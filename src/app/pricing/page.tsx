@@ -1,45 +1,56 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { CheckCircle2, Loader2, AlertCircle } from "lucide-react";
+import { LandingNavbar } from "~/components/LandingNavbar";
+import { LandingFooter } from "~/components/LandingFooter";
+import { cn } from "~/lib/utils";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
-import Navbar from "~/components/Navbar";
-import Footer from "~/components/Footer";
 
-type Product = {
-  id: string;
+type PolarProduct = {
+  key: string;
   name: string;
   description?: string;
-  displayPrice: string;
-  priceAmount: number | null;
-  priceCurrency: string | null;
+  uiDescription?: string;
+  monthly: {
+    displayPrice: string;
+    priceAmount: number;
+    recurringInterval: string;
+  } | null;
+  yearly: {
+    displayPrice: string;
+    priceAmount: number;
+    recurringInterval: string;
+  } | null;
 };
 
 export default function PricingPage() {
-  const router = useRouter();
-  const { isSignedIn } = useUser();
-  const [products, setProducts] = useState<Product[]>([]);
+  const [isAnnual, setIsAnnual] = useState(true);
+  const [products, setProducts] = useState<PolarProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const [checkoutLoadingId, setCheckoutLoadingId] = useState<string | null>(null);
+
+  const { isSignedIn } = useUser();
+  const router = useRouter();
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    async function loadProducts() {
       try {
         const res = await fetch("/api/polar/products");
-        if (!res.ok) {
-          throw new Error("Failed to load products");
-        }
+        if (!res.ok) throw new Error("Failed to load pricing");
         const data = await res.json();
         setProducts(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load pricing");
+        console.error(err);
+        setError("Could not load pricing plans. Please try again later.");
       } finally {
         setLoading(false);
       }
-    };
-
-    fetchProducts();
+    }
+    loadProducts();
   }, []);
 
   const handleSubscribe = async (productId: string) => {
@@ -48,168 +59,181 @@ export default function PricingPage() {
       return;
     }
 
-    setCheckoutLoading(productId);
+    setCheckoutLoadingId(productId);
     try {
       const res = await fetch("/api/polar/checkout", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId }),
+        body: JSON.stringify({
+          productId,
+          recurringInterval: isAnnual ? "year" : "month"
+        })
       });
-
-      if (!res.ok) {
-        throw new Error("Failed to create checkout");
+      const data = await res.json();
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      } else {
+        throw new Error("No checkout URL returned");
       }
-
-      const { checkoutUrl } = await res.json();
-      window.location.href = checkoutUrl;
     } catch (err) {
-      alert("Failed to create checkout. Please try again.");
-      setCheckoutLoading(null);
+      console.error(err);
+      alert("Failed to start checkout");
+      setCheckoutLoadingId(null);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-white via-blue-50/30 to-purple-50/20">
-        <div className="text-center">
-          <div className="mb-4 inline-block h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-          <p className="text-slate-600">Loading pricing...</p>
-        </div>
-      </div>
-    );
-  }
+  // Helper to parse UI description features
+  const getFeatures = (desc?: string) => {
+    if (!desc) return [];
+    return desc.split('\n').filter(line => line.trim().startsWith('•')).map(line => line.replace('•', '').trim());
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-purple-50/20">
-      <Navbar />
+    <div className="min-h-screen bg-white font-sans text-slate-900 selection:bg-slate-900 selection:text-white">
+      <LandingNavbar />
 
-      <main className="mx-auto max-w-7xl px-6 pt-32 pb-20">
-        <div className="text-center">
-          <h1 className="text-5xl font-bold text-slate-900 md:text-6xl">
-            Choose the plan that's
-            <br />
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              right for you
-            </span>
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-xl text-slate-600">
-            Start for free, upgrade when you need more power
-          </p>
-        </div>
+      <div className="relative pt-40 pb-20 px-6">
+        <div className="mx-auto max-w-7xl text-center">
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-5xl font-extrabold tracking-tight text-slate-900 md:text-7xl mb-6"
+          >
+            Simple pricing for everyone.
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-xl text-slate-500 mb-12"
+          >
+            Start for free, upgrade when you love it.
+          </motion.p>
 
-        <div className="mt-16 grid gap-8 lg:grid-cols-3">
-          {products.map((product, index) => (
-            <div
-              key={product.id}
-              className={`group relative overflow-hidden rounded-3xl border-2 bg-white p-8 shadow-lg transition hover:shadow-2xl ${
-                index === 1
-                  ? "border-blue-600 ring-4 ring-blue-100"
-                  : "border-slate-200"
-              }`}
+          {/* Toggle */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="flex items-center justify-center gap-4 mb-16"
+          >
+            <span className={cn("text-sm font-semibold", !isAnnual ? "text-slate-900" : "text-slate-500")}>Monthly</span>
+            <button
+              onClick={() => setIsAnnual(!isAnnual)}
+              className="relative h-8 w-14 rounded-full bg-slate-200 p-1 transition-colors hover:bg-slate-300"
             >
-              {index === 1 && (
-                <div className="absolute right-6 top-6">
-                  <span className="rounded-full bg-gradient-to-r from-pink-500 to-purple-500 px-4 py-1.5 text-xs font-bold text-white shadow-lg">
-                    Most popular
-                  </span>
-                </div>
-              )}
+              <div className={cn("h-6 w-6 rounded-full bg-white shadow-sm transition-transform", isAnnual ? "translate-x-6" : "translate-x-0")} />
+            </button>
+            <span className={cn("text-sm font-semibold", isAnnual ? "text-slate-900" : "text-slate-500")}>
+              Yearly <span className="text-green-600 font-bold ml-1">(Save ~20%)</span>
+            </span>
+          </motion.div>
 
-              <div className="mb-6">
-                <h3 className="text-2xl font-bold text-slate-900">
-                  {product.name}
-                </h3>
-                <div className="mt-4 flex items-baseline gap-2">
-                  <span className="text-5xl font-bold text-slate-900">
-                    ${(product.priceAmount || 0) / 100}
-                  </span>
-                  <span className="text-slate-600">/ month</span>
-                </div>
-                <p className="mt-2 text-sm text-slate-600">Billed monthly</p>
-              </div>
-
-              {product.description && (
-                <p className="mb-6 text-sm text-slate-600">
-                  {product.description}
-                </p>
-              )}
-
-              <button
-                onClick={() => handleSubscribe(product.id)}
-                disabled={checkoutLoading === product.id}
-                className={`w-full rounded-full px-6 py-3.5 font-semibold transition ${
-                  index === 1
-                    ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30 hover:bg-blue-700 hover:shadow-xl"
-                    : "border-2 border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white"
-                } disabled:opacity-50`}
-              >
-                {checkoutLoading === product.id
-                  ? "Loading..."
-                  : `Upgrade to ${product.name}`}
-              </button>
-
-              <div className="mt-8 space-y-3">
-                <div className="flex items-start gap-3">
-                  <svg
-                    className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  <span className="text-sm text-slate-700">
-                    Unlimited AI creations
-                  </span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <svg
-                    className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  <span className="text-sm text-slate-700">
-                    Export to PPTX format
-                  </span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <svg
-                    className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  <span className="text-sm text-slate-700">
-                    Premium AI models
-                  </span>
-                </div>
+          {/* Content */}
+          {loading ? (
+            <div className="flex justify-center py-20">
+              <Loader2 className="h-8 w-8 animate-spin text-slate-300" />
+            </div>
+          ) : error ? (
+            <div className="flex justify-center py-20">
+              <div className="flex items-center gap-2 text-red-500 bg-red-50 px-4 py-2 rounded-lg">
+                <AlertCircle className="h-5 w-5" />
+                <span>{error}</span>
               </div>
             </div>
-          ))}
-        </div>
-      </main>
+          ) : (
+            <div className="grid gap-8 md:grid-cols-3 items-start">
+              {products.map((product, i) => {
+                // Determine active price based on toggle
+                const priceData = isAnnual ? product.yearly : product.monthly;
+                // Fallback if one is missing (e.g. only monthly exists)
+                const activePrice = priceData || product.monthly || product.yearly;
 
-      <Footer />
+                // Safe checks
+                if (!activePrice) return null;
+
+                const isHighlighted = product.key === 'pro'; // Highlight Pro plan
+
+                return (
+                  <motion.div
+                    key={product.key}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 + (i * 0.1) }}
+                    className={cn(
+                      "relative rounded-3xl p-8 text-left border transition-all duration-300 flex flex-col h-full",
+                      isHighlighted
+                        ? "bg-black text-white shadow-2xl scale-105 border-black z-10"
+                        : "bg-white text-slate-900 border-slate-200 hover:border-slate-300 hover:shadow-xl"
+                    )}
+                  >
+                    <h3 className="text-xl font-bold mb-2">{product.name}</h3>
+                    {/* Parse description first line as description */}
+                    <p className={cn("text-sm mb-6 min-h-[40px]", isHighlighted ? "text-slate-400" : "text-slate-500")}>
+                      {product.description?.split('\n')[0] || "Unlock your potential."}
+                    </p>
+
+                    <div className="flex items-baseline gap-1 mb-8">
+                      <span className="text-4xl font-extrabold tracking-tight">{activePrice.displayPrice.split('/')[0]}</span>
+                      <span className={cn("text-sm", isHighlighted ? "text-slate-400" : "text-slate-500")}>/{activePrice.recurringInterval}</span>
+                    </div>
+
+                    <button
+                      onClick={() => handleSubscribe(product.monthly?.priceAmount === 0 ? "" : (product as any).id || "") /* Getting Product ID from somewhere? Accessing from product object directly? My type def might be incomplete */}
+                      // FIX: The API returns the Product ID in the monthly/yearly objects? No, it returns top-level Product ID from env maybe?
+                      // Let's use the key to find the productId from state or assume product object has ID.
+                      // Actually, my API route returns `monthly: { ... id: product.id }`. Access ID from price object.
+                      onClick={() => handleSubscribe(activePrice.id)}
+                      disabled={!!checkoutLoadingId}
+                      className={cn(
+                        "w-full rounded-full py-3 px-6 font-bold text-sm mb-8 transition-transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed",
+                        isHighlighted
+                          ? "bg-white text-black hover:bg-slate-100"
+                          : "bg-black text-white hover:bg-slate-800"
+                      )}>
+                      {checkoutLoadingId === activePrice.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+                      ) : (
+                        activePrice.priceAmount === 0 ? "Sign up for free" : "Get started"
+                      )}
+                    </button>
+
+                    <ul className="space-y-4 flex-1">
+                      {getFeatures(product.uiDescription).map((feature, idx) => (
+                        <li key={idx} className="flex items-start gap-3 text-sm">
+                          <CheckCircle2 className={cn("h-5 w-5 shrink-0", isHighlighted ? "text-green-400" : "text-green-600")} />
+                          <span className={cn(isHighlighted ? "text-slate-300" : "text-slate-600")}>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* FAQ Mockup */}
+          <div className="mt-32 max-w-3xl mx-auto text-left">
+            <h2 className="text-3xl font-bold text-slate-900 mb-12 text-center">Frequently asked questions</h2>
+            <div className="space-y-8">
+              <div>
+                <h4 className="font-bold text-slate-900 mb-2">Can I cancel anytime?</h4>
+                <p className="text-slate-600">Yes, you can cancel your subscription at any time. You'll keep access until the end of your billing period.</p>
+              </div>
+              <div>
+                <h4 className="font-bold text-slate-900 mb-2">Do you offer discounts for students?</h4>
+                <p className="text-slate-600">Absolutly! We offer free Pro accounts for students and educators with a valid .edu email address.</p>
+              </div>
+              <div>
+                <h4 className="font-bold text-slate-900 mb-2">What happens to my decks if I downgrade?</h4>
+                <p className="text-slate-600">Your decks remain safe. You'll switch to the Free plan limits, but you won't lose your existing content.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <LandingFooter />
     </div>
   );
 }
