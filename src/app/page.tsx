@@ -30,72 +30,74 @@ export default function LandingPage() {
             {/* Hero Section */}
             <section className="relative pt-40 pb-20 px-6 overflow-hidden">
                 <div className="mx-auto max-w-7xl">
-                    <div className="flex flex-col items-center text-center">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 
-                        {/* Badge */}
+                        {/* Left Column - Text Content */}
+                        <div className="flex flex-col items-start text-left">
+                            {/* Badge */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.1 }}
+                                className="mb-8 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-3 py-1 backdrop-blur-sm"
+                            >
+                                <span className="flex h-2 w-2 rounded-full bg-green-500"></span>
+                                <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">AI Generation V2.0</span>
+                            </motion.div>
+
+                            {/* Headline */}
+                            <motion.h1
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2, duration: 0.8 }}
+                                className="relative z-10 text-5xl font-extrabold tracking-tight text-slate-900 md:text-6xl lg:text-7xl"
+                            >
+                                Design beautiful <br />
+                                <span className="bg-gradient-to-r from-slate-900 via-slate-700 to-slate-900 bg-clip-text text-transparent">presentations</span> with AI.
+                            </motion.h1>
+
+                            <motion.p
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.3 }}
+                                className="mt-8 text-lg text-slate-500 md:text-xl max-w-xl"
+                            >
+                                The smartest way to create professional decks. Just describe your idea, and PPTMaster generates the story, design, and slides for you.
+                            </motion.p>
+
+                            {/* CTA Buttons */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.4 }}
+                                className="mt-10 flex flex-col items-start gap-4 sm:flex-row"
+                            >
+                                <SignedOut>
+                                    <SignInButton mode="modal">
+                                        <button className="h-12 w-full min-w-[180px] rounded-full bg-black px-8 text-base font-bold text-white shadow-xl shadow-slate-900/10 transition hover:scale-105 hover:bg-slate-800 hover:shadow-2xl sm:w-auto">
+                                            Start for free
+                                        </button>
+                                    </SignInButton>
+                                </SignedOut>
+                                <SignedIn>
+                                    <Link href="/dashboard" className="flex h-12 w-full min-w-[180px] items-center justify-center rounded-full bg-black px-8 text-base font-bold text-white shadow-xl shadow-slate-900/10 transition hover:scale-105 hover:bg-slate-800 hover:shadow-2xl sm:w-auto">
+                                        Go to Dashboard
+                                    </Link>
+                                </SignedIn>
+
+                                <button className="flex h-12 w-full min-w-[180px] items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-8 text-base font-bold text-slate-900 transition hover:border-slate-300 hover:bg-slate-50 sm:w-auto">
+                                    <Play className="h-4 w-4 fill-current" />
+                                    See how it works
+                                </button>
+                            </motion.div>
+                        </div>
+
+                        {/* Right Column - Hero Visual */}
                         <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.1 }}
-                            className="mb-8 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-3 py-1 backdrop-blur-sm"
-                        >
-                            <span className="flex h-2 w-2 rounded-full bg-green-500"></span>
-                            <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">AI Generation V2.0</span>
-                        </motion.div>
-
-                        {/* Headline */}
-                        <motion.h1
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2, duration: 0.8 }}
-                            className="relative z-10 max-w-5xl text-5xl font-extrabold tracking-tight text-slate-900 md:text-7xl lg:text-8xl"
-                        >
-                            Design beautiful <br />
-                            <span className="bg-gradient-to-r from-slate-900 via-slate-700 to-slate-900 bg-clip-text text-transparent">presentations</span> with AI.
-                        </motion.h1>
-
-                        <motion.p
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.3 }}
-                            className="mt-8 max-w-2xl text-lg text-slate-500 md:text-xl"
-                        >
-                            The smartest way to create professional decks. Just describe your idea, and PPTMaster generates the story, design, and slides for you.
-                        </motion.p>
-
-                        {/* CTA Buttons */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.4 }}
-                            className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
-                        >
-                            <SignedOut>
-                                <SignInButton mode="modal">
-                                    <button className="h-12 w-full min-w-[180px] rounded-full bg-black px-8 text-base font-bold text-white shadow-xl shadow-slate-900/10 transition hover:scale-105 hover:bg-slate-800 hover:shadow-2xl sm:w-auto">
-                                        Start for free
-                                    </button>
-                                </SignInButton>
-                            </SignedOut>
-                            <SignedIn>
-                                <Link href="/dashboard" className="flex h-12 w-full min-w-[180px] items-center justify-center rounded-full bg-black px-8 text-base font-bold text-white shadow-xl shadow-slate-900/10 transition hover:scale-105 hover:bg-slate-800 hover:shadow-2xl sm:w-auto">
-                                    Go to Dashboard
-                                </Link>
-                            </SignedIn>
-
-                            <button className="flex h-12 w-full min-w-[180px] items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-8 text-base font-bold text-slate-900 transition hover:border-slate-300 hover:bg-slate-50 sm:w-auto">
-                                <Play className="h-4 w-4 fill-current" />
-                                See how it works
-                            </button>
-                        </motion.div>
-
-
-                        {/* Hero Visual - Abstract Product Mockup */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 60, rotateX: 20 }}
-                            animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                            initial={{ opacity: 0, x: 60 }}
+                            animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.5, type: "spring", damping: 20 }}
-                            className="relative mt-20 w-full max-w-5xl md:mt-32 perspective-1000"
+                            className="relative w-full perspective-1000"
                         >
                             <div className="relative aspect-video overflow-hidden rounded-[20px] bg-white shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] border border-slate-200">
                                 {/* Mac Window Dots */}
@@ -144,7 +146,7 @@ export default function LandingPage() {
                             </div>
 
                             {/* Floating Glass Cards Decoration */}
-                            <div className="absolute -left-12 bottom-20 z-20 hidden md:block animate-bounce [animation-duration:3s]">
+                            <div className="absolute -left-12 bottom-20 z-20 hidden lg:block animate-bounce [animation-duration:3s]">
                                 <div className="flex items-center gap-3 rounded-2xl border border-white/50 bg-white/80 p-4 shadow-xl backdrop-blur-md">
                                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
                                         <CheckCircle2 className="h-5 w-5 text-green-600" />
@@ -156,7 +158,7 @@ export default function LandingPage() {
                                 </div>
                             </div>
 
-                            <div className="absolute -right-8 top-10 z-20 hidden md:block animate-bounce [animation-duration:4s]">
+                            <div className="absolute -right-8 top-10 z-20 hidden lg:block animate-bounce [animation-duration:4s]">
                                 <div className="flex items-center gap-3 rounded-2xl border border-white/50 bg-white/80 p-4 shadow-xl backdrop-blur-md">
                                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
                                         <Wand2 className="h-5 w-5 text-blue-600" />
