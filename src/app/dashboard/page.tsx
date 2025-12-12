@@ -1,9 +1,9 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { db } from "~/server/db";
-import PresentationGenerator from "~/components/PresentationGenerator";
-import Navbar from "~/components/Navbar";
-import Link from "next/link";
+import { Filter, Grid, List as ListIcon, MoreHorizontal, Upload, Import, Star } from "lucide-react";
+import CreateProjectButton from "~/components/dashboard/CreateProjectButton";
+import Image from "next/image";
 
 export default async function DashboardPage() {
   const { userId } = await auth();
@@ -17,7 +17,7 @@ export default async function DashboardPage() {
     include: {
       presentations: {
         orderBy: { createdAt: "desc" },
-        take: 10,
+        take: 50,
       },
     },
   });
@@ -27,83 +27,110 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-purple-50/20">
-      <Navbar />
+    <div className="space-y-8 h-full">
+      {/* Top Action Bar */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center">
+        <CreateProjectButton userId={user.id} credits={user.credits} />
+        <button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-[#1e3a8a] hover:border-[#1e3a8a]/20">
+          <Import size={18} /> Import
+        </button>
+      </div>
 
-      <main className="mx-auto max-w-7xl px-6 pt-24 pb-20">
-        <div className="mb-12">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold text-slate-900">Dashboard</h1>
-              <div className="mt-2 flex items-center gap-4">
-                <div className="flex items-center gap-2 rounded-full bg-blue-100 px-4 py-1.5">
-                  <span className="text-sm font-semibold text-blue-700">
-                    {user.credits} credits
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 rounded-full bg-purple-100 px-4 py-1.5">
-                  <span className="text-sm font-semibold text-purple-700">
-                    {user.subscriptionPlan || "Free"} Plan
-                  </span>
-                </div>
-              </div>
-            </div>
-            <Link
-              href="/pricing"
-              className="rounded-full border-2 border-blue-600 px-6 py-2.5 text-sm font-semibold text-blue-600 transition hover:bg-blue-600 hover:text-white"
-            >
-              Upgrade Plan
-            </Link>
+      {/* Filters & View Toggle */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-slate-100 pb-4">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0">
+          <button className="flex items-center gap-2 whitespace-nowrap rounded-lg bg-[#1e3a8a]/10 px-4 py-2 text-sm font-bold text-[#1e3a8a]">
+            <Grid size={16} /> All
+          </button>
+          <button className="flex items-center gap-2 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-[#1e3a8a]">
+            <Star size={16} /> Favorites
+          </button>
+        </div>
+
+        <div className="flex items-center gap-4">
+           <button className="text-slate-400 hover:text-slate-600">
+              <Filter size={18} />
+           </button>
+           <div className="flex items-center gap-1 rounded-lg bg-slate-100 p-1">
+            <button className="flex items-center gap-2 rounded-md bg-white px-3 py-2 text-[#1e3a8a] shadow-sm transition">
+              <Grid size={20} />
+              <span className="text-sm font-medium">Grid</span>
+            </button>
+            <button className="flex items-center gap-2 rounded-md px-3 py-2 text-slate-500 transition hover:text-slate-700">
+              <ListIcon size={20} />
+              <span className="text-sm font-medium">List</span>
+            </button>
           </div>
         </div>
+      </div>
 
-        <PresentationGenerator userId={user.id} credits={user.credits} />
-
-        <div className="mt-16">
-          <h2 className="mb-6 text-2xl font-bold text-slate-900">
-            Recent Presentations
-          </h2>
-          {user.presentations.length === 0 ? (
-            <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-white p-12 text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
-                <span className="text-3xl">📊</span>
-              </div>
-              <h3 className="mb-2 text-lg font-semibold text-slate-900">
-                No presentations yet
-              </h3>
-              <p className="text-sm text-slate-600">
-                Create your first presentation above to get started
-              </p>
+      {/* Content Display */}
+      <div className="min-h-[600px]">
+        {user.presentations.length === 0 ? (
+          <div className="flex h-[400px] flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50/50 text-center">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-lg ring-1 ring-slate-100">
+              <Upload size={28} className="text-[#06b6d4]" />
             </div>
-          ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {user.presentations.map((pres) => (
-                <div
-                  key={pres.id}
-                  className="group overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-lg"
-                >
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 text-2xl text-white">
-                    📊
-                  </div>
-                  <h3 className="mb-2 font-bold text-slate-900">
+            <h3 className="mb-2 text-lg font-bold text-[#1e3a8a]">
+              No presentations yet
+            </h3>
+            <p className="text-sm text-slate-500 max-w-xs mx-auto mb-6">
+              Create your first AI-powered deck in seconds.
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            {user.presentations.map((pres) => (
+              <div
+                key={pres.id}
+                className="group relative flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-lg hover:shadow-[#06b6d4]/10 cursor-pointer"
+              >
+                {/* Large Thumbnail (Top Half) */}
+                <div className="aspect-[16/10] w-full bg-slate-100 relative overflow-hidden">
+                   {/* Placeholder for actual thumbnail logic */}
+                   <div className="absolute inset-0 bg-gradient-to-br from-[#1e3a8a]/5 to-[#06b6d4]/5 group-hover:from-[#1e3a8a]/10 group-hover:to-[#06b6d4]/10 transition-colors" />
+                   
+                   {/* Abstract Pattern/Preview */}
+                   <div className="absolute inset-3 rounded-lg bg-white shadow-sm flex flex-col p-3 opacity-80 group-hover:opacity-100 transition-opacity">
+                      <div className="h-3 w-3/4 rounded bg-slate-200 mb-2" />
+                      <div className="h-1.5 w-full rounded bg-slate-100 mb-1.5" />
+                      <div className="h-1.5 w-5/6 rounded bg-slate-100 mb-1.5" />
+                      <div className="h-1.5 w-4/5 rounded bg-slate-100" />
+                      
+                      <div className="mt-auto flex gap-2">
+                         <div className="h-8 w-1/2 rounded bg-slate-100" />
+                         <div className="h-8 w-1/2 rounded bg-slate-100" />
+                      </div>
+                   </div>
+                </div>
+
+                {/* Content Section */}
+                <div className="flex flex-col p-5">
+                  <h3 className="mb-3 line-clamp-1 text-lg font-bold text-[#1e3a8a]" title={pres.title}>
                     {pres.title}
                   </h3>
-                  <p className="mb-4 text-sm text-slate-600">
-                    {pres.description || "AI-generated presentation"}
-                  </p>
-                  <p className="text-xs text-slate-400">
-                    {new Date(pres.createdAt).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </p>
+                  
+                  {/* Footer Info */}
+                  <div className="flex items-center justify-between mt-2 pt-3 border-t border-slate-50">
+                     <div className="flex items-center gap-2">
+                        <div className="h-6 w-6 rounded-full bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center text-[10px] text-white font-bold">
+                           {user.name ? user.name[0]?.toUpperCase() : "U"}
+                        </div>
+                        <div className="flex flex-col">
+                           <span className="text-[10px] font-semibold text-slate-700">Created by you</span>
+                           <span className="text-[10px] text-slate-400">Last viewed 2h ago</span>
+                        </div>
+                     </div>
+                     <button className="text-slate-300 hover:text-[#06b6d4]">
+                        <MoreHorizontal size={16} />
+                     </button>
+                  </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </main>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

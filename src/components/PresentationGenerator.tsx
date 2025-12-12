@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { Sparkles, ArrowRight } from "lucide-react";
 
 interface Props {
   userId: string;
@@ -57,37 +58,40 @@ export default function PresentationGenerator({ userId, credits }: Props) {
   };
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl">
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-8">
-        <h2 className="text-3xl font-bold text-white">
+    <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <div className="border-b border-slate-100 bg-slate-50/50 p-8">
+        <h2 className="flex items-center gap-2 text-2xl font-bold text-slate-900">
+          <Sparkles className="text-[#06b6d4]" />
           Create New Presentation
         </h2>
-        <p className="mt-2 text-blue-100">
-          Describe your topic and let AI do the magic
+        <p className="mt-2 text-slate-500">
+          Describe your topic and let AI generate a professional deck for you
         </p>
       </div>
 
       <div className="p-8">
-        <div className="space-y-6">
+        <div className="space-y-8">
           <div>
-            <label className="mb-2 block text-sm font-semibold text-slate-900">
+            <label className="mb-3 block text-sm font-bold text-slate-900">
               What's your presentation about?
             </label>
-            <input
-              type="text"
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              placeholder="e.g., Climate Change Solutions, AI in Healthcare..."
-              className="w-full rounded-xl border-2 border-slate-200 px-4 py-3.5 text-slate-900 placeholder-slate-400 transition focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
-            />
+            <div className="relative">
+              <input
+                type="text"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                placeholder="e.g., Q3 Financial Report, Marketing Strategy for 2025..."
+                className="w-full rounded-2xl border-2 border-slate-200 bg-white px-6 py-4 text-lg text-slate-900 placeholder-slate-400 transition-all focus:border-[#06b6d4] focus:outline-none focus:ring-4 focus:ring-cyan-500/10"
+              />
+            </div>
           </div>
 
           <div>
-            <div className="mb-3 flex items-center justify-between">
-              <label className="text-sm font-semibold text-slate-900">
+            <div className="mb-4 flex items-center justify-between">
+              <label className="text-sm font-bold text-slate-900">
                 Number of Slides
               </label>
-              <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-bold text-blue-700">
+              <span className="rounded-full bg-slate-100 px-4 py-1.5 text-sm font-bold text-slate-900">
                 {slides} slides
               </span>
             </div>
@@ -97,12 +101,9 @@ export default function PresentationGenerator({ userId, credits }: Props) {
               max="15"
               value={slides}
               onChange={(e) => setSlides(Number(e.target.value))}
-              className="h-2 w-full cursor-pointer appearance-none rounded-full bg-slate-200"
-              style={{
-                background: `linear-gradient(to right, rgb(37, 99, 235) 0%, rgb(37, 99, 235) ${((slides - 3) / 12) * 100}%, rgb(226, 232, 240) ${((slides - 3) / 12) * 100}%, rgb(226, 232, 240) 100%)`,
-              }}
+              className="h-2 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-[#06b6d4]"
             />
-            <div className="mt-2 flex justify-between text-xs text-slate-500">
+            <div className="mt-2 flex justify-between text-xs font-medium text-slate-400">
               <span>3</span>
               <span>15</span>
             </div>
@@ -111,7 +112,7 @@ export default function PresentationGenerator({ userId, credits }: Props) {
           <button
             onClick={handleGenerate}
             disabled={loading || credits < 1}
-            className="group relative w-full overflow-hidden rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-4 font-bold text-white shadow-lg shadow-blue-600/30 transition hover:shadow-xl hover:shadow-blue-600/40 disabled:opacity-50 disabled:hover:shadow-lg"
+            className="group relative w-full overflow-hidden rounded-2xl bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-8 py-5 font-bold text-white shadow-lg shadow-cyan-500/20 transition-all hover:scale-[1.01] hover:shadow-xl hover:shadow-cyan-500/30 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-lg"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
@@ -137,16 +138,16 @@ export default function PresentationGenerator({ userId, credits }: Props) {
                 Generating your presentation...
               </span>
             ) : (
-              <span className="flex items-center justify-center gap-2">
-                ✨ Generate Presentation
-                <span className="transition group-hover:translate-x-1">→</span>
+              <span className="flex items-center justify-center gap-2 text-lg">
+                Generate Presentation
+                <ArrowRight className="transition-transform group-hover:translate-x-1" />
               </span>
             )}
           </button>
 
           {credits < 1 && (
-            <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 text-center">
-              <p className="text-sm font-medium text-amber-800">
+            <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-center">
+              <p className="text-sm font-medium text-rose-900">
                 You're out of credits. Upgrade your plan to continue creating.
               </p>
             </div>

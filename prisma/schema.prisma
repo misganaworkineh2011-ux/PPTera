@@ -8,15 +8,15 @@ datasource db {
 }
 
 model User {
-  id                  String         @id @default(cuid())
-  clerkId             String         @unique
+  id                  String          @id @default(cuid())
+  clerkId             String          @unique
   name                String
   email               String
-  emailVerified       Boolean        @default(false)
+  emailVerified       Boolean         @default(false)
   image               String?
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @default(now()) @updatedAt
-  credits             Int            @default(0)
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @default(now()) @updatedAt
+  credits             Int             @default(0)
   subscriptionPlan    String?
   subscriptionType    String?
   productId           String?
@@ -24,20 +24,127 @@ model User {
   polarCustomerId     String?
   polarSubscriptionId String?
   presentations       Presentation[]
+  images              Image[]
+  charts              Chart[]
+  templates           Template[]
+  themes              Theme[]
+  resources           Resource[]
+  activities          Activity[]
+  collaborations      Collaboration[]
+  pinnedProjects      PinnedProject[]
 
   @@map("user")
 }
 
 model Presentation {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  content     Json
-  slides      Json
-  userId      String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String          @id @default(cuid())
+  title          String
+  description    String?
+  content        Json
+  slides         Json
+  thumbnailUrl   String?
+  isPinned       Boolean         @default(false)
+  userId         String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  images         Image[]
+  charts         Chart[]
+  collaborations Collaboration[]
+  activities     Activity[]
+  pinnedBy       PinnedProject[]
 
   @@map("presentation")
+}
+
+model Image {
+  id             String        @id @default(cuid())
+  url            String
+  filename       String
+  tags           String[]
+  userId         String
+  presentationId String?
+  createdAt      DateTime      @default(now())
+  user           User          @relation(fields: [userId], references: [id])
+  presentation   Presentation? @relation(fields: [presentationId], references: [id])
+}
+
+model Chart {
+  id             String        @id @default(cuid())
+  type           String // pie, bar, line, table, etc.
+  data           Json
+  config         Json
+  previewUrl     String?
+  userId         String
+  presentationId String?
+  createdAt      DateTime      @default(now())
+  user           User          @relation(fields: [userId], references: [id])
+  presentation   Presentation? @relation(fields: [presentationId], references: [id])
+}
+
+model Template {
+  id         String   @id @default(cuid())
+  name       String
+  category   String // theme, style, industry
+  previewUrl String
+  config     Json
+  isPublic   Boolean  @default(false)
+  userId     String?
+  createdAt  DateTime @default(now())
+  user       User?    @relation(fields: [userId], references: [id])
+}
+
+model Theme {
+  id             String   @id @default(cuid())
+  name           String
+  colors         Json
+  fonts          Json
+  designElements Json
+  isDefault      Boolean  @default(false)
+  userId         String?
+  createdAt      DateTime @default(now())
+  user           User?    @relation(fields: [userId], references: [id])
+}
+
+model Resource {
+  id        String   @id @default(cuid())
+  type      String // font, icon, logo, illustration, photo, component
+  name      String
+  url       String
+  category  String?
+  tags      String[]
+  userId    String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+}
+
+model Activity {
+  id             String        @id @default(cuid())
+  type           String // edit, create, delete, share, etc.
+  description    String
+  userId         String
+  presentationId String?
+  metadata       Json?
+  createdAt      DateTime      @default(now())
+  user           User          @relation(fields: [userId], references: [id])
+  presentation   Presentation? @relation(fields: [presentationId], references: [id])
+}
+
+model Collaboration {
+  id             String       @id @default(cuid())
+  presentationId String
+  userId         String
+  role           String // owner, editor, viewer
+  createdAt      DateTime     @default(now())
+  presentation   Presentation @relation(fields: [presentationId], references: [id])
+  user           User         @relation(fields: [userId], references: [id])
+}
+
+model PinnedProject {
+  id             String       @id @default(cuid())
+  userId         String
+  presentationId String
+  pinnedAt       DateTime     @default(now())
+  user           User         @relation(fields: [userId], references: [id])
+  presentation   Presentation @relation(fields: [presentationId], references: [id])
 }
