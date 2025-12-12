@@ -1,16 +1,15 @@
 "use client";
 
-import { FileText, Import } from "lucide-react";
-import CreateProjectButton from "~/components/dashboard/CreateProjectButton";
+import { BarChart, Plus, Filter, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useStickyContext } from "~/components/dashboard/DashboardLayout";
 
-interface StickyHeaderProps {
-  userId: string;
-  credits: number;
+interface ChartsStickyHeaderProps {
+  userId?: string;
+  credits?: number;
 }
 
-export default function StickyHeader({ userId, credits }: StickyHeaderProps) {
+export default function ChartsStickyHeader({ userId, credits }: ChartsStickyHeaderProps) {
   const [isSticky, setIsSticky] = useState(false);
   const headerRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -26,9 +25,9 @@ export default function StickyHeader({ userId, credits }: StickyHeaderProps) {
           setStickyTitleContent(
             <>
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
-                <FileText size={18} />
+                <BarChart size={18} />
               </div>
-              <h1 className="text-xl font-bold tracking-tight text-[#1e3a8a] whitespace-nowrap">Presentations</h1>
+              <h1 className="text-xl font-bold tracking-tight text-[#1e3a8a] whitespace-nowrap">Charts</h1>
             </>
           );
         } else {
@@ -65,14 +64,19 @@ export default function StickyHeader({ userId, credits }: StickyHeaderProps) {
       >
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
-            <FileText size={22} />
+            <BarChart size={22} />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-[#1e3a8a]">Presentations</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-[#1e3a8a]">Charts</h1>
         </div>
         <div className="flex items-center gap-3">
-          <CreateProjectButton userId={userId} credits={credits} />
           <button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-[#1e3a8a] hover:border-[#1e3a8a]/20">
-            <Import size={18} /> Import
+            <Filter size={18} /> Filter
+          </button>
+          <button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-[#1e3a8a] hover:border-[#1e3a8a]/20">
+            <Sparkles size={18} /> AI Generate
+          </button>
+          <button className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-[#06b6d4]/20 transition-all hover:from-[#172554] hover:to-[#0891b2] hover:scale-[1.02] active:scale-[0.98]">
+            <Plus size={18} /> Create Chart
           </button>
         </div>
       </div>

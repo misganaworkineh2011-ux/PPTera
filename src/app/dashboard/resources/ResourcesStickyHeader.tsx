@@ -1,16 +1,10 @@
 "use client";
 
-import { FileText, Import } from "lucide-react";
-import CreateProjectButton from "~/components/dashboard/CreateProjectButton";
+import { Box, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useStickyContext } from "~/components/dashboard/DashboardLayout";
 
-interface StickyHeaderProps {
-  userId: string;
-  credits: number;
-}
-
-export default function StickyHeader({ userId, credits }: StickyHeaderProps) {
+export default function ResourcesStickyHeader() {
   const [isSticky, setIsSticky] = useState(false);
   const headerRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -26,9 +20,9 @@ export default function StickyHeader({ userId, credits }: StickyHeaderProps) {
           setStickyTitleContent(
             <>
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
-                <FileText size={18} />
+                <Box size={18} />
               </div>
-              <h1 className="text-xl font-bold tracking-tight text-[#1e3a8a] whitespace-nowrap">Presentations</h1>
+              <h1 className="text-xl font-bold tracking-tight text-[#1e3a8a] whitespace-nowrap">Resources</h1>
             </>
           );
         } else {
@@ -65,15 +59,19 @@ export default function StickyHeader({ userId, credits }: StickyHeaderProps) {
       >
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
-            <FileText size={22} />
+            <Box size={22} />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-[#1e3a8a]">Presentations</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-[#1e3a8a]">Resources</h1>
         </div>
         <div className="flex items-center gap-3">
-          <CreateProjectButton userId={userId} credits={credits} />
-          <button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-[#1e3a8a] hover:border-[#1e3a8a]/20">
-            <Import size={18} /> Import
-          </button>
+          <div className="relative flex-1 max-w-xs">
+            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search assets..."
+              className="w-full rounded-full border border-slate-200 bg-white py-2.5 pl-11 pr-4 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]/20"
+            />
+          </div>
         </div>
       </div>
     </>

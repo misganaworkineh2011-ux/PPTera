@@ -1,23 +1,18 @@
 "use client";
 
-import { Bell, Search, FileText } from "lucide-react";
+import { Bell, Search } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
+import { useStickyContext } from "./DashboardLayout";
 
-interface TopBarProps {
-  isTitleSticky?: boolean;
-}
-
-export default function TopBar({ isTitleSticky = false }: TopBarProps) {
+export default function TopBar() {
+  const { isTitleSticky, stickyTitleContent } = useStickyContext();
   return (
     <header className="sticky top-0 z-50 flex h-20 items-center justify-between bg-[#F8F9FA] px-8 border-b border-slate-100/50 backdrop-blur-sm">
       {/* Left: Shows sticky title when active */}
       <div className={`flex items-center gap-4 transition-all ${isTitleSticky ? "flex-1 min-w-[280px]" : "flex-1"}`}>
-        {isTitleSticky && (
+        {isTitleSticky && stickyTitleContent && (
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
-              <FileText size={18} />
-            </div>
-            <h1 className="text-xl font-bold tracking-tight text-[#1e3a8a] whitespace-nowrap">Presentations</h1>
+            {stickyTitleContent}
           </div>
         )}
       </div>
