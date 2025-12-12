@@ -383,69 +383,7 @@ export default function LandingPage() {
 
             <LandingFooter />
 
-            <style jsx global>{`
-                @keyframes fade-in {
-                    from {
-                        opacity: 0;
-                    }
-                    to {
-                        opacity: 1;
-                    }
-                }
 
-                @keyframes fade-in-up {
-                    from {
-                        opacity: 0;
-                        transform: translateY(20px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-
-                @keyframes fade-in-right {
-                    from {
-                        opacity: 0;
-                        transform: translateX(60px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateX(0);
-                    }
-                }
-
-                @keyframes float {
-                    0%, 100% {
-                        transform: translate(0, 0);
-                    }
-                    33% {
-                        transform: translate(100px, -50px);
-                    }
-                    66% {
-                        transform: translate(0, 0);
-                    }
-                }
-
-                .animate-fade-in {
-                    animation: fade-in 0.6s ease-out forwards;
-                    opacity: 0;
-                }
-
-                .animate-fade-in-up {
-                    animation: fade-in-up 0.8s ease-out forwards;
-                    opacity: 0;
-                }
-
-                .animate-fade-in-right {
-                    animation: fade-in-right 0.8s ease-out forwards;
-                    opacity: 0;
-                }
-
-                .animate-float {
-                    animation: float 10s linear infinite;
-                }
-            `}</style>
         </div>
     );
 }

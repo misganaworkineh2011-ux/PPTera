@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { CheckCircle2, Loader2, AlertCircle } from "lucide-react";
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
@@ -15,11 +14,13 @@ type PolarProduct = {
   description?: string;
   uiDescription?: string;
   monthly: {
+    id: string; // Added id to monthly
     displayPrice: string;
     priceAmount: number;
     recurringInterval: string;
   } | null;
   yearly: {
+    id: string; // Added id to yearly
     displayPrice: string;
     priceAmount: number;
     recurringInterval: string;
@@ -93,29 +94,15 @@ export default function PricingPage() {
 
       <div className="relative pt-40 pb-20 px-6">
         <div className="mx-auto max-w-7xl text-center">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-5xl font-extrabold tracking-tight text-slate-900 md:text-7xl mb-6"
-          >
+          <h1 className="text-5xl font-extrabold tracking-tight text-slate-900 md:text-7xl mb-6 animate-fade-in-up">
             Simple pricing for everyone.
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-xl text-slate-500 mb-12"
-          >
+          </h1>
+          <p className="text-xl text-slate-500 mb-12 animate-fade-in-up [animation-delay:100ms]">
             Start for free, upgrade when you love it.
-          </motion.p>
+          </p>
 
           {/* Toggle */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="flex items-center justify-center gap-4 mb-16"
-          >
+          <div className="flex items-center justify-center gap-4 mb-16 animate-fade-in-up [animation-delay:200ms]">
             <span className={cn("text-sm font-semibold", !isAnnual ? "text-slate-900" : "text-slate-500")}>Monthly</span>
             <button
               onClick={() => setIsAnnual(!isAnnual)}
@@ -126,7 +113,7 @@ export default function PricingPage() {
             <span className={cn("text-sm font-semibold", isAnnual ? "text-slate-900" : "text-slate-500")}>
               Yearly <span className="text-green-600 font-bold ml-1">(Save ~20%)</span>
             </span>
-          </motion.div>
+          </div>
 
           {/* Content */}
           {loading ? (
@@ -143,31 +130,25 @@ export default function PricingPage() {
           ) : (
             <div className="grid gap-8 md:grid-cols-3 items-start">
               {products.map((product, i) => {
-                // Determine active price based on toggle
                 const priceData = isAnnual ? product.yearly : product.monthly;
-                // Fallback if one is missing (e.g. only monthly exists)
                 const activePrice = priceData || product.monthly || product.yearly;
 
-                // Safe checks
                 if (!activePrice) return null;
 
-                const isHighlighted = product.key === 'pro'; // Highlight Pro plan
+                const isHighlighted = product.key === 'pro';
 
                 return (
-                  <motion.div
+                  <div
                     key={product.key}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 + (i * 0.1) }}
                     className={cn(
-                      "relative rounded-3xl p-8 text-left border transition-all duration-300 flex flex-col h-full",
+                      "relative rounded-3xl p-8 text-left border transition-all duration-300 flex flex-col h-full animate-fade-in-up",
                       isHighlighted
                         ? "bg-black text-white shadow-2xl scale-105 border-black z-10"
                         : "bg-white text-slate-900 border-slate-200 hover:border-slate-300 hover:shadow-xl"
                     )}
+                    style={{ animationDelay: `${300 + (i * 100)}ms` }}
                   >
                     <h3 className="text-xl font-bold mb-2">{product.name}</h3>
-                    {/* Parse description first line as description */}
                     <p className={cn("text-sm mb-6 min-h-[40px]", isHighlighted ? "text-slate-400" : "text-slate-500")}>
                       {product.description?.split('\n')[0] || "Unlock your potential."}
                     </p>
@@ -178,10 +159,6 @@ export default function PricingPage() {
                     </div>
 
                     <button
-                      onClick={() => handleSubscribe(product.monthly?.priceAmount === 0 ? "" : (product as any).id || "") /* Getting Product ID from somewhere? Accessing from product object directly? My type def might be incomplete */}
-                      // FIX: The API returns the Product ID in the monthly/yearly objects? No, it returns top-level Product ID from env maybe?
-                      // Let's use the key to find the productId from state or assume product object has ID.
-                      // Actually, my API route returns `monthly: { ... id: product.id }`. Access ID from price object.
                       onClick={() => handleSubscribe(activePrice.id)}
                       disabled={!!checkoutLoadingId}
                       className={cn(
@@ -205,13 +182,12 @@ export default function PricingPage() {
                         </li>
                       ))}
                     </ul>
-                  </motion.div>
+                  </div>
                 );
               })}
             </div>
           )}
 
-          {/* FAQ Mockup */}
           <div className="mt-32 max-w-3xl mx-auto text-left">
             <h2 className="text-3xl font-bold text-slate-900 mb-12 text-center">Frequently asked questions</h2>
             <div className="space-y-8">
