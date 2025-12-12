@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
-import { motion, AnimatePresence } from "framer-motion";
 import {
     ChevronDown,
     Globe,
@@ -61,37 +60,30 @@ export const LandingNavbar = () => {
                             <button className="flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100/50 hover:text-slate-900">
                                 Products <ChevronDown className={cn("h-4 w-4 transition-transform", productsOpen && "rotate-180")} />
                             </button>
-                            <AnimatePresence>
-                                {productsOpen && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                        className="absolute top-full left-0 pt-2 w-64"
-                                    >
-                                        <div className="rounded-2xl border border-slate-100 bg-white p-2 shadow-xl">
-                                            <Link href="#" className="flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50">
-                                                <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
-                                                    <Wand2 className="h-4 w-4" />
-                                                </div>
-                                                <div>
-                                                    <div className="font-semibold text-slate-900">AI Generator</div>
-                                                    <div className="text-xs text-slate-500">Text to presentation</div>
-                                                </div>
-                                            </Link>
-                                            <Link href="#" className="flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50">
-                                                <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100 text-purple-600">
-                                                    <Sparkles className="h-4 w-4" />
-                                                </div>
-                                                <div>
-                                                    <div className="font-semibold text-slate-900">Templates</div>
-                                                    <div className="text-xs text-slate-500">Premium designs</div>
-                                                </div>
-                                            </Link>
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                            {productsOpen && (
+                                <div className="absolute top-full left-0 pt-2 w-64 animate-fade-in-up [animation-duration:0.2s] origin-top">
+                                    <div className="rounded-2xl border border-slate-100 bg-white p-2 shadow-xl">
+                                        <Link href="#" className="flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50">
+                                            <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                                                <Wand2 className="h-4 w-4" />
+                                            </div>
+                                            <div>
+                                                <div className="font-semibold text-slate-900">AI Generator</div>
+                                                <div className="text-xs text-slate-500">Text to presentation</div>
+                                            </div>
+                                        </Link>
+                                        <Link href="#" className="flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50">
+                                            <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100 text-purple-600">
+                                                <Sparkles className="h-4 w-4" />
+                                            </div>
+                                            <div>
+                                                <div className="font-semibold text-slate-900">Templates</div>
+                                                <div className="text-xs text-slate-500">Premium designs</div>
+                                            </div>
+                                        </Link>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Solutions Dropdown */}
@@ -103,27 +95,20 @@ export const LandingNavbar = () => {
                             <button className="flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100/50 hover:text-slate-900">
                                 Solutions <ChevronDown className={cn("h-4 w-4 transition-transform", solutionsOpen && "rotate-180")} />
                             </button>
-                            <AnimatePresence>
-                                {solutionsOpen && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                        className="absolute top-full left-0 pt-2 w-64"
-                                    >
-                                        <div className="rounded-2xl border border-slate-100 bg-white p-2 shadow-xl">
-                                            <Link href="#" className="block rounded-xl p-3 hover:bg-slate-50">
-                                                <div className="font-semibold text-slate-900">Enterprise</div>
-                                                <div className="text-xs text-slate-500">For large teams</div>
-                                            </Link>
-                                            <Link href="#" className="block rounded-xl p-3 hover:bg-slate-50">
-                                                <div className="font-semibold text-slate-900">Education</div>
-                                                <div className="text-xs text-slate-500">For students & teachers</div>
-                                            </Link>
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                            {solutionsOpen && (
+                                <div className="absolute top-full left-0 pt-2 w-64 animate-fade-in-up [animation-duration:0.2s] origin-top">
+                                    <div className="rounded-2xl border border-slate-100 bg-white p-2 shadow-xl">
+                                        <Link href="#" className="block rounded-xl p-3 hover:bg-slate-50">
+                                            <div className="font-semibold text-slate-900">Enterprise</div>
+                                            <div className="text-xs text-slate-500">For large teams</div>
+                                        </Link>
+                                        <Link href="#" className="block rounded-xl p-3 hover:bg-slate-50">
+                                            <div className="font-semibold text-slate-900">Education</div>
+                                            <div className="text-xs text-slate-500">For students & teachers</div>
+                                        </Link>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <Link href="#" className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100/50 hover:text-slate-900">About</Link>
@@ -165,44 +150,37 @@ export const LandingNavbar = () => {
             </nav>
 
             {/* Mobile Menu - Fixed to prevent overflow/unnecessary flow */}
-            <AnimatePresence>
-                {mobileOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -20, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                        className="absolute top-20 left-4 right-4 z-40 rounded-3xl border border-slate-100 bg-white p-4 shadow-2xl md:hidden origin-top"
-                    >
-                        <div className="flex flex-col gap-2">
-                            <Link href="#" className="flex items-center justify-between rounded-xl bg-slate-50 p-3 font-semibold text-slate-900">
-                                Products <ChevronDown className="h-4 w-4" />
-                            </Link>
-                            <Link href="#" className="flex items-center justify-between rounded-xl bg-slate-50 p-3 font-semibold text-slate-900">
-                                Solutions <ChevronDown className="h-4 w-4" />
-                            </Link>
-                            <Link href="#" className="rounded-xl p-3 font-semibold text-slate-600 hover:bg-slate-50">About</Link>
-                            <Link href="/pricing" className="rounded-xl p-3 font-semibold text-slate-600 hover:bg-slate-50">Pricing</Link>
+            {mobileOpen && (
+                <div className="absolute top-20 left-4 right-4 z-40 rounded-3xl border border-slate-100 bg-white p-4 shadow-2xl md:hidden origin-top animate-fade-in-up [animation-duration:0.2s]">
+                    <div className="flex flex-col gap-2">
+                        <Link href="#" className="flex items-center justify-between rounded-xl bg-slate-50 p-3 font-semibold text-slate-900">
+                            Products <ChevronDown className="h-4 w-4" />
+                        </Link>
+                        <Link href="#" className="flex items-center justify-between rounded-xl bg-slate-50 p-3 font-semibold text-slate-900">
+                            Solutions <ChevronDown className="h-4 w-4" />
+                        </Link>
+                        <Link href="#" className="rounded-xl p-3 font-semibold text-slate-600 hover:bg-slate-50">About</Link>
+                        <Link href="/pricing" className="rounded-xl p-3 font-semibold text-slate-600 hover:bg-slate-50">Pricing</Link>
 
-                            <SignedIn>
-                                <div className="mt-2 text-center">
-                                    <Link href="/dashboard" className="block w-full rounded-xl bg-black py-3 font-bold text-white" onClick={() => setMobileOpen(false)}>
-                                        Go to Dashboard
-                                    </Link>
-                                </div>
-                            </SignedIn>
-                            <SignedOut>
-                                <div className="mt-2 text-center">
-                                    <SignInButton mode="modal">
-                                        <button className="block w-full rounded-xl bg-black py-3 font-bold text-white">
-                                            Log in / Sign up
-                                        </button>
-                                    </SignInButton>
-                                </div>
-                            </SignedOut>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                        <SignedIn>
+                            <div className="mt-2 text-center">
+                                <Link href="/dashboard" className="block w-full rounded-xl bg-black py-3 font-bold text-white" onClick={() => setMobileOpen(false)}>
+                                    Go to Dashboard
+                                </Link>
+                            </div>
+                        </SignedIn>
+                        <SignedOut>
+                            <div className="mt-2 text-center">
+                                <SignInButton mode="modal">
+                                    <button className="block w-full rounded-xl bg-black py-3 font-bold text-white">
+                                        Log in / Sign up
+                                    </button>
+                                </SignInButton>
+                            </div>
+                        </SignedOut>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
