@@ -1,6 +1,7 @@
 "use client";
 
 import { Bell, Search } from "lucide-react";
+import { UserButton } from "@clerk/nextjs";
 
 export default function TopBar() {
   return (
@@ -35,6 +36,16 @@ export default function TopBar() {
           <Bell size={20} />
           <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full border-2 border-white bg-[#06b6d4]"></span>
         </button>
+        
+        {/* User Profile */}
+        <UserButton 
+          afterSignOutUrl="/"
+          appearance={{
+            elements: {
+              avatarBox: "h-10 w-10 ring-2 ring-slate-200 hover:ring-[#06b6d4] transition-all",
+            },
+          }}
+        />
       </div>
     </header>
   );
