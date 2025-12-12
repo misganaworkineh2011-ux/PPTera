@@ -86,22 +86,19 @@ export default async function DashboardPage() {
                 className="group relative flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-lg hover:shadow-[#06b6d4]/10 cursor-pointer"
               >
                 {/* Large Thumbnail (Top Half) */}
-                <div className="aspect-[16/10] w-full bg-slate-100 relative overflow-hidden">
-                   {/* Placeholder for actual thumbnail logic */}
-                   <div className="absolute inset-0 bg-gradient-to-br from-[#1e3a8a]/5 to-[#06b6d4]/5 group-hover:from-[#1e3a8a]/10 group-hover:to-[#06b6d4]/10 transition-colors" />
-                   
-                   {/* Abstract Pattern/Preview */}
-                   <div className="absolute inset-3 rounded-lg bg-white shadow-sm flex flex-col p-3 opacity-80 group-hover:opacity-100 transition-opacity">
-                      <div className="h-3 w-3/4 rounded bg-slate-200 mb-2" />
-                      <div className="h-1.5 w-full rounded bg-slate-100 mb-1.5" />
-                      <div className="h-1.5 w-5/6 rounded bg-slate-100 mb-1.5" />
-                      <div className="h-1.5 w-4/5 rounded bg-slate-100" />
-                      
-                      <div className="mt-auto flex gap-2">
-                         <div className="h-8 w-1/2 rounded bg-slate-100" />
-                         <div className="h-8 w-1/2 rounded bg-slate-100" />
-                      </div>
+                <div className="aspect-[16/10] w-full bg-gradient-to-br from-[#1e3a8a]/10 to-[#06b6d4]/10 relative overflow-hidden">
+                   {/* Logo as Thumbnail Placeholder */}
+                   <div className="absolute inset-0 flex items-center justify-center p-4">
+                      <Image
+                        src="/logo.png"
+                        alt={pres.title}
+                        width={200}
+                        height={120}
+                        className="object-contain opacity-60 group-hover:opacity-80 transition-opacity"
+                      />
                    </div>
+                   {/* Gradient Overlay */}
+                   <div className="absolute inset-0 bg-gradient-to-br from-[#1e3a8a]/5 to-[#06b6d4]/5 group-hover:from-[#1e3a8a]/10 group-hover:to-[#06b6d4]/10 transition-colors" />
                 </div>
 
                 {/* Content Section */}
