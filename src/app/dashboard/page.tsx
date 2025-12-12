@@ -4,6 +4,7 @@ import { db } from "~/server/db";
 import { Filter, Grid, List as ListIcon, MoreHorizontal, Upload, Import, Star, FileText } from "lucide-react";
 import CreateProjectButton from "~/components/dashboard/CreateProjectButton";
 import Image from "next/image";
+import StickyHeader from "./StickyHeader";
 
 export default async function DashboardPage() {
   const { userId } = await auth();
@@ -28,21 +29,8 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8 h-full">
-      {/* Top Action Bar */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
-            <FileText size={22} />
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight text-[#1e3a8a]">Presentations</h1>
-        </div>
-        <div className="flex items-center gap-3">
-          <CreateProjectButton userId={user.id} credits={user.credits} />
-          <button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-[#1e3a8a] hover:border-[#1e3a8a]/20">
-            <Import size={18} /> Import
-          </button>
-        </div>
-      </div>
+      {/* Sticky Header Section */}
+      <StickyHeader userId={user.id} credits={user.credits} />
 
       {/* Filters & View Toggle */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-slate-100 pb-4">

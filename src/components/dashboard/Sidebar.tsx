@@ -113,7 +113,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
                       key={item.href}
                       href={item.href}
                       className={cn(
-                        "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all",
+                        "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-semibold transition-all",
                         isActive
                           ? "bg-[#e0f2fe] text-[#06b6d4] shadow-sm"
                           : "text-slate-700 hover:bg-slate-50 hover:text-[#1e3a8a]",
@@ -121,7 +121,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
                       )}
                     >
                       <item.icon
-                        size={20}
+                        size={17}
                         className={cn(
                           "transition-colors",
                           isActive ? "text-[#06b6d4]" : "text-slate-600 group-hover:text-[#1e3a8a]"

@@ -1,30 +1,41 @@
 "use client";
 
-import { Bell, Search } from "lucide-react";
+import { Bell, Search, FileText } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
 
-export default function TopBar() {
+interface TopBarProps {
+  isTitleSticky?: boolean;
+}
+
+export default function TopBar({ isTitleSticky = false }: TopBarProps) {
   return (
-    <header className="flex h-20 items-center justify-between bg-transparent px-8">
-      {/* Left: Spacer or Breadcrumbs */}
-      <div className="flex items-center gap-4">
-        {/* Can add breadcrumbs here */}
+    <header className="sticky top-0 z-50 flex h-20 items-center justify-between bg-[#F8F9FA] px-8 border-b border-slate-100/50 backdrop-blur-sm">
+      {/* Left: Shows sticky title when active */}
+      <div className={`flex items-center gap-4 transition-all ${isTitleSticky ? "flex-1 min-w-[280px]" : "flex-1"}`}>
+        {isTitleSticky && (
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
+              <FileText size={18} />
+            </div>
+            <h1 className="text-xl font-bold tracking-tight text-[#1e3a8a] whitespace-nowrap">Presentations</h1>
+          </div>
+        )}
       </div>
 
-      {/* Center: Modern Search */}
-      <div className="flex flex-1 items-center justify-center px-8">
-        <div className="relative w-full max-w-lg transition-transform focus-within:scale-105">
+      {/* Center: Modern Search - Adjusts when title is sticky */}
+      <div className={`flex items-center transition-all ${isTitleSticky ? "flex-1 justify-end px-4" : "flex-1 justify-center px-8"}`}>
+        <div className={`relative transition-all ${isTitleSticky ? "w-full max-w-xs" : "w-full max-w-lg"}`}>
           <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             placeholder="Try searching 'insights'..."
-            className="w-full rounded-full border-none bg-white py-3 pl-11 pr-4 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]/20"
+            className={`w-full rounded-full border-none bg-white pl-11 pr-4 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]/20 transition-all ${isTitleSticky ? "py-2.5" : "py-3"}`}
           />
         </div>
       </div>
 
-      {/* Right: Actions */}
-      <div className="flex items-center gap-3">
+      {/* Right: Actions - Always Fixed */}
+      <div className="flex items-center gap-3 shrink-0">
         {/* Credits Badge */}
         <div className="hidden items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 md:flex">
           <span className="flex h-2 w-2 rounded-full bg-[#06b6d4]"></span>
