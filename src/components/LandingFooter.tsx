@@ -7,20 +7,20 @@ import { Globe, CheckCircle2 } from "lucide-react";
 export const LandingFooter = () => {
     return (
         <footer className="relative z-10 bg-black text-white">
-            {/* CTA Section - Full Height, Text centered, Button smaller/higher */}
-            <div className="relative w-full overflow-hidden h-screen bg-gradient-to-t from-[#ff9a9e] via-[#ffd1d5] to-white flex items-center justify-center">
+            {/* CTA Section - Full Height, Text centered top */}
+            <div className="relative w-full h-screen bg-gradient-to-t from-[#ff9a9e] via-[#ffd1d5] to-white flex items-start justify-center pt-32">
 
-                {/* Background Image - Full height/cover */}
-                <div className="absolute inset-0 z-0 select-none">
+                {/* Background Image - Full image shown at bottom */}
+                <div className="absolute inset-0 z-0">
                     <img
                         src="/background.png"
                         alt="Background"
-                        className="h-full w-full object-cover opacity-80"
+                        className="h-full w-full object-contain object-bottom opacity-80"
                     />
                 </div>
 
                 {/* Text + Button - Centered relative to container */}
-                <div className="relative z-10 mx-auto max-w-4xl text-center px-6 -mt-32"> {/* Negative margin to pull up a bit if needed, or just justify-center */}
+                <div className="relative z-10 mx-auto max-w-4xl text-center px-6">
                     <h2 className="mb-4 text-4xl font-bold tracking-tight text-slate-900 md:text-5xl lg:text-7xl">
                         Ready to transform<br className="hidden md:block" /> your presentations?
                     </h2>

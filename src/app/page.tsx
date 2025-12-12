@@ -11,7 +11,8 @@ import {
     CheckCircle2,
     Wand2,
     Sparkles,
-    Globe
+    Globe,
+    ArrowUpRight
 } from "lucide-react";
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
@@ -172,162 +173,152 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* Feature Grid / Premium Section 
-                 - Updated Gradient from dashboard
-                 - Increased padding ("give more time")
-                 - Monochrome icons ("Hero like")
-             */}
-            <section className="relative z-10 py-32 px-6 lg:py-40 bg-gradient-to-br from-[#1e3a8a]/5 to-[#06b6d4]/5">
-                <div className="mx-auto max-w-7xl">
-                    {/* Feature Grid: Horizontal Scroll on Mobile, Grid on Desktop */}
-                    <div className="flex overflow-x-auto gap-8 pb-8 -mx-6 px-6 md:grid md:grid-cols-2 md:gap-10 md:overflow-visible md:pb-0 md:mx-0 md:px-0 scrollbar-hide snap-x snap-mandatory">
+            {/* Fade to White at Bottom of Hero (Overlay) */}
+            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white via-white/80 to-transparent z-10 pointer-events-none"></div>
+
+            {/* Feature Grid Section (Sky Blue Theme) */}
+            <section className="relative z-10 pt-32 pb-48 px-6 bg-[#85CBF8] overflow-visible">
+                {/* Smooth Top Gradient from White Hero */}
+                <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-white to-transparent z-20 pointer-events-none"></div>
+
+                {/* Cloud Background Effects (Cleaner) */}
+                <div className="absolute inset-0 pointer-events-none opacity-50">
+                    <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-white/20 rounded-full blur-[100px]"></div>
+                    <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-white/10 rounded-full blur-[120px]"></div>
+                </div >
+
+                <div className="mx-auto max-w-7xl relative z-10">
+                    <div className="text-center mb-16 md:mb-24">
+                        <span className="inline-block py-1 px-3 rounded-full bg-white/20 border border-white/30 text-white text-sm font-semibold mb-4 tracking-wide uppercase">
+                            Features
+                        </span>
+                        <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-6">
+                            Everything you need to <br className="hidden md:block" /> tell your story.
+                        </h2>
+                        <p className="text-lg text-white/90 max-w-2xl mx-auto font-medium">
+                            Powerful tools wrapped in a stunning interface. Designed for speed, built for impact.
+                        </p>
+                    </div>
+
+                    {/* Feature Grid: Sky Blue Theme (White Cards) */}
+                    <div className="flex overflow-x-auto gap-6 pb-8 -mx-6 px-6 md:grid md:grid-cols-2 md:gap-8 md:overflow-visible md:pb-0 md:mx-0 md:px-0 scrollbar-hide snap-x snap-mandatory">
 
                         {/* Card 1: Presentations */}
-                        <div className="min-w-[85vw] md:min-w-0 snap-center group relative overflow-hidden rounded-[2.5rem] bg-white p-8 shadow-sm transition-all duration-300 hover:shadow-2xl md:p-12 border border-white/50 hover:border-slate-200 flex flex-col h-full">
-                            <div className="relative z-10 flex flex-col h-full justify-between">
-                                <div className="mb-8 md:mb-12">
-                                    <div className="mb-6 inline-flex rounded-2xl bg-slate-50 p-4 text-slate-900 ring-1 ring-slate-100">
-                                        <Play className="h-6 w-6" />
-                                    </div>
-                                    <h3 className="mb-4 text-3xl font-bold text-slate-900 tracking-tight">Smart Decks</h3>
-                                    <p className="text-lg text-slate-500 leading-relaxed max-w-sm">
-                                        Stunning slides with your brand DNA. Export to PowerPoint, PDF, or Google Slides instantly.
-                                    </p>
-                                </div>
-                                <div className="relative h-64 md:h-80 w-full overflow-hidden rounded-3xl shadow-lg ring-1 ring-slate-100 transition-transform duration-500 group-hover:scale-[1.02]">
-                                    <img
-                                        src="https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=800&q=80"
-                                        alt="Presentation Slide"
-                                        className="h-full w-full object-cover"
-                                    />
-                                </div>
+                        <div className="min-w-[85vw] md:min-w-0 snap-center group relative overflow-hidden rounded-[2rem] bg-white p-8 shadow-xl hover:shadow-2xl transition-all duration-300 md:h-[400px] flex flex-col md:flex-row items-center gap-6">
+                            <div className="flex-1 text-left z-10">
+                                <h3 className="mb-2 text-2xl font-bold text-slate-900 tracking-tight">Presentations</h3>
+                                <p className="text-slate-600 leading-relaxed text-sm">
+                                    Stunning slides with consistent branding in minutes. Export to PPT, Google Slides, and more.
+                                </p>
+                            </div>
+                            <div className="w-full md:w-1/2 h-48 md:h-full relative overflow-hidden rounded-xl bg-blue-50">
+                                <img
+                                    src="https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=800&q=80"
+                                    alt="Presentation Slide"
+                                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                />
                             </div>
                         </div>
 
-                        {/* Card 2: Visual Docs */}
-                        <div className="min-w-[85vw] md:min-w-0 snap-center group relative overflow-hidden rounded-[2.5rem] bg-white p-8 shadow-sm transition-all duration-300 hover:shadow-2xl md:p-12 border border-white/50 hover:border-slate-200 flex flex-col h-full">
-                            <div className="relative z-10 flex flex-col h-full justify-between">
-                                <div className="mb-8 md:mb-12">
-                                    <div className="mb-6 inline-flex rounded-2xl bg-slate-50 p-4 text-slate-900 ring-1 ring-slate-100">
-                                        <CheckCircle2 className="h-6 w-6" />
-                                    </div>
-                                    <h3 className="mb-4 text-3xl font-bold text-slate-900 tracking-tight">Visual Docs</h3>
-                                    <p className="text-lg text-slate-500 leading-relaxed max-w-sm">
-                                        Engaging reports, proposals, and handouts that people actually read.
-                                    </p>
-                                </div>
-                                <div className="relative h-64 md:h-80 w-full overflow-hidden rounded-3xl shadow-lg ring-1 ring-slate-100 transition-transform duration-500 group-hover:scale-[1.02]">
-                                    <img
-                                        src="https://images.unsplash.com/photo-1586282391129-76a6df840fd0?auto=format&fit=crop&w=800&q=80"
-                                        alt="Document Preview"
-                                        className="h-full w-full object-cover"
-                                    />
-                                </div>
+                        {/* Card 2: Documents */}
+                        <div className="min-w-[85vw] md:min-w-0 snap-center group relative overflow-hidden rounded-[2rem] bg-white p-8 shadow-xl hover:shadow-2xl transition-all duration-300 md:h-[400px] flex flex-col md:flex-row items-center gap-6">
+                            <div className="w-full md:w-1/2 h-48 md:h-full relative overflow-hidden rounded-xl bg-blue-50">
+                                <img
+                                    src="https://images.unsplash.com/photo-1586282391129-76a6df840fd0?auto=format&fit=crop&w=800&q=80"
+                                    alt="Docs"
+                                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                />
+                            </div>
+                            <div className="flex-1 text-left z-10">
+                                <h3 className="mb-2 text-2xl font-bold text-slate-900 tracking-tight">Documents</h3>
+                                <p className="text-slate-600 leading-relaxed text-sm">
+                                    Show-stopping proposals, PDFs, visual aids and more, lightning-fast on any topic.
+                                </p>
                             </div>
                         </div>
 
                         {/* Card 3: Social Media */}
-                        <div className="min-w-[85vw] md:min-w-0 snap-center group relative overflow-hidden rounded-[2.5rem] bg-white p-8 shadow-sm transition-all duration-300 hover:shadow-2xl md:p-12 border border-white/50 hover:border-slate-200 flex flex-col h-full">
-                            <div className="relative z-10 flex flex-col md:flex-row items-center gap-8 md:gap-12 h-full">
-                                <div className="flex-1">
-                                    <div className="mb-6 inline-flex rounded-2xl bg-slate-50 p-4 text-slate-900 ring-1 ring-slate-100">
-                                        <Sparkles className="h-6 w-6" />
-                                    </div>
-                                    <h3 className="mb-4 text-2xl font-bold text-slate-900 tracking-tight">Social Media</h3>
-                                    <p className="text-slate-500 leading-relaxed">
-                                        Gorgeous graphics and convincing copy. Share directly to social platforms.
-                                    </p>
-                                </div>
-                                <div className="h-48 w-40 overflow-hidden rounded-2xl shadow-lg rotate-3 ring-1 ring-slate-100 transition-transform duration-500 group-hover:rotate-0 group-hover:scale-105 shrink-0">
-                                    <img
-                                        src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=400&q=80"
-                                        alt="Social Post"
-                                        className="h-full w-full object-cover"
-                                    />
-                                </div>
+                        <div className="min-w-[85vw] md:min-w-0 snap-center group relative overflow-hidden rounded-[2rem] bg-white p-8 shadow-xl hover:shadow-2xl transition-all duration-300 md:h-[400px] flex flex-col md:flex-row items-center gap-6">
+                            <div className="flex-1 text-left z-10">
+                                <h3 className="mb-2 text-2xl font-bold text-slate-900 tracking-tight">Social Media</h3>
+                                <p className="text-slate-600 leading-relaxed text-sm">
+                                    Gorgeous graphics and convincing copy. Share directly to social platforms.
+                                </p>
+                            </div>
+                            <div className="w-full md:w-1/2 h-48 md:h-full relative overflow-hidden rounded-xl bg-blue-50">
+                                <img
+                                    src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=400&q=80"
+                                    alt="Social"
+                                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                />
                             </div>
                         </div>
 
-                        {/* Card 4: Microsites */}
-                        <div className="min-w-[85vw] md:min-w-0 snap-center group relative overflow-hidden rounded-[2.5rem] bg-white p-8 shadow-sm transition-all duration-300 hover:shadow-2xl md:p-12 border border-white/50 hover:border-slate-200 flex flex-col h-full">
-                            <div className="relative z-10 flex flex-col md:flex-row items-center gap-8 md:gap-12 h-full">
-                                <div className="flex-1">
-                                    <div className="mb-6 inline-flex rounded-2xl bg-slate-50 p-4 text-slate-900 ring-1 ring-slate-100">
-                                        <Globe className="h-6 w-6" />
-                                    </div>
-                                    <h3 className="mb-4 text-2xl font-bold text-slate-900 tracking-tight">Websites</h3>
-                                    <p className="text-slate-500 leading-relaxed">
-                                        Business sites, landing pages, portfolios and more. No coding required.
-                                    </p>
-                                </div>
-                                <div className="h-48 w-56 overflow-hidden rounded-2xl shadow-lg -rotate-2 ring-1 ring-slate-100 transition-transform duration-500 group-hover:rotate-0 group-hover:scale-105 shrink-0">
-                                    <img
-                                        src="https://images.unsplash.com/photo-1467232004587-fc7be6695161?auto=format&fit=crop&w=600&q=80"
-                                        alt="Website Layout"
-                                        className="h-full w-full object-cover"
-                                    />
-                                </div>
+                        {/* Card 4: Websites */}
+                        <div className="min-w-[85vw] md:min-w-0 snap-center group relative overflow-hidden rounded-[2rem] bg-white p-8 shadow-xl hover:shadow-2xl transition-all duration-300 md:h-[400px] flex flex-col md:flex-row items-center gap-6">
+                            <div className="w-full md:w-1/2 h-48 md:h-full relative overflow-hidden rounded-xl bg-blue-50">
+                                <img
+                                    src="https://images.unsplash.com/photo-1467232004587-fc7be6695161?auto=format&fit=crop&w=600&q=80"
+                                    alt="Web"
+                                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                />
+                            </div>
+                            <div className="flex-1 text-left z-10">
+                                <h3 className="mb-2 text-2xl font-bold text-slate-900 tracking-tight">Websites</h3>
+                                <p className="text-slate-600 leading-relaxed text-sm">
+                                    Business sites, landing pages, portfolios and more. Faster than you can blink. No coding required.
+                                </p>
                             </div>
                         </div>
 
                     </div>
 
-                    {/* API Banner */}
-                    <div className="mt-8 rounded-[2rem] border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md md:px-10 md:py-8 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-4 opacity-5">
-                            <Wand2 className="h-32 w-32 text-slate-900" />
+                    {/* API Banner - White style */}
+                    <div className="mt-8 rounded-[1.5rem] bg-white p-6 shadow-xl relative overflow-hidden group flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div className="flex items-center gap-4">
+                            <span className="rounded bg-green-100 px-2 py-1 text-[10px] font-bold text-green-700 uppercase tracking-wide">Beta</span>
+                            <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                                API
+                            </h3>
+                            <p className="text-slate-500 text-sm hidden md:block border-l border-slate-200 pl-4">
+                                Connect to PPTMaster programmatically. Automate creation, integrate with your tools, and scale your storytelling.
+                            </p>
                         </div>
-                        <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
-                            <div className="flex items-center gap-6">
-                                <span className="rounded-lg bg-green-100 px-3 py-1 text-xs font-bold text-green-800 uppercase tracking-wide border border-green-200/50">Beta</span>
-                                <div className="text-left">
-                                    <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2 mb-1">
-                                        <Wand2 className="h-5 w-5" />
-                                        Developers API
-                                    </h3>
-                                    <p className="text-slate-500 hidden md:block">
-                                        Connect to PPTMaster programmatically. Automate creation and scale your storytelling.
-                                    </p>
-                                </div>
-                            </div>
-                            <button className="whitespace-nowrap rounded-full bg-slate-100 px-6 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-200">
-                                Read documentation
-                            </button>
+                        <div className="hidden md:block">
+                            <Wand2 className="h-6 w-6 text-slate-400" />
                         </div>
                     </div>
 
                     {/* Logo Section */}
                     <div className="mt-32 text-center">
-                        <p className="mb-10 text-lg font-medium text-slate-400">
+                        <p className="mb-10 text-3xl font-medium text-white/90">
                             Your next big idea is in good company.
                         </p>
                         <div className="relative">
-                            {/* Cloud/Gradient Effect - Match dashboard gradient but soft */}
-                            <div className="absolute -inset-x-20 -bottom-20 h-40 bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-blue-100/50 via-transparent to-transparent blur-3xl"></div>
-
-                            <div className="relative z-10 flex flex-wrap justify-center gap-12 md:gap-20 opacity-60 grayscale transition-all duration-500 hover:grayscale-0 hover:opacity-100 items-center">
-                                {/* Logos - Increased size approx 3x */}
-                                <Image src="/companyLogo/amazon.png" alt="Amazon" width={300} height={90} className="h-20 w-auto object-contain" />
-                                <Image src="/companyLogo/adobe.png" alt="Adobe" width={300} height={90} className="h-24 w-auto object-contain" />
-                                <Image src="/companyLogo/vercel.png" alt="Vercel" width={300} height={90} className="h-20 w-auto object-contain" />
-                                <Image src="/companyLogo/zoom.png" alt="Zoom" width={300} height={90} className="h-16 w-auto object-contain" />
-                                <Image src="/companyLogo/losangelestimes.png" alt="Los Angeles Times" width={420} height={90} className="h-16 w-auto object-contain" />
+                            <div className="relative z-10 flex flex-wrap justify-center gap-12 md:gap-20 opacity-80 mix-blend-multiply transition-all duration-500 hover:mix-blend-normal hover:opacity-100 items-center">
+                                {/* Logos */}
+                                <Image src="/companyLogo/amazon.png" alt="Amazon" width={300} height={90} className="h-20 w-auto object-contain brightness-0 invert lg:brightness-100 lg:invert-0" />
+                                <Image src="/companyLogo/adobe.png" alt="Adobe" width={300} height={90} className="h-16 w-40 object-contain brightness-0 invert lg:brightness-100 lg:invert-0" />
+                                <Image src="/companyLogo/vercel.png" alt="Vercel" width={300} height={90} className="h-20 w-40 object-contain brightness-0 invert lg:brightness-100 lg:invert-0" />
+                                <Image src="/companyLogo/zoom.png" alt="Zoom" width={300} height={90} className="h-20 w-auto object-contain brightness-0 invert lg:brightness-100 lg:invert-0" />
+                                <Image src="/companyLogo/losangelestimes.png" alt="Los Angeles Times" width={420} height={90} className="h-20 w-60 object-contain brightness-0 invert lg:brightness-100 lg:invert-0" />
                             </div>
                         </div>
                     </div>
 
                 </div>
-            </section>
 
-            {/* Generate / Shape / Share Section 
-                - Updated background to "Settled/Creamy"
-            */}
-            <section className="relative z-10 py-24 px-6 md:py-32 bg-gradient-to-b from-white to-[#fffbf7]">
+                {/* Cloud Divider - Absolute at bottom */}
+                <div className="absolute bottom-0 left-0 right-0 h-24 md:h-48 z-20 pointer-events-none translate-y-1">
+                    <svg viewBox="0 0 1440 320" className="w-full h-full" preserveAspectRatio="none">
+                        <path fill="#ffffff" fillOpacity="1" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,224C672,245,768,267,864,261.3C960,256,1056,224,1152,197.3C1248,171,1344,149,1392,138.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+                    </svg>
+                </div>
+            </section >
+
+            {/* Generate / Shape / Share Section */}
+            < section className="relative z-10 py-24 px-6 md:py-32 bg-gradient-to-b from-white to-[#fffbf7]" >
                 <div className="mx-auto max-w-7xl">
-                    <div className="text-center mb-20">
-                        <h2 className="text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">Creative content at the speed of light.</h2>
-                    </div>
-
                     {/* Generate */}
                     <div className="grid gap-12 md:grid-cols-2 items-center mb-32">
                         <motion.div
@@ -425,7 +416,7 @@ export default function LandingPage() {
                         </div>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* Testimonials 
                  - Horizontal Marquee 
@@ -442,7 +433,7 @@ export default function LandingPage() {
 
             <LandingFooter />
 
-        </div>
+        </div >
     );
 }
 
@@ -523,85 +514,54 @@ function ActualCarousel() {
     ];
 
     const next = () => {
-        setIndex((prev) => (prev + 1) % testimonials.length);
+        setIndex((prev) => (prev + 1) % (testimonials.length - 2));
     };
     const prev = () => {
-        setIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+        setIndex((prev) => (prev - 1 + (testimonials.length - 2)) % (testimonials.length - 2));
     };
 
-    // Calculate indices for 3 cards: prev, current, next
-    const getVisibleIndices = () => {
-        const prevIndex = (index - 1 + testimonials.length) % testimonials.length;
-        const nextIndex = (index + 1) % testimonials.length;
-        return [prevIndex, index, nextIndex];
-    };
-    const visibleIndices = getVisibleIndices();
+    // Get 3 visible testimonials
+    const visibleTestimonials = [
+        testimonials[index],
+        testimonials[index + 1],
+        testimonials[index + 2]
+    ];
 
     return (
-        <div className="relative mx-auto max-w-7xl px-6 group pb-4"> {/* Reduced padding bottom */}
-            <div className="relative h-[400px] flex items-center justify-center overflow-visible md:overflow-hidden">
-                {/* 
-                   Center Mode Implementation:
-                   We display 3 items. 
-                   Middle one is scale-100 opacity-100 z-10.
-                   Side ones are scale-90 opacity-50 z-0.
-                   We position them absolutely to animate transitions? 
-                   Or use a flex row and animate properties?
-                   Absolute is easier for "centering" without complex scroll calc issues.
-                */}
-                <AnimatePresence mode='popLayout'>
-                    {visibleIndices.map((idx, i) => {
-                        // i=0 -> Left, i=1 -> Center, i=2 -> Right
-                        let position = i === 0 ? "left" : i === 1 ? "center" : "right";
-                        // Mobile Override: Only show center? Or stack?
-                        // User asked for "1 in middle two fading", implies desktop view.
-
-                        return (
-                            <motion.div
-                                key={`${idx}-${position}`}
-                                layout
-                                initial={{
-                                    opacity: 0,
-                                    scale: 0.8,
-                                    x: position === "left" ? "-100%" : position === "right" ? "100%" : 0
-                                }}
-                                animate={{
-                                    opacity: position === "center" ? 1 : 0.5,
-                                    scale: position === "center" ? 1 : 0.9,
-                                    zIndex: position === "center" ? 20 : 10,
-                                    x: position === "left" ? "-60%" : position === "right" ? "60%" : "0%",
-                                    y: 0
-                                }}
-                                exit={{ opacity: 0, scale: 0.8 }}
-                                transition={{ duration: 0.5, type: "spring" }}
-                                className={`absolute w-[85vw] md:w-[600px] p-6 md:p-10 rounded-3xl border bg-white shadow-xl flex flex-col justify-center text-center md:text-left
-                                    ${position === "center" ? "border-slate-200 shadow-2xl" : "border-slate-100 bg-slate-50"}
-                                `}
-                            >
-                                <p className={`mb-6 text-lg md:text-xl font-medium leading-relaxed italic ${position === "center" ? "text-slate-800" : "text-slate-500"}`}>
-                                    "{testimonials[idx]?.quote}"
-                                </p>
-                                <div className="flex items-center gap-4 justify-center md:justify-start">
-                                    <div className="h-12 w-12 rounded-full bg-slate-200 overflow-hidden shrink-0">
-                                        <img src={`https://images.unsplash.com/photo-${1500000000000 + (idx % 9)}?auto=format&fit=crop&w=100&q=80`} alt={testimonials[idx]?.author} className="h-full w-full object-cover" />
-                                    </div>
-                                    <div>
-                                        <div className="font-bold text-slate-900 text-base">{testimonials[idx]?.author}</div>
-                                        <div className="text-sm text-slate-500">{testimonials[idx]?.role}</div>
-                                    </div>
+        <div className="relative mx-auto max-w-6xl px-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <AnimatePresence mode="wait">
+                    {visibleTestimonials.map((t, i) => (
+                        <motion.div
+                            key={`${index}-${i}`}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.3, delay: i * 0.1 }}
+                            className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow"
+                        >
+                            <p className="mb-4 text-sm text-slate-600 leading-relaxed italic line-clamp-3">"{t?.quote}"</p>
+                            <div className="flex items-center gap-3 mt-auto">
+                                <div className="h-10 w-10 rounded-full bg-slate-200 overflow-hidden shrink-0">
+                                    <img src={`https://images.unsplash.com/photo-${1500000000000 + ((index + i) % 9)}?auto=format&fit=crop&w=100&q=80`} alt={t?.author} className="h-full w-full object-cover" />
                                 </div>
-                            </motion.div>
-                        );
-                    })}
+                                <div>
+                                    <div className="font-semibold text-slate-900 text-sm">{t?.author}</div>
+                                    <div className="text-xs text-slate-500">{t?.role}</div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))}
                 </AnimatePresence>
             </div>
 
-            <div className="mt-6 flex justify-center gap-4">
-                <button onClick={prev} className="rounded-full bg-white border border-slate-200 p-4 text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 active:scale-95 z-30 relative">
-                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+            {/* Navigation Buttons */}
+            <div className="flex justify-center gap-3">
+                <button onClick={prev} className="rounded-full bg-white border border-slate-200 p-3 text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 active:scale-95">
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
                 </button>
-                <button onClick={next} className="rounded-full bg-white border border-slate-200 p-4 text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 active:scale-95 z-30 relative">
-                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                <button onClick={next} className="rounded-full bg-white border border-slate-200 p-3 text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 active:scale-95">
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                 </button>
             </div>
         </div>
