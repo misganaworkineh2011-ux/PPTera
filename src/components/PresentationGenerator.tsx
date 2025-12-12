@@ -7,10 +7,11 @@ import { Sparkles, ArrowRight } from "lucide-react";
 interface Props {
   userId: string;
   credits: number;
+  initialTopic?: string;
 }
 
-export default function PresentationGenerator({ userId, credits }: Props) {
-  const [topic, setTopic] = useState("");
+export default function PresentationGenerator({ userId, credits, initialTopic = "" }: Props) {
+  const [topic, setTopic] = useState(initialTopic);
   const [slides, setSlides] = useState(5);
   const [loading, setLoading] = useState(false);
 

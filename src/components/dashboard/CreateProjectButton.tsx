@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import PresentationGenerator from "../PresentationGenerator";
-import { Plus, X } from "lucide-react";
+import ProjectCreationWizard from "./ProjectCreationWizard";
+import { Plus } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 
 interface Props {
@@ -22,13 +22,13 @@ export default function CreateProjectButton({ userId, credits }: Props) {
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-2xl -translate-x-1/2 -translate-y-1/2 rounded-3xl bg-white shadow-2xl transition-all p-0 overflow-hidden outline-none">
-          <div className="relative">
-            <Dialog.Close className="absolute right-4 top-4 z-10 rounded-full bg-white/20 p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors">
-              <X size={20} />
-            </Dialog.Close>
-            <PresentationGenerator userId={userId} credits={credits} />
-          </div>
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-5xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-3xl bg-transparent shadow-2xl outline-none transition-all h-[85vh] max-h-[900px]">
+          <Dialog.Title className="sr-only">Create New Presentation</Dialog.Title>
+          <ProjectCreationWizard 
+            userId={userId} 
+            credits={credits} 
+            onClose={() => setIsOpen(false)} 
+          />
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
