@@ -54,11 +54,10 @@ export default function CreatePresentationForm({ maxSlides, subscriptionPlan }: 
   const [mounted, setMounted] = useState(false);
 
   const [formData, setFormData] = useState({
-    title: "",
     description: "",
     numberOfSlides: Math.min(10, maxSlides),
     tone: "professional",
-    style: "modern",
+    language: "english",
   });
 
   useEffect(() => {
@@ -133,35 +132,23 @@ export default function CreatePresentationForm({ maxSlides, subscriptionPlan }: 
         <div className="flex-1 px-8 pb-12">
           <div className="mx-auto max-w-3xl">
             <form onSubmit={handleSubmit} className="space-y-8">
-              {/* Title */}
-              <div>
-                <label htmlFor="title" className="block text-sm font-semibold text-[#1e3a8a] mb-3">
-                  Presentation Title
-                </label>
-                <input
-                  type="text"
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => handleChange("title", e.target.value)}
-                  placeholder="e.g., Q4 Business Review"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-5 py-4 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all shadow-sm"
-                  required
-                />
-              </div>
-
-              {/* Description */}
+              {/* Presentation Content */}
               <div>
                 <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-3">
-                  Description
+                  What to Create
                 </label>
                 <textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => handleChange("description", e.target.value)}
-                  placeholder="Brief description of your presentation..."
-                  rows={3}
+                  placeholder="Define what you want to create in one sentence or more..."
+                  rows={4}
                   className="w-full rounded-xl border border-slate-200 bg-white px-5 py-4 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all resize-none shadow-sm"
+                  required
                 />
+                <p className="mt-2 text-xs text-slate-500">
+                  Describe your presentation idea, topics to cover, main message, or any specific requirements
+                </p>
               </div>
 
               {/* Number of Slides - Minimal Dropdown */}
@@ -219,7 +206,7 @@ export default function CreatePresentationForm({ maxSlides, subscriptionPlan }: 
                 </div>
               </div>
 
-              {/* Tone and Style */}
+              {/* Tone and Language */}
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="tone" className="block text-sm font-semibold text-[#1e3a8a] mb-3">
@@ -240,38 +227,38 @@ export default function CreatePresentationForm({ maxSlides, subscriptionPlan }: 
                 </div>
 
                 <div>
-                  <label htmlFor="style" className="block text-sm font-semibold text-[#1e3a8a] mb-3">
-                    Style
+                  <label htmlFor="language" className="block text-sm font-semibold text-[#1e3a8a] mb-3">
+                    Language
                   </label>
                   <select
-                    id="style"
-                    value={formData.style}
-                    onChange={(e) => handleChange("style", e.target.value)}
+                    id="language"
+                    value={formData.language}
+                    onChange={(e) => handleChange("language", e.target.value)}
                     className="w-full rounded-xl border border-slate-200 bg-white px-5 py-4 text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all shadow-sm"
                   >
-                    <option value="modern">Modern</option>
-                    <option value="classic">Classic</option>
-                    <option value="minimal">Minimal</option>
-                    <option value="bold">Bold</option>
-                    <option value="elegant">Elegant</option>
+                    <option value="english">English</option>
+                    <option value="spanish">Spanish</option>
+                    <option value="french">French</option>
+                    <option value="german">German</option>
+                    <option value="italian">Italian</option>
+                    <option value="portuguese">Portuguese</option>
+                    <option value="chinese">Chinese</option>
+                    <option value="japanese">Japanese</option>
+                    <option value="korean">Korean</option>
+                    <option value="arabic">Arabic</option>
+                    <option value="hindi">Hindi</option>
+                    <option value="russian">Russian</option>
                   </select>
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex items-center justify-center gap-4 pt-4">
-                <button
-                  type="button"
-                  onClick={() => router.back()}
-                  className="px-8 py-3 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold transition-all hover:bg-slate-50 hover:shadow-md"
-                >
-                  Cancel
-                </button>
+              {/* Action Button */}
+              <div className="flex items-center justify-center pt-4">
                 <button
                   type="submit"
-                  className="px-10 py-3 rounded-xl bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold shadow-lg transition-all hover:opacity-90 hover:shadow-xl hover:scale-[1.02]"
+                  className="px-12 py-3 rounded-xl bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold shadow-lg transition-all hover:opacity-90 hover:shadow-xl hover:scale-[1.02]"
                 >
-                  Create Presentation
+                  Generate Outline
                 </button>
               </div>
             </form>
