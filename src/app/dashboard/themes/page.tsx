@@ -1,7 +1,32 @@
-import { Palette, Check, Plus } from "lucide-react";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import { db } from "~/server/db";
+import { Grid, List as ListIcon, Star, Check, Palette } from "lucide-react";
+import ThemesStickyHeader from "./ThemesStickyHeader";
 
-export default function ThemesPage() {
-  const themes = [
+export default async function ThemesPage() {
+  const { userId } = await auth();
+
+  if (!userId) {
+    redirect("/sign-in");
+  }
+
+  const user = await db.user.findUnique({
+    where: { clerkId: userId },
+    include: {
+      themes: {
+        orderBy: { createdAt: "desc" },
+        take: 50,
+      },
+    },
+  });
+
+  if (!user) {
+    redirect("/sign-in");
+  }
+
+  // Default themes if user has none
+  const defaultThemes = [
     {
       id: "modern-blue",
       name: "Modern Blue",
@@ -40,66 +65,112 @@ export default function ThemesPage() {
     },
   ];
 
+  const themes = user.themes.length > 0 
+    ? user.themes.map(t => ({
+        id: t.id,
+        name: t.name,
+        colors: (t.colors as { colors: string[] }).colors || [],
+        font: (t.fonts as { font: string }).font || "Inter",
+        isDefault: t.isDefault,
+      }))
+    : defaultThemes.map(t => ({ ...t, isDefault: t.id === "modern-blue" }));
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Themes</h1>
-          <p className="text-sm text-slate-500">
-            Customize the look and feel of your presentations
-          </p>
+    <div className="space-y-8 h-full">
+      {/* Sticky Header Section */}
+      <ThemesStickyHeader />
+
+      {/* Filters & View Toggle */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-slate-100 pb-4">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0">
+          <button className="flex items-center gap-2 whitespace-nowrap rounded-lg bg-[#1e3a8a]/10 px-4 py-2 text-sm font-bold text-[#1e3a8a]">
+            <Grid size={16} /> All
+          </button>
+          <button className="flex items-center gap-2 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-[#1e3a8a]">
+            <Star size={16} /> Favorites
+          </button>
         </div>
-        <button className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700">
-          <Plus size={16} /> Create Custom Theme
-        </button>
+
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1 rounded-lg bg-slate-100 p-1">
+            <button className="flex items-center gap-2 rounded-md bg-white px-3 py-2 text-[#1e3a8a] shadow-sm transition">
+              <Grid size={20} />
+              <span className="text-sm font-medium">Grid</span>
+            </button>
+            <button className="flex items-center gap-2 rounded-md px-3 py-2 text-slate-500 transition hover:text-slate-700">
+              <ListIcon size={20} />
+              <span className="text-sm font-medium">List</span>
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Themes Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {themes.map((theme) => (
-          <div
-            key={theme.id}
-            className="group overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md"
-          >
-            {/* Preview */}
-            <div className="flex h-32">
-              {theme.colors.map((color) => (
-                <div
-                  key={color}
-                  className="flex-1"
-                  style={{ backgroundColor: color }}
-                ></div>
-              ))}
+      {/* Content Display */}
+      <div className="min-h-[600px]">
+        {themes.length === 0 ? (
+          <div className="flex h-[400px] flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50/50 text-center">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-lg ring-1 ring-slate-100">
+              <Palette size={28} className="text-[#06b6d4]" />
             </div>
-
-            {/* Content */}
-            <div className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-bold text-slate-900">{theme.name}</h3>
-                  <p className="text-xs text-slate-500">{theme.font}</p>
-                </div>
-                {theme.id === "modern-blue" && (
-                   <span className="flex items-center gap-1 rounded-full bg-blue-50 px-2 py-1 text-xs font-bold text-blue-700">
-                     <Check size={12} /> Active
-                   </span>
-                )}
-              </div>
-
-              <div className="mt-4 flex gap-2">
-                <button className="flex-1 rounded-lg border border-slate-200 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-                   Preview
-                </button>
-                <button className="flex-1 rounded-lg bg-slate-900 py-2 text-sm font-medium text-white hover:bg-slate-800">
-                   Apply
-                </button>
-              </div>
-            </div>
+            <h3 className="mb-2 text-lg font-bold text-[#1e3a8a]">
+              No themes yet
+            </h3>
+            <p className="text-sm text-slate-500 max-w-xs mx-auto mb-6">
+              Create your first custom theme to get started.
+            </p>
           </div>
-        ))}
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {themes.map((theme) => (
+              <div
+                key={theme.id}
+                className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-lg hover:shadow-[#06b6d4]/10"
+              >
+                {/* Preview */}
+                <div className="flex h-32">
+                  {theme.colors.length > 0 ? (
+                    theme.colors.map((color, idx) => (
+                      <div
+                        key={idx}
+                        className="flex-1"
+                        style={{ backgroundColor: color }}
+                      />
+                    ))
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#1e3a8a]/10 to-[#06b6d4]/10">
+                      <Palette className="text-[#06b6d4] opacity-50" size={32} />
+                    </div>
+                  )}
+                </div>
+
+                {/* Content */}
+                <div className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-bold text-[#1e3a8a]">{theme.name}</h3>
+                      <p className="text-xs text-slate-500">{theme.font}</p>
+                    </div>
+                    {theme.isDefault && (
+                      <span className="flex items-center gap-1 rounded-full bg-[#e0f2fe] px-2 py-1 text-xs font-bold text-[#06b6d4]">
+                        <Check size={12} /> Active
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="mt-4 flex gap-2">
+                    <button className="flex-1 rounded-lg border border-slate-200 bg-white py-2 text-sm font-semibold text-slate-700 transition hover:border-[#06b6d4] hover:bg-[#e0f2fe] hover:text-[#06b6d4]">
+                      Preview
+                    </button>
+                    <button className="flex-1 rounded-lg bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] py-2 text-sm font-semibold text-white shadow-md transition hover:from-[#172554] hover:to-[#0891b2]">
+                      Apply
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
 }
-
