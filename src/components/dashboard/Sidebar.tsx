@@ -25,9 +25,10 @@ import { UserButton, useUser } from "@clerk/nextjs";
 interface SidebarProps {
   isCollapsed: boolean;
   toggleCollapse: () => void;
+  subscriptionPlan?: string | null;
 }
 
-export default function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
+export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan }: SidebarProps) {
   const pathname = usePathname();
   const { user } = useUser();
 
@@ -78,21 +79,13 @@ export default function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
       )}
     >
       {/* Sidebar Header */}
-      <div className="flex h-20 items-center justify-between px-6">
-        {!isCollapsed && (
-          <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="PPTMaster Logo" className="h-10 w-auto" />
-            <span className="text-xl font-bold tracking-tight text-[#1e3a8a]">
-              PPT<span className="text-[#06b6d4]">MASTER</span>
-            </span>
-          </div>
-        )}
-        <button
-          onClick={toggleCollapse}
-          className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-        >
-          {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-        </button>
+      <div className="flex h-20 items-center justify-center px-6">
+        <div className="flex items-center justify-center">
+          <img src="/pptlogo.png" alt="PPTMaster Logo" className={cn(
+            "w-auto transition-all",
+            isCollapsed ? "h-14" : "h-20"
+          )} />
+        </div>
       </div>
 
       {/* Navigation */}
@@ -143,24 +136,41 @@ export default function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
       </div>
 
       {/* Account Info at Bottom */}
-      {!isCollapsed && (
-        <div className="border-t border-slate-100 p-4">
-          <button className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition hover:border-[#06b6d4] hover:shadow-md">
-            <div className="flex items-center gap-3">
-               <UserButton afterSignOutUrl="/" />
-              <div className="flex flex-col items-start overflow-hidden">
-                <span className="truncate text-sm font-bold text-[#1e3a8a]">
-                  {user?.fullName || "User"}
-                </span>
-                <span className="truncate text-xs text-slate-500">
-                  Free Workspace
-                </span>
+      <div className="border-t border-slate-100 relative">
+        {!isCollapsed && (
+          <div className="p-4">
+            <button className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition hover:border-[#06b6d4] hover:shadow-md">
+              <div className="flex items-center gap-3">
+                 <UserButton afterSignOutUrl="/" />
+                <div className="flex flex-col items-start overflow-hidden flex-1 min-w-0">
+                  <div className="flex items-center justify-between w-full gap-2">
+                    <span className="truncate text-sm font-bold text-[#1e3a8a]">
+                      {user?.fullName || "User"}
+                    </span>
+                    <span className="truncate text-xs text-slate-500 shrink-0">
+                      Workspace
+                    </span>
+                  </div>
+                  <span className="truncate text-xs font-semibold text-[#06b6d4] mt-0.5">
+                    {subscriptionPlan ? subscriptionPlan.charAt(0).toUpperCase() + subscriptionPlan.slice(1) : "Free"}
+                  </span>
+                </div>
               </div>
-            </div>
-            <MoreVertical size={16} className="text-slate-400" />
+              <MoreVertical size={16} className="text-slate-400" />
+            </button>
+          </div>
+        )}
+        
+        {/* Collapse/Expand Button at Bottom - Outer Edge */}
+        <div className="absolute bottom-0 right-0 p-2">
+          <button
+            onClick={toggleCollapse}
+            className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+          >
+            {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
           </button>
         </div>
-      )}
+      </div>
     </aside>
   );
 }

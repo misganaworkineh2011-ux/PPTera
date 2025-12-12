@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, createContext, useContext } from "react";
+import { useState, createContext, useContext, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
 import { cn } from "~/lib/utils";
+import { useUser } from "@clerk/nextjs";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
+  subscriptionPlan?: string | null;
 }
 
 const StickyContext = createContext<{
@@ -23,7 +25,7 @@ const StickyContext = createContext<{
 
 export const useStickyContext = () => useContext(StickyContext);
 
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export default function DashboardLayout({ children, subscriptionPlan }: DashboardLayoutProps) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isTitleSticky, setIsTitleSticky] = useState(false);
   const [stickyTitleContent, setStickyTitleContent] = useState<React.ReactNode | null>(null);
@@ -34,6 +36,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <Sidebar
           isCollapsed={isSidebarCollapsed}
           toggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          subscriptionPlan={subscriptionPlan}
         />
         <div className="flex flex-1 flex-col overflow-hidden">
           <TopBar />
