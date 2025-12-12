@@ -2,7 +2,7 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { ArrowLeft, FileText, Sparkles, Upload, PenTool } from "lucide-react";
+import { ArrowLeft, FileText, Sparkles, Upload, PenTool, Loader2 } from "lucide-react";
 
 interface CreatePresentationFormProps {
   maxSlides: number;
@@ -52,6 +52,8 @@ export default function CreatePresentationForm({ maxSlides, subscriptionPlan }: 
   const router = useRouter();
   const mode = searchParams.get("mode");
   const [mounted, setMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     description: "",
@@ -71,11 +73,36 @@ export default function CreatePresentationForm({ maxSlides, subscriptionPlan }: 
 
   if (!mounted) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log("Form submitted:", formData);
-    // Redirect or show success message
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/generate-outline", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || "Failed to generate outline");
+        setIsLoading(false);
+        return;
+      }
+
+      // Store outline in sessionStorage and redirect to outline page
+      sessionStorage.setItem("generatedOutline", JSON.stringify(data));
+      router.push("/createpresentation/outline");
+    } catch (err) {
+      console.error("Error generating outline:", err);
+      setError("An unexpected error occurred. Please try again.");
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (field: string, value: string | number) => {
@@ -252,13 +279,28 @@ export default function CreatePresentationForm({ maxSlides, subscriptionPlan }: 
                 </div>
               </div>
 
+              {/* Error Message */}
+              {error && (
+                <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
+                  {error}
+                </div>
+              )}
+
               {/* Action Button */}
               <div className="flex items-center justify-center pt-4">
                 <button
                   type="submit"
-                  className="px-12 py-3 rounded-xl bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold shadow-lg transition-all hover:opacity-90 hover:shadow-xl hover:scale-[1.02]"
+                  disabled={isLoading || !formData.description.trim()}
+                  className="px-12 py-3 rounded-xl bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold shadow-lg transition-all hover:opacity-90 hover:shadow-xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center gap-2"
                 >
-                  Generate Outline
+                  {isLoading ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    "Generate Outline"
+                  )}
                 </button>
               </div>
             </form>
