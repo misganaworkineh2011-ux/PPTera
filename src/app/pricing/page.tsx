@@ -89,7 +89,7 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white font-sans text-slate-900 selection:bg-slate-900 selection:text-white">
+    <div className="min-h-screen bg-white font-sans text-slate-900 selection:bg-slate-900 selection:text-white overflow-x-hidden">
       <LandingNavbar />
 
       <div className="relative pt-40 pb-20 px-6">

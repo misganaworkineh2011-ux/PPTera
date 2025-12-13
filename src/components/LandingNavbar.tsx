@@ -29,23 +29,23 @@ export const LandingNavbar = () => {
     }, []);
 
     return (
-        <div className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 px-4">
+        <div className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-2 md:pt-4 px-2 md:px-4">
             <nav
                 className={cn(
-                    "flex w-full items-center justify-between rounded-full bg-white/80 pl-6 pr-2 py-2.5 backdrop-blur-md transition-all duration-300 border border-white/50",
+                    "flex w-full items-center justify-between rounded-full bg-white/80 pl-3 md:pl-6 pr-2 py-2 md:py-2.5 backdrop-blur-md transition-all duration-300 border border-white/50",
                     isScrolled ? "max-w-6xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white/90" : "max-w-7xl bg-transparent border-transparent"
                 )}
             >
                 {/* Left: Branding & Links */}
-                <div className="flex items-center gap-8">
-                    <Link href="/" className="flex items-center gap-2 group">
+                <div className="flex items-center gap-2 md:gap-8">
+                    <Link href="/" className="flex items-center gap-2 group shrink-0">
                         <div className="flex items-center justify-center transition group-hover:scale-105">
                             <Image
                                 src="/logo.png"
                                 alt="PPTMaster Logo"
-                                width={160}
-                                height={60}
-                                className="h-8 md:h-14 w-auto object-contain"
+                                width={120}
+                                height={45}
+                                className="h-7 md:h-10 lg:h-14 w-auto object-contain"
                             />
                         </div>
                     </Link>
@@ -117,34 +117,34 @@ export const LandingNavbar = () => {
                 </div>
 
                 {/* Right: Actions */}
-                <div className="flex items-center gap-2">
-                    <button className="hidden items-center gap-1 rounded-full px-3 py-2 text-sm font-medium text-slate-600 transition hover:text-slate-900 md:flex">
+                <div className="flex items-center gap-1 md:gap-2 shrink-0">
+                    <button className="hidden items-center gap-1 rounded-full px-2 md:px-3 py-2 text-sm font-medium text-slate-600 transition hover:text-slate-900 lg:flex">
                         <Globe className="h-4 w-4" />
                         <span>EN</span>
                     </button>
 
-                    <div className="hidden h-4 w-px bg-slate-200 md:block mx-1"></div>
+                    <div className="hidden h-4 w-px bg-slate-200 lg:block mx-1"></div>
 
                     <SignedOut>
                         <SignInButton mode="modal">
-                            <button className="hidden rounded-full px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:text-slate-900 md:block">
+                            <button className="hidden rounded-full px-3 md:px-5 py-2 md:py-2.5 text-sm font-semibold text-slate-700 transition hover:text-slate-900 lg:block">
                                 Log in
                             </button>
                         </SignInButton>
                         <SignInButton mode="modal">
-                            <button className="rounded-full bg-black px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:bg-slate-800 hover:shadow-xl hover:-translate-y-0.5 md:px-6 md:py-2.5">
-                                Start for free
+                            <button className="rounded-full bg-black px-3 md:px-4 lg:px-6 py-1.5 md:py-2 lg:py-2.5 text-xs md:text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:bg-slate-800 hover:shadow-xl hover:-translate-y-0.5 whitespace-nowrap">
+                                Start free
                             </button>
                         </SignInButton>
                     </SignedOut>
                     <SignedIn>
-                        <Link href="/dashboard" className="hidden md:block rounded-full bg-black px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:bg-slate-800 hover:shadow-xl hover:-translate-y-0.5">
+                        <Link href="/dashboard" className="hidden lg:block rounded-full bg-black px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:bg-slate-800 hover:shadow-xl hover:-translate-y-0.5">
                             Dashboard
                         </Link>
                     </SignedIn>
 
-                    <button className="ml-2 md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
-                        {mobileOpen ? <X /> : <Menu />}
+                    <button className="ml-1 md:ml-2 lg:hidden p-1" onClick={() => setMobileOpen(!mobileOpen)}>
+                        {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                     </button>
                 </div>
             </nav>

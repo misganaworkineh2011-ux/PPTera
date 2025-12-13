@@ -18,7 +18,7 @@ import { cn } from "~/lib/utils";
 
 export default function LandingPage() {
     return (
-        <div className="min-h-screen bg-white font-sans text-slate-900 selection:bg-slate-900 selection:text-white">
+        <div className="min-h-screen bg-white font-sans text-slate-900 selection:bg-slate-900 selection:text-white overflow-x-hidden">
             {/* Subtle Background Pattern */}
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
             <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_-100px,#1e1e1e0a,transparent)]"></div>
@@ -149,7 +149,7 @@ export default function LandingPage() {
             </section>
 
             {/* Feature Grid Section (Sky Blue Theme) */}
-            <section className="relative z-10 pt-32 pb-48 px-6 bg-[#85CBF8] overflow-visible">
+            <section className="relative z-10 pt-32 pb-48 px-6 bg-[#85CBF8] overflow-x-hidden">
                 {/* Smooth Top Gradient from White Hero */}
                 <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-white to-transparent z-20 pointer-events-none"></div>
 
@@ -173,7 +173,7 @@ export default function LandingPage() {
                     </div>
 
                     {/* Feature Grid: Sky Blue Theme (White Cards) */}
-                    <div className="flex overflow-x-auto gap-6 pb-8 -mx-6 px-6 md:grid md:grid-cols-2 md:gap-8 md:overflow-visible md:pb-0 md:mx-0 md:px-0 scrollbar-hide snap-x snap-mandatory">
+                    <div className="flex overflow-x-auto gap-6 pb-8 px-0 md:grid md:grid-cols-2 md:gap-8 md:overflow-visible md:pb-0 scrollbar-hide snap-x snap-mandatory">
 
                         {/* Card 1: Presentations */}
                         <div className="min-w-[85vw] md:min-w-0 snap-center group relative overflow-hidden rounded-[2rem] bg-white p-8 shadow-xl hover:shadow-2xl transition-all duration-300 md:h-[400px] flex flex-col md:flex-row items-center gap-6">
