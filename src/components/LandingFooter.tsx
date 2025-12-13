@@ -8,7 +8,7 @@ export const LandingFooter = () => {
     return (
         <footer className="relative z-10 bg-black text-white">
             {/* CTA Section - Full Height, Text centered top */}
-            <div className="relative w-full h-screen bg-gradient-to-t from-[#ff9a9e] via-[#ffd1d5] to-white flex items-start justify-center pt-32">
+            <div className="relative w-full h-[60vh] md:h-screen bg-gradient-to-t from-[#ff9a9e] via-[#ffd1d5] to-white flex items-start justify-center pt-20 md:pt-32">
 
                 {/* Background Image - Full image shown at bottom */}
                 <div className="absolute inset-0 z-0">

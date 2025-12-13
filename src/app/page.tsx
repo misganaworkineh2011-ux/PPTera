@@ -26,7 +26,7 @@ export default function LandingPage() {
             <LandingNavbar />
 
             {/* Hero Section */}
-            <section className="relative pt-40 pb-20 px-6 overflow-hidden">
+            <section className="relative pt-40 pb-32 px-6 overflow-hidden flex items-center" style={{ minHeight: '80vh' }}>
                 <div className="mx-auto max-w-7xl">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 
@@ -149,14 +149,28 @@ export default function LandingPage() {
             </section>
 
             {/* Feature Grid Section (Sky Blue Theme) */}
-            <section className="relative z-10 pt-32 pb-48 px-6 bg-[#85CBF8] overflow-x-hidden">
+            <section className="relative z-10 pt-32 pb-48 px-6 overflow-hidden">
+                {/* Background Image with Overlay */}
+                <div className="absolute inset-0 z-0">
+                    <Image
+                        src="/bg2.jpeg"
+                        alt="Background"
+                        fill
+                        className="object-cover"
+                        priority
+                    />
+                    {/* Overlay for better text readability */}
+                    <div className="absolute inset-0 bg-[#85CBF8]/80"></div>
+                </div>
+
                 {/* Smooth Top Gradient from White Hero */}
                 <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-white to-transparent z-20 pointer-events-none"></div>
 
-                {/* Cloud Background Effects (Cleaner) */}
-                <div className="absolute inset-0 pointer-events-none opacity-50">
-                    <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-white/20 rounded-full blur-[100px]"></div>
-                    <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-white/10 rounded-full blur-[120px]"></div>
+                {/* Animated Floating Orbs */}
+                <div className="absolute inset-0 pointer-events-none opacity-40 z-10">
+                    <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-white/30 rounded-full blur-[100px] animate-blob"></div>
+                    <div className="animation-delay-2000 absolute bottom-0 left-0 w-[600px] h-[600px] bg-white/20 rounded-full blur-[120px] animate-blob"></div>
+                    <div className="animation-delay-4000 absolute top-1/2 left-1/2 w-[400px] h-[400px] bg-cyan-300/20 rounded-full blur-[100px] animate-blob"></div>
                 </div>
 
                 <div className="mx-auto max-w-7xl relative z-10">
@@ -373,7 +387,7 @@ export default function LandingPage() {
             </section>
 
             {/* Testimonials */}
-            <section className="relative z-10 py-24 bg-white overflow-hidden">
+            <section className="relative z-10 py-12 md:py-24 bg-white overflow-hidden">
                 <div className="mx-auto max-w-7xl px-6 mb-16 text-center">
                     <h2 className="text-4xl font-bold tracking-tight text-slate-900">Join 50+ million users changing <br /> how the world communicates</h2>
                 </div>
