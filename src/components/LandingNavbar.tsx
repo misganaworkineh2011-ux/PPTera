@@ -15,6 +15,7 @@ import {
 import { cn } from "~/lib/utils";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { languageNames, type Language } from "~/lib/translations";
+import { LoadingLink } from "./LoadingLink";
 
 export const LandingNavbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -68,7 +69,7 @@ export const LandingNavbar = () => {
                             {productsOpen && (
                                 <div className="absolute top-full left-0 pt-2 w-64 animate-fade-in-up [animation-duration:0.2s] origin-top">
                                     <div className="rounded-2xl border border-slate-100 bg-white p-2 shadow-xl">
-                                        <Link href="/dashboard" className="flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50">
+                                        <LoadingLink href="/dashboard" className="flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50">
                                             <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
                                                 <Wand2 className="h-4 w-4" />
                                             </div>
@@ -76,8 +77,8 @@ export const LandingNavbar = () => {
                                                 <div className="font-semibold text-slate-900">{t.aiPresentations}</div>
                                                 <div className="text-xs text-slate-500">{t.aiPresentationsDesc}</div>
                                             </div>
-                                        </Link>
-                                        <Link href="/dashboard" className="flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50">
+                                        </LoadingLink>
+                                        <LoadingLink href="/templates" className="flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50">
                                             <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100 text-purple-600">
                                                 <Sparkles className="h-4 w-4" />
                                             </div>
@@ -85,7 +86,7 @@ export const LandingNavbar = () => {
                                                 <div className="font-semibold text-slate-900">{t.templates}</div>
                                                 <div className="text-xs text-slate-500">{t.templatesDesc}</div>
                                             </div>
-                                        </Link>
+                                        </LoadingLink>
                                     </div>
                                 </div>
                             )}
@@ -103,21 +104,21 @@ export const LandingNavbar = () => {
                             {solutionsOpen && (
                                 <div className="absolute top-full left-0 pt-2 w-64 animate-fade-in-up [animation-duration:0.2s] origin-top">
                                     <div className="rounded-2xl border border-slate-100 bg-white p-2 shadow-xl">
-                                        <Link href="/education" className="block rounded-xl p-3 hover:bg-slate-50">
+                                        <LoadingLink href="/team" className="block rounded-xl p-3 hover:bg-slate-50">
                                             <div className="font-semibold text-slate-900">{t.forBusiness}</div>
                                             <div className="text-xs text-slate-500">{t.forBusinessDesc}</div>
-                                        </Link>
-                                        <Link href="/education" className="block rounded-xl p-3 hover:bg-slate-50">
+                                        </LoadingLink>
+                                        <LoadingLink href="/education" className="block rounded-xl p-3 hover:bg-slate-50">
                                             <div className="font-semibold text-slate-900">{t.forEducation}</div>
                                             <div className="text-xs text-slate-500">{t.forEducationDesc}</div>
-                                        </Link>
+                                        </LoadingLink>
                                     </div>
                                 </div>
                             )}
                         </div>
 
-                        <Link href="/about" className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100/50 hover:text-slate-900">{t.about}</Link>
-                        <Link href="/pricing" className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100/50 hover:text-slate-900">{t.pricing}</Link>
+                        <LoadingLink href="/about" className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100/50 hover:text-slate-900">{t.about}</LoadingLink>
+                        <LoadingLink href="/pricing" className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100/50 hover:text-slate-900">{t.pricing}</LoadingLink>
                     </div>
                 </div>
 
@@ -170,9 +171,9 @@ export const LandingNavbar = () => {
                         </SignInButton>
                     </SignedOut>
                     <SignedIn>
-                        <Link href="/dashboard" className="hidden lg:block rounded-full bg-black px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:bg-slate-800 hover:shadow-xl hover:-translate-y-0.5">
+                        <LoadingLink href="/dashboard" className="hidden lg:block rounded-full bg-black px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:bg-slate-800 hover:shadow-xl hover:-translate-y-0.5">
                             {t.dashboard}
-                        </Link>
+                        </LoadingLink>
                     </SignedIn>
 
                     <button className="ml-1 md:ml-2 lg:hidden p-1" onClick={() => setMobileOpen(!mobileOpen)}>
@@ -185,14 +186,14 @@ export const LandingNavbar = () => {
             {mobileOpen && (
                 <div className="absolute top-20 left-4 right-4 z-40 rounded-3xl border border-slate-100 bg-white p-4 shadow-2xl md:hidden origin-top animate-fade-in-up [animation-duration:0.2s]">
                     <div className="flex flex-col gap-2">
-                        <Link href="/dashboard" className="flex items-center justify-between rounded-xl bg-slate-50 p-3 font-semibold text-slate-900">
+                        <LoadingLink href="/dashboard" className="flex items-center justify-between rounded-xl bg-slate-50 p-3 font-semibold text-slate-900">
                             {t.products} <ChevronDown className="h-4 w-4" />
-                        </Link>
-                        <Link href="/education" className="flex items-center justify-between rounded-xl bg-slate-50 p-3 font-semibold text-slate-900">
+                        </LoadingLink>
+                        <LoadingLink href="/education" className="flex items-center justify-between rounded-xl bg-slate-50 p-3 font-semibold text-slate-900">
                             {t.solutions} <ChevronDown className="h-4 w-4" />
-                        </Link>
-                        <Link href="/about" className="rounded-xl p-3 font-semibold text-slate-600 hover:bg-slate-50">{t.about}</Link>
-                        <Link href="/pricing" className="rounded-xl p-3 font-semibold text-slate-600 hover:bg-slate-50">{t.pricing}</Link>
+                        </LoadingLink>
+                        <LoadingLink href="/about" className="rounded-xl p-3 font-semibold text-slate-600 hover:bg-slate-50">{t.about}</LoadingLink>
+                        <LoadingLink href="/pricing" className="rounded-xl p-3 font-semibold text-slate-600 hover:bg-slate-50">{t.pricing}</LoadingLink>
 
                         {/* Mobile Language Selector */}
                         <div className="border-t border-slate-100 pt-2 mt-2">
@@ -215,9 +216,9 @@ export const LandingNavbar = () => {
 
                         <SignedIn>
                             <div className="mt-2 text-center">
-                                <Link href="/dashboard" className="block w-full rounded-xl bg-black py-3 font-bold text-white" onClick={() => setMobileOpen(false)}>
+                                <LoadingLink href="/dashboard" className="block w-full rounded-xl bg-black py-3 font-bold text-white" onClick={() => setMobileOpen(false)}>
                                     {t.dashboard}
-                                </Link>
+                                </LoadingLink>
                             </div>
                         </SignedIn>
                         <SignedOut>

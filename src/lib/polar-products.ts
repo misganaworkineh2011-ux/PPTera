@@ -51,81 +51,151 @@ const UI_DESCRIPTIONS: Record<string, string> = {
 };
 
 export async function fetchPolarProductsFromEnv(): Promise<PolarPricingTier[]> {
-  // Mapping the env vars to our keys. 
-  // Note: We might only have monthly IDs in the env vars depending on setup.
-  // Assuming the env vars point to the "Monthly" product IDs for now, 
-  // or that we will fetch the product and find its monthly/yearly prices from Polar.
-
-  // Strategy: Fetch the product by ID. Polar Product has multiple prices (monthly/yearly).
-  // We will try to find both prices from the single Product ID if they are grouped, 
-  // OR we might need separate IDs if they are separate products.
-  // Based on the reference implementation, it seems they had separate IDs for monthly/yearly?
-  // Reference had: monthlyId: env.POLAR_PRODUCT_SMALL, yearlyId: env.POLAR_PRODUCT_YEARLY_SMALL
-  // Our env.js only has: POLAR_PRODUCT_STARTER, POLAR_PRODUCT_PRO, POLAR_PRODUCT_ENTERPRISE.
-  // This implies either:
-  // 1. These IDs refer to a "Product" that has BOTH monthly and yearly prices attached.
-  // 2. We are missing variables for yearly.
-
-  // I will assume (1) for now given the simpler env config. I will fetch the product and split its prices.
-
   const tierConfigs = [
-    { key: "starter", id: env.POLAR_PRODUCT_STARTER },
-    { key: "pro", id: env.POLAR_PRODUCT_PRO },
-    { key: "enterprise", id: env.POLAR_PRODUCT_ENTERPRISE },
-  ].filter((config) => config.id);
+    { 
+      key: "starter", 
+      monthlyId: env.POLAR_PRODUCT_STARTER,
+      yearlyId: env.POLAR_PRODUCT_STARTER_YEARLY
+    },
+    { 
+      key: "pro", 
+      monthlyId: env.POLAR_PRODUCT_PRO,
+      yearlyId: env.POLAR_PRODUCT_PRO_YEARLY
+    },
+    { 
+      key: "enterprise", 
+      monthlyId: env.POLAR_PRODUCT_ENTERPRISE,
+      yearlyId: env.POLAR_PRODUCT_ENTERPRISE_YEARLY
+    },
+  ].filter((config) => config.monthlyId || config.yearlyId);
 
-  if (tierConfigs.length === 0) return [];
+  console.log('[Polar Products] Tier configs:', tierConfigs);
+
+  if (tierConfigs.length === 0) {
+    console.log('[Polar Products] No product IDs found in environment variables');
+    return [];
+  }
 
   const results: PolarPricingTier[] = [];
 
   for (const tier of tierConfigs) {
-    if (!tier.id) continue;
+    console.log(`[Polar Products] Processing tier: ${tier.key}`);
 
-    const product = await fetchPolarProduct(tier.id);
-    if (!product) continue;
+    try {
+      let monthlySummary: PolarProductSummary | null = null;
+      let yearlySummary: PolarProductSummary | null = null;
+      let tierName = tier.key.charAt(0).toUpperCase() + tier.key.slice(1);
+      let tierDescription: string | null = null;
 
-    // The fetchPolarProduct helper below currently returns a single 'summary' based on the first price found.
-    // We need to upgrade it to finding ALL prices (monthly/yearly) for this product.
+      // Fetch monthly product if ID exists
+      if (tier.monthlyId) {
+        console.log(`[Polar Products] Fetching monthly product for ${tier.key} with ID: ${tier.monthlyId}`);
+        try {
+          const monthlyProduct = await polarClient.products.get({ id: tier.monthlyId });
+          console.log(`[Polar Products] Monthly product fetched:`, {
+            id: monthlyProduct.id,
+            name: monthlyProduct.name,
+            pricesCount: monthlyProduct.prices?.length ?? 0
+          });
 
-    // Let's refactor fetchPolarProduct logic inline here or make a better helper to get all prices.
-    const fullProduct = await polarClient.products.get({ id: tier.id }).catch(() => null);
-    if (!fullProduct) continue;
+          tierName = monthlyProduct.name;
+          tierDescription = monthlyProduct.description ?? null;
 
-    // Find monthly and yearly prices
-    const monthlyPrice = fullProduct.prices?.find(p => p.type === "recurring" && p.recurringInterval === "month" && !p.isArchived);
-    const yearlyPrice = fullProduct.prices?.find(p => p.type === "recurring" && p.recurringInterval === "year" && !p.isArchived);
+          // Check if this product has monthly prices
+          const monthlyPrice = monthlyProduct.prices?.find(
+            p => p.type === "recurring" && p.recurringInterval === "month" && !p.isArchived
+          );
 
-    // Map them to summaries
-    const mapPriceToSummary = (price: any): PolarProductSummary | null => {
-      if (!price) return null;
-      return {
-        id: fullProduct.id, // The product ID is the same
-        name: fullProduct.name,
-        description: fullProduct.description ?? null,
-        priceAmount: price.priceAmount,
-        priceCurrency: price.priceCurrency,
-        priceType: price.type,
-        recurringInterval: price.recurringInterval,
-        displayPrice: formatPrice(price.priceAmount, price.priceCurrency, price.recurringInterval)
-      };
-    };
+          if (monthlyPrice) {
+            monthlySummary = mapPriceToSummary(monthlyProduct, monthlyPrice);
+          }
 
-    results.push({
-      key: tier.key,
-      name: fullProduct.name,
-      description: fullProduct.description ?? null,
-      uiDescription: UI_DESCRIPTIONS[tier.key] ?? fullProduct.description ?? null,
-      monthly: mapPriceToSummary(monthlyPrice),
-      yearly: mapPriceToSummary(yearlyPrice),
-    });
+          // Also check if this product has yearly prices (in case they're on the same product)
+          const yearlyPrice = monthlyProduct.prices?.find(
+            p => p.type === "recurring" && p.recurringInterval === "year" && !p.isArchived
+          );
+
+          if (yearlyPrice && !tier.yearlyId) {
+            yearlySummary = mapPriceToSummary(monthlyProduct, yearlyPrice);
+          }
+        } catch (error) {
+          console.error(`[Polar Products] Error fetching monthly product for ${tier.key}:`, error);
+        }
+      }
+
+      // Fetch yearly product if separate ID exists
+      if (tier.yearlyId && tier.yearlyId !== tier.monthlyId) {
+        console.log(`[Polar Products] Fetching yearly product for ${tier.key} with ID: ${tier.yearlyId}`);
+        try {
+          const yearlyProduct = await polarClient.products.get({ id: tier.yearlyId });
+          console.log(`[Polar Products] Yearly product fetched:`, {
+            id: yearlyProduct.id,
+            name: yearlyProduct.name,
+            pricesCount: yearlyProduct.prices?.length ?? 0
+          });
+
+          // Find the yearly price
+          const yearlyPrice = yearlyProduct.prices?.find(
+            p => p.type === "recurring" && p.recurringInterval === "year" && !p.isArchived
+          );
+
+          if (yearlyPrice) {
+            yearlySummary = mapPriceToSummary(yearlyProduct, yearlyPrice);
+          }
+        } catch (error) {
+          console.error(`[Polar Products] Error fetching yearly product for ${tier.key}:`, error);
+        }
+      }
+
+      console.log(`[Polar Products] Results for ${tier.key}:`, {
+        hasMonthly: !!monthlySummary,
+        hasYearly: !!yearlySummary,
+        monthlyAmount: monthlySummary?.priceAmount,
+        yearlyAmount: yearlySummary?.priceAmount
+      });
+
+      // Only add tier if we have at least one product
+      if (monthlySummary || yearlySummary) {
+        results.push({
+          key: tier.key,
+          name: tierName,
+          description: tierDescription,
+          uiDescription: UI_DESCRIPTIONS[tier.key] ?? tierDescription ?? undefined,
+          monthly: monthlySummary,
+          yearly: yearlySummary,
+        });
+      }
+    } catch (error) {
+      console.error(`[Polar Products] Error processing tier ${tier.key}:`, error);
+      if (error instanceof Error) {
+        console.error(`[Polar Products] Error message:`, error.message);
+      }
+    }
   }
 
+  console.log(`[Polar Products] Total tiers fetched: ${results.length}`);
   return results;
 }
 
-async function fetchPolarProduct(productId: string): Promise<PolarProductSummary | null> {
-  // Basic helper kept for compatibility if needed, but the main logic is above now.
-  return null;
+// Helper function to map price to summary
+function mapPriceToSummary(product: any, price: any): PolarProductSummary | null {
+  if (!price) return null;
+  
+  // Handle different price structures from Polar SDK
+  const amount = price.priceAmount ?? price.amount ?? 0;
+  const currency = price.priceCurrency ?? price.currency ?? 'USD';
+  const interval = price.recurringInterval ?? price.interval ?? 'month';
+  
+  return {
+    id: product.id,
+    name: product.name,
+    description: product.description ?? null,
+    priceAmount: amount,
+    priceCurrency: currency,
+    priceType: price.type,
+    recurringInterval: interval,
+    displayPrice: formatPrice(amount, currency, interval)
+  };
 }
 
 function formatPrice(amount: number, currency: string, interval: string): string {

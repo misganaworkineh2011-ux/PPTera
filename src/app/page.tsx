@@ -16,10 +16,36 @@ import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
 import { cn } from "~/lib/utils";
 import { useLanguage } from "~/contexts/LanguageContext";
+import { LoadingLink } from "~/components/LoadingLink";
 
-export default function LandingPage() {
+export default function HomePage() {
     const { t } = useLanguage();
     
+    return (
+        <>
+            {/* Show Dashboard for signed-in users */}
+            <SignedIn>
+                <DashboardRedirect />
+            </SignedIn>
+
+            {/* Show Landing Page for signed-out users */}
+            <SignedOut>
+                <LandingPageContent t={t} />
+            </SignedOut>
+        </>
+    );
+}
+
+// Component to handle dashboard redirect
+function DashboardRedirect() {
+    if (typeof window !== 'undefined') {
+        window.location.href = '/dashboard';
+    }
+    return null;
+}
+
+// Landing page content component
+function LandingPageContent({ t }: { t: any }) {
     return (
         <div className="min-h-screen bg-white font-sans text-slate-900 selection:bg-slate-900 selection:text-white overflow-x-hidden">
             {/* Subtle Background Pattern */}
@@ -61,9 +87,9 @@ export default function LandingPage() {
                                     </SignInButton>
                                 </SignedOut>
                                 <SignedIn>
-                                    <Link href="/dashboard" className="flex h-12 w-full min-w-[180px] items-center justify-center rounded-full bg-black px-8 text-base font-bold text-white shadow-xl shadow-slate-900/10 transition hover:scale-105 hover:bg-slate-800 hover:shadow-2xl sm:w-auto">
+                                    <LoadingLink href="/dashboard" className="flex h-12 w-full min-w-[180px] items-center justify-center rounded-full bg-black px-8 text-base font-bold text-white shadow-xl shadow-slate-900/10 transition hover:scale-105 hover:bg-slate-800 hover:shadow-2xl sm:w-auto">
                                         {t.goToDashboard}
-                                    </Link>
+                                    </LoadingLink>
                                 </SignedIn>
 
                                 <button className="flex h-12 w-full min-w-[180px] items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-8 text-base font-bold text-slate-900 transition hover:border-slate-300 hover:bg-slate-50 sm:w-auto">
@@ -399,8 +425,6 @@ export default function LandingPage() {
             </section>
 
             <LandingFooter />
-
-
         </div>
     );
 }

@@ -12,6 +12,9 @@ export const env = createEnv({
     POLAR_PRODUCT_STARTER: z.string().optional(),
     POLAR_PRODUCT_PRO: z.string().optional(),
     POLAR_PRODUCT_ENTERPRISE: z.string().optional(),
+    POLAR_PRODUCT_STARTER_YEARLY: z.string().optional(),
+    POLAR_PRODUCT_PRO_YEARLY: z.string().optional(),
+    POLAR_PRODUCT_ENTERPRISE_YEARLY: z.string().optional(),
     OPENAI_API_KEY: z.string(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
@@ -31,6 +34,9 @@ export const env = createEnv({
     POLAR_PRODUCT_STARTER: process.env.POLAR_PRODUCT_STARTER,
     POLAR_PRODUCT_PRO: process.env.POLAR_PRODUCT_PRO,
     POLAR_PRODUCT_ENTERPRISE: process.env.POLAR_PRODUCT_ENTERPRISE,
+    POLAR_PRODUCT_STARTER_YEARLY: process.env.POLAR_PRODUCT_STARTER_YEARLY,
+    POLAR_PRODUCT_PRO_YEARLY: process.env.POLAR_PRODUCT_PRO_YEARLY,
+    POLAR_PRODUCT_ENTERPRISE_YEARLY: process.env.POLAR_PRODUCT_ENTERPRISE_YEARLY,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,

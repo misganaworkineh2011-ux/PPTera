@@ -4,10 +4,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { Globe, CheckCircle2 } from "lucide-react";
 import { useLanguage } from "~/contexts/LanguageContext";
+import { SignedOut, SignInButton } from "@clerk/nextjs";
+import { LoadingLink } from "./LoadingLink";
 
 export const LandingFooter = () => {
     const { t } = useLanguage();
-    
+
     return (
         <footer className="relative z-10 bg-black text-white">
             {/* CTA Section - Full Height, Text centered top */}
@@ -32,11 +34,13 @@ export const LandingFooter = () => {
                         {t.footerCtaSubtitle}
                     </p>
 
-                    <Link href="/pricing">
-                        <button className="rounded-full bg-black px-8 py-3 text-lg font-bold text-white shadow-xl transition-transform hover:scale-105 hover:bg-slate-800">
-                            {t.tryForFree}
-                        </button>
-                    </Link>
+                    <SignedOut>
+                        <SignInButton mode="modal">
+                            <button className="h-12 w-full min-w-[180px] rounded-full bg-black px-8 text-base font-bold text-white shadow-xl shadow-slate-900/10 transition hover:scale-105 hover:bg-slate-800 hover:shadow-2xl sm:w-auto">
+                                {t.tryForFree}
+                            </button>
+                        </SignInButton>
+                    </SignedOut>
                 </div>
             </div>
 
@@ -47,7 +51,7 @@ export const LandingFooter = () => {
                     <div className="grid gap-12 grid-cols-2 lg:grid-cols-6 mb-20">
                         <div className="col-span-2 lg:col-span-2">
                             <div className="flex items-center gap-2 mb-6">
-                                <Link href="/" className="flex items-center gap-2">
+                                <LoadingLink href="/" className="flex items-center gap-2">
                                     <Image
                                         src="/logo.png"
                                         alt="PPTMaster Logo"
@@ -55,7 +59,7 @@ export const LandingFooter = () => {
                                         height={60}
                                         className="h-14 w-auto object-contain brightness-0 invert"
                                     />
-                                </Link>
+                                </LoadingLink>
                             </div>
                             <p className="text-slate-400 mb-6 max-w-xs">{t.howGoodIdeas}</p>
                             <div className="flex gap-4">
@@ -69,39 +73,39 @@ export const LandingFooter = () => {
                         <div>
                             <h4 className="font-bold text-white mb-6 text-lg">{t.productFooter}</h4>
                             <ul className="space-y-4 text-sm text-slate-400">
-                                <li><Link href="/pricing" className="hover:text-white transition">{t.pricing}</Link></li>
-                                <li><Link href="/inspiration" className="hover:text-white transition">{t.inspiration}</Link></li>
-                                <li><Link href="/templates" className="hover:text-white transition">{t.templates}</Link></li>
-                                <li><Link href="/prompt-guide" className="hover:text-white transition">{t.promptGuide}</Link></li>
-                                <li><Link href="/insights" className="hover:text-white transition">{t.insights}</Link></li>
+                                <li><LoadingLink href="/pricing" className="hover:text-white transition">{t.pricing}</LoadingLink></li>
+                                <li><LoadingLink href="/inspiration" className="hover:text-white transition">{t.inspiration}</LoadingLink></li>
+                                <li><LoadingLink href="/templates" className="hover:text-white transition">{t.templates}</LoadingLink></li>
+                                <li><LoadingLink href="/prompt-guide" className="hover:text-white transition">{t.promptGuide}</LoadingLink></li>
+                                <li><LoadingLink href="/insights" className="hover:text-white transition">{t.insights}</LoadingLink></li>
                             </ul>
                         </div>
 
                         <div>
                             <h4 className="font-bold text-white mb-6 text-lg">{t.company}</h4>
                             <ul className="space-y-4 text-sm text-slate-400">
-                                <li><Link href="/about" className="hover:text-white transition">{t.about}</Link></li>
-                                <li><Link href="/careers" className="hover:text-white transition">{t.careers}</Link></li>
-                                <li><Link href="/team" className="hover:text-white transition">{t.ourTeam}</Link></li>
+                                <li><LoadingLink href="/about" className="hover:text-white transition">{t.about}</LoadingLink></li>
+                                <li><LoadingLink href="/careers" className="hover:text-white transition">{t.careers}</LoadingLink></li>
+                                <li><LoadingLink href="/team" className="hover:text-white transition">{t.ourTeam}</LoadingLink></li>
                             </ul>
                         </div>
 
                         <div>
                             <h4 className="font-bold text-white mb-6 text-lg">{t.help}</h4>
                             <ul className="space-y-4 text-sm text-slate-400">
-                                <li><Link href="/help" className="hover:text-white transition">{t.helpCenter}</Link></li>
-                                <li><Link href="/help" className="hover:text-white transition">{t.community}</Link></li>
-                                <li><Link href="/help" className="hover:text-white transition">{t.developerDocs}</Link></li>
-                                <li><Link href="/contact" className="hover:text-white transition">{t.contactUs}</Link></li>
+                                <li><LoadingLink href="/help" className="hover:text-white transition">{t.helpCenter}</LoadingLink></li>
+                                <li><LoadingLink href="/help" className="hover:text-white transition">{t.community}</LoadingLink></li>
+                                <li><LoadingLink href="/help" className="hover:text-white transition">{t.developerDocs}</LoadingLink></li>
+                                <li><LoadingLink href="/contact" className="hover:text-white transition">{t.contactUs}</LoadingLink></li>
                             </ul>
                         </div>
 
                         <div>
                             <h4 className="font-bold text-white mb-6 text-lg">{t.legal}</h4>
                             <ul className="space-y-4 text-sm text-slate-400">
-                                <li><Link href="/privacy" className="hover:text-white transition">{t.privacyPolicy}</Link></li>
-                                <li><Link href="/terms" className="hover:text-white transition">{t.termsOfService}</Link></li>
-                                <li><Link href="/cookies" className="hover:text-white transition">{t.cookieNotice}</Link></li>
+                                <li><LoadingLink href="/privacy" className="hover:text-white transition">{t.privacyPolicy}</LoadingLink></li>
+                                <li><LoadingLink href="/terms" className="hover:text-white transition">{t.termsOfService}</LoadingLink></li>
+                                <li><LoadingLink href="/cookies" className="hover:text-white transition">{t.cookieNotice}</LoadingLink></li>
                             </ul>
                         </div>
                     </div>
@@ -109,9 +113,9 @@ export const LandingFooter = () => {
                     <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
                         <p className="text-sm text-slate-500">© 2025 PPTMaster Tech, Inc.</p>
                         <div className="flex gap-6 text-sm text-slate-500">
-                            <Link href="/privacy" className="hover:text-white transition">{t.privacyPolicy}</Link>
-                            <Link href="/terms" className="hover:text-white transition">{t.termsOfService}</Link>
-                            <Link href="/cookies" className="hover:text-white transition">{t.cookieNotice}</Link>
+                            <LoadingLink href="/privacy" className="hover:text-white transition">{t.privacyPolicy}</LoadingLink>
+                            <LoadingLink href="/terms" className="hover:text-white transition">{t.termsOfService}</LoadingLink>
+                            <LoadingLink href="/cookies" className="hover:text-white transition">{t.cookieNotice}</LoadingLink>
                         </div>
                     </div>
                 </div>
@@ -119,3 +123,4 @@ export const LandingFooter = () => {
         </footer>
     );
 };
+

@@ -263,6 +263,11 @@ export const translations = {
     howWeUseCookiesText: "We use cookies to understand how you use our service, remember your preferences, and improve your experience.",
     managingCookies: "Managing Cookies",
     managingCookiesText: "You can control and manage cookies through your browser settings. Please note that removing or blocking cookies may impact your user experience.",
+    
+    // 404 Page
+    pageNotFound: "Page Not Found",
+    pageNotFoundDesc: "The page you're looking for doesn't exist or has been moved.",
+    goBack: "Go Back",
   },
 
   es: {
@@ -956,6 +961,11 @@ export const translations = {
     howWeUseCookiesText: "We use cookies to understand how you use our service, remember your preferences, and improve your experience.",
     managingCookies: "Managing Cookies",
     managingCookiesText: "You can control and manage cookies through your browser settings. Please note that removing or blocking cookies may impact your user experience.",
+    
+    // 404 Page
+    pageNotFound: "Página No Encontrada",
+    pageNotFoundDesc: "La página que buscas no existe o ha sido movida.",
+    goBack: "Volver",
   },
 };
 
