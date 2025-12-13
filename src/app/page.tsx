@@ -15,8 +15,11 @@ import {
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
 import { cn } from "~/lib/utils";
+import { useLanguage } from "~/contexts/LanguageContext";
 
 export default function LandingPage() {
+    const { t } = useLanguage();
+    
     return (
         <div className="min-h-screen bg-white font-sans text-slate-900 selection:bg-slate-900 selection:text-white overflow-x-hidden">
             {/* Subtle Background Pattern */}
@@ -40,12 +43,12 @@ export default function LandingPage() {
 
                             {/* Headline */}
                             <h1 className="relative z-10 text-5xl font-extrabold tracking-tight text-slate-900 md:text-6xl lg:text-7xl animate-fade-in-up [animation-delay:200ms]">
-                                Design beautiful <br />
-                                <span className="bg-gradient-to-r from-slate-900 via-slate-700 to-slate-900 bg-clip-text text-transparent">presentations</span> with AI.
+                                {t.heroTitle} <br />
+                                <span className="bg-gradient-to-r from-slate-900 via-slate-700 to-slate-900 bg-clip-text text-transparent">{t.heroSubtitle}</span> {t.heroSubtitle2}
                             </h1>
 
                             <p className="mt-8 text-lg text-slate-500 md:text-xl max-w-xl animate-fade-in-up [animation-delay:300ms]">
-                                The smartest way to create professional decks. Just describe your idea, and PPTMaster generates the story, design, and slides for you.
+                                {t.heroDescription}
                             </p>
 
                             {/* CTA Buttons */}
@@ -53,19 +56,19 @@ export default function LandingPage() {
                                 <SignedOut>
                                     <SignInButton mode="modal">
                                         <button className="h-12 w-full min-w-[180px] rounded-full bg-black px-8 text-base font-bold text-white shadow-xl shadow-slate-900/10 transition hover:scale-105 hover:bg-slate-800 hover:shadow-2xl sm:w-auto">
-                                            Start for free
+                                            {t.startForFree}
                                         </button>
                                     </SignInButton>
                                 </SignedOut>
                                 <SignedIn>
                                     <Link href="/dashboard" className="flex h-12 w-full min-w-[180px] items-center justify-center rounded-full bg-black px-8 text-base font-bold text-white shadow-xl shadow-slate-900/10 transition hover:scale-105 hover:bg-slate-800 hover:shadow-2xl sm:w-auto">
-                                        Go to Dashboard
+                                        {t.goToDashboard}
                                     </Link>
                                 </SignedIn>
 
                                 <button className="flex h-12 w-full min-w-[180px] items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-8 text-base font-bold text-slate-900 transition hover:border-slate-300 hover:bg-slate-50 sm:w-auto">
                                     <Play className="h-4 w-4 fill-current" />
-                                    See how it works
+                                    {t.seeHowItWorks}
                                 </button>
                             </div>
                         </div>
@@ -176,13 +179,13 @@ export default function LandingPage() {
                 <div className="mx-auto max-w-7xl relative z-10">
                     <div className="text-center mb-16 md:mb-24">
                         <span className="inline-block py-1 px-3 rounded-full bg-white/20 border border-white/30 text-white text-sm font-semibold mb-4 tracking-wide uppercase">
-                            Features
+                            {t.products}
                         </span>
                         <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-6">
-                            Everything you need to <br className="hidden md:block" /> tell your story.
+                            {t.featuresTitle}
                         </h2>
                         <p className="text-lg text-white/90 max-w-2xl mx-auto font-medium">
-                            Powerful tools wrapped in a stunning interface. Designed for speed, built for impact.
+                            {t.featuresSubtitle}
                         </p>
                     </div>
 
@@ -192,9 +195,9 @@ export default function LandingPage() {
                         {/* Card 1: Presentations */}
                         <div className="min-w-[85vw] md:min-w-0 snap-center group relative overflow-hidden rounded-[2rem] bg-white p-8 shadow-xl hover:shadow-2xl transition-all duration-300 md:h-[400px] flex flex-col md:flex-row items-center gap-6">
                             <div className="flex-1 text-left z-10">
-                                <h3 className="mb-2 text-2xl font-bold text-slate-900 tracking-tight">Presentations</h3>
+                                <h3 className="mb-2 text-2xl font-bold text-slate-900 tracking-tight">{t.presentations}</h3>
                                 <p className="text-slate-600 leading-relaxed text-sm">
-                                    Stunning slides with consistent branding in minutes. Export to PPT, Google Slides, and more.
+                                    {t.presentationsDesc}
                                 </p>
                             </div>
                             <div className="w-full md:w-1/2 h-48 md:h-full relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-100 to-blue-50 group-hover:scale-105 transition-transform duration-500">
@@ -212,9 +215,9 @@ export default function LandingPage() {
                                 </div>
                             </div>
                             <div className="flex-1 text-left z-10">
-                                <h3 className="mb-2 text-2xl font-bold text-slate-900 tracking-tight">Documents</h3>
+                                <h3 className="mb-2 text-2xl font-bold text-slate-900 tracking-tight">{t.documents}</h3>
                                 <p className="text-slate-600 leading-relaxed text-sm">
-                                    Show-stopping proposals, PDFs, visual aids and more, lightning-fast on any topic.
+                                    {t.documentsDesc}
                                 </p>
                             </div>
                         </div>
@@ -222,9 +225,9 @@ export default function LandingPage() {
                         {/* Card 3: Social Media */}
                         <div className="min-w-[85vw] md:min-w-0 snap-center group relative overflow-hidden rounded-[2rem] bg-white p-8 shadow-xl hover:shadow-2xl transition-all duration-300 md:h-[400px] flex flex-col md:flex-row items-center gap-6">
                             <div className="flex-1 text-left z-10">
-                                <h3 className="mb-2 text-2xl font-bold text-slate-900 tracking-tight">Social Media</h3>
+                                <h3 className="mb-2 text-2xl font-bold text-slate-900 tracking-tight">{t.socialMedia}</h3>
                                 <p className="text-slate-600 leading-relaxed text-sm">
-                                    Gorgeous graphics and convincing copy. Share directly to social platforms.
+                                    {t.socialMediaDesc}
                                 </p>
                             </div>
                             <div className="w-full md:w-1/2 h-48 md:h-full relative overflow-hidden rounded-xl bg-gradient-to-br from-pink-100 to-pink-50 group-hover:scale-105 transition-transform duration-500">
@@ -242,9 +245,9 @@ export default function LandingPage() {
                                 </div>
                             </div>
                             <div className="flex-1 text-left z-10">
-                                <h3 className="mb-2 text-2xl font-bold text-slate-900 tracking-tight">Websites</h3>
+                                <h3 className="mb-2 text-2xl font-bold text-slate-900 tracking-tight">{t.websites}</h3>
                                 <p className="text-slate-600 leading-relaxed text-sm">
-                                    Business sites, landing pages, portfolios and more. Faster than you can blink. No coding required.
+                                    {t.websitesDesc}
                                 </p>
                             </div>
                         </div>
@@ -254,12 +257,12 @@ export default function LandingPage() {
                     {/* API Banner - White style */}
                     <div className="mt-8 rounded-[1.5rem] bg-white p-6 shadow-xl relative overflow-hidden group flex flex-col md:flex-row items-center justify-between gap-6">
                         <div className="flex items-center gap-4">
-                            <span className="rounded bg-green-100 px-2 py-1 text-[10px] font-bold text-green-700 uppercase tracking-wide">Beta</span>
+                            <span className="rounded bg-green-100 px-2 py-1 text-[10px] font-bold text-green-700 uppercase tracking-wide">{t.beta}</span>
                             <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                                API
+                                {t.api}
                             </h3>
                             <p className="text-slate-500 text-sm hidden md:block border-l border-slate-200 pl-4">
-                                Connect to PPTMaster programmatically. Automate creation, integrate with your tools, and scale your storytelling.
+                                {t.apiDescription}
                             </p>
                         </div>
                         <div className="hidden md:block">
@@ -270,7 +273,7 @@ export default function LandingPage() {
                     {/* Logo Section */}
                     <div className="mt-32 text-center">
                         <p className="mb-10 text-3xl font-medium text-white/90">
-                            Your next big idea is in good company.
+                            {t.yourNextBigIdea}
                         </p>
                         <div className="relative">
                             <div className="relative z-10 flex flex-wrap justify-center gap-12 md:gap-20 opacity-80 mix-blend-multiply transition-all duration-500 hover:mix-blend-normal hover:opacity-100 items-center">
@@ -301,21 +304,21 @@ export default function LandingPage() {
                     <div className="grid gap-12 md:grid-cols-2 items-center mb-32">
                         <div className="order-2 md:order-1">
                             <div className="mb-6 inline-flex rounded-full bg-blue-100 px-4 py-1.5 text-sm font-semibold text-blue-600">
-                                Instant Creation
+                                {t.instantCreation}
                             </div>
-                            <h3 className="mb-4 text-3xl font-bold text-slate-900">Skip the blank page. <br /> Create brilliance in a flash.</h3>
+                            <h3 className="mb-4 text-3xl font-bold text-slate-900">{t.skipBlankPage} <br /> {t.createBrilliance}</h3>
                             <ul className="space-y-4 text-lg text-slate-600">
                                 <li className="flex items-center gap-3">
                                     <CheckCircle2 className="h-5 w-5 text-blue-500" />
-                                    Start with an idea, paste an outline, or import docs
+                                    {t.startWithIdea}
                                 </li>
                                 <li className="flex items-center gap-3">
                                     <CheckCircle2 className="h-5 w-5 text-blue-500" />
-                                    20+ AI models for highest-quality output
+                                    {t.aiModels}
                                 </li>
                                 <li className="flex items-center gap-3">
                                     <CheckCircle2 className="h-5 w-5 text-blue-500" />
-                                    Import your brand or use one of our 100+ themes
+                                    {t.importBrand}
                                 </li>
                             </ul>
                         </div>
@@ -335,21 +338,21 @@ export default function LandingPage() {
                         </div>
                         <div>
                             <div className="mb-6 inline-flex rounded-full bg-purple-100 px-4 py-1.5 text-sm font-semibold text-purple-600">
-                                Smart Refine
+                                {t.smartRefine}
                             </div>
-                            <h3 className="mb-4 text-3xl font-bold text-slate-900">Edit with AI, <br /> in just a click.</h3>
+                            <h3 className="mb-4 text-3xl font-bold text-slate-900">{t.editWithAI} <br /> {t.inJustClick}</h3>
                             <ul className="space-y-4 text-lg text-slate-600">
                                 <li className="flex items-center gap-3">
                                     <CheckCircle2 className="h-5 w-5 text-purple-500" />
-                                    Instantly add smart layouts and translations
+                                    {t.smartLayouts}
                                 </li>
                                 <li className="flex items-center gap-3">
                                     <CheckCircle2 className="h-5 w-5 text-purple-500" />
-                                    Generate images and rework with AI
+                                    {t.generateImages}
                                 </li>
                                 <li className="flex items-center gap-3">
                                     <CheckCircle2 className="h-5 w-5 text-purple-500" />
-                                    Collaborate real-time with your team
+                                    {t.collaborateRealtime}
                                 </li>
                             </ul>
                         </div>
@@ -359,21 +362,21 @@ export default function LandingPage() {
                     <div className="grid gap-12 md:grid-cols-2 items-center">
                         <div>
                             <div className="mb-6 inline-flex rounded-full bg-green-100 px-4 py-1.5 text-sm font-semibold text-green-600">
-                                Universal Share
+                                {t.universalShare}
                             </div>
-                            <h3 className="mb-4 text-3xl font-bold text-slate-900">Shareworthy content, <br /> wherever you need it.</h3>
+                            <h3 className="mb-4 text-3xl font-bold text-slate-900">{t.shareworthyContent} <br /> {t.whereverYouNeed}</h3>
                             <ul className="space-y-4 text-lg text-slate-600">
                                 <li className="flex items-center gap-3">
                                     <CheckCircle2 className="h-5 w-5 text-green-500" />
-                                    Export as PPT, PDF, PNG, or Google Slides
+                                    {t.exportFormats}
                                 </li>
                                 <li className="flex items-center gap-3">
                                     <CheckCircle2 className="h-5 w-5 text-green-500" />
-                                    Publish as a website or social post
+                                    {t.publishWebsite}
                                 </li>
                                 <li className="flex items-center gap-3">
                                     <CheckCircle2 className="h-5 w-5 text-green-500" />
-                                    Track engagement metrics
+                                    {t.trackEngagement}
                                 </li>
                             </ul>
                         </div>
@@ -389,7 +392,7 @@ export default function LandingPage() {
             {/* Testimonials */}
             <section className="relative z-10 py-12 md:py-24 bg-white overflow-hidden">
                 <div className="mx-auto max-w-7xl px-6 mb-16 text-center">
-                    <h2 className="text-4xl font-bold tracking-tight text-slate-900">Join 50+ million users changing <br /> how the world communicates</h2>
+                    <h2 className="text-4xl font-bold tracking-tight text-slate-900">{t.joinMillionUsers}</h2>
                 </div>
 
                 <ActualCarousel />

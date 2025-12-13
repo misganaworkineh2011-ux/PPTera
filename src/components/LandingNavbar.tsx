@@ -13,6 +13,8 @@ import {
     Sparkles
 } from "lucide-react";
 import { cn } from "~/lib/utils";
+import { useLanguage } from "~/contexts/LanguageContext";
+import { languageNames, type Language } from "~/lib/translations";
 
 export const LandingNavbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -21,6 +23,9 @@ export const LandingNavbar = () => {
     // Dropdown states
     const [productsOpen, setProductsOpen] = useState(false);
     const [solutionsOpen, setSolutionsOpen] = useState(false);
+    const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+    
+    const { language, setLanguage, t } = useLanguage();
 
     useEffect(() => {
         const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -58,27 +63,27 @@ export const LandingNavbar = () => {
                             onMouseLeave={() => setProductsOpen(false)}
                         >
                             <button className="flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100/50 hover:text-slate-900">
-                                Products <ChevronDown className={cn("h-4 w-4 transition-transform", productsOpen && "rotate-180")} />
+                                {t.products} <ChevronDown className={cn("h-4 w-4 transition-transform", productsOpen && "rotate-180")} />
                             </button>
                             {productsOpen && (
                                 <div className="absolute top-full left-0 pt-2 w-64 animate-fade-in-up [animation-duration:0.2s] origin-top">
                                     <div className="rounded-2xl border border-slate-100 bg-white p-2 shadow-xl">
-                                        <Link href="#" className="flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50">
+                                        <Link href="/dashboard" className="flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50">
                                             <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
                                                 <Wand2 className="h-4 w-4" />
                                             </div>
                                             <div>
-                                                <div className="font-semibold text-slate-900">AI Generator</div>
-                                                <div className="text-xs text-slate-500">Text to presentation</div>
+                                                <div className="font-semibold text-slate-900">{t.aiPresentations}</div>
+                                                <div className="text-xs text-slate-500">{t.aiPresentationsDesc}</div>
                                             </div>
                                         </Link>
-                                        <Link href="#" className="flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50">
+                                        <Link href="/dashboard" className="flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50">
                                             <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100 text-purple-600">
                                                 <Sparkles className="h-4 w-4" />
                                             </div>
                                             <div>
-                                                <div className="font-semibold text-slate-900">Templates</div>
-                                                <div className="text-xs text-slate-500">Premium designs</div>
+                                                <div className="font-semibold text-slate-900">{t.templates}</div>
+                                                <div className="text-xs text-slate-500">{t.templatesDesc}</div>
                                             </div>
                                         </Link>
                                     </div>
@@ -93,53 +98,80 @@ export const LandingNavbar = () => {
                             onMouseLeave={() => setSolutionsOpen(false)}
                         >
                             <button className="flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100/50 hover:text-slate-900">
-                                Solutions <ChevronDown className={cn("h-4 w-4 transition-transform", solutionsOpen && "rotate-180")} />
+                                {t.solutions} <ChevronDown className={cn("h-4 w-4 transition-transform", solutionsOpen && "rotate-180")} />
                             </button>
                             {solutionsOpen && (
                                 <div className="absolute top-full left-0 pt-2 w-64 animate-fade-in-up [animation-duration:0.2s] origin-top">
                                     <div className="rounded-2xl border border-slate-100 bg-white p-2 shadow-xl">
-                                        <Link href="#" className="block rounded-xl p-3 hover:bg-slate-50">
-                                            <div className="font-semibold text-slate-900">Enterprise</div>
-                                            <div className="text-xs text-slate-500">For large teams</div>
+                                        <Link href="/education" className="block rounded-xl p-3 hover:bg-slate-50">
+                                            <div className="font-semibold text-slate-900">{t.forBusiness}</div>
+                                            <div className="text-xs text-slate-500">{t.forBusinessDesc}</div>
                                         </Link>
-                                        <Link href="#" className="block rounded-xl p-3 hover:bg-slate-50">
-                                            <div className="font-semibold text-slate-900">Education</div>
-                                            <div className="text-xs text-slate-500">For students & teachers</div>
+                                        <Link href="/education" className="block rounded-xl p-3 hover:bg-slate-50">
+                                            <div className="font-semibold text-slate-900">{t.forEducation}</div>
+                                            <div className="text-xs text-slate-500">{t.forEducationDesc}</div>
                                         </Link>
                                     </div>
                                 </div>
                             )}
                         </div>
 
-                        <Link href="#" className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100/50 hover:text-slate-900">About</Link>
-                        <Link href="/pricing" className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100/50 hover:text-slate-900">Pricing</Link>
+                        <Link href="/about" className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100/50 hover:text-slate-900">{t.about}</Link>
+                        <Link href="/pricing" className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100/50 hover:text-slate-900">{t.pricing}</Link>
                     </div>
                 </div>
 
                 {/* Right: Actions */}
                 <div className="flex items-center gap-1 md:gap-2 shrink-0">
-                    <button className="hidden items-center gap-1 rounded-full px-2 md:px-3 py-2 text-sm font-medium text-slate-600 transition hover:text-slate-900 lg:flex">
-                        <Globe className="h-4 w-4" />
-                        <span>EN</span>
-                    </button>
+                    {/* Language Dropdown */}
+                    <div 
+                        className="relative hidden lg:block"
+                        onMouseEnter={() => setLangDropdownOpen(true)}
+                        onMouseLeave={() => setLangDropdownOpen(false)}
+                    >
+                        <button className="flex items-center gap-1 rounded-full px-2 md:px-3 py-2 text-sm font-medium text-slate-600 transition hover:text-slate-900">
+                            <Globe className="h-4 w-4" />
+                            <span>{language.toUpperCase()}</span>
+                        </button>
+                        {langDropdownOpen && (
+                            <div className="absolute top-full right-0 pt-2 w-40 animate-fade-in-up [animation-duration:0.2s] origin-top">
+                                <div className="rounded-2xl border border-slate-100 bg-white p-2 shadow-xl">
+                                    {(Object.keys(languageNames) as Language[]).map((lang) => (
+                                        <button
+                                            key={lang}
+                                            onClick={() => {
+                                                setLanguage(lang);
+                                                setLangDropdownOpen(false);
+                                            }}
+                                            className={`w-full text-left rounded-xl px-3 py-2 text-sm transition hover:bg-slate-50 ${
+                                                language === lang ? 'bg-slate-100 font-semibold text-slate-900' : 'text-slate-700'
+                                            }`}
+                                        >
+                                            {languageNames[lang]}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
 
                     <div className="hidden h-4 w-px bg-slate-200 lg:block mx-1"></div>
 
                     <SignedOut>
                         <SignInButton mode="modal">
                             <button className="hidden rounded-full px-3 md:px-5 py-2 md:py-2.5 text-sm font-semibold text-slate-700 transition hover:text-slate-900 lg:block">
-                                Log in
+                                {t.login}
                             </button>
                         </SignInButton>
                         <SignInButton mode="modal">
                             <button className="rounded-full bg-black px-3 md:px-4 lg:px-6 py-1.5 md:py-2 lg:py-2.5 text-xs md:text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:bg-slate-800 hover:shadow-xl hover:-translate-y-0.5 whitespace-nowrap">
-                                Start free
+                                {t.getStarted}
                             </button>
                         </SignInButton>
                     </SignedOut>
                     <SignedIn>
                         <Link href="/dashboard" className="hidden lg:block rounded-full bg-black px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:bg-slate-800 hover:shadow-xl hover:-translate-y-0.5">
-                            Dashboard
+                            {t.dashboard}
                         </Link>
                     </SignedIn>
 
@@ -153,19 +185,38 @@ export const LandingNavbar = () => {
             {mobileOpen && (
                 <div className="absolute top-20 left-4 right-4 z-40 rounded-3xl border border-slate-100 bg-white p-4 shadow-2xl md:hidden origin-top animate-fade-in-up [animation-duration:0.2s]">
                     <div className="flex flex-col gap-2">
-                        <Link href="#" className="flex items-center justify-between rounded-xl bg-slate-50 p-3 font-semibold text-slate-900">
-                            Products <ChevronDown className="h-4 w-4" />
+                        <Link href="/dashboard" className="flex items-center justify-between rounded-xl bg-slate-50 p-3 font-semibold text-slate-900">
+                            {t.products} <ChevronDown className="h-4 w-4" />
                         </Link>
-                        <Link href="#" className="flex items-center justify-between rounded-xl bg-slate-50 p-3 font-semibold text-slate-900">
-                            Solutions <ChevronDown className="h-4 w-4" />
+                        <Link href="/education" className="flex items-center justify-between rounded-xl bg-slate-50 p-3 font-semibold text-slate-900">
+                            {t.solutions} <ChevronDown className="h-4 w-4" />
                         </Link>
-                        <Link href="#" className="rounded-xl p-3 font-semibold text-slate-600 hover:bg-slate-50">About</Link>
-                        <Link href="/pricing" className="rounded-xl p-3 font-semibold text-slate-600 hover:bg-slate-50">Pricing</Link>
+                        <Link href="/about" className="rounded-xl p-3 font-semibold text-slate-600 hover:bg-slate-50">{t.about}</Link>
+                        <Link href="/pricing" className="rounded-xl p-3 font-semibold text-slate-600 hover:bg-slate-50">{t.pricing}</Link>
+
+                        {/* Mobile Language Selector */}
+                        <div className="border-t border-slate-100 pt-2 mt-2">
+                            <div className="px-3 py-2 text-xs font-semibold text-slate-500 uppercase">Language</div>
+                            {(Object.keys(languageNames) as Language[]).map((lang) => (
+                                <button
+                                    key={lang}
+                                    onClick={() => {
+                                        setLanguage(lang);
+                                        setMobileOpen(false);
+                                    }}
+                                    className={`w-full text-left rounded-xl px-3 py-2 text-sm transition ${
+                                        language === lang ? 'bg-slate-100 font-semibold text-slate-900' : 'text-slate-700 hover:bg-slate-50'
+                                    }`}
+                                >
+                                    {languageNames[lang]}
+                                </button>
+                            ))}
+                        </div>
 
                         <SignedIn>
                             <div className="mt-2 text-center">
                                 <Link href="/dashboard" className="block w-full rounded-xl bg-black py-3 font-bold text-white" onClick={() => setMobileOpen(false)}>
-                                    Go to Dashboard
+                                    {t.dashboard}
                                 </Link>
                             </div>
                         </SignedIn>
@@ -173,7 +224,7 @@ export const LandingNavbar = () => {
                             <div className="mt-2 text-center">
                                 <SignInButton mode="modal">
                                     <button className="block w-full rounded-xl bg-black py-3 font-bold text-white">
-                                        Log in / Sign up
+                                        {t.login}
                                     </button>
                                 </SignInButton>
                             </div>

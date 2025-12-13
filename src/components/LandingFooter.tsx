@@ -3,8 +3,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Globe, CheckCircle2 } from "lucide-react";
+import { useLanguage } from "~/contexts/LanguageContext";
 
 export const LandingFooter = () => {
+    const { t } = useLanguage();
+    
     return (
         <footer className="relative z-10 bg-black text-white">
             {/* CTA Section - Full Height, Text centered top */}
@@ -22,16 +25,16 @@ export const LandingFooter = () => {
                 {/* Text + Button - Centered relative to container */}
                 <div className="relative z-10 mx-auto max-w-4xl text-center px-6">
                     <h2 className="mb-4 text-4xl font-bold tracking-tight text-slate-900 md:text-5xl lg:text-7xl">
-                        Ready to transform<br className="hidden md:block" /> your presentations?
+                        {t.footerCtaTitle}
                     </h2>
 
                     <p className="mb-8 text-lg text-slate-700 md:text-xl font-medium">
-                        Join thousands of teams using PPTMaster to create stunning decks in minutes.
+                        {t.footerCtaSubtitle}
                     </p>
 
                     <Link href="/pricing">
                         <button className="rounded-full bg-black px-8 py-3 text-lg font-bold text-white shadow-xl transition-transform hover:scale-105 hover:bg-slate-800">
-                            Try for free
+                            {t.tryForFree}
                         </button>
                     </Link>
                 </div>
@@ -54,7 +57,7 @@ export const LandingFooter = () => {
                                     />
                                 </Link>
                             </div>
-                            <p className="text-slate-400 mb-6 max-w-xs">How good ideas get into the universe.</p>
+                            <p className="text-slate-400 mb-6 max-w-xs">{t.howGoodIdeas}</p>
                             <div className="flex gap-4">
                                 {/* Social Icons */}
                                 <div className="h-10 w-10 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:bg-white hover:text-black transition cursor-pointer"><Globe className="h-5 w-5" /></div>
@@ -64,41 +67,41 @@ export const LandingFooter = () => {
 
                         {/* Mobile Grid Sections */}
                         <div>
-                            <h4 className="font-bold text-white mb-6 text-lg">Product</h4>
+                            <h4 className="font-bold text-white mb-6 text-lg">{t.productFooter}</h4>
                             <ul className="space-y-4 text-sm text-slate-400">
-                                <li><Link href="/pricing" className="hover:text-white transition">Pricing</Link></li>
-                                <li><Link href="#" className="hover:text-white transition">Inspiration</Link></li>
-                                <li><Link href="#" className="hover:text-white transition">Education</Link></li>
-                                <li><Link href="#" className="hover:text-white transition">Prompt guide</Link></li>
-                                <li><Link href="#" className="hover:text-white transition">Insights</Link></li>
+                                <li><Link href="/pricing" className="hover:text-white transition">{t.pricing}</Link></li>
+                                <li><Link href="/inspiration" className="hover:text-white transition">{t.inspiration}</Link></li>
+                                <li><Link href="/templates" className="hover:text-white transition">{t.templates}</Link></li>
+                                <li><Link href="/prompt-guide" className="hover:text-white transition">{t.promptGuide}</Link></li>
+                                <li><Link href="/insights" className="hover:text-white transition">{t.insights}</Link></li>
                             </ul>
                         </div>
 
                         <div>
-                            <h4 className="font-bold text-white mb-6 text-lg">Company</h4>
+                            <h4 className="font-bold text-white mb-6 text-lg">{t.company}</h4>
                             <ul className="space-y-4 text-sm text-slate-400">
-                                <li><Link href="#" className="hover:text-white transition">About</Link></li>
-                                <li><Link href="#" className="hover:text-white transition">Careers</Link></li>
-                                <li><Link href="#" className="hover:text-white transition">Team</Link></li>
+                                <li><Link href="/about" className="hover:text-white transition">{t.about}</Link></li>
+                                <li><Link href="/careers" className="hover:text-white transition">{t.careers}</Link></li>
+                                <li><Link href="/team" className="hover:text-white transition">{t.ourTeam}</Link></li>
                             </ul>
                         </div>
 
                         <div>
-                            <h4 className="font-bold text-white mb-6 text-lg">Help</h4>
+                            <h4 className="font-bold text-white mb-6 text-lg">{t.help}</h4>
                             <ul className="space-y-4 text-sm text-slate-400">
-                                <li><Link href="#" className="hover:text-white transition">Help Center</Link></li>
-                                <li><Link href="#" className="hover:text-white transition">Community</Link></li>
-                                <li><Link href="#" className="hover:text-white transition">Developer docs</Link></li>
-                                <li><Link href="#" className="hover:text-white transition">Contact us</Link></li>
+                                <li><Link href="/help" className="hover:text-white transition">{t.helpCenter}</Link></li>
+                                <li><Link href="/help" className="hover:text-white transition">{t.community}</Link></li>
+                                <li><Link href="/help" className="hover:text-white transition">{t.developerDocs}</Link></li>
+                                <li><Link href="/contact" className="hover:text-white transition">{t.contactUs}</Link></li>
                             </ul>
                         </div>
 
                         <div>
-                            <h4 className="font-bold text-white mb-6 text-lg">Legal</h4>
+                            <h4 className="font-bold text-white mb-6 text-lg">{t.legal}</h4>
                             <ul className="space-y-4 text-sm text-slate-400">
-                                <li><Link href="#" className="hover:text-white transition">Privacy Policy</Link></li>
-                                <li><Link href="#" className="hover:text-white transition">Terms of Service</Link></li>
-                                <li><Link href="#" className="hover:text-white transition">Cookie Notice</Link></li>
+                                <li><Link href="/privacy" className="hover:text-white transition">{t.privacyPolicy}</Link></li>
+                                <li><Link href="/terms" className="hover:text-white transition">{t.termsOfService}</Link></li>
+                                <li><Link href="/cookies" className="hover:text-white transition">{t.cookieNotice}</Link></li>
                             </ul>
                         </div>
                     </div>
@@ -106,9 +109,9 @@ export const LandingFooter = () => {
                     <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
                         <p className="text-sm text-slate-500">© 2025 PPTMaster Tech, Inc.</p>
                         <div className="flex gap-6 text-sm text-slate-500">
-                            <Link href="#" className="hover:text-white transition">Privacy</Link>
-                            <Link href="#" className="hover:text-white transition">Terms</Link>
-                            <Link href="#" className="hover:text-white transition">Cookies</Link>
+                            <Link href="/privacy" className="hover:text-white transition">{t.privacyPolicy}</Link>
+                            <Link href="/terms" className="hover:text-white transition">{t.termsOfService}</Link>
+                            <Link href="/cookies" className="hover:text-white transition">{t.cookieNotice}</Link>
                         </div>
                     </div>
                 </div>

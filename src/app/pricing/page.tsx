@@ -7,6 +7,7 @@ import { LandingFooter } from "~/components/LandingFooter";
 import { cn } from "~/lib/utils";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
+import { useLanguage } from "~/contexts/LanguageContext";
 
 type PolarProduct = {
   key: string;
@@ -36,6 +37,7 @@ export default function PricingPage() {
 
   const { isSignedIn } = useUser();
   const router = useRouter();
+  const { t } = useLanguage();
 
   useEffect(() => {
     async function loadProducts() {
@@ -95,15 +97,15 @@ export default function PricingPage() {
       <div className="relative pt-40 pb-20 px-6">
         <div className="mx-auto max-w-7xl text-center">
           <h1 className="text-5xl font-extrabold tracking-tight text-slate-900 md:text-7xl mb-6 animate-fade-in-up">
-            Simple pricing for everyone.
+            {t.pricingTitle}
           </h1>
           <p className="text-xl text-slate-500 mb-12 animate-fade-in-up [animation-delay:100ms]">
-            Start for free, upgrade when you love it.
+            {t.pricingSubtitle}
           </p>
 
           {/* Toggle */}
           <div className="flex items-center justify-center gap-4 mb-16 animate-fade-in-up [animation-delay:200ms]">
-            <span className={cn("text-sm font-semibold", !isAnnual ? "text-slate-900" : "text-slate-500")}>Monthly</span>
+            <span className={cn("text-sm font-semibold", !isAnnual ? "text-slate-900" : "text-slate-500")}>{t.monthly}</span>
             <button
               onClick={() => setIsAnnual(!isAnnual)}
               className="relative h-8 w-14 rounded-full bg-slate-200 p-1 transition-colors hover:bg-slate-300"
@@ -111,7 +113,7 @@ export default function PricingPage() {
               <div className={cn("h-6 w-6 rounded-full bg-white shadow-sm transition-transform", isAnnual ? "translate-x-6" : "translate-x-0")} />
             </button>
             <span className={cn("text-sm font-semibold", isAnnual ? "text-slate-900" : "text-slate-500")}>
-              Yearly <span className="text-green-600 font-bold ml-1">(Save ~20%)</span>
+              {t.yearly} <span className="text-green-600 font-bold ml-1">{t.savePercent}</span>
             </span>
           </div>
 
@@ -170,7 +172,7 @@ export default function PricingPage() {
                       {checkoutLoadingId === activePrice.id ? (
                         <Loader2 className="h-4 w-4 animate-spin mx-auto" />
                       ) : (
-                        activePrice.priceAmount === 0 ? "Sign up for free" : "Get started"
+                        activePrice.priceAmount === 0 ? t.signUpFree : t.getStartedBtn
                       )}
                     </button>
 
@@ -189,19 +191,19 @@ export default function PricingPage() {
           )}
 
           <div className="mt-32 max-w-3xl mx-auto text-left">
-            <h2 className="text-3xl font-bold text-slate-900 mb-12 text-center">Frequently asked questions</h2>
+            <h2 className="text-3xl font-bold text-slate-900 mb-12 text-center">{t.faqTitle}</h2>
             <div className="space-y-8">
               <div>
-                <h4 className="font-bold text-slate-900 mb-2">Can I cancel anytime?</h4>
-                <p className="text-slate-600">Yes, you can cancel your subscription at any time. You'll keep access until the end of your billing period.</p>
+                <h4 className="font-bold text-slate-900 mb-2">{t.faqCancel}</h4>
+                <p className="text-slate-600">{t.faqCancelAnswer}</p>
               </div>
               <div>
-                <h4 className="font-bold text-slate-900 mb-2">Do you offer discounts for students?</h4>
-                <p className="text-slate-600">Absolutly! We offer free Pro accounts for students and educators with a valid .edu email address.</p>
+                <h4 className="font-bold text-slate-900 mb-2">{t.faqStudentDiscount}</h4>
+                <p className="text-slate-600">{t.faqStudentAnswer}</p>
               </div>
               <div>
-                <h4 className="font-bold text-slate-900 mb-2">What happens to my decks if I downgrade?</h4>
-                <p className="text-slate-600">Your decks remain safe. You'll switch to the Free plan limits, but you won't lose your existing content.</p>
+                <h4 className="font-bold text-slate-900 mb-2">{t.faqDowngrade}</h4>
+                <p className="text-slate-600">{t.faqDowngradeAnswer}</p>
               </div>
             </div>
           </div>

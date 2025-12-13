@@ -1,5 +1,6 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
+import { LanguageProvider } from "~/contexts/LanguageContext";
 import "~/styles/globals.css";
 
 export const metadata = {
@@ -21,7 +22,9 @@ export default function RootLayout({
           <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
         </head>
         <body className="font-sans">
-          {children}
+          <LanguageProvider>
+            {children}
+          </LanguageProvider>
           <Toaster />
         </body>
       </html>
