@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, FileText, Check, Edit2, Trash2, Plus, Sparkles } from "lucide-react";
+import { ArrowLeft, FileText, Check, Edit2, Trash2, Plus, Sparkles, GripVertical } from "lucide-react";
 
 interface Slide {
   type: "title" | "content";
@@ -28,6 +28,8 @@ export default function OutlinePage() {
   const [outlineData, setOutlineData] = useState<OutlineData | null>(null);
   const [editingSlide, setEditingSlide] = useState<number | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -80,6 +82,66 @@ export default function OutlinePage() {
     alert("Presentation creation coming soon! The outline has been saved.");
   };
 
+  // Calculate total characters - reactive to changes
+  const totalCharacters = outlineData ? (() => {
+    let total = 0;
+    outlineData.outline.forEach((slide) => {
+      total += slide.title.length;
+      if (slide.subtitle) total += slide.subtitle.length;
+      if (slide.bulletPoints) {
+        slide.bulletPoints.forEach((point) => {
+          total += point.length;
+        });
+      }
+    });
+    return total;
+  })() : 0;
+
+  // Drag and drop handlers
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    setDragOverIndex(index);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    // Don't allow moving the first slide (title slide)
+    if (draggedIndex === 0 || dropIndex === 0) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    // Reorder slides
+    const newOutline = [...outlineData!.outline];
+    const [draggedSlide] = newOutline.splice(draggedIndex, 1);
+    newOutline.splice(dropIndex, 0, draggedSlide);
+
+    setOutlineData({ ...outlineData!, outline: newOutline });
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
   return (
     <div className="min-h-screen w-full relative overflow-hidden">
       {/* Background */}
@@ -124,18 +186,31 @@ export default function OutlinePage() {
             </h1>
           </div>
           <p className="text-slate-600 text-center max-w-xl">
-            Review and edit your presentation outline. Click on any slide to make changes.
+            Review and edit your presentation outline. Drag slides to reorder them.
           </p>
-          <div className="mt-4 flex items-center gap-4 text-sm text-slate-500">
-            <span className="px-3 py-1 rounded-full bg-white/80 border border-slate-200">
-              {outlineData.outline.length} slides
-            </span>
-            <span className="px-3 py-1 rounded-full bg-white/80 border border-slate-200">
-              {outlineData.metadata.tone}
-            </span>
-            <span className="px-3 py-1 rounded-full bg-white/80 border border-slate-200">
-              {outlineData.metadata.language}
-            </span>
+          
+          {/* Stats Section */}
+          <div className="mt-6 w-full max-w-4xl">
+            <div className="rounded-xl border border-white/60 bg-white/80 backdrop-blur-sm p-4 shadow-sm">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-[#1e3a8a]">{outlineData.outline.length}</div>
+                  <div className="text-xs text-slate-500 mt-1">Total Slides</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-[#06b6d4]">{totalCharacters.toLocaleString()}</div>
+                  <div className="text-xs text-slate-500 mt-1">Characters</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-sm font-semibold text-slate-700 capitalize">{outlineData.metadata.tone}</div>
+                  <div className="text-xs text-slate-500 mt-1">Tone</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-sm font-semibold text-slate-700 capitalize">{outlineData.metadata.language}</div>
+                  <div className="text-xs text-slate-500 mt-1">Language</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -145,15 +220,30 @@ export default function OutlinePage() {
             {outlineData.outline.map((slide, index) => (
               <div
                 key={index}
-                className={`rounded-xl border bg-white shadow-sm transition-all ${
+                draggable={index > 0 && editingSlide !== index}
+                onDragStart={() => handleDragStart(index)}
+                onDragOver={(e) => handleDragOver(e, index)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, index)}
+                onDragEnd={handleDragEnd}
+                className={`rounded-xl border bg-white shadow-sm transition-all cursor-move ${
                   editingSlide === index 
-                    ? "border-[#06b6d4] ring-2 ring-[#06b6d4]/20" 
+                    ? "border-[#06b6d4] ring-2 ring-[#06b6d4]/20 cursor-default" 
+                    : draggedIndex === index
+                    ? "opacity-50 scale-95 border-[#06b6d4] ring-2 ring-[#06b6d4]/30"
+                    : dragOverIndex === index && draggedIndex !== null && draggedIndex !== index
+                    ? "border-[#06b6d4] ring-2 ring-[#06b6d4]/20 scale-[1.02] bg-[#06b6d4]/5"
                     : "border-slate-200 hover:border-[#06b6d4]/50 hover:shadow-md"
-                }`}
+                } ${index === 0 ? "cursor-default" : ""}`}
               >
                 {/* Slide Header */}
                 <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl">
                   <div className="flex items-center gap-3">
+                    {index > 0 && (
+                      <div className="text-slate-400 hover:text-[#06b6d4] transition-colors">
+                        <GripVertical size={18} />
+                      </div>
+                    )}
                     <span className={`flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold ${
                       slide.type === "title" 
                         ? "bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white" 
