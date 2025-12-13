@@ -1,76 +1,211 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
-import { ArrowLeft, Target, Users, Zap } from "lucide-react";
+import { LandingNavbar } from "~/components/LandingNavbar";
+import { LandingFooter } from "~/components/LandingFooter";
 import { useLanguage } from "~/contexts/LanguageContext";
+import { Sparkles, Users, Target, Zap, Globe, Heart } from "lucide-react";
+import Image from "next/image";
 
 export default function AboutPage() {
   const { t } = useLanguage();
-  
+
   return (
     <div className="min-h-screen bg-white">
-      <div className="mx-auto max-w-6xl px-6 py-20">
-        <Link
-          href="/"
-          className="mb-8 inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {t.backToHome}
-        </Link>
+      <LandingNavbar />
 
-        <div className="mb-16 text-center">
-          <h1 className="mb-4 text-5xl font-bold text-slate-900">{t.aboutTitle}</h1>
-          <p className="mx-auto max-w-2xl text-xl text-slate-600">
-            {t.aboutSubtitle}
+      {/* Hero Section */}
+      <section className="relative pt-40 pb-32 px-6 overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_-100px,#1e1e1e0a,transparent)]"></div>
+
+        <div className="relative z-10 mx-auto max-w-5xl text-center">
+          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-4 py-2 backdrop-blur-sm animate-fade-in">
+            <Sparkles className="h-4 w-4 text-[#06b6d4]" />
+            <span className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
+              {t.aboutUs || "About Us"}
+            </span>
+          </div>
+
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 mb-8 animate-fade-in-up [animation-delay:100ms]">
+            {t.aboutHeroTitle || "We're building the future of"}{" "}
+            <span className="bg-gradient-to-r from-[#1e3a8a] via-[#06b6d4] to-[#1e3a8a] bg-clip-text text-transparent">
+              {t.aboutHeroHighlight || "presentations"}
+            </span>
+          </h1>
+
+          <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed animate-fade-in-up [animation-delay:200ms]">
+            {t.aboutHeroDesc || "PPTMaster is on a mission to empower everyone to create beautiful, professional presentations with the power of AI. No design skills required."}
           </p>
         </div>
+      </section>
 
-        <div className="mb-20 grid gap-8 md:grid-cols-3">
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4]">
-              <Target className="h-8 w-8 text-white" />
+      {/* Mission Section */}
+      <section className="relative py-24 px-6 bg-gradient-to-br from-slate-50 to-white">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid md:grid-cols-2 gap-16 items-center">
+            <div>
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-blue-100 px-4 py-2">
+                <Target className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-semibold text-blue-600 uppercase tracking-wide">
+                  {t.ourMission || "Our Mission"}
+                </span>
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
+                {t.missionTitle || "Making design accessible to everyone"}
+              </h2>
+              <p className="text-lg text-slate-600 leading-relaxed mb-6">
+                {t.missionDesc1 || "We believe that great ideas shouldn't be held back by design limitations. That's why we're building AI-powered tools that help anyone create stunning presentations in minutes."}
+              </p>
+              <p className="text-lg text-slate-600 leading-relaxed">
+                {t.missionDesc2 || "From students to Fortune 500 companies, over 50 million people trust PPTMaster to bring their ideas to life."}
+              </p>
             </div>
-            <h3 className="mb-2 text-xl font-bold text-slate-900">{t.ourMission}</h3>
-            <p className="text-slate-600">
-              {t.ourMissionDesc}
-            </p>
-          </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500">
-              <Users className="h-8 w-8 text-white" />
+            <div className="relative">
+              <div className="aspect-square rounded-3xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] p-1 rotate-3 hover:rotate-0 transition-transform duration-500">
+                <div className="h-full w-full rounded-3xl bg-white flex items-center justify-center">
+                  <Sparkles className="h-32 w-32 text-[#06b6d4]" />
+                </div>
+              </div>
             </div>
-            <h3 className="mb-2 text-xl font-bold text-slate-900">{t.ourTeam}</h3>
-            <p className="text-slate-600">
-              {t.ourTeamDesc}
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-red-500">
-              <Zap className="h-8 w-8 text-white" />
-            </div>
-            <h3 className="mb-2 text-xl font-bold text-slate-900">{t.ourVision}</h3>
-            <p className="text-slate-600">
-              {t.ourVisionDesc}
-            </p>
           </div>
         </div>
+      </section>
 
-        <div className="rounded-3xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] p-12 text-center text-white">
-          <h2 className="mb-4 text-3xl font-bold">{t.joinOurJourney}</h2>
-          <p className="mb-8 text-lg text-white/90">
-            {t.joinOurJourneyDesc}
-          </p>
-          <Link
-            href="/careers"
-            className="inline-block rounded-full bg-white px-8 py-3 font-semibold text-[#1e3a8a] transition hover:bg-slate-100"
-          >
-            {t.viewOpenPositions}
-          </Link>
+      {/* Values Section */}
+      <section className="relative py-24 px-6">
+        <div className="mx-auto max-w-7xl">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+              {t.ourValues || "Our Values"}
+            </h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              {t.valuesDesc || "The principles that guide everything we do"}
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Value 1 */}
+            <div className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 hover:shadow-2xl transition-all duration-300">
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-100 to-blue-50 group-hover:scale-110 transition-transform">
+                <Users className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-4">
+                {t.valueUserFirst || "User First"}
+              </h3>
+              <p className="text-slate-600 leading-relaxed">
+                {t.valueUserFirstDesc || "Every decision we make starts with our users. We listen, learn, and build products that solve real problems."}
+              </p>
+            </div>
+
+            {/* Value 2 */}
+            <div className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 hover:shadow-2xl transition-all duration-300">
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-100 to-purple-50 group-hover:scale-110 transition-transform">
+                <Zap className="h-8 w-8 text-purple-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-4">
+                {t.valueInnovation || "Innovation"}
+              </h3>
+              <p className="text-slate-600 leading-relaxed">
+                {t.valueInnovationDesc || "We push boundaries and embrace new technologies to create tools that were previously impossible."}
+              </p>
+            </div>
+
+            {/* Value 3 */}
+            <div className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 hover:shadow-2xl transition-all duration-300">
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-green-100 to-green-50 group-hover:scale-110 transition-transform">
+                <Heart className="h-8 w-8 text-green-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-4">
+                {t.valueQuality || "Quality"}
+              </h3>
+              <p className="text-slate-600 leading-relaxed">
+                {t.valueQualityDesc || "We're obsessed with the details. Every pixel, every interaction, every feature is crafted with care."}
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="relative py-24 px-6 bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4]">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid md:grid-cols-4 gap-8 text-center text-white">
+            <div className="animate-fade-in-up">
+              <div className="text-5xl md:text-6xl font-black mb-2">50M+</div>
+              <div className="text-lg text-white/80">{t.statUsers || "Users Worldwide"}</div>
+            </div>
+            <div className="animate-fade-in-up [animation-delay:100ms]">
+              <div className="text-5xl md:text-6xl font-black mb-2">1B+</div>
+              <div className="text-lg text-white/80">{t.statPresentations || "Presentations Created"}</div>
+            </div>
+            <div className="animate-fade-in-up [animation-delay:200ms]">
+              <div className="text-5xl md:text-6xl font-black mb-2">150+</div>
+              <div className="text-lg text-white/80">{t.statCountries || "Countries"}</div>
+            </div>
+            <div className="animate-fade-in-up [animation-delay:300ms]">
+              <div className="text-5xl md:text-6xl font-black mb-2">99%</div>
+              <div className="text-lg text-white/80">{t.statSatisfaction || "Satisfaction Rate"}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Story Section */}
+      <section className="relative py-24 px-6">
+        <div className="mx-auto max-w-4xl">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+              {t.ourStory || "Our Story"}
+            </h2>
+          </div>
+
+          <div className="space-y-12">
+            <div className="flex gap-6 items-start">
+              <div className="flex-shrink-0 w-24 text-right">
+                <div className="text-2xl font-bold text-[#06b6d4]">2020</div>
+              </div>
+              <div className="flex-1 border-l-2 border-slate-200 pl-6 pb-8">
+                <h3 className="text-xl font-bold text-slate-900 mb-2">{t.story2020Title || "The Beginning"}</h3>
+                <p className="text-slate-600">{t.story2020Desc || "Founded with a vision to democratize design and make professional presentations accessible to everyone."}</p>
+              </div>
+            </div>
+
+            <div className="flex gap-6 items-start">
+              <div className="flex-shrink-0 w-24 text-right">
+                <div className="text-2xl font-bold text-[#06b6d4]">2022</div>
+              </div>
+              <div className="flex-1 border-l-2 border-slate-200 pl-6 pb-8">
+                <h3 className="text-xl font-bold text-slate-900 mb-2">{t.story2022Title || "AI Revolution"}</h3>
+                <p className="text-slate-600">{t.story2022Desc || "Launched our AI-powered presentation generator, transforming how people create content."}</p>
+              </div>
+            </div>
+
+            <div className="flex gap-6 items-start">
+              <div className="flex-shrink-0 w-24 text-right">
+                <div className="text-2xl font-bold text-[#06b6d4]">2024</div>
+              </div>
+              <div className="flex-1 border-l-2 border-slate-200 pl-6 pb-8">
+                <h3 className="text-xl font-bold text-slate-900 mb-2">{t.story2024Title || "Global Impact"}</h3>
+                <p className="text-slate-600">{t.story2024Desc || "Reached 50 million users across 150+ countries, becoming the world's leading AI presentation platform."}</p>
+              </div>
+            </div>
+
+            <div className="flex gap-6 items-start">
+              <div className="flex-shrink-0 w-24 text-right">
+                <div className="text-2xl font-bold text-[#06b6d4]">2025</div>
+              </div>
+              <div className="flex-1 pl-6">
+                <h3 className="text-xl font-bold text-slate-900 mb-2">{t.story2025Title || "The Future"}</h3>
+                <p className="text-slate-600">{t.story2025Desc || "Continuing to innovate and push the boundaries of what's possible with AI-powered creativity."}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <LandingFooter />
     </div>
   );
 }

@@ -1,14 +1,49 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
-import { Globe, CheckCircle2 } from "lucide-react";
+import { Globe, CheckCircle2, Mail } from "lucide-react";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { SignedOut, SignInButton } from "@clerk/nextjs";
 import { LoadingLink } from "./LoadingLink";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export const LandingFooter = () => {
     const { t } = useLanguage();
+    const [email, setEmail] = useState("");
+    const [loading, setLoading] = useState(false);
+
+    const handleNewsletterSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+
+        try {
+            const response = await fetch("/api/newsletter", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "Failed to subscribe");
+            }
+
+            toast.success(data.message || "Successfully subscribed!", {
+                duration: 5000,
+                position: "top-center",
+            });
+            setEmail("");
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Failed to subscribe", {
+                duration: 5000,
+                position: "top-center",
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <footer className="relative z-10 bg-black text-white">
@@ -44,8 +79,41 @@ export const LandingFooter = () => {
                 </div>
             </div>
 
+            {/* Newsletter Section */}
+            <div className="pt-20 pb-12 px-6 border-b border-slate-800">
+                <div className="mx-auto max-w-4xl text-center">
+                    <Mail className="h-12 w-12 mx-auto mb-4 text-[#06b6d4]" />
+                    <h3 className="text-2xl md:text-3xl font-bold text-white mb-3">
+                        Stay Updated
+                    </h3>
+                    <p className="text-slate-400 mb-8 max-w-2xl mx-auto">
+                        Get the latest tips, insights, and updates delivered to your inbox.
+                    </p>
+                    <form onSubmit={handleNewsletterSubmit} className="max-w-md mx-auto">
+                        <div className="flex gap-2">
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="Enter your email"
+                                required
+                                disabled={loading}
+                                className="flex-1 px-4 py-3 rounded-full bg-slate-900 border border-slate-800 text-white placeholder:text-slate-500 focus:outline-none focus:border-[#06b6d4] disabled:opacity-50"
+                            />
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="px-6 py-3 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-bold hover:shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                            >
+                                {loading ? "..." : "Subscribe"}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             {/* Footer Links - Grid layout for mobile (2 cols) */}
-            <div className="pt-20 pb-10 px-6">
+            <div className="pt-12 pb-10 px-6">
                 <div className="mx-auto max-w-7xl">
                     {/* Updated grid-cols-2 for mobile instead of 1 */}
                     <div className="grid gap-12 grid-cols-2 lg:grid-cols-6 mb-20">
@@ -94,8 +162,8 @@ export const LandingFooter = () => {
                             <h4 className="font-bold text-white mb-6 text-lg">{t.help}</h4>
                             <ul className="space-y-4 text-sm text-slate-400">
                                 <li><LoadingLink href="/help" className="hover:text-white transition">{t.helpCenter}</LoadingLink></li>
-                                <li><LoadingLink href="/help" className="hover:text-white transition">{t.community}</LoadingLink></li>
-                                <li><LoadingLink href="/help" className="hover:text-white transition">{t.developerDocs}</LoadingLink></li>
+                                <li><LoadingLink href="/community" className="hover:text-white transition">{t.community}</LoadingLink></li>
+                                <li><LoadingLink href="/developer-docs" className="hover:text-white transition">{t.developerDocs}</LoadingLink></li>
                                 <li><LoadingLink href="/contact" className="hover:text-white transition">{t.contactUs}</LoadingLink></li>
                             </ul>
                         </div>

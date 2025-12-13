@@ -56,18 +56,25 @@ export default function PricingPage() {
     loadProducts();
   }, []);
 
-  const handleSubscribe = async (productId: string) => {
+  const handleSubscribe = async (productKey: string) => {
     if (!isSignedIn) {
       router.push("/sign-in");
       return;
     }
 
-    setCheckoutLoadingId(productId);
+    // Find the product and get the correct ID based on billing period
+    const product = products.find(p => p.key === productKey);
+    if (!product) return;
+
+    const priceData = isAnnual ? product.yearly : product.monthly;
+    if (!priceData) return;
+
+    setCheckoutLoadingId(productKey);
     try {
       const res = await fetch("/api/polar/checkout", {
         method: "POST",
         body: JSON.stringify({
-          productId,
+          productId: priceData.id,
           recurringInterval: isAnnual ? "year" : "month"
         })
       });
@@ -161,7 +168,7 @@ export default function PricingPage() {
                     </div>
 
                     <button
-                      onClick={() => handleSubscribe(activePrice.id)}
+                      onClick={() => handleSubscribe(product.key)}
                       disabled={!!checkoutLoadingId}
                       className={cn(
                         "w-full rounded-full py-3 px-6 font-bold text-sm mb-8 transition-transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed",
@@ -169,7 +176,7 @@ export default function PricingPage() {
                           ? "bg-white text-black hover:bg-slate-100"
                           : "bg-black text-white hover:bg-slate-800"
                       )}>
-                      {checkoutLoadingId === activePrice.id ? (
+                      {checkoutLoadingId === product.key ? (
                         <Loader2 className="h-4 w-4 animate-spin mx-auto" />
                       ) : (
                         activePrice.priceAmount === 0 ? t.signUpFree : t.getStartedBtn
