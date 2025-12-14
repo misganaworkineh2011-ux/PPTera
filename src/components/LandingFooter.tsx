@@ -48,17 +48,17 @@ export const LandingFooter = () => {
     return (
         <footer className="relative z-10 bg-black text-white">
             {/* Newsletter Section */}
-            <div className="pt-20 pb-12 px-6 border-b border-slate-800">
+            <div className="pt-12 pb-10 px-6 border-b border-slate-800 md:pt-20 md:pb-12">
                 <div className="mx-auto max-w-4xl text-center">
-                    <Mail className="h-12 w-12 mx-auto mb-4 text-[#06b6d4]" />
-                    <h3 className="text-2xl md:text-3xl font-bold text-white mb-3">
+                    <Mail className="h-10 w-10 mx-auto mb-3 text-[#06b6d4] md:h-12 md:w-12 md:mb-4" />
+                    <h3 className="text-xl font-bold text-white mb-2 md:text-2xl lg:text-3xl md:mb-3">
                         Stay Updated
                     </h3>
-                    <p className="text-slate-400 mb-8 max-w-2xl mx-auto">
+                    <p className="text-sm text-slate-400 mb-6 max-w-2xl mx-auto md:text-base md:mb-8">
                         Get the latest tips, insights, and updates delivered to your inbox.
                     </p>
                     <form onSubmit={handleNewsletterSubmit} className="max-w-md mx-auto">
-                        <div className="flex gap-2">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:gap-2">
                             <input
                                 type="email"
                                 value={email}
@@ -66,12 +66,12 @@ export const LandingFooter = () => {
                                 placeholder="Enter your email"
                                 required
                                 disabled={loading}
-                                className="flex-1 px-4 py-3 rounded-full bg-slate-900 border border-slate-800 text-white placeholder:text-slate-500 focus:outline-none focus:border-[#06b6d4] disabled:opacity-50"
+                                className="flex-1 px-4 py-3 rounded-full bg-slate-900 border border-slate-800 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-[#06b6d4] disabled:opacity-50 md:text-base"
                             />
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="px-6 py-3 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-bold hover:shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                                className="px-6 py-3 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white text-sm font-bold hover:shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap md:text-base"
                             >
                                 {loading ? "..." : "Subscribe"}
                             </button>

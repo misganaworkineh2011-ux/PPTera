@@ -110,3 +110,25 @@ body {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* Horizontal scrolling animations for diagonal background */
+@keyframes scroll-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll-left {
+  animation: scroll-left 20s linear infinite;
+}
+
+.animate-scroll-left-slow {
+  animation: scroll-left 25s linear infinite;
+}
+
+.animate-scroll-left-fast {
+  animation: scroll-left 15s linear infinite;
+}
