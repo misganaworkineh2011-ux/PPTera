@@ -5,11 +5,11 @@ export type PolarProductSummary = {
   id: string;
   name: string;
   description?: string | null;
-  uiDescription?: string; // Custom UI description for better presentation
-  priceAmount?: number | null; // in cents
+  uiDescription?: string;
+  priceAmount?: number | null;
   priceCurrency?: string | null;
   priceType?: "one_time" | "recurring" | null;
-  recurringInterval?: string | null; // month, year, etc.
+  recurringInterval?: string | null;
   displayPrice?: string;
 };
 
@@ -24,186 +24,171 @@ export type PolarPricingTier = {
 
 const polarClient = new Polar({
   accessToken: env.POLAR_ACCESS_TOKEN,
-  server: env.POLAR_ENV === "production" ? "production" : "sandbox",
+  server: env.POLAR_ENV,
 });
 
-// Custom UI descriptions matching the Landing Page design content where possible
+// Custom UI descriptions for better presentation
 const UI_DESCRIPTIONS: Record<string, string> = {
-  "starter": `
-• 400 AI credits at signup
+  "basic": `
+• 50 AI credits / mo
 • Unlimited PDF exports
-• Basic analytics
-• 7-day version history`,
+• Basic templates
+• 7-day version history
+
+**Credits reset:** Monthly for subscriptions`,
 
   "pro": `
-• Unlimited AI creation
+• 200 AI credits / mo
 • Remove PPTMaster branding
 • Export to PowerPoint (PPTX)
-• Unlimited folders
-• 30-day version history`,
+• Premium templates
+• 30-day version history
+• Priority support
 
-  "enterprise": `
+**Credits reset:** Monthly for subscriptions`,
+
+  "business": `
+• 500 AI credits / mo
 • Everything in Pro
 • Shared team workspace
 • Custom fonts & themes
 • Advanced analytics
-• Priority support`
+• Dedicated support
+
+**Credits reset:** Monthly for subscriptions`
 };
 
 export async function fetchPolarProductsFromEnv(): Promise<PolarPricingTier[]> {
   const tierConfigs = [
-    { 
-      key: "starter", 
-      monthlyId: env.POLAR_PRODUCT_STARTER,
-      yearlyId: env.POLAR_PRODUCT_STARTER_YEARLY
+    {
+      key: "basic",
+      monthlyId: env.POLAR_PRODUCT_BASIC,
+      yearlyId: env.POLAR_PRODUCT_YEARLY_BASIC,
     },
-    { 
-      key: "pro", 
+    {
+      key: "pro",
       monthlyId: env.POLAR_PRODUCT_PRO,
-      yearlyId: env.POLAR_PRODUCT_PRO_YEARLY
+      yearlyId: env.POLAR_PRODUCT_YEARLY_PRO,
     },
-    { 
-      key: "enterprise", 
-      monthlyId: env.POLAR_PRODUCT_ENTERPRISE,
-      yearlyId: env.POLAR_PRODUCT_ENTERPRISE_YEARLY
+    {
+      key: "business",
+      monthlyId: env.POLAR_PRODUCT_BUSINESS,
+      yearlyId: env.POLAR_PRODUCT_YEARLY_BUSINESS,
     },
   ].filter((config) => config.monthlyId || config.yearlyId);
 
   console.log('[Polar Products] Tier configs:', tierConfigs);
 
-  if (tierConfigs.length === 0) {
-    console.log('[Polar Products] No product IDs found in environment variables');
-    return [];
-  }
+  if (tierConfigs.length === 0) return [];
 
   const results: PolarPricingTier[] = [];
 
   for (const tier of tierConfigs) {
-    console.log(`[Polar Products] Processing tier: ${tier.key}`);
+    console.log(`[Polar Products] Fetching ${tier.key}:`, {
+      monthlyId: tier.monthlyId,
+      yearlyId: tier.yearlyId
+    });
 
-    try {
-      let monthlySummary: PolarProductSummary | null = null;
-      let yearlySummary: PolarProductSummary | null = null;
-      let tierName = tier.key.charAt(0).toUpperCase() + tier.key.slice(1);
-      let tierDescription: string | null = null;
+    const [monthly, yearly] = await Promise.all([
+      fetchPolarProduct(tier.monthlyId),
+      fetchPolarProduct(tier.yearlyId),
+    ]);
 
-      // Fetch monthly product if ID exists
-      if (tier.monthlyId) {
-        console.log(`[Polar Products] Fetching monthly product for ${tier.key} with ID: ${tier.monthlyId}`);
-        try {
-          const monthlyProduct = await polarClient.products.get({ id: tier.monthlyId });
-          console.log(`[Polar Products] Monthly product fetched:`, {
-            id: monthlyProduct.id,
-            name: monthlyProduct.name,
-            pricesCount: monthlyProduct.prices?.length ?? 0
-          });
+    console.log(`[Polar Products] ${tier.key} results:`, {
+      monthly: monthly ? { id: monthly.id, price: monthly.displayPrice, interval: monthly.recurringInterval } : null,
+      yearly: yearly ? { id: yearly.id, price: yearly.displayPrice, interval: yearly.recurringInterval } : null,
+    });
 
-          tierName = monthlyProduct.name;
-          tierDescription = monthlyProduct.description ?? null;
+    const canonical = monthly ?? yearly;
 
-          // Check if this product has monthly prices
-          const monthlyPrice = monthlyProduct.prices?.find(
-            p => p.type === "recurring" && p.recurringInterval === "month" && !p.isArchived
-          );
-
-          if (monthlyPrice) {
-            monthlySummary = mapPriceToSummary(monthlyProduct, monthlyPrice);
-          }
-
-          // Also check if this product has yearly prices (in case they're on the same product)
-          const yearlyPrice = monthlyProduct.prices?.find(
-            p => p.type === "recurring" && p.recurringInterval === "year" && !p.isArchived
-          );
-
-          if (yearlyPrice && !tier.yearlyId) {
-            yearlySummary = mapPriceToSummary(monthlyProduct, yearlyPrice);
-          }
-        } catch (error) {
-          console.error(`[Polar Products] Error fetching monthly product for ${tier.key}:`, error);
-        }
-      }
-
-      // Fetch yearly product if separate ID exists
-      if (tier.yearlyId && tier.yearlyId !== tier.monthlyId) {
-        console.log(`[Polar Products] Fetching yearly product for ${tier.key} with ID: ${tier.yearlyId}`);
-        try {
-          const yearlyProduct = await polarClient.products.get({ id: tier.yearlyId });
-          console.log(`[Polar Products] Yearly product fetched:`, {
-            id: yearlyProduct.id,
-            name: yearlyProduct.name,
-            pricesCount: yearlyProduct.prices?.length ?? 0
-          });
-
-          // Find the yearly price
-          const yearlyPrice = yearlyProduct.prices?.find(
-            p => p.type === "recurring" && p.recurringInterval === "year" && !p.isArchived
-          );
-
-          if (yearlyPrice) {
-            yearlySummary = mapPriceToSummary(yearlyProduct, yearlyPrice);
-          }
-        } catch (error) {
-          console.error(`[Polar Products] Error fetching yearly product for ${tier.key}:`, error);
-        }
-      }
-
-      console.log(`[Polar Products] Results for ${tier.key}:`, {
-        hasMonthly: !!monthlySummary,
-        hasYearly: !!yearlySummary,
-        monthlyAmount: monthlySummary?.priceAmount,
-        yearlyAmount: yearlySummary?.priceAmount
-      });
-
-      // Only add tier if we have at least one product
-      if (monthlySummary || yearlySummary) {
-        results.push({
-          key: tier.key,
-          name: tierName,
-          description: tierDescription,
-          uiDescription: UI_DESCRIPTIONS[tier.key] ?? tierDescription ?? undefined,
-          monthly: monthlySummary,
-          yearly: yearlySummary,
-        });
-      }
-    } catch (error) {
-      console.error(`[Polar Products] Error processing tier ${tier.key}:`, error);
-      if (error instanceof Error) {
-        console.error(`[Polar Products] Error message:`, error.message);
-      }
+    if (!canonical) {
+      console.log(`[Polar Products] Skipping ${tier.key} - no products found`);
+      continue;
     }
+
+    results.push({
+      key: tier.key,
+      name: canonical.name,
+      description: canonical.description ?? null,
+      uiDescription: UI_DESCRIPTIONS[tier.key] ?? canonical.description ?? undefined,
+      monthly: monthly ?? null,
+      yearly: yearly ?? null,
+    });
   }
 
-  console.log(`[Polar Products] Total tiers fetched: ${results.length}`);
+  console.log(`[Polar Products] Total tiers: ${results.length}`);
   return results;
 }
 
-// Helper function to map price to summary
-function mapPriceToSummary(product: any, price: any): PolarProductSummary | null {
-  if (!price) return null;
-  
-  // Handle different price structures from Polar SDK
-  const amount = price.priceAmount ?? price.amount ?? 0;
-  const currency = price.priceCurrency ?? price.currency ?? 'USD';
-  const interval = price.recurringInterval ?? price.interval ?? 'month';
-  
-  return {
-    id: product.id,
-    name: product.name,
-    description: product.description ?? null,
-    priceAmount: amount,
-    priceCurrency: currency,
-    priceType: price.type,
-    recurringInterval: interval,
-    displayPrice: formatPrice(amount, currency, interval)
-  };
+export async function fetchPolarProduct(productId?: string | null): Promise<PolarProductSummary | null> {
+  if (!productId) {
+    console.log('[Polar Product] No product ID provided');
+    return null;
+  }
+
+  try {
+    console.log(`[Polar Product] Fetching product: ${productId}`);
+    const product = await polarClient.products.get({ id: productId });
+    
+    console.log(`[Polar Product] Product fetched:`, {
+      id: product.id,
+      name: product.name,
+      pricesCount: product.prices?.length ?? 0
+    });
+
+    const price: any =
+      product.prices?.find((p: any) => p.amountType === "fixed" && !p.isArchived) ??
+      product.prices?.[0];
+
+    if (!price) {
+      console.log(`[Polar Product] No valid price found for ${productId}`);
+      return null;
+    }
+
+    console.log(`[Polar Product] Price details:`, {
+      priceAmount: price.priceAmount,
+      currency: price.priceCurrency,
+      type: price.type,
+      interval: price.recurringInterval
+    });
+
+    const summary: PolarProductSummary = {
+      id: product.id,
+      name: product.name,
+      description: product.description ?? null,
+      priceAmount: price?.priceAmount ?? null,
+      priceCurrency: price?.priceCurrency ?? null,
+      priceType: price?.type ?? null,
+      recurringInterval: price?.recurringInterval ?? null,
+    };
+
+    summary.displayPrice = formatPolarPrice(summary);
+    console.log(`[Polar Product] Final summary:`, { id: summary.id, displayPrice: summary.displayPrice });
+
+    return summary;
+  } catch (err) {
+    console.error("Failed to fetch Polar product", productId, err);
+    return null;
+  }
 }
 
-function formatPrice(amount: number, currency: string, interval: string): string {
-  const formatter = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  });
-  return `${formatter.format(amount / 100)}/${interval}`;
+export function formatPolarPrice(product: PolarProductSummary): string {
+  if (!product.priceAmount || !product.priceCurrency) return "";
+  const amount = (product.priceAmount / 100).toFixed(2);
+  const isRecurring = product.priceType === "recurring";
+  const interval = product.recurringInterval ? `/${product.recurringInterval}` : "";
+  return `${currencySymbol(product.priceCurrency)}${amount}${isRecurring ? interval : ""}`;
+}
+
+function currencySymbol(code: string): string {
+  try {
+    return (0).toLocaleString(undefined, {
+      style: "currency",
+      currency: code,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).replace(/0+([.,]0+)?$/, "");
+  } catch {
+    return "$";
+  }
 }

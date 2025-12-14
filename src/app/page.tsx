@@ -424,6 +424,37 @@ function LandingPageContent({ t }: { t: any }) {
                 <ActualCarousel />
             </section>
 
+            {/* CTA Section - Only on Home Page */}
+            <section className="relative w-full h-[60vh] md:h-screen bg-gradient-to-t from-[#ff9a9e] via-[#ffd1d5] to-white flex items-start justify-center pt-20 md:pt-32">
+                {/* Background Image - Full image shown at bottom */}
+                <div className="absolute inset-0 z-0">
+                    <img
+                        src="/background.png"
+                        alt="Background"
+                        className="h-full w-full object-contain object-bottom opacity-80"
+                    />
+                </div>
+
+                {/* Text + Button - Centered relative to container */}
+                <div className="relative z-10 mx-auto max-w-4xl text-center px-6">
+                    <h2 className="mb-4 text-4xl font-bold tracking-tight text-slate-900 md:text-5xl lg:text-7xl">
+                        {t.footerCtaTitle}
+                    </h2>
+
+                    <p className="mb-8 text-lg text-slate-700 md:text-xl font-medium">
+                        {t.footerCtaSubtitle}
+                    </p>
+
+                    <SignedOut>
+                        <SignInButton mode="modal">
+                            <button className="h-12 w-full min-w-[180px] rounded-full bg-white px-8 text-base font-bold text-black shadow-xl shadow-slate-900/10 transition hover:scale-105 hover:bg-slate-100 hover:shadow-2xl sm:w-auto">
+                                {t.tryForFree}
+                            </button>
+                        </SignInButton>
+                    </SignedOut>
+                </div>
+            </section>
+
             <LandingFooter />
         </div>
     );
