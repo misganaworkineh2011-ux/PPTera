@@ -55,30 +55,30 @@ function LandingPageContent({ t }: { t: any }) {
             <LandingNavbar />
 
             {/* Hero Section */}
-            <section className="relative pt-40 pb-32 px-6 overflow-hidden flex items-center" style={{ minHeight: '80vh' }}>
-                <div className="mx-auto max-w-7xl">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <section className="relative pt-24 pb-16 px-4 overflow-hidden flex items-center sm:pt-32 sm:pb-24 md:pt-40 md:pb-32 sm:px-6" style={{ minHeight: '70vh' }}>
+                <div className="mx-auto max-w-7xl w-full">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center sm:gap-12">
 
                         {/* Left Column - Text Content */}
                         <div className="flex flex-col items-start text-left animate-fade-in-up">
                             {/* Badge */}
-                            <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-3 py-1 backdrop-blur-sm animate-fade-in [animation-delay:100ms]">
+                            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-3 py-1 backdrop-blur-sm animate-fade-in [animation-delay:100ms] sm:mb-6 md:mb-8">
                                 <span className="flex h-2 w-2 rounded-full bg-green-500"></span>
                                 <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">AI Generation V2.0</span>
                             </div>
 
                             {/* Headline */}
-                            <h1 className="relative z-10 text-5xl font-extrabold tracking-tight text-slate-900 md:text-6xl lg:text-7xl animate-fade-in-up [animation-delay:200ms]">
+                            <h1 className="relative z-10 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl animate-fade-in-up [animation-delay:200ms]">
                                 {t.heroTitle} <br />
                                 <span className="bg-gradient-to-r from-slate-900 via-slate-700 to-slate-900 bg-clip-text text-transparent">{t.heroSubtitle}</span> {t.heroSubtitle2}
                             </h1>
 
-                            <p className="mt-8 text-lg text-slate-500 md:text-xl max-w-xl animate-fade-in-up [animation-delay:300ms]">
+                            <p className="mt-4 text-base text-slate-500 max-w-xl sm:mt-6 sm:text-lg md:mt-8 md:text-xl animate-fade-in-up [animation-delay:300ms]">
                                 {t.heroDescription}
                             </p>
 
                             {/* CTA Buttons */}
-                            <div className="mt-10 flex flex-col items-start gap-4 sm:flex-row animate-fade-in-up [animation-delay:400ms]">
+                            <div className="mt-6 flex flex-col items-start gap-3 w-full sm:mt-8 sm:flex-row sm:gap-4 md:mt-10 animate-fade-in-up [animation-delay:400ms]">
                                 <SignedOut>
                                     <SignInButton mode="modal">
                                         <button className="h-12 w-full min-w-[180px] rounded-full bg-black px-8 text-base font-bold text-white shadow-xl shadow-slate-900/10 transition hover:scale-105 hover:bg-slate-800 hover:shadow-2xl sm:w-auto">
@@ -178,7 +178,7 @@ function LandingPageContent({ t }: { t: any }) {
             </section>
 
             {/* Feature Grid Section - Hero Style */}
-            <section className="relative z-10 pt-32 pb-32 px-6 overflow-hidden">
+            <section className="relative z-10 pt-16 pb-16 px-4 overflow-hidden sm:pt-24 sm:pb-24 sm:px-6 md:pt-32 md:pb-32">
                 {/* Background Image */}
                 <div className="absolute inset-0 z-0">
                     <img src="/bg2.webp" alt="" className="w-full h-full object-cover" />
@@ -186,25 +186,25 @@ function LandingPageContent({ t }: { t: any }) {
                     <div className="absolute inset-0 bg-white/70"></div>
                 </div>
                 {/* Top gradient blend with hero section */}
-                <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none"></div>
+                <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none sm:h-24 md:h-32"></div>
 
                 <div className="mx-auto max-w-7xl relative z-10">
                     {/* Header - Hero Style */}
-                    <div className="text-center mb-16 md:mb-20">
-                        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-3 py-1 backdrop-blur-sm">
+                    <div className="text-center mb-10 sm:mb-12 md:mb-16 lg:mb-20">
+                        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-3 py-1 backdrop-blur-sm sm:mb-6">
                             <span className="flex h-2 w-2 rounded-full bg-blue-500"></span>
                             <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">{t.products}</span>
                         </div>
-                        <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 mb-6">
+                        <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 mb-4 sm:text-4xl md:text-5xl lg:text-6xl sm:mb-6">
                             {t.featuresTitle}
                         </h2>
-                        <p className="text-lg text-slate-500 max-w-2xl mx-auto">
+                        <p className="text-base text-slate-500 max-w-2xl mx-auto sm:text-lg px-4">
                             {t.featuresSubtitle}
                         </p>
                     </div>
 
                     {/* Feature Grid - Clean Cards with Hero Aesthetic */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
 
                         {/* Card 1: Presentations */}
                         <div className="group relative overflow-hidden rounded-[20px] bg-white shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] border border-slate-200 hover:shadow-[0_25px_60px_-12px_rgba(0,0,0,0.15)] transition-shadow duration-500">
@@ -433,7 +433,7 @@ function LandingPageContent({ t }: { t: any }) {
             </section>
 
             {/* CTA Section - Only on Home Page */}
-            <section className="relative w-full h-[70vh] md:h-screen bg-gradient-to-t from-[#ff9a9e] via-[#ffd1d5] to-white flex items-start justify-center pt-12 md:pt-32">
+            <section className="relative w-full min-h-[35vh] sm:min-h-[45vh] md:min-h-[55vh] lg:min-h-[70vh] xl:min-h-[85vh] 2xl:min-h-screen bg-gradient-to-t from-[#ff9a9e] via-[#ffd1d5] to-white flex flex-col pt-6 sm:pt-8 md:pt-10 lg:pt-14 xl:pt-18 2xl:pt-18">
                 {/* Background Image - Full image shown at bottom */}
                 <div className="absolute inset-0 z-0">
                     <img
@@ -443,24 +443,23 @@ function LandingPageContent({ t }: { t: any }) {
                     />
                 </div>
 
-                {/* Text + Button - Top aligned on mobile, centered on desktop */}
-                <div className="relative z-10 mx-auto max-w-4xl text-center px-6">
-                    <h2 className="mb-3 text-3xl font-bold tracking-tight text-slate-900 md:mb-4 md:text-5xl lg:text-7xl">
+                {/* Text + Button - Starts at top, scales proportionally */}
+                <div className="relative z-10 mx-auto max-w-4xl text-center px-4 sm:px-6 flex-shrink-0">
+                    <h2 className="mb-2 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl sm:mb-3 md:text-3xl md:mb-4 lg:text-4xl lg:mb-5 xl:text-5xl xl:mb-6 2xl:text-6xl 2xl:mb-8">
                         {t.footerCtaTitle}
                     </h2>
 
-                    <p className="mb-6 text-base text-slate-700 md:mb-8 md:text-lg lg:text-xl font-medium">
-                        {t.footerCtaSubtitle}
-                    </p>
-
                     <SignedOut>
                         <SignInButton mode="modal">
-                            <button className="h-11 w-full min-w-[160px] rounded-full bg-white px-6 text-sm font-bold text-black shadow-xl shadow-slate-900/10 transition hover:scale-105 hover:bg-slate-100 hover:shadow-2xl sm:h-12 sm:min-w-[180px] sm:px-8 sm:text-base sm:w-auto">
+                            <button className="h-10 w-full min-w-[140px] rounded-full bg-white px-5 text-sm font-bold text-black shadow-xl shadow-slate-900/10 transition hover:scale-105 hover:bg-slate-100 hover:shadow-2xl sm:h-12 sm:min-w-[180px] sm:px-8 sm:text-base sm:w-auto">
                                 {t.tryForFree}
                             </button>
                         </SignInButton>
                     </SignedOut>
                 </div>
+                
+                {/* Spacer to push content to top */}
+                <div className="flex-grow"></div>
             </section>
 
             <LandingFooter />
