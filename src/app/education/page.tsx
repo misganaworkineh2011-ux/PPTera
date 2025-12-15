@@ -86,11 +86,11 @@ export default function EducationPage() {
             </div>
 
             {/* Teachers */}
-            <div className="group relative overflow-hidden rounded-3xl border-2 border-purple-500 bg-white p-8 hover:shadow-2xl transition-all duration-300 scale-105">
-              <div className="absolute top-0 right-0 bg-purple-500 text-white text-xs font-bold px-4 py-1 rounded-bl-xl">
+            <div className="group relative overflow-hidden rounded-3xl border-2 border-[#06b6d4] bg-white p-8 hover:shadow-2xl transition-all duration-300 scale-105">
+              <div className="absolute top-0 right-0 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white text-xs font-bold px-4 py-1 rounded-bl-xl">
                 {t.free}
               </div>
-              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 group-hover:scale-110 transition-transform">
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] group-hover:scale-110 transition-transform">
                 <BookOpen className="h-8 w-8 text-white" />
               </div>
               <h3 className="mb-2 text-2xl font-bold text-slate-900">{t.forTeachers}</h3>
@@ -100,14 +100,14 @@ export default function EducationPage() {
               <ul className="space-y-3 mb-8">
                 {features.map((feature, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
-                    <CheckCircle2 className="h-4 w-4 text-purple-500" />
+                    <CheckCircle2 className="h-4 w-4 text-[#06b6d4]" />
                     {feature}
                   </li>
                 ))}
               </ul>
               <Link
                 href="/pricing"
-                className="block w-full text-center rounded-full bg-purple-500 py-3 font-semibold text-white hover:bg-purple-600 transition-colors"
+                className="block w-full text-center rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] py-3 font-semibold text-white hover:shadow-lg transition-all"
               >
                 {t.getStartedBtn}
               </Link>
@@ -115,10 +115,10 @@ export default function EducationPage() {
 
             {/* Schools */}
             <div className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 hover:shadow-2xl transition-all duration-300">
-              <div className="absolute top-0 right-0 bg-orange-500 text-white text-xs font-bold px-4 py-1 rounded-bl-xl">
+              <div className="absolute top-0 right-0 bg-[#06b6d4] text-white text-xs font-bold px-4 py-1 rounded-bl-xl">
                 {t.custom}
               </div>
-              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 group-hover:scale-110 transition-transform">
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] group-hover:scale-110 transition-transform">
                 <Users className="h-8 w-8 text-white" />
               </div>
               <h3 className="mb-2 text-2xl font-bold text-slate-900">{t.forSchools}</h3>
@@ -128,14 +128,14 @@ export default function EducationPage() {
               <ul className="space-y-3 mb-8">
                 {[...features, "Admin dashboard", "Usage analytics"].slice(0, 5).map((feature, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
-                    <CheckCircle2 className="h-4 w-4 text-orange-500" />
+                    <CheckCircle2 className="h-4 w-4 text-[#06b6d4]" />
                     {feature}
                   </li>
                 ))}
               </ul>
               <Link
                 href="/contact"
-                className="block w-full text-center rounded-full border-2 border-slate-200 py-3 font-semibold text-slate-900 hover:border-orange-500 hover:text-orange-500 transition-colors"
+                className="block w-full text-center rounded-full border-2 border-slate-200 py-3 font-semibold text-slate-900 hover:border-[#06b6d4] hover:text-[#06b6d4] transition-colors"
               >
                 {t.contactSales}
               </Link>
