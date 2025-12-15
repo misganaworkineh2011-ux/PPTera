@@ -7,14 +7,19 @@ import { type Metadata } from "next";
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://www.pptmaster.app'),
   title: {
-    default: "PPTMaster: AI Presentation Generator | Free PPT Maker",
-    template: "%s | PPTMaster"
+    default: "PPTMaster | Best AI PowerPoint Generator & Presentation Maker",
+    template: "%s | PPT Master"
   },
-  description: "Create stunning presentations with AI in seconds. Free AI-powered PPT maker that transforms your ideas into professional slides instantly.",
+  description: "PPTMaster is the best free AI-powered PowerPoint generator that helps you create stunning presentations and visuals effortlessly — no design or coding skills needed.",
   keywords: [
+    "PPTMaster",
     "AI presentation generator",
-    "PPT maker",
     "PowerPoint generator",
+    "AI PowerPoint",
+    "best PowerPoint generator",
+    "AI PowerPoint generator",
+    "free PowerPoint maker",
+    "PPT maker",
     "AI slide creator",
     "presentation maker",
     "AI PPT generator",
@@ -23,9 +28,10 @@ export const metadata: Metadata = {
     "presentation software",
     "AI document generator",
     "free presentation maker",
-    "PPTMaster",
     "create presentations online",
-    "AI powered slides"
+    "AI powered slides",
+    "PowerPoint AI",
+    "best AI PowerPoint"
   ],
   authors: [{ name: "PPTMaster" }],
   creator: "PPTMaster",
@@ -63,12 +69,12 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "/",
-    siteName: "PPTMaster",
-    title: "PPTMaster: AI Presentation Generator | Free PPT Maker",
-    description: "Create stunning presentations with AI in seconds. Transform your ideas into professional slides instantly with PPTMaster.",
+    siteName: "PPT Master",
+    title: "PPT Master: AI PowerPoint Generator | Best Free PowerPoint Maker",
+    description: "Create stunning PowerPoint presentations with AI in seconds. Transform your ideas into professional slides instantly with PPT Master, the best AI PowerPoint generator.",
     images: [
       {
-        url: "/og-image.png",
+        url: "/og-image.jpeg",
         width: 1200,
         height: 630,
         alt: "PPTMaster - AI Presentation Generator"
@@ -77,9 +83,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "PPTMaster: AI Presentation Generator",
-    description: "Create professional presentations with AI. Transform ideas into stunning slides instantly with PPTMaster.",
-    images: ["/og-image.png"],
+    title: "PPT Master: AI PowerPoint Generator",
+    description: "Create professional PowerPoint presentations with AI. Transform ideas into stunning slides instantly with PPT Master, the best AI PowerPoint generator.",
+    images: ["/og-image.jpeg"],
     site: "@pptmaster",
     creator: "@pptmaster",
   },
@@ -96,9 +102,10 @@ export default function RootLayout({
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "PPTMaster",
+    "name": "PPT Master",
+    "alternateName": "PPTMaster",
     "url": process.env.NEXT_PUBLIC_APP_URL || "https://www.pptmaster.app",
-    "description": "AI-powered presentation generator that creates professional slides, documents, and social media content instantly.",
+    "description": "PPT Master is the best AI-powered PowerPoint generator that creates professional presentations, slides, documents, and social media content instantly.",
     "potentialAction": {
       "@type": "SearchAction",
       "target": {
@@ -112,19 +119,22 @@ export default function RootLayout({
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": "PPTMaster",
+    "name": "PPT Master",
+    "alternateName": "PPTMaster",
     "url": process.env.NEXT_PUBLIC_APP_URL || "https://www.pptmaster.app",
     "logo": `${process.env.NEXT_PUBLIC_APP_URL || "https://www.pptmaster.app"}/logo.png`,
-    "description": "AI-powered presentation generator for creating professional presentations, documents, and social media content.",
+    "description": "PPT Master is the best AI-powered PowerPoint generator for creating professional presentations, documents, and social media content.",
     "sameAs": []
   };
 
   const softwareApplicationSchema = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    "name": "PPTMaster",
+    "name": "PPT Master",
+    "alternateName": "PPTMaster",
     "applicationCategory": "BusinessApplication",
     "operatingSystem": "Web",
+    "description": "PPTMaster is the best AI PowerPoint generator for creating professional presentations with artificial intelligence.",
     "offers": {
       "@type": "Offer",
       "price": "0",

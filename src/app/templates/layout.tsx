@@ -2,15 +2,15 @@ import { type Metadata } from "next";
 import { Breadcrumbs } from "~/components/Breadcrumbs";
 
 export const metadata: Metadata = {
-  title: "Templates - Professional Presentations",
-  description: "Browse professional presentation templates for business, marketing, education, and more. Start with a template and let AI customize it.",
-  keywords: ["templates", "presentation templates", "slide templates", "business templates", "professional designs", "ppt templates"],
+  title: "Templates - PPT Master PowerPoint Templates",
+  description: "Browse professional PowerPoint templates from PPT Master for business, marketing, education, and more. Start with a template and let the best AI PowerPoint generator customize it.",
+  keywords: ["templates", "presentation templates", "slide templates", "business templates", "professional designs", "ppt templates", "PPT Master", "PowerPoint templates", "AI PowerPoint", "best PowerPoint generator"],
   alternates: {
     canonical: "/templates",
   },
   openGraph: {
-    title: "PPTMaster Templates - Professional Presentation Designs",
-    description: "Browse professional presentation templates powered by AI.",
+    title: "PPT Master Templates - Professional PowerPoint Designs",
+    description: "Browse professional PowerPoint templates powered by PPT Master AI.",
     url: "/templates",
   },
 };

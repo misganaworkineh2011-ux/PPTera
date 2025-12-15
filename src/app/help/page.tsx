@@ -10,6 +10,62 @@ export default function HelpPage() {
   const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
 
+  // FAQ Schema for SEO
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How many presentations can I create?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Free users can create up to 5 presentations per month. Pro users get unlimited presentations. All presentations are saved permanently in your account."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use PPTMaster offline?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "PPTMaster requires an internet connection for AI generation and real-time collaboration. However, you can download presentations and work on them offline using PowerPoint or other presentation software."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my data secure?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. We use enterprise-grade encryption for all data in transit and at rest. Your presentations are private by default and only accessible to people you explicitly share them with. We never use your content to train our AI models."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I cancel my subscription anytime?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Absolutely. You can cancel your subscription at any time from your account settings. You'll retain access until the end of your billing period, and all your presentations remain accessible even after cancellation."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do you offer refunds?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "We offer a 30-day money-back guarantee for annual subscriptions. If you're not satisfied within the first 30 days, contact support for a full refund. Monthly subscriptions are non-refundable but can be cancelled anytime."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the AI work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Our AI uses advanced language models trained on millions of presentations to understand context, structure, and design principles. It analyzes your prompt, generates relevant content, and applies professional design templates automatically."
+        }
+      }
+    ]
+  };
+
   const gettingStartedArticles = [
     {
       title: "Creating Your First Presentation",
@@ -108,6 +164,10 @@ export default function HelpPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       <LandingNavbar />
 
       {/* Hero Section */}

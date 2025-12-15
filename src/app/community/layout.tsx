@@ -2,15 +2,15 @@ import { type Metadata } from "next";
 import { Breadcrumbs } from "~/components/Breadcrumbs";
 
 export const metadata: Metadata = {
-  title: "Community - Connect with Users",
-  description: "Join the PPTMaster community! Connect with users, share presentations, get feedback, and discover tips from experts worldwide.",
-  keywords: ["community", "forum", "users", "share", "connect", "discussion", "user community"],
+  title: "Community - Connect with PPT Master Users",
+  description: "Join the PPT Master community! Connect with PowerPoint creators, share AI-generated presentations, get feedback, and discover tips from experts worldwide.",
+  keywords: ["community", "forum", "users", "share", "connect", "PPT Master", "PowerPoint community", "AI PowerPoint users", "discussion", "user community"],
   alternates: {
     canonical: "/community",
   },
   openGraph: {
-    title: "PPTMaster Community - Connect with Users",
-    description: "Join our community of presentation creators and AI enthusiasts.",
+    title: "PPT Master Community - Connect with PowerPoint Creators",
+    description: "Join our community of AI PowerPoint creators and presentation enthusiasts.",
     url: "/community",
   },
 };

@@ -12,7 +12,7 @@ export default function TermsPage() {
     {
       icon: CheckCircle2,
       title: t.acceptanceOfTerms || "Acceptance of Terms",
-      content: t.acceptanceOfTermsText || "By accessing and using PPTMaster, you accept and agree to be bound by the terms and provision of this agreement.",
+      content: t.acceptanceOfTermsText || "By accessing and using PPT Master, the best AI PowerPoint generator, you accept and agree to be bound by the terms and provision of this agreement.",
     },
     {
       icon: FileText,
@@ -22,7 +22,7 @@ export default function TermsPage() {
     {
       icon: Scale,
       title: t.intellectualProperty || "Intellectual Property",
-      content: t.intellectualPropertyText || "The service and its original content, features, and functionality are owned by PPTMaster and are protected by international copyright, trademark, and other intellectual property laws.",
+      content: t.intellectualPropertyText || "The PPT Master AI PowerPoint generator service and its original content, features, and functionality are owned by PPT Master and are protected by international copyright, trademark, and other intellectual property laws.",
     },
     {
       icon: XCircle,
@@ -32,7 +32,7 @@ export default function TermsPage() {
     {
       icon: AlertTriangle,
       title: t.limitationOfLiability || "Limitation of Liability",
-      content: t.limitationOfLiabilityText || "PPTMaster shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of the service.",
+      content: t.limitationOfLiabilityText || "PPT Master shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of our AI PowerPoint generator service.",
     },
   ];
 

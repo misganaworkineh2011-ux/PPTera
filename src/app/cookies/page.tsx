@@ -70,7 +70,7 @@ export default function CookiesPage() {
           </p>
 
           <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed animate-fade-in-up [animation-delay:300ms]">
-            {t.cookiesIntro || "Learn about how we use cookies and how you can manage them."}
+            {t.cookiesIntro || "Learn about how PPT Master uses cookies on our AI PowerPoint generator platform and how you can manage them."}
           </p>
         </div>
       </section>

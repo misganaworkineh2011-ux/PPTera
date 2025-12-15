@@ -12,22 +12,22 @@ export const translations = {
     dashboard: "Dashboard",
     
     // Products Dropdown
-    aiPresentations: "AI Presentations",
-    aiPresentationsDesc: "Generate stunning slides",
-    templates: "Templates",
-    templatesDesc: "Professional designs",
+    aiPresentations: "AI PowerPoint Generator",
+    aiPresentationsDesc: "Generate stunning PowerPoint slides with AI",
+    templates: "PowerPoint Templates",
+    templatesDesc: "Professional PowerPoint designs",
     
     // Solutions Dropdown
     forBusiness: "For Business",
-    forBusinessDesc: "Enterprise solutions",
+    forBusinessDesc: "Enterprise PowerPoint solutions",
     forEducation: "For Education",
-    forEducationDesc: "Student & teacher plans",
+    forEducationDesc: "AI PowerPoint for students & teachers",
     
     // Hero
     heroTitle: "Design beautiful",
-    heroSubtitle: "presentations",
+    heroSubtitle: "PowerPoint presentations",
     heroSubtitle2: "with AI.",
-    heroDescription: "The smartest way to create professional decks. Just describe your idea, and PPTMaster generates the story, design, and slides for you.",
+    heroDescription: "The smartest way to create professional PowerPoint presentations. Just describe your idea, and PPT Master, the best AI PowerPoint generator, creates the story, design, and slides for you.",
     startForFree: "Start for free",
     seeHowItWorks: "See how it works",
     goToDashboard: "Go to Dashboard",
@@ -36,7 +36,7 @@ export const translations = {
     backToHome: "Back to Home",
     contactUs: "Contact Us",
     learnMore: "Learn More",
-    startCreating: "Start creating for free",
+    startCreating: "Start creating PowerPoint presentations for free",
     watchDemo: "Watch demo",
     
     // Landing Page Sections
@@ -58,11 +58,11 @@ export const translations = {
     exportFormats: "Export as PPT, PDF, PNG, or Google Slides",
     publishWebsite: "Publish as a website or social post",
     trackEngagement: "Track engagement metrics",
-    yourNextBigIdea: "Your next big idea is in good company.",
-    joinMillionUsers: "Join 50+ million users changing how the world communicates",
+    yourNextBigIdea: "Your next big PowerPoint idea is in good company.",
+    joinMillionUsers: "Join 50+ million users using PPT Master's AI PowerPoint generator to change how the world communicates",
     beta: "Beta",
     api: "API",
-    apiDescription: "Connect to PPTMaster programmatically. Automate creation, integrate with your tools, and scale your storytelling.",
+    apiDescription: "Connect to PPT Master's AI PowerPoint generator programmatically. Automate PowerPoint creation, integrate with your tools, and scale your storytelling.",
     
     // Footer
     productFooter: "Product",
@@ -75,7 +75,7 @@ export const translations = {
     helpCenter: "Help Center",
     community: "Community",
     communityHeroTitle: "Join the",
-    communityHeroDesc: "Connect with creators, share your work, learn from experts, and be part of the presentation revolution.",
+    communityHeroDesc: "Connect with PowerPoint creators, share your AI-generated presentations, learn from experts, and be part of the PPT Master revolution.",
     communityForums: "Community Forums",
     createPost: "Create Post",
     createNewPost: "Create New Post",
@@ -114,7 +114,7 @@ export const translations = {
     guidelineHelpTitle: "Help Others",
     guidelineHelpDesc: "Share your knowledge and help fellow members. Answer questions and provide constructive feedback.",
     guidelineTopicTitle: "Stay On Topic",
-    guidelineTopicDesc: "Keep discussions relevant to presentations, design, and PPTMaster features.",
+    guidelineTopicDesc: "Keep discussions relevant to PowerPoint presentations, design, and PPT Master AI features.",
     guidelineReportTitle: "Report Issues",
     guidelineReportDesc: "If you see inappropriate content or behavior, report it to moderators immediately.",
     developerDocs: "Developer docs",
@@ -125,8 +125,8 @@ export const translations = {
     howGoodIdeas: "How good ideas get into the universe.",
     
     // Templates Page
-    professionalTemplates: "Professional Templates",
-    templatesSubtitle: "Choose from our collection of professionally designed templates. Customize them to match your brand and message.",
+    professionalTemplates: "Professional PowerPoint Templates",
+    templatesSubtitle: "Choose from PPT Master's collection of professionally designed PowerPoint templates. Customize them with our AI PowerPoint generator to match your brand and message.",
     useTemplate: "Use Template",
     businessPitch: "Business Pitch",
     marketingPlan: "Marketing Plan",
@@ -137,7 +137,7 @@ export const translations = {
     
     // Prompt Guide Page
     promptGuideTitle: "Prompt Guide",
-    promptGuideSubtitle: "Learn how to write effective prompts to get the best results from PPTMaster AI.",
+    promptGuideSubtitle: "Learn how to write effective prompts to get the best results from PPT Master, the best AI PowerPoint generator.",
     beSpecific: "Be Specific",
     beSpecificDesc: "The more specific your prompt, the better the results. Instead of \"Create a presentation about marketing,\" try:",
     beSpecificExample: "Create a 10-slide presentation about digital marketing strategies for small businesses, including social media, email marketing, and SEO best practices",
@@ -151,50 +151,50 @@ export const translations = {
     readyToCreateDesc: "Start using these tips to create amazing presentations",
     
     // Insights Page
-    insightsTitle: "Insights & Resources",
-    insightsSubtitle: "Expert tips, industry trends, and best practices for creating impactful presentations.",
+    insightsTitle: "PowerPoint Insights & Resources",
+    insightsSubtitle: "Expert tips, industry trends, and best practices for creating impactful PowerPoint presentations with PPT Master's AI generator.",
     presentationsCreated: "Presentations Created",
     activeUsers: "Active Users",
     timeSaved: "Time Saved",
     readMore: "Read More →",
-    futureOfAI: "The Future of AI in Presentations",
-    futureOfAIExcerpt: "Discover how artificial intelligence is transforming the way we create and deliver presentations.",
-    designTrends: "10 Design Trends for 2025",
-    designTrendsExcerpt: "Stay ahead of the curve with these emerging design trends that will dominate presentations this year.",
-    maximizingEngagement: "Maximizing Engagement in Virtual Meetings",
-    maximizingEngagementExcerpt: "Learn proven strategies to keep your audience engaged during remote presentations.",
+    futureOfAI: "The Future of AI PowerPoint Generators",
+    futureOfAIExcerpt: "Discover how PPT Master's AI PowerPoint generator is transforming the way we create and deliver PowerPoint presentations.",
+    designTrends: "10 PowerPoint Design Trends for 2025",
+    designTrendsExcerpt: "Stay ahead of the curve with these emerging PowerPoint design trends that will dominate presentations this year.",
+    maximizingEngagement: "Maximizing Engagement with AI PowerPoint",
+    maximizingEngagementExcerpt: "Learn proven strategies to keep your audience engaged during remote PowerPoint presentations using PPT Master.",
     aiTechnology: "AI & Technology",
     design: "Design",
     bestPractices: "Best Practices",
     
     // Features
-    featuresTitle: "Everything you need to tell your story.",
-    featuresSubtitle: "Powerful tools wrapped in a stunning interface. Designed for speed, built for impact.",
-    presentations: "Presentations",
-    presentationsDesc: "Stunning slides with consistent branding in minutes. Export to PPT, Google Slides, and more.",
-    documents: "Documents",
-    documentsDesc: "Show-stopping proposals, PDFs, visual aids and more, lightning-fast on any topic.",
+    featuresTitle: "Everything you need to create PowerPoint presentations.",
+    featuresSubtitle: "PPT Master's AI PowerPoint generator: Powerful tools wrapped in a stunning interface. Designed for speed, built for impact.",
+    presentations: "AI PowerPoint Presentations",
+    presentationsDesc: "Stunning PowerPoint slides with consistent branding in minutes. Export to PPT, Google Slides, and more with our AI generator.",
+    documents: "AI Documents",
+    documentsDesc: "Show-stopping proposals, PDFs, visual aids and more, lightning-fast on any topic with PPT Master.",
     socialMedia: "Social Media",
     socialMediaDesc: "Gorgeous graphics and convincing copy. Share directly to social platforms.",
     websites: "Websites",
     websitesDesc: "Business sites, landing pages, portfolios and more. Faster than you can blink. No coding required.",
     
     // Testimonials
-    testimonialsTitle: "Join 50+ million users changing how the world communicates",
+    testimonialsTitle: "Join 50+ million users using PPT Master, the best AI PowerPoint generator",
     
     // Footer CTA
-    footerCtaTitle: "Ready to transform your presentations?",
-    footerCtaSubtitle: "Join thousands of teams using PPTMaster to create stunning decks in minutes.",
+    footerCtaTitle: "Ready to transform your PowerPoint presentations?",
+    footerCtaSubtitle: "Join thousands of teams using PPT Master's AI PowerPoint generator to create stunning presentations in minutes.",
     tryForFree: "Try for free",
     
     // How It Works Section
-    howItWorks: "How it works",
-    fromIdeaToPresentation: "From idea to presentation in minutes",
-    step1Title: "Describe your idea",
-    step1Desc: "Tell us what you need. A pitch deck, a report, a proposal — just type it out in plain language.",
-    step2Title: "AI does the heavy lifting",
-    step2Desc: "Our AI generates slides, layouts, and content. Smart design choices, zero effort from you.",
-    step3Title: "Refine and present",
+    howItWorks: "How PPT Master's AI PowerPoint Generator Works",
+    fromIdeaToPresentation: "From idea to PowerPoint presentation in minutes",
+    step1Title: "Describe your PowerPoint idea",
+    step1Desc: "Tell PPT Master what you need. A pitch deck, a report, a proposal — just type it out in plain language.",
+    step2Title: "AI PowerPoint generator does the heavy lifting",
+    step2Desc: "Our best AI PowerPoint generator creates slides, layouts, and content. Smart design choices, zero effort from you.",
+    step3Title: "Refine and present your PowerPoint",
     step3Desc: "Make it yours with easy edits. Export to PowerPoint, PDF, or share a live link instantly.",
     tryItFree: "Try it free",
     
@@ -202,26 +202,26 @@ export const translations = {
     trustedByCompanies: "Trusted by teams at leading companies",
     
     // Newsletter Section
-    stayUpdated: "Stay Updated",
-    newsletterDesc: "Get the latest tips, insights, and updates delivered to your inbox.",
+    stayUpdated: "Stay Updated with PPT Master",
+    newsletterDesc: "Get the latest PowerPoint tips, AI generator insights, and updates delivered to your inbox.",
     subscribe: "Subscribe",
     
     // About Page
-    aboutTitle: "About PPTMaster",
-    aboutSubtitle: "We're on a mission to make professional presentations accessible to everyone through the power of AI.",
+    aboutTitle: "About PPT Master",
+    aboutSubtitle: "PPT Master is on a mission to make professional PowerPoint presentations accessible to everyone through the best AI PowerPoint generator.",
     ourMission: "Our Mission",
-    ourMissionDesc: "Empower everyone to create stunning presentations with AI technology.",
+    ourMissionDesc: "Empower everyone to create stunning PowerPoint presentations with PPT Master's AI PowerPoint generator technology.",
     ourTeam: "Our Team",
     ourTeamDesc: "A diverse group of designers, engineers, and AI experts passionate about innovation.",
     ourVision: "Our Vision",
-    ourVisionDesc: "A world where anyone can communicate their ideas beautifully and effectively.",
+    ourVisionDesc: "A world where anyone can communicate their ideas beautifully and effectively through PowerPoint presentations created with PPT Master.",
     joinOurJourney: "Join Our Journey",
     joinOurJourneyDesc: "We're always looking for talented people to join our team.",
     viewOpenPositions: "View Open Positions",
     
     // Pricing Page
-    pricingTitle: "Simple pricing for everyone.",
-    pricingSubtitle: "Start for free, upgrade when you love it.",
+    pricingTitle: "Simple pricing for PPT Master's AI PowerPoint generator.",
+    pricingSubtitle: "Start creating PowerPoint presentations for free, upgrade when you love it.",
     monthly: "Monthly",
     yearly: "Yearly",
     savePercent: "(Save ~20%)",
@@ -237,7 +237,7 @@ export const translations = {
     
     // Help Page
     helpTitle: "Help Center",
-    helpSubtitle: "Find answers to common questions and learn how to get the most out of PPTMaster.",
+    helpSubtitle: "Find answers to common questions and learn how to get the most out of PPT Master's AI PowerPoint generator.",
     documentation: "Documentation",
     documentationDesc: "Comprehensive guides and tutorials",
     readDocs: "Read Docs →",
@@ -266,19 +266,19 @@ export const translations = {
     sendMessage: "Send Message",
     
     // Education Page
-    educationTitle: "PPTMaster for Education",
-    educationSubtitle: "Empower students and educators with AI-powered presentation tools. Special pricing for educational institutions.",
+    educationTitle: "PPT Master for Education - AI PowerPoint Generator",
+    educationSubtitle: "Empower students and educators with PPT Master's AI PowerPoint generator. Special pricing for educational institutions.",
     forStudents: "For Students",
-    forStudentsDesc: "Create impressive presentations for assignments and projects",
+    forStudentsDesc: "Create impressive PowerPoint presentations for assignments and projects with AI",
     fiftyPercentOff: "50% OFF",
     forTeachers: "For Teachers",
-    forTeachersDesc: "Create engaging lesson materials and educational content",
+    forTeachersDesc: "Create engaging PowerPoint lesson materials and educational content with AI",
     free: "FREE",
     forSchools: "For Schools",
-    forSchoolsDesc: "Institution-wide licenses with admin controls",
+    forSchoolsDesc: "Institution-wide AI PowerPoint generator licenses with admin controls",
     custom: "Custom",
-    readyToStart: "Ready to get started?",
-    readyToStartDesc: "Contact us to learn more about our education pricing",
+    readyToStart: "Ready to get started with PPT Master?",
+    readyToStartDesc: "Contact us to learn more about our AI PowerPoint generator education pricing",
     contactSales: "Contact Sales",
     
     // Team Page
@@ -290,18 +290,18 @@ export const translations = {
     // Inspiration Page
     inspirationGallery: "Inspiration Gallery",
     getInspired: "Get Inspired",
-    getInspiredSubtitle: "Explore stunning presentations created with PPTMaster. Find inspiration for your next project.",
+    getInspiredSubtitle: "Explore stunning PowerPoint presentations created with PPT Master's AI generator. Find inspiration for your next project.",
     
     // Careers Page
-    careersTitle: "Join Our Team",
-    careersSubtitle: "Help us build the future of presentations. We're looking for talented individuals who are passionate about AI and design.",
+    careersTitle: "Join PPT Master's Team",
+    careersSubtitle: "Help us build the best AI PowerPoint generator. We're looking for talented individuals who are passionate about AI and PowerPoint design.",
     applyNow: "Apply Now",
     
     // Privacy Page
     privacyTitle: "Privacy Policy",
     lastUpdated: "Last updated: January 2025",
     introduction: "Introduction",
-    introductionText: "At PPTMaster, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our service.",
+    introductionText: "At PPT Master, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our AI PowerPoint generator service.",
     infoWeCollect: "Information We Collect",
     infoWeCollectText: "We collect information that you provide directly to us, including when you create an account, use our services, or communicate with us.",
     howWeUse: "How We Use Your Information",
@@ -311,9 +311,9 @@ export const translations = {
     // Terms Page
     termsTitle: "Terms of Service",
     agreementToTerms: "Agreement to Terms",
-    agreementToTermsText: "By accessing or using PPTMaster, you agree to be bound by these Terms of Service and all applicable laws and regulations.",
+    agreementToTermsText: "By accessing or using PPT Master's AI PowerPoint generator, you agree to be bound by these Terms of Service and all applicable laws and regulations.",
     useLicense: "Use License",
-    useLicenseText: "Permission is granted to temporarily use PPTMaster for personal or commercial purposes. This is the grant of a license, not a transfer of title.",
+    useLicenseText: "Permission is granted to temporarily use PPT Master's AI PowerPoint generator for personal or commercial purposes. This is the grant of a license, not a transfer of title.",
     userResponsibilities: "User Responsibilities",
     userResponsibilitiesText: "You are responsible for maintaining the confidentiality of your account and for all activities that occur under your account.",
     
@@ -335,10 +335,10 @@ export const translations = {
     aboutUs: "About Us",
     aboutHeroTitle: "We're building the future of",
     aboutHeroHighlight: "presentations",
-    aboutHeroDesc: "PPTMaster is on a mission to empower everyone to create beautiful, professional presentations with the power of AI. No design skills required.",
+    aboutHeroDesc: "PPT Master is on a mission to empower everyone to create beautiful, professional PowerPoint presentations with the best AI PowerPoint generator. No design skills required.",
     missionTitle: "Making design accessible to everyone",
-    missionDesc1: "We believe that great ideas shouldn't be held back by design limitations. That's why we're building AI-powered tools that help anyone create stunning presentations in minutes.",
-    missionDesc2: "From students to Fortune 500 companies, over 50 million people trust PPTMaster to bring their ideas to life.",
+    missionDesc1: "We believe that great ideas shouldn't be held back by design limitations. That's why PPT Master is building the best AI PowerPoint generator that helps anyone create stunning PowerPoint presentations in minutes.",
+    missionDesc2: "From students to Fortune 500 companies, over 50 million people trust PPT Master's AI PowerPoint generator to bring their ideas to life.",
     ourValues: "Our Values",
     valuesDesc: "The principles that guide everything we do",
     valueUserFirst: "User First",
@@ -494,15 +494,15 @@ export const translations = {
     
     // Terms Page - Additional Keys
     acceptanceOfTerms: "Acceptance of Terms",
-    acceptanceOfTermsText: "By accessing and using PPTMaster, you accept and agree to be bound by the terms and provision of this agreement.",
+    acceptanceOfTermsText: "By accessing and using PPT Master, the best AI PowerPoint generator, you accept and agree to be bound by the terms and provision of this agreement.",
     useOfService: "Use of Service",
     useOfServiceText: "You agree to use the service only for lawful purposes and in accordance with these Terms. You are responsible for all activity under your account.",
     intellectualProperty: "Intellectual Property",
-    intellectualPropertyText: "The service and its original content, features, and functionality are owned by PPTMaster and are protected by international copyright, trademark, and other intellectual property laws.",
+    intellectualPropertyText: "The PPT Master AI PowerPoint generator service and its original content, features, and functionality are owned by PPT Master and are protected by international copyright, trademark, and other intellectual property laws.",
     termination: "Termination",
     terminationText: "We may terminate or suspend your account and access to the service immediately, without prior notice, for any reason, including breach of these Terms.",
     limitationOfLiability: "Limitation of Liability",
-    limitationOfLiabilityText: "PPTMaster shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of the service.",
+    limitationOfLiabilityText: "PPT Master shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of our AI PowerPoint generator service.",
     termsIntro: "Please read these terms carefully before using our service.",
     changestoTerms: "Changes to Terms",
     changesToTermsText: "We reserve the right to modify these terms at any time. We will notify users of any material changes via email or through the service.",

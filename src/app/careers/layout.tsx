@@ -2,15 +2,15 @@ import { type Metadata } from "next";
 import { Breadcrumbs } from "~/components/Breadcrumbs";
 
 export const metadata: Metadata = {
-  title: "Careers - Join PPTMaster Team",
-  description: "Join PPTMaster and shape the future of AI presentations. Explore open positions and join our innovative team.",
-  keywords: ["careers", "jobs", "hiring", "work at pptmaster", "job openings", "join our team"],
+  title: "Careers - Join PPT Master Team",
+  description: "Join PPT Master and shape the future of AI PowerPoint generation. Explore open positions at the best AI presentation company.",
+  keywords: ["careers", "jobs", "hiring", "work at pptmaster", "PPT Master", "job openings", "join our team", "AI PowerPoint jobs"],
   alternates: {
     canonical: "/careers",
   },
   openGraph: {
-    title: "Careers at PPTMaster - Join Our Team",
-    description: "Join PPTMaster and help shape the future of AI-powered presentations.",
+    title: "Careers at PPT Master - Join Our Team",
+    description: "Join PPT Master and help shape the future of AI-powered PowerPoint generation.",
     url: "/careers",
   },
 };

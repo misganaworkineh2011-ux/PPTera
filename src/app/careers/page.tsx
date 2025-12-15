@@ -124,7 +124,7 @@ export default function CareersPage() {
           </h1>
 
           <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed animate-fade-in-up [animation-delay:200ms]">
-            {t.careersHeroDesc || "Join a team of passionate innovators building AI-powered tools that empower millions of people worldwide."}
+            {t.careersHeroDesc || "Join PPT Master, a team of passionate innovators building the best AI PowerPoint generator that empowers millions of people worldwide to create stunning presentations."}
           </p>
 
           <div className="mt-10 animate-fade-in-up [animation-delay:300ms]">

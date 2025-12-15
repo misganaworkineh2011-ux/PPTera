@@ -110,8 +110,57 @@ export default function PricingPage() {
     { credits: 250, price: "$39.99", popular: false },
   ];
 
+  // Product Schema for SEO
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "PPTMaster AI Presentation Generator",
+    "description": "AI-powered presentation generator that creates professional slides instantly",
+    "brand": {
+      "@type": "Brand",
+      "name": "PPTMaster"
+    },
+    "offers": [
+      {
+        "@type": "Offer",
+        "name": "Free Plan",
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock",
+        "url": "https://www.pptmaster.app/pricing"
+      },
+      {
+        "@type": "Offer",
+        "name": "Pro Plan - Monthly",
+        "price": "19.99",
+        "priceCurrency": "USD",
+        "priceValidUntil": "2026-12-31",
+        "availability": "https://schema.org/InStock",
+        "url": "https://www.pptmaster.app/pricing"
+      },
+      {
+        "@type": "Offer",
+        "name": "Pro Plan - Yearly",
+        "price": "199.99",
+        "priceCurrency": "USD",
+        "priceValidUntil": "2026-12-31",
+        "availability": "https://schema.org/InStock",
+        "url": "https://www.pptmaster.app/pricing"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "reviewCount": "1250"
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900 overflow-x-hidden">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
       <LandingNavbar />
 
       {/* Hero Section */}

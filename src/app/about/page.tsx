@@ -34,7 +34,7 @@ export default function AboutPage() {
           </h1>
 
           <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed animate-fade-in-up [animation-delay:200ms]">
-            {t.aboutHeroDesc || "PPTMaster is on a mission to empower everyone to create beautiful, professional presentations with the power of AI. No design skills required."}
+            {t.aboutHeroDesc || "PPT Master is on a mission to empower everyone to create beautiful, professional PowerPoint presentations with the power of AI. As the best AI PowerPoint generator, we make it easy—no design skills required."}
           </p>
         </div>
       </section>
@@ -54,10 +54,10 @@ export default function AboutPage() {
                 {t.missionTitle || "Making design accessible to everyone"}
               </h2>
               <p className="text-lg text-slate-600 leading-relaxed mb-6">
-                {t.missionDesc1 || "We believe that great ideas shouldn't be held back by design limitations. That's why we're building AI-powered tools that help anyone create stunning presentations in minutes."}
+                {t.missionDesc1 || "We believe that great ideas shouldn't be held back by design limitations. That's why PPT Master is building the best AI PowerPoint generator that helps anyone create stunning presentations in minutes."}
               </p>
               <p className="text-lg text-slate-600 leading-relaxed">
-                {t.missionDesc2 || "From students to Fortune 500 companies, over 50 million people trust PPTMaster to bring their ideas to life."}
+                {t.missionDesc2 || "From students to Fortune 500 companies, over 50 million people trust PPT Master to bring their PowerPoint ideas to life with our AI-powered presentation maker."}
               </p>
             </div>
 

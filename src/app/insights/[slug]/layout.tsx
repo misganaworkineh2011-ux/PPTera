@@ -19,9 +19,9 @@ export async function generateMetadata({
       };
     }
 
-    const title = `${post.title} | PPTMaster Insights`;
+    const title = `${post.title} | PPT Master Insights`;
     const description = post.excerpt;
-    const imageUrl = post.coverImage || "https://www.pptmaster.app/og-image.png";
+    const imageUrl = post.coverImage || "https://www.pptmaster.app/og-image.jpeg";
     const url = `https://www.pptmaster.app/insights/${params.slug}`;
 
     return {
@@ -31,7 +31,7 @@ export async function generateMetadata({
         title,
         description,
         url,
-        siteName: "PPTMaster",
+        siteName: "PPT Master",
         images: [
           {
             url: imageUrl,
@@ -58,7 +58,10 @@ export async function generateMetadata({
         ...post.tags,
         post.category,
         "presentation tips",
-        "PPTMaster",
+        "PPT Master",
+        "PowerPoint tips",
+        "AI PowerPoint",
+        "best PowerPoint generator",
         "AI presentations",
       ],
       alternates: {
@@ -68,8 +71,8 @@ export async function generateMetadata({
   } catch (error) {
     console.error("Error generating metadata:", error);
     return {
-      title: "Insights | PPTMaster",
-      description: "Learn from experts about creating better presentations.",
+      title: "Insights | PPT Master",
+      description: "Learn from experts about creating better PowerPoint presentations.",
     };
   }
 }

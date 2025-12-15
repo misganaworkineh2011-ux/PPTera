@@ -19,9 +19,9 @@ export async function generateMetadata({
       };
     }
 
-    const title = `${item.title} | PPTMaster Inspiration`;
+    const title = `${item.title} | PPT Master Inspiration`;
     const description = item.description || `Explore this ${item.category} presentation design for inspiration. ${item.views} views, ${item.likes} likes.`;
-    const imageUrl = item.imageUrl || "https://www.pptmaster.app/og-image.png";
+    const imageUrl = item.imageUrl || "https://www.pptmaster.app/og-image.jpeg";
     const url = `https://www.pptmaster.app/inspiration/${params.id}`;
 
     return {
@@ -31,7 +31,7 @@ export async function generateMetadata({
         title,
         description,
         url,
-        siteName: "PPTMaster",
+        siteName: "PPT Master",
         images: [
           {
             url: imageUrl,
@@ -59,7 +59,10 @@ export async function generateMetadata({
         "inspiration",
         item.category,
         ...item.tags,
-        "PPTMaster",
+        "PPT Master",
+        "PowerPoint design",
+        "AI PowerPoint",
+        "best PowerPoint generator",
         "AI presentations",
       ],
       alternates: {
@@ -69,8 +72,8 @@ export async function generateMetadata({
   } catch (error) {
     console.error("Error generating metadata:", error);
     return {
-      title: "Inspiration | PPTMaster",
-      description: "Explore amazing presentation designs for inspiration.",
+      title: "Inspiration | PPT Master",
+      description: "Explore amazing PowerPoint designs for inspiration.",
     };
   }
 }
