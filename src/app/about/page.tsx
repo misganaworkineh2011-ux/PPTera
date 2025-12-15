@@ -3,8 +3,7 @@
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
 import { useLanguage } from "~/contexts/LanguageContext";
-import { Sparkles, Users, Target, Zap, Globe, Heart } from "lucide-react";
-import Image from "next/image";
+import { Sparkles, Users, Target, Zap, Heart } from "lucide-react";
 
 export default function AboutPage() {
   const { t } = useLanguage();
@@ -45,9 +44,9 @@ export default function AboutPage() {
         <div className="mx-auto max-w-7xl">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div>
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-blue-100 px-4 py-2">
-                <Target className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-semibold text-blue-600 uppercase tracking-wide">
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a]/10 to-[#06b6d4]/10 px-4 py-2">
+                <Target className="h-4 w-4 text-[#06b6d4]" />
+                <span className="text-sm font-semibold text-[#06b6d4] uppercase tracking-wide">
                   {t.ourMission || "Our Mission"}
                 </span>
               </div>
@@ -88,8 +87,8 @@ export default function AboutPage() {
           <div className="grid md:grid-cols-3 gap-8">
             {/* Value 1 */}
             <div className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 hover:shadow-2xl transition-all duration-300">
-              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-100 to-blue-50 group-hover:scale-110 transition-transform">
-                <Users className="h-8 w-8 text-blue-600" />
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] group-hover:scale-110 transition-transform">
+                <Users className="h-8 w-8 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-4">
                 {t.valueUserFirst || "User First"}
@@ -101,8 +100,8 @@ export default function AboutPage() {
 
             {/* Value 2 */}
             <div className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 hover:shadow-2xl transition-all duration-300">
-              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-100 to-purple-50 group-hover:scale-110 transition-transform">
-                <Zap className="h-8 w-8 text-purple-600" />
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] group-hover:scale-110 transition-transform">
+                <Zap className="h-8 w-8 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-4">
                 {t.valueInnovation || "Innovation"}
@@ -114,8 +113,8 @@ export default function AboutPage() {
 
             {/* Value 3 */}
             <div className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 hover:shadow-2xl transition-all duration-300">
-              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-green-100 to-green-50 group-hover:scale-110 transition-transform">
-                <Heart className="h-8 w-8 text-green-600" />
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] group-hover:scale-110 transition-transform">
+                <Heart className="h-8 w-8 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-4">
                 {t.valueQuality || "Quality"}
@@ -133,11 +132,11 @@ export default function AboutPage() {
         <div className="mx-auto max-w-7xl">
           <div className="grid md:grid-cols-4 gap-8 text-center text-white">
             <div className="animate-fade-in-up">
-              <div className="text-5xl md:text-6xl font-black mb-2">50M+</div>
+              <div className="text-5xl md:text-6xl font-black mb-2">100K+</div>
               <div className="text-lg text-white/80">{t.statUsers || "Users Worldwide"}</div>
             </div>
             <div className="animate-fade-in-up [animation-delay:100ms]">
-              <div className="text-5xl md:text-6xl font-black mb-2">1B+</div>
+              <div className="text-5xl md:text-6xl font-black mb-2">1M+</div>
               <div className="text-lg text-white/80">{t.statPresentations || "Presentations Created"}</div>
             </div>
             <div className="animate-fade-in-up [animation-delay:200ms]">
@@ -164,41 +163,21 @@ export default function AboutPage() {
           <div className="space-y-12">
             <div className="flex gap-6 items-start">
               <div className="flex-shrink-0 w-24 text-right">
-                <div className="text-2xl font-bold text-[#06b6d4]">2020</div>
+                <div className="text-2xl font-bold text-[#06b6d4]">{t.story2025Year || "2025"}</div>
               </div>
               <div className="flex-1 border-l-2 border-slate-200 pl-6 pb-8">
-                <h3 className="text-xl font-bold text-slate-900 mb-2">{t.story2020Title || "The Beginning"}</h3>
-                <p className="text-slate-600">{t.story2020Desc || "Founded with a vision to democratize design and make professional presentations accessible to everyone."}</p>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">{t.story2025Title || "The Beginning"}</h3>
+                <p className="text-slate-600">{t.story2025Desc || "Founded with a vision to democratize design and make professional presentations accessible to everyone through the power of AI."}</p>
               </div>
             </div>
 
             <div className="flex gap-6 items-start">
               <div className="flex-shrink-0 w-24 text-right">
-                <div className="text-2xl font-bold text-[#06b6d4]">2022</div>
-              </div>
-              <div className="flex-1 border-l-2 border-slate-200 pl-6 pb-8">
-                <h3 className="text-xl font-bold text-slate-900 mb-2">{t.story2022Title || "AI Revolution"}</h3>
-                <p className="text-slate-600">{t.story2022Desc || "Launched our AI-powered presentation generator, transforming how people create content."}</p>
-              </div>
-            </div>
-
-            <div className="flex gap-6 items-start">
-              <div className="flex-shrink-0 w-24 text-right">
-                <div className="text-2xl font-bold text-[#06b6d4]">2024</div>
-              </div>
-              <div className="flex-1 border-l-2 border-slate-200 pl-6 pb-8">
-                <h3 className="text-xl font-bold text-slate-900 mb-2">{t.story2024Title || "Global Impact"}</h3>
-                <p className="text-slate-600">{t.story2024Desc || "Reached 50 million users across 150+ countries, becoming the world's leading AI presentation platform."}</p>
-              </div>
-            </div>
-
-            <div className="flex gap-6 items-start">
-              <div className="flex-shrink-0 w-24 text-right">
-                <div className="text-2xl font-bold text-[#06b6d4]">2025</div>
+                <div className="text-2xl font-bold text-[#06b6d4]">{t.story2026Year || "2026"}</div>
               </div>
               <div className="flex-1 pl-6">
-                <h3 className="text-xl font-bold text-slate-900 mb-2">{t.story2025Title || "The Future"}</h3>
-                <p className="text-slate-600">{t.story2025Desc || "Continuing to innovate and push the boundaries of what's possible with AI-powered creativity."}</p>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">{t.story2026Title || "The Future"}</h3>
+                <p className="text-slate-600">{t.story2026Desc || "Continuing to innovate and push the boundaries of what's possible with AI-powered creativity."}</p>
               </div>
             </div>
           </div>

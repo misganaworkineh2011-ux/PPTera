@@ -3,7 +3,7 @@
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
 import { useLanguage } from "~/contexts/LanguageContext";
-import { HelpCircle, Book, Video, Search, Zap, Users, FileText, Settings, Download, Shield } from "lucide-react";
+import { HelpCircle, Video, Search, Zap, Settings } from "lucide-react";
 import { useState } from "react";
 
 export default function HelpPage() {
@@ -148,84 +148,165 @@ export default function HelpPage() {
       </section>
 
       {/* Getting Started */}
-      <section className="relative px-6 pb-16">
-        <div className="mx-auto max-w-5xl">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center">
-              <Zap className="h-6 w-6 text-white" />
-            </div>
-            <h2 className="text-3xl font-bold text-slate-900">{t.gettingStarted || "Getting Started"}</h2>
-          </div>
-          <div className="space-y-6">
-            {gettingStartedArticles.map((article, index) => (
-              <div key={index} className="rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-lg transition-all">
-                <h3 className="text-xl font-bold text-slate-900 mb-3">{article.title}</h3>
-                <p className="text-slate-600 leading-relaxed">{article.content}</p>
+      {(!searchQuery || gettingStartedArticles.some(article => 
+        article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        article.content.toLowerCase().includes(searchQuery.toLowerCase())
+      )) && (
+        <section className="relative px-6 pb-16">
+          <div className="mx-auto max-w-5xl">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center">
+                <Zap className="h-6 w-6 text-white" />
               </div>
-            ))}
+              <h2 className="text-3xl font-bold text-slate-900">{t.gettingStarted || "Getting Started"}</h2>
+            </div>
+            <div className="space-y-6">
+              {gettingStartedArticles
+                .filter(article => 
+                  !searchQuery || 
+                  article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                  article.content.toLowerCase().includes(searchQuery.toLowerCase())
+                )
+                .map((article, index) => (
+                  <div key={index} className="rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-lg transition-all">
+                    <h3 className="text-xl font-bold text-slate-900 mb-3">{article.title}</h3>
+                    <p className="text-slate-600 leading-relaxed">{article.content}</p>
+                  </div>
+                ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Features & Tutorials */}
-      <section className="relative px-6 pb-16 bg-gradient-to-br from-slate-50 to-white">
-        <div className="mx-auto max-w-5xl">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-              <Video className="h-6 w-6 text-white" />
-            </div>
-            <h2 className="text-3xl font-bold text-slate-900">Features & Tutorials</h2>
-          </div>
-          <div className="grid md:grid-cols-2 gap-6">
-            {featuresArticles.map((article, index) => (
-              <div key={index} className="rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-lg transition-all">
-                <h3 className="text-lg font-bold text-slate-900 mb-3">{article.title}</h3>
-                <p className="text-slate-600 leading-relaxed text-sm">{article.content}</p>
+      {(!searchQuery || featuresArticles.some(article => 
+        article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        article.content.toLowerCase().includes(searchQuery.toLowerCase())
+      )) && (
+        <section className="relative px-6 pb-16 bg-gradient-to-br from-slate-50 to-white">
+          <div className="mx-auto max-w-5xl">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center">
+                <Video className="h-6 w-6 text-white" />
               </div>
-            ))}
+              <h2 className="text-3xl font-bold text-slate-900">Features & Tutorials</h2>
+            </div>
+            <div className="grid md:grid-cols-2 gap-6">
+              {featuresArticles
+                .filter(article => 
+                  !searchQuery || 
+                  article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                  article.content.toLowerCase().includes(searchQuery.toLowerCase())
+                )
+                .map((article, index) => (
+                  <div key={index} className="rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-lg transition-all">
+                    <h3 className="text-lg font-bold text-slate-900 mb-3">{article.title}</h3>
+                    <p className="text-slate-600 leading-relaxed text-sm">{article.content}</p>
+                  </div>
+                ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Troubleshooting */}
-      <section className="relative px-6 pb-16">
-        <div className="mx-auto max-w-5xl">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
-              <Settings className="h-6 w-6 text-white" />
-            </div>
-            <h2 className="text-3xl font-bold text-slate-900">{t.troubleshooting || "Troubleshooting"}</h2>
-          </div>
-          <div className="space-y-6">
-            {troubleshootingArticles.map((article, index) => (
-              <div key={index} className="rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-lg transition-all">
-                <h3 className="text-xl font-bold text-slate-900 mb-3">{article.title}</h3>
-                <p className="text-slate-600 leading-relaxed">{article.content}</p>
+      {(!searchQuery || troubleshootingArticles.some(article => 
+        article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        article.content.toLowerCase().includes(searchQuery.toLowerCase())
+      )) && (
+        <section className="relative px-6 pb-16">
+          <div className="mx-auto max-w-5xl">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center">
+                <Settings className="h-6 w-6 text-white" />
               </div>
-            ))}
+              <h2 className="text-3xl font-bold text-slate-900">{t.troubleshooting || "Troubleshooting"}</h2>
+            </div>
+            <div className="space-y-6">
+              {troubleshootingArticles
+                .filter(article => 
+                  !searchQuery || 
+                  article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                  article.content.toLowerCase().includes(searchQuery.toLowerCase())
+                )
+                .map((article, index) => (
+                  <div key={index} className="rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-lg transition-all">
+                    <h3 className="text-xl font-bold text-slate-900 mb-3">{article.title}</h3>
+                    <p className="text-slate-600 leading-relaxed">{article.content}</p>
+                  </div>
+                ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* FAQ */}
-      <section className="relative px-6 pb-24 bg-gradient-to-br from-slate-50 to-white">
-        <div className="mx-auto max-w-5xl">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
-              <HelpCircle className="h-6 w-6 text-white" />
-            </div>
-            <h2 className="text-3xl font-bold text-slate-900">{t.faqTitle || "Frequently Asked Questions"}</h2>
-          </div>
-          <div className="space-y-4">
-            {faqArticles.map((article, index) => (
-              <div key={index} className="rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-lg transition-all">
-                <h3 className="text-lg font-bold text-slate-900 mb-2">{article.question}</h3>
-                <p className="text-slate-600 leading-relaxed">{article.answer}</p>
+      {(!searchQuery || faqArticles.some(article => 
+        article.question.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        article.answer.toLowerCase().includes(searchQuery.toLowerCase())
+      )) && (
+        <section className="relative px-6 pb-24 bg-gradient-to-br from-slate-50 to-white">
+          <div className="mx-auto max-w-5xl">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center">
+                <HelpCircle className="h-6 w-6 text-white" />
               </div>
-            ))}
+              <h2 className="text-3xl font-bold text-slate-900">{t.faqTitle || "Frequently Asked Questions"}</h2>
+            </div>
+            <div className="space-y-4">
+              {faqArticles
+                .filter(article => 
+                  !searchQuery || 
+                  article.question.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                  article.answer.toLowerCase().includes(searchQuery.toLowerCase())
+                )
+                .map((article, index) => (
+                  <div key={index} className="rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-lg transition-all">
+                    <h3 className="text-lg font-bold text-slate-900 mb-2">{article.question}</h3>
+                    <p className="text-slate-600 leading-relaxed">{article.answer}</p>
+                  </div>
+                ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
+
+      {/* No Results Message */}
+      {searchQuery && 
+       !gettingStartedArticles.some(article => 
+         article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+         article.content.toLowerCase().includes(searchQuery.toLowerCase())
+       ) &&
+       !featuresArticles.some(article => 
+         article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+         article.content.toLowerCase().includes(searchQuery.toLowerCase())
+       ) &&
+       !troubleshootingArticles.some(article => 
+         article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+         article.content.toLowerCase().includes(searchQuery.toLowerCase())
+       ) &&
+       !faqArticles.some(article => 
+         article.question.toLowerCase().includes(searchQuery.toLowerCase()) || 
+         article.answer.toLowerCase().includes(searchQuery.toLowerCase())
+       ) && (
+        <section className="relative px-6 pb-24">
+          <div className="mx-auto max-w-5xl text-center">
+            <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-12">
+              <Search className="h-16 w-16 text-slate-400 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">No results found</h3>
+              <p className="text-slate-600 mb-6">
+                We couldn't find any articles matching "{searchQuery}". Try different keywords or browse all articles above.
+              </p>
+              <button
+                onClick={() => setSearchQuery("")}
+                className="px-6 py-3 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold hover:shadow-xl transition-all"
+              >
+                Clear Search
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
 
       <LandingFooter />
     </div>
