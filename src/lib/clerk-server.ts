@@ -8,14 +8,47 @@ import { redirect } from "next/navigation";
  */
 export async function getAuthUser() {
   const { userId } = await auth();
-  
+
   if (!userId) {
     return null;
   }
 
-  const user = await db.user.findUnique({
+  // Try to find user by clerkId; if not found, fall back to creating from Clerk
+  let user = await db.user.findUnique({
     where: { clerkId: userId },
   });
+
+  if (!user) {
+    const clerkUser = await currentUser();
+    if (clerkUser) {
+      try {
+        const email = clerkUser.emailAddresses[0]?.emailAddress || "";
+        const name =
+          `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim() ||
+          clerkUser.username ||
+          "User";
+
+        user = await db.user.create({
+          data: {
+            clerkId: userId,
+            email: email,
+            name: name,
+            emailVerified:
+              clerkUser.emailAddresses[0]?.verification?.status === "verified",
+            image: clerkUser.imageUrl,
+            credits: 3,
+            subscriptionPlan: "Free",
+          },
+        });
+      } catch (error) {
+        // If user already exists or creation fails, just return null and let caller handle redirect
+        console.error("[getAuthUser] Failed to ensure user:", error);
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }
 
   return user;
 }

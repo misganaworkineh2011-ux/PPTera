@@ -1,8 +1,13 @@
 import { requireAuth } from "~/lib/clerk-server";
-import CreatePresentationForm from "./CreatePresentationForm";
+import CreatePresentationClient from "./CreatePresentationClient";
 
-export default async function CreatePresentationPage() {
+interface PageProps {
+  searchParams: Promise<{ mode?: string }>;
+}
+
+export default async function CreatePresentationPage({ searchParams }: PageProps) {
   const user = await requireAuth();
+  const { mode } = await searchParams;
 
   // Determine max slides based on subscription plan
   const getMaxSlides = (plan: string | null | undefined): number => {
@@ -16,5 +21,11 @@ export default async function CreatePresentationPage() {
 
   const maxSlides = getMaxSlides(user?.subscriptionPlan);
 
-  return <CreatePresentationForm maxSlides={maxSlides} subscriptionPlan={user?.subscriptionPlan} />;
+  return (
+    <CreatePresentationClient
+      maxSlides={maxSlides}
+      subscriptionPlan={user?.subscriptionPlan}
+      mode={mode || "ai"}
+    />
+  );
 }

@@ -1,8 +1,8 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { env } from "~/env";
 import { db } from "~/server/db";
+import { getAuthUser } from "~/lib/clerk-server";
 
 const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
 
@@ -36,23 +36,11 @@ const validateSlideCount = (
 export async function POST(req: Request) {
   try {
     // 1. Check authentication
-    const { userId } = await auth();
-    if (!userId) {
+    const user = await getAuthUser();
+    if (!user) {
       return NextResponse.json(
         { error: "Unauthorized", message: "Please sign in to continue" },
         { status: 401 }
-      );
-    }
-
-    // 2. Get user from database
-    const user = await db.user.findUnique({
-      where: { clerkId: userId },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found", message: "User account not found. Please try signing out and back in." },
-        { status: 404 }
       );
     }
 
@@ -160,15 +148,18 @@ CRITICAL REQUIREMENTS:
    - "title": A clear, descriptive heading that creates a strong narrative flow
    - "bulletPoints": An array of 3-6 bullet points (strings), each being:
      * CRITICAL: Bullet points must be SUBSTANTIAL, DETAILED, and SELF-CONTAINED - they should fully explain the concept within themselves, not be brief statements that feel like they need expansion
+     * Slide-bullet style (not prose): one idea per bullet; short, skimmable cues that can be spoken over; avoid paragraph-like sentences. Bullets should create quick visual hierarchy (primary vs. supporting), be readable in 3–5 seconds, and stay modular (can be revealed or rearranged). Good: "Urban HIV prevalence is higher than rural areas". Bad: "Urban areas tend to show significantly higher HIV prevalence due to migration, population density, and access to services."
+     * Count variety: Use a mix of counts (3-6). Favor 4-6 bullets when advising, teaching, or giving frameworks; 3 is acceptable only when truly sufficient.
      * Length: Make bullet points a mix of medium and longer when needed - they should be comprehensive enough to stand alone as complete explanations, not dry or brief
      * Each bullet should be a complete, standalone explanation that fully develops the idea with context, implications, causes, effects, or details within the bullet point itself
      * Be SPECIFIC and CONCRETE: Mention actual items, steps, facts, ingredients, tools, methods, examples, numbers, or specific details - NOT vague statements like "Understand the role of...", "Importance of...", or "Explore the significance of..."
+     * If offering advice or “how to” guidance, mention scientifically proven or evidence-backed methods relevant to the domain; when using frameworks or acronyms (e.g., SMART), briefly spell out what each term means in context.
 
 3. NARRATIVE STRUCTURE:
    - FIRST (intro):
      * No generic titles ("Introduction", "Overview").
-     * Use a topic-fitting hook: question, bold claim, or vivid phrase.
-     * Make the audience curious right away.
+     * Title must be attention-grabbing (e.g., sharp question like why/how/what-if, hard truth, surprising fact, or vivid hook) that tees up the main point.
+     * Bullets act as the “entrance” to the main thread—each should pull the audience into the core idea.
    - MIDDLE (body):
      * Adapt flow to the topic type (educational, problem-solving, strategic, creative, analytical, how-to, etc.).
      * Pick the structure that fits best.
@@ -176,13 +167,14 @@ CRITICAL REQUIREMENTS:
    - LAST (conclusion):
      * No generic titles ("Conclusion", "Summary").
      * Title must feel native to the topic.
-     * Summarize key takeaways and give a clear CTA/next steps.
+     * Summarize key takeaways and give a clear CTA/next steps. Provide 4-6 bullets here to land the message with substance.
      * End with a standout last bullet that directly engages the audience—could be a question, playful nudge, confident command, poetic twist, vivid metaphor, surprising contrast, reflective prompt, or aspirational invite to act—anything that makes them pause and connect with the whole deck.
    
 4. LANGUAGE & TONE:
    - Language must be ${languageDescription}
    - Tone must be ${toneDescription}
    - Content should work for any field (business, education, technology, marketing, science, etc.)
+   - Titles on every slide must be clear, precise, and catchy—address the main point directly with crisp wording (questions, bold claims, vivid phrases). Keep the outline expert-level yet easily skimmable.
    - Write as a master/expert in the specific topic area - demonstrate professional expertise while keeping content clear and accessible, like a well-crafted PowerPoint presentation
 
 Return ONLY a valid JSON object with this exact structure:
