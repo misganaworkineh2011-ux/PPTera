@@ -61,11 +61,6 @@ function LandingPageContent({ t }: { t: any }) {
 
                         {/* Left Column - Text Content */}
                         <div className="flex flex-col items-start text-left animate-fade-in-up">
-                            {/* Badge */}
-                            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-3 py-1 backdrop-blur-sm animate-fade-in [animation-delay:100ms] sm:mb-6 md:mb-8">
-                                <span className="flex h-2 w-2 rounded-full bg-green-500"></span>
-                                <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">AI Generation V2.0</span>
-                            </div>
 
                             {/* Headline */}
                             <h1 className="relative z-10 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl animate-fade-in-up [animation-delay:200ms]">
@@ -177,157 +172,58 @@ function LandingPageContent({ t }: { t: any }) {
                 <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white via-white/80 to-transparent z-10 pointer-events-none"></div>
             </section>
 
-            {/* Feature Grid Section - Hero Style */}
-            <section className="relative z-10 pt-16 pb-16 px-4 overflow-hidden sm:pt-24 sm:pb-24 sm:px-6 md:pt-32 md:pb-32">
+            {/* How It Works Section */}
+            <section className="relative z-10 py-20 px-4 sm:py-28 sm:px-6 md:py-32 overflow-hidden">
                 {/* Background Image */}
                 <div className="absolute inset-0 z-0">
                     <img src="/bg2.webp" alt="" className="w-full h-full object-cover" />
-                    {/* Overlay for readability */}
-                    <div className="absolute inset-0 bg-white/70"></div>
+                    <div className="absolute inset-0 bg-blue-100/80"></div>
                 </div>
-                {/* Top gradient blend with hero section */}
-                <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none sm:h-24 md:h-32"></div>
-
-                <div className="mx-auto max-w-7xl relative z-10">
-                    {/* Header - Hero Style */}
-                    <div className="text-center mb-10 sm:mb-12 md:mb-16 lg:mb-20">
-                        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-3 py-1 backdrop-blur-sm sm:mb-6">
-                            <span className="flex h-2 w-2 rounded-full bg-blue-500"></span>
-                            <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">{t.products}</span>
-                        </div>
-                        <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 mb-4 sm:text-4xl md:text-5xl lg:text-6xl sm:mb-6">
-                            {t.featuresTitle}
+                {/* Top gradient blend */}
+                <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none"></div>
+                <div className="mx-auto max-w-6xl relative z-10">
+                    {/* Header */}
+                    <div className="text-center mb-16 sm:mb-20">
+                        <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
+                            {t.fromIdeaToPresentation}
                         </h2>
-                        <p className="text-base text-slate-500 max-w-2xl mx-auto sm:text-lg px-4">
-                            {t.featuresSubtitle}
-                        </p>
                     </div>
 
-                    {/* Feature Grid - Clean Cards with Hero Aesthetic */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
 
-                        {/* Card 1: Presentations */}
-                        <div className="group relative overflow-hidden rounded-[20px] bg-white shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] border border-slate-200 hover:shadow-[0_25px_60px_-12px_rgba(0,0,0,0.15)] transition-shadow duration-500">
-                            <div className="p-8">
-                                <div className="flex items-start justify-between mb-6">
-                                    <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1">
-                                        <span className="flex h-2 w-2 rounded-full bg-blue-500"></span>
-                                        <span className="text-xs font-semibold text-blue-600">{t.presentations}</span>
-                                    </div>
-                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/25 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <h3 className="text-2xl font-bold text-slate-900 mb-3">{t.presentations}</h3>
-                                <p className="text-slate-500 leading-relaxed mb-6">{t.presentationsDesc}</p>
-                                <SignInButton mode="modal">
-                                    <button className="flex items-center gap-2 text-blue-600 font-semibold text-sm hover:gap-3 transition-all cursor-pointer">
-                                        <span>Learn more</span>
-                                        <ArrowUpRight className="w-4 h-4" />
-                                    </button>
-                                </SignInButton>
-                            </div>
-                        </div>
-
-                        {/* Card 2: Documents */}
-                        <div className="group relative overflow-hidden rounded-[20px] bg-white shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] border border-slate-200 hover:shadow-[0_25px_60px_-12px_rgba(0,0,0,0.15)] transition-shadow duration-500">
-                            <div className="p-8">
-                                <div className="flex items-start justify-between mb-6">
-                                    <div className="inline-flex items-center gap-2 rounded-full border border-purple-200 bg-purple-50 px-3 py-1">
-                                        <span className="flex h-2 w-2 rounded-full bg-purple-500"></span>
-                                        <span className="text-xs font-semibold text-purple-600">{t.documents}</span>
-                                    </div>
-                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-fuchsia-600 shadow-lg shadow-purple-500/25 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <h3 className="text-2xl font-bold text-slate-900 mb-3">{t.documents}</h3>
-                                <p className="text-slate-500 leading-relaxed mb-6">{t.documentsDesc}</p>
-                                <SignInButton mode="modal">
-                                    <button className="flex items-center gap-2 text-purple-600 font-semibold text-sm hover:gap-3 transition-all cursor-pointer">
-                                        <span>Learn more</span>
-                                        <ArrowUpRight className="w-4 h-4" />
-                                    </button>
-                                </SignInButton>
-                            </div>
-                        </div>
-
-                        {/* Card 3: Social Media */}
-                        <div className="group relative overflow-hidden rounded-[20px] bg-white shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] border border-slate-200 hover:shadow-[0_25px_60px_-12px_rgba(0,0,0,0.15)] transition-shadow duration-500">
-                            <div className="p-8">
-                                <div className="flex items-start justify-between mb-6">
-                                    <div className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1">
-                                        <span className="flex h-2 w-2 rounded-full bg-rose-500"></span>
-                                        <span className="text-xs font-semibold text-rose-600">{t.socialMedia}</span>
-                                    </div>
-                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 shadow-lg shadow-rose-500/25 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <h3 className="text-2xl font-bold text-slate-900 mb-3">{t.socialMedia}</h3>
-                                <p className="text-slate-500 leading-relaxed mb-6">{t.socialMediaDesc}</p>
-                                <SignInButton mode="modal">
-                                    <button className="flex items-center gap-2 text-rose-600 font-semibold text-sm hover:gap-3 transition-all cursor-pointer">
-                                        <span>Learn more</span>
-                                        <ArrowUpRight className="w-4 h-4" />
-                                    </button>
-                                </SignInButton>
-                            </div>
-                        </div>
-
-                        {/* Card 4: Websites */}
-                        <div className="group relative overflow-hidden rounded-[20px] bg-white shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] border border-slate-200 hover:shadow-[0_25px_60px_-12px_rgba(0,0,0,0.15)] transition-shadow duration-500">
-                            <div className="p-8">
-                                <div className="flex items-start justify-between mb-6">
-                                    <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1">
-                                        <span className="flex h-2 w-2 rounded-full bg-emerald-500"></span>
-                                        <span className="text-xs font-semibold text-emerald-600">{t.websites}</span>
-                                    </div>
-                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/25 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                                        <Globe className="w-6 h-6 text-white" />
-                                    </div>
-                                </div>
-                                <h3 className="text-2xl font-bold text-slate-900 mb-3">{t.websites}</h3>
-                                <p className="text-slate-500 leading-relaxed mb-6">{t.websitesDesc}</p>
-                                <SignInButton mode="modal">
-                                    <button className="flex items-center gap-2 text-emerald-600 font-semibold text-sm hover:gap-3 transition-all cursor-pointer">
-                                        <span>Learn more</span>
-                                        <ArrowUpRight className="w-4 h-4" />
-                                    </button>
-                                </SignInButton>
-                            </div>
-                        </div>
-
+                    {/* CTA */}
+                    <div className="mt-16 text-center">
+                        <SignedOut>
+                            <SignInButton mode="modal">
+                                <button className="inline-flex items-center gap-2 h-12 rounded-full bg-black px-8 text-base font-bold text-white shadow-lg transition hover:scale-105 hover:bg-slate-800">
+                                    <Sparkles className="w-5 h-5" />
+                                    {t.tryItFree}
+                                </button>
+                            </SignInButton>
+                        </SignedOut>
+                        <SignedIn>
+                            <LoadingLink href="/dashboard" className="inline-flex items-center gap-2 h-12 rounded-full bg-black px-8 text-base font-bold text-white shadow-lg transition hover:scale-105 hover:bg-slate-800">
+                                <Sparkles className="w-5 h-5" />
+                                {t.goToDashboard}
+                            </LoadingLink>
+                        </SignedIn>
                     </div>
+                </div>
+            </section>
 
-                    {/* API Banner - Hero Style */}
-                    <div className="mt-10 relative overflow-hidden rounded-[20px] bg-white shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] border border-slate-200">
-                        <div className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
-                            <div className="flex items-center gap-4">
-                                <div className="inline-flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-3 py-1">
-                                    <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-                                    <span className="text-xs font-semibold text-green-600">{t.beta}</span>
-                                </div>
-                                <h3 className="text-lg font-bold text-slate-900">{t.api}</h3>
-                                <p className="text-slate-500 text-sm hidden md:block border-l border-slate-200 pl-4">
-                                    {t.apiDescription}
-                                </p>
-                            </div>
-                            <button className="flex items-center gap-2 rounded-full bg-black px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-slate-900/10 transition hover:scale-105 hover:bg-slate-800">
-                                <Wand2 className="h-4 w-4" />
-                                <span>Explore API</span>
-                                <ArrowUpRight className="h-4 w-4" />
-                            </button>
-                        </div>
+            {/* Trusted By Section */}
+            <section className="relative z-10 py-12 sm:py-16 md:py-20 bg-white">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6">
+                    <p className="text-center text-sm font-medium text-slate-400 uppercase tracking-wider mb-8 sm:mb-10">
+                        {t.trustedByCompanies}
+                    </p>
+                    <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12 md:gap-16">
+                        <img src="/companyLogo/adobe.png" alt="Adobe" className="h-8 sm:h-10 object-contain brightness-0 opacity-70" />
+                        <img src="/companyLogo/amazon.png" alt="Amazon" className="h-8 sm:h-10 object-contain brightness-0 opacity-70" />
+                        <img src="/companyLogo/stanford.png" alt="Stanford" className="h-8 sm:h-10 object-contain brightness-0 opacity-70" />
+                        <img src="/companyLogo/vercel.png" alt="Vercel" className="h-8 sm:h-10 object-contain brightness-0 opacity-70" />
+                        <img src="/companyLogo/zoom.png" alt="Zoom" className="h-8 sm:h-10 object-contain brightness-0 opacity-70" />
+                        <img src="/companyLogo/latimes.png" alt="LA Times" className="h-8 sm:h-10 object-contain brightness-0 opacity-70" />
                     </div>
-
                 </div>
             </section>
 

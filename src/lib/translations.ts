@@ -144,6 +144,25 @@ export const translations = {
     footerCtaSubtitle: "Join thousands of teams using PPTMaster to create stunning decks in minutes.",
     tryForFree: "Try for free",
     
+    // How It Works Section
+    howItWorks: "How it works",
+    fromIdeaToPresentation: "From idea to presentation in minutes",
+    step1Title: "Describe your idea",
+    step1Desc: "Tell us what you need. A pitch deck, a report, a proposal — just type it out in plain language.",
+    step2Title: "AI does the heavy lifting",
+    step2Desc: "Our AI generates slides, layouts, and content. Smart design choices, zero effort from you.",
+    step3Title: "Refine and present",
+    step3Desc: "Make it yours with easy edits. Export to PowerPoint, PDF, or share a live link instantly.",
+    tryItFree: "Try it free",
+    
+    // Trusted By Section
+    trustedByCompanies: "Trusted by teams at leading companies",
+    
+    // Newsletter Section
+    stayUpdated: "Stay Updated",
+    newsletterDesc: "Get the latest tips, insights, and updates delivered to your inbox.",
+    subscribe: "Subscribe",
+    
     // About Page
     aboutTitle: "About PPTMaster",
     aboutSubtitle: "We're on a mission to make professional presentations accessible to everyone through the power of AI.",
@@ -597,6 +616,25 @@ export const translations = {
     footerCtaTitle: "¿Listo para transformar tus presentaciones?",
     footerCtaSubtitle: "Únete a miles de equipos usando PPTMaster para crear presentaciones impresionantes en minutos.",
     tryForFree: "Prueba gratis",
+    
+    // How It Works Section
+    howItWorks: "Cómo funciona",
+    fromIdeaToPresentation: "De idea a presentación en minutos",
+    step1Title: "Describe tu idea",
+    step1Desc: "Dinos qué necesitas. Un pitch deck, un informe, una propuesta — solo escríbelo en lenguaje simple.",
+    step2Title: "La IA hace el trabajo pesado",
+    step2Desc: "Nuestra IA genera diapositivas, diseños y contenido. Decisiones de diseño inteligentes, cero esfuerzo de tu parte.",
+    step3Title: "Refina y presenta",
+    step3Desc: "Hazlo tuyo con ediciones fáciles. Exporta a PowerPoint, PDF o comparte un enlace en vivo al instante.",
+    tryItFree: "Pruébalo gratis",
+    
+    // Trusted By Section
+    trustedByCompanies: "Confiado por equipos en empresas líderes",
+    
+    // Newsletter Section
+    stayUpdated: "Mantente Actualizado",
+    newsletterDesc: "Recibe los últimos consejos, ideas y actualizaciones en tu bandeja de entrada.",
+    subscribe: "Suscribirse",
     aboutTitle: "Acerca de PPTMaster",
     aboutSubtitle: "Estamos en una misión para hacer las presentaciones profesionales accesibles para todos a través del poder de la IA.",
     ourMission: "Nuestra Misión",
@@ -840,6 +878,25 @@ export const translations = {
     footerCtaTitle: "Prêt à transformer vos présentations ?",
     footerCtaSubtitle: "Rejoignez des milliers d'équipes utilisant PPTMaster pour créer des supports époustouflants en quelques minutes.",
     tryForFree: "Essayer gratuitement",
+    
+    // How It Works Section
+    howItWorks: "Comment ça marche",
+    fromIdeaToPresentation: "De l'idée à la présentation en quelques minutes",
+    step1Title: "Décrivez votre idée",
+    step1Desc: "Dites-nous ce dont vous avez besoin. Un pitch deck, un rapport, une proposition — écrivez-le simplement.",
+    step2Title: "L'IA fait le gros du travail",
+    step2Desc: "Notre IA génère des diapositives, des mises en page et du contenu. Des choix de design intelligents, zéro effort de votre part.",
+    step3Title: "Affinez et présentez",
+    step3Desc: "Personnalisez avec des modifications faciles. Exportez vers PowerPoint, PDF ou partagez un lien en direct instantanément.",
+    tryItFree: "Essayer gratuitement",
+    
+    // Trusted By Section
+    trustedByCompanies: "Approuvé par des équipes d'entreprises leaders",
+    
+    // Newsletter Section
+    stayUpdated: "Restez Informé",
+    newsletterDesc: "Recevez les derniers conseils, idées et mises à jour dans votre boîte mail.",
+    subscribe: "S'abonner",
     
     // About Page
     aboutTitle: "À propos de PPTMaster",
@@ -1298,6 +1355,25 @@ de: {
     footerCtaSubtitle: "Schließen Sie sich Tausenden von Teams an, die PPTMaster nutzen, um in Minuten atemberaubende Decks zu erstellen.",
     tryForFree: "Kostenlos ausprobieren",
     
+    // How It Works Section
+    howItWorks: "So funktioniert's",
+    fromIdeaToPresentation: "Von der Idee zur Präsentation in Minuten",
+    step1Title: "Beschreiben Sie Ihre Idee",
+    step1Desc: "Sagen Sie uns, was Sie brauchen. Ein Pitch Deck, ein Bericht, ein Vorschlag — schreiben Sie es einfach auf.",
+    step2Title: "KI erledigt die schwere Arbeit",
+    step2Desc: "Unsere KI generiert Folien, Layouts und Inhalte. Intelligente Designentscheidungen, null Aufwand für Sie.",
+    step3Title: "Verfeinern und präsentieren",
+    step3Desc: "Machen Sie es zu Ihrem mit einfachen Bearbeitungen. Exportieren Sie nach PowerPoint, PDF oder teilen Sie sofort einen Live-Link.",
+    tryItFree: "Kostenlos testen",
+    
+    // Trusted By Section
+    trustedByCompanies: "Vertraut von Teams führender Unternehmen",
+    
+    // Newsletter Section
+    stayUpdated: "Bleiben Sie Informiert",
+    newsletterDesc: "Erhalten Sie die neuesten Tipps, Einblicke und Updates direkt in Ihren Posteingang.",
+    subscribe: "Abonnieren",
+    
     // About Page
     aboutTitle: "Über PPTMaster",
     aboutSubtitle: "Wir haben die Mission, professionelle Präsentationen durch die Kraft der KI für jeden zugänglich zu machen.",
@@ -1754,6 +1830,25 @@ de: {
     footerCtaTitle: "准备好改变您的演示文稿了吗？",
     footerCtaSubtitle: "加入成千上万个使用 PPTMaster 的团队，在几分钟内创建令人惊叹的演示文档。",
     tryForFree: "免费试用",
+    
+    // How It Works Section
+    howItWorks: "工作原理",
+    fromIdeaToPresentation: "从想法到演示文稿，只需几分钟",
+    step1Title: "描述您的想法",
+    step1Desc: "告诉我们您需要什么。商业计划书、报告、提案——用简单的语言写出来。",
+    step2Title: "AI完成繁重工作",
+    step2Desc: "我们的AI生成幻灯片、布局和内容。智能设计选择，您无需费力。",
+    step3Title: "完善并展示",
+    step3Desc: "通过简单编辑使其成为您的作品。导出到PowerPoint、PDF或即时分享实时链接。",
+    tryItFree: "免费试用",
+    
+    // Trusted By Section
+    trustedByCompanies: "受到领先企业团队的信赖",
+    
+    // Newsletter Section
+    stayUpdated: "保持更新",
+    newsletterDesc: "将最新的技巧、见解和更新发送到您的收件箱。",
+    subscribe: "订阅",
     
     // About Page
     aboutTitle: "关于 PPTMaster",
@@ -2213,6 +2308,25 @@ pt: {
     footerCtaSubtitle: "Junte-se a milhares de equipes usando PPTMaster para criar decks incríveis em minutos.",
     tryForFree: "Experimente grátis",
     
+    // How It Works Section
+    howItWorks: "Como funciona",
+    fromIdeaToPresentation: "Da ideia à apresentação em minutos",
+    step1Title: "Descreva sua ideia",
+    step1Desc: "Diga-nos o que você precisa. Um pitch deck, um relatório, uma proposta — apenas escreva em linguagem simples.",
+    step2Title: "A IA faz o trabalho pesado",
+    step2Desc: "Nossa IA gera slides, layouts e conteúdo. Escolhas de design inteligentes, zero esforço da sua parte.",
+    step3Title: "Refine e apresente",
+    step3Desc: "Faça do seu jeito com edições fáceis. Exporte para PowerPoint, PDF ou compartilhe um link ao vivo instantaneamente.",
+    tryItFree: "Experimente grátis",
+    
+    // Trusted By Section
+    trustedByCompanies: "Confiado por equipes de empresas líderes",
+    
+    // Newsletter Section
+    stayUpdated: "Fique Atualizado",
+    newsletterDesc: "Receba as últimas dicas, insights e atualizações na sua caixa de entrada.",
+    subscribe: "Inscrever-se",
+    
     // About Page
     aboutTitle: "Sobre o PPTMaster",
     aboutSubtitle: "Temos a missão de tornar apresentações profissionais acessíveis a todos através do poder da IA.",
@@ -2670,6 +2784,25 @@ it: {
     footerCtaTitle: "Pronto a trasformare le tue presentazioni?",
     footerCtaSubtitle: "Unisciti a migliaia di team che usano PPTMaster per creare deck stupendi in pochi minuti.",
     tryForFree: "Prova gratis",
+    
+    // How It Works Section
+    howItWorks: "Come funziona",
+    fromIdeaToPresentation: "Dall'idea alla presentazione in pochi minuti",
+    step1Title: "Descrivi la tua idea",
+    step1Desc: "Dicci di cosa hai bisogno. Un pitch deck, un report, una proposta — scrivilo semplicemente.",
+    step2Title: "L'IA fa il lavoro pesante",
+    step2Desc: "La nostra IA genera slide, layout e contenuti. Scelte di design intelligenti, zero sforzo da parte tua.",
+    step3Title: "Perfeziona e presenta",
+    step3Desc: "Rendilo tuo con modifiche facili. Esporta in PowerPoint, PDF o condividi un link live istantaneamente.",
+    tryItFree: "Prova gratis",
+    
+    // Trusted By Section
+    trustedByCompanies: "Scelto da team di aziende leader",
+    
+    // Newsletter Section
+    stayUpdated: "Resta Aggiornato",
+    newsletterDesc: "Ricevi gli ultimi consigli, approfondimenti e aggiornamenti nella tua casella di posta.",
+    subscribe: "Iscriviti",
     
     // About Page
     aboutTitle: "Su PPTMaster",
@@ -3130,6 +3263,25 @@ ja: {
     footerCtaSubtitle: "数千のチームがPPTMasterを使用して、数分で素晴らしい資料を作成しています。",
     tryForFree: "無料で試す",
     
+    // How It Works Section
+    howItWorks: "使い方",
+    fromIdeaToPresentation: "アイデアからプレゼンテーションまで数分で",
+    step1Title: "アイデアを説明する",
+    step1Desc: "必要なものを教えてください。ピッチデッキ、レポート、提案書 — シンプルな言葉で書くだけです。",
+    step2Title: "AIが重労働を担当",
+    step2Desc: "AIがスライド、レイアウト、コンテンツを生成します。スマートなデザイン選択、あなたの労力はゼロ。",
+    step3Title: "調整して発表",
+    step3Desc: "簡単な編集で自分のものに。PowerPoint、PDFにエクスポート、またはライブリンクを即座に共有。",
+    tryItFree: "無料で試す",
+    
+    // Trusted By Section
+    trustedByCompanies: "一流企業のチームに信頼されています",
+    
+    // Newsletter Section
+    stayUpdated: "最新情報を入手",
+    newsletterDesc: "最新のヒント、インサイト、アップデートをメールでお届けします。",
+    subscribe: "購読する",
+    
     // About Page
     aboutTitle: "PPTMasterについて",
     aboutSubtitle: "私たちは、AIの力を通じて誰もがプロフェッショナルなプレゼンテーションを作成できるようにすることを使命としています。",
@@ -3588,6 +3740,25 @@ ko: {
     footerCtaTitle: "프레젠테이션을 변화시킬 준비가 되셨나요?",
     footerCtaSubtitle: "PPTMaster를 사용하여 몇 분 만에 멋진 덱을 만드는 수천 개의 팀에 합류하세요.",
     tryForFree: "무료로 체험하기",
+    
+    // How It Works Section
+    howItWorks: "작동 방식",
+    fromIdeaToPresentation: "아이디어에서 프레젠테이션까지 몇 분 만에",
+    step1Title: "아이디어를 설명하세요",
+    step1Desc: "필요한 것을 알려주세요. 피치 덱, 보고서, 제안서 — 간단한 언어로 작성하세요.",
+    step2Title: "AI가 힘든 일을 합니다",
+    step2Desc: "AI가 슬라이드, 레이아웃, 콘텐츠를 생성합니다. 스마트한 디자인 선택, 당신의 노력은 제로.",
+    step3Title: "다듬고 발표하세요",
+    step3Desc: "쉬운 편집으로 나만의 것으로 만드세요. PowerPoint, PDF로 내보내거나 라이브 링크를 즉시 공유하세요.",
+    tryItFree: "무료로 체험하기",
+    
+    // Trusted By Section
+    trustedByCompanies: "선도 기업의 팀들이 신뢰합니다",
+    
+    // Newsletter Section
+    stayUpdated: "최신 정보 받기",
+    newsletterDesc: "최신 팁, 인사이트, 업데이트를 이메일로 받아보세요.",
+    subscribe: "구독하기",
     
     // About Page
     aboutTitle: "PPTMaster 소개",
@@ -4048,6 +4219,25 @@ ar: {
     footerCtaSubtitle: "انضم لآلاف الفرق التي تستخدم PPTMaster لإنشاء عروض مذهلة في دقائق.",
     tryForFree: "جرب مجاناً",
     
+    // How It Works Section
+    howItWorks: "كيف يعمل",
+    fromIdeaToPresentation: "من الفكرة إلى العرض التقديمي في دقائق",
+    step1Title: "صف فكرتك",
+    step1Desc: "أخبرنا بما تحتاجه. عرض تقديمي، تقرير، اقتراح — فقط اكتبه بلغة بسيطة.",
+    step2Title: "الذكاء الاصطناعي يقوم بالعمل الشاق",
+    step2Desc: "يقوم الذكاء الاصطناعي بإنشاء الشرائح والتخطيطات والمحتوى. خيارات تصميم ذكية، بدون أي جهد منك.",
+    step3Title: "حسّن وقدّم",
+    step3Desc: "اجعله خاصاً بك مع تعديلات سهلة. صدّر إلى PowerPoint أو PDF أو شارك رابطاً مباشراً فوراً.",
+    tryItFree: "جرب مجاناً",
+    
+    // Trusted By Section
+    trustedByCompanies: "موثوق به من قبل فرق في شركات رائدة",
+    
+    // Newsletter Section
+    stayUpdated: "ابق على اطلاع",
+    newsletterDesc: "احصل على أحدث النصائح والرؤى والتحديثات في بريدك الإلكتروني.",
+    subscribe: "اشترك",
+    
     // About Page
     aboutTitle: "عن PPTMaster",
     aboutSubtitle: "نحن في مهمة لجعل العروض التقديمية الاحترافية متاحة للجميع من خلال قوة الذكاء الاصطناعي.",
@@ -4507,6 +4697,25 @@ hi: {
     footerCtaSubtitle: "उन हजारों टीमों में शामिल हों जो मिनटों में शानदार डेक बनाने के लिए PPTMaster का उपयोग कर रही हैं।",
     tryForFree: "मुफ्त में आज़माएं",
     
+    // How It Works Section
+    howItWorks: "यह कैसे काम करता है",
+    fromIdeaToPresentation: "विचार से प्रेजेंटेशन तक मिनटों में",
+    step1Title: "अपना विचार बताएं",
+    step1Desc: "हमें बताएं कि आपको क्या चाहिए। पिच डेक, रिपोर्ट, प्रस्ताव — बस सरल भाषा में लिखें।",
+    step2Title: "AI भारी काम करता है",
+    step2Desc: "हमारा AI स्लाइड, लेआउट और कंटेंट जेनरेट करता है। स्मार्ट डिज़ाइन चॉइस, आपकी ओर से शून्य प्रयास।",
+    step3Title: "परिष्कृत करें और प्रस्तुत करें",
+    step3Desc: "आसान संपादन के साथ इसे अपना बनाएं। PowerPoint, PDF में एक्सपोर्ट करें या तुरंत लाइव लिंक शेयर करें।",
+    tryItFree: "मुफ्त में आज़माएं",
+    
+    // Trusted By Section
+    trustedByCompanies: "अग्रणी कंपनियों की टीमों द्वारा विश्वसनीय",
+    
+    // Newsletter Section
+    stayUpdated: "अपडेट रहें",
+    newsletterDesc: "नवीनतम टिप्स, इनसाइट्स और अपडेट अपने इनबॉक्स में प्राप्त करें।",
+    subscribe: "सब्सक्राइब करें",
+    
     // About Page
     aboutTitle: "PPTMaster के बारे में",
     aboutSubtitle: "हम AI की शक्ति के माध्यम से पेशेवर प्रेजेंटेशन को सभी के लिए सुलभ बनाने के मिशन पर हैं।",
@@ -4965,6 +5174,25 @@ ru: {
     footerCtaTitle: "Готовы преобразить свои презентации?",
     footerCtaSubtitle: "Присоединяйтесь к тысячам команд, использующих PPTMaster для создания потрясающих слайдов за минуты.",
     tryForFree: "Попробовать бесплатно",
+    
+    // How It Works Section
+    howItWorks: "Как это работает",
+    fromIdeaToPresentation: "От идеи до презентации за минуты",
+    step1Title: "Опишите свою идею",
+    step1Desc: "Расскажите нам, что вам нужно. Питч-дек, отчет, предложение — просто напишите простым языком.",
+    step2Title: "ИИ делает тяжелую работу",
+    step2Desc: "Наш ИИ создает слайды, макеты и контент. Умные дизайнерские решения, ноль усилий с вашей стороны.",
+    step3Title: "Доработайте и презентуйте",
+    step3Desc: "Сделайте его своим с легкими правками. Экспортируйте в PowerPoint, PDF или мгновенно поделитесь ссылкой.",
+    tryItFree: "Попробовать бесплатно",
+    
+    // Trusted By Section
+    trustedByCompanies: "Нам доверяют команды ведущих компаний",
+    
+    // Newsletter Section
+    stayUpdated: "Будьте в курсе",
+    newsletterDesc: "Получайте последние советы, идеи и обновления на вашу почту.",
+    subscribe: "Подписаться",
     
     // About Page
     aboutTitle: "О PPTMaster",

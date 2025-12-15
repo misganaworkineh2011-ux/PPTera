@@ -52,10 +52,10 @@ export const LandingFooter = () => {
                 <div className="mx-auto max-w-4xl text-center">
                     <Mail className="h-10 w-10 mx-auto mb-3 text-[#06b6d4] md:h-12 md:w-12 md:mb-4" />
                     <h3 className="text-xl font-bold text-white mb-2 md:text-2xl lg:text-3xl md:mb-3">
-                        Stay Updated
+                        {t.stayUpdated}
                     </h3>
                     <p className="text-sm text-slate-400 mb-6 max-w-2xl mx-auto md:text-base md:mb-8">
-                        Get the latest tips, insights, and updates delivered to your inbox.
+                        {t.newsletterDesc}
                     </p>
                     <form onSubmit={handleNewsletterSubmit} className="max-w-md mx-auto">
                         <div className="flex flex-col gap-3 sm:flex-row sm:gap-2">
@@ -73,7 +73,7 @@ export const LandingFooter = () => {
                                 disabled={loading}
                                 className="px-6 py-3 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white text-sm font-bold hover:shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap md:text-base"
                             >
-                                {loading ? "..." : "Subscribe"}
+                                {loading ? "..." : t.subscribe}
                             </button>
                         </div>
                     </form>
