@@ -181,7 +181,7 @@ function LandingPageContent({ t }: { t: any }) {
             <section className="relative z-10 pt-32 pb-32 px-6 overflow-hidden">
                 {/* Background Image */}
                 <div className="absolute inset-0 z-0">
-                    <img src="/bg2.png" alt="" className="w-full h-full object-cover" />
+                    <img src="/bg2.webp" alt="" className="w-full h-full object-cover" />
                     {/* Overlay for readability */}
                     <div className="absolute inset-0 bg-white/70"></div>
                 </div>

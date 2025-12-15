@@ -83,7 +83,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan 
         <div className="flex items-center justify-center">
           <img src="/logo.png" alt="PPTMaster Logo" className={cn(
             "w-auto transition-all",
-            isCollapsed ? "h-14" : "h-20"
+            isCollapsed ? "h-10" : "h-14"
           )} />
         </div>
       </div>

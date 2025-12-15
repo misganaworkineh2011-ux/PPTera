@@ -22,9 +22,9 @@ export default function Navbar() {
             <Image
               src="/logo.png"
               alt="PPTMaster"
-              width={160}
-              height={45}
-              className="h-11 w-auto"
+              width={120}
+              height={34}
+              className="h-8 w-auto"
             />
           </Link>
 

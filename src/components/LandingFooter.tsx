@@ -91,9 +91,9 @@ export const LandingFooter = () => {
                                     <Image
                                         src="/logo.png"
                                         alt="PPTMaster Logo"
-                                        width={160}
-                                        height={60}
-                                        className="h-14 w-auto object-contain brightness-0 invert"
+                                        width={120}
+                                        height={45}
+                                        className="h-10 w-auto object-contain brightness-0 invert"
                                     />
                                 </LoadingLink>
                             </div>
