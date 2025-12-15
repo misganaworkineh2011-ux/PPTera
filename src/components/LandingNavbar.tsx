@@ -29,8 +29,17 @@ export const LandingNavbar = () => {
     const { language, setLanguage, t } = useLanguage();
 
     useEffect(() => {
-        const handleScroll = () => setIsScrolled(window.scrollY > 10);
-        window.addEventListener("scroll", handleScroll);
+        let ticking = false;
+        const handleScroll = () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    setIsScrolled(window.scrollY > 10);
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        };
+        window.addEventListener("scroll", handleScroll, { passive: true });
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
@@ -49,9 +58,9 @@ export const LandingNavbar = () => {
                             <Image
                                 src="/logo.png"
                                 alt="PPTMaster Logo"
-                                width={120}
-                                height={45}
-                                className="h-7 md:h-10 lg:h-14 w-auto object-contain"
+                                width={100}
+                                height={35}
+                                className="h-6 md:h-8 lg:h-10 w-auto object-contain"
                             />
                         </div>
                     </Link>

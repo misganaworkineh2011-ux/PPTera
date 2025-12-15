@@ -81,9 +81,9 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan 
       {/* Sidebar Header */}
       <div className="flex h-20 items-center justify-center px-6">
         <div className="flex items-center justify-center">
-          <img src="/pptlogo.png" alt="PPTMaster Logo" className={cn(
+          <img src="/logo.png" alt="PPTMaster Logo" className={cn(
             "w-auto transition-all",
-            isCollapsed ? "h-14" : "h-20"
+            isCollapsed ? "h-10" : "h-14"
           )} />
         </div>
       </div>

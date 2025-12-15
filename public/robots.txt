@@ -1,0 +1,13 @@
+# robots.txt for PPTMaster
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /sign-in/
+Disallow: /sign-up/
+
+# Sitemap
+Sitemap: https://www.pptmaster.app/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 1
