@@ -9,12 +9,22 @@ import Link from "next/link";
 export default function EducationPage() {
   const { t } = useLanguage();
 
-  const features = [
+  const studentTeacherFeatures = [
+    "Access to all premium templates",
+    "Export to PowerPoint, PDF, Google Slides",
+    "Real-time collaboration",
+    "Priority support",
+    "AI-powered slide generation",
+  ];
+
+  const schoolFeatures = [
     "Unlimited AI-generated presentations",
     "Access to all premium templates",
     "Export to PowerPoint, PDF, Google Slides",
     "Real-time collaboration",
     "Priority support",
+    "Admin dashboard",
+    "Usage analytics",
   ];
 
   return (
@@ -67,10 +77,10 @@ export default function EducationPage() {
               </div>
               <h3 className="mb-2 text-2xl font-bold text-slate-900">{t.forStudents}</h3>
               <p className="mb-6 text-slate-600 leading-relaxed">
-                {t.forStudentsDesc}
+                50% off on all Pro plans with full premium access
               </p>
               <ul className="space-y-3 mb-8">
-                {features.slice(0, 3).map((feature, i) => (
+                {studentTeacherFeatures.map((feature, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
                     <CheckCircle2 className="h-4 w-4 text-[#06b6d4]" />
                     {feature}
@@ -88,17 +98,17 @@ export default function EducationPage() {
             {/* Teachers */}
             <div className="group relative overflow-hidden rounded-3xl border-2 border-[#06b6d4] bg-white p-8 hover:shadow-2xl transition-all duration-300 scale-105">
               <div className="absolute top-0 right-0 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white text-xs font-bold px-4 py-1 rounded-bl-xl">
-                {t.free}
+                {t.fiftyPercentOff}
               </div>
               <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] group-hover:scale-110 transition-transform">
                 <BookOpen className="h-8 w-8 text-white" />
               </div>
               <h3 className="mb-2 text-2xl font-bold text-slate-900">{t.forTeachers}</h3>
               <p className="mb-6 text-slate-600 leading-relaxed">
-                {t.forTeachersDesc}
+                50% off on all Pro plans with full premium access
               </p>
               <ul className="space-y-3 mb-8">
-                {features.map((feature, i) => (
+                {studentTeacherFeatures.map((feature, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
                     <CheckCircle2 className="h-4 w-4 text-[#06b6d4]" />
                     {feature}
@@ -126,7 +136,7 @@ export default function EducationPage() {
                 {t.forSchoolsDesc}
               </p>
               <ul className="space-y-3 mb-8">
-                {[...features, "Admin dashboard", "Usage analytics"].slice(0, 5).map((feature, i) => (
+                {schoolFeatures.map((feature, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
                     <CheckCircle2 className="h-4 w-4 text-[#06b6d4]" />
                     {feature}
