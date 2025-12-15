@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { ChevronRight, Home } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 interface BreadcrumbItem {
@@ -33,7 +31,7 @@ export function Breadcrumbs() {
     breadcrumbs.push({ label, href: currentPath });
   });
 
-  // Generate JSON-LD structured data for breadcrumbs
+  // Generate JSON-LD structured data for breadcrumbs (SEO only, not visible)
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -45,45 +43,11 @@ export function Breadcrumbs() {
     }))
   };
 
+  // Only render the JSON-LD schema for SEO - no visible UI
   return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-      />
-      <nav aria-label="Breadcrumb" className="py-3 px-6 bg-slate-50/50 border-b border-slate-100">
-        <ol className="flex items-center gap-2 text-sm max-w-7xl mx-auto">
-          {breadcrumbs.map((item, index) => {
-            const isLast = index === breadcrumbs.length - 1;
-            const isFirst = index === 0;
-            
-            return (
-              <li key={item.href} className="flex items-center gap-2">
-                {!isFirst && (
-                  <ChevronRight className="w-4 h-4 text-slate-400" />
-                )}
-                {isLast ? (
-                  <span className="text-slate-900 font-medium" aria-current="page">
-                    {item.label}
-                  </span>
-                ) : (
-                  <Link
-                    href={item.href}
-                    className="text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-1.5"
-                    aria-label={isFirst ? "Go to homepage" : `Go to ${item.label}`}
-                  >
-                    {isFirst ? (
-                      <Home className="w-4 h-4" aria-hidden="true" />
-                    ) : (
-                      item.label
-                    )}
-                  </Link>
-                )}
-              </li>
-            );
-          })}
-        </ol>
-      </nav>
-    </>
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+    />
   );
 }

@@ -1,77 +1,171 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowLeft, GraduationCap, BookOpen, Users } from "lucide-react";
+import { GraduationCap, BookOpen, Users, CheckCircle2, Sparkles } from "lucide-react";
 import { useLanguage } from "~/contexts/LanguageContext";
+import { LandingNavbar } from "~/components/LandingNavbar";
+import { LandingFooter } from "~/components/LandingFooter";
+import Link from "next/link";
 
 export default function EducationPage() {
   const { t } = useLanguage();
+
+  const features = [
+    "Unlimited AI-generated presentations",
+    "Access to all premium templates",
+    "Export to PowerPoint, PDF, Google Slides",
+    "Real-time collaboration",
+    "Priority support",
+  ];
+
   return (
     <div className="min-h-screen bg-white">
-      <div className="mx-auto max-w-6xl px-6 py-20">
-        <Link
-          href="/"
-          className="mb-8 inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {t.backToHome}
-        </Link>
+      <LandingNavbar />
 
-        <div className="mb-16 text-center">
-          <h1 className="mb-4 text-5xl font-bold text-slate-900">{t.educationTitle}</h1>
-          <p className="mx-auto max-w-2xl text-xl text-slate-600">
+      {/* Hero Section */}
+      <section className="relative pt-40 pb-24 px-6 overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_-100px,#1e1e1e0a,transparent)]"></div>
+
+        <div className="relative z-10 mx-auto max-w-5xl text-center">
+          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-4 py-2 backdrop-blur-sm">
+            <GraduationCap className="h-4 w-4 text-[#06b6d4]" />
+            <span className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
+              Education
+            </span>
+          </div>
+
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 mb-8">
+            {t.educationTitle}
+          </h1>
+
+          <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed mb-10">
             {t.educationSubtitle}
           </p>
-        </div>
 
-        <div className="mb-20 grid gap-8 md:grid-cols-3">
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4]">
-              <GraduationCap className="h-8 w-8 text-white" />
-            </div>
-            <h3 className="mb-2 text-xl font-bold text-slate-900">{t.forStudents}</h3>
-            <p className="mb-4 text-slate-600">
-              {t.forStudentsDesc}
-            </p>
-            <p className="text-2xl font-bold text-[#06b6d4]">{t.fiftyPercentOff}</p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500">
-              <BookOpen className="h-8 w-8 text-white" />
-            </div>
-            <h3 className="mb-2 text-xl font-bold text-slate-900">{t.forTeachers}</h3>
-            <p className="mb-4 text-slate-600">
-              {t.forTeachersDesc}
-            </p>
-            <p className="text-2xl font-bold text-purple-600">{t.free}</p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-red-500">
-              <Users className="h-8 w-8 text-white" />
-            </div>
-            <h3 className="mb-2 text-xl font-bold text-slate-900">{t.forSchools}</h3>
-            <p className="mb-4 text-slate-600">
-              {t.forSchoolsDesc}
-            </p>
-            <p className="text-2xl font-bold text-orange-600">{t.custom}</p>
-          </div>
-        </div>
-
-        <div className="rounded-3xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] p-12 text-center text-white">
-          <h2 className="mb-4 text-3xl font-bold">{t.readyToStart}</h2>
-          <p className="mb-8 text-lg text-white/90">
-            {t.readyToStartDesc}
-          </p>
           <Link
             href="/contact"
-            className="inline-block rounded-full bg-white px-8 py-3 font-semibold text-[#1e3a8a] transition hover:bg-slate-100"
+            className="inline-flex items-center gap-2 h-14 rounded-full bg-black px-10 text-lg font-bold text-white shadow-xl transition hover:scale-105 hover:bg-slate-800"
           >
+            <Sparkles className="w-5 h-5" />
             {t.contactSales}
           </Link>
         </div>
-      </div>
+      </section>
+
+      {/* Plans Section */}
+      <section className="relative py-24 px-6 bg-gradient-to-b from-white to-slate-50">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid gap-8 md:grid-cols-3">
+            {/* Students */}
+            <div className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 hover:shadow-2xl transition-all duration-300">
+              <div className="absolute top-0 right-0 bg-[#06b6d4] text-white text-xs font-bold px-4 py-1 rounded-bl-xl">
+                {t.fiftyPercentOff}
+              </div>
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] group-hover:scale-110 transition-transform">
+                <GraduationCap className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="mb-2 text-2xl font-bold text-slate-900">{t.forStudents}</h3>
+              <p className="mb-6 text-slate-600 leading-relaxed">
+                {t.forStudentsDesc}
+              </p>
+              <ul className="space-y-3 mb-8">
+                {features.slice(0, 3).map((feature, i) => (
+                  <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
+                    <CheckCircle2 className="h-4 w-4 text-[#06b6d4]" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/pricing"
+                className="block w-full text-center rounded-full border-2 border-slate-200 py-3 font-semibold text-slate-900 hover:border-[#06b6d4] hover:text-[#06b6d4] transition-colors"
+              >
+                {t.learnMore}
+              </Link>
+            </div>
+
+            {/* Teachers */}
+            <div className="group relative overflow-hidden rounded-3xl border-2 border-purple-500 bg-white p-8 hover:shadow-2xl transition-all duration-300 scale-105">
+              <div className="absolute top-0 right-0 bg-purple-500 text-white text-xs font-bold px-4 py-1 rounded-bl-xl">
+                {t.free}
+              </div>
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 group-hover:scale-110 transition-transform">
+                <BookOpen className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="mb-2 text-2xl font-bold text-slate-900">{t.forTeachers}</h3>
+              <p className="mb-6 text-slate-600 leading-relaxed">
+                {t.forTeachersDesc}
+              </p>
+              <ul className="space-y-3 mb-8">
+                {features.map((feature, i) => (
+                  <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
+                    <CheckCircle2 className="h-4 w-4 text-purple-500" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/pricing"
+                className="block w-full text-center rounded-full bg-purple-500 py-3 font-semibold text-white hover:bg-purple-600 transition-colors"
+              >
+                {t.getStartedBtn}
+              </Link>
+            </div>
+
+            {/* Schools */}
+            <div className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 hover:shadow-2xl transition-all duration-300">
+              <div className="absolute top-0 right-0 bg-orange-500 text-white text-xs font-bold px-4 py-1 rounded-bl-xl">
+                {t.custom}
+              </div>
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 group-hover:scale-110 transition-transform">
+                <Users className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="mb-2 text-2xl font-bold text-slate-900">{t.forSchools}</h3>
+              <p className="mb-6 text-slate-600 leading-relaxed">
+                {t.forSchoolsDesc}
+              </p>
+              <ul className="space-y-3 mb-8">
+                {[...features, "Admin dashboard", "Usage analytics"].slice(0, 5).map((feature, i) => (
+                  <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
+                    <CheckCircle2 className="h-4 w-4 text-orange-500" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/contact"
+                className="block w-full text-center rounded-full border-2 border-slate-200 py-3 font-semibold text-slate-900 hover:border-orange-500 hover:text-orange-500 transition-colors"
+              >
+                {t.contactSales}
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="relative py-24 px-6">
+        <div className="mx-auto max-w-4xl text-center">
+          <div className="rounded-3xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] p-12 md:p-16 text-white">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              {t.readyToStart}
+            </h2>
+            <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+              {t.readyToStartDesc}
+            </p>
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-lg font-bold text-[#1e3a8a] shadow-xl hover:shadow-2xl transition-all hover:scale-105"
+            >
+              {t.contactSales}
+              <span>→</span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <LandingFooter />
     </div>
   );
 }
