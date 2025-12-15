@@ -27,7 +27,12 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("language", lang);
   };
 
-  const t = translations[language];
+  // Merge selected language with English fallback
+  const t = new Proxy(translations[language] || translations.en, {
+    get(target, prop: string) {
+      return target[prop as keyof typeof target] || translations.en[prop as keyof typeof translations.en];
+    }
+  }) as typeof translations.en;
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>

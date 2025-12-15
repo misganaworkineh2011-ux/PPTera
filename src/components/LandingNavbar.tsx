@@ -70,18 +70,12 @@ export const LandingNavbar = () => {
                                 <div className="absolute top-full left-0 pt-2 w-64 animate-fade-in-up [animation-duration:0.2s] origin-top">
                                     <div className="rounded-2xl border border-slate-100 bg-white p-2 shadow-xl">
                                         <LoadingLink href="/dashboard" className="flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50">
-                                            <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
-                                                <Wand2 className="h-4 w-4" />
-                                            </div>
                                             <div>
                                                 <div className="font-semibold text-slate-900">{t.aiPresentations}</div>
                                                 <div className="text-xs text-slate-500">{t.aiPresentationsDesc}</div>
                                             </div>
                                         </LoadingLink>
                                         <LoadingLink href="/templates" className="flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50">
-                                            <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100 text-purple-600">
-                                                <Sparkles className="h-4 w-4" />
-                                            </div>
                                             <div>
                                                 <div className="font-semibold text-slate-900">{t.templates}</div>
                                                 <div className="text-xs text-slate-500">{t.templatesDesc}</div>

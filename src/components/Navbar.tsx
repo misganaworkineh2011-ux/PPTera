@@ -38,18 +38,12 @@ export default function Navbar() {
               <div className="invisible absolute left-0 top-full pt-2 opacity-0 transition-all group-hover:visible group-hover:opacity-100">
                 <div className="w-64 rounded-2xl border border-slate-100 bg-white p-3 shadow-xl">
                   <Link href="/dashboard" className="flex items-center gap-3 rounded-xl p-3 transition hover:bg-slate-50">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4]">
-                      <span className="text-lg text-white">✨</span>
-                    </div>
                     <div>
                       <div className="font-semibold text-slate-900">{t.aiPresentations}</div>
                       <div className="text-xs text-slate-500">{t.aiPresentationsDesc}</div>
                     </div>
                   </Link>
                   <Link href="/dashboard" className="flex items-center gap-3 rounded-xl p-3 transition hover:bg-slate-50">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-pink-500">
-                      <span className="text-lg text-white">🎨</span>
-                    </div>
                     <div>
                       <div className="font-semibold text-slate-900">{t.templates}</div>
                       <div className="text-xs text-slate-500">{t.templatesDesc}</div>

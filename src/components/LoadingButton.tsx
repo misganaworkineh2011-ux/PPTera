@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { cn } from "~/lib/utils";
 
@@ -34,28 +33,10 @@ export function LoadingButton({
       disabled={disabled || isLoading}
       {...props}
     >
-      {isLoading && (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      )}
+      {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
       <span className={cn(isLoading && "opacity-70")}>
         {isLoading && loadingText ? loadingText : children}
       </span>
     </button>
   );
-}
-
-// Hook for managing loading state
-export function useLoadingButton() {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const withLoading = async <T,>(fn: () => Promise<T>): Promise<T> => {
-    setIsLoading(true);
-    try {
-      return await fn();
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return { isLoading, setIsLoading, withLoading };
 }

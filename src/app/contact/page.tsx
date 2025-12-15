@@ -21,7 +21,7 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
       const response = await fetch("/api/contact", {
         method: "POST",
@@ -205,9 +205,11 @@ export default function ContactPage() {
                 variant="primary"
                 className="w-full"
               >
-                <Send className="h-5 w-5" />
-                {t.sendMessage || "Send Message"}
+                <>
+                  <span>{t.sendMessage || "Send Message"}</span>
+                </>
               </LoadingButton>
+
             </form>
           </div>
         </div>
