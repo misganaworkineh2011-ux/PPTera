@@ -1,18 +1,13 @@
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
+import { requireAuth } from "~/lib/clerk-server";
 import { db } from "~/server/db";
 import { FolderOpen, Mail, Users } from "lucide-react";
 import CollaborationStickyHeader from "./CollaborationStickyHeader";
 
 export default async function CollaborationPage() {
-  const { userId } = await auth();
-
-  if (!userId) {
-    redirect("/sign-in");
-  }
+  const authUser = await requireAuth();
 
   const user = await db.user.findUnique({
-    where: { clerkId: userId },
+    where: { id: authUser.id },
     include: {
       collaborations: {
         include: {
@@ -25,7 +20,7 @@ export default async function CollaborationPage() {
   });
 
   if (!user) {
-    redirect("/sign-in");
+    return null;
   }
 
   // Group collaborations by presentation

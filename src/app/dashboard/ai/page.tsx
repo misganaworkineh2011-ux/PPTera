@@ -1,14 +1,9 @@
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
+import { requireAuth } from "~/lib/clerk-server";
 import { Sparkles, ThumbsUp, ThumbsDown, ArrowRight } from "lucide-react";
 import AIStickyHeader from "./AIStickyHeader";
 
 export default async function AISuggestionsPage() {
-  const { userId } = await auth();
-
-  if (!userId) {
-    redirect("/sign-in");
-  }
+  await requireAuth();
 
   return (
     <div className="space-y-8 h-full">

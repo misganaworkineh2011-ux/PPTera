@@ -1,18 +1,13 @@
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
+import { requireAuth } from "~/lib/clerk-server";
 import { db } from "~/server/db";
 import { FileEdit, Plus, UserPlus, Trash2, History } from "lucide-react";
 import ActivityStickyHeader from "./ActivityStickyHeader";
 
 export default async function ActivityPage() {
-  const { userId } = await auth();
-
-  if (!userId) {
-    redirect("/sign-in");
-  }
+  const authUser = await requireAuth();
 
   const user = await db.user.findUnique({
-    where: { clerkId: userId },
+    where: { id: authUser.id },
     include: {
       activities: {
         orderBy: { createdAt: "desc" },
@@ -22,7 +17,7 @@ export default async function ActivityPage() {
   });
 
   if (!user) {
-    redirect("/sign-in");
+    return null;
   }
 
   // Map activity types to icons and colors

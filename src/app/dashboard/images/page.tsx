@@ -1,19 +1,14 @@
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
+import { requireAuth } from "~/lib/clerk-server";
 import { db } from "~/server/db";
 import { Grid, List as ListIcon, Star, Image as ImageIcon, MoreHorizontal, Search } from "lucide-react";
 import ImagesStickyHeader from "./ImagesStickyHeader";
 import Image from "next/image";
 
 export default async function ImagesPage() {
-  const { userId } = await auth();
-
-  if (!userId) {
-    redirect("/sign-in");
-  }
+  const authUser = await requireAuth();
 
   const user = await db.user.findUnique({
-    where: { clerkId: userId },
+    where: { id: authUser.id },
     include: {
       images: {
         orderBy: { createdAt: "desc" },
@@ -23,7 +18,7 @@ export default async function ImagesPage() {
   });
 
   if (!user) {
-    redirect("/sign-in");
+    return null;
   }
 
   return (

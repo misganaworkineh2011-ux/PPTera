@@ -1,20 +1,15 @@
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
+import { requireAuth } from "~/lib/clerk-server";
 import { db } from "~/server/db";
-import { Filter, Grid, List as ListIcon, MoreHorizontal, Upload, Import, Star, FileText } from "lucide-react";
+import { Filter, Grid, List as ListIcon, MoreHorizontal, Upload, Star } from "lucide-react";
 import CreateProjectButton from "~/components/dashboard/CreateProjectButton";
 import Image from "next/image";
 import StickyHeader from "./StickyHeader";
 
 export default async function DashboardPage() {
-  const { userId } = await auth();
-
-  if (!userId) {
-    redirect("/sign-in");
-  }
+  const authUser = await requireAuth();
 
   const user = await db.user.findUnique({
-    where: { clerkId: userId },
+    where: { id: authUser.id },
     include: {
       presentations: {
         orderBy: { createdAt: "desc" },
@@ -24,7 +19,8 @@ export default async function DashboardPage() {
   });
 
   if (!user) {
-    redirect("/sign-in");
+    // This should not happen since requireAuth ensures user exists
+    return null;
   }
 
   return (

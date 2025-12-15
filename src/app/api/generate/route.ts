@@ -18,7 +18,11 @@ export async function POST(req: Request) {
       where: { clerkId: userId },
     });
 
-    if (!user || user.credits < 1) {
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    if (user.credits < 1) {
       return NextResponse.json(
         { error: "Insufficient credits" },
         { status: 403 }

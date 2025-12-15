@@ -1,19 +1,14 @@
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
+import { requireAuth } from "~/lib/clerk-server";
 import { db } from "~/server/db";
 import { Grid, List as ListIcon, Star, Eye, LayoutTemplate } from "lucide-react";
 import TemplatesStickyHeader from "./TemplatesStickyHeader";
 import Image from "next/image";
 
 export default async function TemplatesPage() {
-  const { userId } = await auth();
-
-  if (!userId) {
-    redirect("/sign-in");
-  }
+  const authUser = await requireAuth();
 
   const user = await db.user.findUnique({
-    where: { clerkId: userId },
+    where: { id: authUser.id },
     include: {
       templates: {
         orderBy: { createdAt: "desc" },
@@ -23,7 +18,7 @@ export default async function TemplatesPage() {
   });
 
   if (!user) {
-    redirect("/sign-in");
+    return null;
   }
 
   const categories = ["All", "Business", "Creative", "Education", "Minimal", "Technology"];

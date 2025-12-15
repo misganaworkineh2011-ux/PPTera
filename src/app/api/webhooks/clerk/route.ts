@@ -1,6 +1,6 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
-import { WebhookEvent } from "@clerk/nextjs/server";
+import type { WebhookEvent } from "@clerk/nextjs/server";
 import { db } from "~/server/db";
 import { env } from "~/env";
 
@@ -40,17 +40,85 @@ export async function POST(req: Request) {
   const eventType = evt.type;
 
   if (eventType === "user.created") {
-    const { id, email_addresses, first_name, last_name, image_url } = evt.data;
+    const { id, email_addresses, first_name, last_name, image_url, username } = evt.data;
+    const email = email_addresses[0]?.email_address || "";
 
-    await db.user.create({
-      data: {
-        clerkId: id,
-        email: email_addresses[0]?.email_address || "",
-        name: `${first_name || ""} ${last_name || ""}`.trim() || "User",
-        image: image_url,
-        credits: 3, // Free credits
-      },
-    });
+    try {
+      // Check if user with this email already exists to prevent duplicates
+      // Only check if email is present
+      const existingUser = email ? await db.user.findFirst({
+        where: { email: email }
+      }) : null;
+
+      if (existingUser) {
+        // Update existing user with new Clerk ID
+        await db.user.update({
+          where: { id: existingUser.id },
+          data: {
+            clerkId: id,
+            name: `${first_name || ""} ${last_name || ""}`.trim() || username || "User",
+            emailVerified: email_addresses[0]?.verification?.status === "verified",
+            image: image_url,
+          },
+        });
+        console.log(`[Clerk Webhook] User updated (linked to existing email): ${id}`);
+      } else {
+        // Create user in database
+        await db.user.create({
+          data: {
+            clerkId: id,
+            email: email,
+            name: `${first_name || ""} ${last_name || ""}`.trim() || username || "User",
+            emailVerified: email_addresses[0]?.verification?.status === "verified",
+            image: image_url,
+            credits: 3, // Free credits for new users
+            subscriptionPlan: "Free", // Default to free plan
+          },
+        });
+        console.log(`[Clerk Webhook] User created: ${id}`);
+      }
+    } catch (error) {
+      console.error("[Clerk Webhook] Error creating/updating user:", error);
+      return new Response("Error creating/updating user", { status: 500 });
+    }
+  }
+
+  if (eventType === "user.updated") {
+    const { id, email_addresses, first_name, last_name, image_url, username } = evt.data;
+
+    try {
+      // Update user in database
+      await db.user.update({
+        where: { clerkId: id },
+        data: {
+          email: email_addresses[0]?.email_address || "",
+          name: `${first_name || ""} ${last_name || ""}`.trim() || username || "User",
+          emailVerified: email_addresses[0]?.verification?.status === "verified",
+          image: image_url,
+        },
+      });
+
+      console.log(`[Clerk Webhook] User updated: ${id}`);
+    } catch (error) {
+      console.error("[Clerk Webhook] Error updating user:", error);
+      // Don't fail if user doesn't exist
+    }
+  }
+
+  if (eventType === "user.deleted") {
+    const { id } = evt.data;
+
+    try {
+      // Delete user from database
+      await db.user.delete({
+        where: { clerkId: id || "" },
+      });
+
+      console.log(`[Clerk Webhook] User deleted: ${id}`);
+    } catch (error) {
+      console.error("[Clerk Webhook] Error deleting user:", error);
+      // Don't fail if user doesn't exist
+    }
   }
 
   return new Response("", { status: 200 });

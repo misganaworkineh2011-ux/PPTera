@@ -1,18 +1,13 @@
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
+import { requireAuth } from "~/lib/clerk-server";
 import { db } from "~/server/db";
 import { Type, Smile, Image as ImageIcon, Box, Grid, List as ListIcon, Star } from "lucide-react";
 import ResourcesStickyHeader from "./ResourcesStickyHeader";
 
 export default async function ResourcesPage() {
-  const { userId } = await auth();
-
-  if (!userId) {
-    redirect("/sign-in");
-  }
+  const authUser = await requireAuth();
 
   const user = await db.user.findUnique({
-    where: { clerkId: userId },
+    where: { id: authUser.id },
     include: {
       resources: {
         orderBy: { createdAt: "desc" },
@@ -22,7 +17,7 @@ export default async function ResourcesPage() {
   });
 
   if (!user) {
-    redirect("/sign-in");
+    return null;
   }
 
   const categories = [

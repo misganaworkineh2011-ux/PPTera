@@ -1,18 +1,13 @@
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
+import { requireAuth } from "~/lib/clerk-server";
 import { db } from "~/server/db";
 import { Grid, List as ListIcon, Star, Check, Palette } from "lucide-react";
 import ThemesStickyHeader from "./ThemesStickyHeader";
 
 export default async function ThemesPage() {
-  const { userId } = await auth();
-
-  if (!userId) {
-    redirect("/sign-in");
-  }
+  const authUser = await requireAuth();
 
   const user = await db.user.findUnique({
-    where: { clerkId: userId },
+    where: { id: authUser.id },
     include: {
       themes: {
         orderBy: { createdAt: "desc" },
@@ -22,7 +17,7 @@ export default async function ThemesPage() {
   });
 
   if (!user) {
-    redirect("/sign-in");
+    return null;
   }
 
   // Default themes if user has none

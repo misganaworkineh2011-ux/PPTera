@@ -1,21 +1,8 @@
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
-import { db } from "~/server/db";
+import { requireAuth } from "~/lib/clerk-server";
 import CreatePresentationForm from "./CreatePresentationForm";
 
 export default async function CreatePresentationPage() {
-  const { userId } = await auth();
-
-  if (!userId) {
-    redirect("/sign-in");
-  }
-
-  const user = await db.user.findUnique({
-    where: { clerkId: userId },
-    select: {
-      subscriptionPlan: true,
-    },
-  });
+  const user = await requireAuth();
 
   // Determine max slides based on subscription plan
   const getMaxSlides = (plan: string | null | undefined): number => {

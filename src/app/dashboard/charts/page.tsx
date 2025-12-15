@@ -1,19 +1,14 @@
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
+import { requireAuth } from "~/lib/clerk-server";
 import { db } from "~/server/db";
 import { BarChart, PieChart, LineChart, Table, Grid, List as ListIcon, Star, MoreHorizontal } from "lucide-react";
 import ChartsStickyHeader from "./ChartsStickyHeader";
 import Image from "next/image";
 
 export default async function ChartsPage() {
-  const { userId } = await auth();
-
-  if (!userId) {
-    redirect("/sign-in");
-  }
+  const authUser = await requireAuth();
 
   const user = await db.user.findUnique({
-    where: { clerkId: userId },
+    where: { id: authUser.id },
     include: {
       charts: {
         orderBy: { createdAt: "desc" },
@@ -23,7 +18,7 @@ export default async function ChartsPage() {
   });
 
   if (!user) {
-    redirect("/sign-in");
+    return null;
   }
 
   const chartTypes = [
