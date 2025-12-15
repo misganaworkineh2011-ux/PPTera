@@ -120,16 +120,8 @@ CRITICAL QUALITY STANDARDS:
    - For analytical topics: context → data → insights → implications → conclusion
    - For how-to topics: overview → step-by-step → tips → common mistakes → conclusion
    - Adapt creatively - not every topic needs problems, solutions, methods, or tools. Choose what fits!
-   
-3. Creative, engaging introduction: FIRST content slide MUST be an introduction, but NEVER use generic titles like "Introduction" or "Overview". Use creative, engaging titles that pose thought-provoking questions, make bold statements, present intriguing insights, or challenge conventional thinking. Examples: "Why Most Presentations Fail Before They Start", "The Hidden Power of First Impressions", "What If Everything You Knew Was Wrong?"
-   
-4. Creative, topic-specific conclusion: LAST content slide MUST be a conclusion, but NEVER use generic titles like "Conclusion", "Summary", or generic phrases like "Your Next Move". Create a conclusion title that directly relates to and reflects the specific topic/idea. It should feel like a natural extension of the topic, not a generic template. The conclusion should:
-   - Summarize key takeaways specific to the topic
-   - Include a clear call to action relevant to the topic
-   - Provide contextually relevant next steps or recommendations
-   - Tie everything together in a way that's meaningful for the specific subject matter
-   
-5. Real-time data and statistics: When appropriate for the topic, include current data, statistics, or real-time information. NOT all topics need this - use judgment:
+      
+3. Real-time data and statistics: When appropriate for the topic, include current data, statistics, or real-time information. NOT all topics need this - use judgment:
    - Topics about prevalence, trends, or current events: Include relevant statistics
    - Educational "what is" and How-to or process topics: May not need statistics
    - Analytical or research topics: Should include data
@@ -140,13 +132,13 @@ CRITICAL QUALITY STANDARDS:
      * When presenting data, include context: show comparisons, trends, disparities, or implications
      * Include both positive progress AND challenges/concerns when relevant - provide balanced perspective
 
-5. Scientific and evidence-based content: When solutions, tools, methods, or examples are provided, use scientific, evidence-based approaches when the topic requires it (health, science, research, etc.). Examples should be realistic and demonstrate actual utilization. Make it practical and applicable to real-world scenarios.
+4. Scientific and evidence-based content: When solutions, tools, methods, or examples are provided, use scientific, evidence-based approaches when the topic requires it (health, science, research, etc.). Examples should be realistic and demonstrate actual utilization. Make it practical and applicable to real-world scenarios.
 
-6. Actionable content: Provide specific, practical tips and actionable advice - avoid vague motivation or generic statements. Include concrete examples, case studies, exercises, or activities that make content tangible and applicable.
+5. Actionable content: Provide specific, practical tips and actionable advice - avoid vague motivation or generic statements. Include concrete examples, case studies, exercises, or activities that make content tangible and applicable.
 
-7. Bullet point quality - CRITICAL: See detailed requirements in section 2 of user prompt below.
+6. Bullet point quality - CRITICAL: See detailed requirements in section 2 of user prompt below.
 
-8. Professional expertise and clarity: Write the outline as if you are a master/expert in the specific field or topic. The content should demonstrate deep knowledge and professional understanding, but remain accessible and easy to understand - like a well-crafted PowerPoint presentation. Use clear, concise language that balances expertise with clarity. Avoid jargon unless necessary, and when using technical terms, ensure the context makes them understandable. The outline should feel authoritative and professional while being digestible for the intended audience.
+7. Professional expertise and clarity: Write the outline as if you are a master/expert in the specific field or topic. The content should demonstrate deep knowledge and professional understanding, but remain accessible and easy to understand - like a well-crafted PowerPoint presentation. Use clear, concise language that balances expertise with clarity. Avoid jargon unless necessary, and when using technical terms, ensure the context makes them understandable. The outline should feel authoritative and professional while being digestible for the intended audience.
 
 The outline must be well-structured, engaging, written in ${languageDescription}, using a ${toneDescription} tone, and applicable to any field. Output format must be a valid JSON object with a "slides" array.`;
 
@@ -161,10 +153,6 @@ CRITICAL REQUIREMENTS:
      * Fix any typos or grammar errors if present
      * DO NOT delete any words from the original input
      * DO NOT change the core meaning or intent
-     Examples: 
-     - Input: "marketing strategies" → Title: "Marketing Strategies" or "Effective Marketing Strategies"
-     - Input: "what is hiv" → Title: "What is HIV?" or "Understanding HIV: What You Need to Know"
-     - Input: "hiv prevalence in africa" → Title: "HIV Prevalence in Africa" or "HIV Prevalence in Africa: Current Trends and Analysis"
    - "subtitle": A brief, compelling tagline or subtitle that expands on the title
 
 2. CONTENT slides (${contentSlides} slides):
@@ -175,30 +163,21 @@ CRITICAL REQUIREMENTS:
      * Length: Make bullet points a mix of medium and longer when needed - they should be comprehensive enough to stand alone as complete explanations, not dry or brief
      * Each bullet should be a complete, standalone explanation that fully develops the idea with context, implications, causes, effects, or details within the bullet point itself
      * Be SPECIFIC and CONCRETE: Mention actual items, steps, facts, ingredients, tools, methods, examples, numbers, or specific details - NOT vague statements like "Understand the role of...", "Importance of...", or "Explore the significance of..."
-     * For "how-to" topics: Include actual steps, ingredients, tools, measurements, or specific actions with full context (e.g., "Rinse 1 cup sushi rice until water runs clear to remove starch", "Sushi rice (short-grain sticky rice) & rice vinegar seasoning")
-     * For informational/analytical topics: Fully explain concepts with context, implications, and details (e.g., "Short scooter lifespan leads to frequent replacements, increasing environmental footprint", "Battery production and disposal generate toxic waste and require rare metals like lithium and cobalt")
-     * Include specific numbers, percentages, or metrics when presenting data, with full context
-     * Show HOW to implement when applicable with concrete steps or methods, fully explained
 
 3. NARRATIVE STRUCTURE:
-   - FIRST content slide: MUST be a creative, engaging introduction (never generic "Introduction")
-     * Use a thought-provoking title that hooks the audience
-     * Make them curious about what comes next
-   
-   - MIDDLE slides: Adapt the flow based on the topic's nature:
-     * Analyze what type of content this is (educational, problem-solving, strategic, creative, analytical, how-to, etc.)
-     * Choose the most appropriate flow structure for that type
-     * Each slide should build logically on the previous one
-    
-   - LAST content slide: MUST be a creative, topic-specific conclusion (never generic "Conclusion" or generic phrases)
-     * Create a conclusion title that directly relates to and reflects the specific topic/idea
-     * The title should feel like a natural extension of the topic, not a generic template
-     * Summarize key takeaways specific to the topic
-     * Include a clear call to action relevant to the topic
-     * Provide contextually relevant next steps, recommendations, or future directions
-     * Tie everything together in a way that's meaningful for the specific subject matter
-   
-   - The flow should feel natural and tailored to the specific topic, not forced into a template
+   - FIRST (intro):
+     * No generic titles ("Introduction", "Overview").
+     * Use a topic-fitting hook: question, bold claim, or vivid phrase.
+     * Make the audience curious right away.
+   - MIDDLE (body):
+     * Adapt flow to the topic type (educational, problem-solving, strategic, creative, analytical, how-to, etc.).
+     * Pick the structure that fits best.
+     * Each slide should build logically on the previous one.
+   - LAST (conclusion):
+     * No generic titles ("Conclusion", "Summary").
+     * Title must feel native to the topic.
+     * Summarize key takeaways and give a clear CTA/next steps.
+     * End with a standout last bullet that directly engages the audience—could be a question, playful nudge, confident command, poetic twist, vivid metaphor, surprising contrast, reflective prompt, or aspirational invite to act—anything that makes them pause and connect with the whole deck.
    
 4. LANGUAGE & TONE:
    - Language must be ${languageDescription}
