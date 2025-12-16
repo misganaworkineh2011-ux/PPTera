@@ -10,12 +10,13 @@ interface FeedbackSectionProps {
   theme?: Theme;
 }
 
-type ThemeType = "dark" | "light" | "sunset";
+type ThemeType = "dark" | "light" | "sunset" | "ocean";
 
 function getThemeType(theme?: Theme): ThemeType {
   if (!theme) return "light";
   if (theme.id === "arctic-frost") return "light";
   if (theme.id === "sunset-gradient") return "sunset";
+  if (theme.id === "ocean-depths") return "ocean";
   return "dark";
 }
 
@@ -59,6 +60,19 @@ function getThemeColors(themeType: ThemeType, theme?: Theme) {
       ratingSelected: "border-pink-500 bg-pink-950/50",
       hideText: "text-pink-300/50 hover:text-pink-300",
       thankYou: "text-pink-300/70",
+    },
+    ocean: {
+      bg: "bg-[#0a1628]",
+      border: "border-teal-900/40",
+      title: "text-teal-50",
+      subtitle: "text-teal-300/60",
+      buttonPrimary: "from-teal-500 to-cyan-500",
+      buttonSecondary: "bg-[#0d1f35] border-teal-800/40 text-teal-200 hover:bg-teal-950/60",
+      ratingBorder: "border-teal-800/40",
+      ratingHover: "hover:border-teal-700/50 hover:bg-[#0d1f35]",
+      ratingSelected: "border-teal-500 bg-teal-950/50",
+      hideText: "text-teal-300/50 hover:text-teal-300",
+      thankYou: "text-teal-300/70",
     },
   };
   return colors[themeType];

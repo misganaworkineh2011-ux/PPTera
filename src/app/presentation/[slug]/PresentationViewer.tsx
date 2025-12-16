@@ -55,11 +55,12 @@ function getGoogleFontsUrl(theme: Theme): string {
   return `https://fonts.googleapis.com/css2?${fontParams}&display=swap`;
 }
 
-// Theme type helper - "dark" for Elegant Noir, "light" for Arctic Frost, "sunset" for Sunset Gradient
-type ThemeType = "dark" | "light" | "sunset";
+// Theme type helper - "dark" for Elegant Noir, "light" for Arctic Frost, "sunset" for Sunset Gradient, "ocean" for Ocean Depths
+type ThemeType = "dark" | "light" | "sunset" | "ocean";
 function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "arctic-frost") return "light";
   if (theme.id === "sunset-gradient") return "sunset";
+  if (theme.id === "ocean-depths") return "ocean";
   return "dark"; // elegant-noir and default
 }
 
@@ -146,6 +147,33 @@ function getUIColors(themeType: ThemeType) {
       indicatorMuted: "text-pink-300/50",
       navBtn: "bg-[#2d1a24] text-pink-200 hover:bg-pink-950/60 border border-pink-800/40",
       navDot: "bg-pink-800/50 hover:bg-pink-700/50",
+    },
+    ocean: {
+      pageBg: "bg-gradient-to-br from-[#0a1628] via-[#0d1f35] to-[#0a1628]",
+      headerBg: "bg-[#0a1628]/95 border-[#1e3a5f]",
+      headerText: "text-cyan-50",
+      headerMuted: "text-cyan-300/60",
+      headerHover: "hover:bg-[#122a45]/50",
+      headerIcon: "text-cyan-300/70",
+      headerActive: "bg-[#1e3a5f]/40 text-cyan-100",
+      divider: "bg-[#1e3a5f]",
+      ring: "ring-[#1e3a5f]",
+      ringHover: "ring-[#1e3a5f] hover:ring-teal-500/50",
+      thumbBg: "bg-[#0a1628]/80",
+      thumbText: "text-cyan-100",
+      scrollbar: "scrollbar-thumb-[#1e3a5f]",
+      kbd: "bg-[#122a45] text-cyan-300",
+      endCard: "bg-[#122a45]/90 border-teal-500/30",
+      endText: "text-cyan-100",
+      endMuted: "text-cyan-300/60",
+      titleBg: "bg-gradient-to-br from-[#0a1628] via-[#0d1f35] to-[#122a45]",
+      orb1: "bg-teal-500/15",
+      orb2: "bg-cyan-500/10",
+      accentLine: "from-teal-400",
+      borderLine: "via-[#1e3a5f]",
+      indicatorMuted: "text-cyan-400/50",
+      navBtn: "bg-[#122a45] text-cyan-200 hover:bg-[#1e3a5f]/60 border border-teal-500/30",
+      navDot: "bg-[#1e3a5f] hover:bg-teal-500/50",
     },
   };
   return colors[themeType];
@@ -611,7 +639,7 @@ export default function PresentationViewer({ presentation, mode, isOwner, collab
       // Thumbnail view - render actual slide content scaled down
       const themeType = getThemeType(theme);
       const ui = getUIColors(themeType);
-      const bgColors = { dark: "#0a0a0b", light: "#f8fafc", sunset: "#1c1017" };
+      const bgColors: Record<ThemeType, string> = { dark: "#0a0a0b", light: "#f8fafc", sunset: "#1c1017", ocean: "#0a1628" };
       const thumbnailBg: React.CSSProperties = isTitle 
         ? backgroundStyle 
         : { background: bgColors[themeType] };
@@ -1319,6 +1347,75 @@ function TitleSlide({
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-pink-900/40 to-transparent" />
     </div>
   );
+
+  // OCEAN DEPTHS - Deep teal with flowing waves and circular accents
+  return (
+    <div className="h-full relative overflow-hidden">
+      {!hasImage && (
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0a1628] via-[#0d1f35] to-[#122a45]">
+          <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-cyan-500/8 rounded-full blur-3xl" />
+          {/* Decorative circles */}
+          <div className="absolute top-20 right-20 w-32 h-32 rounded-full border border-teal-500/20" />
+          <div className="absolute top-28 right-28 w-24 h-24 rounded-full border border-cyan-500/15" />
+          <div className="absolute bottom-32 left-16 w-20 h-20 rounded-full border border-teal-500/15" />
+          {/* Wave accent */}
+          <svg className="absolute bottom-0 left-0 right-0 h-32 opacity-20" viewBox="0 0 1440 320" preserveAspectRatio="none">
+            <path fill="#14b8a6" d="M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,138.7C672,128,768,160,864,181.3C960,203,1056,213,1152,197.3C1248,181,1344,139,1392,117.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z" />
+          </svg>
+        </div>
+      )}
+      {hasImage && <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628]/95 via-[#0a1628]/60 to-[#0a1628]/30" />}
+      
+      <div className="relative h-full flex flex-col items-center justify-center p-12 text-center">
+        <div className="absolute top-8 left-8 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full border-2 border-teal-500/40 flex items-center justify-center bg-[#0a1628]/50 backdrop-blur-sm">
+            <span className="font-mono text-sm font-bold text-teal-400">{String(index + 1).padStart(2, "0")}</span>
+          </div>
+          <div className="w-16 h-px bg-gradient-to-r from-teal-500/50 to-transparent" />
+          <span className="text-xs font-medium text-cyan-400/50">/ {String(totalSlides).padStart(2, "0")}</span>
+        </div>
+
+        {/* Decorative glow behind title */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-40 bg-gradient-to-r from-teal-500/10 via-cyan-500/15 to-teal-500/10 blur-3xl rounded-full pointer-events-none" />
+        
+        <EditableText
+          value={slide.title}
+          isEditing={isEditing && editingText?.field === "title"}
+          onStartEdit={() => onStartEditing(index, "title")}
+          onChange={(val) => onUpdateContent(index, "title", val)}
+          onFinish={onFinishEditing}
+          className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight relative"
+          style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "-0.02em" }}
+          isOwner={canEdit}
+          isHovered={isHovered}
+        />
+        {slide.subtitle && (
+          <EditableText
+            value={slide.subtitle || ""}
+            isEditing={isEditing && editingText?.field === "subtitle"}
+            onStartEdit={() => onStartEditing(index, "subtitle")}
+            onChange={(val) => onUpdateContent(index, "subtitle", val)}
+            onFinish={onFinishEditing}
+            className="text-xl md:text-2xl max-w-3xl"
+            style={{ fontFamily: theme.fonts.body.family, color: "#7dd3fc" }}
+            isOwner={canEdit}
+            isHovered={isHovered}
+          />
+        )}
+        
+        <div className="flex items-center gap-4 mt-12">
+          <div className="w-4 h-4 rounded-full border-2 border-teal-500/40" />
+          <div className="w-20 h-0.5 bg-gradient-to-r from-teal-500/60 via-cyan-500/40 to-teal-500/60 rounded-full" />
+          <div className="w-3 h-3 rounded-full bg-teal-500/60" />
+          <div className="w-20 h-0.5 bg-gradient-to-r from-teal-500/60 via-cyan-500/40 to-teal-500/60 rounded-full" />
+          <div className="w-4 h-4 rounded-full border-2 border-cyan-500/40" />
+        </div>
+      </div>
+      
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-teal-500/30 to-transparent" />
+    </div>
+  );
 }
 
 function ThumbnailSidebar({
@@ -1623,6 +1720,7 @@ function ScrollSlideContent({
     dark: "bg-gradient-to-br from-zinc-900 via-zinc-950 to-black",
     light: "bg-gradient-to-br from-slate-50 via-white to-slate-100",
     sunset: "bg-gradient-to-br from-rose-950 via-[#1c1017] to-[#261520]",
+    ocean: "bg-gradient-to-br from-[#0a1628] via-[#0d1f35] to-[#122a45]",
   };
   
   return (

@@ -11,10 +11,11 @@ interface ExportModalProps {
 }
 
 // Theme type detection
-type ThemeType = "dark" | "light" | "sunset";
+type ThemeType = "dark" | "light" | "sunset" | "ocean";
 function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "arctic-frost") return "light";
   if (theme.id === "sunset-gradient") return "sunset";
+  if (theme.id === "ocean-depths") return "ocean";
   return "dark";
 }
 
@@ -53,6 +54,16 @@ export default function ExportModal({ isExporting, theme, onExport, onClose }: E
       cardBorder: "border-pink-900/40",
       cardHover: "hover:border-pink-500/50 hover:bg-pink-500/5",
       closeHover: "hover:bg-pink-950/50 text-pink-300/70 hover:text-pink-100",
+    },
+    ocean: {
+      bg: "bg-[#0a1628]",
+      border: "border-[#1e3a5f]",
+      text: "text-cyan-50",
+      textMuted: "text-cyan-300/70",
+      cardBg: "bg-[#122a45]/50",
+      cardBorder: "border-[#1e3a5f]",
+      cardHover: "hover:border-teal-500/50 hover:bg-teal-500/5",
+      closeHover: "hover:bg-[#122a45]/50 text-cyan-300/70 hover:text-cyan-100",
     },
   };
   

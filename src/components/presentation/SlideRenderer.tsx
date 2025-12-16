@@ -22,14 +22,15 @@ interface SlideRendererProps {
   onDeleteBullet: (slideIndex: number, bulletIndex: number) => void;
 }
 
-type LayoutVariant = "left-content" | "right-content" | "centered" | "split-diagonal" | "image-focus" | "minimal-left" | "cards-grid" | "quote-style" | "timeline";
+type LayoutVariant = "left-content" | "right-content" | "centered" | "split-diagonal" | "image-focus" | "minimal-left" | "cards-grid" | "quote-style" | "timeline" | "diagonal-cut" | "circle-focus" | "wave-layout";
 
 // Theme type detection
-type ThemeType = "dark" | "light" | "sunset";
+type ThemeType = "dark" | "light" | "sunset" | "ocean";
 function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "elegant-noir") return "dark";
   if (theme.id === "arctic-frost") return "light";
   if (theme.id === "sunset-gradient") return "sunset";
+  if (theme.id === "ocean-depths") return "ocean";
   return "dark";
 }
 
@@ -66,6 +67,9 @@ function getLayoutVariant(index: number, themeType: ThemeType, slideLayout?: str
       "cards-grid": "cards-grid",
       "quote-style": "quote-style",
       "timeline": "timeline",
+      "diagonal-cut": "diagonal-cut",
+      "circle-focus": "circle-focus",
+      "wave-layout": "wave-layout",
     };
     const mappedLayout = layoutMap[slideLayout];
     if (mappedLayout) return mappedLayout;
@@ -76,6 +80,7 @@ function getLayoutVariant(index: number, themeType: ThemeType, slideLayout?: str
     dark: ["left-content", "image-focus", "right-content", "split-diagonal", "minimal-left", "centered"],
     light: ["centered", "left-content", "cards-grid", "right-content", "quote-style", "minimal-left"],
     sunset: ["image-focus", "split-diagonal", "timeline", "left-content", "centered", "right-content"],
+    ocean: ["diagonal-cut", "circle-focus", "wave-layout", "left-content", "cards-grid", "centered"],
   };
   const layouts = layoutsByTheme[themeType];
   return layouts[index % layouts.length]!;
@@ -177,10 +182,34 @@ export default function SlideRenderer({
       sideOverlay: "bg-gradient-to-r from-[#1c1017]/90 via-transparent to-transparent",
       topOverlay: "bg-gradient-to-b from-[#1c1017]/60 to-transparent",
     },
+    ocean: {
+      bg: "from-[#0a1628] via-[#0d1f35] to-[#122a45]",
+      bgSolid: "bg-[#0a1628]",
+      orb1: "bg-teal-500/12",
+      orb2: "bg-cyan-500/10",
+      orb1Strong: "bg-teal-500/20",
+      orb2Strong: "bg-cyan-500/15",
+      accentMuted: "bg-teal-500/80",
+      accentLine: "from-teal-400",
+      accentBorder: "from-teal-500/30 via-transparent to-cyan-500/25",
+      accentGlow: "from-teal-500/40 to-cyan-500/35",
+      border: "border-[#1e3a5f]",
+      borderLine: "via-[#1e3a5f]",
+      surface: "bg-[#122a45]",
+      surfaceAlt: "bg-[#0d1f35]/80",
+      overlay: "from-[#0a1628]/50",
+      cardBg: "bg-[#122a45]/80 border-teal-500/20",
+      indicatorMuted: "text-cyan-400/50",
+      hoverAccent: "hover:text-teal-400",
+      imgOverlay: "bg-gradient-to-r from-[#0a1628] via-[#0a1628]/80 to-transparent",
+      fullOverlay: "bg-gradient-to-t from-[#0a1628] via-[#0a1628]/70 to-[#0a1628]/30",
+      sideOverlay: "bg-gradient-to-r from-[#0a1628]/90 via-transparent to-transparent",
+      topOverlay: "bg-gradient-to-b from-[#0a1628]/60 to-transparent",
+    },
   };
 
   const colors = {
-    ...colorMap[themeType],
+    ...colorMap[themeType as keyof typeof colorMap] || colorMap.dark,
     accent: theme.colors.primary,
     text: theme.colors.heading,
     textMuted: theme.colors.textMuted,
@@ -753,6 +782,206 @@ export default function SlideRenderer({
             <div className="w-[35%] p-8 flex items-center">
               <ImageBlock className="w-full h-[70%]" />
             </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // LAYOUT 10: Diagonal Cut - Slanted image with geometric accents (Ocean theme signature)
+  if (layout === "diagonal-cut") {
+    const firstImage = allImages[0];
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        
+        {/* Diagonal image section */}
+        {hasImage && firstImage && (
+          <div className="absolute right-0 top-0 bottom-0 w-[55%]" style={{ clipPath: "polygon(20% 0, 100% 0, 100% 100%, 0% 100%)" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={firstImage.url} alt={firstImage.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0a1628] via-transparent to-transparent" />
+          </div>
+        )}
+        
+        {/* Geometric accent shapes */}
+        <div className="absolute top-20 right-[45%] w-32 h-32 border-2 border-teal-500/20 rotate-45" />
+        <div className="absolute bottom-20 right-[50%] w-20 h-20 border border-cyan-500/15 rotate-12" />
+        <div className={`absolute top-1/3 left-8 w-1 h-32 bg-gradient-to-b ${colors.accentLine} to-transparent`} />
+        
+        {/* Glowing orbs */}
+        <div className={`absolute top-0 left-1/4 w-96 h-96 ${colors.orb1Strong} rounded-full blur-3xl`} />
+        <div className={`absolute bottom-0 right-1/3 w-72 h-72 ${colors.orb2Strong} rounded-full blur-3xl`} />
+        
+        <SlideIndicator position="top-left" />
+        
+        <div className="relative h-full flex">
+          <div className="w-[50%] flex flex-col justify-center p-12 pt-20">
+            {/* Decorative line above title */}
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: colors.accent }} />
+              <div className={`w-24 h-0.5 bg-gradient-to-r ${colors.accentLine} to-transparent`} />
+            </div>
+            
+            <Title className="text-4xl md:text-5xl mb-8" />
+            {bulletPoints.length > 0 && <BulletPoints />}
+          </div>
+        </div>
+        
+        {/* Bottom accent line */}
+        <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-500/50 ${colors.borderLine} to-transparent`} />
+      </div>
+    );
+  }
+
+  // LAYOUT 11: Circle Focus - Circular image frames with floating elements (Ocean theme)
+  if (layout === "circle-focus") {
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        
+        {/* Decorative circles */}
+        <div className="absolute top-10 right-10 w-64 h-64 rounded-full border border-teal-500/10" />
+        <div className="absolute top-16 right-16 w-52 h-52 rounded-full border border-cyan-500/15" />
+        <div className="absolute bottom-20 left-20 w-40 h-40 rounded-full border border-teal-500/10" />
+        
+        {/* Glowing orbs */}
+        <div className={`absolute top-1/4 right-1/4 w-80 h-80 ${colors.orb1Strong} rounded-full blur-3xl`} />
+        <div className={`absolute bottom-1/4 left-1/3 w-64 h-64 ${colors.orb2} rounded-full blur-3xl`} />
+        
+        <SlideIndicator position="top-left" />
+        
+        <div className="relative h-full flex items-center">
+          {/* Content side */}
+          <div className="w-[55%] flex flex-col justify-center p-12">
+            <Title className="text-4xl md:text-5xl mb-8" />
+            {bulletPoints.length > 0 && <BulletPoints />}
+          </div>
+          
+          {/* Circular images */}
+          <div className="w-[45%] relative flex items-center justify-center">
+            {hasImage && (
+              <div className="relative">
+                {/* Main circular image */}
+                <div className="w-72 h-72 rounded-full overflow-hidden border-4 shadow-2xl relative z-10" style={{ borderColor: colors.accent, boxShadow: `0 0 60px ${colors.accent}30` }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={allImages[0]!.url} alt={allImages[0]!.alt || slide.title} className="w-full h-full object-cover" />
+                </div>
+                
+                {/* Secondary circular images if multiple */}
+                {hasMultipleImages && allImages[1] && (
+                  <div className="absolute -bottom-8 -left-16 w-32 h-32 rounded-full overflow-hidden border-2 shadow-xl z-20" style={{ borderColor: `${colors.accent}80` }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={allImages[1].url} alt={allImages[1].alt || ""} className="w-full h-full object-cover" />
+                  </div>
+                )}
+                {allImages.length > 2 && allImages[2] && (
+                  <div className="absolute -top-4 -right-12 w-24 h-24 rounded-full overflow-hidden border-2 shadow-xl z-20" style={{ borderColor: `${colors.accent}60` }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={allImages[2].url} alt={allImages[2].alt || ""} className="w-full h-full object-cover" />
+                  </div>
+                )}
+                
+                {/* Decorative ring */}
+                <div className="absolute inset-0 w-72 h-72 rounded-full border-2 border-dashed animate-spin-slow" style={{ borderColor: `${colors.accent}20`, animationDuration: "30s" }} />
+              </div>
+            )}
+            
+            {!hasImage && (
+              <div className="w-64 h-64 rounded-full border-2 border-dashed flex items-center justify-center" style={{ borderColor: `${colors.accent}40` }}>
+                <div className="text-center" style={{ color: colors.textMuted }}>
+                  <ImageIcon size={48} className="mx-auto mb-2 opacity-40" />
+                  <p className="text-sm">Add image</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Bottom wave accent */}
+        <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-transparent via-teal-500/30 to-transparent" />
+      </div>
+    );
+  }
+
+  // LAYOUT 12: Wave Layout - Flowing curves with content cards (Ocean theme)
+  if (layout === "wave-layout") {
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 bg-gradient-to-b ${colors.bg}`} />
+        
+        {/* Wave SVG background */}
+        <svg className="absolute bottom-0 left-0 right-0 h-48 opacity-20" viewBox="0 0 1440 320" preserveAspectRatio="none">
+          <path fill="#14b8a6" d="M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,138.7C672,128,768,160,864,181.3C960,203,1056,213,1152,197.3C1248,181,1344,139,1392,117.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z" />
+        </svg>
+        <svg className="absolute bottom-0 left-0 right-0 h-32 opacity-10" viewBox="0 0 1440 320" preserveAspectRatio="none">
+          <path fill="#06b6d4" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,218.7C672,235,768,245,864,234.7C960,224,1056,192,1152,181.3C1248,171,1344,181,1392,186.7L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z" />
+        </svg>
+        
+        {/* Floating bubbles */}
+        <div className="absolute top-20 right-20 w-6 h-6 rounded-full bg-teal-500/20" />
+        <div className="absolute top-40 right-40 w-4 h-4 rounded-full bg-cyan-500/15" />
+        <div className="absolute top-32 right-60 w-3 h-3 rounded-full bg-teal-400/25" />
+        <div className="absolute bottom-40 left-20 w-5 h-5 rounded-full bg-cyan-500/20" />
+        
+        {/* Glowing orbs */}
+        <div className={`absolute top-0 right-1/4 w-96 h-96 ${colors.orb1} rounded-full blur-3xl`} />
+        
+        <SlideIndicator position="top-left" />
+        
+        <div className="relative h-full p-12 pt-20">
+          <div className="flex items-start gap-8">
+            {/* Title section */}
+            <div className={`${hasImage ? "w-[50%]" : "w-full"}`}>
+              <Title className="text-4xl md:text-5xl mb-8" />
+            </div>
+            
+            {/* Image in rounded card */}
+            {hasImage && (
+              <div className="w-[45%] relative">
+                <div className="rounded-3xl overflow-hidden shadow-2xl border" style={{ borderColor: `${colors.accent}30` }}>
+                  <div className="aspect-video">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={allImages[0]!.url} alt={allImages[0]!.alt || slide.title} className="w-full h-full object-cover" />
+                  </div>
+                </div>
+                {/* Glow effect */}
+                <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-teal-500/20 to-cyan-500/10 blur-xl -z-10" />
+              </div>
+            )}
+          </div>
+          
+          {/* Content cards */}
+          {bulletPoints.length > 0 && (
+            <div className="mt-8 grid grid-cols-2 gap-4 max-w-3xl">
+              {bulletPoints.map((point, i) => (
+                <div key={i} className={`p-5 rounded-2xl backdrop-blur-sm border ${colors.cardBg}`} style={{ borderColor: `${colors.accent}20` }}>
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0" style={{ backgroundColor: `${colors.accent}20`, color: colors.accent }}>
+                      {i + 1}
+                    </div>
+                    <EditableText
+                      value={point}
+                      isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                      onStartEdit={() => onStartEditing(index, "bullet", i)}
+                      onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                      onFinish={onFinishEditing}
+                      className="flex-1 text-base leading-relaxed"
+                      style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+                      isOwner={canEdit}
+                      isHovered={isHovered}
+                      onDelete={() => onDeleteBullet(index, i)}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {canEdit && isHovered && bulletPoints.length > 0 && (
+            <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+              <Plus size={14} /> Add card
+            </button>
           )}
         </div>
       </div>
