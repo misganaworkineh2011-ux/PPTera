@@ -262,6 +262,7 @@ export default function CreatePresentationClient({
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
+  const [isCreatingPresentation, setIsCreatingPresentation] = useState(false);
 
   const allSlideOptions = getAllSlideOptions(subscriptionPlan);
 
@@ -377,9 +378,44 @@ export default function CreatePresentationClient({
     router.push(`/createpresentation?mode=${mode}`);
   };
 
-  const handleCreatePresentation = () => {
-    // TODO: Navigate to presentation editor with the outline
-    console.log("Creating presentation with slides:", slides);
+  const handleCreatePresentation = async () => {
+    if (slides.length === 0 || isCreatingPresentation) return;
+
+    setIsCreatingPresentation(true);
+
+    try {
+      const response = await fetch("/api/create-presentation", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          outlineId: outlineId || existingOutline?.id,
+          slides: slides,
+          theme: formData.theme,
+          imageSource: formData.imageSource,
+          metadata: {
+            topic: formData.description || existingOutline?.metadata?.topic || "Presentation",
+            totalSlides: slides.length,
+            tone: formData.tone,
+            language: formData.language,
+          },
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create presentation");
+      }
+
+      // Redirect to the presentation page
+      router.push(data.redirectUrl);
+    } catch (error) {
+      console.error("Error creating presentation:", error);
+      setIsCreatingPresentation(false);
+      // You could add a toast notification here
+    }
   };
 
   // Calculate stats
@@ -760,40 +796,45 @@ export default function CreatePresentationClient({
                                 className="aspect-[1.6/1] w-full rounded-md shadow-sm relative overflow-hidden"
                                 style={{
                                   backgroundColor: theme.preview.titleBg,
-                                  backgroundImage: theme.slideStyles.title.pattern || "none",
+                                  backgroundImage: theme.previewBackgroundImage 
+                                    ? `url(${theme.previewBackgroundImage})`
+                                    : theme.slideStyles.title.pattern || "none",
+                                  backgroundSize: theme.previewBackgroundImage ? "cover" : "auto",
+                                  backgroundPosition: theme.previewBackgroundImage ? "center" : "center",
                                 }}
                               >
-                                <div className="absolute inset-0 p-4 flex flex-col justify-center">
+                                {/* Small content box overlaid on background */}
+                                <div 
+                                  className="absolute bottom-3 left-3 right-3 rounded-lg p-3 backdrop-blur-md transition-all duration-300"
+                                  style={{
+                                    backgroundColor: theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
+                                    border: theme.cardBox?.borderColor ? `1px solid ${theme.cardBox.borderColor}` : "none",
+                                    boxShadow: theme.cardBox?.shadow || "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                                    maxWidth: "75%",
+                                  }}
+                                >
                                   <div
-                                    className="text-2xl font-bold mb-2"
+                                    className="text-lg font-bold mb-1"
                                     style={{
                                       fontFamily: theme.fonts.heading.family,
-                                      color:
-                                        theme.colors.heading === "#f1f5f9" ||
-                                        theme.colors.heading === "#ffffff"
-                                          ? "#ffffff"
-                                          : "#1e293b",
+                                      color: theme.cardBox?.titleColor || theme.colors.heading,
                                     }}
                                   >
                                     Title
                                   </div>
                                   <div
-                                    className="text-sm font-medium opacity-90"
+                                    className="text-xs font-medium"
                                     style={{
                                       fontFamily: theme.fonts.body.family,
-                                      color:
-                                        theme.colors.heading === "#f1f5f9" ||
-                                        theme.colors.heading === "#ffffff"
-                                          ? "#e2e8f0"
-                                          : "#475569",
+                                      color: theme.cardBox?.bodyColor || theme.colors.text,
                                     }}
                                   >
                                     Body &{" "}
                                     <span
                                       className="underline decoration-2 underline-offset-2"
                                       style={{
-                                        color: theme.preview.accentColor,
-                                        textDecorationColor: theme.preview.accentColor,
+                                        color: theme.cardBox?.accentColor || theme.preview.accentColor,
+                                        textDecorationColor: theme.cardBox?.accentColor || theme.preview.accentColor,
                                       }}
                                     >
                                       link
@@ -878,10 +919,17 @@ export default function CreatePresentationClient({
               <button
                 type="button"
                 onClick={handleCreatePresentation}
-                disabled={!isCompleted || slides.length === 0}
-                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white text-sm font-semibold shadow-md transition hover:opacity-90 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!isCompleted || slides.length === 0 || isCreatingPresentation}
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white text-sm font-semibold shadow-md transition hover:opacity-90 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                Create Presentation
+                {isCreatingPresentation ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    {formData.imageSource === "stock-photos" ? "Fetching Images..." : "Creating..."}
+                  </>
+                ) : (
+                  "Create Presentation"
+                )}
               </button>
             </div>
           </div>

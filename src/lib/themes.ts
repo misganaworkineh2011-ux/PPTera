@@ -102,6 +102,19 @@ export interface Theme {
     textColor: string;
     accentColor: string;
   };
+  // Background images (optional - for themes with image backgrounds)
+  backgroundImage?: string; // Path to full background image
+  previewBackgroundImage?: string; // Path to preview/smaller background image
+  overlay?: string; // CSS gradient overlay for text readability
+  // Content box style for the preview card
+  cardBox?: {
+    background: string;
+    borderColor?: string;
+    titleColor: string;
+    bodyColor: string;
+    accentColor: string;
+    shadow?: string;
+  };
 }
 
 export const themes: Theme[] = [
@@ -196,6 +209,14 @@ export const themes: Theme[] = [
       textColor: "#334155",
       accentColor: "#2563eb",
     },
+    cardBox: {
+      background: "rgba(255, 255, 255, 0.95)",
+      borderColor: "transparent",
+      titleColor: "#0f172a",
+      bodyColor: "#334155",
+      accentColor: "#2563eb",
+      shadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+    },
   },
   {
     id: "elegant-dark",
@@ -289,6 +310,18 @@ export const themes: Theme[] = [
       bodyBg: "#0f172a",
       textColor: "#cbd5e1",
       accentColor: "#38bdf8",
+    },
+    // Background image for elegant-dark theme
+    backgroundImage: "/themes/backgrounds/elegant-dark.jpg",
+    previewBackgroundImage: "/themes/backgrounds/elegant-dark.jpg",
+    overlay: "linear-gradient(180deg, rgba(15, 23, 42, 0.6) 0%, rgba(15, 23, 42, 0.3) 100%)",
+    cardBox: {
+      background: "rgba(30, 41, 59, 0.8)",
+      borderColor: "rgba(56, 189, 248, 0.3)",
+      titleColor: "#f1f5f9",
+      bodyColor: "#cbd5e1",
+      accentColor: "#38bdf8",
+      shadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
     },
   },
 ];

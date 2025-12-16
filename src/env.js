@@ -17,6 +17,7 @@ export const env = createEnv({
     POLAR_PRODUCT_YEARLY_BUSINESS: z.string().optional(),
     CRON_SECRET: z.string().optional(),
     OPENAI_API_KEY: z.string(),
+    PEXELS_API_KEY: z.string().optional(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -40,6 +41,7 @@ export const env = createEnv({
     POLAR_PRODUCT_YEARLY_BUSINESS: process.env.POLAR_PRODUCT_YEARLY_BUSINESS,
     CRON_SECRET: process.env.CRON_SECRET,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    PEXELS_API_KEY: process.env.PEXELS_API_KEY,
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
   },

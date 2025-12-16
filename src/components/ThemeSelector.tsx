@@ -137,40 +137,45 @@ export default function ThemeSelector({
                         className="aspect-[1.6/1] w-full rounded-md shadow-sm relative overflow-hidden"
                         style={{
                           backgroundColor: theme.preview.titleBg,
-                          backgroundImage: theme.slideStyles.title.pattern || "none",
+                          backgroundImage: theme.previewBackgroundImage 
+                            ? `url(${theme.previewBackgroundImage})`
+                            : theme.slideStyles.title.pattern || "none",
+                          backgroundSize: theme.previewBackgroundImage ? "cover" : "auto",
+                          backgroundPosition: theme.previewBackgroundImage ? "center" : "center",
                         }}
                       >
-                        <div className="absolute inset-0 p-4 flex flex-col justify-center">
+                        {/* Small content box overlaid on background */}
+                        <div 
+                          className="absolute bottom-3 left-3 right-3 rounded-lg p-3 backdrop-blur-md transition-all duration-300"
+                          style={{
+                            backgroundColor: theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
+                            border: theme.cardBox?.borderColor ? `1px solid ${theme.cardBox.borderColor}` : "none",
+                            boxShadow: theme.cardBox?.shadow || "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                            maxWidth: "75%",
+                          }}
+                        >
                           <div
-                            className="text-2xl font-bold mb-2"
+                            className="text-lg font-bold mb-1"
                             style={{
                               fontFamily: theme.fonts.heading.family,
-                              color:
-                                theme.colors.heading === "#f1f5f9" ||
-                                theme.colors.heading === "#ffffff"
-                                  ? "#ffffff"
-                                  : "#1e293b",
+                              color: theme.cardBox?.titleColor || theme.colors.heading,
                             }}
                           >
                             Title
                           </div>
                           <div
-                            className="text-sm font-medium opacity-90"
+                            className="text-xs font-medium"
                             style={{
                               fontFamily: theme.fonts.body.family,
-                              color:
-                                theme.colors.heading === "#f1f5f9" ||
-                                theme.colors.heading === "#ffffff"
-                                  ? "#e2e8f0"
-                                  : "#475569",
+                              color: theme.cardBox?.bodyColor || theme.colors.text,
                             }}
                           >
                             Body &{" "}
                             <span
                               className="underline decoration-2 underline-offset-2"
                               style={{
-                                color: theme.preview.accentColor,
-                                textDecorationColor: theme.preview.accentColor,
+                                color: theme.cardBox?.accentColor || theme.preview.accentColor,
+                                textDecorationColor: theme.cardBox?.accentColor || theme.preview.accentColor,
                               }}
                             >
                               link
@@ -216,14 +221,27 @@ export default function ThemeSelector({
 
           {/* Preview Content */}
           <div
-            className="flex-1 overflow-y-auto p-8"
+            className="flex-1 overflow-y-auto p-8 relative"
             style={{
               backgroundColor: previewTheme.preview.bodyBg,
+              backgroundImage: previewTheme.backgroundImage 
+                ? `url(${previewTheme.backgroundImage})`
+                : "none",
+              backgroundSize: previewTheme.backgroundImage ? "cover" : "auto",
+              backgroundPosition: previewTheme.backgroundImage ? "center" : "center",
+              backgroundAttachment: previewTheme.backgroundImage ? "fixed" : "scroll",
               color: previewTheme.preview.textColor,
             }}
           >
+            {/* Overlay for text readability */}
+            {previewTheme.overlay && (
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{ background: previewTheme.overlay }}
+              />
+            )}
             {/* Top Section */}
-            <div className="mb-8">
+            <div className="mb-8 relative z-10">
               <h2
                 className="mb-4 text-2xl font-bold"
                 style={{ 
@@ -250,7 +268,7 @@ export default function ThemeSelector({
             </div>
 
             {/* Main Content */}
-            <div className="mb-8" style={{ fontFamily: previewTheme.fonts.body.family }}>
+            <div className="mb-8 relative z-10" style={{ fontFamily: previewTheme.fonts.body.family }}>
               <div className="mb-4 text-4xl">Hello 👋</div>
               <h1
                 className="mb-4 text-4xl font-bold"
@@ -330,7 +348,7 @@ export default function ThemeSelector({
             </div>
 
             {/* Bottom Section */}
-            <div style={{ fontFamily: previewTheme.fonts.body.family }}>
+            <div className="relative z-10" style={{ fontFamily: previewTheme.fonts.body.family }}>
               <h2
                 className="mb-4 text-2xl font-bold"
                 style={{ 
