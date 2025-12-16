@@ -2,56 +2,38 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import {
   ChevronLeft,
   ChevronRight,
   ArrowLeft,
-  Maximize2,
   Minimize2,
-  Edit3,
   Download,
   Share2,
   Play,
   Grid3X3,
   Sparkles,
-  ImageIcon,
   X,
-  Globe,
-  Lock,
   CheckCircle2,
+  MoreHorizontal,
+  LayoutGrid,
+  Trash2,
+  Copy,
+  MoveUp,
+  MoveDown,
+  PlusCircle,
+  ImagePlus,
+  ImageOff,
+  Loader2,
 } from "lucide-react";
 import { getThemeById, getDefaultTheme, type Theme } from "~/lib/themes";
-
-interface SlideData {
-  type: "title" | "content";
-  title: string;
-  subtitle?: string;
-  bulletPoints?: string[];
-  image?: {
-    url: string;
-    alt: string;
-    photographer?: string;
-    photographerUrl?: string;
-    source: string;
-  } | null;
-  layout?: string;
-}
-
-interface PresentationData {
-  id: string;
-  title: string;
-  description: string | null;
-  slides: SlideData[];
-  content: {
-    theme?: string;
-    themeConfig?: Record<string, unknown>;
-    imageSource?: string;
-    metadata?: Record<string, unknown>;
-  };
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { type LayoutType } from "~/lib/slide-layouts";
+import { type SlideData, type PresentationData, type EditingState } from "~/components/presentation/types";
+import EditableText from "~/components/presentation/EditableText";
+import SlideRenderer from "~/components/presentation/SlideRenderer";
+import LayoutModal from "~/components/presentation/LayoutModal";
+import ExportModal from "~/components/presentation/ExportModal";
+import ShareModal from "~/components/presentation/ShareModal";
+import FeedbackSection from "~/components/presentation/FeedbackSection";
 
 interface PresentationViewerProps {
   presentation: PresentationData;
@@ -60,50 +42,204 @@ interface PresentationViewerProps {
   collaboratorRole?: string;
 }
 
-// Get Google Fonts for the theme
 function getGoogleFontsUrl(theme: Theme): string {
   const fonts = new Set<string>();
-  
-  // Extract font family names (remove fallbacks and quotes)
-  const extractFontName = (family: string) => {
-    return family.split(",")[0]?.replace(/['"]/g, "").trim() || "";
-  };
-  
+  const extractFontName = (family: string) => family.split(",")[0]?.replace(/['"]/g, "").trim() || "";
   fonts.add(extractFontName(theme.fonts.heading.family));
   fonts.add(extractFontName(theme.fonts.body.family));
-  
   const fontParams = Array.from(fonts)
-    .filter(f => f && !["sans-serif", "serif", "monospace"].includes(f.toLowerCase()))
-    .map(f => `family=${f.replace(/\s+/g, "+")}:wght@400;500;600;700`)
+    .filter((f) => f && !["sans-serif", "serif", "monospace"].includes(f.toLowerCase()))
+    .map((f) => `family=${f.replace(/\s+/g, "+")}:wght@400;500;600;700`)
     .join("&");
-  
   return `https://fonts.googleapis.com/css2?${fontParams}&display=swap`;
 }
 
-export default function PresentationViewer({
-  presentation,
-  mode,
-  isOwner,
-}: PresentationViewerProps) {
+// Theme type helper - "dark" for Elegant Noir, "light" for Arctic Frost, "sunset" for Sunset Gradient
+type ThemeType = "dark" | "light" | "sunset";
+function getThemeType(theme: Theme): ThemeType {
+  if (theme.id === "arctic-frost") return "light";
+  if (theme.id === "sunset-gradient") return "sunset";
+  return "dark"; // elegant-noir and default
+}
+
+// Theme-aware UI colors
+function getUIColors(themeType: ThemeType) {
+  const colors = {
+    dark: {
+      pageBg: "bg-gradient-to-br from-zinc-950 via-black to-zinc-950",
+      headerBg: "bg-zinc-950/90 border-zinc-800",
+      headerText: "text-zinc-100",
+      headerMuted: "text-zinc-500",
+      headerHover: "hover:bg-zinc-800",
+      headerIcon: "text-zinc-400",
+      headerActive: "bg-zinc-800 text-zinc-200",
+      divider: "bg-zinc-800",
+      ring: "ring-zinc-800",
+      ringHover: "ring-zinc-700 hover:ring-zinc-600",
+      thumbBg: "bg-black/60",
+      thumbText: "text-white",
+      scrollbar: "scrollbar-thumb-zinc-700",
+      kbd: "bg-zinc-800 text-zinc-400",
+      endCard: "bg-zinc-900/90 border-zinc-800",
+      endText: "text-zinc-200",
+      endMuted: "text-zinc-500",
+      titleBg: "bg-gradient-to-br from-zinc-900 via-zinc-950 to-black",
+      orb1: "bg-amber-500/10",
+      orb2: "bg-indigo-500/10",
+      accentLine: "from-amber-500",
+      borderLine: "via-zinc-800",
+      indicatorMuted: "text-zinc-600",
+      navBtn: "bg-zinc-900 text-zinc-300 hover:bg-zinc-800 border border-zinc-700",
+      navDot: "bg-zinc-700 hover:bg-zinc-600",
+    },
+    light: {
+      pageBg: "bg-gradient-to-br from-slate-100 via-white to-slate-50",
+      headerBg: "bg-white/90 border-slate-200",
+      headerText: "text-slate-800",
+      headerMuted: "text-slate-500",
+      headerHover: "hover:bg-slate-100",
+      headerIcon: "text-slate-500",
+      headerActive: "bg-slate-200 text-slate-700",
+      divider: "bg-slate-200",
+      ring: "ring-slate-200",
+      ringHover: "ring-slate-200 hover:ring-slate-300",
+      thumbBg: "bg-white/80",
+      thumbText: "text-slate-700",
+      scrollbar: "scrollbar-thumb-slate-300",
+      kbd: "bg-slate-200 text-slate-600",
+      endCard: "bg-white/90 border-slate-200",
+      endText: "text-slate-700",
+      endMuted: "text-slate-500",
+      titleBg: "bg-gradient-to-br from-slate-50 via-white to-cyan-50",
+      orb1: "bg-cyan-500/15",
+      orb2: "bg-violet-500/10",
+      accentLine: "from-cyan-500",
+      borderLine: "via-slate-300",
+      indicatorMuted: "text-slate-400",
+      navBtn: "bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 shadow-sm",
+      navDot: "bg-slate-300 hover:bg-slate-400",
+    },
+    sunset: {
+      pageBg: "bg-gradient-to-br from-[#1c1017] via-[#261520] to-[#1c1017]",
+      headerBg: "bg-[#1c1017]/95 border-pink-900/40",
+      headerText: "text-pink-50",
+      headerMuted: "text-pink-300/60",
+      headerHover: "hover:bg-pink-950/50",
+      headerIcon: "text-pink-300/70",
+      headerActive: "bg-pink-900/40 text-pink-100",
+      divider: "bg-pink-900/40",
+      ring: "ring-pink-900/50",
+      ringHover: "ring-pink-800/50 hover:ring-pink-700/50",
+      thumbBg: "bg-[#1c1017]/80",
+      thumbText: "text-pink-100",
+      scrollbar: "scrollbar-thumb-pink-900/50",
+      kbd: "bg-pink-950/60 text-pink-300",
+      endCard: "bg-[#2d1a24]/90 border-pink-800/30",
+      endText: "text-pink-100",
+      endMuted: "text-pink-300/60",
+      titleBg: "bg-gradient-to-br from-rose-950 via-[#1c1017] to-[#261520]",
+      orb1: "bg-pink-500/15",
+      orb2: "bg-orange-500/10",
+      accentLine: "from-pink-400",
+      borderLine: "via-pink-900/40",
+      indicatorMuted: "text-pink-300/50",
+      navBtn: "bg-[#2d1a24] text-pink-200 hover:bg-pink-950/60 border border-pink-800/40",
+      navDot: "bg-pink-800/50 hover:bg-pink-700/50",
+    },
+  };
+  return colors[themeType];
+}
+
+export default function PresentationViewer({ presentation, mode, isOwner }: PresentationViewerProps) {
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showThumbnails, setShowThumbnails] = useState(true);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
-  const [viewMode, setViewMode] = useState<"slides" | "scroll">("scroll"); // Default to scroll view
+  const [viewMode, setViewMode] = useState<"slides" | "scroll">("slides");
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editedTitle, setEditedTitle] = useState(presentation.title);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
-  const { slides, content } = presentation;
+  // Editing state
+  const [slidesData, setSlidesData] = useState<SlideData[]>(presentation.slides);
+  const [activeSlideIndex, setActiveSlideIndex] = useState<number | null>(null);
+  const [showLayoutModal, setShowLayoutModal] = useState(false);
+  const [showSlideMenu, setShowSlideMenu] = useState<number | null>(null);
+  const [editingText, setEditingText] = useState<EditingState | null>(null);
+  const [showImageModal, setShowImageModal] = useState<number | null>(null);
+  const [imageUrl, setImageUrl] = useState("");
+  const [isLoadingImage, setIsLoadingImage] = useState(false);
+
+  const slides = slidesData;
+  const { content } = presentation;
   const theme = getThemeById(content.theme || "") || getDefaultTheme();
   const fontsUrl = getGoogleFontsUrl(theme);
 
-  const goToSlide = useCallback((index: number) => {
-    if (index >= 0 && index < slides.length && !isAnimating) {
-      setIsAnimating(true);
-      setCurrentSlide(index);
-      setTimeout(() => setIsAnimating(false), 300);
+  // Title save
+  const handleSaveTitle = async () => {
+    if (editedTitle.trim() === "" || editedTitle === presentation.title) {
+      setEditedTitle(presentation.title);
+      setIsEditingTitle(false);
+      return;
     }
-  }, [slides.length, isAnimating]);
+    try {
+      const response = await fetch(`/api/presentations/${presentation.id}/rename`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: editedTitle.trim() }),
+      });
+      if (response.ok) {
+        presentation.title = editedTitle.trim();
+        setIsEditingTitle(false);
+      } else {
+        setEditedTitle(presentation.title);
+      }
+    } catch {
+      setEditedTitle(presentation.title);
+    }
+  };
+
+  // Export
+  const handleExport = async (format: "pdf" | "pptx" | "images") => {
+    setIsExporting(true);
+    try {
+      const response = await fetch(`/api/presentations/${presentation.id}/export`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ format }),
+      });
+      if (!response.ok) throw new Error("Export failed");
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${presentation.title}.${format === "images" ? "zip" : format}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      setShowExportModal(false);
+    } catch {
+      alert("Export failed. Please try again.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Navigation
+  const goToSlide = useCallback(
+    (index: number) => {
+      if (index >= 0 && index < slides.length && !isAnimating) {
+        setIsAnimating(true);
+        setCurrentSlide(index);
+        setTimeout(() => setIsAnimating(false), 300);
+      }
+    },
+    [slides.length, isAnimating]
+  );
 
   const nextSlide = useCallback(() => goToSlide(currentSlide + 1), [currentSlide, goToSlide]);
   const prevSlide = useCallback(() => goToSlide(currentSlide - 1), [currentSlide, goToSlide]);
@@ -111,31 +247,40 @@ export default function PresentationViewer({
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (editingText) return;
       if (e.key === "ArrowRight" || e.key === " ") {
         e.preventDefault();
         nextSlide();
       } else if (e.key === "ArrowLeft") {
         e.preventDefault();
         prevSlide();
-      } else if (e.key === "Escape" && isFullscreen) {
-        document.exitFullscreen();
+      } else if (e.key === "Escape") {
+        if (isFullscreen) document.exitFullscreen();
+        setEditingText(null);
       } else if (e.key === "f") {
         toggleFullscreen();
       }
     };
-
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [nextSlide, prevSlide, isFullscreen]);
+  }, [nextSlide, prevSlide, isFullscreen, editingText]);
 
-  // Fullscreen change listener
   useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
+    const handleFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      // Don't close if clicking inside the menu
+      const target = e.target as HTMLElement;
+      if (target.closest('[data-slide-menu]')) return;
+      if (showSlideMenu !== null) setShowSlideMenu(null);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showSlideMenu]);
 
   const toggleFullscreen = async () => {
     if (!document.fullscreenElement) {
@@ -143,6 +288,130 @@ export default function PresentationViewer({
       setShowThumbnails(false);
     } else {
       await document.exitFullscreen();
+    }
+  };
+
+  // Slide operations
+  const updateSlideContent = (slideIndex: number, field: string, value: string, bulletIndex?: number) => {
+    const newSlides = [...slidesData];
+    const existingSlide = newSlides[slideIndex];
+    if (!existingSlide) return;
+    const slide: SlideData = { ...existingSlide };
+    if (field === "title") slide.title = value;
+    else if (field === "subtitle") slide.subtitle = value;
+    else if (field === "bullet" && bulletIndex !== undefined) {
+      const bullets = [...(slide.bulletPoints || [])];
+      bullets[bulletIndex] = value;
+      slide.bulletPoints = bullets;
+    }
+    newSlides[slideIndex] = slide;
+    setSlidesData(newSlides);
+  };
+
+  const changeSlideLayout = (slideIndex: number, layoutId: LayoutType) => {
+    const newSlides = [...slidesData];
+    const existingSlide = newSlides[slideIndex];
+    if (existingSlide) {
+      newSlides[slideIndex] = { ...existingSlide, layout: layoutId };
+      setSlidesData(newSlides);
+    }
+    setShowLayoutModal(false);
+  };
+
+  const duplicateSlide = (index: number) => {
+    const original = slidesData[index];
+    if (original) {
+      const newSlides = [...slidesData];
+      newSlides.splice(index + 1, 0, { ...original });
+      setSlidesData(newSlides);
+      setCurrentSlide(index + 1);
+    }
+    setShowSlideMenu(null);
+  };
+
+  const addSlideAt = (index: number) => {
+    const newSlide: SlideData = {
+      type: "content",
+      title: "New Slide",
+      bulletPoints: ["Add your content here"],
+      layout: "content-left" as LayoutType,
+    };
+    const newSlides = [...slidesData];
+    newSlides.splice(index + 1, 0, newSlide);
+    setSlidesData(newSlides);
+    setCurrentSlide(index + 1);
+    setShowSlideMenu(null);
+  };
+
+  const deleteSlide = (index: number) => {
+    if (slidesData.length <= 1) return;
+    const newSlides = slidesData.filter((_, i) => i !== index);
+    setSlidesData(newSlides);
+    if (currentSlide >= newSlides.length) setCurrentSlide(newSlides.length - 1);
+    setShowSlideMenu(null);
+  };
+
+  const moveSlide = (index: number, direction: "up" | "down") => {
+    const newIndex = direction === "up" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= slidesData.length) return;
+    const newSlides = [...slidesData];
+    const slideA = newSlides[index];
+    const slideB = newSlides[newIndex];
+    if (slideA && slideB) {
+      newSlides[index] = slideB;
+      newSlides[newIndex] = slideA;
+      setSlidesData(newSlides);
+      setCurrentSlide(newIndex);
+    }
+    setShowSlideMenu(null);
+  };
+
+  const addBulletPoint = (slideIndex: number) => {
+    const slide = slidesData[slideIndex];
+    if (slide) {
+      const newSlides = [...slidesData];
+      newSlides[slideIndex] = { ...slide, bulletPoints: [...(slide.bulletPoints || []), "New point"] };
+      setSlidesData(newSlides);
+    }
+  };
+
+  const deleteBulletPoint = (slideIndex: number, bulletIndex: number) => {
+    const slide = slidesData[slideIndex];
+    if (slide) {
+      const newSlides = [...slidesData];
+      newSlides[slideIndex] = { ...slide, bulletPoints: (slide.bulletPoints || []).filter((_, i) => i !== bulletIndex) };
+      setSlidesData(newSlides);
+    }
+  };
+
+  const startEditing = (slideIndex: number, field: string, bulletIndex?: number) => {
+    setEditingText({ slideIndex, field, bulletIndex });
+  };
+
+  const updateSlideImage = (slideIndex: number, imageUrl: string) => {
+    const slide = slidesData[slideIndex];
+    if (slide) {
+      const newSlides = [...slidesData];
+      newSlides[slideIndex] = {
+        ...slide,
+        image: imageUrl ? {
+          url: imageUrl,
+          alt: slide.title,
+          source: "custom",
+        } : null,
+      };
+      setSlidesData(newSlides);
+    }
+    setShowImageModal(null);
+    setImageUrl("");
+  };
+
+  const removeSlideImage = (slideIndex: number) => {
+    const slide = slidesData[slideIndex];
+    if (slide) {
+      const newSlides = [...slidesData];
+      newSlides[slideIndex] = { ...slide, image: null };
+      setSlidesData(newSlides);
     }
   };
 
@@ -154,10 +423,7 @@ export default function PresentationViewer({
         <div className="text-center text-white">
           <Sparkles size={48} className="mx-auto mb-4 opacity-50" />
           <p className="text-xl">No slides found in this presentation.</p>
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="mt-4 px-6 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition"
-          >
+          <button onClick={() => router.push("/dashboard")} className="mt-4 px-6 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition">
             Back to Dashboard
           </button>
         </div>
@@ -165,255 +431,181 @@ export default function PresentationViewer({
     );
   }
 
-  // Render a single slide with beautiful design
+  const getThemeBackground = () => {
+    if (theme.backgroundImage) {
+      return { backgroundImage: `url(${theme.backgroundImage})`, backgroundSize: "cover", backgroundPosition: "center" };
+    }
+    return { background: theme.slideStyles.title.background };
+  };
+
+
+  // Render slide
   const renderSlide = (slide: SlideData, index: number, isMain: boolean = false) => {
     const hasImage = slide.image?.url && slide.image.source !== "placeholder";
     const isTitle = slide.type === "title";
-    
-    // Determine background based on slide type and image
+    const isHovered = activeSlideIndex === index;
+    const isEditing = editingText?.slideIndex === index;
+
     let backgroundStyle: React.CSSProperties = {};
-    
     if (isTitle && hasImage) {
-      backgroundStyle = {
-        backgroundImage: `url(${slide.image!.url})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      };
+      backgroundStyle = { backgroundImage: `url(${slide.image!.url})`, backgroundSize: "cover", backgroundPosition: "center" };
     } else if (isTitle) {
-      backgroundStyle = {
-        background: theme.slideStyles.title.background,
-      };
-    } else {
-      backgroundStyle = {
-        backgroundColor: theme.colors.background,
-      };
+      backgroundStyle = getThemeBackground();
     }
+    // Content slides: no background here - the outer container handles the glass effect
 
     if (!isMain) {
-      // Thumbnail version
+      // Thumbnail view - render actual slide content scaled down
+      const themeType = getThemeType(theme);
+      const ui = getUIColors(themeType);
+      const bgColors = { dark: "#0a0a0b", light: "#f8fafc", sunset: "#1c1017" };
+      const thumbnailBg: React.CSSProperties = isTitle 
+        ? backgroundStyle 
+        : { background: bgColors[themeType] };
+      
       return (
-        <div className="w-full h-full relative overflow-hidden" style={backgroundStyle}>
-          {isTitle && hasImage && (
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-          )}
-          <div className="relative p-2 h-full flex flex-col justify-end">
-            <p
-              className="text-[7px] font-semibold line-clamp-2"
-              style={{
-                color: isTitle ? "#ffffff" : theme.colors.heading,
-                textShadow: isTitle ? "0 1px 2px rgba(0,0,0,0.5)" : "none",
-              }}
-            >
-              {slide.title}
-            </p>
+        <div className="w-full h-full relative overflow-hidden" style={thumbnailBg}>
+          {isTitle && hasImage && <div className={`absolute inset-0 ${themeType === "light" ? "bg-gradient-to-t from-white/70 via-white/30 to-transparent" : "bg-gradient-to-t from-black/70 via-black/30 to-transparent"}`} />}
+          <div className="absolute inset-0 transform scale-[0.18] origin-top-left" style={{ width: "555%", height: "555%" }}>
+            {isTitle ? (
+              <div className={`h-full flex flex-col items-center justify-center p-12 text-center ${ui.titleBg}`}>
+                <div className={`absolute top-0 right-0 w-96 h-96 ${ui.orb1} rounded-full blur-3xl`} />
+                <h1 className="text-5xl font-bold mb-4 relative" style={{ fontFamily: theme.fonts.heading.family, color: hasImage ? "#fff" : theme.colors.heading }}>
+                  {slide.title}
+                </h1>
+                {slide.subtitle && (
+                  <p className="text-2xl opacity-80 relative" style={{ fontFamily: theme.fonts.body.family, color: hasImage ? "#e2e8f0" : theme.colors.textMuted }}>
+                    {slide.subtitle}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <SlideRenderer
+                slide={slide}
+                index={index}
+                totalSlides={slides.length}
+                theme={theme}
+                isOwner={false}
+                isFullscreen={false}
+                isHovered={false}
+                isEditing={false}
+                editingText={null}
+                onStartEditing={() => {}}
+                onUpdateContent={() => {}}
+                onFinishEditing={() => {}}
+                onAddBullet={() => {}}
+                onDeleteBullet={() => {}}
+              />
+            )}
           </div>
         </div>
       );
     }
 
-    // Main slide version - beautiful full design
     return (
       <div
-        className="w-full h-full relative overflow-hidden transition-all duration-500"
+        className="w-full h-full relative overflow-hidden transition-all duration-500 group"
         style={backgroundStyle}
+        onMouseEnter={() => isOwner && !isFullscreen && setActiveSlideIndex(index)}
+        onMouseLeave={() => !isEditing && setActiveSlideIndex(null)}
       >
-        {/* Title Slide Design */}
+        {theme.overlay && !hasImage && <div className="absolute inset-0" style={{ background: theme.overlay }} />}
+
+        {/* Slide Menu */}
+        {isOwner && !isFullscreen && (isHovered || showSlideMenu === index) && (
+          <SlideMenu
+            index={index}
+            totalSlides={slides.length}
+            showMenu={showSlideMenu === index}
+            hasImage={!!hasImage}
+            onToggleMenu={() => setShowSlideMenu(showSlideMenu === index ? null : index)}
+            onChangeLayout={() => { setShowLayoutModal(true); setShowSlideMenu(null); }}
+            onDuplicate={() => duplicateSlide(index)}
+            onAddSlide={() => addSlideAt(index)}
+            onEditImage={() => { setShowImageModal(index); setImageUrl(slide.image?.url || ""); setShowSlideMenu(null); }}
+            onRemoveImage={() => { removeSlideImage(index); setShowSlideMenu(null); }}
+            onMoveUp={() => moveSlide(index, "up")}
+            onMoveDown={() => moveSlide(index, "down")}
+            onDelete={() => deleteSlide(index)}
+          />
+        )}
+
+        {/* Title Slide */}
         {isTitle ? (
-          <>
-            {/* Dark overlay for readability */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
-            
-            {/* Decorative elements */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-            
-            {/* Content */}
-            <div className="relative h-full flex flex-col items-center justify-center p-12 text-center">
-              {/* Slide number badge */}
-              <div className="absolute top-6 right-6 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-white/70 text-xs font-medium">
-                {index + 1} / {slides.length}
-              </div>
-              
-              {/* Title */}
-              <h1
-                className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 max-w-4xl leading-tight animate-fade-in"
-                style={{
-                  fontFamily: theme.fonts.heading.family,
-                  color: "#ffffff",
-                  textShadow: "0 4px 20px rgba(0,0,0,0.5)",
-                  letterSpacing: theme.fonts.heading.letterSpacing,
-                }}
-              >
-                {slide.title}
-              </h1>
-              
-              {/* Subtitle */}
-              {slide.subtitle && (
-                <p
-                  className="text-xl md:text-2xl max-w-2xl opacity-90 animate-fade-in-delay"
-                  style={{
-                    fontFamily: theme.fonts.body.family,
-                    color: "#e2e8f0",
-                    lineHeight: theme.fonts.body.lineHeight,
-                  }}
-                >
-                  {slide.subtitle}
-                </p>
-              )}
-              
-              {/* Decorative line */}
-              <div 
-                className="w-24 h-1 rounded-full mt-8"
-                style={{ backgroundColor: theme.colors.primary }}
-              />
-
-              {/* Pexels attribution */}
-              {slide.image?.source === "pexels" && slide.image.photographer && (
-                <div className="absolute bottom-6 right-6 bg-black/40 backdrop-blur-sm text-white/80 text-xs px-3 py-1.5 rounded-full">
-                  Photo by{" "}
-                  <a
-                    href={slide.image.photographerUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline hover:text-white"
-                  >
-                    {slide.image.photographer}
-                  </a>
-                  {" "}on Pexels
-                </div>
-              )}
-            </div>
-          </>
+          <TitleSlide
+            slide={slide}
+            index={index}
+            totalSlides={slides.length}
+            theme={theme}
+            hasImage={!!hasImage}
+            isOwner={isOwner}
+            isFullscreen={isFullscreen}
+            isHovered={isHovered ?? false}
+            isEditing={isEditing ?? false}
+            editingText={editingText}
+            onStartEditing={startEditing}
+            onUpdateContent={updateSlideContent}
+            onFinishEditing={() => setEditingText(null)}
+          />
         ) : (
-          /* Content Slide Design */
-          <div className="h-full flex">
-            {/* Content area */}
-            <div className={`flex flex-col justify-center p-12 ${hasImage ? "w-1/2" : "w-full"}`}>
-              {/* Slide number */}
-              <div 
-                className="inline-flex items-center gap-2 mb-6 text-sm font-medium"
-                style={{ color: theme.colors.primary }}
-              >
-                <span className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                  style={{ backgroundColor: theme.colors.primary }}>
-                  {index + 1}
-                </span>
-                <span className="opacity-60">of {slides.length}</span>
-              </div>
-              
-              {/* Title */}
-              <h2
-                className="text-3xl md:text-4xl font-bold mb-8"
-                style={{
-                  fontFamily: theme.fonts.heading.family,
-                  color: theme.colors.heading,
-                  letterSpacing: theme.fonts.heading.letterSpacing,
-                }}
-              >
-                {slide.title}
-              </h2>
-              
-              {/* Bullet points with beautiful styling */}
-              {slide.bulletPoints && slide.bulletPoints.length > 0 && (
-                <ul className="space-y-4">
-                  {slide.bulletPoints.map((point, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start gap-4 text-lg md:text-xl animate-fade-in"
-                      style={{
-                        fontFamily: theme.fonts.body.family,
-                        color: theme.colors.text,
-                        lineHeight: theme.fonts.body.lineHeight,
-                        animationDelay: `${i * 100}ms`,
-                      }}
-                    >
-                      <span
-                        className="mt-2.5 w-2 h-2 rounded-full shrink-0"
-                        style={{ backgroundColor: theme.colors.primary }}
-                      />
-                      <span>{point}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
-            {/* Image area */}
-            {hasImage && (
-              <div className="w-1/2 p-6 flex items-center justify-center">
-                <div 
-                  className="relative w-full h-full rounded-2xl overflow-hidden shadow-2xl"
-                  style={{ boxShadow: theme.design.shadows.large }}
-                >
-                  <Image
-                    src={slide.image!.url}
-                    alt={slide.image!.alt || slide.title}
-                    fill
-                    className="object-cover"
-                    sizes="50vw"
-                  />
-                  {/* Gradient overlay on image */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-                  
-                  {/* Pexels attribution */}
-                  {slide.image?.source === "pexels" && slide.image.photographer && (
-                    <div className="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-lg">
-                      📷{" "}
-                      <a
-                        href={slide.image.photographerUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline"
-                      >
-                        {slide.image.photographer}
-                      </a>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Placeholder for slides expecting images */}
-            {slide.image?.source === "placeholder" && (
-              <div className="w-1/2 p-6 flex items-center justify-center">
-                <div className="w-full h-full rounded-2xl border-2 border-dashed border-slate-300 flex items-center justify-center bg-slate-50/50">
-                  <div className="text-center text-slate-400">
-                    <ImageIcon size={64} className="mx-auto mb-3 opacity-40" />
-                    <p className="font-medium">Image placeholder</p>
-                    <p className="text-sm">Click to add image</p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+          <SlideRenderer
+            slide={slide}
+            index={index}
+            totalSlides={slides.length}
+            theme={theme}
+            isOwner={isOwner}
+            isFullscreen={isFullscreen}
+            isHovered={isHovered ?? false}
+            isEditing={isEditing ?? false}
+            editingText={editingText}
+            onStartEditing={startEditing}
+            onUpdateContent={updateSlideContent}
+            onFinishEditing={() => setEditingText(null)}
+            onAddBullet={addBulletPoint}
+            onDeleteBullet={deleteBulletPoint}
+          />
         )}
       </div>
     );
   };
 
-  // Scrollable view rendering - all slides stacked vertically
   const renderScrollableView = () => {
+    const ui = getUIColors(getThemeType(theme));
     return (
       <div className="max-w-6xl mx-auto space-y-12 pb-12">
-        {slides.map((slide, index) => (
-          <div
-            key={index}
-            id={`slide-${index}`}
-            className="w-full aspect-video rounded-2xl shadow-2xl ring-1 ring-slate-200/50 overflow-hidden scroll-mt-24"
-          >
-            {renderSlide(slide, index, true)}
-          </div>
-        ))}
-        
-        {/* End of presentation indicator */}
+        {slides.map((slide, index) => {
+          const isTitle = slide.type === "title";
+          
+          // Title slides keep aspect-video, content slides grow dynamically
+          if (isTitle) {
+            return (
+              <div 
+                key={index} 
+                id={`slide-${index}`} 
+                className={`w-full aspect-video rounded-lg shadow-2xl overflow-hidden scroll-mt-24 ring-1 ${ui.ring}`}
+              >
+                {renderSlide(slide, index, true)}
+              </div>
+            );
+          }
+          
+          // Content slides - render without fixed height constraint
+          return (
+            <div 
+              key={index} 
+              id={`slide-${index}`} 
+              className={`w-full rounded-lg shadow-2xl overflow-hidden scroll-mt-24 ring-1 ${ui.ring}`}
+            >
+              <ScrollSlideContent slide={slide} index={index} theme={theme} renderSlide={renderSlide} />
+            </div>
+          );
+        })}
         <div className="text-center py-8">
-          <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white shadow-lg">
-            <Sparkles size={20} />
-            <span className="font-semibold">End of Presentation</span>
+          <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-full backdrop-blur-sm shadow-lg border ${ui.endCard}`}>
+            <Sparkles size={20} style={{ color: theme.colors.primary }} />
+            <span className={`font-semibold ${ui.endText}`}>End of Presentation</span>
           </div>
-          <p className="mt-4 text-slate-500">
-            {slides.length} slides • Created with PPT Master
-          </p>
+          <p className={`mt-4 ${ui.endMuted}`}>{slides.length} slides • Created with PPT Master</p>
         </div>
       </div>
     );
@@ -421,369 +613,752 @@ export default function PresentationViewer({
 
   return (
     <>
-      {/* Google Fonts */}
       <style jsx global>{`
         @import url('${fontsUrl}');
-        
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .animate-fade-in {
-          animation: fade-in 0.5s ease-out forwards;
-        }
-        
-        .animate-fade-in-delay {
-          animation: fade-in 0.5s ease-out 0.2s forwards;
-          opacity: 0;
-        }
+        @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
+        .scrollbar-thin::-webkit-scrollbar { width: 6px; }
+        .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+        .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(100, 100, 100, 0.4); border-radius: 3px; }
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: rgba(100, 100, 100, 0.6); }
       `}</style>
 
-      <div className={`min-h-screen ${isFullscreen ? "bg-black" : "bg-gradient-to-br from-slate-100 to-slate-200"}`}>
-        {/* Header - hidden in fullscreen */}
+      <div className={`min-h-screen ${getUIColors(getThemeType(theme)).pageBg}`}>
+        {/* Header */}
         {!isFullscreen && (
-          <header className="bg-white/80 backdrop-blur-lg border-b border-slate-200/50 px-6 py-3 sticky top-0 z-50">
-            <div className="max-w-7xl mx-auto flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => router.push("/dashboard")}
-                  className="p-2 rounded-xl hover:bg-slate-100 text-slate-600 transition-colors"
-                >
-                  <ArrowLeft size={20} />
-                </button>
-                <div>
-                  <h1 className="font-semibold text-slate-900 truncate max-w-[400px]">
-                    {presentation.title}
-                  </h1>
-                  <div className="flex items-center gap-2 text-xs text-slate-500">
-                    <span>{slides.length} slides</span>
-                    {mode === "ai" && (
-                      <>
-                        <span>•</span>
-                        <span className="flex items-center gap-1">
-                          <Sparkles size={12} className="text-amber-500" />
-                          AI Generated
-                        </span>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button 
-                  onClick={() => {
-                    setViewMode(viewMode === "slides" ? "scroll" : "slides");
-                    if (viewMode === "scroll") setShowThumbnails(true);
-                  }}
-                  className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-slate-600 hover:bg-slate-100 transition-colors"
-                  title={viewMode === "slides" ? "Switch to scroll view" : "Switch to presentation mode"}
-                >
-                  {viewMode === "slides" ? "📄 Scroll View" : "🎬 Presentation Mode"}
-                </button>
-                
-                {viewMode === "slides" && (
-                  <button 
-                    onClick={() => setShowThumbnails(!showThumbnails)}
-                    className={`p-2 rounded-xl text-sm transition-colors ${
-                      showThumbnails ? "bg-slate-100 text-slate-900" : "text-slate-600 hover:bg-slate-100"
-                    }`}
-                  >
-                    <Grid3X3 size={18} />
-                  </button>
-                )}
-                
-                {isOwner && (
-                  <>
-                    <button className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-slate-600 hover:bg-slate-100 transition-colors">
-                      <Edit3 size={16} />
-                      <span className="hidden sm:inline">Edit</span>
-                    </button>
-                    <button className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-slate-600 hover:bg-slate-100 transition-colors">
-                      <Download size={16} />
-                      <span className="hidden sm:inline">Export</span>
-                    </button>
-                    <button 
-                      onClick={() => setShowShareModal(true)}
-                      className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-slate-600 hover:bg-slate-100 transition-colors">
-                      <Share2 size={16} />
-                      <span className="hidden sm:inline">Share</span>
-                    </button>
-                  </>
-                )}
-                
-                <button
-                  onClick={toggleFullscreen}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm bg-gradient-to-r from-indigo-600 to-cyan-500 text-white shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30 transition-all"
-                >
-                  <Play size={16} />
-                  <span className="hidden sm:inline">Present</span>
-                </button>
-              </div>
-            </div>
-          </header>
+          <Header
+            title={presentation.title}
+            editedTitle={editedTitle}
+            isEditingTitle={isEditingTitle}
+            slidesCount={slides.length}
+            mode={mode}
+            viewMode={viewMode}
+            showThumbnails={showThumbnails}
+            isOwner={isOwner}
+            theme={theme}
+            onBack={() => router.push("/dashboard")}
+            onEditTitle={() => setIsEditingTitle(true)}
+            onTitleChange={setEditedTitle}
+            onSaveTitle={handleSaveTitle}
+            onCancelEditTitle={() => { setEditedTitle(presentation.title); setIsEditingTitle(false); }}
+            onToggleViewMode={() => { setViewMode(viewMode === "slides" ? "scroll" : "slides"); if (viewMode === "scroll") setShowThumbnails(true); }}
+            onToggleThumbnails={() => setShowThumbnails(!showThumbnails)}
+            onExport={() => setShowExportModal(true)}
+            onShare={() => setShowShareModal(true)}
+            onPresent={toggleFullscreen}
+          />
         )}
 
         {/* Main content */}
-        <div className={`${isFullscreen ? "" : "max-w-7xl mx-auto px-6 py-8"}`}>
-          {/* Scrollable view */}
+        <div className={`${isFullscreen ? "" : "px-4 py-8"}`}>
           {viewMode === "scroll" && !isFullscreen ? (
-            renderScrollableView()
+            <div className="flex gap-6 max-w-7xl mx-auto">
+              {showThumbnails && (
+                <ThumbnailSidebar
+                  slides={slides}
+                  onSlideClick={(index) => document.getElementById(`slide-${index}`)?.scrollIntoView({ behavior: "smooth", block: "center" })}
+                  onClose={() => setShowThumbnails(false)}
+                  renderSlide={renderSlide}
+                  theme={theme}
+                  onAddSlide={addSlideAt}
+                  isOwner={isOwner}
+                />
+              )}
+              <div className="flex-1">{renderScrollableView()}</div>
+            </div>
           ) : (
-            <div className={`flex gap-6 ${isFullscreen ? "h-screen" : ""}`}>
-              {/* Slide thumbnails sidebar - hidden in fullscreen */}
+            <div className={`flex gap-6 ${isFullscreen ? "h-screen" : "max-w-7xl mx-auto"}`}>
               {showThumbnails && !isFullscreen && viewMode === "slides" && (
-              <div className="w-52 shrink-0 space-y-3 max-h-[calc(100vh-180px)] overflow-y-auto pr-2 scrollbar-thin">
-                {slides.map((slide, index) => (
-                  <button
-                    key={index}
-                    onClick={() => goToSlide(index)}
-                    className={`w-full aspect-video rounded-xl overflow-hidden transition-all duration-200 ${
-                      currentSlide === index
-                        ? "ring-2 ring-indigo-500 ring-offset-2 shadow-lg scale-[1.02]"
-                        : "hover:ring-2 hover:ring-slate-300 hover:ring-offset-1 opacity-70 hover:opacity-100"
-                    }`}
-                  >
-                    {renderSlide(slide, index, false)}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Main slide view */}
-            <div className={`flex-1 flex flex-col ${isFullscreen ? "h-full" : ""}`}>
-              {/* Slide container */}
-              <div
-                className={`relative overflow-hidden ${
-                  isFullscreen 
-                    ? "w-full h-full" 
-                    : "aspect-video w-full rounded-2xl shadow-2xl ring-1 ring-slate-200/50"
-                }`}
-              >
-                {renderSlide(currentSlideData, currentSlide, true)}
-              </div>
-
-              {/* Navigation controls */}
-              <div className={`flex items-center justify-between ${isFullscreen ? "absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent" : "mt-6"}`}>
-                <button
-                  onClick={prevSlide}
-                  disabled={currentSlide === 0}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
-                    isFullscreen 
-                      ? "bg-white/10 backdrop-blur-sm text-white hover:bg-white/20" 
-                      : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm"
-                  }`}
-                >
-                  <ChevronLeft size={20} />
-                  <span className="hidden sm:inline">Previous</span>
-                </button>
-
-                {/* Slide dots */}
-                <div className="flex items-center gap-1.5">
-                  {slides.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => goToSlide(index)}
-                      className={`rounded-full transition-all duration-300 ${
-                        currentSlide === index
-                          ? `w-8 h-2 ${isFullscreen ? "bg-white" : "bg-indigo-500"}`
-                          : `w-2 h-2 ${isFullscreen ? "bg-white/40 hover:bg-white/60" : "bg-slate-300 hover:bg-slate-400"}`
-                      }`}
-                      aria-label={`Go to slide ${index + 1}`}
-                    />
-                  ))}
-                </div>
-
-                <button
-                  onClick={nextSlide}
-                  disabled={currentSlide === slides.length - 1}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
-                    isFullscreen 
-                      ? "bg-white/10 backdrop-blur-sm text-white hover:bg-white/20" 
-                      : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm"
-                  }`}
-                >
-                  <span className="hidden sm:inline">Next</span>
-                  <ChevronRight size={20} />
-                </button>
-              </div>
-
-              {/* Slide info - hidden in fullscreen */}
-              {!isFullscreen && (
-                <div className="mt-4 text-center text-sm text-slate-500">
-                  <span>Slide {currentSlide + 1} of {slides.length}</span>
-                  {currentSlideData.image?.source === "pexels" && (
-                    <span className="ml-2">
-                      • Images from{" "}
-                      <a
-                        href="https://www.pexels.com"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-emerald-600 hover:underline font-medium"
+                <div className={`w-44 shrink-0 space-y-2 max-h-[calc(100vh-140px)] overflow-y-auto scrollbar-thin pr-2 sticky top-20 ${getUIColors(getThemeType(theme)).scrollbar}`}>
+                  {slides.map((slide, index) => {
+                    const ui = getUIColors(getThemeType(theme));
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => goToSlide(index)}
+                        className="w-full group relative"
                       >
-                        Pexels
-                      </a>
-                    </span>
-                  )}
-                  <span className="ml-2 text-slate-400">
-                    • Press <kbd className="px-1.5 py-0.5 rounded bg-slate-200 text-xs">F</kbd> for fullscreen
-                  </span>
+                        <div 
+                          className={`aspect-video overflow-hidden transition-all duration-200 ring-1 ${
+                            currentSlide === index 
+                              ? "ring-2 shadow-lg" 
+                              : `${ui.ringHover} opacity-70 hover:opacity-100`
+                          }`}
+                          style={currentSlide === index ? { boxShadow: `0 0 0 2px ${theme.colors.primary}` } : {}}
+                        >
+                          {renderSlide(slide, index, false)}
+                        </div>
+                        <div className={`absolute top-1 left-1 w-4 h-4 backdrop-blur-sm flex items-center justify-center ${ui.thumbBg}`}>
+                          <span className={`text-[9px] font-bold ${ui.thumbText}`}>{index + 1}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
-            </div>
+
+              <div className={`flex-1 flex flex-col ${isFullscreen ? "h-full" : ""}`}>
+                {(() => {
+                  const isTitle = currentSlideData.type === "title";
+                  const bulletCount = currentSlideData.bulletPoints?.length || 0;
+                  // Title slides and fullscreen keep aspect-video, content slides grow dynamically
+                  const useFixedRatio = isFullscreen || isTitle || bulletCount <= 3;
+                  const dynamicHeight = Math.max(450, 380 + bulletCount * 65);
+                  
+                  if (useFixedRatio) {
+                    return (
+                      <div className={`relative overflow-hidden ${isFullscreen ? "w-full h-full" : `aspect-video w-full rounded-lg shadow-2xl ring-1 ${getUIColors(getThemeType(theme)).ring}`}`}>
+                        {renderSlide(currentSlideData, currentSlide, true)}
+                      </div>
+                    );
+                  }
+                  
+                  return (
+                    <div 
+                      className={`relative overflow-hidden w-full rounded-lg shadow-2xl ring-1 ${getUIColors(getThemeType(theme)).ring}`}
+                      style={{ height: `${dynamicHeight}px` }}
+                    >
+                      {renderSlide(currentSlideData, currentSlide, true)}
+                    </div>
+                  );
+                })()}
+
+                <NavigationControls
+                  currentSlide={currentSlide}
+                  totalSlides={slides.length}
+                  isFullscreen={isFullscreen}
+                  onPrev={prevSlide}
+                  onNext={nextSlide}
+                  onGoTo={goToSlide}
+                  theme={theme}
+                />
+
+                {!isFullscreen && (
+                  <div className={`mt-4 text-center text-sm ${getUIColors(getThemeType(theme)).endMuted}`}>
+                    <span>Slide {currentSlide + 1} of {slides.length}</span>
+                    <span className="ml-2 opacity-70">• Press <kbd className={`px-1.5 py-0.5 rounded text-xs ${getUIColors(getThemeType(theme)).kbd}`}>F</kbd> for fullscreen</span>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
 
-        {/* Fullscreen controls overlay */}
         {isFullscreen && (
-          <button
-            onClick={toggleFullscreen}
-            className="fixed top-6 right-6 p-3 rounded-xl bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-colors z-50"
-          >
+          <button onClick={toggleFullscreen} className="fixed top-6 right-6 p-3 rounded-xl bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-colors z-50">
             <Minimize2 size={20} />
           </button>
         )}
 
-        {/* Share Modal */}
-        {showShareModal && isOwner && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-              <button
-                onClick={() => setShowShareModal(false)}
-                className="absolute right-4 top-4 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-              >
-                <X size={20} />
-              </button>
+        {viewMode === "scroll" && !isFullscreen && <FeedbackSection presentationId={presentation.id} theme={theme} />}
 
-              <h2 className="mb-6 text-2xl font-bold text-slate-900">
-                Share Presentation
-              </h2>
-
-              <ShareModalContent 
-                presentationId={presentation.id}
-                onClose={() => setShowShareModal(false)}
-              />
-            </div>
-          </div>
+        {showLayoutModal && activeSlideIndex !== null && (
+          <LayoutModal currentLayout={slides[activeSlideIndex]?.layout} onSelect={(layoutId) => changeSlideLayout(activeSlideIndex, layoutId)} onClose={() => setShowLayoutModal(false)} />
         )}
+
+        {showImageModal !== null && (
+          <ImageModal
+            currentImage={slides[showImageModal]?.image?.url}
+            imageUrl={imageUrl}
+            isLoading={isLoadingImage}
+            theme={theme}
+            onUrlChange={setImageUrl}
+            onSave={() => updateSlideImage(showImageModal, imageUrl)}
+            onRemove={() => { removeSlideImage(showImageModal); setShowImageModal(null); }}
+            onClose={() => { setShowImageModal(null); setImageUrl(""); }}
+          />
+        )}
+
+        {showExportModal && isOwner && <ExportModal isExporting={isExporting} onExport={handleExport} onClose={() => setShowExportModal(false)} />}
+
+        {showShareModal && isOwner && <ShareModal presentationId={presentation.id} onClose={() => setShowShareModal(false)} />}
       </div>
     </>
   );
 }
 
-// Share Modal Content Component
-function ShareModalContent({ presentationId, onClose }: { presentationId: string; onClose: () => void }) {
-  const [isPublic, setIsPublic] = useState(false);
-  const [shareUrl, setShareUrl] = useState("");
-  const [copied, setCopied] = useState(false);
-  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    fetchShareStatus();
-  }, []);
-
-  const fetchShareStatus = async () => {
-    try {
-      const res = await fetch(`/api/presentations/${presentationId}/share`);
-      const data = await res.json();
-      setIsPublic(data.isPublic);
-      setShareUrl(data.shareUrl || "");
-    } catch (error) {
-      console.error("Error fetching share status:", error);
-    }
-  };
-
-  const handleTogglePublic = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/presentations/${presentationId}/share`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isPublic: !isPublic }),
-      });
-
-      const data = await res.json();
-      setIsPublic(data.isPublic);
-      setShareUrl(data.shareUrl);
-    } catch (error) {
-      console.error("Failed to update sharing settings");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(shareUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
+// Sub-components
+function Header({
+  title, editedTitle, isEditingTitle, slidesCount, mode, viewMode, showThumbnails, isOwner, theme,
+  onBack, onEditTitle, onTitleChange, onSaveTitle, onCancelEditTitle, onToggleViewMode, onToggleThumbnails, onExport, onShare, onPresent,
+}: {
+  title: string; editedTitle: string; isEditingTitle: boolean; slidesCount: number; mode: string;
+  viewMode: "slides" | "scroll"; showThumbnails: boolean; isOwner: boolean; theme: Theme;
+  onBack: () => void; onEditTitle: () => void; onTitleChange: (v: string) => void; onSaveTitle: () => void;
+  onCancelEditTitle: () => void; onToggleViewMode: () => void; onToggleThumbnails: () => void;
+  onExport: () => void; onShare: () => void; onPresent: () => void;
+}) {
+  const themeType = getThemeType(theme);
+  const ui = getUIColors(themeType);
   return (
-    <>
-      <div className="mb-6 rounded-xl border border-slate-200 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {isPublic ? (
-              <Globe className="text-green-500" size={24} />
+    <header className={`backdrop-blur-md border-b px-4 py-2.5 sticky top-0 z-50 ${ui.headerBg}`}>
+      <div className="flex items-center justify-between">
+        {/* Left section - Back & Title */}
+        <div className="flex items-center gap-3">
+          <button onClick={onBack} className={`p-1.5 rounded transition-colors ${ui.headerHover} ${ui.headerIcon}`}>
+            <ArrowLeft size={18} />
+          </button>
+          <div className={`h-5 w-px ${ui.divider}`} />
+          <div>
+            {isEditingTitle ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={editedTitle}
+                  onChange={(e) => onTitleChange(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") onSaveTitle(); else if (e.key === "Escape") onCancelEditTitle(); }}
+                  className={`font-medium border-b bg-transparent focus:outline-none text-sm ${ui.headerText}`}
+                  style={{ borderColor: theme.colors.primary }}
+                  autoFocus
+                />
+                <button onClick={onSaveTitle} className={`p-1 rounded ${ui.headerHover} ${ui.headerIcon}`}><CheckCircle2 size={14} /></button>
+                <button onClick={onCancelEditTitle} className={`p-1 rounded ${ui.headerHover} ${ui.headerMuted}`}><X size={14} /></button>
+              </div>
             ) : (
-              <Lock className="text-slate-400" size={24} />
+              <h1 
+                className={`font-medium text-sm truncate max-w-[300px] cursor-pointer transition-colors ${ui.headerText}`}
+                style={{ ["--hover-color" as string]: theme.colors.primary }}
+                onClick={isOwner ? onEditTitle : undefined}
+              >
+                {title}
+              </h1>
             )}
-            <div>
-              <p className="font-semibold text-slate-900">
-                {isPublic ? "Public" : "Private"}
-              </p>
-              <p className="text-sm text-slate-500">
-                {isPublic ? "Anyone with the link can view" : "Only you can access"}
-              </p>
-            </div>
+            <p className={`text-xs ${ui.headerMuted}`}>{slidesCount} slides{mode === "ai" && " • AI"}</p>
           </div>
-          <button
-            onClick={handleTogglePublic}
-            disabled={loading}
-            className={`relative h-8 w-14 rounded-full transition-colors ${
-              isPublic ? "bg-green-500" : "bg-slate-300"
-            } ${loading ? "opacity-50" : ""}`}
+        </div>
+
+        {/* Right section - Actions */}
+        <div className="flex items-center gap-1">
+          <button 
+            onClick={onToggleViewMode} 
+            className={`p-2 rounded transition-colors ${ui.headerHover} ${ui.headerIcon}`}
+            title={viewMode === "slides" ? "Scroll View" : "Slides View"}
           >
-            <div
-              className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow-md transition-transform ${
-                isPublic ? "translate-x-7" : "translate-x-1"
-              }`}
-            />
+            {viewMode === "slides" ? <Grid3X3 size={18} /> : <Play size={18} />}
+          </button>
+          <button 
+            onClick={onToggleThumbnails} 
+            className={`p-2 rounded transition-colors ${showThumbnails ? ui.headerActive : `${ui.headerIcon} ${ui.headerHover}`}`}
+            title="Toggle Thumbnails"
+          >
+            <LayoutGrid size={18} />
+          </button>
+          
+          <div className={`h-5 w-px mx-1 ${ui.divider}`} />
+          
+          {isOwner && (
+            <>
+              <button onClick={onExport} className={`p-2 rounded transition-colors ${ui.headerHover} ${ui.headerIcon}`} title="Export">
+                <Download size={18} />
+              </button>
+              <button onClick={onShare} className={`p-2 rounded transition-colors ${ui.headerHover} ${ui.headerIcon}`} title="Share">
+                <Share2 size={18} />
+              </button>
+            </>
+          )}
+          
+          <div className={`h-5 w-px mx-1 ${ui.divider}`} />
+          
+          <button 
+            onClick={onPresent} 
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded text-sm font-medium transition-colors"
+            style={{ backgroundColor: theme.colors.primary, color: themeType === "light" ? "#ffffff" : "#18181b" }}
+          >
+            <Play size={14} />
+            <span className="hidden sm:inline">Present</span>
           </button>
         </div>
       </div>
+    </header>
+  );
+}
 
-      {isPublic && shareUrl && (
-        <div className="space-y-3">
-          <label className="text-sm font-semibold text-slate-700">Share Link</label>
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              value={shareUrl}
-              readOnly
-              className="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-600"
+function SlideMenu({
+  index, totalSlides, showMenu, hasImage, onToggleMenu, onChangeLayout, onDuplicate, onAddSlide, onEditImage, onRemoveImage, onMoveUp, onMoveDown, onDelete,
+}: {
+  index: number; totalSlides: number; showMenu: boolean; hasImage: boolean;
+  onToggleMenu: () => void; onChangeLayout: () => void; onDuplicate: () => void; onAddSlide: () => void;
+  onEditImage: () => void; onRemoveImage: () => void;
+  onMoveUp: () => void; onMoveDown: () => void; onDelete: () => void;
+}) {
+  const handleAction = (action: () => void) => (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    action();
+  };
+
+  return (
+    <div data-slide-menu className="absolute top-4 right-4 z-30" onMouseDown={(e) => e.stopPropagation()}>
+      <button 
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={handleAction(onToggleMenu)} 
+        className="p-2 rounded-lg bg-zinc-900/90 backdrop-blur-sm shadow-lg hover:bg-zinc-800 transition-all border border-zinc-700"
+      >
+        <MoreHorizontal size={18} className="text-zinc-300" />
+      </button>
+      {showMenu && (
+        <div data-slide-menu className="absolute top-full right-0 mt-2 w-52 bg-zinc-900 rounded-xl shadow-2xl border border-zinc-700 py-2 z-50" onMouseDown={(e) => e.stopPropagation()}>
+          <button onMouseDown={(e) => e.stopPropagation()} onClick={handleAction(onAddSlide)} className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-emerald-400 hover:bg-emerald-900/30">
+            <PlusCircle size={16} />Add Slide After
+          </button>
+          <div className="border-t border-zinc-700 my-1" />
+          <button onMouseDown={(e) => e.stopPropagation()} onClick={handleAction(onEditImage)} className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-cyan-400 hover:bg-cyan-900/30">
+            <ImagePlus size={16} />{hasImage ? "Change Image" : "Add Image"}
+          </button>
+          {hasImage && (
+            <button onMouseDown={(e) => e.stopPropagation()} onClick={handleAction(onRemoveImage)} className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-orange-400 hover:bg-orange-900/30">
+              <ImageOff size={16} />Remove Image
+            </button>
+          )}
+          <div className="border-t border-zinc-700 my-1" />
+          <button onMouseDown={(e) => e.stopPropagation()} onClick={handleAction(onChangeLayout)} className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-zinc-300 hover:bg-zinc-800">
+            <LayoutGrid size={16} />Change Layout
+          </button>
+          <button onMouseDown={(e) => e.stopPropagation()} onClick={handleAction(onDuplicate)} className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-zinc-300 hover:bg-zinc-800">
+            <Copy size={16} />Duplicate Slide
+          </button>
+          <button onMouseDown={(e) => e.stopPropagation()} onClick={handleAction(onMoveUp)} disabled={index === 0} className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-zinc-300 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed">
+            <MoveUp size={16} />Move Up
+          </button>
+          <button onMouseDown={(e) => e.stopPropagation()} onClick={handleAction(onMoveDown)} disabled={index === totalSlides - 1} className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-zinc-300 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed">
+            <MoveDown size={16} />Move Down
+          </button>
+          <div className="border-t border-zinc-700 my-1" />
+          <button onMouseDown={(e) => e.stopPropagation()} onClick={handleAction(onDelete)} disabled={totalSlides <= 1} className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-red-400 hover:bg-red-900/30 disabled:opacity-40 disabled:cursor-not-allowed">
+            <Trash2 size={16} />Delete Slide
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TitleSlide({
+  slide, index, totalSlides, theme, hasImage, isOwner, isFullscreen, isHovered, isEditing, editingText,
+  onStartEditing, onUpdateContent, onFinishEditing,
+}: {
+  slide: SlideData; index: number; totalSlides: number; theme: Theme; hasImage: boolean;
+  isOwner: boolean; isFullscreen: boolean; isHovered: boolean; isEditing: boolean; editingText: EditingState | null;
+  onStartEditing: (i: number, f: string, b?: number) => void; onUpdateContent: (i: number, f: string, v: string, b?: number) => void; onFinishEditing: () => void;
+}) {
+  const canEdit = isOwner && !isFullscreen;
+  const themeType = getThemeType(theme);
+  const ui = getUIColors(themeType);
+
+  // ELEGANT NOIR - Sophisticated dark with geometric accents
+  if (themeType === "dark") {
+    return (
+      <div className="h-full relative overflow-hidden">
+        {!hasImage && (
+          <div className="absolute inset-0 bg-gradient-to-br from-zinc-950 via-black to-zinc-900">
+            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-amber-500/5 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-3xl" />
+            {/* Geometric accent lines */}
+            <div className="absolute top-0 left-1/4 w-px h-32 bg-gradient-to-b from-amber-500/30 to-transparent" />
+            <div className="absolute top-0 left-1/4 w-32 h-px bg-gradient-to-r from-amber-500/30 to-transparent" />
+            <div className="absolute bottom-0 right-1/4 w-px h-24 bg-gradient-to-t from-indigo-500/20 to-transparent" />
+            <div className="absolute bottom-0 right-1/4 w-24 h-px bg-gradient-to-l from-indigo-500/20 to-transparent" />
+          </div>
+        )}
+        {hasImage && <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/30" />}
+        
+        <div className="relative h-full flex flex-col items-center justify-center p-12 text-center">
+          <div className="absolute top-8 left-8 flex items-center gap-3">
+            <span className="font-mono text-sm font-medium text-amber-500">{String(index + 1).padStart(2, "0")}</span>
+            <div className="w-16 h-px bg-gradient-to-r from-amber-500 to-transparent" />
+            <span className="text-xs font-medium uppercase tracking-widest text-zinc-600">/ {String(totalSlides).padStart(2, "0")}</span>
+          </div>
+
+          {/* Decorative frame */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[60%] border border-zinc-800/50 rounded-lg pointer-events-none" />
+          
+          <EditableText
+            value={slide.title}
+            isEditing={isEditing && editingText?.field === "title"}
+            onStartEdit={() => onStartEditing(index, "title")}
+            onChange={(val) => onUpdateContent(index, "title", val)}
+            onFinish={onFinishEditing}
+            className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight"
+            style={{ fontFamily: theme.fonts.heading.family, color: "#fafafa", letterSpacing: "-0.03em" }}
+            isOwner={canEdit}
+            isHovered={isHovered}
+          />
+          {slide.subtitle && (
+            <EditableText
+              value={slide.subtitle}
+              isEditing={isEditing && editingText?.field === "subtitle"}
+              onStartEdit={() => onStartEditing(index, "subtitle")}
+              onChange={(val) => onUpdateContent(index, "subtitle", val)}
+              onFinish={onFinishEditing}
+              className="text-xl md:text-2xl max-w-3xl"
+              style={{ fontFamily: theme.fonts.body.family, color: "#a1a1aa" }}
+              isOwner={canEdit}
+              isHovered={isHovered}
             />
+          )}
+          
+          <div className="flex items-center gap-4 mt-12">
+            <div className="w-20 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
+            <div className="w-2 h-2 rotate-45 bg-amber-500/60" />
+            <div className="w-20 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
+          </div>
+        </div>
+        
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
+      </div>
+    );
+  }
+
+  // ARCTIC FROST - Clean, airy with floating elements
+  if (themeType === "light") {
+    return (
+      <div className="h-full relative overflow-hidden">
+        {!hasImage && (
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-cyan-50">
+            <div className="absolute top-10 right-10 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-3xl" />
+            <div className="absolute bottom-10 left-10 w-[350px] h-[350px] bg-violet-500/8 rounded-full blur-3xl" />
+            {/* Floating circles decoration */}
+            <div className="absolute top-20 right-20 w-4 h-4 rounded-full border-2 border-cyan-400/30" />
+            <div className="absolute top-32 right-32 w-6 h-6 rounded-full border-2 border-cyan-400/20" />
+            <div className="absolute bottom-24 left-24 w-5 h-5 rounded-full bg-cyan-400/20" />
+            <div className="absolute top-1/4 left-16 w-3 h-3 rounded-full bg-violet-400/20" />
+          </div>
+        )}
+        {hasImage && <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-white/50 to-white/30" />}
+        
+        <div className="relative h-full flex flex-col items-center justify-center p-12 text-center">
+          <div className="absolute top-8 left-8 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full border-2 border-cyan-500/30 flex items-center justify-center">
+              <span className="font-mono text-sm font-bold text-cyan-600">{index + 1}</span>
+            </div>
+            <div className="w-12 h-px bg-gradient-to-r from-cyan-500/50 to-transparent" />
+            <span className="text-xs font-medium text-slate-400">of {totalSlides}</span>
+          </div>
+
+          {/* Top decorative bar */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent rounded-full" />
+          
+          <EditableText
+            value={slide.title}
+            isEditing={isEditing && editingText?.field === "title"}
+            onStartEdit={() => onStartEditing(index, "title")}
+            onChange={(val) => onUpdateContent(index, "title", val)}
+            onFinish={onFinishEditing}
+            className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight"
+            style={{ fontFamily: theme.fonts.heading.family, color: "#0f172a", letterSpacing: "-0.03em" }}
+            isOwner={canEdit}
+            isHovered={isHovered}
+          />
+          {slide.subtitle && (
+            <EditableText
+              value={slide.subtitle}
+              isEditing={isEditing && editingText?.field === "subtitle"}
+              onStartEdit={() => onStartEditing(index, "subtitle")}
+              onChange={(val) => onUpdateContent(index, "subtitle", val)}
+              onFinish={onFinishEditing}
+              className="text-xl md:text-2xl max-w-3xl"
+              style={{ fontFamily: theme.fonts.body.family, color: "#64748b" }}
+              isOwner={canEdit}
+              isHovered={isHovered}
+            />
+          )}
+          
+          <div className="flex items-center gap-3 mt-12">
+            <div className="w-3 h-3 rounded-full bg-cyan-500/40" />
+            <div className="w-16 h-0.5 bg-gradient-to-r from-cyan-500/60 to-violet-500/40 rounded-full" />
+            <div className="w-2 h-2 rounded-full bg-violet-500/40" />
+          </div>
+        </div>
+        
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent" />
+      </div>
+    );
+  }
+
+  // SUNSET GRADIENT - Warm, dramatic with glowing accents
+  return (
+    <div className="h-full relative overflow-hidden">
+      {!hasImage && (
+        <div className="absolute inset-0 bg-gradient-to-br from-rose-950 via-[#1c1017] to-[#261520]">
+          <div className="absolute top-0 left-1/3 w-[500px] h-[500px] bg-pink-500/15 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-orange-500/10 rounded-full blur-3xl" />
+          {/* Glowing accent lines */}
+          <div className="absolute top-1/4 left-0 w-48 h-px bg-gradient-to-r from-pink-500/40 to-transparent" />
+          <div className="absolute bottom-1/3 right-0 w-32 h-px bg-gradient-to-l from-orange-500/30 to-transparent" />
+          {/* Corner glow */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-pink-500/10 to-transparent" />
+        </div>
+      )}
+      {hasImage && <div className="absolute inset-0 bg-gradient-to-t from-[#1c1017]/95 via-[#1c1017]/60 to-[#1c1017]/30" />}
+      
+      <div className="relative h-full flex flex-col items-center justify-center p-12 text-center">
+        <div className="absolute top-8 left-8 flex items-center gap-3">
+          <div className="px-3 py-1 rounded-full bg-pink-500/20 border border-pink-500/30">
+            <span className="font-mono text-sm font-bold text-pink-300">{String(index + 1).padStart(2, "0")}</span>
+          </div>
+          <div className="w-12 h-px bg-gradient-to-r from-pink-500/50 to-transparent" />
+          <span className="text-xs font-medium text-pink-300/50">/ {String(totalSlides).padStart(2, "0")}</span>
+        </div>
+
+        {/* Decorative glow behind title */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-32 bg-gradient-to-r from-pink-500/10 via-orange-500/10 to-pink-500/10 blur-2xl rounded-full pointer-events-none" />
+        
+        <EditableText
+          value={slide.title}
+          isEditing={isEditing && editingText?.field === "title"}
+          onStartEdit={() => onStartEditing(index, "title")}
+          onChange={(val) => onUpdateContent(index, "title", val)}
+          onFinish={onFinishEditing}
+          className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight relative"
+          style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "-0.03em" }}
+          isOwner={canEdit}
+          isHovered={isHovered}
+        />
+        {slide.subtitle && (
+          <EditableText
+            value={slide.subtitle}
+            isEditing={isEditing && editingText?.field === "subtitle"}
+            onStartEdit={() => onStartEditing(index, "subtitle")}
+            onChange={(val) => onUpdateContent(index, "subtitle", val)}
+            onFinish={onFinishEditing}
+            className="text-xl md:text-2xl max-w-3xl"
+            style={{ fontFamily: theme.fonts.body.family, color: "#f9a8d4" }}
+            isOwner={canEdit}
+            isHovered={isHovered}
+          />
+        )}
+        
+        <div className="flex items-center gap-4 mt-12">
+          <div className="w-16 h-0.5 bg-gradient-to-r from-transparent to-pink-500/60 rounded-full" />
+          <div className="w-3 h-3 rounded-full bg-gradient-to-br from-pink-400 to-orange-400" />
+          <div className="w-16 h-0.5 bg-gradient-to-l from-transparent to-orange-500/60 rounded-full" />
+        </div>
+      </div>
+      
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-pink-900/40 to-transparent" />
+    </div>
+  );
+}
+
+function ThumbnailSidebar({
+  slides, onSlideClick, onClose, renderSlide, theme, onAddSlide, isOwner,
+}: {
+  slides: SlideData[]; onSlideClick: (i: number) => void; onClose: () => void;
+  renderSlide: (slide: SlideData, index: number, isMain: boolean) => React.ReactNode; theme: Theme;
+  onAddSlide: (index: number) => void; isOwner: boolean;
+}) {
+  const ui = getUIColors(getThemeType(theme));
+  return (
+    <div className="w-44 shrink-0">
+      <div className={`sticky top-24 space-y-2 max-h-[calc(100vh-120px)] overflow-y-auto pr-2 scrollbar-thin ${ui.scrollbar}`}>
+        <div className="flex items-center justify-between mb-3 px-1">
+          <span className={`text-xs font-semibold uppercase tracking-wide ${ui.headerMuted}`}>Slides</span>
+          <button onClick={onClose} className={`p-1 rounded transition-colors ${ui.headerHover} ${ui.headerMuted}`}><X size={14} /></button>
+        </div>
+        {slides.map((slide, index) => (
+          <button key={index} onClick={() => onSlideClick(index)} className="w-full group relative">
+            <div className={`aspect-video overflow-hidden transition-all duration-200 ring-1 hover:ring-2 hover:shadow-md ${ui.ringHover}`}>
+              {renderSlide(slide, index, false)}
+            </div>
+            <div className={`absolute top-1 left-1 w-4 h-4 backdrop-blur-sm flex items-center justify-center ${ui.thumbBg}`}>
+              <span className={`text-[9px] font-bold ${ui.thumbText}`}>{index + 1}</span>
+            </div>
+          </button>
+        ))}
+        {isOwner && (
+          <button 
+            onClick={() => onAddSlide(slides.length - 1)} 
+            className={`w-full aspect-video rounded border-2 border-dashed flex items-center justify-center transition-colors ${ui.ringHover} ${ui.headerMuted} hover:border-solid`}
+            style={{ borderColor: theme.colors.primary + "40" }}
+          >
+            <div className="text-center">
+              <PlusCircle size={20} className="mx-auto mb-1" style={{ color: theme.colors.primary }} />
+              <span className="text-[10px]">Add Slide</span>
+            </div>
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function NavigationControls({
+  currentSlide, totalSlides, isFullscreen, onPrev, onNext, onGoTo, theme,
+}: {
+  currentSlide: number; totalSlides: number; isFullscreen: boolean;
+  onPrev: () => void; onNext: () => void; onGoTo: (i: number) => void; theme: Theme;
+}) {
+  const ui = getUIColors(getThemeType(theme));
+  return (
+    <div className={`flex items-center justify-between ${isFullscreen ? "absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent" : "mt-6"}`}>
+      <button
+        onClick={onPrev}
+        disabled={currentSlide === 0}
+        className={`flex items-center gap-2 px-4 py-2 rounded font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+          isFullscreen ? "bg-white/10 backdrop-blur-sm text-white hover:bg-white/20" : ui.navBtn
+        }`}
+      >
+        <ChevronLeft size={18} /><span className="hidden sm:inline text-sm">Previous</span>
+      </button>
+      <div className="flex items-center gap-1.5">
+        {Array.from({ length: totalSlides }).map((_, index) => (
+          <button
+            key={index}
+            onClick={() => onGoTo(index)}
+            className={`transition-all duration-300 ${
+              currentSlide === index
+                ? "w-6 h-1.5 rounded-full"
+                : `w-1.5 h-1.5 rounded-full ${isFullscreen ? "bg-white/40 hover:bg-white/60" : ui.navDot}`
+            }`}
+            style={currentSlide === index ? { backgroundColor: theme.colors.primary } : {}}
+          />
+        ))}
+      </div>
+      <button
+        onClick={onNext}
+        disabled={currentSlide === totalSlides - 1}
+        className={`flex items-center gap-2 px-4 py-2 rounded font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+          isFullscreen ? "bg-white/10 backdrop-blur-sm text-white hover:bg-white/20" : ui.navBtn
+        }`}
+      >
+        <span className="hidden sm:inline text-sm">Next</span><ChevronRight size={18} />
+      </button>
+    </div>
+  );
+}
+
+function ImageModal({
+  currentImage, imageUrl, isLoading, theme, onUrlChange, onSave, onRemove, onClose,
+}: {
+  currentImage?: string; imageUrl: string; isLoading: boolean; theme: Theme;
+  onUrlChange: (url: string) => void; onSave: () => void; onRemove: () => void; onClose: () => void;
+}) {
+  const themeType = getThemeType(theme);
+  const isDark = themeType !== "light";
+  
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <div 
+        className={`w-full max-w-lg rounded-2xl shadow-2xl ${isDark ? "bg-zinc-900 border border-zinc-700" : "bg-white border border-slate-200"}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className={`flex items-center justify-between p-4 border-b ${isDark ? "border-zinc-700" : "border-slate-200"}`}>
+          <h3 className={`text-lg font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>
+            {currentImage ? "Change Image" : "Add Image"}
+          </h3>
+          <button onClick={onClose} className={`p-1 rounded-lg transition-colors ${isDark ? "hover:bg-zinc-800 text-zinc-400" : "hover:bg-slate-100 text-slate-500"}`}>
+            <X size={20} />
+          </button>
+        </div>
+        
+        <div className="p-4 space-y-4">
+          {currentImage && (
+            <div className="relative aspect-video rounded-lg overflow-hidden bg-zinc-800">
+              <img src={currentImage} alt="Current" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                <span className="text-white text-sm">Current image</span>
+              </div>
+            </div>
+          )}
+          
+          <div>
+            <label className={`block text-sm font-medium mb-2 ${isDark ? "text-zinc-300" : "text-slate-700"}`}>
+              Image URL
+            </label>
+            <input
+              type="url"
+              value={imageUrl}
+              onChange={(e) => onUrlChange(e.target.value)}
+              placeholder="https://example.com/image.jpg"
+              className={`w-full px-4 py-3 rounded-lg border transition-colors ${
+                isDark 
+                  ? "bg-zinc-800 border-zinc-600 text-white placeholder-zinc-500 focus:border-amber-500" 
+                  : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:border-cyan-500"
+              } focus:outline-none focus:ring-2 focus:ring-opacity-20`}
+              style={{ ["--tw-ring-color" as string]: theme.colors.primary }}
+            />
+            <p className={`mt-2 text-xs ${isDark ? "text-zinc-500" : "text-slate-500"}`}>
+              Paste a direct link to an image (JPG, PNG, WebP)
+            </p>
+          </div>
+          
+          {imageUrl && (
+            <div className="aspect-video rounded-lg overflow-hidden bg-zinc-800 border border-dashed border-zinc-600">
+              <img 
+                src={imageUrl} 
+                alt="Preview" 
+                className="w-full h-full object-cover"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+              />
+            </div>
+          )}
+        </div>
+        
+        <div className={`flex items-center justify-between p-4 border-t ${isDark ? "border-zinc-700" : "border-slate-200"}`}>
+          <div>
+            {currentImage && (
+              <button
+                onClick={onRemove}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-red-400 hover:bg-red-900/20 transition-colors"
+              >
+                <ImageOff size={16} />
+                Remove
+              </button>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
             <button
-              onClick={copyToClipboard}
-              className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-4 py-2 text-sm font-semibold text-white transition hover:shadow-lg"
+              onClick={onClose}
+              className={`px-4 py-2 rounded-lg transition-colors ${isDark ? "text-zinc-400 hover:bg-zinc-800" : "text-slate-600 hover:bg-slate-100"}`}
             >
-              {copied ? <CheckCircle2 size={16} /> : <Share2 size={16} />}
-              {copied ? "Copied!" : "Copy"}
+              Cancel
+            </button>
+            <button
+              onClick={onSave}
+              disabled={!imageUrl || isLoading}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-white transition-colors disabled:opacity-50"
+              style={{ backgroundColor: theme.colors.primary }}
+            >
+              {isLoading ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
+              Save
             </button>
           </div>
-          <p className="text-xs text-slate-500">
-            Anyone with this link can view your presentation
-          </p>
         </div>
-      )}
+      </div>
+    </div>
+  );
+}
 
-      {!isPublic && (
-        <div className="rounded-lg bg-slate-50 p-4 text-center text-sm text-slate-600">
-          Enable public sharing to get a shareable link
-        </div>
-      )}
-    </>
+// Component for scroll view slides with dynamic height
+function ScrollSlideContent({ 
+  slide, 
+  index, 
+  theme, 
+  renderSlide 
+}: { 
+  slide: SlideData; 
+  index: number; 
+  theme: Theme;
+  renderSlide: (slide: SlideData, index: number, isMain: boolean) => React.ReactNode;
+}) {
+  const themeType = getThemeType(theme);
+  const bulletCount = slide.bulletPoints?.length || 0;
+  // Calculate height based on content - each bullet adds height
+  const calculatedHeight = Math.max(450, 380 + bulletCount * 65);
+  
+  const bgColors = {
+    dark: "bg-gradient-to-br from-zinc-900 via-zinc-950 to-black",
+    light: "bg-gradient-to-br from-slate-50 via-white to-slate-100",
+    sunset: "bg-gradient-to-br from-rose-950 via-[#1c1017] to-[#261520]",
+  };
+  
+  return (
+    <div 
+      className={`w-full ${bgColors[themeType]} relative`}
+      style={{ height: `${calculatedHeight}px` }}
+    >
+      {renderSlide(slide, index, true)}
+    </div>
   );
 }

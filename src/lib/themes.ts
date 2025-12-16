@@ -1,90 +1,44 @@
-// Complete theme definitions for presentations
-// Each theme includes colors, fonts, and design elements
+// Single sophisticated theme for presentations
+// A beautiful, modern design with elegant gradients and typography
 
 export interface ThemeColors {
-  // Background colors
   background: string;
   backgroundAlt: string;
   surface: string;
-  
-  // Text colors
   text: string;
   textMuted: string;
   heading: string;
-  
-  // Interactive elements
   link: string;
   linkHover: string;
-  
-  // Brand/accent colors
   primary: string;
   primaryHover: string;
   secondary: string;
   secondaryHover: string;
   accent: string;
-  
-  // UI elements
   border: string;
   borderHover: string;
   shadow: string;
-  
-  // Status colors
   success: string;
   warning: string;
   error: string;
 }
 
 export interface ThemeFonts {
-  heading: {
-    family: string;
-    weight: number;
-    letterSpacing: string;
-  };
-  body: {
-    family: string;
-    weight: number;
-    lineHeight: string;
-  };
-  caption: {
-    family: string;
-    weight: number;
-    size: string;
-  };
+  heading: { family: string; weight: number; letterSpacing: string; };
+  body: { family: string; weight: number; lineHeight: string; };
+  caption: { family: string; weight: number; size: string; };
 }
 
 export interface ThemeDesign {
-  borderRadius: {
-    small: string;
-    medium: string;
-    large: string;
-    full: string;
-  };
-  shadows: {
-    small: string;
-    medium: string;
-    large: string;
-  };
-  spacing: {
-    tight: string;
-    normal: string;
-    relaxed: string;
-  };
+  borderRadius: { small: string; medium: string; large: string; full: string; };
+  shadows: { small: string; medium: string; large: string; };
+  spacing: { tight: string; normal: string; relaxed: string; };
 }
 
 export interface ThemeSlideStyles {
-  title: {
-    background: string;
-    pattern?: string;
-  };
-  content: {
-    background: string;
-    bulletStyle: "disc" | "circle" | "square" | "dash" | "arrow" | "check";
-  };
-  image: {
-    borderRadius: string;
-    shadow: string;
-    overlay?: string;
-  };
+  title: { background: string; pattern?: string; };
+  content: { background: string; bulletStyle: "disc" | "circle" | "square" | "dash" | "arrow" | "check"; };
+  image: { borderRadius: string; shadow: string; overlay?: string; };
 }
 
 export interface Theme {
@@ -96,17 +50,10 @@ export interface Theme {
   fonts: ThemeFonts;
   design: ThemeDesign;
   slideStyles: ThemeSlideStyles;
-  preview: {
-    titleBg: string;
-    bodyBg: string;
-    textColor: string;
-    accentColor: string;
-  };
-  // Background images (optional - for themes with image backgrounds)
-  backgroundImage?: string; // Path to full background image
-  previewBackgroundImage?: string; // Path to preview/smaller background image
-  overlay?: string; // CSS gradient overlay for text readability
-  // Content box style for the preview card
+  preview: { titleBg: string; bodyBg: string; textColor: string; accentColor: string; };
+  backgroundImage?: string;
+  previewBackgroundImage?: string;
+  overlay?: string;
   cardBox?: {
     background: string;
     borderColor?: string;
@@ -117,220 +64,231 @@ export interface Theme {
   };
 }
 
-export const themes: Theme[] = [
-  {
-    id: "corporate-professional",
-    name: "Corporate Professional",
-    description: "Clean, trustworthy design perfect for business presentations",
-    category: "professional",
-    colors: {
-      // Backgrounds
-      background: "#ffffff",
-      backgroundAlt: "#f8fafc",
-      surface: "#ffffff",
-      
-      // Text
-      text: "#334155",
-      textMuted: "#64748b",
-      heading: "#0f172a",
-      
-      // Links
-      link: "#2563eb",
-      linkHover: "#1d4ed8",
-      
-      // Brand colors
-      primary: "#2563eb",
-      primaryHover: "#1d4ed8",
-      secondary: "#64748b",
-      secondaryHover: "#475569",
-      accent: "#0ea5e9",
-      
-      // UI
-      border: "#e2e8f0",
-      borderHover: "#cbd5e1",
-      shadow: "rgba(15, 23, 42, 0.08)",
-      
-      // Status
-      success: "#22c55e",
-      warning: "#f59e0b",
-      error: "#ef4444",
+// Theme 1: Elegant Noir - Sophisticated dark theme
+const elegantNoir: Theme = {
+  id: "elegant-noir",
+  name: "Elegant Noir",
+  description: "A sophisticated dark theme with warm accents and modern typography",
+  category: "bold",
+  colors: {
+    background: "#0a0a0b",
+    backgroundAlt: "#141416",
+    surface: "#1a1a1d",
+    text: "#e4e4e7",
+    textMuted: "#a1a1aa",
+    heading: "#fafafa",
+    link: "#f59e0b",
+    linkHover: "#fbbf24",
+    primary: "#f59e0b",
+    primaryHover: "#fbbf24",
+    secondary: "#6366f1",
+    secondaryHover: "#818cf8",
+    accent: "#ec4899",
+    border: "#27272a",
+    borderHover: "#3f3f46",
+    shadow: "rgba(0, 0, 0, 0.5)",
+    success: "#22c55e",
+    warning: "#f59e0b",
+    error: "#ef4444",
+  },
+  fonts: {
+    heading: { family: "'Inter', sans-serif", weight: 700, letterSpacing: "-0.03em" },
+    body: { family: "'Inter', sans-serif", weight: 400, lineHeight: "1.7" },
+    caption: { family: "'Inter', sans-serif", weight: 500, size: "0.875rem" },
+  },
+  design: {
+    borderRadius: { small: "0.5rem", medium: "0.75rem", large: "1rem", full: "9999px" },
+    shadows: {
+      small: "0 2px 8px rgba(0, 0, 0, 0.3)",
+      medium: "0 8px 24px rgba(0, 0, 0, 0.4)",
+      large: "0 16px 48px rgba(0, 0, 0, 0.5)",
     },
-    fonts: {
-      heading: {
-        family: "'Playfair Display', serif",
-        weight: 700,
-        letterSpacing: "-0.01em",
-      },
-      body: {
-        family: "'Lato', sans-serif",
-        weight: 400,
-        lineHeight: "1.6",
-      },
-      caption: {
-        family: "'Lato', sans-serif",
-        weight: 500,
-        size: "0.875rem",
-      },
+    spacing: { tight: "0.5rem", normal: "1.25rem", relaxed: "2rem" },
+  },
+  slideStyles: {
+    title: {
+      background: "linear-gradient(135deg, #0a0a0b 0%, #1a1a1d 50%, #0a0a0b 100%)",
+      pattern: "radial-gradient(ellipse at 30% 20%, rgba(245, 158, 11, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(99, 102, 241, 0.1) 0%, transparent 40%)",
     },
-    design: {
-      borderRadius: {
-        small: "0.375rem",
-        medium: "0.5rem",
-        large: "0.75rem",
-        full: "9999px",
-      },
-      shadows: {
-        small: "0 1px 2px rgba(15, 23, 42, 0.05)",
-        medium: "0 4px 6px -1px rgba(15, 23, 42, 0.1), 0 2px 4px -2px rgba(15, 23, 42, 0.1)",
-        large: "0 10px 15px -3px rgba(15, 23, 42, 0.1), 0 4px 6px -4px rgba(15, 23, 42, 0.1)",
-      },
-      spacing: {
-        tight: "0.5rem",
-        normal: "1rem",
-        relaxed: "1.5rem",
-      },
+    content: {
+      background: "linear-gradient(180deg, #0a0a0b 0%, #141416 100%)",
+      bulletStyle: "circle",
     },
-    slideStyles: {
-      title: {
-        background: "linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)",
-      },
-      content: {
-        background: "#ffffff",
-        bulletStyle: "disc",
-      },
-      image: {
-        borderRadius: "0.5rem",
-        shadow: "0 4px 6px -1px rgba(15, 23, 42, 0.1)",
-      },
-    },
-    preview: {
-      titleBg: "#2563eb",
-      bodyBg: "#ffffff",
-      textColor: "#334155",
-      accentColor: "#2563eb",
-    },
-    cardBox: {
-      background: "rgba(255, 255, 255, 0.95)",
-      borderColor: "transparent",
-      titleColor: "#0f172a",
-      bodyColor: "#334155",
-      accentColor: "#2563eb",
-      shadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+    image: {
+      borderRadius: "0.75rem",
+      shadow: "0 20px 50px rgba(0, 0, 0, 0.6)",
+      overlay: "linear-gradient(to top, rgba(10, 10, 11, 0.9) 0%, transparent 60%)",
     },
   },
-  {
-    id: "elegant-dark",
-    name: "Elegant Dark",
-    description: "Sophisticated dark theme with subtle gradients and modern typography",
-    category: "bold",
-    colors: {
-      // Backgrounds
-      background: "#0f172a",
-      backgroundAlt: "#1e293b",
-      surface: "#1e293b",
-      
-      // Text
-      text: "#cbd5e1",
-      textMuted: "#94a3b8",
-      heading: "#f1f5f9",
-      
-      // Links
-      link: "#38bdf8",
-      linkHover: "#7dd3fc",
-      
-      // Brand colors
-      primary: "#38bdf8",
-      primaryHover: "#7dd3fc",
-      secondary: "#475569",
-      secondaryHover: "#64748b",
-      accent: "#a78bfa",
-      
-      // UI
-      border: "#334155",
-      borderHover: "#475569",
-      shadow: "rgba(0, 0, 0, 0.3)",
-      
-      // Status
-      success: "#4ade80",
-      warning: "#fbbf24",
-      error: "#f87171",
+  preview: {
+    titleBg: "linear-gradient(135deg, #1a1a1d 0%, #27272a 100%)",
+    bodyBg: "#0a0a0b",
+    textColor: "#e4e4e7",
+    accentColor: "#f59e0b",
+  },
+  overlay: "linear-gradient(180deg, rgba(10, 10, 11, 0.4) 0%, rgba(10, 10, 11, 0.2) 100%)",
+  cardBox: {
+    background: "rgba(26, 26, 29, 0.8)",
+    borderColor: "rgba(245, 158, 11, 0.2)",
+    titleColor: "#fafafa",
+    bodyColor: "#e4e4e7",
+    accentColor: "#f59e0b",
+    shadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
+  },
+};
+
+// Theme 2: Arctic Frost - Clean, modern light theme with cool tones
+const arcticFrost: Theme = {
+  id: "arctic-frost",
+  name: "Arctic Frost",
+  description: "A crisp, modern light theme with cool cyan accents and clean typography",
+  category: "minimal",
+  colors: {
+    background: "#f8fafc",
+    backgroundAlt: "#f1f5f9",
+    surface: "#ffffff",
+    text: "#334155",
+    textMuted: "#64748b",
+    heading: "#0f172a",
+    link: "#0891b2",
+    linkHover: "#06b6d4",
+    primary: "#0891b2",
+    primaryHover: "#06b6d4",
+    secondary: "#8b5cf6",
+    secondaryHover: "#a78bfa",
+    accent: "#f43f5e",
+    border: "#e2e8f0",
+    borderHover: "#cbd5e1",
+    shadow: "rgba(15, 23, 42, 0.08)",
+    success: "#10b981",
+    warning: "#f59e0b",
+    error: "#ef4444",
+  },
+  fonts: {
+    heading: { family: "'Inter', sans-serif", weight: 700, letterSpacing: "-0.03em" },
+    body: { family: "'Inter', sans-serif", weight: 400, lineHeight: "1.7" },
+    caption: { family: "'Inter', sans-serif", weight: 500, size: "0.875rem" },
+  },
+  design: {
+    borderRadius: { small: "0.5rem", medium: "0.75rem", large: "1rem", full: "9999px" },
+    shadows: {
+      small: "0 2px 8px rgba(15, 23, 42, 0.06)",
+      medium: "0 8px 24px rgba(15, 23, 42, 0.1)",
+      large: "0 16px 48px rgba(15, 23, 42, 0.12)",
     },
-    fonts: {
-      heading: {
-        family: "'Outfit', sans-serif",
-        weight: 700,
-        letterSpacing: "-0.02em",
-      },
-      body: {
-        family: "'Plus Jakarta Sans', sans-serif",
-        weight: 400,
-        lineHeight: "1.7",
-      },
-      caption: {
-        family: "'Plus Jakarta Sans', sans-serif",
-        weight: 500,
-        size: "0.875rem",
-      },
+    spacing: { tight: "0.5rem", normal: "1.25rem", relaxed: "2rem" },
+  },
+  slideStyles: {
+    title: {
+      background: "linear-gradient(135deg, #f8fafc 0%, #e0f2fe 50%, #f0f9ff 100%)",
+      pattern: "radial-gradient(ellipse at 30% 20%, rgba(8, 145, 178, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 40%)",
     },
-    design: {
-      borderRadius: {
-        small: "0.5rem",
-        medium: "0.75rem",
-        large: "1rem",
-        full: "9999px",
-      },
-      shadows: {
-        small: "0 2px 4px rgba(0, 0, 0, 0.2)",
-        medium: "0 4px 12px rgba(0, 0, 0, 0.25)",
-        large: "0 8px 24px rgba(0, 0, 0, 0.3)",
-      },
-      spacing: {
-        tight: "0.5rem",
-        normal: "1.25rem",
-        relaxed: "2rem",
-      },
+    content: {
+      background: "linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)",
+      bulletStyle: "circle",
     },
-    slideStyles: {
-      title: {
-        background: "linear-gradient(135deg, #1e293b 0%, #334155 50%, #1e293b 100%)",
-        pattern: "radial-gradient(circle at 25% 25%, rgba(56, 189, 248, 0.1) 0%, transparent 50%)",
-      },
-      content: {
-        background: "#0f172a",
-        bulletStyle: "arrow",
-      },
-      image: {
-        borderRadius: "0.75rem",
-        shadow: "0 8px 24px rgba(0, 0, 0, 0.4)",
-        overlay: "linear-gradient(to top, rgba(15, 23, 42, 0.8) 0%, transparent 50%)",
-      },
-    },
-    preview: {
-      titleBg: "#1e293b",
-      bodyBg: "#0f172a",
-      textColor: "#cbd5e1",
-      accentColor: "#38bdf8",
-    },
-    // Background image for elegant-dark theme
-    backgroundImage: "/themes/backgrounds/elegant-dark.jpg",
-    previewBackgroundImage: "/themes/backgrounds/elegant-dark.jpg",
-    overlay: "linear-gradient(180deg, rgba(15, 23, 42, 0.6) 0%, rgba(15, 23, 42, 0.3) 100%)",
-    cardBox: {
-      background: "rgba(30, 41, 59, 0.8)",
-      borderColor: "rgba(56, 189, 248, 0.3)",
-      titleColor: "#f1f5f9",
-      bodyColor: "#cbd5e1",
-      accentColor: "#38bdf8",
-      shadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
+    image: {
+      borderRadius: "0.75rem",
+      shadow: "0 20px 50px rgba(15, 23, 42, 0.15)",
+      overlay: "linear-gradient(to top, rgba(248, 250, 252, 0.9) 0%, transparent 60%)",
     },
   },
-];
+  preview: {
+    titleBg: "linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%)",
+    bodyBg: "#f8fafc",
+    textColor: "#334155",
+    accentColor: "#0891b2",
+  },
+  overlay: "linear-gradient(180deg, rgba(248, 250, 252, 0.4) 0%, rgba(248, 250, 252, 0.2) 100%)",
+  cardBox: {
+    background: "rgba(255, 255, 255, 0.9)",
+    borderColor: "rgba(8, 145, 178, 0.2)",
+    titleColor: "#0f172a",
+    bodyColor: "#334155",
+    accentColor: "#0891b2",
+    shadow: "0 8px 32px rgba(15, 23, 42, 0.1)",
+  },
+};
+
+// Theme 3: Sunset Gradient - Warm, vibrant creative theme with rose/orange/purple tones
+const sunsetGradient: Theme = {
+  id: "sunset-gradient",
+  name: "Sunset Gradient",
+  description: "A warm, vibrant theme with beautiful rose and orange gradients for creative presentations",
+  category: "creative",
+  colors: {
+    background: "#1c1017",
+    backgroundAlt: "#261520",
+    surface: "#2d1a24",
+    text: "#fce7f3",
+    textMuted: "#f9a8d4",
+    heading: "#ffffff",
+    link: "#fb923c",
+    linkHover: "#fdba74",
+    primary: "#f472b6",
+    primaryHover: "#f9a8d4",
+    secondary: "#fb923c",
+    secondaryHover: "#fdba74",
+    accent: "#a855f7",
+    border: "#4c1d3d",
+    borderHover: "#6b2150",
+    shadow: "rgba(28, 16, 23, 0.6)",
+    success: "#4ade80",
+    warning: "#fbbf24",
+    error: "#f87171",
+  },
+  fonts: {
+    heading: { family: "'Inter', sans-serif", weight: 700, letterSpacing: "-0.03em" },
+    body: { family: "'Inter', sans-serif", weight: 400, lineHeight: "1.7" },
+    caption: { family: "'Inter', sans-serif", weight: 500, size: "0.875rem" },
+  },
+  design: {
+    borderRadius: { small: "0.5rem", medium: "0.75rem", large: "1rem", full: "9999px" },
+    shadows: {
+      small: "0 2px 8px rgba(28, 16, 23, 0.4)",
+      medium: "0 8px 24px rgba(28, 16, 23, 0.5)",
+      large: "0 16px 48px rgba(28, 16, 23, 0.6)",
+    },
+    spacing: { tight: "0.5rem", normal: "1.25rem", relaxed: "2rem" },
+  },
+  slideStyles: {
+    title: {
+      background: "linear-gradient(135deg, #1c1017 0%, #2d1a24 30%, #1c1017 100%)",
+      pattern: "radial-gradient(ellipse at 20% 30%, rgba(244, 114, 182, 0.2) 0%, transparent 50%), radial-gradient(ellipse at 80% 70%, rgba(251, 146, 60, 0.15) 0%, transparent 45%)",
+    },
+    content: {
+      background: "linear-gradient(180deg, #1c1017 0%, #261520 100%)",
+      bulletStyle: "circle",
+    },
+    image: {
+      borderRadius: "0.75rem",
+      shadow: "0 20px 50px rgba(28, 16, 23, 0.7)",
+      overlay: "linear-gradient(to top, rgba(28, 16, 23, 0.95) 0%, transparent 60%)",
+    },
+  },
+  preview: {
+    titleBg: "linear-gradient(135deg, #2d1a24 0%, #4c1d3d 100%)",
+    bodyBg: "#1c1017",
+    textColor: "#fce7f3",
+    accentColor: "#f472b6",
+  },
+  overlay: "linear-gradient(180deg, rgba(28, 16, 23, 0.4) 0%, rgba(28, 16, 23, 0.2) 100%)",
+  cardBox: {
+    background: "rgba(45, 26, 36, 0.85)",
+    borderColor: "rgba(244, 114, 182, 0.25)",
+    titleColor: "#ffffff",
+    bodyColor: "#fce7f3",
+    accentColor: "#f472b6",
+    shadow: "0 8px 32px rgba(28, 16, 23, 0.5)",
+  },
+};
+
+export const themes: Theme[] = [elegantNoir, arcticFrost, sunsetGradient];
 
 export const getThemeById = (id: string): Theme | undefined => {
-  return themes.find((theme) => theme.id === id);
+  return themes.find((theme) => theme.id === id) || elegantNoir;
 };
 
 export const getDefaultTheme = (): Theme => {
-  return themes[0]!;
+  return elegantNoir;
 };
-

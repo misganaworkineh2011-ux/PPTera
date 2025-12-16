@@ -256,6 +256,8 @@ export default function CreatePresentationClient({
     language: existingOutline?.metadata.language || "english",
     theme: "corporate-professional",
     imageSource: "no-images",
+    textDensity: "concise" as "minimal" | "concise" | "detailed" | "extensive",
+    imageLicensing: "all-images" as "all-images" | "free-to-use" | "free-commercial",
   });
 
   const [lastDescription, setLastDescription] = useState(
@@ -271,6 +273,12 @@ export default function CreatePresentationClient({
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
   const [isCreatingPresentation, setIsCreatingPresentation] = useState(false);
+  
+  // Track recently selected themes for quick access
+  const [quickSelectThemes, setQuickSelectThemes] = useState<string[]>([
+    themes[0]?.id || "corporate-professional",
+    themes[1]?.id || "elegant-dark",
+  ]);
 
   const allSlideOptions = getAllSlideOptions(subscriptionPlan);
 
@@ -921,12 +929,74 @@ export default function CreatePresentationClient({
               {/* Presentation style box – used when creating slides from this outline */}
               {isCompleted && (
                 <div className="mt-6 mb-[60px] rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm px-4 py-4 shadow-sm">
+                  {/* Text Content Section */}
+                  <div className="mb-6 pb-6 border-b border-slate-200">
+                    <div className="flex items-center gap-2 mb-3">
+                      <svg className="w-4 h-4 text-[#06b6d4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                      </svg>
+                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                        Text Content
+                      </p>
+                    </div>
+                    <p className="text-xs text-slate-500 mb-3">Amount of text per card</p>
+                    
+                    {/* Text Density Options */}
+                    <div className="grid grid-cols-4 gap-2">
+                      {[
+                        { id: "minimal", label: "Minimal", lines: 2 },
+                        { id: "concise", label: "Concise", lines: 3 },
+                        { id: "detailed", label: "Detailed", lines: 4 },
+                        { id: "extensive", label: "Extensive", lines: 5 },
+                      ].map((option) => {
+                        const isSelected = formData.textDensity === option.id;
+                        return (
+                          <button
+                            key={option.id}
+                            type="button"
+                            onClick={() => handleChange("textDensity", option.id)}
+                            className={`relative rounded-lg border p-3 text-left transition-all hover:shadow-sm ${
+                              isSelected
+                                ? "border-[#06b6d4] ring-2 ring-[#06b6d4]/20 bg-[#06b6d4]/5"
+                                : "border-slate-200 hover:border-slate-300 bg-white"
+                            }`}
+                          >
+                            {/* Text lines visualization */}
+                            <div className="mb-2 space-y-1">
+                              {Array.from({ length: option.lines }).map((_, i) => (
+                                <div
+                                  key={i}
+                                  className={`h-1 rounded ${
+                                    isSelected ? "bg-[#06b6d4]" : "bg-slate-300"
+                                  }`}
+                                  style={{
+                                    width: i === option.lines - 1 ? "60%" : "100%",
+                                  }}
+                                />
+                              ))}
+                            </div>
+                            <div className={`text-xs font-medium ${
+                              isSelected ? "text-[#06b6d4]" : "text-slate-700"
+                            }`}>
+                              {option.label}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
                   {/* Theme Selection */}
                   <div className="mb-4">
                     <div className="flex items-center justify-between mb-3">
-                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                        Presentation Theme
-                      </p>
+                      <div>
+                        <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                          Presentation Theme
+                        </p>
+                        <p className="text-[10px] text-slate-400 mt-0.5">
+                          Recently selected themes
+                        </p>
+                      </div>
                       <button
                         type="button"
                         onClick={() => setIsThemeSelectorOpen(true)}
@@ -938,13 +1008,22 @@ export default function CreatePresentationClient({
                     
                     {/* Popular Themes Grid */}
                     <div className="grid grid-cols-2 gap-3">
-                      {themes.slice(0, 2).map((theme) => {
+                      {quickSelectThemes.map((themeId) => {
+                        const theme = getThemeById(themeId);
+                        if (!theme) return null;
                         const isSelected = formData.theme === theme.id;
                         return (
                           <button
                             key={theme.id}
                             type="button"
-                            onClick={() => handleChange("theme", theme.id)}
+                            onClick={() => {
+                              handleChange("theme", theme.id);
+                              // Move selected theme to front of quick-select
+                              setQuickSelectThemes((prev) => {
+                                if (prev[0] === theme.id) return prev; // Already first
+                                return [theme.id, ...prev.filter(id => id !== theme.id)].slice(0, 2);
+                              });
+                            }}
                             className={`group relative overflow-hidden rounded-lg border text-left transition-all hover:shadow-md ${
                               isSelected
                                 ? "border-[#06b6d4] ring-2 ring-[#06b6d4]/20 shadow-sm"
@@ -952,9 +1031,9 @@ export default function CreatePresentationClient({
                             }`}
                           >
                             {/* Theme Preview Card */}
-                            <div className="p-2.5">
+                            <div className="p-2">
                               <div
-                                className="aspect-[1.6/1] w-full rounded-md shadow-sm relative overflow-hidden"
+                                className="aspect-[1.8/1] w-full rounded shadow-sm relative overflow-hidden"
                                 style={{
                                   backgroundColor: theme.preview.titleBg,
                                   backgroundImage: theme.previewBackgroundImage 
@@ -966,16 +1045,16 @@ export default function CreatePresentationClient({
                               >
                                 {/* Small content box overlaid on background */}
                                 <div 
-                                  className="absolute bottom-2 left-2 right-2 rounded-md p-2 backdrop-blur-md transition-all duration-300"
+                                  className="absolute bottom-1.5 left-1.5 right-1.5 rounded p-1.5 backdrop-blur-md transition-all duration-300"
                                   style={{
                                     backgroundColor: theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
                                     border: theme.cardBox?.borderColor ? `1px solid ${theme.cardBox.borderColor}` : "none",
-                                    boxShadow: theme.cardBox?.shadow || "0 2px 4px rgba(0, 0, 0, 0.1)",
-                                    maxWidth: "75%",
+                                    boxShadow: theme.cardBox?.shadow || "0 1px 3px rgba(0, 0, 0, 0.1)",
+                                    maxWidth: "70%",
                                   }}
                                 >
                                   <div
-                                    className="text-sm font-bold mb-0.5"
+                                    className="text-[11px] font-bold mb-0.5 leading-tight"
                                     style={{
                                       fontFamily: theme.fonts.heading.family,
                                       color: theme.cardBox?.titleColor || theme.colors.heading,
@@ -984,7 +1063,7 @@ export default function CreatePresentationClient({
                                     Title
                                   </div>
                                   <div
-                                    className="text-[10px] font-medium"
+                                    className="text-[8px] font-medium leading-tight"
                                     style={{
                                       fontFamily: theme.fonts.body.family,
                                       color: theme.cardBox?.bodyColor || theme.colors.text,
@@ -992,7 +1071,7 @@ export default function CreatePresentationClient({
                                   >
                                     Body &{" "}
                                     <span
-                                      className="underline decoration-1 underline-offset-1"
+                                      className="underline decoration-1"
                                       style={{
                                         color: theme.cardBox?.accentColor || theme.preview.accentColor,
                                         textDecorationColor: theme.cardBox?.accentColor || theme.preview.accentColor,
@@ -1007,16 +1086,16 @@ export default function CreatePresentationClient({
 
                             {/* Theme Name Footer */}
                             <div
-                              className={`px-2.5 py-1.5 border-t flex items-center justify-between text-xs ${
+                              className={`px-2 py-1 border-t flex items-center justify-between text-[11px] ${
                                 isSelected ? "bg-[#06b6d4]/5" : "bg-white"
                               }`}
                               style={{ borderColor: isSelected ? "#06b6d4" : "#e2e8f0" }}
                             >
-                              <div className="font-medium text-slate-700">
+                              <div className="font-medium text-slate-700 truncate">
                                 {theme.name}
                               </div>
                               {isSelected && (
-                                <Check size={14} className="text-[#06b6d4]" />
+                                <Check size={12} className="text-[#06b6d4] flex-shrink-0 ml-1" />
                               )}
                             </div>
                           </button>
@@ -1026,7 +1105,7 @@ export default function CreatePresentationClient({
                   </div>
 
                   {/* Image Style Selection */}
-                  <div>
+                  <div className="mb-4">
                     <p className="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">
                       Image Style
                     </p>
@@ -1043,6 +1122,51 @@ export default function CreatePresentationClient({
                       <option value="illustrations">Illustrations (Pictographic Style)</option>
                       <option value="web-images">Web Images (Public Search)</option>
                     </select>
+                  </div>
+
+                  {/* Image Licensing Selection */}
+                  <div>
+                    <div className="relative">
+                      <select
+                        id="imageLicensing-outline"
+                        value={formData.imageLicensing}
+                        onChange={(e) => handleChange("imageLicensing", e.target.value)}
+                        disabled={formData.imageSource === "no-images" || formData.imageSource === "placeholders"}
+                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all disabled:opacity-50 disabled:cursor-not-allowed appearance-none"
+                      >
+                        <option value="all-images">All images</option>
+                        <option value="free-to-use">Free to use</option>
+                        <option value="free-commercial">Free to use commercially</option>
+                      </select>
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </div>
+                    
+                    {/* Licensing Info Tooltip */}
+                    {formData.imageLicensing !== "all-images" && formData.imageSource !== "no-images" && formData.imageSource !== "placeholders" && (
+                      <div className="mt-2 p-2 rounded-lg bg-blue-50 border border-blue-100">
+                        <div className="flex items-start gap-2">
+                          <svg className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                          </svg>
+                          <div className="text-[10px] text-blue-700 leading-relaxed">
+                            {formData.imageLicensing === "free-to-use" && (
+                              <span>
+                                <strong>Free to use:</strong> Only use images licensed for personal use, like a school project.
+                              </span>
+                            )}
+                            {formData.imageLicensing === "free-commercial" && (
+                              <span>
+                                <strong>Free to use commercially:</strong> Only use images licensed for commercial use, like a sales pitch.
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <p className="mt-3 text-xs text-slate-500 leading-relaxed">
@@ -1070,15 +1194,11 @@ export default function CreatePresentationClient({
                   <span className="text-slate-500">Characters:</span>
                   <strong className="text-[#1e3a8a]">{totalCharacters.toLocaleString()}</strong>
                 </span>
-                {streamState.creditsRemaining !== null && (
-                  <>
-                    <span className="text-slate-300">•</span>
-                    <span className="flex items-center gap-1">
-                      <span className="text-slate-500">Credits:</span>
-                      <strong className="text-[#06b6d4]">{streamState.creditsRemaining}</strong>
-                    </span>
-                  </>
-                )}
+                <span className="text-slate-300">•</span>
+                <span className="flex items-center gap-1">
+                  <span className="text-slate-500">Credits:</span>
+                  <strong className="text-[#06b6d4]">{streamState.creditsRemaining ?? "—"}</strong>
+                </span>
               </div>
               <button
                 type="button"
@@ -1107,6 +1227,15 @@ export default function CreatePresentationClient({
         selectedThemeId={formData.theme}
         onSelectTheme={(themeId) => {
           handleChange("theme", themeId);
+          // Update quick-select themes: add new theme and keep the most recent one
+          setQuickSelectThemes((prev) => {
+            // If theme is already in the list, move it to the front
+            if (prev.includes(themeId)) {
+              return [themeId, ...prev.filter(id => id !== themeId)].slice(0, 2);
+            }
+            // Otherwise, add it to the front and keep only 2 themes
+            return [themeId, prev[0]!].slice(0, 2);
+          });
         }}
       />
     </div>
