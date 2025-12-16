@@ -3,7 +3,7 @@
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
 import { useLanguage } from "~/contexts/LanguageContext";
-import { Mail, MessageCircle, Phone, MapPin, Send } from "lucide-react";
+import { Mail, MessageCircle } from "lucide-react";
 import { useState } from "react";
 import { LoadingButton } from "~/components/LoadingButton";
 import { toast } from "sonner";
@@ -56,21 +56,14 @@ export default function ContactPage() {
       title: t.email || "Email",
       value: "support@pptmaster.com",
       description: t.emailDesc || "We'll respond within 24 hours",
-      color: "from-blue-500 to-cyan-500",
+      color: "from-[#1e3a8a] to-[#06b6d4]",
     },
     {
       icon: MessageCircle,
       title: t.liveChat || "Live Chat",
       value: t.available247 || "Available 24/7",
       description: t.liveChatDesc || "Get instant help from our team",
-      color: "from-purple-500 to-pink-500",
-    },
-    {
-      icon: Phone,
-      title: t.phone || "Phone",
-      value: "+1 (555) 123-4567",
-      description: t.phoneDesc || "Mon-Fri, 9am-6pm EST",
-      color: "from-orange-500 to-red-500",
+      color: "from-[#1e3a8a] to-[#06b6d4]",
     },
   ];
 
@@ -96,7 +89,7 @@ export default function ContactPage() {
           </h1>
 
           <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed animate-fade-in-up [animation-delay:200ms]">
-            {t.contactDesc || "Have a question or feedback? We'd love to hear from you."}
+            {t.contactDesc || "Have a question about PPT Master or our AI PowerPoint generator? We'd love to hear from you."}
           </p>
         </div>
       </section>
@@ -104,7 +97,7 @@ export default function ContactPage() {
       {/* Contact Methods */}
       <section className="relative px-6 pb-12">
         <div className="mx-auto max-w-7xl">
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
             {contactMethods.map((method, index) => (
               <div
                 key={index}
@@ -211,39 +204,6 @@ export default function ContactPage() {
               </LoadingButton>
 
             </form>
-          </div>
-        </div>
-      </section>
-
-      {/* Office Location */}
-      <section className="relative px-6 pb-24 bg-gradient-to-br from-slate-50 to-white">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-4xl font-bold text-slate-900 mb-6">
-                {t.visitUs || "Visit our office"}
-              </h2>
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center flex-shrink-0">
-                    <MapPin className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-slate-900 mb-1">{t.headquarters || "Headquarters"}</h3>
-                    <p className="text-slate-600">
-                      123 Innovation Drive<br />
-                      San Francisco, CA 94105<br />
-                      United States
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Map Placeholder */}
-            <div className="h-96 rounded-3xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center border border-slate-200">
-              <MapPin className="h-16 w-16 text-slate-400" />
-            </div>
           </div>
         </div>
       </section>

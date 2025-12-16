@@ -14,28 +14,28 @@ export default function PromptGuidePage() {
       title: t.beSpecific || "Be Specific",
       description: t.beSpecificDesc || "The more specific your prompt, the better the results. Instead of 'Create a presentation about marketing,' try:",
       example: t.beSpecificExample || "Create a 10-slide presentation about digital marketing strategies for small businesses, including social media, email marketing, and SEO best practices",
-      color: "from-blue-500 to-cyan-500",
+      color: "from-[#1e3a8a] to-[#06b6d4]",
     },
     {
       icon: Layers,
       title: t.includeStructure || "Include Structure",
       description: t.includeStructureDesc || "Tell the AI how you want your presentation organized:",
       example: t.includeStructureExample || "Create a presentation with: 1) Problem statement, 2) Market analysis, 3) Our solution, 4) Business model, 5) Team, 6) Financial projections",
-      color: "from-purple-500 to-pink-500",
+      color: "from-[#1e3a8a] to-[#06b6d4]",
     },
     {
       icon: Zap,
       title: t.defineAudience || "Define Your Audience",
       description: t.defineAudienceDesc || "Specify who will be viewing your presentation:",
       example: t.defineAudienceExample || "Create an investor pitch deck for Series A funding, targeting venture capital firms interested in SaaS startups",
-      color: "from-orange-500 to-red-500",
+      color: "from-[#1e3a8a] to-[#06b6d4]",
     },
     {
       icon: Lightbulb,
       title: t.setTone || "Set the Tone",
       description: t.setToneDesc || "Describe the style and tone you want:",
       example: t.setToneExample || "Create a professional yet friendly presentation for employee onboarding, with a modern design and conversational tone",
-      color: "from-green-500 to-emerald-500",
+      color: "from-[#1e3a8a] to-[#06b6d4]",
     },
   ];
 
@@ -55,6 +55,70 @@ export default function PromptGuidePage() {
     {
       category: "Sales",
       prompt: "Create a sales pitch deck for enterprise clients, highlighting our SaaS platform's ROI, case studies, pricing tiers, and implementation timeline. Professional and data-driven tone.",
+    },
+    {
+      category: "Startup",
+      prompt: "Create a 12-slide investor pitch deck for a fintech startup seeking seed funding. Include problem, solution, market size, business model, traction, team, and financial projections. Make it compelling and data-driven.",
+    },
+    {
+      category: "HR",
+      prompt: "Design a 10-slide employee onboarding presentation covering company culture, values, benefits, team structure, tools and resources, and first-week expectations. Friendly and welcoming tone.",
+    },
+    {
+      category: "Product",
+      prompt: "Build a 15-slide product roadmap presentation for Q1-Q4 2025, showing planned features, timelines, resource allocation, and success metrics. Target audience: product team and stakeholders.",
+    },
+    {
+      category: "Finance",
+      prompt: "Create an 8-slide financial report presentation showing revenue trends, expense breakdown, profit margins, cash flow analysis, and budget forecasts. Professional and data-heavy.",
+    },
+    {
+      category: "Training",
+      prompt: "Design a 25-slide training presentation on cybersecurity best practices for employees, covering password management, phishing detection, data protection, and incident reporting. Interactive and practical.",
+    },
+    {
+      category: "Research",
+      prompt: "Create a 20-slide research presentation on AI trends in healthcare, including current applications, case studies, challenges, future opportunities, and recommendations. Academic tone with citations.",
+    },
+    {
+      category: "Nonprofit",
+      prompt: "Build a 12-slide fundraising presentation for a nonprofit organization, highlighting mission, impact stories, programs, financial transparency, and donation opportunities. Emotional and inspiring.",
+    },
+    {
+      category: "Real Estate",
+      prompt: "Create a 10-slide property listing presentation for a luxury home, featuring location highlights, property features, floor plans, neighborhood amenities, and investment potential. Elegant and sophisticated.",
+    },
+    {
+      category: "Consulting",
+      prompt: "Design a 15-slide consulting proposal for digital transformation, including current state analysis, recommended solutions, implementation roadmap, timeline, team, and pricing. Professional and strategic.",
+    },
+    {
+      category: "Event",
+      prompt: "Build an 8-slide event proposal presentation for a tech conference, covering event concept, target audience, agenda, speakers, venue, budget, and sponsorship opportunities. Exciting and professional.",
+    },
+    {
+      category: "Portfolio",
+      prompt: "Create a 12-slide creative portfolio presentation showcasing design projects, including project briefs, design process, final deliverables, and client testimonials. Modern and visually stunning.",
+    },
+    {
+      category: "Strategy",
+      prompt: "Design a 20-slide strategic planning presentation for 2025, covering market analysis, competitive landscape, SWOT analysis, strategic objectives, initiatives, KPIs, and resource requirements.",
+    },
+    {
+      category: "Customer Success",
+      prompt: "Build a 10-slide customer success story presentation highlighting the client's challenge, our solution, implementation process, results achieved, and ROI. Include metrics and testimonials.",
+    },
+    {
+      category: "Technology",
+      prompt: "Create a 15-slide technical architecture presentation explaining our cloud infrastructure, security measures, scalability approach, disaster recovery, and performance optimization. Technical but accessible.",
+    },
+    {
+      category: "Healthcare",
+      prompt: "Design a 12-slide patient education presentation about diabetes management, covering symptoms, diagnosis, treatment options, lifestyle changes, monitoring, and support resources. Clear and compassionate.",
+    },
+    {
+      category: "Legal",
+      prompt: "Build an 8-slide legal compliance presentation on GDPR requirements for the marketing team, covering key regulations, data handling procedures, consent management, and penalties. Clear and actionable.",
     },
   ];
 
@@ -175,9 +239,9 @@ export default function PromptGuidePage() {
             <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
               {t.readyToCreateDesc || "Put these tips into practice and create your first AI-powered presentation."}
             </p>
-            <button className="inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-lg font-bold text-[#1e3a8a] shadow-xl hover:shadow-2xl transition-all hover:scale-105">
+            <button className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 md:px-8 md:py-4 text-sm md:text-lg font-bold text-[#1e3a8a] shadow-xl hover:shadow-2xl transition-all hover:scale-105">
               {t.startCreating || "Start Creating"}
-              <Zap className="h-5 w-5" />
+              <Zap className="h-4 w-4 md:h-5 md:w-5" />
             </button>
           </div>
         </div>

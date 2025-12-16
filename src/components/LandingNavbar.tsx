@@ -8,9 +8,7 @@ import {
     ChevronDown,
     Globe,
     Menu,
-    X,
-    Wand2,
-    Sparkles
+    X
 } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { useLanguage } from "~/contexts/LanguageContext";
@@ -107,13 +105,13 @@ export const LandingNavbar = () => {
                             {solutionsOpen && (
                                 <div className="absolute top-full left-0 pt-2 w-64 animate-fade-in-up [animation-duration:0.2s] origin-top">
                                     <div className="rounded-2xl border border-slate-100 bg-white p-2 shadow-xl">
-                                        <LoadingLink href="/team" className="block rounded-xl p-3 hover:bg-slate-50">
-                                            <div className="font-semibold text-slate-900">{t.forBusiness}</div>
-                                            <div className="text-xs text-slate-500">{t.forBusinessDesc}</div>
-                                        </LoadingLink>
                                         <LoadingLink href="/education" className="block rounded-xl p-3 hover:bg-slate-50">
                                             <div className="font-semibold text-slate-900">{t.forEducation}</div>
                                             <div className="text-xs text-slate-500">{t.forEducationDesc}</div>
+                                        </LoadingLink>
+                                        <LoadingLink href="/community" className="block rounded-xl p-3 hover:bg-slate-50">
+                                            <div className="font-semibold text-slate-900">{t.community}</div>
+                                            <div className="text-xs text-slate-500">{t.communityDesc || "Join our community"}</div>
                                         </LoadingLink>
                                     </div>
                                 </div>

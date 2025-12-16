@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CheckCircle2, Loader2, AlertCircle } from "lucide-react";
+import { CheckCircle2, Loader2, AlertCircle, Plus, Zap } from "lucide-react";
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
 import { cn } from "~/lib/utils";
@@ -15,13 +15,13 @@ type PolarProduct = {
   description?: string;
   uiDescription?: string;
   monthly: {
-    id: string; // Added id to monthly
+    id: string;
     displayPrice: string;
     priceAmount: number;
     recurringInterval: string;
   } | null;
   yearly: {
-    id: string; // Added id to yearly
+    id: string;
     displayPrice: string;
     priceAmount: number;
     recurringInterval: string;
@@ -34,8 +34,9 @@ export default function PricingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [checkoutLoadingId, setCheckoutLoadingId] = useState<string | null>(null);
+  const [hasSubscription, setHasSubscription] = useState(false);
 
-  const { isSignedIn } = useUser();
+  const { isSignedIn, user } = useUser();
   const router = useRouter();
   const { t } = useLanguage();
 
@@ -56,13 +57,20 @@ export default function PricingPage() {
     loadProducts();
   }, []);
 
+  // Check if user has a subscription
+  useEffect(() => {
+    if (isSignedIn && user) {
+      const subscription = user.publicMetadata?.subscription as string | undefined;
+      setHasSubscription(!!subscription && subscription !== 'free');
+    }
+  }, [isSignedIn, user]);
+
   const handleSubscribe = async (productKey: string) => {
     if (!isSignedIn) {
       router.push("/sign-in");
       return;
     }
 
-    // Find the product and get the correct ID based on billing period
     const product = products.find(p => p.key === productKey);
     if (!product) return;
 
@@ -91,43 +99,102 @@ export default function PricingPage() {
     }
   };
 
-  // Helper to parse UI description features
   const getFeatures = (desc?: string) => {
     if (!desc) return [];
     return desc.split('\n').filter(line => line.trim().startsWith('•')).map(line => line.replace('•', '').trim());
   };
 
+  const topUpOptions = [
+    { credits: 50, price: "$9.99", popular: false },
+    { credits: 100, price: "$17.99", popular: true },
+    { credits: 250, price: "$39.99", popular: false },
+  ];
+
+  // Product Schema for SEO
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "PPTMaster AI Presentation Generator",
+    "description": "AI-powered presentation generator that creates professional slides instantly",
+    "brand": {
+      "@type": "Brand",
+      "name": "PPTMaster"
+    },
+    "offers": [
+      {
+        "@type": "Offer",
+        "name": "Free Plan",
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock",
+        "url": "https://www.pptmaster.app/pricing"
+      },
+      {
+        "@type": "Offer",
+        "name": "Pro Plan - Monthly",
+        "price": "19.99",
+        "priceCurrency": "USD",
+        "priceValidUntil": "2026-12-31",
+        "availability": "https://schema.org/InStock",
+        "url": "https://www.pptmaster.app/pricing"
+      },
+      {
+        "@type": "Offer",
+        "name": "Pro Plan - Yearly",
+        "price": "199.99",
+        "priceCurrency": "USD",
+        "priceValidUntil": "2026-12-31",
+        "availability": "https://schema.org/InStock",
+        "url": "https://www.pptmaster.app/pricing"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "reviewCount": "1250"
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-white font-sans text-slate-900 selection:bg-slate-900 selection:text-white overflow-x-hidden">
+    <div className="min-h-screen bg-white font-sans text-slate-900 overflow-x-hidden">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
       <LandingNavbar />
 
-      <div className="relative pt-40 pb-20 px-6">
-        <div className="mx-auto max-w-7xl text-center">
-          <h1 className="text-5xl font-extrabold tracking-tight text-slate-900 md:text-7xl mb-6 animate-fade-in-up">
+      {/* Hero Section */}
+      <div className="relative pt-40 pb-20 px-6 overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_-100px,#1e1e1e0a,transparent)]"></div>
+
+        <div className="mx-auto max-w-7xl text-center relative z-10">
+          <h1 className="text-5xl font-extrabold tracking-tight text-slate-900 md:text-7xl mb-6">
             {t.pricingTitle}
           </h1>
-          <p className="text-xl text-slate-500 mb-12 animate-fade-in-up [animation-delay:100ms]">
+          <p className="text-xl text-slate-500 mb-12">
             {t.pricingSubtitle}
           </p>
 
           {/* Toggle */}
-          <div className="flex items-center justify-center gap-4 mb-16 animate-fade-in-up [animation-delay:200ms]">
+          <div className="flex items-center justify-center gap-4 mb-16">
             <span className={cn("text-sm font-semibold", !isAnnual ? "text-slate-900" : "text-slate-500")}>{t.monthly}</span>
             <button
               onClick={() => setIsAnnual(!isAnnual)}
-              className="relative h-8 w-14 rounded-full bg-slate-200 p-1 transition-colors hover:bg-slate-300"
+              className="relative h-8 w-14 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] p-1 transition-all hover:shadow-lg"
             >
-              <div className={cn("h-6 w-6 rounded-full bg-white shadow-sm transition-transform", isAnnual ? "translate-x-6" : "translate-x-0")} />
+              <div className={cn("h-6 w-6 rounded-full bg-white shadow-md transition-transform", isAnnual ? "translate-x-6" : "translate-x-0")} />
             </button>
             <span className={cn("text-sm font-semibold", isAnnual ? "text-slate-900" : "text-slate-500")}>
               {t.yearly} <span className="text-green-600 font-bold ml-1">{t.savePercent}</span>
             </span>
           </div>
 
-          {/* Content */}
+          {/* Pricing Cards */}
           {loading ? (
             <div className="flex justify-center py-20">
-              <Loader2 className="h-8 w-8 animate-spin text-slate-300" />
+              <Loader2 className="h-8 w-8 animate-spin text-[#06b6d4]" />
             </div>
           ) : error ? (
             <div className="flex justify-center py-20">
@@ -150,31 +217,36 @@ export default function PricingPage() {
                   <div
                     key={product.key}
                     className={cn(
-                      "relative rounded-3xl p-8 text-left border transition-all duration-300 flex flex-col h-full animate-fade-in-up",
+                      "relative rounded-3xl p-8 text-left border transition-all duration-300 flex flex-col h-full",
                       isHighlighted
-                        ? "bg-black text-white shadow-2xl scale-105 border-black z-10"
-                        : "bg-white text-slate-900 border-slate-200 hover:border-slate-300 hover:shadow-xl"
+                        ? "bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-2xl scale-105 border-transparent"
+                        : "bg-white text-slate-900 border-slate-200 hover:border-[#06b6d4] hover:shadow-xl"
                     )}
-                    style={{ animationDelay: `${300 + (i * 100)}ms` }}
                   >
+                    {isHighlighted && (
+                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg">
+                        MOST POPULAR
+                      </div>
+                    )}
+
                     <h3 className="text-xl font-bold mb-2">{product.name}</h3>
-                    <p className={cn("text-sm mb-6 min-h-[40px]", isHighlighted ? "text-slate-400" : "text-slate-500")}>
+                    <p className={cn("text-sm mb-6 min-h-[40px]", isHighlighted ? "text-white/80" : "text-slate-500")}>
                       {product.description?.split('\n')[0] || "Unlock your potential."}
                     </p>
 
                     <div className="flex items-baseline gap-1 mb-8">
                       <span className="text-4xl font-extrabold tracking-tight">{activePrice.displayPrice.split('/')[0]}</span>
-                      <span className={cn("text-sm", isHighlighted ? "text-slate-400" : "text-slate-500")}>/{activePrice.recurringInterval}</span>
+                      <span className={cn("text-sm", isHighlighted ? "text-white/70" : "text-slate-500")}>/{activePrice.recurringInterval}</span>
                     </div>
 
                     <button
                       onClick={() => handleSubscribe(product.key)}
                       disabled={!!checkoutLoadingId}
                       className={cn(
-                        "w-full rounded-full py-3 px-6 font-bold text-sm mb-8 transition-transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed",
+                        "w-full rounded-full py-3 px-6 font-bold text-sm mb-8 transition-all hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed shadow-lg",
                         isHighlighted
-                          ? "bg-white text-black hover:bg-slate-100"
-                          : "bg-black text-white hover:bg-slate-800"
+                          ? "bg-white text-[#1e3a8a] hover:bg-slate-100"
+                          : "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:shadow-xl"
                       )}>
                       {checkoutLoadingId === product.key ? (
                         <Loader2 className="h-4 w-4 animate-spin mx-auto" />
@@ -186,8 +258,8 @@ export default function PricingPage() {
                     <ul className="space-y-4 flex-1">
                       {getFeatures(product.uiDescription).map((feature, idx) => (
                         <li key={idx} className="flex items-start gap-3 text-sm">
-                          <CheckCircle2 className={cn("h-5 w-5 shrink-0", isHighlighted ? "text-green-400" : "text-green-600")} />
-                          <span className={cn(isHighlighted ? "text-slate-300" : "text-slate-600")}>{feature}</span>
+                          <CheckCircle2 className={cn("h-5 w-5 shrink-0", isHighlighted ? "text-white" : "text-[#06b6d4]")} />
+                          <span className={cn(isHighlighted ? "text-white/90" : "text-slate-600")}>{feature}</span>
                         </li>
                       ))}
                     </ul>
@@ -197,18 +269,72 @@ export default function PricingPage() {
             </div>
           )}
 
+          {/* Top-up Cards - Only show for subscribed users */}
+          {hasSubscription && (
+            <div className="mt-24">
+              <div className="text-center mb-12">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#06b6d4] bg-cyan-50 px-4 py-2 mb-4">
+                  <Zap className="h-4 w-4 text-[#06b6d4]" />
+                  <span className="text-sm font-semibold text-[#1e3a8a] uppercase tracking-wide">Credit Top-ups</span>
+                </div>
+                <h2 className="text-3xl font-bold text-slate-900 mb-3">Need More Credits?</h2>
+                <p className="text-lg text-slate-500">Purchase additional credits anytime to keep creating</p>
+              </div>
+
+              <div className="grid gap-6 md:grid-cols-3 max-w-4xl mx-auto">
+                {topUpOptions.map((option, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      "relative rounded-2xl p-6 border transition-all duration-300 hover:shadow-xl",
+                      option.popular
+                        ? "border-[#06b6d4] bg-gradient-to-br from-cyan-50 to-blue-50 scale-105"
+                        : "border-slate-200 bg-white hover:border-[#06b6d4]"
+                    )}
+                  >
+                    {option.popular && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#06b6d4] text-white text-xs font-bold px-3 py-1 rounded-full">
+                        BEST VALUE
+                      </div>
+                    )}
+
+                    <div className="text-center">
+                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white mb-4">
+                        <Plus className="w-8 h-8" />
+                      </div>
+                      <div className="text-3xl font-bold text-slate-900 mb-1">{option.credits}</div>
+                      <div className="text-sm text-slate-500 mb-4">Credits</div>
+                      <div className="text-2xl font-bold text-[#1e3a8a] mb-6">{option.price}</div>
+                      <button
+                        className={cn(
+                          "w-full rounded-full py-2.5 px-6 font-semibold text-sm transition-all hover:scale-105",
+                          option.popular
+                            ? "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white shadow-lg hover:shadow-xl"
+                            : "border-2 border-[#06b6d4] text-[#1e3a8a] hover:bg-cyan-50"
+                        )}
+                      >
+                        Purchase
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* FAQ Section */}
           <div className="mt-32 max-w-3xl mx-auto text-left">
             <h2 className="text-3xl font-bold text-slate-900 mb-12 text-center">{t.faqTitle}</h2>
             <div className="space-y-8">
-              <div>
+              <div className="p-6 rounded-2xl border border-slate-200 hover:border-[#06b6d4] transition-colors">
                 <h4 className="font-bold text-slate-900 mb-2">{t.faqCancel}</h4>
                 <p className="text-slate-600">{t.faqCancelAnswer}</p>
               </div>
-              <div>
+              <div className="p-6 rounded-2xl border border-slate-200 hover:border-[#06b6d4] transition-colors">
                 <h4 className="font-bold text-slate-900 mb-2">{t.faqStudentDiscount}</h4>
                 <p className="text-slate-600">{t.faqStudentAnswer}</p>
               </div>
-              <div>
+              <div className="p-6 rounded-2xl border border-slate-200 hover:border-[#06b6d4] transition-colors">
                 <h4 className="font-bold text-slate-900 mb-2">{t.faqDowngrade}</h4>
                 <p className="text-slate-600">{t.faqDowngradeAnswer}</p>
               </div>

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { Globe, CheckCircle2, Mail } from "lucide-react";
 import { useLanguage } from "~/contexts/LanguageContext";
-import { SignedOut, SignInButton } from "@clerk/nextjs";
+
 import { LoadingLink } from "./LoadingLink";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -122,7 +122,6 @@ export const LandingFooter = () => {
                             <ul className="space-y-4 text-sm text-slate-400">
                                 <li><LoadingLink href="/about" className="hover:text-white transition">{t.about}</LoadingLink></li>
                                 <li><LoadingLink href="/careers" className="hover:text-white transition">{t.careers}</LoadingLink></li>
-                                <li><LoadingLink href="/team" className="hover:text-white transition">{t.ourTeam}</LoadingLink></li>
                             </ul>
                         </div>
 

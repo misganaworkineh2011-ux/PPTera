@@ -12,7 +12,7 @@ export default function PrivacyPage() {
     {
       icon: Database,
       title: t.informationWeCollect || "Information We Collect",
-      content: t.informationWeCollectText || "We collect information you provide directly to us, such as when you create an account, use our services, or contact us for support. This includes your name, email address, and any content you create.",
+      content: t.informationWeCollectText || "PPT Master collects information you provide directly to us, such as when you create an account, use our AI PowerPoint generator, or contact us for support. This includes your name, email address, and any PowerPoint presentations you create.",
     },
     {
       icon: Eye,
@@ -62,7 +62,7 @@ export default function PrivacyPage() {
           </p>
 
           <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed animate-fade-in-up [animation-delay:300ms]">
-            {t.privacyIntro || "Your privacy is important to us. This policy explains how we collect, use, and protect your personal information."}
+            {t.privacyIntro || "Your privacy is important to PPT Master. This policy explains how our AI PowerPoint generator collects, uses, and protects your personal information."}
           </p>
         </div>
       </section>
@@ -102,7 +102,7 @@ export default function PrivacyPage() {
               {t.contactPrivacy || "Questions about privacy?"}
             </h3>
             <p className="text-slate-600 mb-6">
-              {t.contactPrivacyText || "If you have any questions about this Privacy Policy, please contact us at privacy@pptmaster.com"}
+              {t.contactPrivacyText || "If you have any questions about PPT Master's Privacy Policy or how we handle data in our AI PowerPoint generator, please contact us at privacy@pptmaster.com"}
             </p>
             <a
               href="/contact"

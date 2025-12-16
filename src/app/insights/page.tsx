@@ -93,8 +93,8 @@ export default function InsightsPage() {
   };
 
   const stats = [
-    { value: "50M+", label: t.statUsers || "Active Users" },
-    { value: "1B+", label: t.statPresentations || "Presentations Created" },
+    { value: "100K+", label: t.statUsers || "Active Users" },
+    { value: "1M+", label: t.statPresentations || "Presentations Created" },
     { value: "150+", label: t.statCountries || "Countries" },
     { value: "99%", label: t.statSatisfaction || "Satisfaction Rate" },
   ];
@@ -196,10 +196,13 @@ export default function InsightsPage() {
                       {featuredPost.readTime} min read
                     </span>
                   </div>
-                  <button className="inline-flex items-center gap-2 text-[#06b6d4] font-semibold hover:gap-3 transition-all">
+                  <a 
+                    href={`/insights/${featuredPost.slug}`}
+                    className="inline-flex items-center gap-2 text-[#06b6d4] font-semibold hover:gap-3 transition-all"
+                  >
                     {t.readMore?.replace(' →', '') || "Read More"}
                     <ArrowRight className="h-5 w-5" />
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
@@ -246,9 +249,10 @@ export default function InsightsPage() {
                 {posts.map((post, index) => {
                   const Icon = getCategoryIcon(post.category);
                   return (
-                    <div
+                    <a
                       key={post.id}
-                      className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white hover:shadow-2xl transition-all duration-300 animate-fade-in-up"
+                      href={`/insights/${post.slug}`}
+                      className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white hover:shadow-2xl transition-all duration-300 animate-fade-in-up block"
                       style={{ animationDelay: `${900 + index * 100}ms` }}
                     >
                       {/* Icon Header */}
@@ -300,7 +304,7 @@ export default function InsightsPage() {
                           </button>
                         </div>
                       </div>
-                    </div>
+                    </a>
                   );
                 })}
               </div>

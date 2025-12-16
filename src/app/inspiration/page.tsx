@@ -136,9 +136,10 @@ export default function InspirationPage() {
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {items.map((item, index) => (
-                  <div
+                  <a
                     key={item.id}
-                    className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white hover:shadow-2xl transition-all duration-300 cursor-pointer animate-fade-in-up"
+                    href={`/inspiration/${item.id}`}
+                    className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white hover:shadow-2xl transition-all duration-300 cursor-pointer animate-fade-in-up block"
                     style={{ animationDelay: `${400 + index * 30}ms` }}
                   >
                     {/* Image */}
@@ -181,7 +182,7 @@ export default function InspirationPage() {
                         <span>{item.likes} likes</span>
                       </div>
                     </div>
-                  </div>
+                  </a>
                 ))}
               </div>
 
