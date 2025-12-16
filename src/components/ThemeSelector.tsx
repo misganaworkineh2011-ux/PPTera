@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { X, Search, Check } from "lucide-react";
-import { themes, getThemeById, type Theme } from "~/lib/themes";
+import { themes, getThemeById } from "~/lib/themes";
 import { Button } from "~/components/ui/Button";
 
 interface ThemeSelectorProps {
@@ -22,7 +22,6 @@ export default function ThemeSelector({
   const [activeFilter, setActiveFilter] = useState<string>("all");
   const [previewThemeId, setPreviewThemeId] = useState<string>(selectedThemeId);
 
-  const selectedTheme = getThemeById(selectedThemeId) || themes[0]!;
   const previewTheme = getThemeById(previewThemeId) || themes[0]!;
 
   const filteredThemes = useMemo(() => {
@@ -210,7 +209,10 @@ export default function ThemeSelector({
         <div className="flex w-[55%] flex-col bg-white">
           {/* Preview Header */}
           <div className="flex items-center justify-between border-b border-slate-200 p-6">
-            <h3 className="text-xl font-bold text-slate-900">Theme Preview</h3>
+            <div>
+              <h3 className="text-xl font-bold text-slate-900">{previewTheme.name}</h3>
+              <p className="text-sm text-slate-500">{previewTheme.description}</p>
+            </div>
             <button
               onClick={onClose}
               className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
@@ -219,160 +221,172 @@ export default function ThemeSelector({
             </button>
           </div>
 
-          {/* Preview Content */}
+          {/* Preview Content - Three Slides */}
           <div
-            className="flex-1 overflow-y-auto p-8 relative"
+            className="flex-1 overflow-hidden relative flex flex-col items-center justify-center p-6"
             style={{
-              backgroundColor: previewTheme.preview.bodyBg,
-              backgroundImage: previewTheme.backgroundImage 
-                ? `url(${previewTheme.backgroundImage})`
-                : "none",
-              backgroundSize: previewTheme.backgroundImage ? "cover" : "auto",
-              backgroundPosition: previewTheme.backgroundImage ? "center" : "center",
-              backgroundAttachment: previewTheme.backgroundImage ? "fixed" : "scroll",
-              color: previewTheme.preview.textColor,
+              background: previewTheme.slideStyles.title.background,
+              backgroundImage: previewTheme.slideStyles.title.pattern || "none",
             }}
           >
-            {/* Overlay for text readability */}
+            {/* Overlay for depth */}
             {previewTheme.overlay && (
               <div
                 className="absolute inset-0 pointer-events-none"
                 style={{ background: previewTheme.overlay }}
               />
             )}
-            {/* Top Section */}
-            <div className="mb-8 relative z-10">
-              <h2
-                className="mb-4 text-2xl font-bold"
-                style={{ 
-                  color: previewTheme.colors.heading,
-                  fontFamily: previewTheme.fonts.heading.family
+            
+            {/* Ambient glow effects */}
+            <div 
+              className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full blur-3xl opacity-30"
+              style={{ backgroundColor: previewTheme.colors.primary }}
+            />
+            <div 
+              className="absolute bottom-1/4 right-1/4 w-48 h-48 rounded-full blur-3xl opacity-20"
+              style={{ backgroundColor: previewTheme.colors.secondary }}
+            />
+
+            {/* Three Slides Vertical */}
+            <div className="relative z-10 flex flex-col gap-3 w-full max-w-md" style={{ perspective: "1200px" }}>
+              {/* Slide 1 - Title Slide */}
+              <div
+                className="w-full aspect-[16/9] rounded-lg shadow-xl overflow-hidden"
+                style={{
+                  transform: "rotateX(3deg)",
+                  transformStyle: "preserve-3d",
+                  background: previewTheme.slideStyles.title.background,
+                  backgroundImage: previewTheme.slideStyles.title.pattern || "none",
+                  border: `1px solid ${previewTheme.colors.border}`,
+                  boxShadow: previewTheme.design.shadows.medium,
                 }}
               >
-                This is a heading.
-              </h2>
-              <div className="grid grid-cols-3 gap-4">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="aspect-video rounded-lg bg-slate-200/20 flex items-center justify-center text-sm opacity-60"
-                    style={{
-                      backgroundColor:
-                        previewTheme.colors.backgroundAlt + "40",
+                <div 
+                  className="absolute inset-0 opacity-20"
+                  style={{ 
+                    background: `radial-gradient(ellipse at 30% 30%, ${previewTheme.colors.primary}40 0%, transparent 60%)` 
+                  }}
+                />
+                <div className="relative z-10 p-4 h-full flex flex-col justify-center">
+                  <div 
+                    className="text-base font-bold mb-1"
+                    style={{ 
+                      color: previewTheme.colors.heading, 
+                      fontFamily: previewTheme.fonts.heading.family,
                     }}
                   >
-                    Image {i}
+                    Presentation Title
                   </div>
-                ))}
+                  <p 
+                    className="text-xs opacity-70"
+                    style={{ color: previewTheme.colors.text }}
+                  >
+                    A beautiful subtitle for your presentation
+                  </p>
+                </div>
+                <div 
+                  className="absolute bottom-0 left-0 right-0 h-0.5"
+                  style={{ background: `linear-gradient(90deg, ${previewTheme.colors.primary}, ${previewTheme.colors.secondary})` }}
+                />
               </div>
-            </div>
 
-            {/* Main Content */}
-            <div className="mb-8 relative z-10" style={{ fontFamily: previewTheme.fonts.body.family }}>
-              <div className="mb-4 text-4xl">Hello 👋</div>
-              <h1
-                className="mb-4 text-4xl font-bold"
-                style={{ 
-                  color: previewTheme.colors.heading,
-                  fontFamily: previewTheme.fonts.heading.family
+              {/* Slide 2 - Content Slide */}
+              <div
+                className="w-full aspect-[16/9] rounded-lg shadow-xl overflow-hidden"
+                style={{
+                  transform: "rotateX(0deg)",
+                  transformStyle: "preserve-3d",
+                  background: previewTheme.slideStyles.content.background,
+                  border: `1px solid ${previewTheme.colors.border}`,
+                  boxShadow: previewTheme.design.shadows.large,
                 }}
               >
-                This is a theme preview.
-              </h1>
-              <p className="mb-4 text-lg leading-relaxed">
-                This is body text. You can change your fonts, colors and images
-                later in the theme editor. You can also create your own custom
-                branded theme.
-              </p>
-              <a
-                href="#"
-                className="text-lg underline"
-                style={{ color: previewTheme.preview.accentColor }}
-              >
-                This is a link.
-              </a>
-
-              {/* Smart Layout Boxes */}
-              <div className="my-6 grid grid-cols-2 gap-4">
-                {[
-                  "This is a smart layout: it acts as a text box.",
-                  "You can get these by typing /smart",
-                ].map((text, i) => (
-                  <div
-                    key={i}
-                    className="rounded-lg p-4"
-                    style={{
-                      backgroundColor: previewTheme.colors.primary + "20",
-                      border: `1px solid ${previewTheme.colors.primary}40`,
-                    }}
+                <div className="p-4 h-full flex flex-col">
+                  <div 
+                    className="text-sm font-bold mb-2"
+                    style={{ color: previewTheme.colors.heading, fontFamily: previewTheme.fonts.heading.family }}
                   >
-                    <p className="text-sm">{text}</p>
+                    Content Slide
                   </div>
-                ))}
+                  <div className="flex-1 flex gap-3">
+                    <div className="flex-1 flex flex-col gap-1.5">
+                      {["Key point one", "Key point two", "Key point three"].map((item, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <div 
+                            className="w-1.5 h-1.5 rounded-full"
+                            style={{ backgroundColor: previewTheme.colors.primary }}
+                          />
+                          <span 
+                            className="text-[10px] opacity-70"
+                            style={{ color: previewTheme.colors.text }}
+                          >
+                            {item}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <div 
+                      className="w-1/3 rounded"
+                      style={{ 
+                        backgroundColor: previewTheme.colors.backgroundAlt,
+                        border: `1px solid ${previewTheme.colors.border}`,
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
 
-              {/* Buttons */}
-              <div className="my-6 flex gap-4">
-                <button
-                  className="rounded-lg px-6 py-3 font-semibold text-white transition-opacity hover:opacity-90"
-                  style={{ backgroundColor: previewTheme.colors.primary }}
-                >
-                  Primary button
-                </button>
-                <button
-                  className="rounded-lg border-2 px-6 py-3 font-semibold transition-opacity hover:opacity-80"
-                  style={{
-                    borderColor: previewTheme.colors.secondary,
-                    color: previewTheme.preview.textColor,
-                  }}
-                >
-                  Secondary button
-                </button>
-              </div>
-
-              {/* Image Placeholder */}
-              <div className="my-6">
-                <div
-                  className="aspect-video rounded-lg flex items-center justify-center"
-                  style={{
-                    backgroundColor: previewTheme.colors.secondary + "30",
-                    border: `2px dashed ${previewTheme.colors.secondary}60`,
-                  }}
-                >
-                  <div className="text-center opacity-50">
-                    <div className="mb-2 text-4xl">🖼️</div>
-                    <div className="text-sm">Image placeholder</div>
+              {/* Slide 3 - Features Slide */}
+              <div
+                className="w-full aspect-[16/9] rounded-lg shadow-xl overflow-hidden"
+                style={{
+                  transform: "rotateX(-3deg)",
+                  transformStyle: "preserve-3d",
+                  background: previewTheme.slideStyles.content.background,
+                  border: `1px solid ${previewTheme.colors.border}`,
+                  boxShadow: previewTheme.design.shadows.medium,
+                }}
+              >
+                <div className="p-4 h-full flex flex-col">
+                  <div 
+                    className="text-sm font-bold mb-2"
+                    style={{ color: previewTheme.colors.heading, fontFamily: previewTheme.fonts.heading.family }}
+                  >
+                    Features
+                  </div>
+                  <div className="flex-1 grid grid-cols-2 gap-2">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div 
+                        key={i}
+                        className="rounded flex items-center justify-center"
+                        style={{ 
+                          backgroundColor: previewTheme.colors.primary + "20",
+                          border: `1px solid ${previewTheme.colors.primary}30`,
+                        }}
+                      >
+                        <span className="text-[9px] opacity-50" style={{ color: previewTheme.colors.text }}>
+                          Item {i}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Bottom Section */}
-            <div className="relative z-10" style={{ fontFamily: previewTheme.fonts.body.family }}>
-              <h2
-                className="mb-4 text-2xl font-bold"
-                style={{ 
-                  color: previewTheme.colors.heading,
-                  fontFamily: previewTheme.fonts.heading.family
-                }}
-              >
-                This is also a heading.
-              </h2>
-              <h1
-                className="mb-4 text-5xl font-bold"
-                style={{ 
-                  color: previewTheme.colors.heading,
-                  fontFamily: previewTheme.fonts.heading.family
-                }}
-              >
-                This is a title It&apos;s like a heading, but bigger.
-              </h1>
-              <p className="text-lg leading-relaxed">
-                This is body text. You can change your fonts, colors and images
-                later in the theme editor. You can also create your own custom
-                branded theme. What&apos;s more, you can create multiple themes
-                and switch between them at any time.
-              </p>
+            {/* Theme color palette indicator */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+              {[
+                previewTheme.colors.primary,
+                previewTheme.colors.secondary,
+                previewTheme.colors.accent,
+              ].map((color, i) => (
+                <div
+                  key={i}
+                  className="w-4 h-4 rounded-full border-2 border-white/30 shadow-lg"
+                  style={{ backgroundColor: color }}
+                />
+              ))}
             </div>
           </div>
 
