@@ -55,12 +55,13 @@ function getGoogleFontsUrl(theme: Theme): string {
   return `https://fonts.googleapis.com/css2?${fontParams}&display=swap`;
 }
 
-// Theme type helper - "dark" for Elegant Noir, "light" for Arctic Frost, "sunset" for Sunset Gradient, "ocean" for Ocean Depths
-type ThemeType = "dark" | "light" | "sunset" | "ocean";
+// Theme type helper - "dark" for Elegant Noir, "light" for Arctic Frost, "sunset" for Sunset Gradient, "ocean" for Ocean Depths, "aurora" for Aurora Borealis
+type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora";
 function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "arctic-frost") return "light";
   if (theme.id === "sunset-gradient") return "sunset";
   if (theme.id === "ocean-depths") return "ocean";
+  if (theme.id === "aurora-borealis") return "aurora";
   return "dark"; // elegant-noir and default
 }
 
@@ -174,6 +175,33 @@ function getUIColors(themeType: ThemeType) {
       indicatorMuted: "text-cyan-400/50",
       navBtn: "bg-[#122a45] text-cyan-200 hover:bg-[#1e3a5f]/60 border border-teal-500/30",
       navDot: "bg-[#1e3a5f] hover:bg-teal-500/50",
+    },
+    aurora: {
+      pageBg: "bg-gradient-to-br from-[#0f0a1a] via-[#1a1030] to-[#0f0a1a]",
+      headerBg: "bg-[#0f0a1a]/95 border-[#2d1f4a]",
+      headerText: "text-purple-50",
+      headerMuted: "text-purple-300/60",
+      headerHover: "hover:bg-[#1a1030]/50",
+      headerIcon: "text-purple-300/70",
+      headerActive: "bg-[#2d1f4a]/40 text-purple-100",
+      divider: "bg-[#2d1f4a]",
+      ring: "ring-[#2d1f4a]",
+      ringHover: "ring-[#2d1f4a] hover:ring-purple-500/50",
+      thumbBg: "bg-[#0f0a1a]/80",
+      thumbText: "text-purple-100",
+      scrollbar: "scrollbar-thumb-[#2d1f4a]",
+      kbd: "bg-[#1a1030] text-purple-300",
+      endCard: "bg-[#1a1030]/90 border-purple-500/30",
+      endText: "text-purple-100",
+      endMuted: "text-purple-300/60",
+      titleBg: "bg-gradient-to-br from-[#0f0a1a] via-[#1a1030] to-[#150d24]",
+      orb1: "bg-purple-500/20",
+      orb2: "bg-green-500/15",
+      accentLine: "from-purple-400",
+      borderLine: "via-[#2d1f4a]",
+      indicatorMuted: "text-purple-400/50",
+      navBtn: "bg-[#1a1030] text-purple-200 hover:bg-[#2d1f4a]/60 border border-purple-500/30",
+      navDot: "bg-[#2d1f4a] hover:bg-purple-500/50",
     },
   };
   return colors[themeType];
@@ -639,7 +667,7 @@ export default function PresentationViewer({ presentation, mode, isOwner, collab
       // Thumbnail view - render actual slide content scaled down
       const themeType = getThemeType(theme);
       const ui = getUIColors(themeType);
-      const bgColors: Record<ThemeType, string> = { dark: "#0a0a0b", light: "#f8fafc", sunset: "#1c1017", ocean: "#0a1628" };
+      const bgColors: Record<ThemeType, string> = { dark: "#0a0a0b", light: "#f8fafc", sunset: "#1c1017", ocean: "#0a1628", aurora: "#0f0a1a" };
       const thumbnailBg: React.CSSProperties = isTitle 
         ? backgroundStyle 
         : { background: bgColors[themeType] };
@@ -1716,11 +1744,12 @@ function ScrollSlideContent({
   // Calculate height based on content - each bullet adds height
   const calculatedHeight = Math.max(450, 380 + bulletCount * 65);
   
-  const bgColors = {
+  const bgColors: Record<ThemeType, string> = {
     dark: "bg-gradient-to-br from-zinc-900 via-zinc-950 to-black",
     light: "bg-gradient-to-br from-slate-50 via-white to-slate-100",
     sunset: "bg-gradient-to-br from-rose-950 via-[#1c1017] to-[#261520]",
     ocean: "bg-gradient-to-br from-[#0a1628] via-[#0d1f35] to-[#122a45]",
+    aurora: "bg-gradient-to-br from-[#0f0a1a] via-[#1a1030] to-[#150d24]",
   };
   
   return (

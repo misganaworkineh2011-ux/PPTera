@@ -22,15 +22,16 @@ interface SlideRendererProps {
   onDeleteBullet: (slideIndex: number, bulletIndex: number) => void;
 }
 
-type LayoutVariant = "left-content" | "right-content" | "centered" | "split-diagonal" | "image-focus" | "minimal-left" | "cards-grid" | "quote-style" | "timeline" | "diagonal-cut" | "circle-focus" | "wave-layout";
+type LayoutVariant = "left-content" | "right-content" | "centered" | "split-diagonal" | "image-focus" | "minimal-left" | "cards-grid" | "quote-style" | "timeline" | "diagonal-cut" | "circle-focus" | "wave-layout" | "hexagon-frame" | "glass-cards" | "aurora-glow";
 
 // Theme type detection
-type ThemeType = "dark" | "light" | "sunset" | "ocean";
+type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora";
 function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "elegant-noir") return "dark";
   if (theme.id === "arctic-frost") return "light";
   if (theme.id === "sunset-gradient") return "sunset";
   if (theme.id === "ocean-depths") return "ocean";
+  if (theme.id === "aurora-borealis") return "aurora";
   return "dark";
 }
 
@@ -70,6 +71,9 @@ function getLayoutVariant(index: number, themeType: ThemeType, slideLayout?: str
       "diagonal-cut": "diagonal-cut",
       "circle-focus": "circle-focus",
       "wave-layout": "wave-layout",
+      "hexagon-frame": "hexagon-frame",
+      "glass-cards": "glass-cards",
+      "aurora-glow": "aurora-glow",
     };
     const mappedLayout = layoutMap[slideLayout];
     if (mappedLayout) return mappedLayout;
@@ -81,6 +85,7 @@ function getLayoutVariant(index: number, themeType: ThemeType, slideLayout?: str
     light: ["centered", "left-content", "cards-grid", "right-content", "quote-style", "minimal-left"],
     sunset: ["image-focus", "split-diagonal", "timeline", "left-content", "centered", "right-content"],
     ocean: ["diagonal-cut", "circle-focus", "wave-layout", "left-content", "cards-grid", "centered"],
+    aurora: ["hexagon-frame", "glass-cards", "aurora-glow", "left-content", "centered", "image-focus"],
   };
   const layouts = layoutsByTheme[themeType];
   return layouts[index % layouts.length]!;
@@ -205,6 +210,30 @@ export default function SlideRenderer({
       fullOverlay: "bg-gradient-to-t from-[#0a1628] via-[#0a1628]/70 to-[#0a1628]/30",
       sideOverlay: "bg-gradient-to-r from-[#0a1628]/90 via-transparent to-transparent",
       topOverlay: "bg-gradient-to-b from-[#0a1628]/60 to-transparent",
+    },
+    aurora: {
+      bg: "from-[#0f0a1a] via-[#1a1030] to-[#150d24]",
+      bgSolid: "bg-[#0f0a1a]",
+      orb1: "bg-purple-500/15",
+      orb2: "bg-green-500/12",
+      orb1Strong: "bg-purple-500/25",
+      orb2Strong: "bg-green-500/20",
+      accentMuted: "bg-purple-500/80",
+      accentLine: "from-purple-400",
+      accentBorder: "from-purple-500/35 via-transparent to-green-500/30",
+      accentGlow: "from-purple-500/45 to-green-500/40",
+      border: "border-[#2d1f4a]",
+      borderLine: "via-[#2d1f4a]",
+      surface: "bg-[#1a1030]",
+      surfaceAlt: "bg-[#150d24]/80",
+      overlay: "from-[#0f0a1a]/50",
+      cardBg: "bg-[#1a1030]/80 border-purple-500/25",
+      indicatorMuted: "text-purple-400/50",
+      hoverAccent: "hover:text-purple-400",
+      imgOverlay: "bg-gradient-to-r from-[#0f0a1a] via-[#0f0a1a]/80 to-transparent",
+      fullOverlay: "bg-gradient-to-t from-[#0f0a1a] via-[#0f0a1a]/70 to-[#0f0a1a]/30",
+      sideOverlay: "bg-gradient-to-r from-[#0f0a1a]/90 via-transparent to-transparent",
+      topOverlay: "bg-gradient-to-b from-[#0f0a1a]/60 to-transparent",
     },
   };
 
@@ -984,6 +1013,243 @@ export default function SlideRenderer({
             </button>
           )}
         </div>
+      </div>
+    );
+  }
+
+  // LAYOUT 13: Hexagon Frame - Hexagonal image frames with aurora effects (Aurora theme signature)
+  if (layout === "hexagon-frame") {
+    const firstImage = allImages[0];
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        
+        {/* Aurora gradient streaks */}
+        <div className="absolute top-0 left-0 right-0 h-full overflow-hidden">
+          <div className="absolute top-10 left-1/4 w-96 h-2 bg-gradient-to-r from-transparent via-purple-500/30 to-transparent rotate-12 blur-sm" />
+          <div className="absolute top-32 right-1/4 w-80 h-1.5 bg-gradient-to-r from-transparent via-green-500/25 to-transparent -rotate-6 blur-sm" />
+          <div className="absolute bottom-40 left-1/3 w-72 h-1 bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent rotate-3 blur-sm" />
+        </div>
+        
+        {/* Glowing orbs */}
+        <div className={`absolute top-0 right-1/4 w-96 h-96 ${colors.orb1Strong} rounded-full blur-3xl`} />
+        <div className={`absolute bottom-0 left-1/4 w-80 h-80 ${colors.orb2Strong} rounded-full blur-3xl`} />
+        
+        <SlideIndicator position="top-left" />
+        
+        <div className="relative h-full flex items-center">
+          {/* Content side */}
+          <div className="w-[55%] flex flex-col justify-center p-12">
+            {/* Decorative hexagon accent */}
+            <div className="flex items-center gap-4 mb-6">
+              <svg width="24" height="28" viewBox="0 0 24 28" fill="none" className="opacity-80">
+                <path d="M12 0L24 7V21L12 28L0 21V7L12 0Z" fill={colors.accent} fillOpacity="0.6" />
+              </svg>
+              <div className={`w-20 h-0.5 bg-gradient-to-r ${colors.accentLine} to-transparent`} />
+            </div>
+            
+            <Title className="text-4xl md:text-5xl mb-8" />
+            {bulletPoints.length > 0 && <BulletPoints />}
+          </div>
+          
+          {/* Hexagonal image frame */}
+          {hasImage && firstImage && (
+            <div className="w-[45%] relative flex items-center justify-center">
+              <div className="relative">
+                {/* Outer glow */}
+                <div className="absolute -inset-4 bg-gradient-to-br from-purple-500/30 via-green-500/20 to-cyan-500/30 blur-xl" style={{ clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)" }} />
+                
+                {/* Hexagonal image container */}
+                <div className="relative w-72 h-80 overflow-hidden" style={{ clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={firstImage.url} alt={firstImage.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-purple-900/40 to-transparent" />
+                </div>
+                
+                {/* Border hexagon */}
+                <svg className="absolute inset-0 w-72 h-80" viewBox="0 0 288 320" fill="none">
+                  <path d="M144 4L284 84V236L144 316L4 236V84L144 4Z" stroke="url(#hexGrad)" strokeWidth="2" fill="none" />
+                  <defs>
+                    <linearGradient id="hexGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#a855f7" stopOpacity="0.6" />
+                      <stop offset="50%" stopColor="#22c55e" stopOpacity="0.4" />
+                      <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.6" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                
+                {/* Secondary smaller hexagon if multiple images */}
+                {hasMultipleImages && allImages[1] && (
+                  <div className="absolute -bottom-8 -left-12 w-24 h-28 overflow-hidden shadow-xl" style={{ clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={allImages[1].url} alt={allImages[1].alt || ""} className="w-full h-full object-cover" />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Bottom aurora line */}
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500/50 via-green-500/30 to-cyan-500/50" />
+      </div>
+    );
+  }
+
+  // LAYOUT 14: Glass Cards - Glassmorphism cards with aurora backdrop (Aurora theme)
+  if (layout === "glass-cards") {
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        
+        {/* Aurora background effect */}
+        <div className="absolute inset-0">
+          <div className="absolute top-1/4 left-1/4 w-[500px] h-[300px] bg-gradient-to-r from-purple-600/20 via-green-500/15 to-cyan-500/20 rounded-full blur-3xl rotate-12" />
+          <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[250px] bg-gradient-to-l from-purple-500/15 via-pink-500/10 to-green-500/15 rounded-full blur-3xl -rotate-12" />
+        </div>
+        
+        {/* Floating particles */}
+        <div className="absolute top-20 left-20 w-2 h-2 rounded-full bg-purple-400/40" />
+        <div className="absolute top-40 right-32 w-3 h-3 rounded-full bg-green-400/30" />
+        <div className="absolute bottom-32 left-40 w-2 h-2 rounded-full bg-cyan-400/35" />
+        <div className="absolute top-60 left-1/2 w-1.5 h-1.5 rounded-full bg-purple-300/40" />
+        
+        <SlideIndicator position="top-left" />
+        
+        <div className="relative h-full p-12 pt-20">
+          {/* Title in glass card */}
+          <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6 mb-8 max-w-2xl shadow-2xl">
+            <Title className="text-3xl md:text-4xl" />
+          </div>
+          
+          {/* Content in glass cards grid */}
+          {bulletPoints.length > 0 && (
+            <div className="grid grid-cols-2 gap-4 max-w-4xl">
+              {bulletPoints.map((point, i) => (
+                <div key={i} className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-xl p-5 shadow-xl hover:bg-white/10 transition-all group">
+                  <div className="flex items-start gap-4">
+                    {/* Glowing number */}
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 bg-gradient-to-br from-purple-500/30 to-green-500/20 border border-purple-500/30" style={{ color: colors.accent }}>
+                      {i + 1}
+                    </div>
+                    <EditableText
+                      value={point}
+                      isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                      onStartEdit={() => onStartEditing(index, "bullet", i)}
+                      onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                      onFinish={onFinishEditing}
+                      className="flex-1 text-base leading-relaxed"
+                      style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+                      isOwner={canEdit}
+                      isHovered={isHovered}
+                      onDelete={() => onDeleteBullet(index, i)}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {canEdit && isHovered && (
+            <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+              <Plus size={14} /> Add card
+            </button>
+          )}
+        </div>
+        
+        {/* Image in corner glass frame */}
+        {hasImage && (
+          <div className="absolute bottom-8 right-8 w-56 h-40 backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-2 shadow-2xl">
+            <div className="w-full h-full rounded-xl overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={allImages[0]!.url} alt={allImages[0]!.alt || slide.title} className="w-full h-full object-cover" />
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // LAYOUT 15: Aurora Glow - Full aurora effect with glowing content (Aurora theme)
+  if (layout === "aurora-glow") {
+    const firstImage = allImages[0];
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 bg-gradient-to-b ${colors.bg}`} />
+        
+        {/* Full aurora effect background */}
+        {hasImage && firstImage ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={firstImage.url} alt={firstImage.alt || slide.title} className="absolute inset-0 w-full h-full object-cover opacity-40" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0f0a1a] via-[#0f0a1a]/80 to-[#0f0a1a]/60" />
+          </>
+        ) : null}
+        
+        {/* Aurora light rays */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-0 left-1/4 w-1 h-full bg-gradient-to-b from-purple-500/40 via-purple-500/10 to-transparent blur-sm" />
+          <div className="absolute top-0 left-1/3 w-0.5 h-3/4 bg-gradient-to-b from-green-500/30 via-green-500/5 to-transparent blur-sm" />
+          <div className="absolute top-0 right-1/3 w-1 h-2/3 bg-gradient-to-b from-cyan-500/35 via-cyan-500/10 to-transparent blur-sm" />
+          <div className="absolute top-0 right-1/4 w-0.5 h-1/2 bg-gradient-to-b from-purple-400/25 via-transparent to-transparent blur-sm" />
+        </div>
+        
+        {/* Glowing orbs */}
+        <div className={`absolute top-0 left-1/3 w-[600px] h-[400px] ${colors.orb1Strong} rounded-full blur-3xl`} />
+        <div className={`absolute bottom-1/4 right-1/4 w-[400px] h-[300px] ${colors.orb2Strong} rounded-full blur-3xl`} />
+        
+        <SlideIndicator position="top-left" />
+        
+        <div className="relative h-full flex flex-col justify-center items-center p-12 text-center">
+          {/* Glowing title container */}
+          <div className="relative mb-8">
+            <div className="absolute -inset-4 bg-gradient-to-r from-purple-500/20 via-green-500/10 to-purple-500/20 rounded-2xl blur-xl" />
+            <div className="relative">
+              <Title className="text-4xl md:text-5xl lg:text-6xl" align="center" />
+            </div>
+          </div>
+          
+          {/* Decorative aurora line */}
+          <div className="flex items-center justify-center gap-4 mb-8">
+            <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-purple-500 to-transparent" />
+            <div className="w-3 h-3 rounded-full bg-gradient-to-br from-purple-500 to-green-500" />
+            <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-green-500 to-transparent" />
+          </div>
+          
+          {/* Content in glowing cards */}
+          {bulletPoints.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-4 max-w-4xl">
+              {bulletPoints.map((point, i) => (
+                <div key={i} className="relative group">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/30 to-green-500/30 rounded-xl blur opacity-50 group-hover:opacity-75 transition-opacity" />
+                  <div className={`relative px-6 py-4 rounded-xl backdrop-blur-sm ${colors.cardBg}`}>
+                    <EditableText
+                      value={point}
+                      isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                      onStartEdit={() => onStartEditing(index, "bullet", i)}
+                      onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                      onFinish={onFinishEditing}
+                      className="text-base leading-relaxed"
+                      style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+                      isOwner={canEdit}
+                      isHovered={isHovered}
+                      onDelete={() => onDeleteBullet(index, i)}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {canEdit && isHovered && (
+            <button onClick={() => onAddBullet(index)} className={`mt-6 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+              <Plus size={14} /> Add point
+            </button>
+          )}
+        </div>
+        
+        {/* Bottom aurora glow */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-purple-500/10 via-green-500/5 to-transparent" />
       </div>
     );
   }
