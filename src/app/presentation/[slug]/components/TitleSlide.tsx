@@ -54,6 +54,7 @@ export function TitleSlide({
     case "midnight": return <MidnightTitleSlide {...props} />;
     case "cyber": return <CyberTitleSlide {...props} />;
     case "alien": return <AlienTitleSlide {...props} />;
+    case "corporate": return <CorporateTitleSlide {...props} />;
     default: return <DarkTitleSlide {...props} />;
   }
 }
@@ -492,6 +493,68 @@ function AlienTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, 
       
       {/* Bottom scanning line */}
       <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-lime-500/40 to-transparent" />
+    </div>
+  );
+}
+
+
+// CORPORATE CLEAN - Professional minimalist white with clean geometric elements
+function CorporateTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+  return (
+    <div className="h-full relative overflow-hidden">
+      {!hasImage && (
+        <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50 to-gray-100">
+          {/* Subtle geometric shapes */}
+          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-500/[0.03] rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-sky-500/[0.03] rounded-full blur-3xl" />
+          
+          {/* Clean line accents */}
+          <div className="absolute top-0 left-0 w-1 h-32 bg-gradient-to-b from-blue-500 to-transparent" />
+          <div className="absolute top-0 left-0 w-32 h-1 bg-gradient-to-r from-blue-500 to-transparent" />
+          <div className="absolute bottom-0 right-0 w-1 h-24 bg-gradient-to-t from-gray-300 to-transparent" />
+          <div className="absolute bottom-0 right-0 w-24 h-1 bg-gradient-to-l from-gray-300 to-transparent" />
+          
+          {/* Subtle grid pattern */}
+          <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: "linear-gradient(to right, #000 1px, transparent 1px), linear-gradient(to bottom, #000 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+        </div>
+      )}
+      {hasImage && <div className="absolute inset-0 bg-gradient-to-t from-white/95 via-white/70 to-white/40" />}
+      
+      <div className="relative h-full flex flex-col items-center justify-center p-12 text-center">
+        {/* Professional slide indicator */}
+        <div className="absolute top-8 left-8 flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-md bg-blue-500 flex items-center justify-center shadow-sm">
+              <span className="font-mono text-sm font-bold text-white">{index + 1}</span>
+            </div>
+            <div className="w-12 h-px bg-gradient-to-r from-blue-500 to-transparent" />
+          </div>
+          <span className="text-xs font-medium text-gray-400 tracking-wide">of {totalSlides}</span>
+        </div>
+
+        {/* Top accent bar */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
+        
+        {/* Decorative frame */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[75%] h-[55%] border border-gray-200/60 rounded-lg pointer-events-none" />
+        
+        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-semibold mb-8 max-w-5xl leading-tight relative" style={{ fontFamily: theme.fonts.heading.family, color: "#111827", letterSpacing: "-0.02em" }} isOwner={canEdit} isHovered={isHovered} />
+        {slide.subtitle && (
+          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#6b7280" }} isOwner={canEdit} isHovered={isHovered} />
+        )}
+        
+        {/* Bottom decorative element */}
+        <div className="flex items-center gap-4 mt-12">
+          <div className="w-2 h-2 rounded-full bg-blue-500" />
+          <div className="w-20 h-px bg-gradient-to-r from-blue-500/60 via-gray-300 to-blue-500/60" />
+          <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+          <div className="w-20 h-px bg-gradient-to-r from-blue-500/60 via-gray-300 to-blue-500/60" />
+          <div className="w-2 h-2 rounded-full bg-blue-500" />
+        </div>
+      </div>
+      
+      {/* Bottom accent line */}
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
     </div>
   );
 }

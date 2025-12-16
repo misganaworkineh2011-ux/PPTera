@@ -20,6 +20,7 @@ import { emberForge } from "./ember-forge";
 import { midnightGarden } from "./midnight-garden";
 import { cyberNeon } from "./cyber-neon";
 import { alienTech } from "./alien-tech";
+import { corporateClean } from "./corporate-clean";
 
 // Re-export individual themes for direct imports
 export {
@@ -32,6 +33,7 @@ export {
   midnightGarden,
   cyberNeon,
   alienTech,
+  corporateClean,
 };
 
 // All themes array - add new themes here
@@ -45,6 +47,7 @@ export const themes = [
   midnightGarden,
   cyberNeon,
   alienTech,
+  corporateClean,
 ];
 
 // Helper functions

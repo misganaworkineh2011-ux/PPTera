@@ -11,7 +11,7 @@ interface ExportModalProps {
 }
 
 // Theme type detection
-type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber" | "alien";
+type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber" | "alien" | "corporate";
 function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "arctic-frost") return "light";
   if (theme.id === "sunset-gradient") return "sunset";
@@ -21,6 +21,7 @@ function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "midnight-garden") return "midnight";
   if (theme.id === "cyber-neon") return "cyber";
   if (theme.id === "alien-tech") return "alien";
+  if (theme.id === "corporate-clean") return "corporate";
   return "dark";
 }
 
@@ -119,6 +120,16 @@ export default function ExportModal({ isExporting, theme, onExport, onClose }: E
       cardBorder: "border-[#1a2a1a]",
       cardHover: "hover:border-lime-400/50 hover:bg-lime-400/5",
       closeHover: "hover:bg-[#121a12]/50 text-lime-300/70 hover:text-lime-100",
+    },
+    corporate: {
+      bg: "bg-white",
+      border: "border-gray-200",
+      text: "text-gray-900",
+      textMuted: "text-gray-500",
+      cardBg: "bg-gray-50",
+      cardBorder: "border-gray-200",
+      cardHover: "hover:border-blue-400/50 hover:bg-blue-50/50",
+      closeHover: "hover:bg-gray-100 text-gray-400 hover:text-gray-600",
     },
   };
   

@@ -10,7 +10,8 @@ export type ThemeType =
   | "ember"
   | "midnight"
   | "cyber"
-  | "alien";
+  | "alien"
+  | "corporate";
 
 export function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "arctic-frost") return "light";
@@ -21,6 +22,7 @@ export function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "midnight-garden") return "midnight";
   if (theme.id === "cyber-neon") return "cyber";
   if (theme.id === "alien-tech") return "alien";
+  if (theme.id === "corporate-clean") return "corporate";
   return "dark"; // elegant-noir and default
 }
 

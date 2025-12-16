@@ -10,7 +10,7 @@ interface FeedbackSectionProps {
   theme?: Theme;
 }
 
-type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber" | "alien";
+type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber" | "alien" | "corporate";
 
 function getThemeType(theme?: Theme): ThemeType {
   if (!theme) return "light";
@@ -22,6 +22,7 @@ function getThemeType(theme?: Theme): ThemeType {
   if (theme.id === "midnight-garden") return "midnight";
   if (theme.id === "cyber-neon") return "cyber";
   if (theme.id === "alien-tech") return "alien";
+  if (theme.id === "corporate-clean") return "corporate";
   return "dark";
 }
 
@@ -143,6 +144,19 @@ function getThemeColors(themeType: ThemeType, theme?: Theme) {
       ratingSelected: "border-lime-400 bg-lime-950/50",
       hideText: "text-lime-300/50 hover:text-lime-300",
       thankYou: "text-lime-300/70",
+    },
+    corporate: {
+      bg: "bg-white",
+      border: "border-gray-200",
+      title: "text-gray-900",
+      subtitle: "text-gray-500",
+      buttonPrimary: "from-blue-500 to-blue-600",
+      buttonSecondary: "bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100",
+      ratingBorder: "border-gray-200",
+      ratingHover: "hover:border-blue-300 hover:bg-blue-50",
+      ratingSelected: "border-blue-500 bg-blue-50",
+      hideText: "text-gray-400 hover:text-gray-600",
+      thankYou: "text-gray-600",
     },
   };
   return colors[themeType];

@@ -469,7 +469,7 @@ export default function PresentationViewer({
       // Thumbnail view
       const themeType = getThemeType(theme);
       const ui = getUIColors(themeType);
-      const bgColors: Record<ThemeType, string> = { dark: "#0a0a0b", light: "#f8fafc", sunset: "#1c1017", ocean: "#0a1628", aurora: "#0f0a1a", ember: "#1a0a0a", midnight: "#0c0a1d", cyber: "#0a0a0f", alien: "#0a0f0a" };
+      const bgColors: Record<ThemeType, string> = { dark: "#0a0a0b", light: "#f8fafc", sunset: "#1c1017", ocean: "#0a1628", aurora: "#0f0a1a", ember: "#1a0a0a", midnight: "#0c0a1d", cyber: "#0a0a0f", alien: "#0a0f0a", corporate: "#ffffff" };
       const thumbnailBg: React.CSSProperties = isTitle ? backgroundStyle : { background: bgColors[themeType] };
       
       return (
@@ -797,6 +797,7 @@ function ScrollSlideContent({ slide, index, theme, renderSlide }: {
     midnight: "bg-gradient-to-br from-[#0c0a1d] via-[#1a1735] to-[#12102a]",
     cyber: "bg-gradient-to-br from-[#0a0a0f] via-[#0f0f18] to-[#151520]",
     alien: "bg-gradient-to-br from-[#0a0f0a] via-[#0d140d] to-[#121a12]",
+    corporate: "bg-gradient-to-br from-white via-gray-50 to-white",
   };
   
   return (
