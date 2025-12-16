@@ -11,7 +11,7 @@ interface ExportModalProps {
 }
 
 // Theme type detection
-type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight";
+type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber";
 function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "arctic-frost") return "light";
   if (theme.id === "sunset-gradient") return "sunset";
@@ -19,6 +19,7 @@ function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "aurora-borealis") return "aurora";
   if (theme.id === "ember-forge") return "ember";
   if (theme.id === "midnight-garden") return "midnight";
+  if (theme.id === "cyber-neon") return "cyber";
   return "dark";
 }
 
@@ -97,6 +98,16 @@ export default function ExportModal({ isExporting, theme, onExport, onClose }: E
       cardBorder: "border-[#312e81]",
       cardHover: "hover:border-pink-400/50 hover:bg-pink-400/5",
       closeHover: "hover:bg-[#1a1735]/50 text-pink-300/70 hover:text-pink-100",
+    },
+    cyber: {
+      bg: "bg-[#0a0a0f]",
+      border: "border-[#1a1a2e]",
+      text: "text-cyan-50",
+      textMuted: "text-cyan-300/70",
+      cardBg: "bg-[#151520]/50",
+      cardBorder: "border-[#1a1a2e]",
+      cardHover: "hover:border-cyan-400/50 hover:bg-cyan-400/5",
+      closeHover: "hover:bg-[#151520]/50 text-cyan-300/70 hover:text-cyan-100",
     },
   };
   

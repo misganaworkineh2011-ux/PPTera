@@ -22,10 +22,10 @@ interface SlideRendererProps {
   onDeleteBullet: (slideIndex: number, bulletIndex: number) => void;
 }
 
-type LayoutVariant = "left-content" | "right-content" | "centered" | "split-diagonal" | "image-focus" | "minimal-left" | "cards-grid" | "quote-style" | "timeline" | "diagonal-cut" | "circle-focus" | "wave-layout" | "hexagon-frame" | "glass-cards" | "aurora-glow" | "diamond-frame" | "ember-cards" | "molten-split" | "arch-frame" | "botanical-cards" | "elegant-split";
+type LayoutVariant = "left-content" | "right-content" | "centered" | "split-diagonal" | "image-focus" | "minimal-left" | "cards-grid" | "quote-style" | "timeline" | "diagonal-cut" | "circle-focus" | "wave-layout" | "hexagon-frame" | "glass-cards" | "aurora-glow" | "diamond-frame" | "ember-cards" | "molten-split" | "arch-frame" | "botanical-cards" | "elegant-split" | "glitch-frame" | "neon-grid" | "holo-cards";
 
 // Theme type detection
-type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight";
+type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber";
 function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "elegant-noir") return "dark";
   if (theme.id === "arctic-frost") return "light";
@@ -34,6 +34,7 @@ function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "aurora-borealis") return "aurora";
   if (theme.id === "ember-forge") return "ember";
   if (theme.id === "midnight-garden") return "midnight";
+  if (theme.id === "cyber-neon") return "cyber";
   return "dark";
 }
 
@@ -82,6 +83,9 @@ function getLayoutVariant(index: number, themeType: ThemeType, slideLayout?: str
       "arch-frame": "arch-frame",
       "botanical-cards": "botanical-cards",
       "elegant-split": "elegant-split",
+      "glitch-frame": "glitch-frame",
+      "neon-grid": "neon-grid",
+      "holo-cards": "holo-cards",
     };
     const mappedLayout = layoutMap[slideLayout];
     if (mappedLayout) return mappedLayout;
@@ -96,6 +100,7 @@ function getLayoutVariant(index: number, themeType: ThemeType, slideLayout?: str
     aurora: ["hexagon-frame", "glass-cards", "aurora-glow", "left-content", "centered", "image-focus"],
     ember: ["diamond-frame", "ember-cards", "molten-split", "left-content", "image-focus", "centered"],
     midnight: ["arch-frame", "botanical-cards", "elegant-split", "left-content", "quote-style", "centered"],
+    cyber: ["glitch-frame", "neon-grid", "holo-cards", "left-content", "cards-grid", "image-focus"],
   };
   const layouts = layoutsByTheme[themeType];
   return layouts[index % layouts.length]!;
@@ -292,6 +297,30 @@ export default function SlideRenderer({
       fullOverlay: "bg-gradient-to-t from-[#0c0a1d] via-[#0c0a1d]/70 to-[#0c0a1d]/30",
       sideOverlay: "bg-gradient-to-r from-[#0c0a1d]/90 via-transparent to-transparent",
       topOverlay: "bg-gradient-to-b from-[#0c0a1d]/60 to-transparent",
+    },
+    cyber: {
+      bg: "from-[#0a0a0f] via-[#0f0f18] to-[#151520]",
+      bgSolid: "bg-[#0a0a0f]",
+      orb1: "bg-cyan-400/20",
+      orb2: "bg-fuchsia-500/15",
+      orb1Strong: "bg-cyan-400/30",
+      orb2Strong: "bg-fuchsia-500/25",
+      accentMuted: "bg-cyan-400/80",
+      accentLine: "from-cyan-400",
+      accentBorder: "from-cyan-400/40 via-transparent to-fuchsia-500/35",
+      accentGlow: "from-cyan-400/50 to-fuchsia-500/45",
+      border: "border-[#1a1a2e]",
+      borderLine: "via-[#1a1a2e]",
+      surface: "bg-[#151520]",
+      surfaceAlt: "bg-[#0f0f18]/80",
+      overlay: "from-[#0a0a0f]/50",
+      cardBg: "bg-[#151520]/90 border-cyan-400/30",
+      indicatorMuted: "text-cyan-400/50",
+      hoverAccent: "hover:text-cyan-400",
+      imgOverlay: "bg-gradient-to-r from-[#0a0a0f] via-[#0a0a0f]/80 to-transparent",
+      fullOverlay: "bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f]/70 to-[#0a0a0f]/30",
+      sideOverlay: "bg-gradient-to-r from-[#0a0a0f]/90 via-transparent to-transparent",
+      topOverlay: "bg-gradient-to-b from-[#0a0a0f]/60 to-transparent",
     },
   };
 
@@ -1778,6 +1807,257 @@ export default function SlideRenderer({
         
         {/* Bottom elegant line */}
         <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-pink-400/30 via-indigo-500/20 to-pink-400/30" />
+      </div>
+    );
+  }
+
+  // LAYOUT 22: Glitch Frame - Cyberpunk glitch effect image frames (Cyber Neon signature)
+  if (layout === "glitch-frame") {
+    const firstImage = allImages[0];
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        
+        {/* Scanlines effect */}
+        <div className="absolute inset-0 opacity-5" style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,255,0.1) 2px, rgba(0,255,255,0.1) 4px)" }} />
+        
+        {/* Neon grid lines */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-1/4 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent" />
+          <div className="absolute top-3/4 left-0 right-0 h-px bg-gradient-to-r from-transparent via-fuchsia-500 to-transparent" />
+          <div className="absolute left-1/4 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-cyan-400 to-transparent" />
+          <div className="absolute right-1/4 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-fuchsia-500 to-transparent" />
+        </div>
+        
+        {/* Glowing orbs */}
+        <div className={`absolute top-0 right-1/4 w-96 h-96 ${colors.orb1Strong} rounded-full blur-3xl`} />
+        <div className={`absolute bottom-0 left-1/4 w-80 h-80 ${colors.orb2Strong} rounded-full blur-3xl`} />
+        
+        <SlideIndicator position="top-left" />
+        
+        <div className="relative h-full flex items-center">
+          {/* Content side */}
+          <div className="w-[55%] flex flex-col justify-center p-12">
+            {/* Cyber accent */}
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-3 h-3 bg-cyan-400 animate-pulse" />
+              <div className="w-3 h-3 bg-fuchsia-500 animate-pulse" style={{ animationDelay: "0.3s" }} />
+              <div className={`w-20 h-0.5 bg-gradient-to-r ${colors.accentLine} to-transparent`} />
+            </div>
+            
+            <Title className="text-4xl md:text-5xl mb-8" />
+            {bulletPoints.length > 0 && <BulletPoints />}
+          </div>
+          
+          {/* Glitch image frame */}
+          {hasImage && firstImage && (
+            <div className="w-[45%] relative flex items-center justify-center">
+              <div className="relative">
+                {/* Glitch offset layers */}
+                <div className="absolute inset-0 translate-x-1 -translate-y-0.5 opacity-50">
+                  <div className="w-64 h-72 rounded-lg overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={firstImage.url} alt="" className="w-full h-full object-cover" style={{ filter: "hue-rotate(90deg)" }} />
+                  </div>
+                </div>
+                <div className="absolute inset-0 -translate-x-1 translate-y-0.5 opacity-50">
+                  <div className="w-64 h-72 rounded-lg overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={firstImage.url} alt="" className="w-full h-full object-cover" style={{ filter: "hue-rotate(-90deg)" }} />
+                  </div>
+                </div>
+                
+                {/* Main image */}
+                <div className="relative w-64 h-72 rounded-lg overflow-hidden border-2 border-cyan-400/50 shadow-2xl" style={{ boxShadow: "0 0 30px rgba(0,255,255,0.4), 0 0 60px rgba(255,0,255,0.2)" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={firstImage.url} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f]/70 to-transparent" />
+                </div>
+                
+                {/* Corner accents */}
+                <div className="absolute -top-2 -left-2 w-6 h-6 border-l-2 border-t-2 border-cyan-400" />
+                <div className="absolute -top-2 -right-2 w-6 h-6 border-r-2 border-t-2 border-fuchsia-500" />
+                <div className="absolute -bottom-2 -left-2 w-6 h-6 border-l-2 border-b-2 border-fuchsia-500" />
+                <div className="absolute -bottom-2 -right-2 w-6 h-6 border-r-2 border-b-2 border-cyan-400" />
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Bottom neon line */}
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400/60 via-fuchsia-500/40 to-cyan-400/60" />
+      </div>
+    );
+  }
+
+  // LAYOUT 23: Neon Grid - Grid layout with neon borders and cyber effects (Cyber Neon)
+  if (layout === "neon-grid") {
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        
+        {/* Grid background */}
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "linear-gradient(rgba(0,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,255,0.1) 1px, transparent 1px)", backgroundSize: "50px 50px" }} />
+        
+        {/* Scanlines */}
+        <div className="absolute inset-0 opacity-5" style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.05) 2px, rgba(255,255,255,0.05) 4px)" }} />
+        
+        {/* Glowing orbs */}
+        <div className={`absolute top-1/3 right-0 w-80 h-80 ${colors.orb1} rounded-full blur-3xl`} />
+        <div className={`absolute bottom-1/3 left-0 w-64 h-64 ${colors.orb2} rounded-full blur-3xl`} />
+        
+        <SlideIndicator position="top-left" />
+        
+        <div className="relative h-full p-12 pt-20">
+          {/* Title with neon underline */}
+          <div className="mb-8">
+            <Title className="text-3xl md:text-4xl mb-4" />
+            <div className="flex items-center gap-2">
+              <div className="w-24 h-0.5 bg-cyan-400 shadow-lg" style={{ boxShadow: "0 0 10px rgba(0,255,255,0.8)" }} />
+              <div className="w-2 h-2 bg-fuchsia-500 shadow-lg" style={{ boxShadow: "0 0 10px rgba(255,0,255,0.8)" }} />
+              <div className="w-12 h-0.5 bg-fuchsia-500 shadow-lg" style={{ boxShadow: "0 0 10px rgba(255,0,255,0.8)" }} />
+            </div>
+          </div>
+          
+          {/* Neon cards grid */}
+          {bulletPoints.length > 0 && (
+            <div className="grid grid-cols-2 gap-4 max-w-4xl">
+              {bulletPoints.map((point, i) => (
+                <div key={i} className="relative group">
+                  {/* Neon glow on hover */}
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-400/0 to-fuchsia-500/0 rounded-lg blur opacity-0 group-hover:opacity-100 group-hover:from-cyan-400/40 group-hover:to-fuchsia-500/40 transition-all duration-300" />
+                  
+                  <div className={`relative p-5 rounded-lg border ${colors.cardBg} transition-all`} style={{ borderColor: i % 2 === 0 ? "rgba(0,255,255,0.3)" : "rgba(255,0,255,0.3)" }}>
+                    <div className="flex items-start gap-4">
+                      {/* Cyber number */}
+                      <div className="w-10 h-10 rounded flex items-center justify-center text-sm font-bold font-mono shrink-0 border" style={{ borderColor: i % 2 === 0 ? "rgba(0,255,255,0.5)" : "rgba(255,0,255,0.5)", color: i % 2 === 0 ? "#00ffff" : "#ff00ff", boxShadow: i % 2 === 0 ? "0 0 15px rgba(0,255,255,0.3)" : "0 0 15px rgba(255,0,255,0.3)" }}>
+                        {String(i + 1).padStart(2, "0")}
+                      </div>
+                      <EditableText
+                        value={point}
+                        isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                        onStartEdit={() => onStartEditing(index, "bullet", i)}
+                        onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                        onFinish={onFinishEditing}
+                        className="flex-1 text-base leading-relaxed"
+                        style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+                        isOwner={canEdit}
+                        isHovered={isHovered}
+                        onDelete={() => onDeleteBullet(index, i)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {canEdit && isHovered && (
+            <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+              <Plus size={14} /> Add card
+            </button>
+          )}
+        </div>
+        
+        {/* Image with neon frame */}
+        {hasImage && (
+          <div className="absolute bottom-8 right-8 w-48 h-32">
+            <div className="relative w-full h-full rounded-lg overflow-hidden border border-cyan-400/40" style={{ boxShadow: "0 0 20px rgba(0,255,255,0.3)" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={allImages[0]!.url} alt={allImages[0]!.alt || slide.title} className="w-full h-full object-cover" />
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // LAYOUT 24: Holo Cards - Holographic card effects with rainbow gradients (Cyber Neon)
+  if (layout === "holo-cards") {
+    const firstImage = allImages[0];
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        
+        {/* Holographic shimmer background */}
+        <div className="absolute inset-0 opacity-5" style={{ backgroundImage: "linear-gradient(135deg, rgba(0,255,255,0.2) 0%, rgba(255,0,255,0.2) 25%, rgba(173,255,47,0.2) 50%, rgba(0,255,255,0.2) 75%, rgba(255,0,255,0.2) 100%)", backgroundSize: "400% 400%" }} />
+        
+        {/* Floating particles */}
+        <div className="absolute top-20 left-20 w-2 h-2 rounded-full bg-cyan-400/60 animate-pulse" />
+        <div className="absolute top-40 right-32 w-1.5 h-1.5 rounded-full bg-fuchsia-500/50 animate-pulse" style={{ animationDelay: "0.5s" }} />
+        <div className="absolute bottom-32 left-40 w-2 h-2 rounded-full bg-lime-400/40 animate-pulse" style={{ animationDelay: "1s" }} />
+        
+        {/* Glowing orbs */}
+        <div className={`absolute top-0 right-1/4 w-96 h-96 ${colors.orb1} rounded-full blur-3xl`} />
+        <div className={`absolute bottom-0 left-1/4 w-80 h-80 ${colors.orb2} rounded-full blur-3xl`} />
+        
+        <SlideIndicator position="top-left" />
+        
+        <div className="relative h-full flex">
+          {/* Content side */}
+          <div className="w-[55%] flex flex-col justify-center p-12">
+            <Title className="text-4xl md:text-5xl mb-8" />
+            
+            {/* Holographic bullet cards */}
+            {bulletPoints.length > 0 && (
+              <div className="space-y-4">
+                {bulletPoints.map((point, i) => (
+                  <div key={i} className="relative group">
+                    {/* Holographic border effect */}
+                    <div className="absolute -inset-0.5 rounded-lg opacity-60 group-hover:opacity-100 transition-opacity" style={{ background: "linear-gradient(135deg, #00ffff, #ff00ff, #adff2f, #00ffff)", backgroundSize: "300% 300%" }} />
+                    
+                    <div className={`relative p-4 rounded-lg ${colors.cardBg}`}>
+                      <div className="flex items-start gap-3">
+                        <div className="w-2 h-2 mt-2 rounded-full bg-gradient-to-r from-cyan-400 to-fuchsia-500" />
+                        <EditableText
+                          value={point}
+                          isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                          onStartEdit={() => onStartEditing(index, "bullet", i)}
+                          onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                          onFinish={onFinishEditing}
+                          className="flex-1 text-base leading-relaxed"
+                          style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+                          isOwner={canEdit}
+                          isHovered={isHovered}
+                          onDelete={() => onDeleteBullet(index, i)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {canEdit && isHovered && (
+              <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+                <Plus size={14} /> Add point
+              </button>
+            )}
+          </div>
+          
+          {/* Holographic image frame */}
+          {hasImage && firstImage && (
+            <div className="w-[45%] relative flex items-center justify-center p-8">
+              <div className="relative w-full h-[80%]">
+                {/* Holographic glow */}
+                <div className="absolute -inset-2 rounded-xl opacity-60" style={{ background: "linear-gradient(135deg, rgba(0,255,255,0.3), rgba(255,0,255,0.3), rgba(173,255,47,0.3))", filter: "blur(15px)" }} />
+                
+                {/* Image */}
+                <div className="relative w-full h-full rounded-xl overflow-hidden border border-cyan-400/30" style={{ boxShadow: "0 0 30px rgba(0,255,255,0.3), 0 0 60px rgba(255,0,255,0.2)" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={firstImage.url} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f]/60 to-transparent" />
+                  
+                  {/* Holographic overlay */}
+                  <div className="absolute inset-0 opacity-20" style={{ background: "linear-gradient(135deg, transparent 0%, rgba(0,255,255,0.1) 25%, transparent 50%, rgba(255,0,255,0.1) 75%, transparent 100%)" }} />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Bottom holographic line */}
+        <div className="absolute bottom-0 left-0 right-0 h-1" style={{ background: "linear-gradient(90deg, #00ffff, #ff00ff, #adff2f, #00ffff)" }} />
       </div>
     );
   }

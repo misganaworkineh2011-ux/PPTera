@@ -55,8 +55,8 @@ function getGoogleFontsUrl(theme: Theme): string {
   return `https://fonts.googleapis.com/css2?${fontParams}&display=swap`;
 }
 
-// Theme type helper - "dark" for Elegant Noir, "light" for Arctic Frost, "sunset" for Sunset Gradient, "ocean" for Ocean Depths, "aurora" for Aurora Borealis, "ember" for Ember Forge, "midnight" for Midnight Garden
-type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight";
+// Theme type helper
+type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber";
 function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "arctic-frost") return "light";
   if (theme.id === "sunset-gradient") return "sunset";
@@ -64,6 +64,7 @@ function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "aurora-borealis") return "aurora";
   if (theme.id === "ember-forge") return "ember";
   if (theme.id === "midnight-garden") return "midnight";
+  if (theme.id === "cyber-neon") return "cyber";
   return "dark"; // elegant-noir and default
 }
 
@@ -258,6 +259,33 @@ function getUIColors(themeType: ThemeType) {
       indicatorMuted: "text-pink-400/50",
       navBtn: "bg-[#1a1735] text-pink-200 hover:bg-[#312e81]/60 border border-pink-400/30",
       navDot: "bg-[#312e81] hover:bg-pink-400/50",
+    },
+    cyber: {
+      pageBg: "bg-gradient-to-br from-[#0a0a0f] via-[#0f0f18] to-[#0a0a0f]",
+      headerBg: "bg-[#0a0a0f]/95 border-[#1a1a2e]",
+      headerText: "text-cyan-50",
+      headerMuted: "text-cyan-300/60",
+      headerHover: "hover:bg-[#151520]/50",
+      headerIcon: "text-cyan-300/70",
+      headerActive: "bg-[#1a1a2e]/40 text-cyan-100",
+      divider: "bg-[#1a1a2e]",
+      ring: "ring-[#1a1a2e]",
+      ringHover: "ring-[#1a1a2e] hover:ring-cyan-400/50",
+      thumbBg: "bg-[#0a0a0f]/80",
+      thumbText: "text-cyan-100",
+      scrollbar: "scrollbar-thumb-[#1a1a2e]",
+      kbd: "bg-[#151520] text-cyan-300",
+      endCard: "bg-[#151520]/90 border-cyan-400/30",
+      endText: "text-cyan-100",
+      endMuted: "text-cyan-300/60",
+      titleBg: "bg-gradient-to-br from-[#0a0a0f] via-[#0f0f18] to-[#151520]",
+      orb1: "bg-cyan-400/20",
+      orb2: "bg-fuchsia-500/15",
+      accentLine: "from-cyan-400",
+      borderLine: "via-[#1a1a2e]",
+      indicatorMuted: "text-cyan-400/50",
+      navBtn: "bg-[#151520] text-cyan-200 hover:bg-[#1a1a2e]/60 border border-cyan-400/30",
+      navDot: "bg-[#1a1a2e] hover:bg-cyan-400/50",
     },
   };
   return colors[themeType];
@@ -723,7 +751,7 @@ export default function PresentationViewer({ presentation, mode, isOwner, collab
       // Thumbnail view - render actual slide content scaled down
       const themeType = getThemeType(theme);
       const ui = getUIColors(themeType);
-      const bgColors: Record<ThemeType, string> = { dark: "#0a0a0b", light: "#f8fafc", sunset: "#1c1017", ocean: "#0a1628", aurora: "#0f0a1a", ember: "#1a0a0a", midnight: "#0c0a1d" };
+      const bgColors: Record<ThemeType, string> = { dark: "#0a0a0b", light: "#f8fafc", sunset: "#1c1017", ocean: "#0a1628", aurora: "#0f0a1a", ember: "#1a0a0a", midnight: "#0c0a1d", cyber: "#0a0a0f" };
       const thumbnailBg: React.CSSProperties = isTitle 
         ? backgroundStyle 
         : { background: bgColors[themeType] };
@@ -1808,6 +1836,7 @@ function ScrollSlideContent({
     aurora: "bg-gradient-to-br from-[#0f0a1a] via-[#1a1030] to-[#150d24]",
     ember: "bg-gradient-to-br from-[#1a0a0a] via-[#2a1010] to-[#3a1515]",
     midnight: "bg-gradient-to-br from-[#0c0a1d] via-[#1a1735] to-[#12102a]",
+    cyber: "bg-gradient-to-br from-[#0a0a0f] via-[#0f0f18] to-[#151520]",
   };
   
   return (
