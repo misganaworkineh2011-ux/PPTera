@@ -93,12 +93,23 @@ export async function POST(req: Request) {
     })) as ArrayBuffer;
 
     // Save to database
-    await db.presentation.create({
+    const presentation = await db.presentation.create({
       data: {
         title: topic,
         content: content,
         slides: slideData,
         userId: user.id,
+      },
+    });
+
+    // Create notification
+    await db.notification.create({
+      data: {
+        userId: user.id,
+        type: "success",
+        title: "Presentation created",
+        message: `Your presentation "${topic}" is ready to view`,
+        link: `/presentation/${presentation.id}`,
       },
     });
 

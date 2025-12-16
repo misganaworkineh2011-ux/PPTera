@@ -33,6 +33,7 @@ model User {
   collaborations      Collaboration[]
   pinnedProjects      PinnedProject[]
   outlines            Outline[]
+  notifications       Notification[]
 
   @@map("user")
 }
@@ -297,4 +298,19 @@ model Outline {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("outline")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // success, info, warning, error, promo
+  title     String
+  message   String
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification")
+  @@index([userId, isRead])
 }

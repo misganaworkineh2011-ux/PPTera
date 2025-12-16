@@ -1,7 +1,7 @@
 import { requireAuth } from "~/lib/clerk-server";
 import { db } from "~/server/db";
 import StickyHeader from "./StickyHeader";
-import DashboardContent from "./DashboardContent";
+import DashboardContentWrapper from "./DashboardContentWrapper";
 
 export default async function DashboardPage() {
   const authUser = await requireAuth();
@@ -23,7 +23,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8 h-full">
       <StickyHeader userId={user.id} credits={user.credits} />
-      <DashboardContent presentations={user.presentations} userName={user.name} />
+      <DashboardContentWrapper presentations={user.presentations} userName={user.name} />
     </div>
   );
 }

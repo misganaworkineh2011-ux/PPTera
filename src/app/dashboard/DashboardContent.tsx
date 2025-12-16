@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Filter, Grid, List as ListIcon, MoreHorizontal, Upload, Star, Globe, Lock, Share2, Edit3, Copy, Trash2, Link2 } from "lucide-react";
 import Image from "next/image";
@@ -28,12 +28,13 @@ interface Presentation {
 interface DashboardContentProps {
   presentations: Presentation[];
   userName: string | null;
+  searchQuery?: string;
 }
 
 type ViewMode = "grid" | "list";
 type FilterMode = "all" | "favorites" | "public" | "private";
 
-export default function DashboardContent({ presentations: initialPresentations, userName }: DashboardContentProps) {
+export default function DashboardContent({ presentations: initialPresentations, userName, searchQuery = "" }: DashboardContentProps) {
   const router = useRouter();
   const [presentations, setPresentations] = useState(initialPresentations);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -47,6 +48,24 @@ export default function DashboardContent({ presentations: initialPresentations, 
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState<string | null>(null);
 
+  // Close menus when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (activeMenu && !target.closest('.menu-container')) {
+        setActiveMenu(null);
+      }
+      if (showFilterMenu && !target.closest('.filter-menu-container')) {
+        setShowFilterMenu(false);
+      }
+    };
+
+    if (activeMenu || showFilterMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [activeMenu, showFilterMenu]);
+
   // Get thumbnail from first slide with image or fallback to logo
   const getThumbnail = (pres: Presentation) => {
     const slideWithImage = pres.slides?.find(slide => slide.image?.url);
@@ -56,6 +75,14 @@ export default function DashboardContent({ presentations: initialPresentations, 
   // Filter presentations
   const filteredPresentations = useMemo(() => {
     let filtered = presentations;
+
+    // Apply search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(p => 
+        p.title.toLowerCase().includes(query)
+      );
+    }
 
     // Apply filter mode
     if (filterMode === "favorites") {
@@ -67,7 +94,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
     }
 
     return filtered;
-  }, [presentations, filterMode]);
+  }, [presentations, filterMode, searchQuery]);
 
   const handleMenuAction = async (action: string, presId: string, pres?: Presentation) => {
     setActiveMenu(null);
@@ -224,7 +251,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="relative">
+          <div className="relative filter-menu-container">
             <button
               onClick={() => setShowFilterMenu(!showFilterMenu)}
               className="text-slate-400 hover:text-slate-600"
@@ -362,7 +389,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
                         {new Date(pres.createdAt).toLocaleDateString()}
                       </span>
                     </div>
-                    <div className="relative">
+                    <div className="relative menu-container">
                       <button
                         onClick={(e) => {
                           e.preventDefault();
@@ -491,7 +518,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
                 </div>
 
                 {/* Actions */}
-                <div className="relative flex-shrink-0">
+                <div className="relative flex-shrink-0 menu-container">
                   <button
                     onClick={(e) => {
                       e.preventDefault();
