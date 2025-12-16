@@ -21,7 +21,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="space-y-8 h-full">
+    <div className="max-w-7xl mx-auto space-y-8 h-full">
       <StickyHeader userId={user.id} credits={user.credits} />
       <DashboardContentWrapper presentations={user.presentations} userName={user.name} />
     </div>

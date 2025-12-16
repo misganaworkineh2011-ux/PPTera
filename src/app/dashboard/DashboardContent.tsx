@@ -313,8 +313,8 @@ export default function DashboardContent({ presentations: initialPresentations, 
       {/* Content Display */}
       <div className="min-h-[600px]">
         {filteredPresentations.length === 0 ? (
-          <div className="flex h-[400px] flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50/50 text-center">
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-lg ring-1 ring-slate-100">
+          <div className="flex h-[400px] flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-200 bg-slate-50/50 text-center">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-md bg-white shadow-lg ring-1 ring-slate-100">
               <Upload size={28} className="text-[#06b6d4]" />
             </div>
             <h3 className="mb-2 text-lg font-bold text-[#1e3a8a]">
@@ -335,12 +335,12 @@ export default function DashboardContent({ presentations: initialPresentations, 
             )}
           </div>
         ) : viewMode === "grid" ? (
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
             {filteredPresentations.map((pres) => (
               <a
                 key={pres.id}
                 href={`/presentation/${pres.id}`}
-                className="group relative flex flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-lg hover:shadow-[#06b6d4]/10 cursor-pointer"
+                className="group relative flex flex-col overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-lg hover:shadow-[#06b6d4]/10 cursor-pointer"
               >
                 {/* Thumbnail */}
                 <div className="aspect-[16/9] w-full bg-gradient-to-br from-[#1e3a8a]/10 to-[#06b6d4]/10 relative overflow-hidden">
@@ -476,10 +476,10 @@ export default function DashboardContent({ presentations: initialPresentations, 
               <a
                 key={pres.id}
                 href={`/presentation/${pres.id}`}
-                className="group flex items-center gap-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-md cursor-pointer"
+                className="group flex items-center gap-4 rounded-md border border-slate-200 bg-white p-3 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-md cursor-pointer"
               >
                 {/* Thumbnail */}
-                <div className="w-24 h-16 flex-shrink-0 bg-gradient-to-br from-[#1e3a8a]/10 to-[#06b6d4]/10 rounded-md relative overflow-hidden">
+                <div className="w-20 h-14 flex-shrink-0 bg-gradient-to-br from-[#1e3a8a]/10 to-[#06b6d4]/10 rounded relative overflow-hidden">
                   <Image
                     src={getThumbnail(pres)}
                     alt={pres.title}
@@ -603,7 +603,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
       {/* Rename Dialog */}
       {showRenameDialog && (
         <div className="fixed inset-0 flex items-center justify-center z-50" onClick={() => setShowRenameDialog(null)}>
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 shadow-2xl border border-slate-200" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-md p-6 w-full max-w-md mx-4 shadow-2xl border border-slate-200" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-[#1e3a8a] mb-4">Rename Presentation</h3>
             <input
               type="text"
@@ -616,7 +616,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
                   setShowRenameDialog(null);
                 }
               }}
-              className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20"
+              className="w-full rounded-md border border-slate-200 px-4 py-2 text-sm focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20"
               placeholder="Enter new title"
               autoFocus
               disabled={isLoading}
@@ -624,14 +624,14 @@ export default function DashboardContent({ presentations: initialPresentations, 
             <div className="flex gap-3 mt-4">
               <button
                 onClick={() => setShowRenameDialog(null)}
-                className="flex-1 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                className="flex-1 rounded-md border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
                 disabled={isLoading}
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleRename(showRenameDialog)}
-                className="flex-1 rounded-lg bg-[#1e3a8a] px-4 py-2 text-sm font-medium text-white hover:bg-[#1e3a8a]/90 disabled:opacity-50"
+                className="flex-1 rounded-md bg-[#1e3a8a] px-4 py-2 text-sm font-medium text-white hover:bg-[#1e3a8a]/90 disabled:opacity-50"
                 disabled={isLoading || !renameValue.trim()}
               >
                 {isLoading ? "Saving..." : "Save"}
@@ -644,9 +644,9 @@ export default function DashboardContent({ presentations: initialPresentations, 
       {/* Delete Confirmation Dialog */}
       {showDeleteDialog && (
         <div className="fixed inset-0 flex items-center justify-center z-50" onClick={() => setShowDeleteDialog(null)}>
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 shadow-2xl border border-slate-200" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-md p-6 w-full max-w-md mx-4 shadow-2xl border border-slate-200" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-3 mb-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
+              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-red-100">
                 <Trash2 size={20} className="text-red-600" />
               </div>
               <h3 className="text-lg font-bold text-[#1e3a8a]">Delete Presentation</h3>
@@ -657,14 +657,14 @@ export default function DashboardContent({ presentations: initialPresentations, 
             <div className="flex gap-3">
               <button
                 onClick={() => setShowDeleteDialog(null)}
-                className="flex-1 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                className="flex-1 rounded-md border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
                 disabled={isLoading}
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleDelete(showDeleteDialog)}
-                className="flex-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                className="flex-1 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
                 disabled={isLoading}
               >
                 {isLoading ? "Deleting..." : "Delete"}

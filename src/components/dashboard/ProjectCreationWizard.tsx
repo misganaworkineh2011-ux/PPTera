@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles, FileText, PenTool, Upload, ArrowRight, X } from "lucide-react";
+import { Sparkles, FileText, PenTool, ArrowRight, X } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { useRouter } from "next/navigation";
 
@@ -24,57 +24,40 @@ export default function ProjectCreationWizard({ userId, credits, onClose }: Prop
       title: "AI Generation",
       description: "Describe your idea and watch AI craft a complete professional deck",
       icon: Sparkles,
-      gradient: "from-[#3b82f6] to-[#06b6d4]", // Blue to Cyan gradient
-      slideColor: "bg-blue-500",
+      gradient: "from-[#1e3a8a] to-[#06b6d4]", // Brand navy to cyan
+      slideColor: "bg-[#1e3a8a]",
     },
     {
       id: "docs",
       title: "Import Documents",
       description: "Upload PDFs, Word files, or paste content to transform into a presentation",
       icon: FileText,
-      gradient: "from-[#8b5cf6] to-[#06b6d4]", // Purple to Cyan gradient
-      slideColor: "bg-purple-500",
+      gradient: "from-[#06b6d4] to-[#0891b2]", // Cyan shades
+      slideColor: "bg-[#06b6d4]",
     },
     {
       id: "scratch",
       title: "Start from Scratch",
       description: "Build from a blank canvas with full creative control over every slide",
       icon: PenTool,
-      gradient: "from-[#06b6d4] to-[#10b981]", // Cyan to Green gradient
-      slideColor: "bg-teal-500",
+      gradient: "from-[#0891b2] to-[#06b6d4]", // Cyan variations
+      slideColor: "bg-[#0891b2]",
     },
   ];
 
   return (
     <div className="flex h-full flex-col relative overflow-hidden rounded-3xl shadow-2xl">
-      {/* Main Light Gradient Background - Teal/Cyan from Logo */}
+      {/* Main Background - Brand colors gradient */}
       <div 
-        className="absolute inset-0 z-0"
-        style={{
-          background: `linear-gradient(to bottom, #ccfbf1 0%, #99f6e4 20%, #5eead4 50%, #2dd4bf 70%, #5eead4 80%, #7dd3fc 90%, #a5f3fc 100%)`,
-        }}
+        className="absolute inset-0 z-0 bg-gradient-to-br from-slate-50 via-blue-50/50 to-cyan-50/50"
       />
       
-      {/* Reflection Effect from Top Right Corner - Diagonal Light Streaks */}
+      {/* Subtle pattern overlay */}
       <div 
-        className="absolute top-0 right-0 w-full h-full z-0"
+        className="absolute inset-0 z-0 opacity-5"
         style={{
-          background: `
-            linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.4) 15%, transparent 40%),
-            linear-gradient(120deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.3) 20%, transparent 50%),
-            linear-gradient(150deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.2) 25%, transparent 60%),
-            linear-gradient(110deg, rgba(255, 255, 255, 0.3) 0%, transparent 30%)
-          `,
-        }}
-      />
-      
-      {/* Additional subtle reflection layers for depth */}
-      <div 
-        className="absolute top-0 right-0 w-2/3 h-2/3 z-0"
-        style={{
-          background: `
-            radial-gradient(ellipse at top right, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.2) 30%, transparent 70%)
-          `,
+          backgroundImage: `linear-gradient(rgba(30, 58, 138, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(30, 58, 138, 0.1) 1px, transparent 1px)`,
+          backgroundSize: '32px 32px'
         }}
       />
       
@@ -165,9 +148,9 @@ export default function ProjectCreationWizard({ userId, credits, onClose }: Prop
                         <div className="flex items-center justify-center mb-0.5">
                           <option.icon className={cn(
                             "h-4 w-4",
-                            index === 0 && "text-blue-500",
-                            index === 1 && "text-purple-500",
-                            index === 2 && "text-teal-500"
+                            index === 0 && "text-[#1e3a8a]",
+                            index === 1 && "text-[#06b6d4]",
+                            index === 2 && "text-[#0891b2]"
                           )} />
                         </div>
                         <div className="h-1 bg-slate-300 rounded w-3/4 mx-auto"></div>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, GripVertical, Trash2, Edit3, Check, X } from "lucide-react";
+import { ArrowLeft, Loader2, GripVertical, Trash2, Edit3, Check, X, Upload } from "lucide-react";
 import { useOutlineStream, type Slide, type OutlineMetadata } from "~/lib/dashboard/hooks/useOutlineStream";
 import { themes, getThemeById } from "~/lib/themes";
 import ThemeSelector from "~/components/ThemeSelector";
@@ -57,17 +57,17 @@ const getAllSlideOptions = (userPlan: string | null | undefined) => {
 // Skeleton Card Component
 function SkeletonCard({ index }: { index: number }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white/80 backdrop-blur-sm p-5 shadow-sm animate-pulse">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-200">
+    <div className="rounded-lg border border-slate-200 bg-white/90 backdrop-blur-sm p-4 shadow-sm animate-pulse">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-200">
           <span className="text-xs font-bold text-slate-400">{index + 1}</span>
         </div>
-        <div className="h-5 bg-slate-200 rounded flex-1" />
+        <div className="h-4 bg-slate-200 rounded flex-1" />
       </div>
-      <div className="space-y-2">
-        <div className="h-3 bg-slate-100 rounded w-full" />
-        <div className="h-3 bg-slate-100 rounded w-5/6" />
-        <div className="h-3 bg-slate-100 rounded w-4/6" />
+      <div className="space-y-2 pl-10">
+        <div className="h-2.5 bg-slate-100 rounded w-full" />
+        <div className="h-2.5 bg-slate-100 rounded w-5/6" />
+        <div className="h-2.5 bg-slate-100 rounded w-4/6" />
       </div>
     </div>
   );
@@ -126,24 +126,24 @@ function SlideCard({
       onDragStart={(e) => onDragStart && onDragStart(e, index)}
       onDragOver={(e) => onDragOver && onDragOver(e)}
       onDrop={(e) => onDrop && onDrop(e, index)}
-      className={`rounded-xl border bg-white/90 backdrop-blur-sm p-5 shadow-sm transition-all ${
-        isDraggedOver ? "border-[#06b6d4] ring-2 ring-[#06b6d4]/20" : "border-slate-200 hover:border-[#06b6d4]/50"
-      } ${isTitle ? "bg-gradient-to-br from-[#1e3a8a]/5 to-[#06b6d4]/5" : ""}`}
+      className={`rounded-lg border bg-white/95 backdrop-blur-sm p-4 shadow-sm transition-all hover:shadow-md ${
+        isDraggedOver ? "border-[#06b6d4] ring-2 ring-[#06b6d4]/20 shadow-lg" : "border-slate-200 hover:border-[#06b6d4]/40"
+      } ${isTitle ? "bg-gradient-to-br from-[#1e3a8a]/5 to-[#06b6d4]/5 border-[#1e3a8a]/20" : ""}`}
     >
       <div className="flex items-start gap-3">
         {/* Drag Handle */}
         {!isTitle && !isStreaming && (
-          <div className="cursor-grab text-slate-300 hover:text-slate-500 mt-1">
-            <GripVertical size={18} />
+          <div className="cursor-grab text-slate-300 hover:text-slate-500 mt-0.5">
+            <GripVertical size={16} />
           </div>
         )}
 
         {/* Slide Number */}
         <div
-          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${
             isTitle
-              ? "bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white"
-              : "bg-[#1e3a8a]/10 text-[#1e3a8a]"
+              ? "bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-sm"
+              : "bg-[#1e3a8a]/10 text-[#1e3a8a] font-semibold"
           }`}
         >
           <span className="text-xs font-bold">{index + 1}</span>
@@ -152,47 +152,49 @@ function SlideCard({
         {/* Content */}
         <div className="flex-1 min-w-0">
           {isEditing ? (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               <input
                 type="text"
                 value={editedTitle}
                 onChange={(e) => setEditedTitle(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-[#1e3a8a] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20"
+                className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-[#1e3a8a] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4]"
               />
               {!isTitle && (
                 <textarea
                   value={editedBullets}
                   onChange={(e) => setEditedBullets(e.target.value)}
-                  rows={4}
+                  rows={3}
                   placeholder="One bullet point per line..."
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 resize-none"
+                  className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] resize-none"
                 />
               )}
               <div className="flex gap-2">
                 <button
                   onClick={handleSave}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#06b6d4] text-white text-xs font-medium hover:bg-[#0891b2]"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-md bg-[#06b6d4] text-white text-xs font-medium hover:bg-[#0891b2] transition-colors"
                 >
-                  <Check size={14} /> Save
+                  <Check size={13} /> Save
                 </button>
                 <button
                   onClick={handleCancel}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium hover:bg-slate-200"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-md bg-slate-100 text-slate-600 text-xs font-medium hover:bg-slate-200 transition-colors"
                 >
-                  <X size={14} /> Cancel
+                  <X size={13} /> Cancel
                 </button>
               </div>
             </div>
           ) : (
             <>
-              <h3 className="font-semibold text-[#1e3a8a] mb-2 leading-tight">{slide.title}</h3>
+              <h3 className={`font-semibold text-[#1e3a8a] mb-1.5 leading-tight ${isTitle ? "text-base" : "text-sm"}`}>
+                {slide.title}
+              </h3>
               {isTitle && slide.subtitle && (
-                <p className="text-sm text-slate-500 italic">{slide.subtitle}</p>
+                <p className="text-sm text-slate-500 italic mt-1">{slide.subtitle}</p>
               )}
               {!isTitle && slide.bulletPoints && (
-                <ul className="space-y-1 list-disc list-inside marker:text-[#06b6d4] text-sm text-slate-700">
+                <ul className="space-y-1 list-disc list-inside marker:text-[#06b6d4] text-xs text-slate-600 leading-relaxed">
                   {slide.bulletPoints.map((bullet, i) => (
-                    <li key={i} className="leading-snug">
+                    <li key={i} className="leading-relaxed">
                       {bullet}
                     </li>
                   ))}
@@ -204,19 +206,21 @@ function SlideCard({
 
         {/* Actions */}
         {!isStreaming && !isEditing && (
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
               onClick={() => setIsEditing(true)}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-[#06b6d4] hover:bg-[#06b6d4]/10"
+              className="p-1.5 rounded-md text-slate-400 hover:text-[#06b6d4] hover:bg-[#06b6d4]/10 transition-colors"
+              title="Edit slide"
             >
-              <Edit3 size={14} />
+              <Edit3 size={13} />
             </button>
             {canDelete && !isTitle && (
               <button
                 onClick={() => onDelete && onDelete(index)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50"
+                className="p-1.5 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                title="Delete slide"
               >
-                <Trash2 size={14} />
+                <Trash2 size={13} />
               </button>
             )}
           </div>
@@ -239,6 +243,10 @@ export default function CreatePresentationClient({
   const [view, setView] = useState<"form" | "streaming" | "completed">(
     existingOutline ? "completed" : "form"
   );
+
+  // File upload state for docs mode
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [pastedContent, setPastedContent] = useState("");
 
   // Form data
   const [formData, setFormData] = useState({
@@ -289,6 +297,27 @@ export default function CreatePresentationClient({
   const handleGenerate = async () => {
     const trimmed = formData.description.trim();
     if (!trimmed) return;
+
+    // For scratch mode, create blank slides immediately
+    if (mode === "scratch") {
+      const blankSlides: Slide[] = [
+        {
+          type: "title",
+          title: trimmed,
+          subtitle: "Your Subtitle Here",
+        },
+        ...Array.from({ length: formData.numberOfSlides - 1 }, (_, i) => ({
+          type: "content" as const,
+          title: `Slide ${i + 2}`,
+          bulletPoints: ["Add your content here", "Edit this slide to customize"],
+        })),
+      ];
+      
+      setSlides(blankSlides);
+      setView("completed");
+      setLastDescription(trimmed);
+      return;
+    }
 
     // Determine which outline ID to use (reuse existing when present)
     const idForStream = outlineId || existingOutline?.id || null;
@@ -443,23 +472,42 @@ export default function CreatePresentationClient({
         @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Outfit:wght@400;700&family=Playfair+Display:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap');
       `}</style>
 
-      {/* Background */}
-      <div
+      {/* Beautiful Cyan Gradient Background */}
+      <div 
         className="absolute inset-0 z-0"
         style={{
-          background: `linear-gradient(to bottom, #ecfdf5 0%, #e6fcf5 15%, #d1fae5 30%, #b2f5ea 45%, #81e6d9 55%, #5eead4 60%, #b2f5ea 75%, #d1fae5 85%, #ecfdf5 100%)`,
+          background: `linear-gradient(135deg, 
+            #e0f2fe 0%,
+            #bae6fd 15%,
+            #7dd3fc 30%,
+            #38bdf8 45%,
+            #0ea5e9 55%,
+            #06b6d4 65%,
+            #0891b2 75%,
+            #0e7490 85%,
+            #155e75 100%
+          )`
         }}
       />
 
-      {/* Reflection Effect */}
-      <div
-        className="absolute top-0 right-0 w-full h-full z-0"
+      {/* Soft Light Overlay for Depth */}
+      <div 
+        className="absolute inset-0 z-0"
         style={{
           background: `
-            linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.4) 15%, transparent 40%),
-            linear-gradient(120deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.3) 20%, transparent 50%),
-            linear-gradient(150deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.2) 25%, transparent 60%)
-          `,
+            radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.4) 0%, transparent 50%),
+            radial-gradient(circle at 80% 70%, rgba(6, 182, 212, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.2) 0%, transparent 70%)
+          `
+        }}
+      />
+
+      {/* Subtle Grid Pattern */}
+      <div
+        className="absolute inset-0 z-0 opacity-[0.03]"
+        style={{
+          backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.5) 1px, transparent 1px)`,
+          backgroundSize: '40px 40px'
         }}
       />
 
@@ -476,14 +524,20 @@ export default function CreatePresentationClient({
         </div>
 
         {/* Form Section - Compact when streaming/completed */}
-        <div className={`px-8 ${showOutline ? "pb-4" : "pb-12"}`}>
-          <div className={`mx-auto ${showOutline ? "max-w-6xl" : "max-w-3xl"}`}>
+        <div className={`px-4 sm:px-6 lg:px-8 ${showOutline ? "pb-4" : "pb-12"}`}>
+          <div className={`mx-auto ${showOutline ? "max-w-4xl" : "max-w-2xl"}`}>
             {!showOutline && (
               <div className="flex flex-col items-center justify-center mb-8">
                 <h1 className="text-4xl font-bold tracking-tight text-[#1e3a8a] mb-3">
-                  New Presentation
+                  {mode === "ai" && "AI Generation"}
+                  {mode === "docs" && "Import Documents"}
+                  {mode === "scratch" && "Start from Scratch"}
                 </h1>
-                <p className="text-slate-600 text-center">Configure your presentation settings</p>
+                <p className="text-slate-600 text-center">
+                  {mode === "ai" && "Describe your idea and watch AI craft a complete professional deck"}
+                  {mode === "docs" && "Upload PDFs, Word files, or paste content to transform into a presentation"}
+                  {mode === "scratch" && "Build from a blank canvas with full creative control over every slide"}
+                </p>
               </div>
             )}
 
@@ -491,23 +545,118 @@ export default function CreatePresentationClient({
               {/* Description - Compact when streaming */}
               <div className={showOutline ? "flex items-start gap-4" : ""}>
                 <div className={showOutline ? "flex-1" : ""}>
-                  {!showOutline && (
+                  {!showOutline && mode === "ai" && (
                     <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-3">
                       What to Create
                     </label>
                   )}
-                  <textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => handleChange("description", e.target.value)}
-                    placeholder="Define what you want to create in one sentence or more..."
-                    rows={showOutline ? 2 : 4}
-                    disabled={isStreaming}
-                    className={`w-full rounded-xl border border-slate-200 bg-white px-5 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all resize-none shadow-sm ${
-                      isStreaming ? "opacity-60 cursor-not-allowed" : ""
-                    }`}
-                    required
-                  />
+                  {!showOutline && mode === "docs" && (
+                    <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-3">
+                      Upload or Paste Content
+                    </label>
+                  )}
+                  {!showOutline && mode === "scratch" && (
+                    <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-3">
+                      Presentation Title
+                    </label>
+                  )}
+                  
+                  {/* AI Mode - Description textarea */}
+                  {mode === "ai" && (
+                    <textarea
+                      id="description"
+                      value={formData.description}
+                      onChange={(e) => handleChange("description", e.target.value)}
+                      placeholder="Define what you want to create in one sentence or more..."
+                      rows={showOutline ? 2 : 4}
+                      disabled={isStreaming}
+                      className={`w-full rounded-md border border-slate-200 bg-white px-5 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all resize-none shadow-sm ${
+                        isStreaming ? "opacity-60 cursor-not-allowed" : ""
+                      }`}
+                      required
+                    />
+                  )}
+
+                  {/* Docs Mode - File upload and paste area */}
+                  {mode === "docs" && !showOutline && (
+                    <div className="space-y-4">
+                      <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-[#06b6d4] transition-colors">
+                        <Upload className="mx-auto h-12 w-12 text-slate-400 mb-3" />
+                        <input
+                          type="file"
+                          id="file-upload"
+                          accept=".pdf,.doc,.docx,.txt"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setUploadedFile(file);
+                              // Extract text from file and set as description
+                              const reader = new FileReader();
+                              reader.onload = (event) => {
+                                const text = event.target?.result as string;
+                                handleChange("description", text);
+                              };
+                              reader.readAsText(file);
+                            }
+                          }}
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor="file-upload"
+                          className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-50"
+                        >
+                          Choose File
+                        </label>
+                        <p className="mt-2 text-xs text-slate-500">
+                          {uploadedFile ? uploadedFile.name : "PDF, Word, or Text files"}
+                        </p>
+                      </div>
+                      <div className="text-center text-sm text-slate-500">or</div>
+                      <textarea
+                        value={pastedContent}
+                        onChange={(e) => {
+                          setPastedContent(e.target.value);
+                          handleChange("description", e.target.value);
+                        }}
+                        placeholder="Paste your content here..."
+                        rows={6}
+                        disabled={isStreaming}
+                        className="w-full rounded-md border border-slate-200 bg-white px-5 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all resize-none shadow-sm"
+                      />
+                    </div>
+                  )}
+
+                  {/* Docs Mode - Compact view when streaming */}
+                  {mode === "docs" && showOutline && (
+                    <textarea
+                      id="description"
+                      value={formData.description}
+                      onChange={(e) => handleChange("description", e.target.value)}
+                      placeholder="Your content..."
+                      rows={2}
+                      disabled={isStreaming}
+                      className={`w-full rounded-md border border-slate-200 bg-white px-5 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all resize-none shadow-sm ${
+                        isStreaming ? "opacity-60 cursor-not-allowed" : ""
+                      }`}
+                      required
+                    />
+                  )}
+
+                  {/* Scratch Mode - Simple title input */}
+                  {mode === "scratch" && (
+                    <input
+                      type="text"
+                      id="description"
+                      value={formData.description}
+                      onChange={(e) => handleChange("description", e.target.value)}
+                      placeholder="Enter your presentation title..."
+                      disabled={isStreaming}
+                      className={`w-full rounded-md border border-slate-200 bg-white px-5 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all shadow-sm ${
+                        isStreaming ? "opacity-60 cursor-not-allowed" : ""
+                      }`}
+                      required
+                    />
+                  )}
                 </div>
 
                 {/* Inline controls when streaming/completed */}
@@ -558,9 +707,21 @@ export default function CreatePresentationClient({
               {/* Full form controls when not streaming */}
               {!showOutline && (
                 <>
-                  <p className="text-xs text-slate-500 -mt-4">
-                    Describe your presentation idea, topics to cover, main message, or any specific requirements.
-                  </p>
+                  {mode === "ai" && (
+                    <p className="text-xs text-slate-500 -mt-4">
+                      Describe your presentation idea, topics to cover, main message, or any specific requirements.
+                    </p>
+                  )}
+                  {mode === "docs" && (
+                    <p className="text-xs text-slate-500 -mt-4">
+                      Upload a document or paste content, and AI will structure it into a presentation.
+                    </p>
+                  )}
+                  {mode === "scratch" && (
+                    <p className="text-xs text-slate-500 -mt-4">
+                      Start with a blank presentation. You&apos;ll be able to add and customize slides manually.
+                    </p>
+                  )}
 
                   {/* Number of Slides */}
                   <div>
@@ -574,7 +735,7 @@ export default function CreatePresentationClient({
                             handleChange("numberOfSlides", value);
                           }
                         }}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-5 py-4 text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all shadow-sm appearance-none cursor-pointer"
+                        className="w-full rounded-md border border-slate-200 bg-white px-5 py-4 text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all shadow-sm appearance-none cursor-pointer"
                       >
                         {allSlideOptions.map((option, index) => {
                           if (option.isGroupHeader) {
@@ -669,15 +830,15 @@ export default function CreatePresentationClient({
                       ? "Regenerate this outline with the same description (replaces current outline)"
                       : "Generate a new outline with this description (replaces current outline)"
                   }
-                  className="px-12 py-3 rounded-xl bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold shadow-lg transition-all hover:opacity-90 hover:shadow-xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="px-12 py-3 rounded-md bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold shadow-lg transition-all hover:opacity-90 hover:shadow-xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
-                  {isStreaming
-                    ? isSamePrompt
-                      ? "Regenerating…"
-                      : "Generating…"
-                    : isSamePrompt
-                    ? "Regenerate outline"
-                    : "Generate outline"}
+                  {isStreaming ? (
+                    mode === "scratch" ? "Creating…" : isSamePrompt ? "Regenerating…" : "Generating…"
+                  ) : (
+                    mode === "ai" ? (isSamePrompt ? "Regenerate outline" : "Generate outline") :
+                    mode === "docs" ? "Transform to Presentation" :
+                    "Create Blank Presentation"
+                  )}
                 </button>
               </div>
             </form>
@@ -699,20 +860,20 @@ export default function CreatePresentationClient({
 
         {/* Outline Section */}
         {showOutline && (
-          <div className={`flex-1 px-8 ${isCompleted ? "pb-[140px]" : "pb-12"}`}>
-            <div className="mx-auto max-w-6xl">
+          <div className={`flex-1 px-4 sm:px-6 lg:px-8 ${isCompleted ? "pb-[140px]" : "pb-12"}`}>
+            <div className="mx-auto max-w-4xl">
               {/* Simple status text above slides */}
               {isStreaming && (
-                <div className="mb-4 text-sm text-[#06b6d4] flex items-center gap-2">
+                <div className="mb-6 text-sm text-[#06b6d4] flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-lg px-4 py-3 shadow-sm border border-[#06b6d4]/20">
                   <Loader2 size={16} className="animate-spin" />
-                  <span>
+                  <span className="font-medium">
                     Generating slide {streamState.currentSlideIndex + 1} of {streamState.totalSlides}...
                   </span>
                 </div>
               )}
 
               {/* Slides List - vertical */}
-              <div className="space-y-4" onDragEnd={handleDragEnd}>
+              <div className="space-y-3" onDragEnd={handleDragEnd}>
                 {isStreaming ? (
                   // Show skeleton cards + completed slides during streaming
                   <>
@@ -759,24 +920,24 @@ export default function CreatePresentationClient({
 
               {/* Presentation style box – used when creating slides from this outline */}
               {isCompleted && (
-                <div className="mt-6 mb-[60px] rounded-2xl border border-slate-200 bg-white/90 px-5 py-5 shadow-sm">
+                <div className="mt-6 mb-[60px] rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm px-4 py-4 shadow-sm">
                   {/* Theme Selection */}
-                  <div className="mb-5">
+                  <div className="mb-4">
                     <div className="flex items-center justify-between mb-3">
-                      <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-                        Select Theme
+                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                        Presentation Theme
                       </p>
                       <button
                         type="button"
                         onClick={() => setIsThemeSelectorOpen(true)}
                         className="text-xs font-medium text-[#06b6d4] hover:text-[#0891b2] transition-colors"
                       >
-                        View more →
+                        Browse all →
                       </button>
                     </div>
                     
                     {/* Popular Themes Grid */}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-3">
                       {themes.slice(0, 2).map((theme) => {
                         const isSelected = formData.theme === theme.id;
                         return (
@@ -786,12 +947,12 @@ export default function CreatePresentationClient({
                             onClick={() => handleChange("theme", theme.id)}
                             className={`group relative overflow-hidden rounded-lg border text-left transition-all hover:shadow-md ${
                               isSelected
-                                ? "border-[#3b82f6] ring-1 ring-[#3b82f6]"
+                                ? "border-[#06b6d4] ring-2 ring-[#06b6d4]/20 shadow-sm"
                                 : "border-slate-200 hover:border-slate-300"
                             }`}
                           >
                             {/* Theme Preview Card */}
-                            <div className="p-3">
+                            <div className="p-2.5">
                               <div
                                 className="aspect-[1.6/1] w-full rounded-md shadow-sm relative overflow-hidden"
                                 style={{
@@ -805,16 +966,16 @@ export default function CreatePresentationClient({
                               >
                                 {/* Small content box overlaid on background */}
                                 <div 
-                                  className="absolute bottom-3 left-3 right-3 rounded-lg p-3 backdrop-blur-md transition-all duration-300"
+                                  className="absolute bottom-2 left-2 right-2 rounded-md p-2 backdrop-blur-md transition-all duration-300"
                                   style={{
                                     backgroundColor: theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
                                     border: theme.cardBox?.borderColor ? `1px solid ${theme.cardBox.borderColor}` : "none",
-                                    boxShadow: theme.cardBox?.shadow || "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                                    boxShadow: theme.cardBox?.shadow || "0 2px 4px rgba(0, 0, 0, 0.1)",
                                     maxWidth: "75%",
                                   }}
                                 >
                                   <div
-                                    className="text-lg font-bold mb-1"
+                                    className="text-sm font-bold mb-0.5"
                                     style={{
                                       fontFamily: theme.fonts.heading.family,
                                       color: theme.cardBox?.titleColor || theme.colors.heading,
@@ -823,7 +984,7 @@ export default function CreatePresentationClient({
                                     Title
                                   </div>
                                   <div
-                                    className="text-xs font-medium"
+                                    className="text-[10px] font-medium"
                                     style={{
                                       fontFamily: theme.fonts.body.family,
                                       color: theme.cardBox?.bodyColor || theme.colors.text,
@@ -831,7 +992,7 @@ export default function CreatePresentationClient({
                                   >
                                     Body &{" "}
                                     <span
-                                      className="underline decoration-2 underline-offset-2"
+                                      className="underline decoration-1 underline-offset-1"
                                       style={{
                                         color: theme.cardBox?.accentColor || theme.preview.accentColor,
                                         textDecorationColor: theme.cardBox?.accentColor || theme.preview.accentColor,
@@ -846,16 +1007,16 @@ export default function CreatePresentationClient({
 
                             {/* Theme Name Footer */}
                             <div
-                              className={`px-3 py-2 border-t flex items-center justify-between text-sm ${
-                                isSelected ? "bg-blue-50/50" : "bg-white"
+                              className={`px-2.5 py-1.5 border-t flex items-center justify-between text-xs ${
+                                isSelected ? "bg-[#06b6d4]/5" : "bg-white"
                               }`}
-                              style={{ borderColor: isSelected ? "#3b82f6" : "#e2e8f0" }}
+                              style={{ borderColor: isSelected ? "#06b6d4" : "#e2e8f0" }}
                             >
                               <div className="font-medium text-slate-700">
                                 {theme.name}
                               </div>
                               {isSelected && (
-                                <Check size={16} className="text-[#3b82f6]" />
+                                <Check size={14} className="text-[#06b6d4]" />
                               )}
                             </div>
                           </button>
@@ -866,14 +1027,14 @@ export default function CreatePresentationClient({
 
                   {/* Image Style Selection */}
                   <div>
-                    <p className="text-[11px] font-semibold text-slate-500 mb-2 uppercase tracking-wide">
+                    <p className="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">
                       Image Style
                     </p>
                     <select
                       id="imageSource-outline"
                       value={formData.imageSource}
                       onChange={(e) => handleChange("imageSource", e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all"
                     >
                       <option value="no-images">No Images (Text-Only Slides)</option>
                       <option value="placeholders">Image Placeholders (Edit Later)</option>
@@ -884,9 +1045,8 @@ export default function CreatePresentationClient({
                     </select>
                   </div>
 
-                  <p className="mt-4 text-[11px] text-slate-500">
-                    These options won&apos;t change the outline – they&apos;ll be used when you{" "}
-                    <span className="font-semibold text-[#0f766e]">create the actual presentation</span> from these slides.
+                  <p className="mt-3 text-xs text-slate-500 leading-relaxed">
+                    These settings will be applied when you create the final presentation.
                   </p>
                 </div>
               )}
@@ -898,34 +1058,38 @@ export default function CreatePresentationClient({
       {/* Bottom sticky stats & action bar (only when outline is ready) */}
       {isCompleted && (
         <div className="fixed inset-x-0 bottom-0 z-20">
-          <div className="mx-auto max-w-6xl px-6 pb-4">
-            <div className="flex items-center justify-between rounded-2xl bg-white/95 px-4 py-3 shadow-lg border border-slate-200 backdrop-blur-sm">
-              <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-slate-700">
-                <span>
-                  Slides:{" "}
-                  <strong>{slides.length || streamState.totalSlides || 0}</strong>
+          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pb-4">
+            <div className="flex items-center justify-between rounded-xl bg-white px-4 py-3 shadow-lg border border-slate-200">
+              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
+                <span className="flex items-center gap-1">
+                  <span className="text-slate-500">Slides:</span>
+                  <strong className="text-[#1e3a8a]">{slides.length || streamState.totalSlides || 0}</strong>
                 </span>
-                <span>
-                  Characters:{" "}
-                  <strong>{totalCharacters.toLocaleString()}</strong>
+                <span className="text-slate-300">•</span>
+                <span className="flex items-center gap-1">
+                  <span className="text-slate-500">Characters:</span>
+                  <strong className="text-[#1e3a8a]">{totalCharacters.toLocaleString()}</strong>
                 </span>
                 {streamState.creditsRemaining !== null && (
-                  <span>
-                    Credits left:{" "}
-                    <strong>{streamState.creditsRemaining}</strong>
-                  </span>
+                  <>
+                    <span className="text-slate-300">•</span>
+                    <span className="flex items-center gap-1">
+                      <span className="text-slate-500">Credits:</span>
+                      <strong className="text-[#06b6d4]">{streamState.creditsRemaining}</strong>
+                    </span>
+                  </>
                 )}
               </div>
               <button
                 type="button"
                 onClick={handleCreatePresentation}
                 disabled={!isCompleted || slides.length === 0 || isCreatingPresentation}
-                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white text-sm font-semibold shadow-md transition hover:opacity-90 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-5 py-2 rounded-lg bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white text-sm font-semibold shadow-md transition-all hover:opacity-90 hover:shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center gap-2"
               >
                 {isCreatingPresentation ? (
                   <>
-                    <Loader2 size={16} className="animate-spin" />
-                    {formData.imageSource === "stock-photos" ? "Fetching Images..." : "Creating..."}
+                    <Loader2 size={15} className="animate-spin" />
+                    <span>{formData.imageSource === "stock-photos" ? "Fetching Images..." : "Creating..."}</span>
                   </>
                 ) : (
                   "Create Presentation"
