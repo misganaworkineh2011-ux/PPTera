@@ -10,7 +10,7 @@ interface FeedbackSectionProps {
   theme?: Theme;
 }
 
-type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember";
+type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight";
 
 function getThemeType(theme?: Theme): ThemeType {
   if (!theme) return "light";
@@ -19,6 +19,7 @@ function getThemeType(theme?: Theme): ThemeType {
   if (theme.id === "ocean-depths") return "ocean";
   if (theme.id === "aurora-borealis") return "aurora";
   if (theme.id === "ember-forge") return "ember";
+  if (theme.id === "midnight-garden") return "midnight";
   return "dark";
 }
 
@@ -101,6 +102,19 @@ function getThemeColors(themeType: ThemeType, theme?: Theme) {
       ratingSelected: "border-red-500 bg-red-950/50",
       hideText: "text-red-300/50 hover:text-red-300",
       thankYou: "text-red-300/70",
+    },
+    midnight: {
+      bg: "bg-[#0c0a1d]",
+      border: "border-indigo-900/40",
+      title: "text-pink-50",
+      subtitle: "text-pink-300/60",
+      buttonPrimary: "from-pink-400 to-indigo-500",
+      buttonSecondary: "bg-[#1a1735] border-indigo-800/40 text-pink-200 hover:bg-indigo-950/60",
+      ratingBorder: "border-indigo-800/40",
+      ratingHover: "hover:border-pink-400/50 hover:bg-[#1a1735]",
+      ratingSelected: "border-pink-400 bg-indigo-950/50",
+      hideText: "text-pink-300/50 hover:text-pink-300",
+      thankYou: "text-pink-300/70",
     },
   };
   return colors[themeType];

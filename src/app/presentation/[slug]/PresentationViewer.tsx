@@ -55,14 +55,15 @@ function getGoogleFontsUrl(theme: Theme): string {
   return `https://fonts.googleapis.com/css2?${fontParams}&display=swap`;
 }
 
-// Theme type helper - "dark" for Elegant Noir, "light" for Arctic Frost, "sunset" for Sunset Gradient, "ocean" for Ocean Depths, "aurora" for Aurora Borealis, "ember" for Ember Forge
-type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember";
+// Theme type helper - "dark" for Elegant Noir, "light" for Arctic Frost, "sunset" for Sunset Gradient, "ocean" for Ocean Depths, "aurora" for Aurora Borealis, "ember" for Ember Forge, "midnight" for Midnight Garden
+type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight";
 function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "arctic-frost") return "light";
   if (theme.id === "sunset-gradient") return "sunset";
   if (theme.id === "ocean-depths") return "ocean";
   if (theme.id === "aurora-borealis") return "aurora";
   if (theme.id === "ember-forge") return "ember";
+  if (theme.id === "midnight-garden") return "midnight";
   return "dark"; // elegant-noir and default
 }
 
@@ -230,6 +231,33 @@ function getUIColors(themeType: ThemeType) {
       indicatorMuted: "text-red-400/50",
       navBtn: "bg-[#2a1010] text-red-200 hover:bg-[#7f1d1d]/60 border border-red-500/30",
       navDot: "bg-[#7f1d1d] hover:bg-red-500/50",
+    },
+    midnight: {
+      pageBg: "bg-gradient-to-br from-[#0c0a1d] via-[#1a1735] to-[#0c0a1d]",
+      headerBg: "bg-[#0c0a1d]/95 border-[#312e81]",
+      headerText: "text-pink-50",
+      headerMuted: "text-pink-300/60",
+      headerHover: "hover:bg-[#1a1735]/50",
+      headerIcon: "text-pink-300/70",
+      headerActive: "bg-[#312e81]/40 text-pink-100",
+      divider: "bg-[#312e81]",
+      ring: "ring-[#312e81]",
+      ringHover: "ring-[#312e81] hover:ring-pink-400/50",
+      thumbBg: "bg-[#0c0a1d]/80",
+      thumbText: "text-pink-100",
+      scrollbar: "scrollbar-thumb-[#312e81]",
+      kbd: "bg-[#1a1735] text-pink-300",
+      endCard: "bg-[#1a1735]/90 border-pink-400/30",
+      endText: "text-pink-100",
+      endMuted: "text-pink-300/60",
+      titleBg: "bg-gradient-to-br from-[#0c0a1d] via-[#1a1735] to-[#12102a]",
+      orb1: "bg-pink-400/20",
+      orb2: "bg-indigo-500/15",
+      accentLine: "from-pink-400",
+      borderLine: "via-[#312e81]",
+      indicatorMuted: "text-pink-400/50",
+      navBtn: "bg-[#1a1735] text-pink-200 hover:bg-[#312e81]/60 border border-pink-400/30",
+      navDot: "bg-[#312e81] hover:bg-pink-400/50",
     },
   };
   return colors[themeType];
@@ -695,7 +723,7 @@ export default function PresentationViewer({ presentation, mode, isOwner, collab
       // Thumbnail view - render actual slide content scaled down
       const themeType = getThemeType(theme);
       const ui = getUIColors(themeType);
-      const bgColors: Record<ThemeType, string> = { dark: "#0a0a0b", light: "#f8fafc", sunset: "#1c1017", ocean: "#0a1628", aurora: "#0f0a1a", ember: "#1a0a0a" };
+      const bgColors: Record<ThemeType, string> = { dark: "#0a0a0b", light: "#f8fafc", sunset: "#1c1017", ocean: "#0a1628", aurora: "#0f0a1a", ember: "#1a0a0a", midnight: "#0c0a1d" };
       const thumbnailBg: React.CSSProperties = isTitle 
         ? backgroundStyle 
         : { background: bgColors[themeType] };
@@ -1779,6 +1807,7 @@ function ScrollSlideContent({
     ocean: "bg-gradient-to-br from-[#0a1628] via-[#0d1f35] to-[#122a45]",
     aurora: "bg-gradient-to-br from-[#0f0a1a] via-[#1a1030] to-[#150d24]",
     ember: "bg-gradient-to-br from-[#1a0a0a] via-[#2a1010] to-[#3a1515]",
+    midnight: "bg-gradient-to-br from-[#0c0a1d] via-[#1a1735] to-[#12102a]",
   };
   
   return (

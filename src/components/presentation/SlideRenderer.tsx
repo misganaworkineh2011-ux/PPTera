@@ -22,10 +22,10 @@ interface SlideRendererProps {
   onDeleteBullet: (slideIndex: number, bulletIndex: number) => void;
 }
 
-type LayoutVariant = "left-content" | "right-content" | "centered" | "split-diagonal" | "image-focus" | "minimal-left" | "cards-grid" | "quote-style" | "timeline" | "diagonal-cut" | "circle-focus" | "wave-layout" | "hexagon-frame" | "glass-cards" | "aurora-glow" | "diamond-frame" | "ember-cards" | "molten-split";
+type LayoutVariant = "left-content" | "right-content" | "centered" | "split-diagonal" | "image-focus" | "minimal-left" | "cards-grid" | "quote-style" | "timeline" | "diagonal-cut" | "circle-focus" | "wave-layout" | "hexagon-frame" | "glass-cards" | "aurora-glow" | "diamond-frame" | "ember-cards" | "molten-split" | "arch-frame" | "botanical-cards" | "elegant-split";
 
 // Theme type detection
-type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember";
+type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight";
 function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "elegant-noir") return "dark";
   if (theme.id === "arctic-frost") return "light";
@@ -33,6 +33,7 @@ function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "ocean-depths") return "ocean";
   if (theme.id === "aurora-borealis") return "aurora";
   if (theme.id === "ember-forge") return "ember";
+  if (theme.id === "midnight-garden") return "midnight";
   return "dark";
 }
 
@@ -78,6 +79,9 @@ function getLayoutVariant(index: number, themeType: ThemeType, slideLayout?: str
       "diamond-frame": "diamond-frame",
       "ember-cards": "ember-cards",
       "molten-split": "molten-split",
+      "arch-frame": "arch-frame",
+      "botanical-cards": "botanical-cards",
+      "elegant-split": "elegant-split",
     };
     const mappedLayout = layoutMap[slideLayout];
     if (mappedLayout) return mappedLayout;
@@ -91,6 +95,7 @@ function getLayoutVariant(index: number, themeType: ThemeType, slideLayout?: str
     ocean: ["diagonal-cut", "circle-focus", "wave-layout", "left-content", "cards-grid", "centered"],
     aurora: ["hexagon-frame", "glass-cards", "aurora-glow", "left-content", "centered", "image-focus"],
     ember: ["diamond-frame", "ember-cards", "molten-split", "left-content", "image-focus", "centered"],
+    midnight: ["arch-frame", "botanical-cards", "elegant-split", "left-content", "quote-style", "centered"],
   };
   const layouts = layoutsByTheme[themeType];
   return layouts[index % layouts.length]!;
@@ -263,6 +268,30 @@ export default function SlideRenderer({
       fullOverlay: "bg-gradient-to-t from-[#1a0a0a] via-[#1a0a0a]/70 to-[#1a0a0a]/30",
       sideOverlay: "bg-gradient-to-r from-[#1a0a0a]/90 via-transparent to-transparent",
       topOverlay: "bg-gradient-to-b from-[#1a0a0a]/60 to-transparent",
+    },
+    midnight: {
+      bg: "from-[#0c0a1d] via-[#1a1735] to-[#12102a]",
+      bgSolid: "bg-[#0c0a1d]",
+      orb1: "bg-pink-400/15",
+      orb2: "bg-indigo-500/12",
+      orb1Strong: "bg-pink-400/25",
+      orb2Strong: "bg-indigo-500/20",
+      accentMuted: "bg-pink-400/80",
+      accentLine: "from-pink-400",
+      accentBorder: "from-pink-400/35 via-transparent to-indigo-500/30",
+      accentGlow: "from-pink-400/45 to-indigo-500/40",
+      border: "border-[#312e81]",
+      borderLine: "via-[#312e81]",
+      surface: "bg-[#1a1735]",
+      surfaceAlt: "bg-[#12102a]/80",
+      overlay: "from-[#0c0a1d]/50",
+      cardBg: "bg-[#1a1735]/80 border-pink-400/25",
+      indicatorMuted: "text-pink-300/50",
+      hoverAccent: "hover:text-pink-400",
+      imgOverlay: "bg-gradient-to-r from-[#0c0a1d] via-[#0c0a1d]/80 to-transparent",
+      fullOverlay: "bg-gradient-to-t from-[#0c0a1d] via-[#0c0a1d]/70 to-[#0c0a1d]/30",
+      sideOverlay: "bg-gradient-to-r from-[#0c0a1d]/90 via-transparent to-transparent",
+      topOverlay: "bg-gradient-to-b from-[#0c0a1d]/60 to-transparent",
     },
   };
 
@@ -1504,6 +1533,251 @@ export default function SlideRenderer({
         
         {/* Bottom molten line */}
         <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-500/50 via-orange-500/70 to-red-500/50" />
+      </div>
+    );
+  }
+
+  // LAYOUT 19: Arch Frame - Elegant arch-shaped image frames with rose gold accents (Midnight Garden signature)
+  if (layout === "arch-frame") {
+    const firstImage = allImages[0];
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        
+        {/* Botanical decorative elements */}
+        <div className="absolute top-0 right-0 w-64 h-64 opacity-10">
+          <svg viewBox="0 0 200 200" className="w-full h-full">
+            <path d="M100,10 Q150,50 140,100 Q130,150 100,190 Q70,150 60,100 Q50,50 100,10" fill="none" stroke="#e879a9" strokeWidth="1" />
+            <path d="M100,30 Q130,60 125,100 Q120,140 100,170 Q80,140 75,100 Q70,60 100,30" fill="none" stroke="#818cf8" strokeWidth="0.5" />
+          </svg>
+        </div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 opacity-10 rotate-180">
+          <svg viewBox="0 0 200 200" className="w-full h-full">
+            <path d="M100,10 Q150,50 140,100 Q130,150 100,190 Q70,150 60,100 Q50,50 100,10" fill="none" stroke="#e879a9" strokeWidth="1" />
+          </svg>
+        </div>
+        
+        {/* Glowing orbs */}
+        <div className={`absolute top-0 right-1/4 w-96 h-96 ${colors.orb1Strong} rounded-full blur-3xl`} />
+        <div className={`absolute bottom-0 left-1/4 w-80 h-80 ${colors.orb2Strong} rounded-full blur-3xl`} />
+        
+        <SlideIndicator position="top-left" />
+        
+        <div className="relative h-full flex items-center">
+          {/* Content side */}
+          <div className="w-[55%] flex flex-col justify-center p-12">
+            {/* Rose gold accent */}
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-8 h-8 rounded-full border-2 border-pink-400/50 flex items-center justify-center">
+                <div className="w-3 h-3 rounded-full bg-gradient-to-br from-pink-400 to-pink-500" />
+              </div>
+              <div className={`w-20 h-0.5 bg-gradient-to-r ${colors.accentLine} to-transparent`} />
+            </div>
+            
+            <Title className="text-4xl md:text-5xl mb-8" />
+            {bulletPoints.length > 0 && <BulletPoints />}
+          </div>
+          
+          {/* Arch image frame */}
+          {hasImage && firstImage && (
+            <div className="w-[45%] relative flex items-center justify-center">
+              <div className="relative">
+                {/* Outer glow */}
+                <div className="absolute -inset-4 bg-gradient-to-br from-pink-400/25 via-indigo-500/15 to-pink-400/25 blur-xl" style={{ borderRadius: "50% 50% 0 0 / 60% 60% 0 0" }} />
+                
+                {/* Arch image container */}
+                <div className="relative w-64 h-80 overflow-hidden shadow-2xl" style={{ borderRadius: "50% 50% 8px 8px / 40% 40% 8px 8px" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={firstImage.url} alt={firstImage.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0c0a1d]/60 to-transparent" />
+                </div>
+                
+                {/* Border arch */}
+                <div className="absolute inset-0 w-64 h-80 border-2 border-pink-400/40" style={{ borderRadius: "50% 50% 8px 8px / 40% 40% 8px 8px" }} />
+                
+                {/* Secondary smaller arch if multiple images */}
+                {hasMultipleImages && allImages[1] && (
+                  <div className="absolute -bottom-4 -left-12 w-20 h-28 overflow-hidden shadow-xl border border-indigo-500/30" style={{ borderRadius: "50% 50% 4px 4px / 40% 40% 4px 4px" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={allImages[1].url} alt={allImages[1].alt || ""} className="w-full h-full object-cover" />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Bottom elegant line */}
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-pink-400/40 to-transparent" />
+      </div>
+    );
+  }
+
+  // LAYOUT 20: Botanical Cards - Elegant cards with botanical corner accents (Midnight Garden)
+  if (layout === "botanical-cards") {
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        
+        {/* Botanical corner decorations */}
+        <div className="absolute top-0 left-0 w-32 h-32 opacity-15">
+          <svg viewBox="0 0 100 100" className="w-full h-full">
+            <path d="M0,0 Q50,20 50,50 Q20,50 0,0" fill="none" stroke="#e879a9" strokeWidth="1" />
+            <path d="M0,0 Q30,30 30,60 Q10,40 0,0" fill="none" stroke="#818cf8" strokeWidth="0.5" />
+          </svg>
+        </div>
+        <div className="absolute bottom-0 right-0 w-32 h-32 opacity-15 rotate-180">
+          <svg viewBox="0 0 100 100" className="w-full h-full">
+            <path d="M0,0 Q50,20 50,50 Q20,50 0,0" fill="none" stroke="#e879a9" strokeWidth="1" />
+            <path d="M0,0 Q30,30 30,60 Q10,40 0,0" fill="none" stroke="#818cf8" strokeWidth="0.5" />
+          </svg>
+        </div>
+        
+        {/* Glowing orbs */}
+        <div className={`absolute top-1/3 right-0 w-80 h-80 ${colors.orb1} rounded-full blur-3xl`} />
+        <div className={`absolute bottom-1/3 left-0 w-64 h-64 ${colors.orb2} rounded-full blur-3xl`} />
+        
+        <SlideIndicator position="top-left" />
+        
+        <div className="relative h-full p-12 pt-20">
+          {/* Title with elegant underline */}
+          <div className="mb-8">
+            <Title className="text-3xl md:text-4xl mb-4" />
+            <div className="flex items-center gap-3">
+              <div className="w-24 h-0.5 bg-gradient-to-r from-pink-400 to-transparent" />
+              <div className="w-2 h-2 rounded-full bg-pink-400/60" />
+              <div className="w-12 h-0.5 bg-gradient-to-r from-indigo-500/60 to-transparent" />
+            </div>
+          </div>
+          
+          {/* Elegant botanical cards */}
+          {bulletPoints.length > 0 && (
+            <div className="grid grid-cols-2 gap-5 max-w-4xl">
+              {bulletPoints.map((point, i) => (
+                <div key={i} className="relative group">
+                  {/* Card with botanical corner */}
+                  <div className={`relative p-6 rounded-2xl border backdrop-blur-sm ${colors.cardBg} transition-all group-hover:border-pink-400/40`}>
+                    {/* Corner botanical accent */}
+                    <div className="absolute top-2 right-2 w-8 h-8 opacity-30">
+                      <svg viewBox="0 0 30 30" className="w-full h-full">
+                        <path d="M30,0 Q15,10 15,20 Q25,15 30,0" fill="none" stroke="#e879a9" strokeWidth="1" />
+                      </svg>
+                    </div>
+                    
+                    <div className="flex items-start gap-4">
+                      {/* Elegant number */}
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 border-2 border-pink-400/40 bg-pink-400/10" style={{ color: colors.accent }}>
+                        {i + 1}
+                      </div>
+                      <EditableText
+                        value={point}
+                        isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                        onStartEdit={() => onStartEditing(index, "bullet", i)}
+                        onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                        onFinish={onFinishEditing}
+                        className="flex-1 text-base leading-relaxed"
+                        style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+                        isOwner={canEdit}
+                        isHovered={isHovered}
+                        onDelete={() => onDeleteBullet(index, i)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {canEdit && isHovered && (
+            <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+              <Plus size={14} /> Add card
+            </button>
+          )}
+        </div>
+        
+        {/* Image in elegant frame */}
+        {hasImage && (
+          <div className="absolute bottom-8 right-8 w-48 h-32">
+            <div className="absolute -inset-1 bg-gradient-to-br from-pink-400/20 to-indigo-500/15 rounded-2xl blur" />
+            <div className="relative w-full h-full rounded-2xl overflow-hidden border border-pink-400/25">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={allImages[0]!.url} alt={allImages[0]!.alt || slide.title} className="w-full h-full object-cover" />
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // LAYOUT 21: Elegant Split - Luxurious split layout with ornate divider (Midnight Garden)
+  if (layout === "elegant-split") {
+    const firstImage = allImages[0];
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        
+        {/* Ornate center divider */}
+        <div className="absolute top-12 bottom-12 left-1/2 -translate-x-1/2 w-px bg-gradient-to-b from-transparent via-pink-400/30 to-transparent" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8">
+          <div className="w-full h-full rounded-full border border-pink-400/40 flex items-center justify-center">
+            <div className="w-3 h-3 rounded-full bg-gradient-to-br from-pink-400/60 to-indigo-500/40" />
+          </div>
+        </div>
+        
+        {/* Decorative corners */}
+        <div className="absolute top-8 left-8 w-16 h-16 border-l-2 border-t-2 border-pink-400/20 rounded-tl-lg" />
+        <div className="absolute top-8 right-8 w-16 h-16 border-r-2 border-t-2 border-pink-400/20 rounded-tr-lg" />
+        <div className="absolute bottom-8 left-8 w-16 h-16 border-l-2 border-b-2 border-indigo-500/20 rounded-bl-lg" />
+        <div className="absolute bottom-8 right-8 w-16 h-16 border-r-2 border-b-2 border-indigo-500/20 rounded-br-lg" />
+        
+        {/* Glowing orbs */}
+        <div className={`absolute top-0 left-1/4 w-80 h-80 ${colors.orb1Strong} rounded-full blur-3xl`} />
+        <div className={`absolute bottom-0 right-1/4 w-72 h-72 ${colors.orb2Strong} rounded-full blur-3xl`} />
+        
+        <SlideIndicator position="top-left" />
+        
+        <div className="relative h-full flex">
+          {/* Left content side */}
+          <div className="w-[48%] flex flex-col justify-center p-12 pr-16">
+            <Title className="text-4xl md:text-5xl mb-8" />
+            {bulletPoints.length > 0 && <BulletPoints />}
+          </div>
+          
+          {/* Right image side */}
+          <div className="w-[48%] ml-auto flex items-center justify-center p-12 pl-16">
+            {hasImage && firstImage ? (
+              <div className="relative w-full h-[80%]">
+                {/* Elegant glow */}
+                <div className="absolute -inset-4 bg-gradient-to-br from-pink-400/20 via-indigo-500/10 to-pink-400/20 rounded-3xl blur-xl" />
+                
+                {/* Image with elegant rounded corners */}
+                <div className="relative w-full h-full rounded-3xl overflow-hidden border border-pink-400/25 shadow-2xl" style={{ boxShadow: "0 0 50px rgba(232, 121, 169, 0.2)" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={firstImage.url} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0c0a1d]/50 via-transparent to-transparent" />
+                </div>
+                
+                {/* Secondary image */}
+                {hasMultipleImages && allImages[1] && (
+                  <div className="absolute -bottom-4 -left-4 w-24 h-16 rounded-xl overflow-hidden border border-indigo-500/30 shadow-xl">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={allImages[1].url} alt={allImages[1].alt || ""} className="w-full h-full object-cover" />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className={`w-full h-[70%] border-2 border-dashed ${colors.border} rounded-3xl flex items-center justify-center`}>
+                <div className="text-center" style={{ color: colors.textMuted }}>
+                  <ImageIcon size={48} className="mx-auto mb-2 opacity-40" />
+                  <p className="text-sm">Add image</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Bottom elegant line */}
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-pink-400/30 via-indigo-500/20 to-pink-400/30" />
       </div>
     );
   }

@@ -38,12 +38,13 @@ function hexToRgb(hex: string): string {
 }
 
 // Get theme type
-function getThemeType(theme: Theme): "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" {
+function getThemeType(theme: Theme): "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" {
   if (theme.id === "arctic-frost") return "light";
   if (theme.id === "sunset-gradient") return "sunset";
   if (theme.id === "ocean-depths") return "ocean";
   if (theme.id === "aurora-borealis") return "aurora";
   if (theme.id === "ember-forge") return "ember";
+  if (theme.id === "midnight-garden") return "midnight";
   return "dark";
 }
 
@@ -59,7 +60,7 @@ async function createPptx(slides: SlideData[], theme: Theme, title: string): Pro
   pptx.company = "PPT Master";
   
   // Define master slides based on theme
-  const bgColorMap: Record<string, string> = { light: "F8FAFC", sunset: "1C1017", ocean: "0A1628", aurora: "0F0A1A", ember: "1A0A0A", dark: "0A0A0B" };
+  const bgColorMap: Record<string, string> = { light: "F8FAFC", sunset: "1C1017", ocean: "0A1628", aurora: "0F0A1A", ember: "1A0A0A", midnight: "0C0A1D", dark: "0A0A0B" };
   const bgColor = bgColorMap[themeType] || "0A0A0B";
   const textColor = hexToRgb(theme.colors.heading);
   const mutedColor = hexToRgb(theme.colors.textMuted);
@@ -284,6 +285,13 @@ function generateSlideHtml(slide: SlideData, index: number, totalSlides: number,
       muted: "#fca5a5",
       accent: "#ef4444",
       surface: "#3a1515",
+    },
+    midnight: {
+      bg: "linear-gradient(135deg, #0c0a1d 0%, #1a1735 40%, #12102a 100%)",
+      text: "#ffffff",
+      muted: "#c4b5fd",
+      accent: "#e879a9",
+      surface: "#1a1735",
     },
   };
   
