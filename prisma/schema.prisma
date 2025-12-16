@@ -137,11 +137,17 @@ model Activity {
 model Collaboration {
   id             String       @id @default(cuid())
   presentationId String
-  userId         String
-  role           String // owner, editor, viewer
+  userId         String?      // null if invited by email but not yet registered
+  email          String       // email of the collaborator
+  role           String       // editor, viewer
+  status         String       @default("pending") // pending, accepted
+  inviteToken    String?      @unique
   createdAt      DateTime     @default(now())
-  presentation   Presentation @relation(fields: [presentationId], references: [id])
-  user           User         @relation(fields: [userId], references: [id])
+  updatedAt      DateTime     @updatedAt
+  presentation   Presentation @relation(fields: [presentationId], references: [id], onDelete: Cascade)
+  user           User?        @relation(fields: [userId], references: [id])
+
+  @@unique([presentationId, email])
 }
 
 model PinnedProject {

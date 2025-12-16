@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { db } from "~/server/db";
 import PresentationViewer from "~/app/presentation/[slug]/PresentationViewer";
+import { type SlideData } from "~/components/presentation/types";
 
 export default async function SharedPresentationPage({
   params,
@@ -25,27 +26,14 @@ export default async function SharedPresentationPage({
   }
 
   // Parse slides and content
-  let slides: Array<{
-    type: "title" | "content";
-    title: string;
-    subtitle?: string;
-    bulletPoints?: string[];
-    image?: {
-      url: string;
-      alt: string;
-      photographer?: string;
-      photographerUrl?: string;
-      source: string;
-    } | null;
-    layout?: string;
-  }> = [];
+  let slides: SlideData[] = [];
 
   try {
     const rawSlides = presentation.slides;
     if (typeof rawSlides === "string") {
-      slides = JSON.parse(rawSlides);
+      slides = JSON.parse(rawSlides) as SlideData[];
     } else if (Array.isArray(rawSlides)) {
-      slides = rawSlides as typeof slides;
+      slides = rawSlides as unknown as SlideData[];
     }
   } catch (e) {
     console.error("Error parsing slides:", e);
@@ -82,6 +70,7 @@ export default async function SharedPresentationPage({
       }}
       mode="view"
       isOwner={false}
+      isPublicView={true}
     />
   );
 }

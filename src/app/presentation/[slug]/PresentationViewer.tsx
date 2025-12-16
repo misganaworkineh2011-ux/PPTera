@@ -40,6 +40,7 @@ interface PresentationViewerProps {
   mode: string;
   isOwner: boolean;
   collaboratorRole?: string;
+  isPublicView?: boolean; // Clean presentation view for public access
 }
 
 function getGoogleFontsUrl(theme: Theme): string {
@@ -150,11 +151,11 @@ function getUIColors(themeType: ThemeType) {
   return colors[themeType];
 }
 
-export default function PresentationViewer({ presentation, mode, isOwner }: PresentationViewerProps) {
+export default function PresentationViewer({ presentation, mode, isOwner, collaboratorRole, isPublicView = false }: PresentationViewerProps) {
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showThumbnails, setShowThumbnails] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(isPublicView); // Start fullscreen for public view
+  const [showThumbnails, setShowThumbnails] = useState(!isPublicView);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [viewMode, setViewMode] = useState<"slides" | "scroll">("slides");
@@ -162,6 +163,9 @@ export default function PresentationViewer({ presentation, mode, isOwner }: Pres
   const [editedTitle, setEditedTitle] = useState(presentation.title);
   const [showExportModal, setShowExportModal] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  
+  // Determine effective permissions
+  const canEdit = isOwner || collaboratorRole === "editor";
 
   // Editing state
   const [slidesData, setSlidesData] = useState<SlideData[]>(presentation.slides);
@@ -521,6 +525,26 @@ export default function PresentationViewer({ presentation, mode, isOwner }: Pres
     setEditingImageIndex(null);
   };
 
+  // Reorder images via drag and drop
+  const reorderSlideImages = (slideIndex: number, fromIndex: number, toIndex: number) => {
+    const slide = slidesData[slideIndex];
+    if (slide && fromIndex !== toIndex) {
+      const newSlides = [...slidesData];
+      const currentImages = [...getSlideImages(slide)];
+      const [movedImage] = currentImages.splice(fromIndex, 1);
+      if (movedImage) {
+        currentImages.splice(toIndex, 0, movedImage);
+        newSlides[slideIndex] = {
+          ...slide,
+          images: currentImages,
+          image: currentImages[0] || null,
+        };
+        updateSlidesWithSave(newSlides);
+      }
+    }
+    setEditingImageIndex(null);
+  };
+
   const currentSlideData = slides[currentSlide];
 
   if (!currentSlideData) {
@@ -612,13 +636,13 @@ export default function PresentationViewer({ presentation, mode, isOwner }: Pres
       <div
         className="w-full h-full relative overflow-hidden transition-all duration-500 group"
         style={backgroundStyle}
-        onMouseEnter={() => isOwner && !isFullscreen && setActiveSlideIndex(index)}
+        onMouseEnter={() => canEdit && !isFullscreen && !isPublicView && setActiveSlideIndex(index)}
         onMouseLeave={() => !isEditing && setActiveSlideIndex(null)}
       >
         {theme.overlay && !hasImage && <div className="absolute inset-0" style={{ background: theme.overlay }} />}
 
-        {/* Slide Menu */}
-        {isOwner && !isFullscreen && (isHovered || showSlideMenu === index) && (
+        {/* Slide Menu - only show for editors, not in public view */}
+        {canEdit && !isFullscreen && !isPublicView && (isHovered || showSlideMenu === index) && (
           <SlideMenu
             index={index}
             totalSlides={slides.length}
@@ -644,8 +668,8 @@ export default function PresentationViewer({ presentation, mode, isOwner }: Pres
             totalSlides={slides.length}
             theme={theme}
             hasImage={!!hasImage}
-            isOwner={isOwner}
-            isFullscreen={isFullscreen}
+            isOwner={canEdit}
+            isFullscreen={isFullscreen || isPublicView}
             isHovered={isHovered ?? false}
             isEditing={isEditing ?? false}
             editingText={editingText}
@@ -659,8 +683,8 @@ export default function PresentationViewer({ presentation, mode, isOwner }: Pres
             index={index}
             totalSlides={slides.length}
             theme={theme}
-            isOwner={isOwner}
-            isFullscreen={isFullscreen}
+            isOwner={canEdit}
+            isFullscreen={isFullscreen || isPublicView}
             isHovered={isHovered ?? false}
             isEditing={isEditing ?? false}
             editingText={editingText}
@@ -730,8 +754,8 @@ export default function PresentationViewer({ presentation, mode, isOwner }: Pres
       `}</style>
 
       <div className={`min-h-screen ${getUIColors(getThemeType(theme)).pageBg}`}>
-        {/* Header */}
-        {!isFullscreen && (
+        {/* Header - hidden for public view */}
+        {!isFullscreen && !isPublicView && (
           <Header
             title={presentation.title}
             editedTitle={editedTitle}
@@ -761,7 +785,7 @@ export default function PresentationViewer({ presentation, mode, isOwner }: Pres
         <div className={`${isFullscreen ? "" : "px-4 py-8"}`}>
           {viewMode === "scroll" && !isFullscreen ? (
             <div className="flex gap-6 max-w-7xl mx-auto">
-              {showThumbnails && (
+              {showThumbnails && !isPublicView && (
                 <ThumbnailSidebar
                   slides={slides}
                   onSlideClick={(index) => document.getElementById(`slide-${index}`)?.scrollIntoView({ behavior: "smooth", block: "center" })}
@@ -769,14 +793,14 @@ export default function PresentationViewer({ presentation, mode, isOwner }: Pres
                   renderSlide={renderSlide}
                   theme={theme}
                   onAddSlide={addSlideAt}
-                  isOwner={isOwner}
+                  isOwner={canEdit}
                 />
               )}
               <div className="flex-1">{renderScrollableView()}</div>
             </div>
           ) : (
-            <div className={`flex gap-6 ${isFullscreen ? "h-screen" : "max-w-7xl mx-auto"}`}>
-              {showThumbnails && !isFullscreen && viewMode === "slides" && (
+            <div className={`flex gap-6 ${isFullscreen || isPublicView ? "h-screen" : "max-w-7xl mx-auto"}`}>
+              {showThumbnails && !isFullscreen && !isPublicView && viewMode === "slides" && (
                 <div className={`w-44 shrink-0 space-y-2 max-h-[calc(100vh-140px)] overflow-y-auto scrollbar-thin pr-2 sticky top-20 ${getUIColors(getThemeType(theme)).scrollbar}`}>
                   {slides.map((slide, index) => {
                     const ui = getUIColors(getThemeType(theme));
@@ -834,17 +858,26 @@ export default function PresentationViewer({ presentation, mode, isOwner }: Pres
                 <NavigationControls
                   currentSlide={currentSlide}
                   totalSlides={slides.length}
-                  isFullscreen={isFullscreen}
+                  isFullscreen={isFullscreen || isPublicView}
                   onPrev={prevSlide}
                   onNext={nextSlide}
                   onGoTo={goToSlide}
                   theme={theme}
                 />
 
-                {!isFullscreen && (
+                {!isFullscreen && !isPublicView && (
                   <div className={`mt-4 text-center text-sm ${getUIColors(getThemeType(theme)).endMuted}`}>
                     <span>Slide {currentSlide + 1} of {slides.length}</span>
                     <span className="ml-2 opacity-70">• Press <kbd className={`px-1.5 py-0.5 rounded text-xs ${getUIColors(getThemeType(theme)).kbd}`}>F</kbd> for fullscreen</span>
+                  </div>
+                )}
+                
+                {/* Public view title overlay */}
+                {isPublicView && (
+                  <div className="fixed top-4 left-4 z-40">
+                    <h1 className={`text-lg font-semibold ${getUIColors(getThemeType(theme)).headerText} bg-black/30 backdrop-blur-sm px-4 py-2 rounded-lg`}>
+                      {presentation.title}
+                    </h1>
                   </div>
                 )}
               </div>
@@ -875,6 +908,7 @@ export default function PresentationViewer({ presentation, mode, isOwner }: Pres
             onAddImage={() => addSlideImage(showImageModal, imageUrl)}
             onUpdateImage={(idx) => updateSlideImage(showImageModal, idx, imageUrl)}
             onRemoveImage={(idx) => removeSlideImage(showImageModal, idx)}
+            onReorderImages={(from, to) => reorderSlideImages(showImageModal, from, to)}
             onEditImage={(idx) => { setEditingImageIndex(idx); setImageUrl(getSlideImages(slides[showImageModal]!)[idx]?.url || ""); }}
             onCancelEdit={() => { setEditingImageIndex(null); setImageUrl(""); }}
             onClose={() => { setShowImageModal(null); setImageUrl(""); setEditingImageIndex(null); }}
@@ -1352,15 +1386,50 @@ function NavigationControls({
 }
 
 function MultiImageModal({
-  images, imageUrl, editingIndex, isLoading, theme, onUrlChange, onAddImage, onUpdateImage, onRemoveImage, onEditImage, onCancelEdit, onClose,
+  images, imageUrl, editingIndex, isLoading, theme, onUrlChange, onAddImage, onUpdateImage, onRemoveImage, onReorderImages, onEditImage, onCancelEdit, onClose,
 }: {
   images: SlideImage[]; imageUrl: string; editingIndex: number | null; isLoading: boolean; theme: Theme;
   onUrlChange: (url: string) => void; onAddImage: () => void; onUpdateImage: (idx: number) => void;
-  onRemoveImage: (idx: number) => void; onEditImage: (idx: number) => void; onCancelEdit: () => void; onClose: () => void;
+  onRemoveImage: (idx: number) => void; onReorderImages: (from: number, to: number) => void;
+  onEditImage: (idx: number) => void; onCancelEdit: () => void; onClose: () => void;
 }) {
   const themeType = getThemeType(theme);
   const isDark = themeType !== "light";
   const isEditing = editingIndex !== null;
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", index.toString());
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (draggedIndex !== null && draggedIndex !== index) {
+      setDragOverIndex(index);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, toIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex !== null && draggedIndex !== toIndex) {
+      onReorderImages(draggedIndex, toIndex);
+    }
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
   
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
@@ -1378,18 +1447,32 @@ function MultiImageModal({
         </div>
         
         <div className="p-4 space-y-4 max-h-[60vh] overflow-y-auto">
-          {/* Existing images grid */}
+          {/* Existing images grid with drag-and-drop */}
           {images.length > 0 && (
             <div>
               <label className={`block text-sm font-medium mb-2 ${isDark ? "text-zinc-300" : "text-slate-700"}`}>
-                Current Images
+                Current Images <span className="text-xs font-normal opacity-70">(drag to reorder)</span>
               </label>
               <div className="grid grid-cols-3 gap-3">
                 {images.map((img, idx) => (
-                  <div key={idx} className={`relative group rounded-lg overflow-hidden border ${editingIndex === idx ? "ring-2" : ""} ${isDark ? "border-zinc-700" : "border-slate-200"}`} style={editingIndex === idx ? { borderColor: theme.colors.primary } : {}}>
+                  <div 
+                    key={idx} 
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, idx)}
+                    onDragOver={(e) => handleDragOver(e, idx)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, idx)}
+                    onDragEnd={handleDragEnd}
+                    className={`relative group rounded-lg overflow-hidden border cursor-grab active:cursor-grabbing transition-all ${
+                      editingIndex === idx ? "ring-2" : ""
+                    } ${draggedIndex === idx ? "opacity-50 scale-95" : ""} ${
+                      dragOverIndex === idx ? "ring-2 ring-cyan-500 scale-105" : ""
+                    } ${isDark ? "border-zinc-700" : "border-slate-200"}`} 
+                    style={editingIndex === idx ? { borderColor: theme.colors.primary } : {}}
+                  >
                     <div className="aspect-video">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={img.url} alt={img.alt} className="w-full h-full object-cover" />
+                      <img src={img.url} alt={img.alt} className="w-full h-full object-cover pointer-events-none" />
                     </div>
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                       <button
