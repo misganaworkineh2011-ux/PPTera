@@ -19,13 +19,24 @@ export default function StickyHeader({ userId, credits }: StickyHeaderProps) {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        const sticky = !entry.isIntersecting;
+        // Trigger when 50% of the header is out of view
+        const sticky = entry.intersectionRatio < 0.5;
         setIsSticky(sticky);
         setIsTitleSticky(sticky);
-        // Don't show sticky title anymore since it's always in TopBar
-        setStickyTitleContent(null);
+        if (sticky) {
+          setStickyTitleContent(
+            <>
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
+                <FileText size={18} />
+              </div>
+              <h1 className="text-xl font-bold tracking-tight text-[#1e3a8a] whitespace-nowrap">Presentations</h1>
+            </>
+          );
+        } else {
+          setStickyTitleContent(null);
+        }
       },
-      { threshold: [0] }
+      { threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] }
     );
 
     const sentinel = sentinelRef.current;
@@ -43,20 +54,28 @@ export default function StickyHeader({ userId, credits }: StickyHeaderProps) {
 
   return (
     <>
-      {/* Sentinel element to detect when header should stick */}
-      <div ref={sentinelRef} className="h-0 -mt-8" />
+      {/* Sentinel element at the top to detect when header starts going out of view */}
+      <div ref={sentinelRef} className="h-0 -mb-1" />
       
       {/* Header that becomes sticky - hides when sticky */}
       <div
         ref={headerRef}
-        className={`transition-all ${
-          isSticky ? "opacity-0 h-0 overflow-hidden" : ""
+        className={`flex flex-col gap-4 md:flex-row md:items-center md:justify-between transition-all duration-300 ${
+          isSticky ? "opacity-0 h-0 overflow-hidden pointer-events-none" : "opacity-100"
         }`}
       >
-        {/* Action buttons on the left */}
+        {/* Title Section */}
         <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
+            <FileText size={22} />
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight text-[#1e3a8a]">Presentations</h1>
+        </div>
+        
+        {/* Action buttons on the right */}
+        <div className="flex items-center justify-end gap-3">
           <CreateProjectButton userId={userId} credits={credits} />
-          <button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-[#1e3a8a] hover:border-[#1e3a8a]/20">
+          <button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-2.5 text-base font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-[#1e3a8a] hover:border-[#1e3a8a]/20">
             <Import size={18} /> Import
           </button>
         </div>

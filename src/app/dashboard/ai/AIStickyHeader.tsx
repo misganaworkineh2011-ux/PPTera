@@ -13,7 +13,8 @@ export default function AIStickyHeader() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        const sticky = !entry.isIntersecting;
+        // Trigger when 50% of the header is out of view
+        const sticky = entry.intersectionRatio < 0.5;
         setIsSticky(sticky);
         setIsTitleSticky(sticky);
         if (sticky) {
@@ -29,7 +30,7 @@ export default function AIStickyHeader() {
           setStickyTitleContent(null);
         }
       },
-      { threshold: [0] }
+      { threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] }
     );
 
     const sentinel = sentinelRef.current;
@@ -47,14 +48,14 @@ export default function AIStickyHeader() {
 
   return (
     <>
-      {/* Sentinel element to detect when header should stick */}
-      <div ref={sentinelRef} className="h-0 -mt-8" />
+      {/* Sentinel element at the top to detect when header starts going out of view */}
+      <div ref={sentinelRef} className="h-0 -mb-1" />
       
       {/* Header that becomes sticky - hides when sticky, title moves to TopBar */}
       <div
         ref={headerRef}
-        className={`flex flex-col gap-4 md:flex-row md:items-center md:justify-between transition-all ${
-          isSticky ? "opacity-0 h-0 overflow-hidden" : ""
+        className={`flex flex-col gap-4 md:flex-row md:items-center md:justify-between transition-all duration-300 ${
+          isSticky ? "opacity-0 h-0 overflow-hidden pointer-events-none" : "opacity-100"
         }`}
       >
         <div className="flex items-center gap-3">
@@ -64,7 +65,7 @@ export default function AIStickyHeader() {
           <h1 className="text-3xl font-bold tracking-tight text-[#1e3a8a]">AI Suggestions</h1>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-[#1e3a8a] hover:border-[#1e3a8a]/20">
+          <button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-2.5 text-base font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-[#1e3a8a] hover:border-[#1e3a8a]/20">
             <RefreshCw size={18} /> Refresh
           </button>
         </div>

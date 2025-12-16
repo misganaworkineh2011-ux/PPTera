@@ -18,7 +18,8 @@ export default function ImagesStickyHeader({ userId, credits }: StickyHeaderProp
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        const sticky = !entry.isIntersecting;
+        // Trigger when 50% of the header is out of view
+        const sticky = entry.intersectionRatio < 0.5;
         setIsSticky(sticky);
         setIsTitleSticky(sticky);
         if (sticky) {
@@ -34,7 +35,7 @@ export default function ImagesStickyHeader({ userId, credits }: StickyHeaderProp
           setStickyTitleContent(null);
         }
       },
-      { threshold: [0] }
+      { threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] }
     );
 
     const sentinel = sentinelRef.current;
@@ -52,14 +53,14 @@ export default function ImagesStickyHeader({ userId, credits }: StickyHeaderProp
 
   return (
     <>
-      {/* Sentinel element to detect when header should stick */}
-      <div ref={sentinelRef} className="h-0 -mt-8" />
+      {/* Sentinel element at the top to detect when header starts going out of view */}
+      <div ref={sentinelRef} className="h-0 -mb-1" />
       
       {/* Header that becomes sticky - hides when sticky, title moves to TopBar */}
       <div
         ref={headerRef}
-        className={`flex flex-col gap-4 md:flex-row md:items-center md:justify-between transition-all ${
-          isSticky ? "opacity-0 h-0 overflow-hidden" : ""
+        className={`flex flex-col gap-4 md:flex-row md:items-center md:justify-between transition-all duration-300 ${
+          isSticky ? "opacity-0 h-0 overflow-hidden pointer-events-none" : "opacity-100"
         }`}
       >
         <div className="flex items-center gap-3">
@@ -69,10 +70,10 @@ export default function ImagesStickyHeader({ userId, credits }: StickyHeaderProp
           <h1 className="text-3xl font-bold tracking-tight text-[#1e3a8a]">Images</h1>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-[#1e3a8a] hover:border-[#1e3a8a]/20">
+          <button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-2.5 text-base font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-[#1e3a8a] hover:border-[#1e3a8a]/20">
             <Filter size={18} /> Filter
           </button>
-          <button className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-[#06b6d4]/20 transition-all hover:from-[#172554] hover:to-[#0891b2] hover:scale-[1.02] active:scale-[0.98]">
+          <button className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-6 py-3 text-base font-bold text-white shadow-lg shadow-[#06b6d4]/20 transition-all hover:from-[#172554] hover:to-[#0891b2] hover:scale-[1.02] active:scale-[0.98]">
             <Upload size={18} /> Upload Images
           </button>
         </div>

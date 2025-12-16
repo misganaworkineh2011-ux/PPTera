@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bell, Search, Sparkles, Gift, AlertCircle, AlertTriangle, FileText } from "lucide-react";
+import { Bell, Search, Sparkles, Gift, AlertCircle, AlertTriangle, FileText, Image as ImageIcon, BarChart, Box, LayoutTemplate, Palette, Sparkles as SparklesIcon, Users, History } from "lucide-react";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { useStickyContext } from "./DashboardLayout";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 
 interface Notification {
@@ -28,6 +29,34 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
   const { user } = useUser();
+  const pathname = usePathname();
+
+  // Get page title and icon based on pathname
+  const getPageInfo = () => {
+    if (stickyTitleContent) {
+      return { title: stickyTitleContent, icon: null };
+    }
+    
+    const pageMap: Record<string, { title: string; icon: React.ReactNode }> = {
+      "/dashboard": { title: "Presentations", icon: <FileText size={14} /> },
+      "/dashboard/images": { title: "Images", icon: <ImageIcon size={14} /> },
+      "/dashboard/charts": { title: "Charts", icon: <BarChart size={14} /> },
+      "/dashboard/resources": { title: "Resources", icon: <Box size={14} /> },
+      "/dashboard/templates": { title: "Templates", icon: <LayoutTemplate size={14} /> },
+      "/dashboard/themes": { title: "Themes", icon: <Palette size={14} /> },
+      "/dashboard/ai": { title: "AI Suggestions", icon: <SparklesIcon size={14} /> },
+      "/dashboard/collaboration": { title: "Collaboration", icon: <Users size={14} /> },
+      "/dashboard/activity": { title: "Activity", icon: <History size={14} /> },
+    };
+
+    const pageInfo = pageMap[pathname] || pageMap["/dashboard"];
+    return {
+      title: pageInfo.title,
+      icon: pageInfo.icon,
+    };
+  };
+
+  const pageInfo = getPageInfo();
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
@@ -105,18 +134,17 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
 
   return (
     <header className="sticky top-0 z-50 flex h-20 items-center justify-between bg-[#F8F9FA] px-8 border-b border-slate-100/50 backdrop-blur-sm">
-      {/* Left: Title and Search Bar */}
-      <div className="flex items-center gap-4 flex-1">
-        {/* Title - Always visible */}
-        <div className="flex items-center gap-2 shrink-0">
-          <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-sm">
-            <FileText size={14} />
-          </div>
-          <h1 className="text-base font-bold tracking-tight text-[#1e3a8a] whitespace-nowrap">Presentations</h1>
-        </div>
+      {/* Left: Title - Only show when sticky title content exists */}
+      <div className="flex items-center gap-2 shrink-0">
+        {isTitleSticky && stickyTitleContent ? (
+          <div className="flex items-center gap-2">{stickyTitleContent}</div>
+        ) : null}
+      </div>
 
-        {/* Search Bar */}
-        <div className="relative w-full max-w-md">
+      {/* Right: Search Bar and Actions */}
+      <div className="flex items-center gap-3 flex-1 justify-end">
+        {/* Search Bar - Moved to right, shrinks when sticky title appears */}
+        <div className={`relative transition-all ${isTitleSticky ? "max-w-xs" : "max-w-md"} ${isTitleSticky ? "w-64" : "w-full"}`}>
           <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
@@ -126,10 +154,6 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
             className="w-full rounded-full border-none bg-white pl-11 pr-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]/20"
           />
         </div>
-      </div>
-
-      {/* Right: Actions - Always Fixed */}
-      <div className="flex items-center gap-3 shrink-0">
         {/* Upgrade Button */}
         <Link
           href="/pricing"

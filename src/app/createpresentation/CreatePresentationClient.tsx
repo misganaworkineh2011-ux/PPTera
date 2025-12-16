@@ -480,32 +480,35 @@ export default function CreatePresentationClient({
         @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Outfit:wght@400;700&family=Playfair+Display:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap');
       `}</style>
 
-      {/* Beautiful Cyan Gradient Background */}
+      {/* Logo-Inspired Gradient Background - Extra Soft with More Upper M Color */}
       <div 
         className="absolute inset-0 z-0"
         style={{
-          background: `linear-gradient(135deg, 
-            #e0f2fe 0%,
-            #bae6fd 15%,
-            #7dd3fc 30%,
-            #38bdf8 45%,
-            #0ea5e9 55%,
-            #06b6d4 65%,
-            #0891b2 75%,
-            #0e7490 85%,
-            #155e75 100%
+          background: `linear-gradient(to bottom, 
+            #f7fefc 0%,
+            #f0fdfa 10%,
+            #e6fcf5 20%,
+            #d1fae5 30%,
+            #b2f5ea 40%,
+            #99f6e4 50%,
+            #7ee7d4 60%,
+            #6ee7d4 70%,
+            #5eead4 80%,
+            #4dd0c4 90%,
+            #38b9a8 100%
           )`
         }}
       />
 
-      {/* Soft Light Overlay for Depth */}
+      {/* Extra Soft Light Overlay for Depth */}
       <div 
         className="absolute inset-0 z-0"
         style={{
           background: `
-            radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.4) 0%, transparent 50%),
-            radial-gradient(circle at 80% 70%, rgba(6, 182, 212, 0.3) 0%, transparent 50%),
-            radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.2) 0%, transparent 70%)
+            radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.7) 0%, transparent 50%),
+            radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.5) 0%, transparent 50%),
+            radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.3) 0%, transparent 70%),
+            radial-gradient(circle at 50% 100%, rgba(255, 255, 255, 0.6) 0%, transparent 50%)
           `
         }}
       />
