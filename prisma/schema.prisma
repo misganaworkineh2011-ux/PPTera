@@ -45,6 +45,8 @@ model Presentation {
   slides         Json
   thumbnailUrl   String?
   isPinned       Boolean         @default(false)
+  isPublic       Boolean         @default(false)
+  shareToken     String?         @unique
   userId         String
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
