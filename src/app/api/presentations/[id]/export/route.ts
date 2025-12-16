@@ -38,7 +38,7 @@ function hexToRgb(hex: string): string {
 }
 
 // Get theme type
-function getThemeType(theme: Theme): "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber" {
+function getThemeType(theme: Theme): "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber" | "alien" {
   if (theme.id === "arctic-frost") return "light";
   if (theme.id === "sunset-gradient") return "sunset";
   if (theme.id === "ocean-depths") return "ocean";
@@ -46,6 +46,7 @@ function getThemeType(theme: Theme): "dark" | "light" | "sunset" | "ocean" | "au
   if (theme.id === "ember-forge") return "ember";
   if (theme.id === "midnight-garden") return "midnight";
   if (theme.id === "cyber-neon") return "cyber";
+  if (theme.id === "alien-tech") return "alien";
   return "dark";
 }
 

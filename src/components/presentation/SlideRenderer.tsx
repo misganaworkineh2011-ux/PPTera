@@ -22,10 +22,10 @@ interface SlideRendererProps {
   onDeleteBullet: (slideIndex: number, bulletIndex: number) => void;
 }
 
-type LayoutVariant = "left-content" | "right-content" | "centered" | "split-diagonal" | "image-focus" | "minimal-left" | "cards-grid" | "quote-style" | "timeline" | "diagonal-cut" | "circle-focus" | "wave-layout" | "hexagon-frame" | "glass-cards" | "aurora-glow" | "diamond-frame" | "ember-cards" | "molten-split" | "arch-frame" | "botanical-cards" | "elegant-split" | "glitch-frame" | "neon-grid" | "holo-cards";
+type LayoutVariant = "left-content" | "right-content" | "centered" | "split-diagonal" | "image-focus" | "minimal-left" | "cards-grid" | "quote-style" | "timeline" | "diagonal-cut" | "circle-focus" | "wave-layout" | "hexagon-frame" | "glass-cards" | "aurora-glow" | "diamond-frame" | "ember-cards" | "molten-split" | "arch-frame" | "botanical-cards" | "elegant-split" | "glitch-frame" | "neon-grid" | "holo-cards" | "scan-frame" | "bio-cards" | "transmission-split";
 
 // Theme type detection
-type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber";
+type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber" | "alien";
 function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "elegant-noir") return "dark";
   if (theme.id === "arctic-frost") return "light";
@@ -35,6 +35,7 @@ function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "ember-forge") return "ember";
   if (theme.id === "midnight-garden") return "midnight";
   if (theme.id === "cyber-neon") return "cyber";
+  if (theme.id === "alien-tech") return "alien";
   return "dark";
 }
 
@@ -86,6 +87,9 @@ function getLayoutVariant(index: number, themeType: ThemeType, slideLayout?: str
       "glitch-frame": "glitch-frame",
       "neon-grid": "neon-grid",
       "holo-cards": "holo-cards",
+      "scan-frame": "scan-frame",
+      "bio-cards": "bio-cards",
+      "transmission-split": "transmission-split",
     };
     const mappedLayout = layoutMap[slideLayout];
     if (mappedLayout) return mappedLayout;
@@ -101,6 +105,7 @@ function getLayoutVariant(index: number, themeType: ThemeType, slideLayout?: str
     ember: ["diamond-frame", "ember-cards", "molten-split", "left-content", "image-focus", "centered"],
     midnight: ["arch-frame", "botanical-cards", "elegant-split", "left-content", "quote-style", "centered"],
     cyber: ["glitch-frame", "neon-grid", "holo-cards", "left-content", "cards-grid", "image-focus"],
+    alien: ["scan-frame", "bio-cards", "transmission-split", "left-content", "image-focus", "centered"],
   };
   const layouts = layoutsByTheme[themeType];
   return layouts[index % layouts.length]!;
@@ -321,6 +326,30 @@ export default function SlideRenderer({
       fullOverlay: "bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f]/70 to-[#0a0a0f]/30",
       sideOverlay: "bg-gradient-to-r from-[#0a0a0f]/90 via-transparent to-transparent",
       topOverlay: "bg-gradient-to-b from-[#0a0a0f]/60 to-transparent",
+    },
+    alien: {
+      bg: "from-[#0a0f0a] via-[#0d140d] to-[#121a12]",
+      bgSolid: "bg-[#0a0f0a]",
+      orb1: "bg-lime-400/20",
+      orb2: "bg-emerald-500/15",
+      orb1Strong: "bg-lime-400/30",
+      orb2Strong: "bg-emerald-500/25",
+      accentMuted: "bg-lime-400/80",
+      accentLine: "from-lime-400",
+      accentBorder: "from-lime-400/40 via-transparent to-emerald-500/35",
+      accentGlow: "from-lime-400/50 to-emerald-500/45",
+      border: "border-[#1a2a1a]",
+      borderLine: "via-[#1a2a1a]",
+      surface: "bg-[#121a12]",
+      surfaceAlt: "bg-[#0d140d]/80",
+      overlay: "from-[#0a0f0a]/50",
+      cardBg: "bg-[#121a12]/90 border-lime-400/30",
+      indicatorMuted: "text-lime-400/50",
+      hoverAccent: "hover:text-lime-400",
+      imgOverlay: "bg-gradient-to-r from-[#0a0f0a] via-[#0a0f0a]/80 to-transparent",
+      fullOverlay: "bg-gradient-to-t from-[#0a0f0a] via-[#0a0f0a]/70 to-[#0a0f0a]/30",
+      sideOverlay: "bg-gradient-to-r from-[#0a0f0a]/90 via-transparent to-transparent",
+      topOverlay: "bg-gradient-to-b from-[#0a0f0a]/60 to-transparent",
     },
   };
 
@@ -2058,6 +2087,268 @@ export default function SlideRenderer({
         
         {/* Bottom holographic line */}
         <div className="absolute bottom-0 left-0 right-0 h-1" style={{ background: "linear-gradient(90deg, #00ffff, #ff00ff, #adff2f, #00ffff)" }} />
+      </div>
+    );
+  }
+
+  // LAYOUT 25: Scan Frame - Alien scanning effect with bioluminescent borders (Alien Tech signature)
+  if (layout === "scan-frame") {
+    const firstImage = allImages[0];
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        
+        {/* Scanning lines effect */}
+        <div className="absolute inset-0 overflow-hidden opacity-15">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-lime-400 to-transparent" style={{ top: `${12.5 * (i + 1)}%` }} />
+          ))}
+        </div>
+        
+        {/* Bioluminescent orbs */}
+        <div className={`absolute top-1/4 right-1/4 w-96 h-96 ${colors.orb1Strong} rounded-full blur-3xl animate-pulse`} style={{ animationDuration: "4s" }} />
+        <div className={`absolute bottom-1/4 left-1/3 w-80 h-80 ${colors.orb2Strong} rounded-full blur-3xl animate-pulse`} style={{ animationDuration: "6s" }} />
+        
+        {/* Corner tech elements */}
+        <div className="absolute top-6 right-6 w-20 h-20">
+          <div className="absolute top-0 right-0 w-full h-px bg-gradient-to-l from-lime-400/60 to-transparent" />
+          <div className="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-lime-400/60 to-transparent" />
+          <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-lime-400/80 animate-pulse" />
+        </div>
+        <div className="absolute bottom-6 left-6 w-16 h-16">
+          <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-lime-400/40 to-transparent" />
+          <div className="absolute bottom-0 left-0 w-px h-full bg-gradient-to-t from-lime-400/40 to-transparent" />
+        </div>
+        
+        <SlideIndicator position="top-left" />
+        
+        <div className="relative h-full flex">
+          {/* Content side */}
+          <div className="w-[55%] flex flex-col justify-center p-12">
+            <Title className="text-4xl md:text-5xl mb-8" />
+            
+            {bulletPoints.length > 0 && (
+              <div className="space-y-4">
+                {bulletPoints.map((point, i) => (
+                  <div key={i} className="flex items-start gap-4 group">
+                    <div className="relative mt-2">
+                      <div className="w-3 h-3 rounded-full border border-lime-400/60 group-hover:bg-lime-400/30 transition-colors" />
+                      <div className="absolute inset-0 w-3 h-3 rounded-full bg-lime-400/40 animate-ping" style={{ animationDuration: "3s" }} />
+                    </div>
+                    <EditableText
+                      value={point}
+                      isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                      onStartEdit={() => onStartEditing(index, "bullet", i)}
+                      onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                      onFinish={onFinishEditing}
+                      className="flex-1 text-lg leading-relaxed"
+                      style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+                      isOwner={canEdit}
+                      isHovered={isHovered}
+                      onDelete={() => onDeleteBullet(index, i)}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {canEdit && isHovered && (
+              <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+                <Plus size={14} /> Add point
+              </button>
+            )}
+          </div>
+          
+          {/* Scan frame image */}
+          {hasImage && firstImage && (
+            <div className="w-[45%] relative flex items-center justify-center p-8">
+              <div className="relative w-full h-[80%]">
+                {/* Scanning glow effect */}
+                <div className="absolute -inset-3 rounded-2xl bg-gradient-to-r from-lime-400/20 via-emerald-400/30 to-lime-400/20 blur-xl" />
+                
+                {/* Frame with scanning corners */}
+                <div className="relative w-full h-full rounded-xl overflow-hidden border-2 border-lime-400/40" style={{ boxShadow: "0 0 40px rgba(163,255,0,0.3), inset 0 0 30px rgba(163,255,0,0.1)" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={firstImage.url} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
+                  <div className={`absolute inset-0 ${colors.fullOverlay}`} />
+                  
+                  {/* Scanning line animation */}
+                  <div className="absolute inset-0 overflow-hidden">
+                    <div className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-lime-400/60 to-transparent animate-pulse" style={{ top: "50%", animationDuration: "2s" }} />
+                  </div>
+                  
+                  {/* Corner brackets */}
+                  <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-lime-400/60" />
+                  <div className="absolute top-2 right-2 w-6 h-6 border-t-2 border-r-2 border-lime-400/60" />
+                  <div className="absolute bottom-2 left-2 w-6 h-6 border-b-2 border-l-2 border-lime-400/60" />
+                  <div className="absolute bottom-2 right-2 w-6 h-6 border-b-2 border-r-2 border-lime-400/60" />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-lime-400/50 to-transparent" />
+      </div>
+    );
+  }
+
+  // LAYOUT 26: Bio Cards - Organic bioluminescent card design (Alien Tech)
+  if (layout === "bio-cards") {
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        
+        {/* Organic flowing shapes */}
+        <div className={`absolute top-0 right-0 w-[500px] h-[500px] ${colors.orb1} rounded-full blur-3xl`} />
+        <div className={`absolute bottom-0 left-0 w-[400px] h-[400px] ${colors.orb2} rounded-full blur-3xl`} />
+        
+        {/* Floating bio particles */}
+        <div className="absolute top-16 left-20 w-3 h-3 rounded-full bg-lime-400/50 animate-pulse" style={{ animationDuration: "3s" }} />
+        <div className="absolute top-32 right-24 w-2 h-2 rounded-full bg-emerald-400/40 animate-pulse" style={{ animationDuration: "4s" }} />
+        <div className="absolute bottom-24 left-32 w-2.5 h-2.5 rounded-full bg-lime-400/30 animate-pulse" style={{ animationDuration: "5s" }} />
+        
+        <SlideIndicator position="top-left" />
+        
+        <div className="relative h-full flex flex-col justify-center p-12">
+          <Title className="text-4xl md:text-5xl mb-10 text-center" align="center" />
+          
+          {/* Bio cards grid */}
+          {bulletPoints.length > 0 && (
+            <div className="grid grid-cols-2 gap-6 max-w-4xl mx-auto">
+              {bulletPoints.map((point, i) => (
+                <div key={i} className="relative group">
+                  {/* Organic glow */}
+                  <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-lime-400/20 to-emerald-500/10 blur-lg opacity-0 group-hover:opacity-100 transition-opacity" />
+                  
+                  <div className={`relative p-5 rounded-2xl ${colors.cardBg} backdrop-blur-sm`} style={{ boxShadow: "0 0 20px rgba(163,255,0,0.1)" }}>
+                    {/* Bio indicator */}
+                    <div className="absolute -top-2 -left-2 w-4 h-4 rounded-full bg-lime-400/60 animate-pulse" style={{ animationDuration: `${3 + i}s` }} />
+                    
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-lime-400/30 to-emerald-500/20 flex items-center justify-center border border-lime-400/30">
+                        <span className="text-lime-400 font-mono text-sm font-bold">{String(i + 1).padStart(2, "0")}</span>
+                      </div>
+                      <EditableText
+                        value={point}
+                        isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                        onStartEdit={() => onStartEditing(index, "bullet", i)}
+                        onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                        onFinish={onFinishEditing}
+                        className="flex-1 text-base leading-relaxed"
+                        style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+                        isOwner={canEdit}
+                        isHovered={isHovered}
+                        onDelete={() => onDeleteBullet(index, i)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {canEdit && isHovered && (
+            <button onClick={() => onAddBullet(index)} className={`mt-6 mx-auto flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+              <Plus size={14} /> Add card
+            </button>
+          )}
+        </div>
+        
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-lime-400/40 to-transparent" />
+      </div>
+    );
+  }
+
+  // LAYOUT 27: Transmission Split - Data transmission style split layout (Alien Tech)
+  if (layout === "transmission-split") {
+    const firstImage = allImages[0];
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        
+        {/* Data stream lines */}
+        <div className="absolute inset-0 overflow-hidden opacity-10">
+          <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-lime-400 via-transparent to-lime-400" />
+          <div className="absolute top-0 left-1/2 w-px h-full bg-gradient-to-b from-transparent via-lime-400 to-transparent" />
+          <div className="absolute top-0 left-3/4 w-px h-full bg-gradient-to-b from-lime-400 via-transparent to-lime-400" />
+        </div>
+        
+        {/* Glowing orbs */}
+        <div className={`absolute top-1/3 left-1/4 w-80 h-80 ${colors.orb1Strong} rounded-full blur-3xl`} />
+        <div className={`absolute bottom-1/3 right-1/4 w-72 h-72 ${colors.orb2Strong} rounded-full blur-3xl`} />
+        
+        <SlideIndicator position="top-left" />
+        
+        <div className="relative h-full flex">
+          {/* Left: Image with transmission frame */}
+          {hasImage && firstImage && (
+            <div className="w-[45%] relative flex items-center justify-center p-8">
+              <div className="relative w-full h-[85%]">
+                {/* Transmission glow */}
+                <div className="absolute -inset-4 rounded-xl bg-gradient-to-r from-lime-400/15 via-emerald-400/20 to-lime-400/15 blur-2xl" />
+                
+                <div className="relative w-full h-full rounded-xl overflow-hidden border border-lime-400/30" style={{ boxShadow: "0 0 50px rgba(163,255,0,0.25)" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={firstImage.url} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
+                  <div className={`absolute inset-0 ${colors.fullOverlay}`} />
+                  
+                  {/* Transmission overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-lime-400/5 via-transparent to-lime-400/5" />
+                  
+                  {/* Status indicator */}
+                  <div className="absolute top-3 left-3 flex items-center gap-2 px-2 py-1 rounded bg-[#0a0f0a]/80 border border-lime-400/30">
+                    <div className="w-2 h-2 rounded-full bg-lime-400 animate-pulse" />
+                    <span className="text-lime-400 text-[10px] font-mono uppercase">Live</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Right: Content */}
+          <div className={`${hasImage ? "w-[55%]" : "w-full"} flex flex-col justify-center p-12`}>
+            <div className="mb-2 flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-lime-400 animate-pulse" />
+              <span className="text-lime-400/60 text-xs font-mono uppercase tracking-widest">Incoming Transmission</span>
+            </div>
+            
+            <Title className="text-4xl md:text-5xl mb-8" />
+            
+            {bulletPoints.length > 0 && (
+              <div className="space-y-4">
+                {bulletPoints.map((point, i) => (
+                  <div key={i} className="flex items-start gap-4 group">
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="w-1 h-1 rounded-full bg-lime-400/60" />
+                      <div className="w-6 h-px bg-gradient-to-r from-lime-400/60 to-transparent" />
+                    </div>
+                    <EditableText
+                      value={point}
+                      isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                      onStartEdit={() => onStartEditing(index, "bullet", i)}
+                      onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                      onFinish={onFinishEditing}
+                      className="flex-1 text-lg leading-relaxed"
+                      style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+                      isOwner={canEdit}
+                      isHovered={isHovered}
+                      onDelete={() => onDeleteBullet(index, i)}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {canEdit && isHovered && (
+              <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+                <Plus size={14} /> Add point
+              </button>
+            )}
+          </div>
+        </div>
+        
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-lime-400/30 via-emerald-400/50 to-lime-400/30" />
       </div>
     );
   }

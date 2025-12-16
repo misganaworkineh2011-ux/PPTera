@@ -10,7 +10,7 @@ interface FeedbackSectionProps {
   theme?: Theme;
 }
 
-type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber";
+type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber" | "alien";
 
 function getThemeType(theme?: Theme): ThemeType {
   if (!theme) return "light";
@@ -21,6 +21,7 @@ function getThemeType(theme?: Theme): ThemeType {
   if (theme.id === "ember-forge") return "ember";
   if (theme.id === "midnight-garden") return "midnight";
   if (theme.id === "cyber-neon") return "cyber";
+  if (theme.id === "alien-tech") return "alien";
   return "dark";
 }
 
@@ -129,6 +130,19 @@ function getThemeColors(themeType: ThemeType, theme?: Theme) {
       ratingSelected: "border-cyan-400 bg-cyan-950/50",
       hideText: "text-cyan-300/50 hover:text-cyan-300",
       thankYou: "text-cyan-300/70",
+    },
+    alien: {
+      bg: "bg-[#0a0f0a]",
+      border: "border-lime-900/40",
+      title: "text-lime-50",
+      subtitle: "text-lime-300/60",
+      buttonPrimary: "from-lime-400 to-emerald-500",
+      buttonSecondary: "bg-[#121a12] border-lime-800/40 text-lime-200 hover:bg-lime-950/60",
+      ratingBorder: "border-lime-800/40",
+      ratingHover: "hover:border-lime-400/50 hover:bg-[#121a12]",
+      ratingSelected: "border-lime-400 bg-lime-950/50",
+      hideText: "text-lime-300/50 hover:text-lime-300",
+      thankYou: "text-lime-300/70",
     },
   };
   return colors[themeType];
