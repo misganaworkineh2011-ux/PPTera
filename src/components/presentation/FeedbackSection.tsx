@@ -10,7 +10,7 @@ interface FeedbackSectionProps {
   theme?: Theme;
 }
 
-type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora";
+type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember";
 
 function getThemeType(theme?: Theme): ThemeType {
   if (!theme) return "light";
@@ -18,6 +18,7 @@ function getThemeType(theme?: Theme): ThemeType {
   if (theme.id === "sunset-gradient") return "sunset";
   if (theme.id === "ocean-depths") return "ocean";
   if (theme.id === "aurora-borealis") return "aurora";
+  if (theme.id === "ember-forge") return "ember";
   return "dark";
 }
 
@@ -87,6 +88,19 @@ function getThemeColors(themeType: ThemeType, theme?: Theme) {
       ratingSelected: "border-purple-500 bg-purple-950/50",
       hideText: "text-purple-300/50 hover:text-purple-300",
       thankYou: "text-purple-300/70",
+    },
+    ember: {
+      bg: "bg-[#1a0a0a]",
+      border: "border-red-900/40",
+      title: "text-red-50",
+      subtitle: "text-red-300/60",
+      buttonPrimary: "from-red-500 to-orange-500",
+      buttonSecondary: "bg-[#2a1010] border-red-800/40 text-red-200 hover:bg-red-950/60",
+      ratingBorder: "border-red-800/40",
+      ratingHover: "hover:border-red-700/50 hover:bg-[#2a1010]",
+      ratingSelected: "border-red-500 bg-red-950/50",
+      hideText: "text-red-300/50 hover:text-red-300",
+      thankYou: "text-red-300/70",
     },
   };
   return colors[themeType];

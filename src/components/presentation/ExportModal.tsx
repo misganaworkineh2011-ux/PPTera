@@ -11,12 +11,13 @@ interface ExportModalProps {
 }
 
 // Theme type detection
-type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora";
+type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember";
 function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "arctic-frost") return "light";
   if (theme.id === "sunset-gradient") return "sunset";
   if (theme.id === "ocean-depths") return "ocean";
   if (theme.id === "aurora-borealis") return "aurora";
+  if (theme.id === "ember-forge") return "ember";
   return "dark";
 }
 
@@ -75,6 +76,16 @@ export default function ExportModal({ isExporting, theme, onExport, onClose }: E
       cardBorder: "border-[#2d1f4a]",
       cardHover: "hover:border-purple-500/50 hover:bg-purple-500/5",
       closeHover: "hover:bg-[#1a1030]/50 text-purple-300/70 hover:text-purple-100",
+    },
+    ember: {
+      bg: "bg-[#1a0a0a]",
+      border: "border-[#7f1d1d]",
+      text: "text-red-50",
+      textMuted: "text-red-300/70",
+      cardBg: "bg-[#2a1010]/50",
+      cardBorder: "border-[#7f1d1d]",
+      cardHover: "hover:border-red-500/50 hover:bg-red-500/5",
+      closeHover: "hover:bg-[#2a1010]/50 text-red-300/70 hover:text-red-100",
     },
   };
   

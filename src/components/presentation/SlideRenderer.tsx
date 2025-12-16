@@ -22,16 +22,17 @@ interface SlideRendererProps {
   onDeleteBullet: (slideIndex: number, bulletIndex: number) => void;
 }
 
-type LayoutVariant = "left-content" | "right-content" | "centered" | "split-diagonal" | "image-focus" | "minimal-left" | "cards-grid" | "quote-style" | "timeline" | "diagonal-cut" | "circle-focus" | "wave-layout" | "hexagon-frame" | "glass-cards" | "aurora-glow";
+type LayoutVariant = "left-content" | "right-content" | "centered" | "split-diagonal" | "image-focus" | "minimal-left" | "cards-grid" | "quote-style" | "timeline" | "diagonal-cut" | "circle-focus" | "wave-layout" | "hexagon-frame" | "glass-cards" | "aurora-glow" | "diamond-frame" | "ember-cards" | "molten-split";
 
 // Theme type detection
-type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora";
+type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember";
 function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "elegant-noir") return "dark";
   if (theme.id === "arctic-frost") return "light";
   if (theme.id === "sunset-gradient") return "sunset";
   if (theme.id === "ocean-depths") return "ocean";
   if (theme.id === "aurora-borealis") return "aurora";
+  if (theme.id === "ember-forge") return "ember";
   return "dark";
 }
 
@@ -74,6 +75,9 @@ function getLayoutVariant(index: number, themeType: ThemeType, slideLayout?: str
       "hexagon-frame": "hexagon-frame",
       "glass-cards": "glass-cards",
       "aurora-glow": "aurora-glow",
+      "diamond-frame": "diamond-frame",
+      "ember-cards": "ember-cards",
+      "molten-split": "molten-split",
     };
     const mappedLayout = layoutMap[slideLayout];
     if (mappedLayout) return mappedLayout;
@@ -86,6 +90,7 @@ function getLayoutVariant(index: number, themeType: ThemeType, slideLayout?: str
     sunset: ["image-focus", "split-diagonal", "timeline", "left-content", "centered", "right-content"],
     ocean: ["diagonal-cut", "circle-focus", "wave-layout", "left-content", "cards-grid", "centered"],
     aurora: ["hexagon-frame", "glass-cards", "aurora-glow", "left-content", "centered", "image-focus"],
+    ember: ["diamond-frame", "ember-cards", "molten-split", "left-content", "image-focus", "centered"],
   };
   const layouts = layoutsByTheme[themeType];
   return layouts[index % layouts.length]!;
@@ -234,6 +239,30 @@ export default function SlideRenderer({
       fullOverlay: "bg-gradient-to-t from-[#0f0a1a] via-[#0f0a1a]/70 to-[#0f0a1a]/30",
       sideOverlay: "bg-gradient-to-r from-[#0f0a1a]/90 via-transparent to-transparent",
       topOverlay: "bg-gradient-to-b from-[#0f0a1a]/60 to-transparent",
+    },
+    ember: {
+      bg: "from-[#1a0a0a] via-[#2a1010] to-[#3a1515]",
+      bgSolid: "bg-[#1a0a0a]",
+      orb1: "bg-red-500/18",
+      orb2: "bg-orange-500/15",
+      orb1Strong: "bg-red-500/28",
+      orb2Strong: "bg-orange-500/22",
+      accentMuted: "bg-red-500/80",
+      accentLine: "from-red-500",
+      accentBorder: "from-red-500/40 via-transparent to-orange-500/35",
+      accentGlow: "from-red-500/50 to-orange-500/45",
+      border: "border-[#7f1d1d]",
+      borderLine: "via-[#7f1d1d]",
+      surface: "bg-[#3a1515]",
+      surfaceAlt: "bg-[#2a1010]/80",
+      overlay: "from-[#1a0a0a]/50",
+      cardBg: "bg-[#3a1515]/80 border-red-500/30",
+      indicatorMuted: "text-red-400/50",
+      hoverAccent: "hover:text-red-400",
+      imgOverlay: "bg-gradient-to-r from-[#1a0a0a] via-[#1a0a0a]/80 to-transparent",
+      fullOverlay: "bg-gradient-to-t from-[#1a0a0a] via-[#1a0a0a]/70 to-[#1a0a0a]/30",
+      sideOverlay: "bg-gradient-to-r from-[#1a0a0a]/90 via-transparent to-transparent",
+      topOverlay: "bg-gradient-to-b from-[#1a0a0a]/60 to-transparent",
     },
   };
 
@@ -1250,6 +1279,231 @@ export default function SlideRenderer({
         
         {/* Bottom aurora glow */}
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-purple-500/10 via-green-500/5 to-transparent" />
+      </div>
+    );
+  }
+
+  // LAYOUT 16: Diamond Frame - Diamond-shaped image frames with ember particles (Ember theme signature)
+  if (layout === "diamond-frame") {
+    const firstImage = allImages[0];
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        
+        {/* Ember particles floating */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-20 left-1/4 w-2 h-2 rounded-full bg-orange-500/60 animate-pulse" />
+          <div className="absolute top-40 right-1/3 w-1.5 h-1.5 rounded-full bg-red-500/50 animate-pulse" style={{ animationDelay: "0.5s" }} />
+          <div className="absolute bottom-32 left-1/3 w-2 h-2 rounded-full bg-yellow-500/40 animate-pulse" style={{ animationDelay: "1s" }} />
+          <div className="absolute top-60 right-1/4 w-1 h-1 rounded-full bg-orange-400/50 animate-pulse" style={{ animationDelay: "1.5s" }} />
+          <div className="absolute bottom-48 right-1/2 w-1.5 h-1.5 rounded-full bg-red-400/45 animate-pulse" style={{ animationDelay: "0.7s" }} />
+        </div>
+        
+        {/* Heat distortion gradient */}
+        <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-red-900/20 via-orange-900/10 to-transparent" />
+        
+        {/* Glowing orbs */}
+        <div className={`absolute top-0 right-1/4 w-96 h-96 ${colors.orb1Strong} rounded-full blur-3xl`} />
+        <div className={`absolute bottom-0 left-1/4 w-80 h-80 ${colors.orb2Strong} rounded-full blur-3xl`} />
+        
+        <SlideIndicator position="top-left" />
+        
+        <div className="relative h-full flex items-center">
+          {/* Content side */}
+          <div className="w-[55%] flex flex-col justify-center p-12">
+            {/* Fire accent */}
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-4 h-4 rotate-45 bg-gradient-to-br from-red-500 to-orange-500" />
+              <div className={`w-20 h-0.5 bg-gradient-to-r ${colors.accentLine} to-transparent`} />
+            </div>
+            
+            <Title className="text-4xl md:text-5xl mb-8" />
+            {bulletPoints.length > 0 && <BulletPoints />}
+          </div>
+          
+          {/* Diamond image frame */}
+          {hasImage && firstImage && (
+            <div className="w-[45%] relative flex items-center justify-center">
+              <div className="relative">
+                {/* Outer glow */}
+                <div className="absolute -inset-6 bg-gradient-to-br from-red-500/30 via-orange-500/20 to-yellow-500/30 blur-xl rotate-45" style={{ width: "320px", height: "320px" }} />
+                
+                {/* Diamond image container */}
+                <div className="relative w-72 h-72 overflow-hidden rotate-45 shadow-2xl" style={{ borderRadius: "24px" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={firstImage.url} alt={firstImage.alt || slide.title} className="absolute inset-0 w-[141%] h-[141%] object-cover -rotate-45 scale-100" style={{ top: "-20%", left: "-20%" }} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-red-900/50 to-transparent -rotate-45" />
+                </div>
+                
+                {/* Border diamond */}
+                <div className="absolute inset-0 w-72 h-72 rotate-45 border-2 border-red-500/40" style={{ borderRadius: "24px" }} />
+                
+                {/* Secondary smaller diamond if multiple images */}
+                {hasMultipleImages && allImages[1] && (
+                  <div className="absolute -bottom-12 -left-8 w-20 h-20 overflow-hidden rotate-45 shadow-xl" style={{ borderRadius: "12px" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={allImages[1].url} alt={allImages[1].alt || ""} className="w-[141%] h-[141%] object-cover -rotate-45" style={{ marginTop: "-20%", marginLeft: "-20%" }} />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Bottom ember line */}
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500/60 via-orange-500/40 to-red-500/60" />
+      </div>
+    );
+  }
+
+  // LAYOUT 17: Ember Cards - Glowing ember-styled cards with fire effects (Ember theme)
+  if (layout === "ember-cards") {
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        
+        {/* Ember background effect */}
+        <div className="absolute inset-0">
+          <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-red-900/30 via-orange-900/15 to-transparent" />
+          <div className="absolute top-1/3 left-1/4 w-[400px] h-[300px] bg-gradient-to-r from-red-600/15 via-orange-500/10 to-red-600/15 rounded-full blur-3xl" />
+        </div>
+        
+        {/* Floating embers */}
+        <div className="absolute top-32 left-20 w-1.5 h-1.5 rounded-full bg-orange-400/50 animate-bounce" style={{ animationDuration: "3s" }} />
+        <div className="absolute top-48 right-32 w-2 h-2 rounded-full bg-red-400/40 animate-bounce" style={{ animationDuration: "4s", animationDelay: "1s" }} />
+        <div className="absolute bottom-40 left-40 w-1 h-1 rounded-full bg-yellow-400/45 animate-bounce" style={{ animationDuration: "3.5s", animationDelay: "0.5s" }} />
+        
+        <SlideIndicator position="top-left" />
+        
+        <div className="relative h-full p-12 pt-20">
+          {/* Title with ember underline */}
+          <div className="mb-8">
+            <Title className="text-3xl md:text-4xl mb-3" />
+            <div className="w-32 h-1 bg-gradient-to-r from-red-500 via-orange-500 to-transparent rounded-full" />
+          </div>
+          
+          {/* Ember-styled cards grid */}
+          {bulletPoints.length > 0 && (
+            <div className="grid grid-cols-2 gap-4 max-w-4xl">
+              {bulletPoints.map((point, i) => (
+                <div key={i} className="relative group">
+                  {/* Card glow on hover */}
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-red-500/0 via-orange-500/0 to-red-500/0 rounded-xl blur opacity-0 group-hover:opacity-50 group-hover:from-red-500/30 group-hover:via-orange-500/20 group-hover:to-red-500/30 transition-all duration-300" />
+                  
+                  <div className={`relative p-5 rounded-xl border backdrop-blur-sm ${colors.cardBg} transition-all group-hover:border-red-500/40`}>
+                    <div className="flex items-start gap-4">
+                      {/* Fire icon number */}
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 bg-gradient-to-br from-red-500/30 to-orange-500/20 border border-red-500/30" style={{ color: colors.accent }}>
+                        {i + 1}
+                      </div>
+                      <EditableText
+                        value={point}
+                        isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                        onStartEdit={() => onStartEditing(index, "bullet", i)}
+                        onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                        onFinish={onFinishEditing}
+                        className="flex-1 text-base leading-relaxed"
+                        style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+                        isOwner={canEdit}
+                        isHovered={isHovered}
+                        onDelete={() => onDeleteBullet(index, i)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {canEdit && isHovered && (
+            <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+              <Plus size={14} /> Add card
+            </button>
+          )}
+        </div>
+        
+        {/* Image in corner with ember frame */}
+        {hasImage && (
+          <div className="absolute bottom-8 right-8 w-52 h-36">
+            <div className="absolute -inset-1 bg-gradient-to-br from-red-500/30 to-orange-500/20 rounded-xl blur" />
+            <div className="relative w-full h-full rounded-xl overflow-hidden border border-red-500/30">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={allImages[0]!.url} alt={allImages[0]!.alt || slide.title} className="w-full h-full object-cover" />
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // LAYOUT 18: Molten Split - Split layout with molten lava effect divider (Ember theme)
+  if (layout === "molten-split") {
+    const firstImage = allImages[0];
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        
+        {/* Molten divider effect */}
+        <div className="absolute top-0 bottom-0 left-1/2 w-2 -translate-x-1/2">
+          <div className="absolute inset-0 bg-gradient-to-b from-red-500/80 via-orange-500/60 to-yellow-500/80 blur-sm" />
+          <div className="absolute inset-0 bg-gradient-to-b from-red-400 via-orange-400 to-red-400 w-0.5 left-1/2 -translate-x-1/2" />
+        </div>
+        
+        {/* Heat waves */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-full">
+          <div className="absolute top-20 left-0 w-full h-1 bg-gradient-to-r from-transparent via-orange-500/20 to-transparent animate-pulse" />
+          <div className="absolute top-40 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-red-500/15 to-transparent animate-pulse" style={{ animationDelay: "0.5s" }} />
+          <div className="absolute top-60 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-500/20 to-transparent animate-pulse" style={{ animationDelay: "1s" }} />
+        </div>
+        
+        {/* Glowing orbs */}
+        <div className={`absolute top-0 left-1/4 w-80 h-80 ${colors.orb1Strong} rounded-full blur-3xl`} />
+        <div className={`absolute bottom-0 right-1/4 w-72 h-72 ${colors.orb2Strong} rounded-full blur-3xl`} />
+        
+        <SlideIndicator position="top-left" />
+        
+        <div className="relative h-full flex">
+          {/* Left content side */}
+          <div className="w-[48%] flex flex-col justify-center p-12 pr-16">
+            <Title className="text-4xl md:text-5xl mb-8" />
+            {bulletPoints.length > 0 && <BulletPoints />}
+          </div>
+          
+          {/* Right image side */}
+          <div className="w-[48%] ml-auto flex items-center justify-center p-12 pl-16">
+            {hasImage && firstImage ? (
+              <div className="relative w-full h-[80%]">
+                {/* Molten glow behind image */}
+                <div className="absolute -inset-4 bg-gradient-to-br from-red-500/25 via-orange-500/15 to-yellow-500/25 rounded-2xl blur-xl" />
+                
+                {/* Image with irregular border */}
+                <div className="relative w-full h-full rounded-2xl overflow-hidden border-2 border-red-500/30 shadow-2xl" style={{ boxShadow: "0 0 40px rgba(239, 68, 68, 0.3)" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={firstImage.url} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#1a0a0a]/60 via-transparent to-transparent" />
+                </div>
+                
+                {/* Secondary image overlay */}
+                {hasMultipleImages && allImages[1] && (
+                  <div className="absolute -bottom-6 -left-6 w-28 h-20 rounded-xl overflow-hidden border border-orange-500/40 shadow-xl">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={allImages[1].url} alt={allImages[1].alt || ""} className="w-full h-full object-cover" />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className={`w-full h-[70%] border-2 border-dashed ${colors.border} rounded-2xl flex items-center justify-center`}>
+                <div className="text-center" style={{ color: colors.textMuted }}>
+                  <ImageIcon size={48} className="mx-auto mb-2 opacity-40" />
+                  <p className="text-sm">Add image</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Bottom molten line */}
+        <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-500/50 via-orange-500/70 to-red-500/50" />
       </div>
     );
   }
