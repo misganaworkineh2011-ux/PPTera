@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   ChevronLeft,
@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import { getThemeById, getDefaultTheme, type Theme } from "~/lib/themes";
 import { type LayoutType } from "~/lib/slide-layouts";
-import { type SlideData, type PresentationData, type EditingState } from "~/components/presentation/types";
+import { type SlideData, type SlideImage, type PresentationData, type EditingState } from "~/components/presentation/types";
 import EditableText from "~/components/presentation/EditableText";
 import SlideRenderer from "~/components/presentation/SlideRenderer";
 import LayoutModal from "~/components/presentation/LayoutModal";
@@ -170,13 +170,67 @@ export default function PresentationViewer({ presentation, mode, isOwner }: Pres
   const [showSlideMenu, setShowSlideMenu] = useState<number | null>(null);
   const [editingText, setEditingText] = useState<EditingState | null>(null);
   const [showImageModal, setShowImageModal] = useState<number | null>(null);
+  const [editingImageIndex, setEditingImageIndex] = useState<number | null>(null); // null = adding new, number = editing existing
   const [imageUrl, setImageUrl] = useState("");
   const [isLoadingImage, setIsLoadingImage] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const slidesRef = useRef<SlideData[]>(presentation.slides);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const slides = slidesData;
   const { content } = presentation;
   const theme = getThemeById(content.theme || "") || getDefaultTheme();
   const fontsUrl = getGoogleFontsUrl(theme);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    slidesRef.current = slidesData;
+  }, [slidesData]);
+
+  // Auto-save slides when they change - using ref-based debounce to avoid re-render issues
+  const saveSlides = useCallback(async () => {
+    if (!isOwner) return;
+    setIsSaving(true);
+    try {
+      const response = await fetch(`/api/presentations/${presentation.id}/slides`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slides: slidesRef.current }),
+      });
+      if (response.ok) {
+        setHasUnsavedChanges(false);
+      }
+    } catch (error) {
+      console.error("Failed to save slides:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [isOwner, presentation.id]);
+
+  // Mark as having unsaved changes and schedule save
+  const updateSlidesWithSave = useCallback((newSlides: SlideData[]) => {
+    setSlidesData(newSlides);
+    slidesRef.current = newSlides;
+    setHasUnsavedChanges(true);
+    
+    // Clear existing timeout and set new one
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    saveTimeoutRef.current = setTimeout(() => {
+      saveSlides();
+    }, 2000);
+  }, [saveSlides]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Title save
   const handleSaveTitle = async () => {
@@ -305,7 +359,7 @@ export default function PresentationViewer({ presentation, mode, isOwner }: Pres
       slide.bulletPoints = bullets;
     }
     newSlides[slideIndex] = slide;
-    setSlidesData(newSlides);
+    updateSlidesWithSave(newSlides);
   };
 
   const changeSlideLayout = (slideIndex: number, layoutId: LayoutType) => {
@@ -313,7 +367,7 @@ export default function PresentationViewer({ presentation, mode, isOwner }: Pres
     const existingSlide = newSlides[slideIndex];
     if (existingSlide) {
       newSlides[slideIndex] = { ...existingSlide, layout: layoutId };
-      setSlidesData(newSlides);
+      updateSlidesWithSave(newSlides);
     }
     setShowLayoutModal(false);
   };
@@ -323,7 +377,7 @@ export default function PresentationViewer({ presentation, mode, isOwner }: Pres
     if (original) {
       const newSlides = [...slidesData];
       newSlides.splice(index + 1, 0, { ...original });
-      setSlidesData(newSlides);
+      updateSlidesWithSave(newSlides);
       setCurrentSlide(index + 1);
     }
     setShowSlideMenu(null);
@@ -338,7 +392,7 @@ export default function PresentationViewer({ presentation, mode, isOwner }: Pres
     };
     const newSlides = [...slidesData];
     newSlides.splice(index + 1, 0, newSlide);
-    setSlidesData(newSlides);
+    updateSlidesWithSave(newSlides);
     setCurrentSlide(index + 1);
     setShowSlideMenu(null);
   };
@@ -346,7 +400,7 @@ export default function PresentationViewer({ presentation, mode, isOwner }: Pres
   const deleteSlide = (index: number) => {
     if (slidesData.length <= 1) return;
     const newSlides = slidesData.filter((_, i) => i !== index);
-    setSlidesData(newSlides);
+    updateSlidesWithSave(newSlides);
     if (currentSlide >= newSlides.length) setCurrentSlide(newSlides.length - 1);
     setShowSlideMenu(null);
   };
@@ -360,7 +414,7 @@ export default function PresentationViewer({ presentation, mode, isOwner }: Pres
     if (slideA && slideB) {
       newSlides[index] = slideB;
       newSlides[newIndex] = slideA;
-      setSlidesData(newSlides);
+      updateSlidesWithSave(newSlides);
       setCurrentSlide(newIndex);
     }
     setShowSlideMenu(null);
@@ -371,7 +425,7 @@ export default function PresentationViewer({ presentation, mode, isOwner }: Pres
     if (slide) {
       const newSlides = [...slidesData];
       newSlides[slideIndex] = { ...slide, bulletPoints: [...(slide.bulletPoints || []), "New point"] };
-      setSlidesData(newSlides);
+      updateSlidesWithSave(newSlides);
     }
   };
 
@@ -380,7 +434,7 @@ export default function PresentationViewer({ presentation, mode, isOwner }: Pres
     if (slide) {
       const newSlides = [...slidesData];
       newSlides[slideIndex] = { ...slide, bulletPoints: (slide.bulletPoints || []).filter((_, i) => i !== bulletIndex) };
-      setSlidesData(newSlides);
+      updateSlidesWithSave(newSlides);
     }
   };
 
@@ -388,31 +442,83 @@ export default function PresentationViewer({ presentation, mode, isOwner }: Pres
     setEditingText({ slideIndex, field, bulletIndex });
   };
 
-  const updateSlideImage = (slideIndex: number, imageUrl: string) => {
+  // Get all images from a slide (combines legacy image with images array)
+  const getSlideImages = (slide: SlideData) => {
+    const images = [...(slide.images || [])];
+    // Include legacy single image if it exists and isn't already in images array
+    if (slide.image?.url && !images.some(img => img.url === slide.image?.url)) {
+      images.unshift(slide.image);
+    }
+    return images;
+  };
+
+  const addSlideImage = (slideIndex: number, newImageUrl: string) => {
     const slide = slidesData[slideIndex];
-    if (slide) {
+    if (slide && newImageUrl) {
       const newSlides = [...slidesData];
+      const currentImages = getSlideImages(slide);
+      const newImage = {
+        url: newImageUrl,
+        alt: slide.title,
+        source: "custom",
+      };
       newSlides[slideIndex] = {
         ...slide,
-        image: imageUrl ? {
-          url: imageUrl,
-          alt: slide.title,
-          source: "custom",
-        } : null,
+        images: [...currentImages, newImage],
+        image: currentImages.length === 0 ? newImage : slide.image, // Keep first image as legacy for compatibility
       };
-      setSlidesData(newSlides);
+      updateSlidesWithSave(newSlides);
     }
     setShowImageModal(null);
     setImageUrl("");
   };
 
-  const removeSlideImage = (slideIndex: number) => {
+  const updateSlideImage = (slideIndex: number, imageIndex: number, newImageUrl: string) => {
     const slide = slidesData[slideIndex];
     if (slide) {
       const newSlides = [...slidesData];
-      newSlides[slideIndex] = { ...slide, image: null };
-      setSlidesData(newSlides);
+      const currentImages = [...getSlideImages(slide)];
+      if (newImageUrl) {
+        currentImages[imageIndex] = {
+          url: newImageUrl,
+          alt: slide.title,
+          source: "custom",
+        };
+      }
+      newSlides[slideIndex] = {
+        ...slide,
+        images: currentImages,
+        image: currentImages[0] || null, // Keep first image as legacy
+      };
+      updateSlidesWithSave(newSlides);
     }
+    setShowImageModal(null);
+    setImageUrl("");
+    setEditingImageIndex(null);
+  };
+
+  const removeSlideImage = (slideIndex: number, imageIndex?: number) => {
+    const slide = slidesData[slideIndex];
+    if (slide) {
+      const newSlides = [...slidesData];
+      const currentImages = getSlideImages(slide);
+      
+      if (imageIndex !== undefined) {
+        // Remove specific image
+        currentImages.splice(imageIndex, 1);
+      } else {
+        // Remove all images (legacy behavior)
+        currentImages.length = 0;
+      }
+      
+      newSlides[slideIndex] = { 
+        ...slide, 
+        images: currentImages,
+        image: currentImages[0] || null,
+      };
+      updateSlidesWithSave(newSlides);
+    }
+    setEditingImageIndex(null);
   };
 
   const currentSlideData = slides[currentSlide];
@@ -517,13 +623,13 @@ export default function PresentationViewer({ presentation, mode, isOwner }: Pres
             index={index}
             totalSlides={slides.length}
             showMenu={showSlideMenu === index}
-            hasImage={!!hasImage}
+            imageCount={getSlideImages(slide).length}
             onToggleMenu={() => setShowSlideMenu(showSlideMenu === index ? null : index)}
-            onChangeLayout={() => { setShowLayoutModal(true); setShowSlideMenu(null); }}
+            onChangeLayout={() => { setActiveSlideIndex(index); setShowLayoutModal(true); setShowSlideMenu(null); }}
             onDuplicate={() => duplicateSlide(index)}
             onAddSlide={() => addSlideAt(index)}
-            onEditImage={() => { setShowImageModal(index); setImageUrl(slide.image?.url || ""); setShowSlideMenu(null); }}
-            onRemoveImage={() => { removeSlideImage(index); setShowSlideMenu(null); }}
+            onAddImage={() => { setShowImageModal(index); setEditingImageIndex(null); setImageUrl(""); setShowSlideMenu(null); }}
+            onManageImages={() => { setShowImageModal(index); setEditingImageIndex(null); setImageUrl(""); setShowSlideMenu(null); }}
             onMoveUp={() => moveSlide(index, "up")}
             onMoveDown={() => moveSlide(index, "down")}
             onDelete={() => deleteSlide(index)}
@@ -636,6 +742,8 @@ export default function PresentationViewer({ presentation, mode, isOwner }: Pres
             showThumbnails={showThumbnails}
             isOwner={isOwner}
             theme={theme}
+            isSaving={isSaving}
+            hasUnsavedChanges={hasUnsavedChanges}
             onBack={() => router.push("/dashboard")}
             onEditTitle={() => setIsEditingTitle(true)}
             onTitleChange={setEditedTitle}
@@ -757,15 +865,19 @@ export default function PresentationViewer({ presentation, mode, isOwner }: Pres
         )}
 
         {showImageModal !== null && (
-          <ImageModal
-            currentImage={slides[showImageModal]?.image?.url}
+          <MultiImageModal
+            images={getSlideImages(slides[showImageModal]!)}
             imageUrl={imageUrl}
+            editingIndex={editingImageIndex}
             isLoading={isLoadingImage}
             theme={theme}
             onUrlChange={setImageUrl}
-            onSave={() => updateSlideImage(showImageModal, imageUrl)}
-            onRemove={() => { removeSlideImage(showImageModal); setShowImageModal(null); }}
-            onClose={() => { setShowImageModal(null); setImageUrl(""); }}
+            onAddImage={() => addSlideImage(showImageModal, imageUrl)}
+            onUpdateImage={(idx) => updateSlideImage(showImageModal, idx, imageUrl)}
+            onRemoveImage={(idx) => removeSlideImage(showImageModal, idx)}
+            onEditImage={(idx) => { setEditingImageIndex(idx); setImageUrl(getSlideImages(slides[showImageModal]!)[idx]?.url || ""); }}
+            onCancelEdit={() => { setEditingImageIndex(null); setImageUrl(""); }}
+            onClose={() => { setShowImageModal(null); setImageUrl(""); setEditingImageIndex(null); }}
           />
         )}
 
@@ -781,10 +893,12 @@ export default function PresentationViewer({ presentation, mode, isOwner }: Pres
 // Sub-components
 function Header({
   title, editedTitle, isEditingTitle, slidesCount, mode, viewMode, showThumbnails, isOwner, theme,
+  isSaving, hasUnsavedChanges,
   onBack, onEditTitle, onTitleChange, onSaveTitle, onCancelEditTitle, onToggleViewMode, onToggleThumbnails, onExport, onShare, onPresent,
 }: {
   title: string; editedTitle: string; isEditingTitle: boolean; slidesCount: number; mode: string;
   viewMode: "slides" | "scroll"; showThumbnails: boolean; isOwner: boolean; theme: Theme;
+  isSaving?: boolean; hasUnsavedChanges?: boolean;
   onBack: () => void; onEditTitle: () => void; onTitleChange: (v: string) => void; onSaveTitle: () => void;
   onCancelEditTitle: () => void; onToggleViewMode: () => void; onToggleThumbnails: () => void;
   onExport: () => void; onShare: () => void; onPresent: () => void;
@@ -824,7 +938,20 @@ function Header({
                 {title}
               </h1>
             )}
-            <p className={`text-xs ${ui.headerMuted}`}>{slidesCount} slides{mode === "ai" && " • AI"}</p>
+            <div className="flex items-center gap-2">
+              <p className={`text-xs ${ui.headerMuted}`}>{slidesCount} slides{mode === "ai" && " • AI"}</p>
+              {isSaving && (
+                <span className={`text-xs ${ui.headerMuted} flex items-center gap-1`}>
+                  <Loader2 size={10} className="animate-spin" /> Saving...
+                </span>
+              )}
+              {!isSaving && hasUnsavedChanges && (
+                <span className={`text-xs ${ui.headerMuted}`}>• Unsaved</span>
+              )}
+              {!isSaving && !hasUnsavedChanges && isOwner && (
+                <span className="text-xs text-emerald-500">• Saved</span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -875,11 +1002,11 @@ function Header({
 }
 
 function SlideMenu({
-  index, totalSlides, showMenu, hasImage, onToggleMenu, onChangeLayout, onDuplicate, onAddSlide, onEditImage, onRemoveImage, onMoveUp, onMoveDown, onDelete,
+  index, totalSlides, showMenu, imageCount, onToggleMenu, onChangeLayout, onDuplicate, onAddSlide, onAddImage, onManageImages, onMoveUp, onMoveDown, onDelete,
 }: {
-  index: number; totalSlides: number; showMenu: boolean; hasImage: boolean;
+  index: number; totalSlides: number; showMenu: boolean; imageCount: number;
   onToggleMenu: () => void; onChangeLayout: () => void; onDuplicate: () => void; onAddSlide: () => void;
-  onEditImage: () => void; onRemoveImage: () => void;
+  onAddImage: () => void; onManageImages: () => void;
   onMoveUp: () => void; onMoveDown: () => void; onDelete: () => void;
 }) {
   const handleAction = (action: () => void) => (e: React.MouseEvent) => {
@@ -903,14 +1030,10 @@ function SlideMenu({
             <PlusCircle size={16} />Add Slide After
           </button>
           <div className="border-t border-zinc-700 my-1" />
-          <button onMouseDown={(e) => e.stopPropagation()} onClick={handleAction(onEditImage)} className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-cyan-400 hover:bg-cyan-900/30">
-            <ImagePlus size={16} />{hasImage ? "Change Image" : "Add Image"}
+          <button onMouseDown={(e) => e.stopPropagation()} onClick={handleAction(onAddImage)} className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-cyan-400 hover:bg-cyan-900/30">
+            <ImagePlus size={16} />
+            {imageCount > 0 ? `Manage Images (${imageCount})` : "Add Image"}
           </button>
-          {hasImage && (
-            <button onMouseDown={(e) => e.stopPropagation()} onClick={handleAction(onRemoveImage)} className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-orange-400 hover:bg-orange-900/30">
-              <ImageOff size={16} />Remove Image
-            </button>
-          )}
           <div className="border-t border-zinc-700 my-1" />
           <button onMouseDown={(e) => e.stopPropagation()} onClick={handleAction(onChangeLayout)} className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-zinc-300 hover:bg-zinc-800">
             <LayoutGrid size={16} />Change Layout
@@ -1228,43 +1351,75 @@ function NavigationControls({
   );
 }
 
-function ImageModal({
-  currentImage, imageUrl, isLoading, theme, onUrlChange, onSave, onRemove, onClose,
+function MultiImageModal({
+  images, imageUrl, editingIndex, isLoading, theme, onUrlChange, onAddImage, onUpdateImage, onRemoveImage, onEditImage, onCancelEdit, onClose,
 }: {
-  currentImage?: string; imageUrl: string; isLoading: boolean; theme: Theme;
-  onUrlChange: (url: string) => void; onSave: () => void; onRemove: () => void; onClose: () => void;
+  images: SlideImage[]; imageUrl: string; editingIndex: number | null; isLoading: boolean; theme: Theme;
+  onUrlChange: (url: string) => void; onAddImage: () => void; onUpdateImage: (idx: number) => void;
+  onRemoveImage: (idx: number) => void; onEditImage: (idx: number) => void; onCancelEdit: () => void; onClose: () => void;
 }) {
   const themeType = getThemeType(theme);
   const isDark = themeType !== "light";
+  const isEditing = editingIndex !== null;
   
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div 
-        className={`w-full max-w-lg rounded-2xl shadow-2xl ${isDark ? "bg-zinc-900 border border-zinc-700" : "bg-white border border-slate-200"}`}
+        className={`w-full max-w-2xl rounded-2xl shadow-2xl ${isDark ? "bg-zinc-900 border border-zinc-700" : "bg-white border border-slate-200"}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className={`flex items-center justify-between p-4 border-b ${isDark ? "border-zinc-700" : "border-slate-200"}`}>
           <h3 className={`text-lg font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>
-            {currentImage ? "Change Image" : "Add Image"}
+            Manage Images {images.length > 0 && `(${images.length})`}
           </h3>
           <button onClick={onClose} className={`p-1 rounded-lg transition-colors ${isDark ? "hover:bg-zinc-800 text-zinc-400" : "hover:bg-slate-100 text-slate-500"}`}>
             <X size={20} />
           </button>
         </div>
         
-        <div className="p-4 space-y-4">
-          {currentImage && (
-            <div className="relative aspect-video rounded-lg overflow-hidden bg-zinc-800">
-              <img src={currentImage} alt="Current" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                <span className="text-white text-sm">Current image</span>
+        <div className="p-4 space-y-4 max-h-[60vh] overflow-y-auto">
+          {/* Existing images grid */}
+          {images.length > 0 && (
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${isDark ? "text-zinc-300" : "text-slate-700"}`}>
+                Current Images
+              </label>
+              <div className="grid grid-cols-3 gap-3">
+                {images.map((img, idx) => (
+                  <div key={idx} className={`relative group rounded-lg overflow-hidden border ${editingIndex === idx ? "ring-2" : ""} ${isDark ? "border-zinc-700" : "border-slate-200"}`} style={editingIndex === idx ? { borderColor: theme.colors.primary } : {}}>
+                    <div className="aspect-video">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={img.url} alt={img.alt} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => onEditImage(idx)}
+                        className="p-2 rounded-lg bg-white/20 hover:bg-white/30 text-white transition-colors"
+                        title="Edit"
+                      >
+                        <ImagePlus size={16} />
+                      </button>
+                      <button
+                        onClick={() => onRemoveImage(idx)}
+                        className="p-2 rounded-lg bg-red-500/80 hover:bg-red-500 text-white transition-colors"
+                        title="Remove"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                    <div className={`absolute bottom-1 left-1 px-1.5 py-0.5 rounded text-xs font-medium ${isDark ? "bg-black/60 text-white" : "bg-white/80 text-slate-700"}`}>
+                      {idx + 1}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
           
-          <div>
+          {/* Add/Edit image form */}
+          <div className={`p-4 rounded-lg border ${isDark ? "border-zinc-700 bg-zinc-800/50" : "border-slate-200 bg-slate-50"}`}>
             <label className={`block text-sm font-medium mb-2 ${isDark ? "text-zinc-300" : "text-slate-700"}`}>
-              Image URL
+              {isEditing ? `Edit Image ${editingIndex! + 1}` : "Add New Image"}
             </label>
             <input
               type="url"
@@ -1279,51 +1434,62 @@ function ImageModal({
               style={{ ["--tw-ring-color" as string]: theme.colors.primary }}
             />
             <p className={`mt-2 text-xs ${isDark ? "text-zinc-500" : "text-slate-500"}`}>
-              Paste a direct link to an image (JPG, PNG, WebP)
+              Paste a direct link to an image (JPG, PNG, WebP). Add multiple images for gallery layouts.
             </p>
-          </div>
-          
-          {imageUrl && (
-            <div className="aspect-video rounded-lg overflow-hidden bg-zinc-800 border border-dashed border-zinc-600">
-              <img 
-                src={imageUrl} 
-                alt="Preview" 
-                className="w-full h-full object-cover"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-              />
+            
+            {imageUrl && (
+              <div className="mt-3 aspect-video rounded-lg overflow-hidden bg-zinc-800 border border-dashed border-zinc-600 max-w-xs">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img 
+                  src={imageUrl} 
+                  alt="Preview" 
+                  className="w-full h-full object-cover"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                />
+              </div>
+            )}
+            
+            <div className="flex items-center gap-2 mt-3">
+              {isEditing ? (
+                <>
+                  <button
+                    onClick={() => onUpdateImage(editingIndex!)}
+                    disabled={!imageUrl || isLoading}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-white transition-colors disabled:opacity-50"
+                    style={{ backgroundColor: theme.colors.primary }}
+                  >
+                    {isLoading ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
+                    Update
+                  </button>
+                  <button
+                    onClick={onCancelEdit}
+                    className={`px-4 py-2 rounded-lg transition-colors ${isDark ? "text-zinc-400 hover:bg-zinc-700" : "text-slate-600 hover:bg-slate-200"}`}
+                  >
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={onAddImage}
+                  disabled={!imageUrl || isLoading}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-white transition-colors disabled:opacity-50"
+                  style={{ backgroundColor: theme.colors.primary }}
+                >
+                  {isLoading ? <Loader2 size={16} className="animate-spin" /> : <ImagePlus size={16} />}
+                  Add Image
+                </button>
+              )}
             </div>
-          )}
+          </div>
         </div>
         
-        <div className={`flex items-center justify-between p-4 border-t ${isDark ? "border-zinc-700" : "border-slate-200"}`}>
-          <div>
-            {currentImage && (
-              <button
-                onClick={onRemove}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-red-400 hover:bg-red-900/20 transition-colors"
-              >
-                <ImageOff size={16} />
-                Remove
-              </button>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onClose}
-              className={`px-4 py-2 rounded-lg transition-colors ${isDark ? "text-zinc-400 hover:bg-zinc-800" : "text-slate-600 hover:bg-slate-100"}`}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={onSave}
-              disabled={!imageUrl || isLoading}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-white transition-colors disabled:opacity-50"
-              style={{ backgroundColor: theme.colors.primary }}
-            >
-              {isLoading ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
-              Save
-            </button>
-          </div>
+        <div className={`flex items-center justify-end p-4 border-t ${isDark ? "border-zinc-700" : "border-slate-200"}`}>
+          <button
+            onClick={onClose}
+            className={`px-4 py-2 rounded-lg transition-colors ${isDark ? "text-zinc-400 hover:bg-zinc-800" : "text-slate-600 hover:bg-slate-100"}`}
+          >
+            Done
+          </button>
         </div>
       </div>
     </div>

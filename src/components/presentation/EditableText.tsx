@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Type, Trash2 } from "lucide-react";
 
 interface EditableTextProps {
@@ -29,31 +29,57 @@ export default function EditableText({
   onDelete,
 }: EditableTextProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
-
+  // Use local state for editing to prevent re-render issues
+  const [localValue, setLocalValue] = useState(value);
+  
+  // Sync local value when value prop changes and not editing
   useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
+    if (!isEditing) {
+      setLocalValue(value);
     }
-  }, [isEditing]);
+  }, [value, isEditing]);
+
+  // Initialize local value when starting to edit
+  useEffect(() => {
+    if (isEditing) {
+      setLocalValue(value);
+      // Focus and select after a small delay to ensure the element is rendered
+      requestAnimationFrame(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+          inputRef.current.select();
+        }
+      });
+    }
+  }, [isEditing, value]);
+
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    setLocalValue(newValue);
+    onChange(newValue);
+  }, [onChange]);
+
+  const handleFinish = useCallback(() => {
+    onFinish();
+  }, [onFinish]);
 
   if (isEditing) {
     return (
       <div className="relative">
         <textarea
           ref={inputRef}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onBlur={onFinish}
+          value={localValue}
+          onChange={handleChange}
+          onBlur={handleFinish}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
-              onFinish();
+              handleFinish();
             }
-            if (e.key === "Escape") onFinish();
+            if (e.key === "Escape") handleFinish();
           }}
           className={`${className} bg-white/90 backdrop-blur-sm rounded-lg p-3 resize-none w-full border-2 border-[#06b6d4] shadow-lg focus:outline-none`}
-          style={{ ...style, minHeight: "60px" }}
+          style={{ ...style, minHeight: "60px", color: "#1e293b" }}
           rows={3}
         />
       </div>

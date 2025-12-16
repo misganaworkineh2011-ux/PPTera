@@ -1,17 +1,21 @@
 import { type LayoutType } from "~/lib/slide-layouts";
 
+export interface SlideImage {
+  url: string;
+  alt: string;
+  photographer?: string;
+  photographerUrl?: string;
+  source: string;
+}
+
 export interface SlideData {
   type: "title" | "content";
   title: string;
   subtitle?: string;
   bulletPoints?: string[];
-  image?: {
-    url: string;
-    alt: string;
-    photographer?: string;
-    photographerUrl?: string;
-    source: string;
-  } | null;
+  // Support both single image (legacy) and multiple images
+  image?: SlideImage | null;
+  images?: SlideImage[];
   layout?: LayoutType;
 }
 

@@ -34,7 +34,44 @@ function getThemeType(theme: Theme): ThemeType {
 }
 
 // Different layout sequences per theme for variety
-function getLayoutVariant(index: number, themeType: ThemeType): LayoutVariant {
+function getLayoutVariant(index: number, themeType: ThemeType, slideLayout?: string): LayoutVariant {
+  // If slide has a specific layout set, map it to our layout variants
+  if (slideLayout) {
+    const layoutMap: Record<string, LayoutVariant> = {
+      // From slide-layouts.ts LayoutType
+      "title-center": "centered",
+      "title-left": "left-content",
+      "content-left-image-right": "left-content",
+      "content-right-image-left": "right-content",
+      "content-grid-2": "cards-grid",
+      "content-grid-3": "cards-grid",
+      "content-grid-4": "cards-grid",
+      "content-cards-2": "cards-grid",
+      "content-cards-3": "cards-grid",
+      "content-full-image": "image-focus",
+      "content-split-diagonal": "split-diagonal",
+      "content-timeline": "timeline",
+      "content-comparison": "cards-grid",
+      "content-quote": "quote-style",
+      "content-stats": "cards-grid",
+      "content-centered-image": "centered",
+      "content-feature-showcase": "image-focus",
+      // Direct mappings for internal layout variants
+      "left-content": "left-content",
+      "right-content": "right-content",
+      "centered": "centered",
+      "split-diagonal": "split-diagonal",
+      "image-focus": "image-focus",
+      "minimal-left": "minimal-left",
+      "cards-grid": "cards-grid",
+      "quote-style": "quote-style",
+      "timeline": "timeline",
+    };
+    const mappedLayout = layoutMap[slideLayout];
+    if (mappedLayout) return mappedLayout;
+  }
+  
+  // Default: cycle through theme-specific layouts
   const layoutsByTheme: Record<ThemeType, LayoutVariant[]> = {
     dark: ["left-content", "image-focus", "right-content", "split-diagonal", "minimal-left", "centered"],
     light: ["centered", "left-content", "cards-grid", "right-content", "quote-style", "minimal-left"],
@@ -44,15 +81,27 @@ function getLayoutVariant(index: number, themeType: ThemeType): LayoutVariant {
   return layouts[index % layouts.length]!;
 }
 
+// Helper to get all images from a slide (combines legacy image with images array)
+function getSlideImages(slide: SlideData) {
+  const images = [...(slide.images || [])];
+  // Include legacy single image if it exists and isn't already in images array
+  if (slide.image?.url && slide.image.source !== "placeholder" && !images.some(img => img.url === slide.image?.url)) {
+    images.unshift(slide.image);
+  }
+  return images.filter(img => img.url && img.source !== "placeholder");
+}
+
 export default function SlideRenderer({
   slide, index, totalSlides, theme, isOwner, isFullscreen, isHovered, isEditing,
   editingText, onStartEditing, onUpdateContent, onFinishEditing, onAddBullet, onDeleteBullet,
 }: SlideRendererProps) {
-  const hasImage = slide.image?.url && slide.image.source !== "placeholder";
+  const allImages = getSlideImages(slide);
+  const hasImage = allImages.length > 0;
+  const hasMultipleImages = allImages.length > 1;
   const bulletPoints = slide.bulletPoints || [];
   const canEdit = isOwner && !isFullscreen;
   const themeType = getThemeType(theme);
-  const layout = getLayoutVariant(index, themeType);
+  const layout = getLayoutVariant(index, themeType, slide.layout);
 
   // Theme-aware colors for all three themes
   const colorMap = {
@@ -192,22 +241,91 @@ export default function SlideRenderer({
     </div>
   );
 
-  const ImageBlock = ({ className = "", size = "large" }: { className?: string; size?: "small" | "medium" | "large" }) => {
-    if (!hasImage) return null;
+  // Single image block (uses first image)
+  const ImageBlock = ({ className = "", size = "large", imageIndex = 0 }: { className?: string; size?: "small" | "medium" | "large"; imageIndex?: number }) => {
+    const img = allImages[imageIndex];
+    if (!img) return null;
     const sizeClass = size === "small" ? "max-h-[50%]" : size === "medium" ? "max-h-[70%]" : "max-h-[85%]";
     return (
       <div className={`relative ${sizeClass} ${className}`}>
         <div className={`absolute inset-0 bg-gradient-to-br ${colors.accentBorder} rounded-lg`} />
         <div className={`absolute inset-[1px] ${colors.surface} rounded-lg overflow-hidden`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={slide.image!.url} alt={slide.image!.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
+          <img src={img.url} alt={img.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
           <div className={`absolute inset-0 bg-gradient-to-t ${colors.overlay} via-transparent to-transparent`} />
         </div>
-        {slide.image?.source === "pexels" && slide.image.photographer && (
+        {img.source === "pexels" && img.photographer && (
           <div className={`absolute bottom-3 right-3 backdrop-blur-sm text-xs px-2 py-1 rounded ${themeType === "light" ? "bg-white/80" : "bg-black/60"}`} style={{ color: colors.textMuted }}>
-            <a href={slide.image.photographerUrl} target="_blank" rel="noopener noreferrer" style={{ color: colors.accent }}>{slide.image.photographer}</a>
+            <a href={img.photographerUrl} target="_blank" rel="noopener noreferrer" style={{ color: colors.accent }}>{img.photographer}</a>
           </div>
         )}
+      </div>
+    );
+  };
+
+  // Image gallery for multiple images
+  const ImageGallery = ({ className = "", layout: galleryLayout = "grid" }: { className?: string; layout?: "grid" | "row" | "stack" }) => {
+    if (allImages.length === 0) return null;
+    
+    // Single image - just show it
+    if (allImages.length === 1) {
+      return <ImageBlock className={className} />;
+    }
+    
+    // Multiple images - show in gallery
+    if (galleryLayout === "row") {
+      return (
+        <div className={`flex gap-3 ${className}`}>
+          {allImages.slice(0, 3).map((img, idx) => (
+            <div key={idx} className="flex-1 relative rounded-lg overflow-hidden" style={{ aspectRatio: "4/3" }}>
+              <div className={`absolute inset-0 bg-gradient-to-br ${colors.accentBorder} rounded-lg`} />
+              <div className={`absolute inset-[1px] ${colors.surface} rounded-lg overflow-hidden`}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={img.url} alt={img.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    
+    if (galleryLayout === "stack") {
+      // Stacked/overlapping style
+      return (
+        <div className={`relative ${className}`} style={{ height: "100%" }}>
+          {allImages.slice(0, 3).map((img, idx) => (
+            <div 
+              key={idx} 
+              className={`absolute rounded-lg overflow-hidden shadow-xl border ${colors.border}`}
+              style={{ 
+                width: `${85 - idx * 10}%`, 
+                height: `${85 - idx * 10}%`,
+                top: `${idx * 8}%`,
+                left: `${idx * 8}%`,
+                zIndex: allImages.length - idx,
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={img.url} alt={img.alt || slide.title} className="w-full h-full object-cover" />
+            </div>
+          ))}
+        </div>
+      );
+    }
+    
+    // Grid layout (default)
+    const gridCols = allImages.length === 2 ? "grid-cols-2" : allImages.length === 3 ? "grid-cols-3" : "grid-cols-2";
+    return (
+      <div className={`grid ${gridCols} gap-3 ${className}`}>
+        {allImages.slice(0, 4).map((img, idx) => (
+          <div key={idx} className="relative rounded-lg overflow-hidden" style={{ aspectRatio: allImages.length <= 2 ? "16/9" : "4/3" }}>
+            <div className={`absolute inset-0 bg-gradient-to-br ${colors.accentBorder} rounded-lg`} />
+            <div className={`absolute inset-[1px] ${colors.surface} rounded-lg overflow-hidden`}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={img.url} alt={img.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
+            </div>
+          </div>
+        ))}
       </div>
     );
   };
@@ -222,7 +340,7 @@ export default function SlideRenderer({
   );
 
 
-  // LAYOUT 1: Left Content - Image Right
+  // LAYOUT 1: Left Content - Image Right (supports multiple images in stack layout)
   if (layout === "left-content") {
     return (
       <div className="h-full relative overflow-hidden">
@@ -240,7 +358,11 @@ export default function SlideRenderer({
           
           {hasImage && (
             <div className="w-[45%] relative flex items-center justify-center p-8">
-              <ImageBlock className="w-full h-full" />
+              {hasMultipleImages ? (
+                <ImageGallery className="w-full h-full" layout="stack" />
+              ) : (
+                <ImageBlock className="w-full h-full" />
+              )}
             </div>
           )}
           {slide.image?.source === "placeholder" && <div className="w-[45%] p-8"><Placeholder /></div>}
@@ -250,7 +372,7 @@ export default function SlideRenderer({
     );
   }
 
-  // LAYOUT 2: Right Content - Image Left
+  // LAYOUT 2: Right Content - Image Left (supports multiple images in stack layout)
   if (layout === "right-content") {
     return (
       <div className="h-full relative overflow-hidden">
@@ -268,7 +390,11 @@ export default function SlideRenderer({
           
           {hasImage && (
             <div className="w-[45%] relative flex items-center justify-center p-8">
-              <ImageBlock className="w-full h-full" />
+              {hasMultipleImages ? (
+                <ImageGallery className="w-full h-full" layout="stack" />
+              ) : (
+                <ImageBlock className="w-full h-full" />
+              )}
             </div>
           )}
           {slide.image?.source === "placeholder" && <div className="w-[45%] p-8"><Placeholder /></div>}
@@ -289,8 +415,14 @@ export default function SlideRenderer({
         
         <div className="relative h-full flex flex-col items-center justify-center p-12 text-center">
           {hasImage && (
-            <div className="w-full max-w-2xl h-48 mb-8 relative">
-              <ImageBlock className="w-full h-full" size="medium" />
+            <div className={`w-full ${hasMultipleImages ? "max-w-4xl" : "max-w-2xl"} mb-8 relative`}>
+              {hasMultipleImages ? (
+                <ImageGallery className="w-full" layout="row" />
+              ) : (
+                <div className="h-48">
+                  <ImageBlock className="w-full h-full" size="medium" />
+                </div>
+              )}
             </div>
           )}
           
@@ -309,14 +441,15 @@ export default function SlideRenderer({
 
   // LAYOUT 4: Split Diagonal
   if (layout === "split-diagonal") {
+    const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
         <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
         
-        {hasImage && (
+        {hasImage && firstImage && (
           <div className="absolute inset-0 clip-diagonal">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={slide.image!.url} alt={slide.image!.alt || slide.title} className={`absolute inset-0 w-full h-full object-cover ${themeType === "light" ? "opacity-20" : "opacity-30"}`} />
+            <img src={firstImage.url} alt={firstImage.alt || slide.title} className={`absolute inset-0 w-full h-full object-cover ${themeType === "light" ? "opacity-20" : "opacity-30"}`} />
             <div className={`absolute inset-0 ${colors.imgOverlay}`} />
           </div>
         )}
@@ -339,7 +472,11 @@ export default function SlideRenderer({
             <div className="w-[40%] relative flex items-center justify-end p-8">
               <div className="relative w-[90%] h-[70%]">
                 <div className={`absolute -inset-2 bg-gradient-to-br ${colors.accentGlow} rounded-lg blur-sm`} />
-                <ImageBlock className="w-full h-full" size="large" />
+                {hasMultipleImages ? (
+                  <ImageGallery className="w-full h-full" layout="grid" />
+                ) : (
+                  <ImageBlock className="w-full h-full" size="large" />
+                )}
               </div>
             </div>
           )}
@@ -350,14 +487,15 @@ export default function SlideRenderer({
     );
   }
 
-  // LAYOUT 5: Image Focus - Full bleed with overlay
+  // LAYOUT 5: Image Focus - Full bleed with overlay (multiple images show as thumbnails)
   if (layout === "image-focus") {
+    const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        {hasImage ? (
+        {hasImage && firstImage ? (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={slide.image!.url} alt={slide.image!.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
+            <img src={firstImage.url} alt={firstImage.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
             <div className={`absolute inset-0 ${colors.fullOverlay}`} />
             <div className={`absolute inset-0 ${colors.sideOverlay}`} />
           </>
@@ -384,9 +522,21 @@ export default function SlideRenderer({
           </div>
         </div>
         
-        {slide.image?.source === "pexels" && slide.image.photographer && (
+        {/* Show additional images as thumbnails in corner */}
+        {hasMultipleImages && (
+          <div className="absolute top-4 right-4 flex gap-2">
+            {allImages.slice(1, 4).map((img, idx) => (
+              <div key={idx} className="w-16 h-12 rounded-lg overflow-hidden border-2 border-white/30 shadow-lg">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={img.url} alt={img.alt || ""} className="w-full h-full object-cover" />
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {firstImage?.source === "pexels" && firstImage.photographer && (
           <div className={`absolute bottom-4 right-4 backdrop-blur-sm text-xs px-3 py-1.5 rounded ${themeType === "light" ? "bg-white/80" : "bg-black/60"}`} style={{ color: colors.textMuted }}>
-            <a href={slide.image.photographerUrl} target="_blank" rel="noopener noreferrer" style={{ color: colors.accent }}>{slide.image.photographer}</a>
+            <a href={firstImage.photographerUrl} target="_blank" rel="noopener noreferrer" style={{ color: colors.accent }}>{firstImage.photographer}</a>
           </div>
         )}
       </div>
@@ -484,8 +634,12 @@ export default function SlideRenderer({
         </div>
         
         {hasImage && (
-          <div className="absolute bottom-8 right-8 w-48 h-32">
-            <ImageBlock className="w-full h-full" size="small" />
+          <div className={`absolute bottom-8 right-8 ${hasMultipleImages ? "w-64" : "w-48"} h-32`}>
+            {hasMultipleImages ? (
+              <ImageGallery className="w-full h-full" layout="row" />
+            ) : (
+              <ImageBlock className="w-full h-full" size="small" />
+            )}
           </div>
         )}
       </div>
