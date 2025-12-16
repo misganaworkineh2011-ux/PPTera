@@ -5,13 +5,17 @@ import { useRouter } from "next/navigation";
 import { Filter, Grid, List as ListIcon, MoreHorizontal, Upload, Star, Globe, Lock, Share2, Edit3, Copy, Trash2, Link2 } from "lucide-react";
 import Image from "next/image";
 
+interface SlideImage {
+  url: string;
+  alt?: string;
+  source?: string;
+}
+
 interface SlideData {
   type: string;
   title: string;
-  image?: {
-    url: string;
-    alt?: string;
-  } | null;
+  image?: SlideImage | null;
+  images?: SlideImage[];
 }
 
 interface Presentation {
@@ -68,8 +72,26 @@ export default function DashboardContent({ presentations: initialPresentations, 
 
   // Get thumbnail from first slide with image or fallback to logo
   const getThumbnail = (pres: Presentation) => {
-    const slideWithImage = pres.slides?.find(slide => slide.image?.url);
-    return slideWithImage?.image?.url || "/logo.png";
+    // Check each slide for images (both legacy image field and images array)
+    for (const slide of pres.slides || []) {
+      // Check images array first (newer format)
+      if (slide.images && slide.images.length > 0) {
+        // Find first image with a valid URL (not placeholder)
+        const validImage = slide.images.find(img => 
+          img.url && 
+          img.url.startsWith("http") && 
+          img.source !== "placeholder"
+        );
+        if (validImage) return validImage.url;
+      }
+      // Check legacy image field - accept any valid URL
+      if (slide.image?.url && 
+          slide.image.url.startsWith("http") && 
+          slide.image.source !== "placeholder") {
+        return slide.image.url;
+      }
+    }
+    return "/logo.png";
   };
 
   // Filter presentations

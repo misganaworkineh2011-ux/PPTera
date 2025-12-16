@@ -201,14 +201,24 @@ export async function fetchImagesForSlides(
     const promises = batch.map(async (slide, batchIndex) => {
       const slideIndex = i + batchIndex;
       
-      // Skip title slides or use a generic query for them
+      // For title slides, use the title itself as the search query for relevant images
       if (slide.type === "title") {
-        const photos = await searchPexelsPhotos("professional abstract", 1);
-        return { index: slideIndex, photo: photos[0] || null };
+        // Extract keywords from the title for a relevant image
+        const titleKeywords = extractKeywordsFromSlide({
+          title: slide.title,
+          subtitle: slide.subtitle,
+          bulletPoints: [],
+        });
+        // Search with more results and pick randomly for variety
+        const photos = await searchPexelsPhotos(titleKeywords || "professional business", 5);
+        const photo = photos.length > 0 
+          ? photos[Math.floor(Math.random() * photos.length)]!
+          : null;
+        return { index: slideIndex, photo };
       }
       
       const keywords = extractKeywordsFromSlide(slide);
-      const photos = await searchPexelsPhotos(keywords, 3);
+      const photos = await searchPexelsPhotos(keywords, 5);
       
       // Pick a random photo from the results for variety
       const photo = photos.length > 0 

@@ -1,50 +1,121 @@
 "use client";
 
-import { X } from "lucide-react";
+import { X, FileText, Presentation, Image } from "lucide-react";
+import { type Theme } from "~/lib/themes";
 
 interface ExportModalProps {
   isExporting: boolean;
+  theme: Theme;
   onExport: (format: "pdf" | "pptx" | "images") => void;
   onClose: () => void;
 }
 
-export default function ExportModal({ isExporting, onExport, onClose }: ExportModalProps) {
+// Theme type detection
+type ThemeType = "dark" | "light" | "sunset";
+function getThemeType(theme: Theme): ThemeType {
+  if (theme.id === "arctic-frost") return "light";
+  if (theme.id === "sunset-gradient") return "sunset";
+  return "dark";
+}
+
+export default function ExportModal({ isExporting, theme, onExport, onClose }: ExportModalProps) {
+  const themeType = getThemeType(theme);
+  const isDark = themeType !== "light";
+  
+  // Theme-aware colors
+  const colors = {
+    dark: {
+      bg: "bg-zinc-900",
+      border: "border-zinc-700",
+      text: "text-zinc-100",
+      textMuted: "text-zinc-400",
+      cardBg: "bg-zinc-800/50",
+      cardBorder: "border-zinc-700",
+      cardHover: "hover:border-amber-500/50 hover:bg-amber-500/5",
+      closeHover: "hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200",
+    },
+    light: {
+      bg: "bg-white",
+      border: "border-slate-200",
+      text: "text-slate-900",
+      textMuted: "text-slate-500",
+      cardBg: "bg-slate-50",
+      cardBorder: "border-slate-200",
+      cardHover: "hover:border-cyan-500/50 hover:bg-cyan-500/5",
+      closeHover: "hover:bg-slate-100 text-slate-400 hover:text-slate-600",
+    },
+    sunset: {
+      bg: "bg-[#1c1017]",
+      border: "border-pink-900/50",
+      text: "text-pink-50",
+      textMuted: "text-pink-300/70",
+      cardBg: "bg-[#2d1a24]/50",
+      cardBorder: "border-pink-900/40",
+      cardHover: "hover:border-pink-500/50 hover:bg-pink-500/5",
+      closeHover: "hover:bg-pink-950/50 text-pink-300/70 hover:text-pink-100",
+    },
+  };
+  
+  const c = colors[themeType];
+  const accentColor = theme.colors.primary;
+
   const options = [
-    { format: "pdf" as const, icon: "📄", title: "PDF Document", desc: "Best for sharing and printing", bg: "bg-red-100" },
-    { format: "pptx" as const, icon: "📊", title: "PowerPoint (PPTX)", desc: "Editable in PowerPoint", bg: "bg-orange-100" },
-    { format: "images" as const, icon: "🖼️", title: "Images (ZIP)", desc: "Each slide as PNG image", bg: "bg-blue-100" },
+    { 
+      format: "pdf" as const, 
+      Icon: FileText, 
+      title: "PDF Document", 
+      desc: "Best for sharing and printing",
+    },
+    { 
+      format: "pptx" as const, 
+      Icon: Presentation, 
+      title: "PowerPoint (PPTX)", 
+      desc: "Editable in PowerPoint",
+    },
+    { 
+      format: "images" as const, 
+      Icon: Image, 
+      title: "Images (HTML)", 
+      desc: "High-quality slide images",
+    },
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div className={`relative w-full max-w-md rounded-2xl p-6 shadow-2xl border ${c.bg} ${c.border}`}>
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+          className={`absolute right-4 top-4 rounded-lg p-2 transition-colors ${c.closeHover}`}
         >
           <X size={20} />
         </button>
-        <h2 className="mb-4 text-2xl font-bold text-slate-900">Export Presentation</h2>
-        <p className="mb-6 text-sm text-slate-600">Choose your preferred export format</p>
+        <h2 className={`mb-2 text-2xl font-bold ${c.text}`}>Export Presentation</h2>
+        <p className={`mb-6 text-sm ${c.textMuted}`}>Choose your preferred export format</p>
         <div className="space-y-3">
           {options.map((opt) => (
             <button
               key={opt.format}
               onClick={() => onExport(opt.format)}
               disabled={isExporting}
-              className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-slate-200 hover:border-[#06b6d4] hover:bg-[#06b6d4]/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${c.cardBg} ${c.cardBorder} ${c.cardHover}`}
             >
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-lg ${opt.bg} flex items-center justify-center`}>
-                  <span className="text-xl">{opt.icon}</span>
+              <div className="flex items-center gap-4">
+                <div 
+                  className="w-11 h-11 rounded-lg flex items-center justify-center"
+                  style={{ backgroundColor: `${accentColor}20` }}
+                >
+                  <opt.Icon size={22} style={{ color: accentColor }} />
                 </div>
                 <div className="text-left">
-                  <div className="font-semibold text-slate-900">{opt.title}</div>
-                  <div className="text-xs text-slate-500">{opt.desc}</div>
+                  <div className={`font-semibold ${c.text}`}>{opt.title}</div>
+                  <div className={`text-xs ${c.textMuted}`}>{opt.desc}</div>
                 </div>
               </div>
               {isExporting && (
-                <div className="animate-spin h-5 w-5 border-2 border-[#06b6d4] border-t-transparent rounded-full" />
+                <div 
+                  className="animate-spin h-5 w-5 border-2 border-t-transparent rounded-full"
+                  style={{ borderColor: accentColor, borderTopColor: "transparent" }}
+                />
               )}
             </button>
           ))}

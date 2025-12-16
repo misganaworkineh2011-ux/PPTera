@@ -270,15 +270,38 @@ export default function PresentationViewer({ presentation, mode, isOwner, collab
         body: JSON.stringify({ format }),
       });
       if (!response.ok) throw new Error("Export failed");
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${presentation.title}.${format === "images" ? "zip" : format}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
+      
+      if (format === "pptx") {
+        // PPTX: Download directly as file
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${presentation.title}.pptx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      } else {
+        // PDF/Images: Open HTML in new window for print/save
+        const html = await response.text();
+        const printWindow = window.open("", "_blank");
+        if (printWindow) {
+          printWindow.document.write(html);
+          printWindow.document.close();
+          // Add print instructions
+          setTimeout(() => {
+            const instructions = printWindow.document.createElement("div");
+            instructions.innerHTML = `
+              <div style="position: fixed; top: 0; left: 0; right: 0; background: #1a1a1d; color: white; padding: 16px; z-index: 9999; display: flex; justify-content: space-between; align-items: center; font-family: Arial, sans-serif;">
+                <span>📄 ${format === "pdf" ? "Press Ctrl+P (Cmd+P on Mac) to save as PDF" : "Right-click on slides to save as images"}</span>
+                <button onclick="this.parentElement.remove()" style="background: #f59e0b; color: black; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600;">Got it</button>
+              </div>
+            `;
+            printWindow.document.body.insertBefore(instructions, printWindow.document.body.firstChild);
+          }, 100);
+        }
+      }
       setShowExportModal(false);
     } catch {
       alert("Export failed. Please try again.");
@@ -915,7 +938,7 @@ export default function PresentationViewer({ presentation, mode, isOwner, collab
           />
         )}
 
-        {showExportModal && isOwner && <ExportModal isExporting={isExporting} onExport={handleExport} onClose={() => setShowExportModal(false)} />}
+        {showExportModal && isOwner && <ExportModal isExporting={isExporting} theme={theme} onExport={handleExport} onClose={() => setShowExportModal(false)} />}
 
         {showShareModal && isOwner && <ShareModal presentationId={presentation.id} onClose={() => setShowShareModal(false)} />}
       </div>
