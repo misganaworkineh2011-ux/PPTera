@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, GripVertical, Trash2, Edit3, Check, X } from "lucide-react";
 import { useOutlineStream, type Slide, type OutlineMetadata } from "~/lib/dashboard/hooks/useOutlineStream";
+import { themes, getThemeById } from "~/lib/themes";
+import ThemeSelector from "~/components/ThemeSelector";
 
 interface ExistingOutline {
   id: string;
@@ -244,6 +246,8 @@ export default function CreatePresentationClient({
     numberOfSlides: existingOutline?.metadata.totalSlides || Math.min(10, maxSlides),
     tone: existingOutline?.metadata.tone || "professional",
     language: existingOutline?.metadata.language || "english",
+    theme: "corporate-professional",
+    imageSource: "no-images",
   });
 
   const [lastDescription, setLastDescription] = useState(
@@ -257,6 +261,7 @@ export default function CreatePresentationClient({
   // Drag state
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
 
   const allSlideOptions = getAllSlideOptions(subscriptionPlan);
 
@@ -343,7 +348,9 @@ export default function CreatePresentationClient({
     setSlides((prev) => {
       const newSlides = [...prev];
       const [draggedSlide] = newSlides.splice(draggedIndex, 1);
-      newSlides.splice(dropIndex, 0, draggedSlide);
+      if (draggedSlide) {
+        newSlides.splice(dropIndex, 0, draggedSlide);
+      }
       return newSlides;
     });
 
@@ -395,6 +402,11 @@ export default function CreatePresentationClient({
 
   return (
     <div className="min-h-screen w-full relative overflow-hidden">
+      {/* Load Google Fonts */}
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Outfit:wght@400;700&family=Playfair+Display:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap');
+      `}</style>
+
       {/* Background */}
       <div
         className="absolute inset-0 z-0"
@@ -511,7 +523,7 @@ export default function CreatePresentationClient({
               {!showOutline && (
                 <>
                   <p className="text-xs text-slate-500 -mt-4">
-                    Describe your presentation idea, topics to cover, main message, or any specific requirements
+                    Describe your presentation idea, topics to cover, main message, or any specific requirements.
                   </p>
 
                   {/* Number of Slides */}
@@ -564,7 +576,7 @@ export default function CreatePresentationClient({
                   </div>
 
                   {/* Tone and Language */}
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="mt-4 grid grid-cols-2 gap-6">
                     <div>
                       <label htmlFor="tone" className="block text-sm font-semibold text-[#1e3a8a] mb-3">
                         Tone
@@ -608,7 +620,6 @@ export default function CreatePresentationClient({
                       </select>
                     </div>
                   </div>
-
                 </>
               )}
 
@@ -639,7 +650,7 @@ export default function CreatePresentationClient({
 
         {/* Error Message */}
         {streamState.error && (
-          <div className="mx-8 mb-4 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm max-w-6xl mx-auto">
+          <div className="mb-4 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm max-w-6xl mx-auto">
             {streamState.error}
             <button
               onClick={handleStartOver}
@@ -652,7 +663,7 @@ export default function CreatePresentationClient({
 
         {/* Outline Section */}
         {showOutline && (
-          <div className="flex-1 px-8 pb-12">
+          <div className={`flex-1 px-8 ${isCompleted ? "pb-[140px]" : "pb-12"}`}>
             <div className="mx-auto max-w-6xl">
               {/* Simple status text above slides */}
               {isStreaming && (
@@ -710,6 +721,134 @@ export default function CreatePresentationClient({
                 )}
               </div>
 
+              {/* Presentation style box – used when creating slides from this outline */}
+              {isCompleted && (
+                <div className="mt-6 mb-[60px] rounded-2xl border border-slate-200 bg-white/90 px-5 py-5 shadow-sm">
+                  {/* Theme Selection */}
+                  <div className="mb-5">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                        Select Theme
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setIsThemeSelectorOpen(true)}
+                        className="text-xs font-medium text-[#06b6d4] hover:text-[#0891b2] transition-colors"
+                      >
+                        View more →
+                      </button>
+                    </div>
+                    
+                    {/* Popular Themes Grid */}
+                    <div className="grid grid-cols-2 gap-4">
+                      {themes.slice(0, 2).map((theme) => {
+                        const isSelected = formData.theme === theme.id;
+                        return (
+                          <button
+                            key={theme.id}
+                            type="button"
+                            onClick={() => handleChange("theme", theme.id)}
+                            className={`group relative overflow-hidden rounded-lg border text-left transition-all hover:shadow-md ${
+                              isSelected
+                                ? "border-[#3b82f6] ring-1 ring-[#3b82f6]"
+                                : "border-slate-200 hover:border-slate-300"
+                            }`}
+                          >
+                            {/* Theme Preview Card */}
+                            <div className="p-3">
+                              <div
+                                className="aspect-[1.6/1] w-full rounded-md shadow-sm relative overflow-hidden"
+                                style={{
+                                  backgroundColor: theme.preview.titleBg,
+                                  backgroundImage: theme.slideStyles.title.pattern || "none",
+                                }}
+                              >
+                                <div className="absolute inset-0 p-4 flex flex-col justify-center">
+                                  <div
+                                    className="text-2xl font-bold mb-2"
+                                    style={{
+                                      fontFamily: theme.fonts.heading.family,
+                                      color:
+                                        theme.colors.heading === "#f1f5f9" ||
+                                        theme.colors.heading === "#ffffff"
+                                          ? "#ffffff"
+                                          : "#1e293b",
+                                    }}
+                                  >
+                                    Title
+                                  </div>
+                                  <div
+                                    className="text-sm font-medium opacity-90"
+                                    style={{
+                                      fontFamily: theme.fonts.body.family,
+                                      color:
+                                        theme.colors.heading === "#f1f5f9" ||
+                                        theme.colors.heading === "#ffffff"
+                                          ? "#e2e8f0"
+                                          : "#475569",
+                                    }}
+                                  >
+                                    Body &{" "}
+                                    <span
+                                      className="underline decoration-2 underline-offset-2"
+                                      style={{
+                                        color: theme.preview.accentColor,
+                                        textDecorationColor: theme.preview.accentColor,
+                                      }}
+                                    >
+                                      link
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Theme Name Footer */}
+                            <div
+                              className={`px-3 py-2 border-t flex items-center justify-between text-sm ${
+                                isSelected ? "bg-blue-50/50" : "bg-white"
+                              }`}
+                              style={{ borderColor: isSelected ? "#3b82f6" : "#e2e8f0" }}
+                            >
+                              <div className="font-medium text-slate-700">
+                                {theme.name}
+                              </div>
+                              {isSelected && (
+                                <Check size={16} className="text-[#3b82f6]" />
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Image Style Selection */}
+                  <div>
+                    <p className="text-[11px] font-semibold text-slate-500 mb-2 uppercase tracking-wide">
+                      Image Style
+                    </p>
+                    <select
+                      id="imageSource-outline"
+                      value={formData.imageSource}
+                      onChange={(e) => handleChange("imageSource", e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all"
+                    >
+                      <option value="no-images">No Images (Text-Only Slides)</option>
+                      <option value="placeholders">Image Placeholders (Edit Later)</option>
+                      <option value="ai-generated">AI-Generated Images</option>
+                      <option value="stock-photos">Stock Photos (Pexels)</option>
+                      <option value="illustrations">Illustrations (Pictographic Style)</option>
+                      <option value="web-images">Web Images (Public Search)</option>
+                    </select>
+                  </div>
+
+                  <p className="mt-4 text-[11px] text-slate-500">
+                    These options won&apos;t change the outline – they&apos;ll be used when you{" "}
+                    <span className="font-semibold text-[#0f766e]">create the actual presentation</span> from these slides.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -748,6 +887,16 @@ export default function CreatePresentationClient({
           </div>
         </div>
       )}
+
+      {/* Theme Selector Modal */}
+      <ThemeSelector
+        isOpen={isThemeSelectorOpen}
+        onClose={() => setIsThemeSelectorOpen(false)}
+        selectedThemeId={formData.theme}
+        onSelectTheme={(themeId) => {
+          handleChange("theme", themeId);
+        }}
+      />
     </div>
   );
 }

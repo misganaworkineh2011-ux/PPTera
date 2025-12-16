@@ -58,7 +58,12 @@ export async function POST(req: Request) {
 
     // 4. Parse request body
     const body = await req.json();
-    const { description, numberOfSlides, tone, language } = body;
+    const { description, numberOfSlides, tone, language } = body as {
+      description?: string;
+      numberOfSlides?: number;
+      tone?: string;
+      language?: string;
+    };
 
     // 5. Validate required fields
     if (!description || !description.trim()) {
