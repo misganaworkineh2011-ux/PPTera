@@ -13,7 +13,7 @@ export async function DELETE(
     // Check if presentation exists and belongs to user
     const presentation = await db.presentation.findUnique({
       where: { id },
-      select: { userId: true },
+      select: { userId: true, title: true },
     });
 
     if (!presentation) {
@@ -29,6 +29,15 @@ export async function DELETE(
         { status: 403 }
       );
     }
+
+    // Log activity before deletion
+    await db.activity.create({
+      data: {
+        userId: authUser.id,
+        type: "delete",
+        description: `Deleted presentation "${presentation.title}"`,
+      },
+    });
 
     // Delete presentation (cascade will handle related records)
     await db.presentation.delete({

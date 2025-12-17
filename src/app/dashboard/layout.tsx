@@ -1,6 +1,7 @@
 import { requireAuth } from "~/lib/clerk-server";
 import { db } from "~/server/db";
 import DashboardLayout from "~/components/dashboard/DashboardLayout";
+import { SettingsProvider } from "~/contexts/SettingsContext";
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
   const authUser = await requireAuth();
@@ -14,11 +15,13 @@ export default async function Layout({ children }: { children: React.ReactNode }
   });
 
   return (
-    <DashboardLayout 
-      subscriptionPlan={user?.subscriptionPlan ?? "Free"}
-      credits={user?.credits ?? 0}
-    >
-      {children}
-    </DashboardLayout>
+    <SettingsProvider>
+      <DashboardLayout 
+        subscriptionPlan={user?.subscriptionPlan ?? "Free"}
+        credits={user?.credits ?? 0}
+      >
+        {children}
+      </DashboardLayout>
+    </SettingsProvider>
   );
 }

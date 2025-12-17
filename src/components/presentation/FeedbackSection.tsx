@@ -10,10 +10,26 @@ interface FeedbackSectionProps {
   theme?: Theme;
 }
 
-type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber" | "alien" | "corporate" | "cosmic" | "architectural" | "anime" | "hacker";
+type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber" | "alien" | "corporate" | "cosmic" | "architectural" | "anime" | "hacker" | "custom-dark" | "custom-light";
+
+// Helper to determine if a color is dark
+function isColorDark(hexColor: string): boolean {
+  const hex = hexColor.replace("#", "");
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance < 0.5;
+}
 
 function getThemeType(theme?: Theme): ThemeType {
   if (!theme) return "light";
+  
+  // Check for custom themes first
+  if (theme.id.startsWith("custom-")) {
+    return isColorDark(theme.colors.background) ? "custom-dark" : "custom-light";
+  }
+  
   if (theme.id === "arctic-frost") return "light";
   if (theme.id === "sunset-gradient") return "sunset";
   if (theme.id === "ocean-depths") return "ocean";
@@ -214,6 +230,34 @@ function getThemeColors(themeType: ThemeType, theme?: Theme) {
       hideText: "text-[#00ff41]/60 hover:text-[#00ff41]",
       thankYou: "text-[#39ff14]/70",
     },
+    // Custom dark theme - uses inline styles from theme object
+    "custom-dark": {
+      bg: "", // Will use inline style
+      border: "border-white/20",
+      title: "text-white",
+      subtitle: "text-white/60",
+      buttonPrimary: "from-white/90 to-white/70",
+      buttonSecondary: "bg-white/10 border-white/20 text-white hover:bg-white/20",
+      ratingBorder: "border-white/20",
+      ratingHover: "hover:border-white/40 hover:bg-white/10",
+      ratingSelected: "border-white bg-white/20",
+      hideText: "text-white/50 hover:text-white/70",
+      thankYou: "text-white/60",
+    },
+    // Custom light theme - uses inline styles from theme object
+    "custom-light": {
+      bg: "", // Will use inline style
+      border: "border-black/10",
+      title: "text-black",
+      subtitle: "text-black/60",
+      buttonPrimary: "from-black/90 to-black/70",
+      buttonSecondary: "bg-black/5 border-black/10 text-black hover:bg-black/10",
+      ratingBorder: "border-black/10",
+      ratingHover: "hover:border-black/20 hover:bg-black/5",
+      ratingSelected: "border-black bg-black/10",
+      hideText: "text-black/50 hover:text-black/70",
+      thankYou: "text-black/60",
+    },
   };
   return colors[themeType];
 }
@@ -226,6 +270,24 @@ export default function FeedbackSection({ presentationId, theme }: FeedbackSecti
 
   const themeType = getThemeType(theme);
   const colors = getThemeColors(themeType, theme);
+  const isCustomTheme = theme?.id.startsWith("custom-");
+  
+  // For custom themes, use inline styles from theme object
+  const customBgStyle = isCustomTheme && theme ? {
+    background: theme.colors.backgroundAlt,
+    borderColor: theme.colors.border,
+  } : {};
+  
+  const customTitleStyle = isCustomTheme && theme ? { color: theme.colors.heading } : {};
+  const customSubtitleStyle = isCustomTheme && theme ? { color: theme.colors.textMuted } : {};
+  const customButtonPrimaryStyle = isCustomTheme && theme ? {
+    background: `linear-gradient(to right, ${theme.colors.primary}, ${theme.colors.accent})`,
+  } : {};
+  const customButtonSecondaryStyle = isCustomTheme && theme ? {
+    backgroundColor: theme.colors.surface,
+    borderColor: theme.colors.border,
+    color: theme.colors.text,
+  } : {};
 
   const handleRating = async (rating: number) => {
     setSelectedRating(rating);
@@ -252,15 +314,22 @@ export default function FeedbackSection({ presentationId, theme }: FeedbackSecti
   ];
 
   return (
-    <div className={`w-full ${colors.bg} border-t ${colors.border} mt-16`}>
+    <div 
+      className={`w-full ${colors.bg} border-t ${colors.border} mt-16`}
+      style={customBgStyle}
+    >
       <div className="max-w-2xl mx-auto px-6 py-12">
-        <h3 className={`text-2xl font-bold text-center ${colors.title} mb-6`}>
+        <h3 
+          className={`text-2xl font-bold text-center ${colors.title} mb-6`}
+          style={customTitleStyle}
+        >
           Like what you created?
         </h3>
         <div className="space-y-3 mb-8">
           <button
             onClick={() => router.push("/createpresentation?mode=ai")}
-            className={`w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-gradient-to-r ${colors.buttonPrimary} text-white font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]`}
+            className={`w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl ${!isCustomTheme ? `bg-gradient-to-r ${colors.buttonPrimary}` : ''} text-white font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]`}
+            style={customButtonPrimaryStyle}
           >
             <Sparkles size={20} />
             Create something else
@@ -268,14 +337,26 @@ export default function FeedbackSection({ presentationId, theme }: FeedbackSecti
           <button
             onClick={() => router.push("/createpresentation?mode=ai")}
             className={`w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl border-2 ${colors.buttonSecondary} font-semibold transition-all`}
+            style={customButtonSecondaryStyle}
           >
             <ArrowLeft size={20} />
             Back to prompt
           </button>
         </div>
-        <div className={`border-t ${colors.border} pt-6`}>
-          <p className={`text-sm ${colors.subtitle} text-center mb-3`}>Help refine our product</p>
-          <p className={`text-base font-semibold ${colors.title} text-center mb-4`}>
+        <div 
+          className={`border-t ${colors.border} pt-6`}
+          style={isCustomTheme && theme ? { borderColor: theme.colors.border } : {}}
+        >
+          <p 
+            className={`text-sm ${colors.subtitle} text-center mb-3`}
+            style={customSubtitleStyle}
+          >
+            Help refine our product
+          </p>
+          <p 
+            className={`text-base font-semibold ${colors.title} text-center mb-4`}
+            style={customTitleStyle}
+          >
             How satisfied are you with the output?
           </p>
           <div className="flex items-center justify-center gap-4">
@@ -289,6 +370,10 @@ export default function FeedbackSection({ presentationId, theme }: FeedbackSecti
                     ? `${colors.ratingSelected} scale-105`
                     : `${colors.ratingBorder} ${colors.ratingHover}`
                 } ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
+                style={isCustomTheme && theme ? {
+                  borderColor: selectedRating === option.value ? theme.colors.primary : theme.colors.border,
+                  backgroundColor: selectedRating === option.value ? `${theme.colors.primary}20` : 'transparent',
+                } : {}}
                 title={option.label}
               >
                 <span className="text-4xl">{option.icon}</span>
@@ -296,7 +381,10 @@ export default function FeedbackSection({ presentationId, theme }: FeedbackSecti
             ))}
           </div>
           {selectedRating && (
-            <p className={`text-center text-sm ${colors.thankYou} mt-4 font-medium`}>
+            <p 
+              className={`text-center text-sm ${colors.thankYou} mt-4 font-medium`}
+              style={customSubtitleStyle}
+            >
               Thank you for your feedback!
             </p>
           )}
@@ -304,6 +392,7 @@ export default function FeedbackSection({ presentationId, theme }: FeedbackSecti
         <button
           onClick={() => setIsVisible(false)}
           className={`mt-6 w-full text-sm ${colors.hideText} transition-colors`}
+          style={isCustomTheme && theme ? { color: theme.colors.textMuted } : {}}
         >
           Hide
         </button>

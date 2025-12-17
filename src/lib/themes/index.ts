@@ -70,3 +70,10 @@ export const getThemeById = (id: string) => {
 export const getDefaultTheme = () => {
   return elegantNoir;
 };
+
+// Re-export custom theme utilities for convenience
+export {
+  isCustomThemeId,
+  getCustomThemeDbId,
+  convertCustomThemeToTheme,
+} from "../custom-theme-utils";

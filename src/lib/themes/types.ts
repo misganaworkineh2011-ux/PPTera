@@ -69,4 +69,6 @@ export interface Theme {
     accentColor: string;
     shadow?: string;
   };
+  // Page background gradient for the presentation viewer page
+  pageBackground?: string;
 }

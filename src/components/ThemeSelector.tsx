@@ -1,9 +1,106 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { X, Search, Check } from "lucide-react";
-import { themes, getThemeById } from "~/lib/themes";
+import { useState, useMemo, useEffect } from "react";
+import { X, Search, Check, Sparkles } from "lucide-react";
+import { themes, getThemeById, type Theme } from "~/lib/themes";
 import { Button } from "~/components/ui/Button";
+
+// Convert custom theme from DB to Theme format
+function convertCustomTheme(dbTheme: any): Theme {
+  const colors = dbTheme.colors?.custom || {
+    background: "#ffffff",
+    backgroundAlt: "#f8fafc",
+    text: "#334155",
+    heading: "#0f172a",
+    primary: "#3b82f6",
+    accent: "#06b6d4",
+  };
+
+  const fontMap: Record<string, string> = {
+    inter: "'Inter', sans-serif",
+    roboto: "'Roboto', sans-serif",
+    poppins: "'Poppins', sans-serif",
+    montserrat: "'Montserrat', sans-serif",
+    lato: "'Lato', sans-serif",
+    "open-sans": "'Open Sans', sans-serif",
+    playfair: "'Playfair Display', serif",
+    merriweather: "'Merriweather', serif",
+    "source-code": "'Source Code Pro', monospace",
+    "space-grotesk": "'Space Grotesk', sans-serif",
+  };
+
+  const headingFont = fontMap[dbTheme.fonts?.heading] || "'Inter', sans-serif";
+  const bodyFont = fontMap[dbTheme.fonts?.body] || "'Inter', sans-serif";
+
+  return {
+    id: `custom-${dbTheme.id}`,
+    name: dbTheme.name,
+    description: "Your custom theme",
+    category: "creative" as const,
+    colors: {
+      background: colors.background,
+      backgroundAlt: colors.backgroundAlt,
+      surface: colors.backgroundAlt,
+      text: colors.text,
+      textMuted: colors.text,
+      heading: colors.heading,
+      link: colors.accent,
+      linkHover: colors.accent,
+      primary: colors.primary,
+      primaryHover: colors.primary,
+      secondary: colors.accent,
+      secondaryHover: colors.accent,
+      accent: colors.accent,
+      border: colors.backgroundAlt,
+      borderHover: colors.primary,
+      shadow: "rgba(0, 0, 0, 0.1)",
+      success: "#22c55e",
+      warning: "#f59e0b",
+      error: "#ef4444",
+    },
+    fonts: {
+      heading: { family: headingFont, weight: 700, letterSpacing: "-0.02em" },
+      body: { family: bodyFont, weight: 400, lineHeight: "1.6" },
+      caption: { family: bodyFont, weight: 500, size: "0.875rem" },
+    },
+    design: {
+      borderRadius: { small: "0.5rem", medium: "0.75rem", large: "1rem", full: "9999px" },
+      shadows: {
+        small: "0 2px 8px rgba(0, 0, 0, 0.1)",
+        medium: "0 8px 24px rgba(0, 0, 0, 0.15)",
+        large: "0 16px 48px rgba(0, 0, 0, 0.2)",
+      },
+      spacing: { tight: "0.5rem", normal: "1rem", relaxed: "1.5rem" },
+    },
+    slideStyles: {
+      title: {
+        background: `linear-gradient(135deg, ${colors.background} 0%, ${colors.backgroundAlt} 100%)`,
+      },
+      content: {
+        background: colors.background,
+        bulletStyle: "disc" as const,
+      },
+      image: {
+        borderRadius: "0.75rem",
+        shadow: "0 20px 50px rgba(0, 0, 0, 0.2)",
+      },
+    },
+    preview: {
+      titleBg: colors.background,
+      bodyBg: colors.backgroundAlt,
+      textColor: colors.text,
+      accentColor: colors.accent,
+    },
+    cardBox: {
+      background: colors.backgroundAlt,
+      borderColor: colors.primary,
+      titleColor: colors.heading,
+      bodyColor: colors.text,
+      accentColor: colors.accent,
+    },
+    isCustom: true,
+  } as Theme & { isCustom?: boolean };
+}
 
 interface ThemeSelectorProps {
   isOpen: boolean;
@@ -21,14 +118,46 @@ export default function ThemeSelector({
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<string>("all");
   const [previewThemeId, setPreviewThemeId] = useState<string>(selectedThemeId);
+  const [customThemes, setCustomThemes] = useState<(Theme & { isCustom?: boolean })[]>([]);
+  const [isLoadingCustom, setIsLoadingCustom] = useState(false);
 
-  const previewTheme = getThemeById(previewThemeId) || themes[0]!;
+  // Fetch custom themes when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setIsLoadingCustom(true);
+      fetch("/api/themes")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.themes) {
+            const converted = data.themes.map(convertCustomTheme);
+            setCustomThemes(converted);
+          }
+        })
+        .catch((err) => console.error("Failed to load custom themes:", err))
+        .finally(() => setIsLoadingCustom(false));
+    }
+  }, [isOpen]);
+
+  // Combine built-in and custom themes
+  const allThemes = useMemo(() => {
+    return [...customThemes, ...themes];
+  }, [customThemes]);
+
+  const getTheme = (id: string) => {
+    const customTheme = customThemes.find((t) => t.id === id);
+    if (customTheme) return customTheme;
+    return getThemeById(id) || themes[0]!;
+  };
+
+  const previewTheme = getTheme(previewThemeId);
 
   const filteredThemes = useMemo(() => {
-    let filtered = themes;
+    let filtered = allThemes;
 
     // Apply category filter
-    if (activeFilter !== "all") {
+    if (activeFilter === "custom") {
+      filtered = filtered.filter((theme: any) => theme.isCustom === true);
+    } else if (activeFilter !== "all") {
       filtered = filtered.filter((theme) => theme.category === activeFilter);
     }
 
@@ -44,7 +173,7 @@ export default function ThemeSelector({
     }
 
     return filtered;
-  }, [searchQuery, activeFilter]);
+  }, [searchQuery, activeFilter, allThemes]);
 
   if (!isOpen) return null;
 
@@ -95,6 +224,7 @@ export default function ThemeSelector({
             <div className="mt-4 flex flex-wrap gap-2">
               {[
                 { id: "all", label: "All" },
+                { id: "custom", label: "My Themes", icon: true },
                 { id: "professional", label: "Professional" },
                 { id: "bold", label: "Bold" },
                 { id: "creative", label: "Creative" },
@@ -103,13 +233,21 @@ export default function ThemeSelector({
                 <button
                   key={filter.id}
                   onClick={() => setActiveFilter(filter.id)}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors flex items-center gap-1.5 ${
                     activeFilter === filter.id
                       ? "bg-[#06b6d4] text-white"
                       : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
                   }`}
                 >
+                  {filter.id === "custom" && <Sparkles size={14} />}
                   {filter.label}
+                  {filter.id === "custom" && customThemes.length > 0 && (
+                    <span className={`ml-1 text-xs px-1.5 py-0.5 rounded-full ${
+                      activeFilter === filter.id ? "bg-white/20" : "bg-[#06b6d4]/10 text-[#06b6d4]"
+                    }`}>
+                      {customThemes.length}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
@@ -184,6 +322,14 @@ export default function ThemeSelector({
                       </div>
                     </div>
 
+                    {/* Custom Theme Badge */}
+                    {(theme as any).isCustom && (
+                      <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">
+                        <Sparkles size={10} />
+                        Custom
+                      </div>
+                    )}
+
                     {/* Theme Name Footer */}
                     <div
                       className={`px-3 py-2 border-t flex items-center justify-between text-sm ${
@@ -191,7 +337,7 @@ export default function ThemeSelector({
                       }`}
                       style={{ borderColor: isSelected ? "#3b82f6" : "#e2e8f0" }}
                     >
-                      <div className="font-medium text-slate-700">
+                      <div className="font-medium text-slate-700 flex items-center gap-1.5">
                         {theme.name}
                       </div>
                       {isSelected && (

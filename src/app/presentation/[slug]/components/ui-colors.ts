@@ -395,6 +395,62 @@ export function getUIColors(themeType: ThemeType) {
         "bg-[#141414] text-[#00ff41] hover:bg-[#00ff41]/20 border border-[#00ff41]/30",
       navDot: "bg-[#00ff41]/30 hover:bg-[#00ff41]/50",
     },
+    // Custom dark theme - uses theme colors via inline styles, these are fallbacks
+    "custom-dark": {
+      pageBg: "", // Will use inline style from theme.pageBackground
+      headerBg: "bg-black/90 border-white/10",
+      headerText: "text-white",
+      headerMuted: "text-white/60",
+      headerHover: "hover:bg-white/10",
+      headerIcon: "text-white/70",
+      headerActive: "bg-white/20 text-white",
+      divider: "bg-white/20",
+      ring: "ring-white/20",
+      ringHover: "ring-white/20 hover:ring-white/40",
+      thumbBg: "bg-black/80",
+      thumbText: "text-white",
+      scrollbar: "scrollbar-thumb-white/30",
+      kbd: "bg-white/10 text-white/80",
+      endCard: "bg-black/80 border-white/20",
+      endText: "text-white",
+      endMuted: "text-white/60",
+      titleBg: "", // Will use theme colors
+      orb1: "bg-white/10",
+      orb2: "bg-white/5",
+      accentLine: "from-white",
+      borderLine: "via-white/20",
+      indicatorMuted: "text-white/50",
+      navBtn: "bg-white/10 text-white hover:bg-white/20 border border-white/20",
+      navDot: "bg-white/30 hover:bg-white/50",
+    },
+    // Custom light theme - uses theme colors via inline styles, these are fallbacks
+    "custom-light": {
+      pageBg: "", // Will use inline style from theme.pageBackground
+      headerBg: "bg-white/90 border-black/10",
+      headerText: "text-black",
+      headerMuted: "text-black/60",
+      headerHover: "hover:bg-black/5",
+      headerIcon: "text-black/70",
+      headerActive: "bg-black/10 text-black",
+      divider: "bg-black/10",
+      ring: "ring-black/10",
+      ringHover: "ring-black/10 hover:ring-black/20",
+      thumbBg: "bg-white/90",
+      thumbText: "text-black",
+      scrollbar: "scrollbar-thumb-black/20",
+      kbd: "bg-black/5 text-black/80",
+      endCard: "bg-white/90 border-black/10",
+      endText: "text-black",
+      endMuted: "text-black/60",
+      titleBg: "", // Will use theme colors
+      orb1: "bg-black/5",
+      orb2: "bg-black/3",
+      accentLine: "from-black",
+      borderLine: "via-black/10",
+      indicatorMuted: "text-black/50",
+      navBtn: "bg-black/5 text-black hover:bg-black/10 border border-black/10",
+      navDot: "bg-black/20 hover:bg-black/30",
+    },
   };
   return colors[themeType];
 }

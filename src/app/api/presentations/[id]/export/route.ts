@@ -434,6 +434,16 @@ export async function POST(
     if (format === "pptx") {
       const pptxBuffer = await createPptx(slides, theme, presentation.title);
       
+      // Log activity
+      await db.activity.create({
+        data: {
+          userId: authUser.id,
+          type: "export",
+          description: `Exported "${presentation.title}" as PPTX`,
+          presentationId: id,
+        },
+      });
+      
       return new NextResponse(new Uint8Array(pptxBuffer), {
         headers: {
           "Content-Type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",

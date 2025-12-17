@@ -3,12 +3,20 @@
 import { Palette, Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useStickyContext } from "~/components/dashboard/DashboardLayout";
+import { useLanguage } from "~/contexts/LanguageContext";
+import { dashboardTranslations } from "~/lib/dashboard-translations";
 
-export default function ThemesStickyHeader() {
+interface ThemesStickyHeaderProps {
+  onCreateClick?: () => void;
+}
+
+export default function ThemesStickyHeader({ onCreateClick }: ThemesStickyHeaderProps) {
   const [isSticky, setIsSticky] = useState(false);
   const headerRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const { setIsTitleSticky, setStickyTitleContent } = useStickyContext();
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language] || dashboardTranslations.en;
 
   useEffect(() => {
     // Only enable sticky behavior on md+ screens
@@ -21,7 +29,9 @@ export default function ThemesStickyHeader() {
     }
 
     const observer = new IntersectionObserver(
-      ([entry]) => {
+      (entries) => {
+        const entry = entries[0];
+        if (!entry) return;
         // Trigger when 50% of the header is out of view
         const sticky = entry.intersectionRatio < 0.5;
         setIsSticky(sticky);
@@ -32,7 +42,7 @@ export default function ThemesStickyHeader() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
                 <Palette size={18} />
               </div>
-              <h1 className="text-xl font-bold tracking-tight text-[#1e3a8a] whitespace-nowrap">Themes</h1>
+              <h1 className="text-xl font-bold tracking-tight text-[#1e3a8a] dark:text-white whitespace-nowrap">{t.themes || "Themes"}</h1>
             </>
           );
         } else {
@@ -71,12 +81,18 @@ export default function ThemesStickyHeader() {
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
             <Palette size={22} />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-[#1e3a8a]">Themes</h1>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-[#1e3a8a] dark:text-white">{t.myThemes || "My Themes"}</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{t.themesSubtitle || "Create and manage your custom presentation themes"}</p>
+          </div>
         </div>
-        <button className="flex items-center gap-1.5 md:gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-white shadow-lg shadow-[#06b6d4]/20 transition-all hover:from-[#172554] hover:to-[#0891b2] hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap">
+        <button 
+          onClick={onCreateClick}
+          className="flex items-center gap-1.5 md:gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-white shadow-lg shadow-[#06b6d4]/20 transition-all hover:from-[#172554] hover:to-[#0891b2] hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap"
+        >
           <Plus size={16} className="md:w-[18px] md:h-[18px]" />
-          <span className="hidden sm:inline">Create Custom Theme</span>
-          <span className="sm:hidden">Create</span>
+          <span className="hidden sm:inline">{t.createCustomTheme || "Create Custom Theme"}</span>
+          <span className="sm:hidden">{t.createBtn || "Create"}</span>
         </button>
       </div>
     </>

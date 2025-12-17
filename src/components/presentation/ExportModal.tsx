@@ -11,8 +11,24 @@ interface ExportModalProps {
 }
 
 // Theme type detection
-type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber" | "alien" | "corporate" | "cosmic" | "architectural" | "anime" | "hacker";
+type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber" | "alien" | "corporate" | "cosmic" | "architectural" | "anime" | "hacker" | "custom-dark" | "custom-light";
+
+// Helper to determine if a color is dark
+function isColorDark(hexColor: string): boolean {
+  const hex = hexColor.replace("#", "");
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance < 0.5;
+}
+
 function getThemeType(theme: Theme): ThemeType {
+  // Check for custom themes first
+  if (theme.id.startsWith("custom-")) {
+    return isColorDark(theme.colors.background) ? "custom-dark" : "custom-light";
+  }
+  
   if (theme.id === "arctic-frost") return "light";
   if (theme.id === "sunset-gradient") return "sunset";
   if (theme.id === "ocean-depths") return "ocean";
@@ -174,6 +190,28 @@ export default function ExportModal({ isExporting, theme, onExport, onClose }: E
       cardBorder: "border-[#00ff41]/25",
       cardHover: "hover:border-[#00ff41]/50 hover:bg-[#00ff41]/10",
       closeHover: "hover:bg-[#00ff41]/20 text-[#39ff14]/70 hover:text-[#00ff41]",
+    },
+    // Custom dark theme
+    "custom-dark": {
+      bg: "bg-black/95",
+      border: "border-white/20",
+      text: "text-white",
+      textMuted: "text-white/60",
+      cardBg: "bg-white/10",
+      cardBorder: "border-white/15",
+      cardHover: "hover:border-white/30 hover:bg-white/15",
+      closeHover: "hover:bg-white/10 text-white/60 hover:text-white",
+    },
+    // Custom light theme
+    "custom-light": {
+      bg: "bg-white",
+      border: "border-black/10",
+      text: "text-black",
+      textMuted: "text-black/60",
+      cardBg: "bg-black/5",
+      cardBorder: "border-black/10",
+      cardHover: "hover:border-black/20 hover:bg-black/10",
+      closeHover: "hover:bg-black/5 text-black/60 hover:text-black",
     },
   };
   

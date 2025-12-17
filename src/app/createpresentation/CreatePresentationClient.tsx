@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, GripVertical, Trash2, Edit3, Check, X, Upload } from "lucide-react";
 import { useOutlineStream, type Slide, type OutlineMetadata } from "~/lib/dashboard/hooks/useOutlineStream";
-import { themes, getThemeById } from "~/lib/themes";
+import { themes, getThemeById, type Theme } from "~/lib/themes";
+import { isCustomThemeId, getCustomThemeDbId, convertCustomThemeToTheme } from "~/lib/custom-theme-utils";
 import ThemeSelector from "~/components/ThemeSelector";
 
 interface ExistingOutline {
@@ -279,6 +280,35 @@ export default function CreatePresentationClient({
     themes[0]?.id || "corporate-professional",
     themes[1]?.id || "elegant-dark",
   ]);
+  
+  // Cache for custom themes
+  const [customThemesCache, setCustomThemesCache] = useState<Record<string, Theme>>({});
+  
+  // Helper to get theme (built-in or custom)
+  const getThemeForDisplay = (themeId: string): Theme | null => {
+    if (isCustomThemeId(themeId)) {
+      return customThemesCache[themeId] || null;
+    }
+    return getThemeById(themeId);
+  };
+  
+  // Load custom theme when added to quick select
+  useEffect(() => {
+    quickSelectThemes.forEach(themeId => {
+      if (isCustomThemeId(themeId) && !customThemesCache[themeId]) {
+        const dbId = getCustomThemeDbId(themeId);
+        fetch(`/api/themes/custom/${dbId}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.theme) {
+              const converted = convertCustomThemeToTheme(data.theme);
+              setCustomThemesCache(prev => ({ ...prev, [themeId]: converted }));
+            }
+          })
+          .catch(err => console.error("Failed to load custom theme:", err));
+      }
+    });
+  }, [quickSelectThemes, customThemesCache]);
 
   const allSlideOptions = getAllSlideOptions(subscriptionPlan);
 
@@ -1030,7 +1060,7 @@ export default function CreatePresentationClient({
                     {/* Popular Themes Grid */}
                     <div className="grid grid-cols-2 gap-3">
                       {quickSelectThemes.map((themeId) => {
-                        const theme = getThemeById(themeId);
+                        const theme = getThemeForDisplay(themeId);
                         if (!theme) return null;
                         const isSelected = formData.theme === theme.id;
                         return (

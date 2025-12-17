@@ -113,6 +113,16 @@ export async function POST(req: Request) {
       },
     });
 
+    // Log activity
+    await db.activity.create({
+      data: {
+        userId: user.id,
+        type: "create",
+        description: `Created presentation "${topic}"`,
+        presentationId: presentation.id,
+      },
+    });
+
     // Deduct credits
     await db.user.update({
       where: { id: user.id },

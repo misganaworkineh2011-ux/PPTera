@@ -97,6 +97,16 @@ export async function POST(
       },
     });
 
+    // Log activity
+    await db.activity.create({
+      data: {
+        userId: user.id,
+        type: "share",
+        description: `Shared "${presentation.title}" with ${email}`,
+        presentationId: params.id,
+      },
+    });
+
     // TODO: Send email invitation if user doesn't exist
 
     return NextResponse.json({ collaboration });

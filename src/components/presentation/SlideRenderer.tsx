@@ -25,8 +25,24 @@ interface SlideRendererProps {
 type LayoutVariant = "left-content" | "right-content" | "centered" | "split-diagonal" | "image-focus" | "minimal-left" | "cards-grid" | "quote-style" | "timeline" | "diagonal-cut" | "circle-focus" | "wave-layout" | "hexagon-frame" | "glass-cards" | "aurora-glow" | "diamond-frame" | "ember-cards" | "molten-split" | "arch-frame" | "botanical-cards" | "elegant-split" | "glitch-frame" | "neon-grid" | "holo-cards" | "scan-frame" | "bio-cards" | "transmission-split" | "clean-frame" | "pro-cards" | "executive-split" | "nebula-float" | "orbital-rings" | "starfield-cards" | "cosmic-portal" | "galaxy-split" | "celestial-frame" | "mono-brutalist" | "geometric-slice" | "contrast-blocks" | "angular-frame" | "stripe-accent" | "bold-stack" | "cloud-float" | "sakura-cards" | "dreamy-split" | "soft-bubble" | "twilight-frame" | "pastel-stack" | "terminal-window" | "matrix-cards" | "code-block" | "shell-prompt" | "cyber-grid" | "hack-split";
 
 // Theme type detection
-type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber" | "alien" | "corporate" | "cosmic" | "architectural" | "anime" | "hacker";
+type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber" | "alien" | "corporate" | "cosmic" | "architectural" | "anime" | "hacker" | "custom-dark" | "custom-light";
+
+// Helper to determine if a color is dark
+function isColorDark(hexColor: string): boolean {
+  const hex = hexColor.replace("#", "");
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance < 0.5;
+}
+
 function getThemeType(theme: Theme): ThemeType {
+  // Check for custom themes first
+  if (theme.id.startsWith("custom-")) {
+    return isColorDark(theme.colors.background) ? "custom-dark" : "custom-light";
+  }
+  
   if (theme.id === "elegant-noir") return "dark";
   if (theme.id === "arctic-frost") return "light";
   if (theme.id === "sunset-gradient") return "sunset";
@@ -147,6 +163,9 @@ function getLayoutVariant(index: number, themeType: ThemeType, slideLayout?: str
     architectural: ["mono-brutalist", "geometric-slice", "contrast-blocks", "angular-frame", "stripe-accent", "bold-stack"],
     anime: ["cloud-float", "sakura-cards", "dreamy-split", "soft-bubble", "twilight-frame", "pastel-stack"],
     hacker: ["terminal-window", "matrix-cards", "code-block", "shell-prompt", "cyber-grid", "hack-split"],
+    // Custom themes use clean, versatile layouts
+    "custom-dark": ["left-content", "image-focus", "right-content", "cards-grid", "minimal-left", "centered"],
+    "custom-light": ["centered", "left-content", "cards-grid", "right-content", "quote-style", "minimal-left"],
   };
   const layouts = layoutsByTheme[themeType];
   return layouts[index % layouts.length]!;
@@ -512,7 +531,66 @@ export default function SlideRenderer({
       sideOverlay: "bg-gradient-to-r from-[#0d0d0d]/90 via-transparent to-transparent",
       topOverlay: "bg-gradient-to-b from-[#0d0d0d]/60 to-transparent",
     },
+    // Custom dark theme - uses theme colors via inline styles where needed
+    "custom-dark": {
+      bg: "", // Will use inline style from theme.slideStyles
+      bgSolid: "", // Will use inline style
+      orb1: "bg-white/10",
+      orb2: "bg-white/5",
+      orb1Strong: "bg-white/15",
+      orb2Strong: "bg-white/10",
+      accentMuted: "", // Will use inline style
+      accentLine: "from-white/80",
+      accentBorder: "from-white/20 via-transparent to-white/10",
+      accentGlow: "from-white/30 to-white/20",
+      border: "border-white/20",
+      borderLine: "via-white/20",
+      surface: "bg-black/40",
+      surfaceAlt: "bg-black/30",
+      overlay: "from-black/50",
+      cardBg: "bg-black/50 border-white/15 backdrop-blur-lg",
+      indicatorMuted: "text-white/50",
+      hoverAccent: "hover:text-white",
+      imgOverlay: "bg-gradient-to-r from-black via-black/80 to-transparent",
+      fullOverlay: "bg-gradient-to-t from-black via-black/60 to-black/20",
+      sideOverlay: "bg-gradient-to-r from-black/90 via-transparent to-transparent",
+      topOverlay: "bg-gradient-to-b from-black/60 to-transparent",
+    },
+    // Custom light theme - uses theme colors via inline styles where needed
+    "custom-light": {
+      bg: "", // Will use inline style from theme.slideStyles
+      bgSolid: "", // Will use inline style
+      orb1: "bg-black/5",
+      orb2: "bg-black/3",
+      orb1Strong: "bg-black/8",
+      orb2Strong: "bg-black/5",
+      accentMuted: "", // Will use inline style
+      accentLine: "from-black/80",
+      accentBorder: "from-black/10 via-transparent to-black/5",
+      accentGlow: "from-black/15 to-black/10",
+      border: "border-black/10",
+      borderLine: "via-black/10",
+      surface: "bg-white/80",
+      surfaceAlt: "bg-white/60",
+      overlay: "from-white/50",
+      cardBg: "bg-white/80 border-black/10 backdrop-blur-lg",
+      indicatorMuted: "text-black/50",
+      hoverAccent: "hover:text-black",
+      imgOverlay: "bg-gradient-to-r from-white via-white/80 to-transparent",
+      fullOverlay: "bg-gradient-to-t from-white via-white/60 to-white/20",
+      sideOverlay: "bg-gradient-to-r from-white/90 via-transparent to-transparent",
+      topOverlay: "bg-gradient-to-b from-white/60 to-transparent",
+    },
   };
+
+  // Check if this is a custom theme
+  const isCustomTheme = theme.id.startsWith("custom-");
+
+  // For custom themes, generate the background gradient class dynamically
+  // Since Tailwind can't use dynamic colors, we'll use inline styles for custom themes
+  const customBgGradient = isCustomTheme 
+    ? theme.slideStyles?.content?.background || `linear-gradient(to bottom right, ${theme.colors.background}, ${theme.colors.backgroundAlt})`
+    : "";
 
   const colors = {
     ...colorMap[themeType as keyof typeof colorMap] || colorMap.dark,
@@ -520,6 +598,9 @@ export default function SlideRenderer({
     text: theme.colors.heading,
     textMuted: theme.colors.textMuted,
   };
+  
+  // Custom theme background style - used for slide backgrounds
+  const customBgStyle: React.CSSProperties = isCustomTheme ? { background: customBgGradient } : {};
 
   const SlideIndicator = ({ position = "top-left" }: { position?: "top-left" | "top-right" | "bottom-left" }) => {
     const posClass = position === "top-left" ? "top-2 left-2 sm:top-4 sm:left-4 md:top-8 md:left-8" : position === "top-right" ? "top-2 right-2 sm:top-4 sm:right-4 md:top-8 md:right-8" : "bottom-2 left-2 sm:bottom-4 sm:left-4 md:bottom-8 md:left-8";
@@ -552,43 +633,55 @@ export default function SlideRenderer({
     />
   );
 
-  const BulletPoints = ({ compact = false }: { compact?: boolean }) => (
-    <div className={compact ? "space-y-1 sm:space-y-2" : "space-y-2 sm:space-y-3"}>
-      {bulletPoints.map((point, i) => (
-        <div key={i} className="flex items-start gap-2 sm:gap-4 group/bullet">
-          <div className={`${compact ? "mt-1" : "mt-1.5"} flex items-center gap-1 sm:gap-2 shrink-0`}>
-            <div className={`${compact ? "w-1 h-1 sm:w-1.5 sm:h-1.5" : "w-1.5 h-1.5 sm:w-2 sm:h-2"} rounded-full ${colors.accentMuted}`} />
-            <div className={`${compact ? "w-2 sm:w-4" : "w-4 sm:w-8"} h-px ${themeType === "dark" ? "bg-zinc-700" : themeType === "sunset" ? "bg-pink-900/50" : "bg-slate-300"}`} />
+  const BulletPoints = ({ compact = false }: { compact?: boolean }) => {
+    // For custom themes, use theme colors for bullet styling
+    const bulletDotStyle = isCustomTheme ? { backgroundColor: theme.colors.primary } : {};
+    const bulletLineStyle = isCustomTheme ? { backgroundColor: theme.colors.border } : {};
+    
+    return (
+      <div className={compact ? "space-y-1 sm:space-y-2" : "space-y-2 sm:space-y-3"}>
+        {bulletPoints.map((point, i) => (
+          <div key={i} className="flex items-start gap-2 sm:gap-4 group/bullet">
+            <div className={`${compact ? "mt-1" : "mt-1.5"} flex items-center gap-1 sm:gap-2 shrink-0`}>
+              <div 
+                className={`${compact ? "w-1 h-1 sm:w-1.5 sm:h-1.5" : "w-1.5 h-1.5 sm:w-2 sm:h-2"} rounded-full ${!isCustomTheme ? colors.accentMuted : ''}`}
+                style={bulletDotStyle}
+              />
+              <div 
+                className={`${compact ? "w-2 sm:w-4" : "w-4 sm:w-8"} h-px ${!isCustomTheme ? (themeType === "dark" ? "bg-zinc-700" : themeType === "sunset" ? "bg-pink-900/50" : "bg-slate-300") : ''}`}
+                style={bulletLineStyle}
+              />
+            </div>
+            <EditableText
+              value={point}
+              isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+              onStartEdit={() => onStartEditing(index, "bullet", i)}
+              onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+              onFinish={onFinishEditing}
+              className={`flex-1 leading-relaxed`}
+              style={{ 
+                fontFamily: theme.fonts.body.family, 
+                color: colors.textMuted,
+                fontSize: compact ? "clamp(0.625rem, 1.2vw + 0.15rem, 1rem)" : "clamp(0.75rem, 1.5vw + 0.2rem, 1.125rem)"
+              }}
+              isOwner={canEdit}
+              isHovered={isHovered}
+              onDelete={() => onDeleteBullet(index, i)}
+            />
           </div>
-          <EditableText
-            value={point}
-            isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
-            onStartEdit={() => onStartEditing(index, "bullet", i)}
-            onChange={(val) => onUpdateContent(index, "bullet", val, i)}
-            onFinish={onFinishEditing}
-            className={`flex-1 leading-relaxed`}
-            style={{ 
-              fontFamily: theme.fonts.body.family, 
-              color: colors.textMuted,
-              fontSize: compact ? "clamp(0.625rem, 1.2vw + 0.15rem, 1rem)" : "clamp(0.75rem, 1.5vw + 0.2rem, 1.125rem)"
-            }}
-            isOwner={canEdit}
-            isHovered={isHovered}
-            onDelete={() => onDeleteBullet(index, i)}
-          />
-        </div>
-      ))}
-      {canEdit && isHovered && (
-        <button 
-          onClick={() => onAddBullet(index)} 
-          className={`flex items-center gap-1 sm:gap-2 ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors ml-6 sm:ml-10`}
-          style={{ fontSize: "clamp(0.625rem, 1.2vw + 0.15rem, 0.875rem)" }}
-        >
-          <Plus size={12} className="sm:w-[14px] sm:h-[14px]" /> <span className="hidden sm:inline">Add point</span><span className="sm:hidden">Add</span>
-        </button>
-      )}
-    </div>
-  );
+        ))}
+        {canEdit && isHovered && (
+          <button 
+            onClick={() => onAddBullet(index)} 
+            className={`flex items-center gap-1 sm:gap-2 ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors ml-6 sm:ml-10`}
+            style={{ fontSize: "clamp(0.625rem, 1.2vw + 0.15rem, 0.875rem)" }}
+          >
+            <Plus size={12} className="sm:w-[14px] sm:h-[14px]" /> <span className="hidden sm:inline">Add point</span><span className="sm:hidden">Add</span>
+          </button>
+        )}
+      </div>
+    );
+  };
 
   // Single image block (uses first image)
   const ImageBlock = ({ className = "", size = "large", imageIndex = 0 }: { className?: string; size?: "small" | "medium" | "large"; imageIndex?: number }) => {
@@ -693,7 +786,7 @@ export default function SlideRenderer({
   if (layout === "left-content") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         <div className={`absolute top-0 right-0 w-96 h-96 ${colors.orb1} rounded-full blur-3xl hidden sm:block`} />
         <div className={`absolute bottom-0 left-0 w-80 h-80 ${colors.orb2} rounded-full blur-3xl hidden sm:block`} />
         
@@ -725,7 +818,7 @@ export default function SlideRenderer({
   if (layout === "right-content") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-bl ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-bl ${colors.bg}` : ''}`} style={customBgStyle} />
         <div className={`absolute top-0 left-0 w-96 h-96 ${colors.orb2} rounded-full blur-3xl hidden sm:block`} />
         <div className={`absolute bottom-0 right-0 w-80 h-80 ${colors.orb1} rounded-full blur-3xl hidden sm:block`} />
         
@@ -757,7 +850,7 @@ export default function SlideRenderer({
   if (layout === "centered") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-b ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-b ${colors.bg}` : ''}`} style={customBgStyle} />
         <div className={`absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] ${colors.orb1} rounded-full blur-3xl hidden sm:block`} />
         
         <SlideIndicator position="top-left" />
@@ -793,7 +886,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         
         {hasImage && firstImage && (
           <div className="absolute inset-0 clip-diagonal hidden sm:block">
@@ -849,7 +942,7 @@ export default function SlideRenderer({
             <div className={`absolute inset-0 ${colors.sideOverlay}`} />
           </>
         ) : (
-          <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+          <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         )}
         
         <div className={`absolute top-0 left-0 w-full h-32 ${colors.topOverlay}`} />
@@ -943,7 +1036,7 @@ export default function SlideRenderer({
   if (layout === "cards-grid") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         <div className={`absolute top-1/3 right-0 w-80 h-80 ${colors.orb1} rounded-full blur-3xl hidden sm:block`} />
         
         <SlideIndicator position="top-left" />
@@ -999,7 +1092,7 @@ export default function SlideRenderer({
   if (layout === "quote-style") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         <div className={`absolute top-0 left-1/4 w-96 h-96 ${colors.orb1Strong} rounded-full blur-3xl`} />
         <div className={`absolute bottom-0 right-1/4 w-72 h-72 ${colors.orb2Strong} rounded-full blur-3xl`} />
         
@@ -1055,7 +1148,7 @@ export default function SlideRenderer({
   if (layout === "timeline") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-b ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-b ${colors.bg}` : ''}`} style={customBgStyle} />
         <div className={`absolute top-0 right-1/3 w-64 h-64 ${colors.orb1Strong} rounded-full blur-3xl`} />
         
         <SlideIndicator position="top-left" />
@@ -1113,7 +1206,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         
         {/* Diagonal image section */}
         {hasImage && firstImage && (
@@ -1158,7 +1251,7 @@ export default function SlideRenderer({
   if (layout === "circle-focus") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         
         {/* Decorative circles */}
         <div className="absolute top-10 right-10 w-64 h-64 rounded-full border border-teal-500/10" />
@@ -1228,7 +1321,7 @@ export default function SlideRenderer({
   if (layout === "wave-layout") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-b ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-b ${colors.bg}` : ''}`} style={customBgStyle} />
         
         {/* Wave SVG background */}
         <svg className="absolute bottom-0 left-0 right-0 h-48 opacity-20" viewBox="0 0 1440 320" preserveAspectRatio="none">
@@ -1313,7 +1406,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         
         {/* Aurora gradient streaks */}
         <div className="absolute top-0 left-0 right-0 h-full overflow-hidden">
@@ -1391,7 +1484,7 @@ export default function SlideRenderer({
   if (layout === "glass-cards") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         
         {/* Aurora background effect */}
         <div className="absolute inset-0">
@@ -1466,7 +1559,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-b ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-b ${colors.bg}` : ''}`} style={customBgStyle} />
         
         {/* Full aurora effect background */}
         {hasImage && firstImage ? (
@@ -1550,7 +1643,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         
         {/* Ember particles floating */}
         <div className="absolute inset-0 overflow-hidden">
@@ -1622,7 +1715,7 @@ export default function SlideRenderer({
   if (layout === "ember-cards") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         
         {/* Ember background effect */}
         <div className="absolute inset-0">
@@ -1703,7 +1796,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         
         {/* Molten divider effect */}
         <div className="absolute top-0 bottom-0 left-1/2 w-2 -translate-x-1/2">
@@ -1775,7 +1868,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         
         {/* Botanical decorative elements */}
         <div className="absolute top-0 right-0 w-64 h-64 opacity-10">
@@ -1850,7 +1943,7 @@ export default function SlideRenderer({
   if (layout === "botanical-cards") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         
         {/* Botanical corner decorations */}
         <div className="absolute top-0 left-0 w-32 h-32 opacity-15">
@@ -1947,7 +2040,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         
         {/* Ornate center divider */}
         <div className="absolute top-12 bottom-12 left-1/2 -translate-x-1/2 w-px bg-gradient-to-b from-transparent via-pink-400/30 to-transparent" />
@@ -2020,7 +2113,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         
         {/* Scanlines effect */}
         <div className="absolute inset-0 opacity-5" style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,255,0.1) 2px, rgba(0,255,255,0.1) 4px)" }} />
@@ -2098,7 +2191,7 @@ export default function SlideRenderer({
   if (layout === "neon-grid") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         
         {/* Grid background */}
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "linear-gradient(rgba(0,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,255,0.1) 1px, transparent 1px)", backgroundSize: "50px 50px" }} />
@@ -2181,7 +2274,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         
         {/* Holographic shimmer background */}
         <div className="absolute inset-0 opacity-5" style={{ backgroundImage: "linear-gradient(135deg, rgba(0,255,255,0.2) 0%, rgba(255,0,255,0.2) 25%, rgba(173,255,47,0.2) 50%, rgba(0,255,255,0.2) 75%, rgba(255,0,255,0.2) 100%)", backgroundSize: "400% 400%" }} />
@@ -2271,7 +2364,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         
         {/* Scanning lines effect */}
         <div className="absolute inset-0 overflow-hidden opacity-15">
@@ -2372,7 +2465,7 @@ export default function SlideRenderer({
   if (layout === "bio-cards") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         
         {/* Organic flowing shapes */}
         <div className={`absolute top-0 right-0 w-[500px] h-[500px] ${colors.orb1} rounded-full blur-3xl`} />
@@ -2440,7 +2533,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         
         {/* Data stream lines */}
         <div className="absolute inset-0 overflow-hidden opacity-10">
@@ -2533,7 +2626,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         
         {/* Subtle geometric accents */}
         <div className="absolute top-0 left-0 w-1 h-24 bg-gradient-to-b from-blue-500 to-transparent" />
@@ -2606,7 +2699,7 @@ export default function SlideRenderer({
   if (layout === "pro-cards") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         
         {/* Subtle background elements */}
         <div className={`absolute top-0 right-0 w-[500px] h-[500px] ${colors.orb1} rounded-full blur-3xl`} />
@@ -2663,7 +2756,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         
         {/* Subtle geometric grid */}
         <div className="absolute inset-0 opacity-[0.015]" style={{ backgroundImage: "linear-gradient(to right, #000 1px, transparent 1px), linear-gradient(to bottom, #000 1px, transparent 1px)", backgroundSize: "50px 50px" }} />

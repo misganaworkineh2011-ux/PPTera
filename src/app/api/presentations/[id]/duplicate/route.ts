@@ -43,11 +43,21 @@ export async function POST(
         userId: authUser.id,
         title: `${original.title} (Copy)`,
         description: original.description,
-        content: original.content,
-        slides: original.slides,
+        content: original.content ?? {},
+        slides: original.slides ?? [],
         thumbnailUrl: original.thumbnailUrl,
         isPinned: false,
         isPublic: false,
+      },
+    });
+
+    // Log activity
+    await db.activity.create({
+      data: {
+        userId: authUser.id,
+        type: "create",
+        description: `Duplicated presentation "${original.title}"`,
+        presentationId: duplicate.id,
       },
     });
 

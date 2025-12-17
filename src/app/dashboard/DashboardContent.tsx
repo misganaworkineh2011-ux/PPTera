@@ -2,8 +2,11 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Filter, Grid, List as ListIcon, MoreHorizontal, Upload, Star, Globe, Lock, Share2, Edit3, Copy, Trash2, Link2 } from "lucide-react";
+import { Filter, Grid, List as ListIcon, MoreHorizontal, Upload, Star, Globe, Lock, Share2, Edit3, Copy, Trash2, Link2, Loader2 } from "lucide-react";
 import Image from "next/image";
+import { useLanguage } from "~/contexts/LanguageContext";
+import { dashboardTranslations } from "~/lib/dashboard-translations";
+import { useUser } from "@clerk/nextjs";
 
 interface SlideImage {
   url: string;
@@ -40,6 +43,7 @@ type FilterMode = "all" | "favorites" | "public" | "private";
 
 export default function DashboardContent({ presentations: initialPresentations, userName, searchQuery = "" }: DashboardContentProps) {
   const router = useRouter();
+  const { user } = useUser();
   const [presentations, setPresentations] = useState(initialPresentations);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [filterMode, setFilterMode] = useState<FilterMode>("all");
@@ -49,8 +53,11 @@ export default function DashboardContent({ presentations: initialPresentations, 
   const [showRenameDialog, setShowRenameDialog] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingAction, setLoadingAction] = useState<{ id: string; action: string } | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState<string | null>(null);
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language] || dashboardTranslations.en;
 
   // Close menus when clicking outside
   useEffect(() => {
@@ -136,6 +143,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
         
       case "favorite":
         try {
+          setLoadingAction({ id: presId, action: "favorite" });
           const response = await fetch(`/api/presentations/${presId}/favorite`, {
             method: "PATCH",
           });
@@ -149,12 +157,15 @@ export default function DashboardContent({ presentations: initialPresentations, 
         } catch (error) {
           console.error("Error toggling favorite:", error);
           alert("Failed to update favorite status");
+        } finally {
+          setLoadingAction(null);
         }
         break;
         
       case "duplicate":
         try {
           setIsLoading(true);
+          setLoadingAction({ id: presId, action: "duplicate" });
           const response = await fetch(`/api/presentations/${presId}/duplicate`, {
             method: "POST",
           });
@@ -171,6 +182,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
           alert("Failed to duplicate presentation");
         } finally {
           setIsLoading(false);
+          setLoadingAction(null);
         }
         break;
         
@@ -254,26 +266,26 @@ export default function DashboardContent({ presentations: initialPresentations, 
             onClick={() => setFilterMode("all")}
             className={`flex items-center gap-1.5 sm:gap-2 whitespace-nowrap rounded-lg px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition ${
               filterMode === "all"
-                ? "bg-[#1e3a8a]/10 font-bold text-[#1e3a8a]"
-                : "text-slate-600 hover:bg-slate-100 hover:text-[#1e3a8a]"
+                ? "bg-[#1e3a8a]/10 font-bold text-[#1e3a8a] dark:bg-[#1e3a8a]/30 dark:text-white"
+                : "text-slate-600 hover:bg-slate-100 hover:text-[#1e3a8a] dark:text-slate-300 dark:hover:bg-slate-700"
             }`}
           >
             <Grid size={14} className="sm:hidden" />
             <Grid size={16} className="hidden sm:block" />
-            All
+            {t.all || "All"}
           </button>
           <button
             onClick={() => setFilterMode("favorites")}
             className={`flex items-center gap-1.5 sm:gap-2 whitespace-nowrap rounded-lg px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition ${
               filterMode === "favorites"
-                ? "bg-[#1e3a8a]/10 font-bold text-[#1e3a8a]"
-                : "text-slate-600 hover:bg-slate-100 hover:text-[#1e3a8a]"
+                ? "bg-[#1e3a8a]/10 font-bold text-[#1e3a8a] dark:bg-[#1e3a8a]/30 dark:text-white"
+                : "text-slate-600 hover:bg-slate-100 hover:text-[#1e3a8a] dark:text-slate-300 dark:hover:bg-slate-700"
             }`}
           >
             <Star size={14} className="sm:hidden" />
             <Star size={16} className="hidden sm:block" />
-            <span className="hidden xs:inline">Favorites</span>
-            <span className="xs:hidden">Fav</span>
+            <span className="hidden xs:inline">{t.favorites || "Favorites"}</span>
+            <span className="xs:hidden">{(t.favorites || "Favorites").slice(0, 3)}</span>
           </button>
         </div>
 
@@ -281,60 +293,60 @@ export default function DashboardContent({ presentations: initialPresentations, 
           <div className="relative filter-menu-container">
             <button
               onClick={() => setShowFilterMenu(!showFilterMenu)}
-              className="p-1.5 sm:p-0 text-slate-400 hover:text-slate-600"
+              className="p-1.5 sm:p-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
             >
               <Filter size={16} className="sm:hidden" />
               <Filter size={18} className="hidden sm:block" />
             </button>
             {showFilterMenu && (
-              <div className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-44 sm:w-48 rounded-lg border border-slate-200 bg-white shadow-lg z-10">
+              <div className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-44 sm:w-48 rounded-lg border border-slate-200 bg-white shadow-lg z-10 dark:border-slate-700 dark:bg-slate-800">
                 <div className="p-1.5 sm:p-2">
                   <button
                     onClick={() => {
                       setFilterMode("public");
                       setShowFilterMenu(false);
                     }}
-                    className="flex w-full items-center gap-2 rounded-md px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-slate-700 hover:bg-slate-100"
+                    className="flex w-full items-center gap-2 rounded-md px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
                   >
-                    <Globe size={14} /> Public only
+                    <Globe size={14} /> {t.publicOnly || "Public only"}
                   </button>
                   <button
                     onClick={() => {
                       setFilterMode("private");
                       setShowFilterMenu(false);
                     }}
-                    className="flex w-full items-center gap-2 rounded-md px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-slate-700 hover:bg-slate-100"
+                    className="flex w-full items-center gap-2 rounded-md px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
                   >
-                    <Lock size={14} /> Private only
+                    <Lock size={14} /> {t.privateOnly || "Private only"}
                   </button>
                 </div>
               </div>
             )}
           </div>
-          <div className="flex items-center gap-0.5 sm:gap-1 rounded-lg bg-slate-100 p-0.5 sm:p-1">
+          <div className="flex items-center gap-0.5 sm:gap-1 rounded-lg bg-slate-100 p-0.5 sm:p-1 dark:bg-slate-700">
             <button
               onClick={() => setViewMode("grid")}
               className={`flex items-center gap-1 sm:gap-2 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 transition ${
                 viewMode === "grid"
-                  ? "bg-white text-[#1e3a8a] shadow-sm"
-                  : "text-slate-500 hover:text-slate-700"
+                  ? "bg-white text-[#1e3a8a] shadow-sm dark:bg-slate-600 dark:text-white"
+                  : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
               }`}
             >
               <Grid size={16} className="sm:hidden" />
               <Grid size={20} className="hidden sm:block" />
-              <span className="text-xs sm:text-sm font-medium hidden xs:inline">Grid</span>
+              <span className="text-xs sm:text-sm font-medium hidden xs:inline">{t.grid || "Grid"}</span>
             </button>
             <button
               onClick={() => setViewMode("list")}
               className={`flex items-center gap-1 sm:gap-2 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 transition ${
                 viewMode === "list"
-                  ? "bg-white text-[#1e3a8a] shadow-sm"
-                  : "text-slate-500 hover:text-slate-700"
+                  ? "bg-white text-[#1e3a8a] shadow-sm dark:bg-slate-600 dark:text-white"
+                  : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
               }`}
             >
               <ListIcon size={16} className="sm:hidden" />
               <ListIcon size={20} className="hidden sm:block" />
-              <span className="text-xs sm:text-sm font-medium hidden xs:inline">List</span>
+              <span className="text-xs sm:text-sm font-medium hidden xs:inline">{t.list || "List"}</span>
             </button>
           </div>
         </div>
@@ -343,25 +355,25 @@ export default function DashboardContent({ presentations: initialPresentations, 
       {/* Content Display */}
       <div className="min-h-[300px] sm:min-h-[400px] lg:min-h-[600px]">
         {filteredPresentations.length === 0 ? (
-          <div className="flex h-[250px] sm:h-[300px] lg:h-[400px] flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-200 bg-slate-50/50 text-center px-4">
-            <div className="mb-3 sm:mb-4 flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-md bg-white shadow-lg ring-1 ring-slate-100">
+          <div className="flex h-[250px] sm:h-[300px] lg:h-[400px] flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-200 bg-slate-50/50 text-center px-4 dark:border-slate-700 dark:bg-slate-800/50">
+            <div className="mb-3 sm:mb-4 flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-md bg-white shadow-lg ring-1 ring-slate-100 dark:bg-slate-700 dark:ring-slate-600">
               <Upload size={22} className="sm:hidden text-[#06b6d4]" />
               <Upload size={28} className="hidden sm:block text-[#06b6d4]" />
             </div>
-            <h3 className="mb-1.5 sm:mb-2 text-base sm:text-lg font-bold text-[#1e3a8a]">
-              {presentations.length === 0 ? "No presentations yet" : "No results found"}
+            <h3 className="mb-1.5 sm:mb-2 text-base sm:text-lg font-bold text-[#1e3a8a] dark:text-white">
+              {presentations.length === 0 ? (t.noPresentations || "No presentations yet") : (t.noResults || "No results found")}
             </h3>
-            <p className="text-xs sm:text-sm text-slate-500 max-w-xs mx-auto mb-4 sm:mb-6">
+            <p className="text-xs sm:text-sm text-slate-500 max-w-xs mx-auto mb-4 sm:mb-6 dark:text-slate-400">
               {presentations.length === 0
-                ? "Create your first AI-powered deck in seconds."
-                : "No presentations match the selected filter."}
+                ? (t.createFirst || "Create your first AI-powered deck in seconds.")
+                : (t.noMatch || "No presentations match the selected filter.")}
             </p>
             {filterMode !== "all" && (
               <button
                 onClick={() => setFilterMode("all")}
                 className="text-xs sm:text-sm font-medium text-[#06b6d4] hover:text-[#1e3a8a]"
               >
-                Clear filters
+                {t.clearFilters || "Clear filters"}
               </button>
             )}
           </div>
@@ -371,7 +383,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
               <a
                 key={pres.id}
                 href={`/presentation/${pres.id}`}
-                className="group relative flex flex-col overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-lg hover:shadow-[#06b6d4]/10 cursor-pointer"
+                className="group relative flex flex-col overflow-hidden rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-lg hover:shadow-[#06b6d4]/10 cursor-pointer"
               >
                 {/* Thumbnail */}
                 <div className="aspect-[16/9] w-full bg-gradient-to-br from-[#1e3a8a]/10 to-[#06b6d4]/10 relative overflow-hidden">
@@ -392,7 +404,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
 
                 {/* Content Section */}
                 <div className="flex flex-col p-2 sm:p-3">
-                  <h3 className="mb-1.5 sm:mb-2 line-clamp-2 text-xs sm:text-sm font-bold text-[#1e3a8a]" title={pres.title}>
+                  <h3 className="mb-1.5 sm:mb-2 line-clamp-2 text-xs sm:text-sm font-bold text-[#1e3a8a] dark:text-white" title={pres.title}>
                     {pres.title}
                   </h3>
 
@@ -402,24 +414,34 @@ export default function DashboardContent({ presentations: initialPresentations, 
                       <>
                         <Globe size={10} className="sm:hidden text-green-600" />
                         <Globe size={12} className="hidden sm:block text-green-600" />
-                        <span className="text-[10px] sm:text-xs font-medium text-green-600">Public</span>
+                        <span className="text-[10px] sm:text-xs font-medium text-green-600">{t.public || "Public"}</span>
                       </>
                     ) : (
                       <>
                         <Lock size={10} className="sm:hidden text-slate-500" />
                         <Lock size={12} className="hidden sm:block text-slate-500" />
-                        <span className="text-[10px] sm:text-xs font-medium text-slate-500">Private</span>
+                        <span className="text-[10px] sm:text-xs font-medium text-slate-500">{t.private || "Private"}</span>
                       </>
                     )}
                   </div>
 
                   {/* Footer Info */}
-                  <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-slate-50">
+                  <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-slate-50 dark:border-slate-700">
                     <div className="flex items-center gap-1 sm:gap-1.5">
-                      <div className="h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center text-[8px] sm:text-[9px] text-white font-bold">
-                        {userName ? userName[0]?.toUpperCase() : "U"}
-                      </div>
-                      <span className="text-[9px] sm:text-[10px] text-slate-400">
+                      {user?.imageUrl ? (
+                        <Image
+                          src={user.imageUrl}
+                          alt={userName || "User"}
+                          width={20}
+                          height={20}
+                          className="h-4 w-4 sm:h-5 sm:w-5 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center text-[8px] sm:text-[9px] text-white font-bold">
+                          {userName ? userName[0]?.toUpperCase() : "U"}
+                        </div>
+                      )}
+                      <span className="text-[9px] sm:text-[10px] text-slate-400 dark:text-slate-500">
                         {new Date(pres.createdAt).toLocaleDateString()}
                       </span>
                     </div>
@@ -429,48 +451,62 @@ export default function DashboardContent({ presentations: initialPresentations, 
                           e.preventDefault();
                           setActiveMenu(activeMenu === pres.id ? null : pres.id);
                         }}
-                        className="text-slate-300 hover:text-[#06b6d4]"
+                        className="text-slate-300 hover:text-[#06b6d4] dark:text-slate-500 dark:hover:text-[#06b6d4]"
                       >
                         <MoreHorizontal size={14} />
                       </button>
                       {activeMenu === pres.id && (
-                        <div className="absolute right-0 bottom-full mb-1 w-48 rounded-lg border border-slate-200 bg-white shadow-lg z-50">
+                        <div className="absolute right-0 bottom-full mb-1 w-48 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg z-50">
                           <div className="p-1">
                             <button
                               onClick={(e) => {
                                 e.preventDefault();
                                 handleMenuAction("share", pres.id);
                               }}
-                              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
+                              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
                             >
-                              <Share2 size={14} /> Share
+                              <Share2 size={14} /> {t.share || "Share"}
                             </button>
                             <button
                               onClick={(e) => {
                                 e.preventDefault();
                                 handleMenuAction("rename", pres.id);
                               }}
-                              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
+                              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
                             >
-                              <Edit3 size={14} /> Rename
+                              <Edit3 size={14} /> {t.rename || "Rename"}
                             </button>
                             <button
                               onClick={(e) => {
                                 e.preventDefault();
                                 handleMenuAction("favorite", pres.id);
                               }}
-                              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
+                              disabled={loadingAction?.id === pres.id && loadingAction?.action === "favorite"}
+                              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-700"
                             >
-                              <Star size={14} /> {pres.isPinned ? "Remove from" : "Add to"} favorites
+                              {loadingAction?.id === pres.id && loadingAction?.action === "favorite" ? (
+                                <Loader2 size={14} className="animate-spin" />
+                              ) : (
+                                <Star size={14} />
+                              )}
+                              {loadingAction?.id === pres.id && loadingAction?.action === "favorite" 
+                                ? (t.updating || "Updating...") 
+                                : (pres.isPinned ? (t.removeFromFavorites || "Remove from favorites") : (t.addToFavorites || "Add to favorites"))}
                             </button>
                             <button
                               onClick={(e) => {
                                 e.preventDefault();
                                 handleMenuAction("duplicate", pres.id);
                               }}
-                              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
+                              disabled={loadingAction?.id === pres.id && loadingAction?.action === "duplicate"}
+                              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-700"
                             >
-                              <Copy size={14} /> Duplicate
+                              {loadingAction?.id === pres.id && loadingAction?.action === "duplicate" ? (
+                                <Loader2 size={14} className="animate-spin" />
+                              ) : (
+                                <Copy size={14} />
+                              )}
+                              {loadingAction?.id === pres.id && loadingAction?.action === "duplicate" ? (t.duplicating || "Duplicating...") : (t.duplicate || "Duplicate")}
                             </button>
                             <button
                               onClick={(e) => {
@@ -479,21 +515,21 @@ export default function DashboardContent({ presentations: initialPresentations, 
                               }}
                               className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm ${
                                 copiedId === pres.id
-                                  ? "bg-green-50 text-green-600"
-                                  : "text-slate-700 hover:bg-slate-100"
+                                  ? "bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400"
+                                  : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
                               }`}
                             >
-                              <Link2 size={14} /> {copiedId === pres.id ? "Link copied!" : "Copy link"}
+                              <Link2 size={14} /> {copiedId === pres.id ? (t.linkCopied || "Link copied!") : (t.copyLink || "Copy link")}
                             </button>
-                            <div className="my-1 border-t border-slate-100" />
+                            <div className="my-1 border-t border-slate-100 dark:border-slate-700" />
                             <button
                               onClick={(e) => {
                                 e.preventDefault();
                                 handleMenuAction("delete", pres.id);
                               }}
-                              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
                             >
-                              <Trash2 size={14} /> Delete
+                              <Trash2 size={14} /> {t.delete || "Delete"}
                             </button>
                           </div>
                         </div>
@@ -510,7 +546,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
               <a
                 key={pres.id}
                 href={`/presentation/${pres.id}`}
-                className="group flex items-center gap-2 sm:gap-4 rounded-md border border-slate-200 bg-white p-2 sm:p-3 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-md cursor-pointer"
+                className="group flex items-center gap-2 sm:gap-4 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 sm:p-3 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-md cursor-pointer"
               >
                 {/* Thumbnail */}
                 <div className="w-14 h-10 sm:w-20 sm:h-14 flex-shrink-0 bg-gradient-to-br from-[#1e3a8a]/10 to-[#06b6d4]/10 rounded relative overflow-hidden">
@@ -525,7 +561,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
-                    <h3 className="text-sm sm:text-base font-bold text-[#1e3a8a] truncate" title={pres.title}>
+                    <h3 className="text-sm sm:text-base font-bold text-[#1e3a8a] dark:text-white truncate" title={pres.title}>
                       {pres.title}
                     </h3>
                     {pres.isPinned && (
@@ -543,13 +579,13 @@ export default function DashboardContent({ presentations: initialPresentations, 
                         <>
                           <Globe size={10} className="sm:hidden text-green-600" />
                           <Globe size={12} className="hidden sm:block text-green-600" />
-                          <span className="text-green-600 font-medium">Public</span>
+                          <span className="text-green-600 font-medium">{t.public || "Public"}</span>
                         </>
                       ) : (
                         <>
                           <Lock size={10} className="sm:hidden text-slate-500" />
                           <Lock size={12} className="hidden sm:block text-slate-500" />
-                          <span className="text-slate-500 font-medium">Private</span>
+                          <span className="text-slate-500 font-medium">{t.private || "Private"}</span>
                         </>
                       )}
                     </div>
@@ -568,43 +604,57 @@ export default function DashboardContent({ presentations: initialPresentations, 
                     <MoreHorizontal size={18} />
                   </button>
                   {activeMenu === pres.id && (
-                    <div className="absolute right-0 top-full mt-1 w-48 rounded-lg border border-slate-200 bg-white shadow-lg z-50">
+                    <div className="absolute right-0 top-full mt-1 w-48 rounded-lg border border-slate-200 bg-white shadow-lg z-50 dark:border-slate-700 dark:bg-slate-800">
                       <div className="p-1">
                         <button
                           onClick={(e) => {
                             e.preventDefault();
                             handleMenuAction("share", pres.id);
                           }}
-                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
+                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
                         >
-                          <Share2 size={14} /> Share
+                          <Share2 size={14} /> {t.share || "Share"}
                         </button>
                         <button
                           onClick={(e) => {
                             e.preventDefault();
                             handleMenuAction("rename", pres.id);
                           }}
-                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
+                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
                         >
-                          <Edit3 size={14} /> Rename
+                          <Edit3 size={14} /> {t.rename || "Rename"}
                         </button>
                         <button
                           onClick={(e) => {
                             e.preventDefault();
                             handleMenuAction("favorite", pres.id);
                           }}
-                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
+                          disabled={loadingAction?.id === pres.id && loadingAction?.action === "favorite"}
+                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-700"
                         >
-                          <Star size={14} /> {pres.isPinned ? "Remove from" : "Add to"} favorites
+                          {loadingAction?.id === pres.id && loadingAction?.action === "favorite" ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : (
+                            <Star size={14} />
+                          )}
+                          {loadingAction?.id === pres.id && loadingAction?.action === "favorite" 
+                            ? (t.updating || "Updating...") 
+                            : (pres.isPinned ? (t.removeFromFavorites || "Remove from favorites") : (t.addToFavorites || "Add to favorites"))}
                         </button>
                         <button
                           onClick={(e) => {
                             e.preventDefault();
                             handleMenuAction("duplicate", pres.id);
                           }}
-                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
+                          disabled={loadingAction?.id === pres.id && loadingAction?.action === "duplicate"}
+                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-700"
                         >
-                          <Copy size={14} /> Duplicate
+                          {loadingAction?.id === pres.id && loadingAction?.action === "duplicate" ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : (
+                            <Copy size={14} />
+                          )}
+                          {loadingAction?.id === pres.id && loadingAction?.action === "duplicate" ? (t.duplicating || "Duplicating...") : (t.duplicate || "Duplicate")}
                         </button>
                         <button
                           onClick={(e) => {
@@ -613,21 +663,21 @@ export default function DashboardContent({ presentations: initialPresentations, 
                           }}
                           className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm ${
                             copiedId === pres.id
-                              ? "bg-green-50 text-green-600"
-                              : "text-slate-700 hover:bg-slate-100"
+                              ? "bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400"
+                              : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
                           }`}
                         >
-                          <Link2 size={14} /> {copiedId === pres.id ? "Link copied!" : "Copy link"}
+                          <Link2 size={14} /> {copiedId === pres.id ? (t.linkCopied || "Link copied!") : (t.copyLink || "Copy link")}
                         </button>
-                        <div className="my-1 border-t border-slate-100" />
+                        <div className="my-1 border-t border-slate-100 dark:border-slate-700" />
                         <button
                           onClick={(e) => {
                             e.preventDefault();
                             handleMenuAction("delete", pres.id);
                           }}
-                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
                         >
-                          <Trash2 size={14} /> Delete
+                          <Trash2 size={14} /> {t.delete || "Delete"}
                         </button>
                       </div>
                     </div>
@@ -642,8 +692,8 @@ export default function DashboardContent({ presentations: initialPresentations, 
       {/* Rename Dialog */}
       {showRenameDialog && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/30 p-4" onClick={() => setShowRenameDialog(null)}>
-          <div className="bg-white rounded-lg sm:rounded-md p-4 sm:p-6 w-full max-w-md shadow-2xl border border-slate-200" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-base sm:text-lg font-bold text-[#1e3a8a] mb-3 sm:mb-4">Rename Presentation</h3>
+          <div className="bg-white rounded-lg sm:rounded-md p-4 sm:p-6 w-full max-w-md shadow-2xl border border-slate-200 dark:bg-slate-800 dark:border-slate-700" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-base sm:text-lg font-bold text-[#1e3a8a] mb-3 sm:mb-4 dark:text-white">{t.renamePresentation || "Rename Presentation"}</h3>
             <input
               type="text"
               value={renameValue}
@@ -655,25 +705,25 @@ export default function DashboardContent({ presentations: initialPresentations, 
                   setShowRenameDialog(null);
                 }
               }}
-              className="w-full rounded-md border border-slate-200 px-3 sm:px-4 py-2 text-sm focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20"
-              placeholder="Enter new title"
+              className="w-full rounded-md border border-slate-200 px-3 sm:px-4 py-2 text-sm focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+              placeholder={t.enterNewTitle || "Enter new title"}
               autoFocus
               disabled={isLoading}
             />
             <div className="flex gap-2 sm:gap-3 mt-3 sm:mt-4">
               <button
                 onClick={() => setShowRenameDialog(null)}
-                className="flex-1 rounded-md border border-slate-200 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-50"
+                className="flex-1 rounded-md border border-slate-200 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
                 disabled={isLoading}
               >
-                Cancel
+                {t.cancel || "Cancel"}
               </button>
               <button
                 onClick={() => handleRename(showRenameDialog)}
                 className="flex-1 rounded-md bg-[#1e3a8a] px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white hover:bg-[#1e3a8a]/90 disabled:opacity-50"
                 disabled={isLoading || !renameValue.trim()}
               >
-                {isLoading ? "Saving..." : "Save"}
+                {isLoading ? (t.saving || "Saving...") : (t.saveChanges || "Save")}
               </button>
             </div>
           </div>
@@ -683,31 +733,31 @@ export default function DashboardContent({ presentations: initialPresentations, 
       {/* Delete Confirmation Dialog */}
       {showDeleteDialog && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/30 p-4" onClick={() => setShowDeleteDialog(null)}>
-          <div className="bg-white rounded-lg sm:rounded-md p-4 sm:p-6 w-full max-w-md shadow-2xl border border-slate-200" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-lg sm:rounded-md p-4 sm:p-6 w-full max-w-md shadow-2xl border border-slate-200 dark:bg-slate-800 dark:border-slate-700" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-              <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-md bg-red-100">
-                <Trash2 size={16} className="sm:hidden text-red-600" />
-                <Trash2 size={20} className="hidden sm:block text-red-600" />
+              <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-md bg-red-100 dark:bg-red-900/50">
+                <Trash2 size={16} className="sm:hidden text-red-600 dark:text-red-400" />
+                <Trash2 size={20} className="hidden sm:block text-red-600 dark:text-red-400" />
               </div>
-              <h3 className="text-base sm:text-lg font-bold text-[#1e3a8a]">Delete Presentation</h3>
+              <h3 className="text-base sm:text-lg font-bold text-[#1e3a8a] dark:text-white">{t.deletePresentation || "Delete Presentation"}</h3>
             </div>
-            <p className="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6">
-              Are you sure you want to delete this presentation? This action cannot be undone.
+            <p className="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6 dark:text-slate-400">
+              {t.deleteConfirm || "Are you sure you want to delete this presentation? This action cannot be undone."}
             </p>
             <div className="flex gap-2 sm:gap-3">
               <button
                 onClick={() => setShowDeleteDialog(null)}
-                className="flex-1 rounded-md border border-slate-200 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-50"
+                className="flex-1 rounded-md border border-slate-200 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
                 disabled={isLoading}
               >
-                Cancel
+                {t.cancel || "Cancel"}
               </button>
               <button
                 onClick={() => handleDelete(showDeleteDialog)}
                 className="flex-1 rounded-md bg-red-600 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
                 disabled={isLoading}
               >
-                {isLoading ? "Deleting..." : "Delete"}
+                {isLoading ? (t.deleting || "Deleting...") : (t.delete || "Delete")}
               </button>
             </div>
           </div>

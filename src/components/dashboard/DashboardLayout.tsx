@@ -69,7 +69,7 @@ export default function DashboardLayout({ children, subscriptionPlan, credits, o
       isMobileSidebarOpen,
       setIsMobileSidebarOpen
     }}>
-      <div className="flex h-screen bg-[#F8F9FA] font-sans selection:bg-[#06b6d4]/20 selection:text-[#1e3a8a]">
+      <div className="flex h-screen bg-[#F8F9FA] dark:bg-slate-900 font-sans selection:bg-[#06b6d4]/20 selection:text-[#1e3a8a]">
         {/* Mobile sidebar overlay */}
         {isMobileSidebarOpen && (
           <div 

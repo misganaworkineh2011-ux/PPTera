@@ -12,6 +12,7 @@ import {
   Redo2,
 } from "lucide-react";
 import { getThemeById, getDefaultTheme, type Theme } from "~/lib/themes";
+import { isCustomThemeId, getCustomThemeDbId, convertCustomThemeToTheme } from "~/lib/custom-theme-utils";
 import { type LayoutType } from "~/lib/slide-layouts";
 import {
   type SlideData,
@@ -111,7 +112,31 @@ export default function PresentationViewer({
 
   const slides = slidesData;
   const { content } = presentation;
-  const theme = getThemeById(content.theme || "") || getDefaultTheme();
+  
+  // Custom theme state
+  const [customTheme, setCustomTheme] = useState<Theme | null>(null);
+  const [isLoadingTheme, setIsLoadingTheme] = useState(false);
+  
+  // Load custom theme if needed
+  useEffect(() => {
+    const themeId = content.theme || "";
+    if (isCustomThemeId(themeId)) {
+      setIsLoadingTheme(true);
+      const dbId = getCustomThemeDbId(themeId);
+      fetch(`/api/themes/custom/${dbId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.theme) {
+            setCustomTheme(convertCustomThemeToTheme(data.theme));
+          }
+        })
+        .catch(err => console.error("Failed to load custom theme:", err))
+        .finally(() => setIsLoadingTheme(false));
+    }
+  }, [content.theme]);
+  
+  // Get the theme - either custom or built-in
+  const theme = customTheme || getThemeById(content.theme || "") || getDefaultTheme();
   const fontsUrl = getGoogleFontsUrl(theme);
 
   // Undo/Redo history management
@@ -578,8 +603,10 @@ export default function PresentationViewer({
       // Thumbnail view
       const themeType = getThemeType(theme);
       const ui = getUIColors(themeType);
-      const bgColors: Record<ThemeType, string> = { dark: "#0a0a0b", light: "#f8fafc", sunset: "#1c1017", ocean: "#0a1628", aurora: "#0f0a1a", ember: "#1a0a0a", midnight: "#0c0a1d", cyber: "#0a0a0f", alien: "#0a0f0a", corporate: "#ffffff", cosmic: "#0a0612", architectural: "#0a0a0a", anime: "#1a1625", hacker: "#0d0d0d" };
-      const thumbnailBg: React.CSSProperties = isTitle ? backgroundStyle : { background: bgColors[themeType] };
+      const bgColors: Record<ThemeType, string> = { dark: "#0a0a0b", light: "#f8fafc", sunset: "#1c1017", ocean: "#0a1628", aurora: "#0f0a1a", ember: "#1a0a0a", midnight: "#0c0a1d", cyber: "#0a0a0f", alien: "#0a0f0a", corporate: "#ffffff", cosmic: "#0a0612", architectural: "#0a0a0a", anime: "#1a1625", hacker: "#0d0d0d", "custom-dark": "#0a0a0a", "custom-light": "#ffffff" };
+      // Use custom theme background if available
+      const thumbnailBgColor = theme.pageBackground ? theme.colors.background : bgColors[themeType];
+      const thumbnailBg: React.CSSProperties = isTitle ? backgroundStyle : { background: thumbnailBgColor };
       
       return (
         <div className="w-full h-full relative overflow-hidden" style={thumbnailBg}>
@@ -735,11 +762,27 @@ export default function PresentationViewer({
           );
         })}
         <div className="text-center py-6 sm:py-8">
-          <div className={`inline-flex items-center gap-2 px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-full backdrop-blur-sm shadow-lg border ${ui.endCard}`}>
+          <div 
+            className={`inline-flex items-center gap-2 px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-full backdrop-blur-sm shadow-lg border ${ui.endCard}`}
+            style={theme.pageBackground ? { 
+              background: theme.colors.backgroundAlt, 
+              borderColor: theme.colors.border 
+            } : {}}
+          >
             <Sparkles size={14} className="sm:w-4 sm:h-4 md:w-5 md:h-5" style={{ color: theme.colors.primary }} />
-            <span className={`font-semibold text-xs sm:text-sm md:text-base ${ui.endText}`}>End of Presentation</span>
+            <span 
+              className={`font-semibold text-xs sm:text-sm md:text-base ${ui.endText}`}
+              style={theme.pageBackground ? { color: theme.colors.heading } : {}}
+            >
+              End of Presentation
+            </span>
           </div>
-          <p className={`mt-3 sm:mt-4 text-[10px] sm:text-xs md:text-sm ${ui.endMuted}`}>{slides.length} slides • Created with PPT Master</p>
+          <p 
+            className={`mt-3 sm:mt-4 text-[10px] sm:text-xs md:text-sm ${ui.endMuted}`}
+            style={theme.pageBackground ? { color: theme.colors.textMuted } : {}}
+          >
+            {slides.length} slides • Created with PPT Master
+          </p>
         </div>
       </div>
     );
@@ -885,7 +928,10 @@ export default function PresentationViewer({
         }
       `}</style>
 
-      <div className={`min-h-screen ${getUIColors(getThemeType(theme)).pageBg}`}>
+      <div 
+        className={`min-h-screen ${theme.pageBackground ? "" : getUIColors(getThemeType(theme)).pageBg}`}
+        style={theme.pageBackground ? { background: theme.pageBackground } : {}}
+      >
         {!isFullscreen && !isPublicView && (
           <Header
             title={presentation.title}
@@ -1077,19 +1123,27 @@ function ScrollSlideContent({ slide, index, theme, renderSlide, isMobile }: {
     architectural: "bg-gradient-to-br from-[#0a0a0a] via-[#141414] to-[#0a0a0a]",
     anime: "bg-gradient-to-br from-[#1a1625] via-[#251f35] to-[#1a1625]",
     hacker: "bg-gradient-to-br from-[#0d0d0d] via-[#141414] to-[#0d0d0d]",
+    // Custom themes use inline styles via bgStyle, these are fallbacks
+    "custom-dark": "",
+    "custom-light": "",
   };
+  
+  // Use custom pageBackground if available, otherwise fall back to themeType-based classes
+  const hasCustomPageBg = !!theme.pageBackground;
+  const bgClass = hasCustomPageBg ? "" : bgColors[themeType];
+  const bgStyle = hasCustomPageBg ? { background: theme.pageBackground } : {};
   
   // On mobile, use min-height to allow content to expand; on desktop use fixed height
   if (isMobile) {
     return (
-      <div className={`w-full ${bgColors[themeType]} relative`} style={{ minHeight: `${calculatedHeight}px` }}>
+      <div className={`w-full ${bgClass} relative`} style={{ minHeight: `${calculatedHeight}px`, ...bgStyle }}>
         {renderSlide(slide, index, true)}
       </div>
     );
   }
   
   return (
-    <div className={`w-full ${bgColors[themeType]} relative`} style={{ height: `min(${calculatedHeight}px, calc(100vh - 150px))` }}>
+    <div className={`w-full ${bgClass} relative`} style={{ height: `min(${calculatedHeight}px, calc(100vh - 150px))`, ...bgStyle }}>
       {renderSlide(slide, index, true)}
     </div>
   );

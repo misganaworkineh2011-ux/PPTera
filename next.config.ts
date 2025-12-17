@@ -10,7 +10,7 @@ const config: NextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ["images.unsplash.com", "images.pexels.com"],
+    domains: ["images.unsplash.com", "images.pexels.com", "img.clerk.com"],
     remotePatterns: [
       {
         protocol: "https",
@@ -20,6 +20,11 @@ const config: NextConfig = {
       {
         protocol: "https",
         hostname: "images.pexels.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "img.clerk.com",
         pathname: "/**",
       },
     ],

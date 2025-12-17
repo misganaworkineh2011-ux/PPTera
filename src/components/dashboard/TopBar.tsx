@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bell, Search, Sparkles, Gift, AlertCircle, AlertTriangle, FileText, Image as ImageIcon, BarChart, Box, LayoutTemplate, Palette, Sparkles as SparklesIcon, Users, History, Menu } from "lucide-react";
+import { Bell, Search, Sparkles, Gift, AlertCircle, AlertTriangle, FileText, Image as ImageIcon, BarChart, Box, Palette, Sparkles as SparklesIcon, Users, History, Menu, Settings } from "lucide-react";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { useStickyContext } from "./DashboardLayout";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useLanguage } from "~/contexts/LanguageContext";
+import { dashboardTranslations } from "~/lib/dashboard-translations";
 
 interface Notification {
   id: string;
@@ -31,6 +33,8 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const { user } = useUser();
   const pathname = usePathname();
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language] || dashboardTranslations.en;
 
   // Get page title and icon based on pathname
   const getPageInfo = () => {
@@ -39,20 +43,20 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
     }
     
     const pageMap: Record<string, { title: string; icon: React.ReactNode }> = {
-      "/dashboard": { title: "Presentations", icon: <FileText size={14} /> },
-      "/dashboard/images": { title: "Images", icon: <ImageIcon size={14} /> },
-      "/dashboard/charts": { title: "Charts", icon: <BarChart size={14} /> },
-      "/dashboard/resources": { title: "Resources", icon: <Box size={14} /> },
-      "/dashboard/templates": { title: "Templates", icon: <LayoutTemplate size={14} /> },
-      "/dashboard/themes": { title: "Themes", icon: <Palette size={14} /> },
-      "/dashboard/ai": { title: "AI Suggestions", icon: <SparklesIcon size={14} /> },
-      "/dashboard/collaboration": { title: "Collaboration", icon: <Users size={14} /> },
-      "/dashboard/activity": { title: "Activity", icon: <History size={14} /> },
+      "/dashboard": { title: t.presentations || "Presentations", icon: <FileText size={14} /> },
+      "/dashboard/images": { title: t.images || "Images", icon: <ImageIcon size={14} /> },
+      "/dashboard/charts": { title: t.charts || "Charts", icon: <BarChart size={14} /> },
+      "/dashboard/resources": { title: t.resources || "Resources", icon: <Box size={14} /> },
+      "/dashboard/themes": { title: t.themes || "Themes", icon: <Palette size={14} /> },
+      "/dashboard/ai": { title: t.aiSuggestions || "AI Suggestions", icon: <SparklesIcon size={14} /> },
+      "/dashboard/collaboration": { title: t.collaboration || "Collaboration", icon: <Users size={14} /> },
+      "/dashboard/activity": { title: t.activity || "Activity", icon: <History size={14} /> },
+      "/dashboard/settings": { title: t.settings || "Settings", icon: <Settings size={14} /> },
     };
 
     const pageInfo = pageMap[pathname] ?? pageMap["/dashboard"];
     return {
-      title: pageInfo?.title ?? "Dashboard",
+      title: pageInfo?.title ?? (t.dashboard || "Dashboard"),
       icon: pageInfo?.icon ?? null,
     };
   };
@@ -134,13 +138,13 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
   }, [showNotifications]);
 
   return (
-    <header className="md:sticky top-0 z-30 flex h-14 lg:h-20 items-center justify-between bg-[#F8F9FA] px-3 sm:px-4 lg:px-8 border-b border-slate-100/50 backdrop-blur-sm gap-2 lg:gap-4">
+    <header className="md:sticky top-0 z-30 flex h-14 lg:h-20 items-center justify-between bg-[#F8F9FA] dark:bg-slate-900 px-3 sm:px-4 lg:px-8 border-b border-slate-100/50 dark:border-slate-700 backdrop-blur-sm gap-2 lg:gap-4">
       {/* Left: Mobile menu button + Title */}
       <div className="flex items-center gap-2 lg:gap-3 shrink-0">
         {/* Mobile menu button */}
         <button
           onClick={() => setIsMobileSidebarOpen(true)}
-          className="lg:hidden p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+          className="lg:hidden p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700"
         >
           <Menu size={22} />
         </button>
@@ -160,15 +164,15 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
             type="text"
             value={searchQuery}
             onChange={handleSearchChange}
-            placeholder="Search..."
-            className="w-full rounded-full border-none bg-white pl-9 lg:pl-11 pr-3 lg:pr-4 py-2 lg:py-2.5 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]/20"
+            placeholder={t.search || "Search..."}
+            className="w-full rounded-full border-none bg-white dark:bg-slate-800 pl-9 lg:pl-11 pr-3 lg:pr-4 py-2 lg:py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 shadow-sm ring-1 ring-slate-200 dark:ring-slate-600 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]/20"
           />
         </div>
         
         {/* Mobile search button */}
         <button
           onClick={() => setShowMobileSearch(!showMobileSearch)}
-          className="sm:hidden p-2 rounded-full bg-white text-slate-500 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50"
+          className="sm:hidden p-2 rounded-full bg-white dark:bg-slate-800 text-slate-500 shadow-sm ring-1 ring-slate-200 dark:ring-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700"
         >
           <Search size={18} />
         </button>
@@ -179,24 +183,24 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
           className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 px-2.5 xl:px-4 py-1.5 xl:py-2 text-sm font-semibold text-white shadow-sm transition hover:shadow-md"
         >
           <Sparkles size={14} />
-          <span className="hidden xl:inline">Upgrade</span>
+          <span className="hidden xl:inline">{t.upgrade || "Upgrade"}</span>
         </Link>
         
         {/* Credits Badge - Hidden on small screens */}
         <Link
           href="/pricing"
-          className="hidden md:flex items-center gap-2 rounded-full bg-white px-3 lg:px-4 py-2 text-xs lg:text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:ring-[#06b6d4] hover:shadow-md cursor-pointer"
+          className="hidden md:flex items-center gap-2 rounded-full bg-white dark:bg-slate-800 px-3 lg:px-4 py-2 text-xs lg:text-sm font-semibold text-slate-700 dark:text-slate-200 shadow-sm ring-1 ring-slate-200 dark:ring-slate-600 transition hover:ring-[#06b6d4] hover:shadow-md cursor-pointer"
         >
           <span className="flex h-2 w-2 rounded-full bg-[#06b6d4]"></span>
           <span>{credits}</span>
-          <span className="hidden lg:inline">Credits</span>
+          <span className="hidden lg:inline">{t.credits || "Credits"}</span>
         </Link>
         
         {/* Notifications */}
         <div className="relative notifications-container">
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="relative flex h-9 w-9 lg:h-10 lg:w-10 items-center justify-center rounded-full bg-white text-slate-500 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50 hover:text-slate-700"
+            className="relative flex h-9 w-9 lg:h-10 lg:w-10 items-center justify-center rounded-full bg-white dark:bg-slate-800 text-slate-500 shadow-sm ring-1 ring-slate-200 dark:ring-slate-600 transition hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-700"
           >
             <Bell size={18} className="lg:hidden" />
             <Bell size={20} className="hidden lg:block" />
@@ -207,13 +211,13 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
 
           {/* Notifications Dropdown */}
           {showNotifications && (
-            <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-sm rounded-lg border border-slate-200 bg-white shadow-2xl z-50">
-              <div className="border-b border-slate-100 p-4">
+            <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-2xl z-50">
+              <div className="border-b border-slate-100 dark:border-slate-700 p-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-slate-900">Notifications</h3>
+                  <h3 className="font-bold text-slate-900 dark:text-white">{t.notificationsTitle || "Notifications"}</h3>
                   {unreadCount > 0 && (
                     <span className="rounded-full bg-[#06b6d4] px-2 py-0.5 text-xs font-semibold text-white">
-                      {unreadCount} new
+                      {unreadCount} {t.newNotifications || "new"}
                     </span>
                   )}
                 </div>
@@ -225,8 +229,8 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
                   </div>
                 ) : notifications.length === 0 ? (
                   <div className="p-8 text-center">
-                    <Bell size={32} className="mx-auto mb-2 text-slate-300" />
-                    <p className="text-sm text-slate-500">No notifications yet</p>
+                    <Bell size={32} className="mx-auto mb-2 text-slate-300 dark:text-slate-600" />
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{t.noNotifications || "No notifications yet"}</p>
                   </div>
                 ) : (
                   notifications.map((notif) => (
@@ -236,54 +240,54 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
                         if (!notif.isRead) markAsRead(notif.id);
                         if (notif.link) window.location.href = notif.link;
                       }}
-                      className={`border-b border-slate-50 p-4 transition hover:bg-slate-50 cursor-pointer ${
-                        !notif.isRead ? "bg-blue-50/50" : ""
+                      className={`border-b border-slate-50 dark:border-slate-700 p-4 transition hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer ${
+                        !notif.isRead ? "bg-blue-50/50 dark:bg-blue-900/20" : ""
                       }`}
                     >
                       <div className="flex gap-3">
                         <div className="flex-shrink-0">
                           {notif.type === "success" && (
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
-                              <Sparkles size={16} className="text-green-600" />
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50">
+                              <Sparkles size={16} className="text-green-600 dark:text-green-400" />
                             </div>
                           )}
                           {notif.type === "info" && (
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
-                              <AlertCircle size={16} className="text-blue-600" />
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50">
+                              <AlertCircle size={16} className="text-blue-600 dark:text-blue-400" />
                             </div>
                           )}
                           {notif.type === "promo" && (
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100">
-                              <Gift size={16} className="text-purple-600" />
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/50">
+                              <Gift size={16} className="text-purple-600 dark:text-purple-400" />
                             </div>
                           )}
                           {notif.type === "warning" && (
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-100">
-                              <AlertTriangle size={16} className="text-yellow-600" />
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/50">
+                              <AlertTriangle size={16} className="text-yellow-600 dark:text-yellow-400" />
                             </div>
                           )}
                           {notif.type === "error" && (
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100">
-                              <AlertCircle size={16} className="text-red-600" />
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/50">
+                              <AlertCircle size={16} className="text-red-600 dark:text-red-400" />
                             </div>
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-slate-900">{notif.title}</p>
-                          <p className="text-xs text-slate-600 mt-0.5">{notif.message}</p>
-                          <p className="text-xs text-slate-400 mt-1">{getTimeAgo(notif.createdAt)}</p>
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white">{notif.title}</p>
+                          <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">{notif.message}</p>
+                          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{getTimeAgo(notif.createdAt)}</p>
                         </div>
                       </div>
                     </div>
                   ))
                 )}
               </div>
-              <div className="border-t border-slate-100 p-3">
+              <div className="border-t border-slate-100 dark:border-slate-700 p-3">
                 <button
                   onClick={() => markAsRead()}
-                  className="w-full text-center text-sm font-medium text-[#06b6d4] hover:text-[#1e3a8a]"
+                  className="w-full text-center text-sm font-medium text-[#06b6d4] hover:text-[#1e3a8a] dark:hover:text-[#06b6d4]"
                 >
-                  Mark all as read
+                  {t.markAllRead || "Mark all as read"}
                 </button>
               </div>
             </div>
@@ -303,16 +307,16 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
       
       {/* Mobile Search Overlay */}
       {showMobileSearch && (
-        <div className="absolute left-0 right-0 top-full bg-white border-b border-slate-200 p-3 sm:hidden shadow-lg">
+        <div className="absolute left-0 right-0 top-full bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-3 sm:hidden shadow-lg">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={handleSearchChange}
-              placeholder="Search presentations..."
+              placeholder={t.search || "Search..."}
               autoFocus
-              className="w-full rounded-full border-none bg-slate-50 pl-10 pr-4 py-2.5 text-sm font-medium text-slate-700 ring-1 ring-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]/20"
+              className="w-full rounded-full border-none bg-slate-50 dark:bg-slate-700 pl-10 pr-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 ring-1 ring-slate-200 dark:ring-slate-600 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]/20"
             />
           </div>
         </div>

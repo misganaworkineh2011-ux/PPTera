@@ -1,27 +1,27 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
   Image as ImageIcon,
   BarChart,
-  LayoutTemplate,
   Palette,
   Box,
-  Sparkles,
   Settings,
   History,
   Users,
-  Search,
   ChevronLeft,
   ChevronRight,
-  Plus,
   MoreVertical,
   X,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "~/lib/utils";
 import { UserButton, useUser } from "@clerk/nextjs";
+import { useLanguage } from "~/contexts/LanguageContext";
+import { dashboardTranslations } from "~/lib/dashboard-translations";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -32,43 +32,57 @@ interface SidebarProps {
 
 export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan, onCloseMobile }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { user } = useUser();
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language] || dashboardTranslations.en;
+  
+  // Track which route is being navigated to
+  const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
+  
+  // Clear navigating state when pathname changes (navigation complete)
+  useEffect(() => {
+    setNavigatingTo(null);
+  }, [pathname]);
+  
+  // Handle navigation with loading state
+  const handleNavigation = (href: string, e: React.MouseEvent) => {
+    // Don't show loading if already on this page
+    if (pathname === href) return;
+    
+    e.preventDefault();
+    setNavigatingTo(href);
+    onCloseMobile?.();
+    router.push(href);
+  };
 
   const navGroups = [
     {
-      title: "Dashboard",
+      title: t.dashboard,
       items: [
-        { name: "Presentations", href: "/dashboard", icon: LayoutDashboard },
-        // Removed Search from here
+        { name: t.presentations, href: "/dashboard", icon: LayoutDashboard },
       ],
     },
     {
-      title: "Assets",
+      title: t.assets,
       items: [
-        { name: "Images", href: "/dashboard/images", icon: ImageIcon },
-        { name: "Charts", href: "/dashboard/charts", icon: BarChart },
-        { name: "Resources", href: "/dashboard/resources", icon: Box },
+        { name: t.images, href: "/dashboard/images", icon: ImageIcon },
+        { name: t.charts, href: "/dashboard/charts", icon: BarChart },
+        { name: t.resources, href: "/dashboard/resources", icon: Box },
       ],
     },
     {
-      title: "Design",
+      title: t.design,
       items: [
-        { name: "Templates", href: "/dashboard/templates", icon: LayoutTemplate },
-        { name: "Themes", href: "/dashboard/themes", icon: Palette },
+        { name: t.themes, href: "/dashboard/themes", icon: Palette },
       ],
     },
     {
-      title: "Intelligence",
+      title: t.workspace,
       items: [
-        { name: "AI Suggestions", href: "/dashboard/ai", icon: Sparkles },
-      ],
-    },
-    {
-      title: "Workspace",
-      items: [
-        { name: "Collaboration", href: "/dashboard/collaboration", icon: Users },
-        { name: "Activity", href: "/dashboard/activity", icon: History }, // Moved Activity here
-        { name: "Settings", href: "/dashboard/settings", icon: Settings },
+        { name: t.collaboration, href: "/dashboard/collaboration", icon: Users },
+        { name: t.activity, href: "/dashboard/activity", icon: History },
+        { name: t.settings, href: "/dashboard/settings", icon: Settings },
       ],
     },
   ];
@@ -76,7 +90,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
   return (
     <aside
       className={cn(
-        "relative flex h-screen flex-col border-r border-slate-200/60 bg-white transition-all duration-300",
+        "relative flex h-screen flex-col border-r border-slate-200/60 bg-white dark:bg-slate-800 dark:border-slate-700 transition-all duration-300",
         // On mobile, always show full width; on desktop, respect collapsed state
         "w-72 lg:w-72",
         isCollapsed && "lg:w-20"
@@ -107,7 +121,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
             <div key={group.title}>
               {/* Show group titles on mobile always, on desktop only when not collapsed */}
               <h3 className={cn(
-                "mb-2 px-2 text-xs font-bold uppercase tracking-wider text-slate-500",
+                "mb-2 px-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400",
                 isCollapsed && "lg:hidden"
               )}>
                 {group.title}
@@ -115,26 +129,35 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
               <div className="space-y-1">
                 {group.items.map((item) => {
                   const isActive = pathname === item.href;
+                  const isNavigating = navigatingTo === item.href;
                   return (
                     <Link
                       key={item.href}
                       href={item.href}
-                      onClick={onCloseMobile}
+                      onClick={(e) => handleNavigation(item.href, e)}
                       className={cn(
                         "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-semibold transition-all",
                         isActive
-                          ? "bg-[#e0f2fe] text-[#06b6d4] shadow-sm"
-                          : "text-slate-700 hover:bg-slate-50 hover:text-[#1e3a8a]",
+                          ? "bg-[#e0f2fe] text-[#06b6d4] shadow-sm dark:bg-[#06b6d4]/20"
+                          : "text-slate-700 hover:bg-slate-50 hover:text-[#1e3a8a] dark:text-slate-300 dark:hover:bg-slate-700",
+                        isNavigating && "bg-slate-100 dark:bg-slate-700",
                         isCollapsed && "lg:justify-center lg:px-2"
                       )}
                     >
-                      <item.icon
-                        size={17}
-                        className={cn(
-                          "transition-colors flex-shrink-0",
-                          isActive ? "text-[#06b6d4]" : "text-slate-600 group-hover:text-[#1e3a8a]"
-                        )}
-                      />
+                      {isNavigating ? (
+                        <Loader2
+                          size={17}
+                          className="animate-spin text-[#06b6d4] flex-shrink-0"
+                        />
+                      ) : (
+                        <item.icon
+                          size={17}
+                          className={cn(
+                            "transition-colors flex-shrink-0",
+                            isActive ? "text-[#06b6d4]" : "text-slate-600 group-hover:text-[#1e3a8a] dark:text-slate-400"
+                          )}
+                        />
+                      )}
                       {/* Show text on mobile always, on desktop only when not collapsed */}
                       <span className={cn(
                         "flex-1",
@@ -142,7 +165,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
                       )}>
                         {item.name}
                       </span>
-                      {isActive && (
+                      {isActive && !isNavigating && (
                         <div className={cn(
                           "h-1.5 w-1.5 rounded-full bg-[#06b6d4]",
                           isCollapsed && "lg:hidden"
@@ -158,21 +181,21 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
       </div>
 
       {/* Account Info at Bottom */}
-      <div className="border-t border-slate-100 relative">
+      <div className="border-t border-slate-100 dark:border-slate-700 relative">
         {/* Show account info on mobile always, on desktop only when not collapsed */}
         <div className={cn(
           "p-3 lg:p-4",
           isCollapsed && "lg:hidden"
         )}>
-          <button className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white p-2.5 lg:p-3 shadow-sm transition hover:border-[#06b6d4] hover:shadow-md">
+          <button className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white dark:bg-slate-700 dark:border-slate-600 p-2.5 lg:p-3 shadow-sm transition hover:border-[#06b6d4] hover:shadow-md">
             <div className="flex items-center gap-2 lg:gap-3 flex-1 min-w-0">
               <UserButton afterSignOutUrl="/" />
               <div className="flex flex-col items-start overflow-hidden flex-1 min-w-0">
                 <div className="flex items-center justify-between w-full gap-2">
-                  <span className="truncate text-sm font-bold text-[#1e3a8a]">
+                  <span className="truncate text-sm font-bold text-[#1e3a8a] dark:text-white">
                     {user?.fullName || "User"}
                   </span>
-                  <span className="truncate text-xs text-slate-500 shrink-0 hidden sm:block">
+                  <span className="truncate text-xs text-slate-500 dark:text-slate-400 shrink-0 hidden sm:block">
                     Workspace
                   </span>
                 </div>
@@ -189,7 +212,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
         <div className="absolute bottom-0 right-0 p-2 hidden lg:block">
           <button
             onClick={toggleCollapse}
-            className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+            className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 transition"
           >
             {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
           </button>
