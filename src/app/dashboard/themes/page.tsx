@@ -76,7 +76,7 @@ export default async function ThemesPage() {
       <ThemesStickyHeader />
 
       {/* Filters & View Toggle */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-slate-100 pb-4">
+      <div className="flex flex-row items-center justify-between gap-4 border-b border-slate-100 pb-4">
         <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0">
           <button className="flex items-center gap-2 whitespace-nowrap rounded-lg bg-[#1e3a8a]/10 px-4 py-2 text-sm font-bold text-[#1e3a8a]">
             <Grid size={16} /> All
@@ -86,17 +86,15 @@ export default async function ThemesPage() {
           </button>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1 rounded-lg bg-slate-100 p-1">
-            <button className="flex items-center gap-2 rounded-md bg-white px-3 py-2 text-[#1e3a8a] shadow-sm transition">
-              <Grid size={20} />
-              <span className="text-sm font-medium">Grid</span>
-            </button>
-            <button className="flex items-center gap-2 rounded-md px-3 py-2 text-slate-500 transition hover:text-slate-700">
-              <ListIcon size={20} />
-              <span className="text-sm font-medium">List</span>
-            </button>
-          </div>
+        <div className="flex items-center gap-1 rounded-lg bg-slate-100 p-1">
+          <button className="flex items-center gap-2 rounded-md bg-white px-3 py-2 text-[#1e3a8a] shadow-sm transition">
+            <Grid size={20} />
+            <span className="text-sm font-medium">Grid</span>
+          </button>
+          <button className="flex items-center gap-2 rounded-md px-3 py-2 text-slate-500 transition hover:text-slate-700">
+            <ListIcon size={20} />
+            <span className="text-sm font-medium">List</span>
+          </button>
         </div>
       </div>
 

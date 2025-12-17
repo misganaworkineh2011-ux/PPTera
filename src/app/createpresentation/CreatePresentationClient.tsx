@@ -290,6 +290,11 @@ export default function CreatePresentationClient({
       setView("completed");
       setSlides(streamState.slides);
       setOutlineId(streamState.outlineId);
+    } else if (streamState.status === "error") {
+      // On error, reset to form view so user can try again
+      setView("form");
+      // Clear any partial slides
+      setSlides([]);
     }
   }, [streamState.status, streamState.slides, streamState.outlineId]);
 
@@ -465,9 +470,11 @@ export default function CreatePresentationClient({
     return acc + chars;
   }, 0);
 
-  const isStreaming = view === "streaming";
-  const isCompleted = view === "completed";
-  const showOutline = isStreaming || isCompleted;
+  // Check actual streaming status, not just view state
+  const isStreaming = streamState.status === "streaming" || streamState.status === "connecting";
+  const isCompleted = streamState.status === "completed" && view === "completed";
+  const hasError = streamState.status === "error";
+  const showOutline = (isStreaming || isCompleted) && !hasError;
 
   const normalizedCurrent = formData.description.trim();
   const normalizedLast = lastDescription.trim();
@@ -533,6 +540,26 @@ export default function CreatePresentationClient({
             <ArrowLeft size={16} /> {showOutline ? "Start Over" : "Back"}
           </button>
         </div>
+
+        {/* Error Message - Minimal, at the top */}
+        {hasError && streamState.error && (
+          <div className="px-4 sm:px-6 lg:px-8 mb-4">
+            <div className="max-w-4xl mx-auto">
+              <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+                <svg className="w-4 h-4 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="flex-1">{streamState.error}</span>
+                <button
+                  onClick={handleStartOver}
+                  className="text-red-700 hover:text-red-900 underline text-xs font-medium"
+                >
+                  Try again
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Form Section - Compact when streaming/completed */}
         <div className={`px-4 sm:px-6 lg:px-8 ${showOutline ? "pb-4" : "pb-12"}`}>
@@ -856,78 +883,69 @@ export default function CreatePresentationClient({
           </div>
         </div>
 
-        {/* Error Message */}
-        {streamState.error && (
-          <div className="mb-4 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm max-w-6xl mx-auto">
-            {streamState.error}
-            <button
-              onClick={handleStartOver}
-              className="ml-4 underline hover:no-underline"
-            >
-              Try again
-            </button>
-          </div>
-        )}
-
         {/* Outline Section */}
         {showOutline && (
           <div className={`flex-1 px-4 sm:px-6 lg:px-8 ${isCompleted ? "pb-[140px]" : "pb-12"}`}>
             <div className="mx-auto max-w-4xl">
-              {/* Simple status text above slides */}
-              {isStreaming && (
+              {/* Simple status text above slides - only show when actually streaming */}
+              {isStreaming && !hasError && streamState.totalSlides > 0 && (
                 <div className="mb-6 text-sm text-[#06b6d4] flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-lg px-4 py-3 shadow-sm border border-[#06b6d4]/20">
                   <Loader2 size={16} className="animate-spin" />
                   <span className="font-medium">
-                    Generating slide {streamState.currentSlideIndex + 1} of {streamState.totalSlides}...
+                    {streamState.currentSlideIndex >= 0 
+                      ? `Generating slide ${streamState.currentSlideIndex + 1} of ${streamState.totalSlides}...`
+                      : `Preparing to generate ${streamState.totalSlides} slides...`}
                   </span>
                 </div>
               )}
 
-              {/* Slides List - vertical */}
-              <div className="space-y-3" onDragEnd={handleDragEnd}>
-                {isStreaming ? (
-                  // Show skeleton cards + completed slides during streaming
-                  <>
-                    {Array.from({ length: streamState.totalSlides }).map((_, index) => {
-                      const slide = streamState.slides[index];
-                      if (slide) {
-                        return (
-                          <div key={index} className="group">
-                            <SlideCard
-                              slide={slide}
-                              index={index}
-                              isStreaming={true}
-                            />
-                          </div>
-                        );
-                      }
-                      return <SkeletonCard key={index} index={index} />;
-                    })}
-                  </>
-                ) : (
-                  // Show editable slides when completed
-                  slides.map((slide, index) => (
-                    <div
-                      key={index}
-                      className="group"
-                      onDragEnter={() => handleDragEnter(index)}
-                    >
-                      <SlideCard
-                        slide={slide}
-                        index={index}
-                        isStreaming={false}
-                        onEdit={handleEditSlide}
-                        onDelete={handleDeleteSlide}
-                        onDragStart={handleDragStart}
-                        onDragOver={handleDragOver}
-                        onDrop={handleDrop}
-                        isDraggedOver={dragOverIndex === index}
-                        canDelete={slides.length > 2}
-                      />
-                    </div>
-                  ))
-                )}
-              </div>
+              {/* Slides List - vertical - only show when not in error state */}
+              {!hasError && (
+                <div className="space-y-3" onDragEnd={handleDragEnd}>
+                  {isStreaming ? (
+                    // Show skeleton cards + completed slides during streaming
+                    <>
+                      {Array.from({ length: streamState.totalSlides }).map((_, index) => {
+                        const slide = streamState.slides[index];
+                        if (slide) {
+                          return (
+                            <div key={index} className="group">
+                              <SlideCard
+                                slide={slide}
+                                index={index}
+                                isStreaming={true}
+                              />
+                            </div>
+                          );
+                        }
+                        return <SkeletonCard key={index} index={index} />;
+                      })}
+                    </>
+                  ) : (
+                    // Show editable slides when completed
+                    slides.map((slide, index) => (
+                      <div
+                        key={index}
+                        className="group"
+                        onDragEnter={() => handleDragEnter(index)}
+                      >
+                        <SlideCard
+                          slide={slide}
+                          index={index}
+                          isStreaming={false}
+                          onEdit={handleEditSlide}
+                          onDelete={handleDeleteSlide}
+                          onDragStart={handleDragStart}
+                          onDragOver={handleDragOver}
+                          onDrop={handleDrop}
+                          isDraggedOver={dragOverIndex === index}
+                          canDelete={slides.length > 2}
+                        />
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
 
               {/* Presentation style box – used when creating slides from this outline */}
               {isCompleted && (

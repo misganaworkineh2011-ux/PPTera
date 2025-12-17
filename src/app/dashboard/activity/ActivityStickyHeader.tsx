@@ -11,6 +11,15 @@ export default function ActivityStickyHeader() {
   const { setIsTitleSticky, setStickyTitleContent } = useStickyContext();
 
   useEffect(() => {
+    // Only enable sticky behavior on md+ screens
+    const checkMobile = () => window.innerWidth < 768;
+    if (checkMobile()) {
+      setIsSticky(false);
+      setIsTitleSticky(false);
+      setStickyTitleContent(null);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         // Trigger when 50% of the header is out of view
@@ -54,7 +63,7 @@ export default function ActivityStickyHeader() {
       {/* Header that becomes sticky - hides when sticky, title moves to TopBar */}
       <div
         ref={headerRef}
-        className={`flex flex-col gap-4 md:flex-row md:items-center md:justify-between transition-all duration-300 ${
+        className={`flex flex-row items-center justify-between gap-4 transition-all duration-300 ${
           isSticky ? "opacity-0 h-0 overflow-hidden pointer-events-none" : "opacity-100"
         }`}
       >
@@ -64,11 +73,10 @@ export default function ActivityStickyHeader() {
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-[#1e3a8a]">Activity</h1>
         </div>
-        <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-2.5 text-base font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-[#1e3a8a] hover:border-[#1e3a8a]/20">
-            <Filter size={18} /> Filter
-          </button>
-        </div>
+        <button className="flex items-center gap-1.5 md:gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-medium text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-700 whitespace-nowrap">
+          <Filter size={16} className="md:w-[18px] md:h-[18px]" />
+          <span className="hidden sm:inline">Filter</span>
+        </button>
       </div>
     </>
   );

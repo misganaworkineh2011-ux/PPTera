@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bell, Search, Sparkles, Gift, AlertCircle, AlertTriangle, FileText, Image as ImageIcon, BarChart, Box, LayoutTemplate, Palette, Sparkles as SparklesIcon, Users, History } from "lucide-react";
+import { Bell, Search, Sparkles, Gift, AlertCircle, AlertTriangle, FileText, Image as ImageIcon, BarChart, Box, LayoutTemplate, Palette, Sparkles as SparklesIcon, Users, History, Menu } from "lucide-react";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { useStickyContext } from "./DashboardLayout";
 import { usePathname } from "next/navigation";
@@ -23,11 +23,12 @@ interface TopBarProps {
 }
 
 export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
-  const { isTitleSticky, stickyTitleContent } = useStickyContext();
+  const { isTitleSticky, stickyTitleContent, setIsMobileSidebarOpen } = useStickyContext();
   const [searchQuery, setSearchQuery] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
   const { user } = useUser();
   const pathname = usePathname();
 
@@ -49,10 +50,10 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
       "/dashboard/activity": { title: "Activity", icon: <History size={14} /> },
     };
 
-    const pageInfo = pageMap[pathname] || pageMap["/dashboard"];
+    const pageInfo = pageMap[pathname] ?? pageMap["/dashboard"];
     return {
-      title: pageInfo.title,
-      icon: pageInfo.icon,
+      title: pageInfo?.title ?? "Dashboard",
+      icon: pageInfo?.icon ?? null,
     };
   };
 
@@ -133,59 +134,80 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
   }, [showNotifications]);
 
   return (
-    <header className="sticky top-0 z-50 flex h-20 items-center justify-between bg-[#F8F9FA] px-8 border-b border-slate-100/50 backdrop-blur-sm">
-      {/* Left: Title - Only show when sticky title content exists */}
-      <div className="flex items-center gap-2 shrink-0">
+    <header className="md:sticky top-0 z-30 flex h-14 lg:h-20 items-center justify-between bg-[#F8F9FA] px-3 sm:px-4 lg:px-8 border-b border-slate-100/50 backdrop-blur-sm gap-2 lg:gap-4">
+      {/* Left: Mobile menu button + Title */}
+      <div className="flex items-center gap-2 lg:gap-3 shrink-0">
+        {/* Mobile menu button */}
+        <button
+          onClick={() => setIsMobileSidebarOpen(true)}
+          className="lg:hidden p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+        >
+          <Menu size={22} />
+        </button>
+        
+        {/* Sticky title content - only show on md+ screens */}
         {isTitleSticky && stickyTitleContent ? (
-          <div className="flex items-center gap-2">{stickyTitleContent}</div>
+          <div className="hidden md:flex items-center gap-2">{stickyTitleContent}</div>
         ) : null}
       </div>
 
       {/* Right: Search Bar and Actions */}
-      <div className="flex items-center gap-3 flex-1 justify-end">
-        {/* Search Bar - Moved to right, shrinks when sticky title appears */}
-        <div className={`relative transition-all ${isTitleSticky ? "max-w-xs" : "max-w-md"} ${isTitleSticky ? "w-64" : "w-full"}`}>
-          <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+      <div className="flex items-center gap-2 lg:gap-3 flex-1 justify-end">
+        {/* Search Bar - Hidden on mobile, shown on sm+ */}
+        <div className={`relative transition-all hidden sm:block ${isTitleSticky ? "max-w-xs" : "max-w-md"} ${isTitleSticky ? "w-48 lg:w-64" : "w-full"}`}>
+          <Search className="absolute left-3 lg:left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={handleSearchChange}
-            placeholder="Try searching 'insights'..."
-            className="w-full rounded-full border-none bg-white pl-11 pr-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]/20"
+            placeholder="Search..."
+            className="w-full rounded-full border-none bg-white pl-9 lg:pl-11 pr-3 lg:pr-4 py-2 lg:py-2.5 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]/20"
           />
         </div>
-        {/* Upgrade Button */}
-        <Link
-          href="/pricing"
-          className="hidden items-center gap-2 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:shadow-md md:flex"
+        
+        {/* Mobile search button */}
+        <button
+          onClick={() => setShowMobileSearch(!showMobileSearch)}
+          className="sm:hidden p-2 rounded-full bg-white text-slate-500 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50"
         >
-          <Sparkles size={16} />
-          <span>Upgrade for more AI</span>
-        </Link>
-        {/* Credits Badge */}
+          <Search size={18} />
+        </button>
+        
+        {/* Upgrade Button - Always visible, text shows from xl+ */}
         <Link
           href="/pricing"
-          className="hidden items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:ring-[#06b6d4] hover:shadow-md md:flex cursor-pointer"
+          className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 px-2.5 xl:px-4 py-1.5 xl:py-2 text-sm font-semibold text-white shadow-sm transition hover:shadow-md"
+        >
+          <Sparkles size={14} />
+          <span className="hidden xl:inline">Upgrade</span>
+        </Link>
+        
+        {/* Credits Badge - Hidden on small screens */}
+        <Link
+          href="/pricing"
+          className="hidden md:flex items-center gap-2 rounded-full bg-white px-3 lg:px-4 py-2 text-xs lg:text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:ring-[#06b6d4] hover:shadow-md cursor-pointer"
         >
           <span className="flex h-2 w-2 rounded-full bg-[#06b6d4]"></span>
-          <span>{credits} Credits</span>
+          <span>{credits}</span>
+          <span className="hidden lg:inline">Credits</span>
         </Link>
         
         {/* Notifications */}
         <div className="relative notifications-container">
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-500 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50 hover:text-slate-700"
+            className="relative flex h-9 w-9 lg:h-10 lg:w-10 items-center justify-center rounded-full bg-white text-slate-500 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50 hover:text-slate-700"
           >
-            <Bell size={20} />
+            <Bell size={18} className="lg:hidden" />
+            <Bell size={20} className="hidden lg:block" />
             {unreadCount > 0 && (
-              <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full border-2 border-white bg-[#06b6d4]"></span>
+              <span className="absolute right-2 top-2 lg:right-2.5 lg:top-2.5 h-2 w-2 rounded-full border-2 border-white bg-[#06b6d4]"></span>
             )}
           </button>
 
           {/* Notifications Dropdown */}
           {showNotifications && (
-            <div className="absolute right-0 top-full mt-2 w-80 rounded-lg border border-slate-200 bg-white shadow-2xl z-50">
+            <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-sm rounded-lg border border-slate-200 bg-white shadow-2xl z-50">
               <div className="border-b border-slate-100 p-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-slate-900">Notifications</h3>
@@ -273,11 +295,28 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
           afterSignOutUrl="/"
           appearance={{
             elements: {
-              avatarBox: "h-10 w-10 ring-2 ring-slate-200 hover:ring-[#06b6d4] transition-all",
+              avatarBox: "h-8 w-8 lg:h-10 lg:w-10 ring-2 ring-slate-200 hover:ring-[#06b6d4] transition-all",
             },
           }}
         />
       </div>
+      
+      {/* Mobile Search Overlay */}
+      {showMobileSearch && (
+        <div className="absolute left-0 right-0 top-full bg-white border-b border-slate-200 p-3 sm:hidden shadow-lg">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              placeholder="Search presentations..."
+              autoFocus
+              className="w-full rounded-full border-none bg-slate-50 pl-10 pr-4 py-2.5 text-sm font-medium text-slate-700 ring-1 ring-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]/20"
+            />
+          </div>
+        </div>
+      )}
     </header>
   );
 }

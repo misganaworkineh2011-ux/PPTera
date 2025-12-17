@@ -11,6 +11,15 @@ export default function AIStickyHeader() {
   const { setIsTitleSticky, setStickyTitleContent } = useStickyContext();
 
   useEffect(() => {
+    // Only enable sticky behavior on md+ screens
+    const checkMobile = () => window.innerWidth < 768;
+    if (checkMobile()) {
+      setIsSticky(false);
+      setIsTitleSticky(false);
+      setStickyTitleContent(null);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         // Trigger when 50% of the header is out of view

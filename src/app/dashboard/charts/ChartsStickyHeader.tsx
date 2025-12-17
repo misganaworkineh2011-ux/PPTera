@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart, Plus, Filter, Sparkles } from "lucide-react";
+import { BarChart, Plus, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useStickyContext } from "~/components/dashboard/DashboardLayout";
 
@@ -16,6 +16,15 @@ export default function ChartsStickyHeader({ userId, credits }: ChartsStickyHead
   const { setIsTitleSticky, setStickyTitleContent } = useStickyContext();
 
   useEffect(() => {
+    // Only enable sticky behavior on md+ screens
+    const checkMobile = () => window.innerWidth < 768;
+    if (checkMobile()) {
+      setIsSticky(false);
+      setIsTitleSticky(false);
+      setStickyTitleContent(null);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         // Trigger when 50% of the header is out of view
@@ -59,7 +68,7 @@ export default function ChartsStickyHeader({ userId, credits }: ChartsStickyHead
       {/* Header that becomes sticky - hides when sticky, title moves to TopBar */}
       <div
         ref={headerRef}
-        className={`flex flex-col gap-4 md:flex-row md:items-center md:justify-between transition-all duration-300 ${
+        className={`flex flex-row items-center justify-between gap-4 transition-all duration-300 ${
           isSticky ? "opacity-0 h-0 overflow-hidden pointer-events-none" : "opacity-100"
         }`}
       >
@@ -69,15 +78,12 @@ export default function ChartsStickyHeader({ userId, credits }: ChartsStickyHead
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-[#1e3a8a]">Charts</h1>
         </div>
-        <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-2.5 text-base font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-[#1e3a8a] hover:border-[#1e3a8a]/20">
-            <Filter size={18} /> Filter
+        <div className="flex items-center gap-2 md:gap-3">
+          <button className="flex items-center gap-1.5 md:gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-[#1e3a8a] hover:border-[#1e3a8a]/20 whitespace-nowrap">
+            <Sparkles size={16} className="md:w-[18px] md:h-[18px]" /> <span className="hidden sm:inline">AI Generate</span><span className="sm:hidden">AI</span>
           </button>
-          <button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-2.5 text-base font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-[#1e3a8a] hover:border-[#1e3a8a]/20">
-            <Sparkles size={18} /> AI Generate
-          </button>
-          <button className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-6 py-3 text-base font-bold text-white shadow-lg shadow-[#06b6d4]/20 transition-all hover:from-[#172554] hover:to-[#0891b2] hover:scale-[1.02] active:scale-[0.98]">
-            <Plus size={18} /> Create Chart
+          <button className="flex items-center gap-1.5 md:gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-white shadow-lg shadow-[#06b6d4]/20 transition-all hover:from-[#172554] hover:to-[#0891b2] hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap">
+            <Plus size={16} className="md:w-[18px] md:h-[18px]" /> <span className="hidden sm:inline">Create Chart</span><span className="sm:hidden">Create</span>
           </button>
         </div>
       </div>

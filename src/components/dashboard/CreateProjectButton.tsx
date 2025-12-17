@@ -16,13 +16,15 @@ export default function CreateProjectButton({ userId, credits }: Props) {
   return (
     <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
       <Dialog.Trigger asChild>
-        <button className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-6 py-3 text-base font-bold text-white shadow-lg shadow-[#06b6d4]/20 transition-all hover:from-[#172554] hover:to-[#0891b2] hover:scale-[1.02] active:scale-[0.98]">
-          <Plus size={18} /> Create new AI
+        <button className="flex items-center gap-1.5 md:gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-white shadow-lg shadow-[#06b6d4]/20 transition-all hover:from-[#172554] hover:to-[#0891b2] hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap">
+          <Plus size={16} className="md:w-[18px] md:h-[18px]" />
+          <span className="hidden sm:inline">Create new AI</span>
+          <span className="sm:hidden">Create</span>
         </button>
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-5xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-3xl bg-transparent shadow-2xl outline-none transition-all h-[85vh] max-h-[900px]">
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[95vw] sm:w-full max-w-5xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl sm:rounded-3xl bg-transparent shadow-2xl outline-none transition-all h-[90vh] sm:h-[85vh] max-h-[900px]">
           <Dialog.Title className="sr-only">Create New Presentation</Dialog.Title>
           <ProjectCreationWizard 
             userId={userId} 

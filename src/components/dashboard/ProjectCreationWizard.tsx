@@ -64,31 +64,32 @@ export default function ProjectCreationWizard({ userId, credits, onClose }: Prop
       {/* Close Button */}
       <button 
         onClick={onClose}
-        className="absolute right-6 top-6 z-20 rounded-full bg-white/80 backdrop-blur-sm p-2 text-slate-600 transition-colors hover:bg-white hover:text-slate-900 shadow-md"
+        className="absolute right-3 top-3 sm:right-6 sm:top-6 z-20 rounded-full bg-white/80 backdrop-blur-sm p-1.5 sm:p-2 text-slate-600 transition-colors hover:bg-white hover:text-slate-900 shadow-md"
       >
-        <X size={20} />
+        <X size={18} className="sm:hidden" />
+        <X size={20} className="hidden sm:block" />
       </button>
 
       {/* Header */}
-      <div className="relative z-10 flex flex-col items-center justify-center px-8 pt-12 pb-12 text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-[#1e3a8a] md:text-4xl drop-shadow-sm">
+      <div className="relative z-10 flex flex-col items-center justify-center px-4 sm:px-8 pt-8 sm:pt-12 pb-6 sm:pb-12 text-center">
+        <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-[#1e3a8a] drop-shadow-sm">
           How would you like to get started?
         </h1>
-        <p className="mt-3 text-base text-slate-700 max-w-lg">
+        <p className="mt-2 sm:mt-3 text-sm sm:text-base text-slate-700 max-w-lg">
           Choose a workflow to begin your creation journey.
         </p>
       </div>
 
         {/* Cards Grid */}
-        <div className="relative z-10 flex-1 overflow-hidden px-8 pt-2 pb-8">
-          <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-3">
+        <div className="relative z-10 flex-1 overflow-y-auto px-3 sm:px-6 lg:px-8 pt-1 sm:pt-2 pb-4 sm:pb-8">
+          <div className="mx-auto grid max-w-5xl gap-3 sm:gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
             {options.map((option, index) => (
             <div
               key={option.title}
-              className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/60 bg-white/95 backdrop-blur-md text-left shadow-lg transition-all duration-300 hover:-translate-y-2 hover:border-white/80 hover:shadow-2xl hover:shadow-[#06b6d4]/30"
+              className="group relative flex flex-col overflow-hidden rounded-xl sm:rounded-2xl border border-white/60 bg-white/95 backdrop-blur-md text-left shadow-lg transition-all duration-300 hover:-translate-y-1 sm:hover:-translate-y-2 hover:border-white/80 hover:shadow-2xl hover:shadow-[#06b6d4]/30"
             >
               {/* Card Header - Slide Stack Representation */}
-              <div className={cn("relative flex h-[148px] w-full items-center justify-center overflow-hidden p-4 transition-all duration-500", `bg-gradient-to-br ${option.gradient}`)}>
+              <div className={cn("relative flex h-24 sm:h-32 md:h-[148px] w-full items-center justify-center overflow-hidden p-3 sm:p-4 transition-all duration-500", `bg-gradient-to-br ${option.gradient}`)}>
                 {/* Subtle pattern overlay */}
                 <div className="absolute inset-0 opacity-10">
                   <div 
@@ -184,16 +185,16 @@ export default function ProjectCreationWizard({ userId, credits, onClose }: Prop
               </div>
 
               {/* Content Body */}
-              <div className="flex flex-1 flex-col p-5 bg-white">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className={cn("p-1.5 rounded-lg bg-gradient-to-br", `bg-gradient-to-br ${option.gradient}`)}>
-                    <option.icon className="h-4 w-4 text-white" />
+              <div className="flex flex-1 flex-col p-3 sm:p-4 md:p-5 bg-white">
+                <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                  <div className={cn("p-1 sm:p-1.5 rounded-lg bg-gradient-to-br", `bg-gradient-to-br ${option.gradient}`)}>
+                    <option.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
                   </div>
-                  <h3 className="text-lg font-bold text-[#1e3a8a]">
+                  <h3 className="text-base sm:text-lg font-bold text-[#1e3a8a]">
                     {option.title}
                   </h3>
                 </div>
-                <p className="mb-4 text-sm leading-relaxed text-slate-600">
+                <p className="mb-3 sm:mb-4 text-xs sm:text-sm leading-relaxed text-slate-600 line-clamp-2 sm:line-clamp-none">
                   {option.description}
                 </p>
                 

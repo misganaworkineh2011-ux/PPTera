@@ -1,6 +1,6 @@
 import { requireAuth } from "~/lib/clerk-server";
 import { db } from "~/server/db";
-import { BarChart, PieChart, LineChart, Table, Grid, List as ListIcon, Star, MoreHorizontal } from "lucide-react";
+import { BarChart, PieChart, LineChart, Table, Grid, Star, MoreHorizontal } from "lucide-react";
 import ChartsStickyHeader from "./ChartsStickyHeader";
 import Image from "next/image";
 
@@ -51,19 +51,6 @@ export default async function ChartsPage() {
               {type.name}
             </button>
           ))}
-        </div>
-
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1 rounded-lg bg-slate-100 p-1">
-            <button className="flex items-center gap-2 rounded-md bg-white px-3 py-2 text-[#1e3a8a] shadow-sm transition">
-              <Grid size={20} />
-              <span className="text-sm font-medium">Grid</span>
-            </button>
-            <button className="flex items-center gap-2 rounded-md px-3 py-2 text-slate-500 transition hover:text-slate-700">
-              <ListIcon size={20} />
-              <span className="text-sm font-medium">List</span>
-            </button>
-          </div>
         </div>
       </div>
 

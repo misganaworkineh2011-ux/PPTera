@@ -129,9 +129,16 @@ CRITICAL QUALITY STANDARDS:
 
 5. Actionable content: Provide specific, practical tips and actionable advice - avoid vague motivation or generic statements. Include concrete examples, case studies, exercises, or activities that make content tangible and applicable.
 
-6. Bullet point quality - CRITICAL: See detailed requirements in section 2 of user prompt below.
+6. Famous quotes and sayings (when appropriate):
+   Sometimes, when it genuinely enhances the content and adds depth, include relevant famous quotes or sayings by notable persons about the main idea or related concepts.
+   - Only include quotes when they meaningfully contribute to the slide's message
+   - Cite quotes properly: "Quote text" — Author Name
+   - Use quotes that are relevant, inspiring, or provide valuable perspective
+   - Do not force quotes into every slide; use judgment to determine when they add value
 
-7. Professional expertise and clarity: Write the outline as if you are a master/expert in the specific field or topic. The content should demonstrate deep knowledge and professional understanding, but remain accessible and easy to understand - like a well-crafted PowerPoint presentation. Use clear, concise language that balances expertise with clarity. Avoid jargon unless necessary, and when using technical terms, ensure the context makes them understandable. The outline should feel authoritative and professional while being digestible for the intended audience.
+7. Bullet point quality - CRITICAL: See detailed requirements in section 2 of user prompt below.
+
+8. Professional expertise and clarity: Write the outline as if you are a master/expert in the specific field or topic. The content should demonstrate deep knowledge and professional understanding, but remain accessible and easy to understand - like a well-crafted PowerPoint presentation. Use clear, concise language that balances expertise with clarity. Avoid jargon unless necessary, and when using technical terms, ensure the context makes them understandable. The outline should feel authoritative and professional while being digestible for the intended audience.
 
 The outline must be well-structured, engaging, written in ${languageDescription}, using a ${toneDescription} tone, and applicable to any field. Output format must be a valid JSON object with a "slides" array.`;
 
@@ -170,10 +177,21 @@ CRITICAL REQUIREMENTS:
      * Pick the structure that fits best.
      * Each slide should build logically on the previous one.
    - LAST (conclusion):
-     * No generic titles ("Conclusion", "Summary").
-     * Title must feel native to the topic.
-     * Summarize key takeaways and give a clear CTA/next steps. Provide 4-6 bullets here to land the message with substance.
-     * End with a standout last bullet that directly engages the audience—could be a question, playful nudge, confident command, poetic twist, vivid metaphor, surprising contrast, reflective prompt, or aspirational invite to act—anything that makes them pause and connect with the whole deck.
+     * CRITICAL: This slide requires deep analysis of the content and main idea to create a truly creative and contextually appropriate conclusion.
+     * NO generic titles like "Conclusion", "Summary", "Call to Action", "CTA", or "Next Steps".
+     * The title must be highly creative and contextually relevant—it could be:
+       - A thought-provoking question that ties back to the main idea
+       - A poetic or metaphorical statement
+       - A bold claim or insight
+       - A reflective statement
+       - A forward-looking vision
+       - Any creative approach that feels native to the topic and provides a memorable closing
+     * Analyze the entire presentation's narrative, the core message, and the audience's journey to determine the most impactful way to conclude.
+     * Provide 4-6 bullets that:
+       - Summarize key takeaways in a meaningful way
+       - Provide clear next steps or actionable items (without saying "next steps" in the title)
+       - End with a standout final bullet that emotionally or intellectually lands the message—could be a question, playful nudge, confident command, poetic twist, vivid metaphor, surprising contrast, reflective prompt, or aspirational invite—anything that makes them pause and connect with the whole presentation
+     * The conclusion should feel like a natural, creative culmination of the entire presentation, not a formulaic ending.
    
 4. LANGUAGE & TONE:
    - Language must be ${languageDescription}

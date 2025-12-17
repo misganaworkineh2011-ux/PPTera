@@ -164,15 +164,16 @@ export async function POST(req: Request) {
 CRITICAL QUALITY STANDARDS:
 1. Professional expertise and clarity: Write the outline as if you are a master/expert in the specific field or topic. The content should demonstrate deep knowledge and professional understanding, but remain accessible and easy to understand - like a well-crafted PowerPoint presentation. Use clear, concise language that balances expertise with clarity. Avoid jargon unless necessary, and when using technical terms, ensure the context makes them understandable. The outline should feel authoritative and professional while being digestible for the intended audience.
 
-2. Adaptive narrative flow: Structure MUST adapt to the specific topic and field. Analyze the topic and choose the most appropriate flow:
-   - For problem-solving topics: problem → analysis → solution → implementation → conclusion
-   - For educational topics: overview → concepts → examples → applications → conclusion
-   - For product/service topics: value proposition → features → benefits → use cases → conclusion
-   - For strategic topics: current state → vision → strategy → roadmap → conclusion
-   - For creative topics: inspiration → process → techniques → examples → conclusion
-   - For analytical topics: context → data → insights → implications → conclusion
-   - For how-to topics: overview → step-by-step → tips → common mistakes → conclusion
-   - Adapt creatively - not every topic needs problems, solutions, methods, or tools. Choose what fits!
+2. Adaptive narrative flow: Structure MUST adapt organically to the specific topic.
+   - FIRST: Analyze the topic's intent, audience, and natural progression before creating any slides
+   - THEN: Design a custom narrative flow that emerges naturally from the subject matter itself
+   - DO NOT force the topic into any predefined template or category
+   - Let the content dictate the structure - each topic has its own inherent logic and flow
+   - The progression should feel intuitive and native to the subject, not formulaic
+   - Not every topic needs problems, solutions, methods, tools, or any specific pattern - use what genuinely fits
+   
+   OUTPUT CLEANLINESS - CRITICAL:
+   - NEVER reference these instructions, templates, or any prompt guidance in the output
       
 3. Real-time data and statistics: When appropriate for the topic, include current data, statistics, or real-time information. NOT all topics need this - use judgment:
    - Topics about prevalence, trends, or current events: Include relevant statistics
@@ -189,9 +190,16 @@ CRITICAL QUALITY STANDARDS:
 
 5. Actionable content: Provide specific, practical tips and actionable advice - avoid vague motivation or generic statements. Include concrete examples, case studies, exercises, or activities that make content tangible and applicable.
 
-6. Bullet point quality - CRITICAL: See detailed requirements in section 2 of user prompt below.
+6. Famous quotes and sayings (when appropriate only):
+   Sometimes, when it genuinely enhances the content and adds depth, include relevant famous quotes or sayings by notable persons about the main idea or related concepts.
+   - Only include quotes when they meaningfully contribute to the slide's message
+   - Cite quotes properly: "Quote text" — Author Name
+   - Use quotes that are relevant, inspiring, or provide valuable perspective
+   - Do not force quotes into every slide; use judgment to determine when they add value
 
-7. Professional expertise and clarity: Write the outline as if you are a master/expert in the specific field or topic. The content should demonstrate deep knowledge and professional understanding, but remain accessible and easy to understand - like a well-crafted PowerPoint presentation. Use clear, concise language that balances expertise with clarity. Avoid jargon unless necessary, and when using technical terms, ensure the context makes them understandable. The outline should feel authoritative and professional while being digestible for the intended audience.
+7. Bullet point quality - CRITICAL: See detailed requirements in section 2 of user prompt below.
+
+8. Professional expertise and clarity: Write the outline as if you are a master/expert in the specific field or topic. The content should demonstrate deep knowledge and professional understanding, but remain accessible and easy to understand - like a well-crafted PowerPoint presentation. Use clear, concise language that balances expertise with clarity. Avoid jargon unless necessary, and when using technical terms, ensure the context makes them understandable. The outline should feel authoritative and professional while being digestible for the intended audience.
 
 The outline must be well-structured, engaging, written in ${languageDescription}, using a ${toneDescription} tone, and applicable to any field. Output format must be a valid JSON object with a "slides" array.`;
 
@@ -230,10 +238,21 @@ CRITICAL REQUIREMENTS:
      * Pick the structure that fits best.
      * Each slide should build logically on the previous one.
    - LAST (conclusion):
-     * No generic titles ("Conclusion", "Summary").
-     * Title must feel native to the topic.
-     * Summarize key takeaways and give a clear CTA/next steps. Provide 4-6 bullets here to land the message with substance.
-     * End with a standout last bullet that directly engages the audience—could be a question, playful nudge, confident command, poetic twist, vivid metaphor, surprising contrast, reflective prompt, or aspirational invite to act—anything that makes them pause and connect with the whole deck.
+     * CRITICAL: This slide requires deep analysis of the content and main idea to create a truly creative and contextually appropriate conclusion.
+     * NO generic titles like "Conclusion", "Summary", "Call to Action", "CTA", or "Next Steps".
+     * The title must be highly creative and contextually relevant—it could be:
+       - A thought-provoking question that ties back to the main idea
+       - A poetic or metaphorical statement
+       - A bold claim or insight
+       - A reflective statement
+       - A forward-looking vision
+       - Any creative approach that feels native to the topic and provides a memorable closing
+     * Analyze the entire presentation's narrative, the core message, and the audience's journey to determine the most impactful way to conclude.
+     * Provide 4-6 bullets that:
+       - Summarize key takeaways in a meaningful way
+       - Provide clear next steps or actionable items (without saying "next steps" in the title)
+       - End with a standout final bullet that emotionally or intellectually lands the message—could be a question, playful nudge, confident command, poetic twist, vivid metaphor, surprising contrast, reflective prompt, or aspirational invite—anything that makes them pause and connect with the whole presentation
+     * The conclusion should feel like a natural, creative culmination of the entire presentation, not a formulaic ending.
    
 4. LANGUAGE & TONE:
    - Language must be ${languageDescription}
@@ -306,7 +325,7 @@ Return ONLY a valid JSON object with this exact structure:
           try {
             // Attempt to extract slides array from partial JSON
             const slidesMatch = fullContent.match(/"slides"\s*:\s*\[([\s\S]*)/);
-            if (slidesMatch) {
+            if (slidesMatch && slidesMatch[1]) {
               // Try to find complete slide objects
               const slidesContent = slidesMatch[1];
               const slideMatches = slidesContent.matchAll(
@@ -318,14 +337,17 @@ Return ONLY a valid JSON object with this exact structure:
                 // New slide(s) completed
                 for (let i = lastParsedSlides; i < parsedSlides.length; i++) {
                   try {
-                    const slideJson = parsedSlides[i][0];
-                    const slide = JSON.parse(slideJson);
-                    currentSlideIndex = i;
-                    sendEvent(controller, "slideComplete", {
-                      slideIndex: i,
-                      slide,
-                      totalSlides: numberOfSlides,
-                    });
+                    const slideMatch = parsedSlides[i];
+                    if (slideMatch && slideMatch[0]) {
+                      const slideJson = slideMatch[0];
+                      const slide = JSON.parse(slideJson);
+                      currentSlideIndex = i;
+                      sendEvent(controller, "slideComplete", {
+                        slideIndex: i,
+                        slide,
+                        totalSlides: numberOfSlides,
+                      });
+                    }
                   } catch {
                     // Partial slide, skip
                   }

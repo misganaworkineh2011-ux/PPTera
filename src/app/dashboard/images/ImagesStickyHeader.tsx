@@ -1,6 +1,6 @@
 "use client";
 
-import { Image as ImageIcon, Upload, Filter } from "lucide-react";
+import { Image as ImageIcon, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useStickyContext } from "~/components/dashboard/DashboardLayout";
 
@@ -16,6 +16,15 @@ export default function ImagesStickyHeader({ userId, credits }: StickyHeaderProp
   const { setIsTitleSticky, setStickyTitleContent } = useStickyContext();
 
   useEffect(() => {
+    // Only enable sticky behavior on md+ screens
+    const checkMobile = () => window.innerWidth < 768;
+    if (checkMobile()) {
+      setIsSticky(false);
+      setIsTitleSticky(false);
+      setStickyTitleContent(null);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         // Trigger when 50% of the header is out of view
@@ -59,7 +68,7 @@ export default function ImagesStickyHeader({ userId, credits }: StickyHeaderProp
       {/* Header that becomes sticky - hides when sticky, title moves to TopBar */}
       <div
         ref={headerRef}
-        className={`flex flex-col gap-4 md:flex-row md:items-center md:justify-between transition-all duration-300 ${
+        className={`flex flex-row items-center justify-between gap-4 transition-all duration-300 ${
           isSticky ? "opacity-0 h-0 overflow-hidden pointer-events-none" : "opacity-100"
         }`}
       >
@@ -69,14 +78,9 @@ export default function ImagesStickyHeader({ userId, credits }: StickyHeaderProp
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-[#1e3a8a]">Images</h1>
         </div>
-        <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-2.5 text-base font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-[#1e3a8a] hover:border-[#1e3a8a]/20">
-            <Filter size={18} /> Filter
-          </button>
-          <button className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-6 py-3 text-base font-bold text-white shadow-lg shadow-[#06b6d4]/20 transition-all hover:from-[#172554] hover:to-[#0891b2] hover:scale-[1.02] active:scale-[0.98]">
-            <Upload size={18} /> Upload Images
-          </button>
-        </div>
+        <button className="flex items-center gap-1.5 md:gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-3 py-2 md:px-6 md:py-3 text-sm md:text-base font-bold text-white shadow-lg shadow-[#06b6d4]/20 transition-all hover:from-[#172554] hover:to-[#0891b2] hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap">
+          <Upload size={16} className="md:w-[18px] md:h-[18px]" /> <span className="hidden sm:inline">Upload Images</span><span className="sm:hidden">Upload</span>
+        </button>
       </div>
     </>
   );

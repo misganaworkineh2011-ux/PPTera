@@ -17,8 +17,19 @@ export default function StickyHeader({ userId, credits }: StickyHeaderProps) {
   const { setIsTitleSticky, setStickyTitleContent } = useStickyContext();
 
   useEffect(() => {
+    // Only enable sticky behavior on md+ screens
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) {
+      setIsSticky(false);
+      setIsTitleSticky(false);
+      setStickyTitleContent(null);
+      return;
+    }
+
     const observer = new IntersectionObserver(
-      ([entry]) => {
+      (entries) => {
+        const entry = entries[0];
+        if (!entry) return;
         // Trigger when 50% of the header is out of view
         const sticky = entry.intersectionRatio < 0.5;
         setIsSticky(sticky);
@@ -26,10 +37,11 @@ export default function StickyHeader({ userId, credits }: StickyHeaderProps) {
         if (sticky) {
           setStickyTitleContent(
             <>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
-                <FileText size={18} />
+              <div className="flex h-7 w-7 lg:h-8 lg:w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
+                <FileText size={16} className="lg:hidden" />
+                <FileText size={18} className="hidden lg:block" />
               </div>
-              <h1 className="text-xl font-bold tracking-tight text-[#1e3a8a] whitespace-nowrap">Presentations</h1>
+              <h1 className="text-lg lg:text-xl font-bold tracking-tight text-[#1e3a8a] whitespace-nowrap">Presentations</h1>
             </>
           );
         } else {
@@ -60,7 +72,7 @@ export default function StickyHeader({ userId, credits }: StickyHeaderProps) {
       {/* Header that becomes sticky - hides when sticky */}
       <div
         ref={headerRef}
-        className={`flex flex-col gap-4 md:flex-row md:items-center md:justify-between transition-all duration-300 ${
+        className={`flex flex-row items-center justify-between gap-4 transition-all duration-300 ${
           isSticky ? "opacity-0 h-0 overflow-hidden pointer-events-none" : "opacity-100"
         }`}
       >
@@ -72,11 +84,12 @@ export default function StickyHeader({ userId, credits }: StickyHeaderProps) {
           <h1 className="text-3xl font-bold tracking-tight text-[#1e3a8a]">Presentations</h1>
         </div>
         
-        {/* Action buttons on the right */}
-        <div className="flex items-center justify-end gap-3">
+        {/* Action buttons - right aligned */}
+        <div className="flex items-center gap-2 md:gap-3">
           <CreateProjectButton userId={userId} credits={credits} />
-          <button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-2.5 text-base font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-[#1e3a8a] hover:border-[#1e3a8a]/20">
-            <Import size={18} /> Import
+          <button className="flex items-center gap-1.5 md:gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-[#1e3a8a] hover:border-[#1e3a8a]/20 whitespace-nowrap">
+            <Import size={16} className="md:w-[18px] md:h-[18px]" />
+            <span className="hidden sm:inline">Import</span>
           </button>
         </div>
       </div>
