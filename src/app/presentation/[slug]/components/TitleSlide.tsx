@@ -55,6 +55,10 @@ export function TitleSlide({
     case "cyber": return <CyberTitleSlide {...props} />;
     case "alien": return <AlienTitleSlide {...props} />;
     case "corporate": return <CorporateTitleSlide {...props} />;
+    case "cosmic": return <CosmicTitleSlide {...props} />;
+    case "architectural": return <ArchitecturalTitleSlide {...props} />;
+    case "anime": return <AnimeTitleSlide {...props} />;
+    case "hacker": return <HackerTitleSlide {...props} />;
     default: return <DarkTitleSlide {...props} />;
   }
 }
@@ -555,6 +559,285 @@ function CorporateTitleSlide({ slide, index, totalSlides, theme, hasImage, canEd
       
       {/* Bottom accent line */}
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
+    </div>
+  );
+}
+
+// COSMIC VOYAGE - Ethereal space theme with image background
+function CosmicTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+  const bgImage = theme.backgroundImage;
+  return (
+    <div className="h-full relative overflow-hidden">
+      {/* Space background image */}
+      {bgImage && !hasImage && (
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${bgImage})` }}
+        />
+      )}
+      {/* Overlay for readability */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0a0612]/70 via-[#120a1f]/50 to-[#0a0612]/60" />
+      
+      {/* Animated cosmic particles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-violet-400/60 rounded-full animate-pulse" />
+        <div className="absolute top-1/3 right-1/3 w-1.5 h-1.5 bg-fuchsia-400/50 rounded-full animate-pulse" style={{ animationDelay: "0.5s" }} />
+        <div className="absolute bottom-1/4 left-1/3 w-1 h-1 bg-blue-400/40 rounded-full animate-pulse" style={{ animationDelay: "1s" }} />
+        <div className="absolute top-2/3 right-1/4 w-1.5 h-1.5 bg-violet-300/50 rounded-full animate-pulse" style={{ animationDelay: "1.5s" }} />
+      </div>
+      
+      {/* Orbital ring decorations */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-30">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] border border-violet-500/20 rounded-full" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] border border-fuchsia-500/15 rounded-full rotate-45" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] border border-blue-500/10 rounded-full -rotate-12" />
+      </div>
+      
+      {hasImage && <div className="absolute inset-0 bg-gradient-to-t from-[#0a0612]/95 via-[#0a0612]/60 to-[#0a0612]/30" />}
+      
+      <div className="relative h-full flex flex-col items-center justify-center p-12 text-center">
+        {/* Slide indicator */}
+        <div className="absolute top-8 left-8 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full border-2 border-violet-500/40 flex items-center justify-center bg-[#0a0612]/50 backdrop-blur-sm">
+            <span className="font-mono text-sm font-bold text-violet-400">{String(index + 1).padStart(2, "0")}</span>
+          </div>
+          <div className="w-16 h-px bg-gradient-to-r from-violet-500/50 via-fuchsia-500/30 to-transparent" />
+          <span className="text-xs font-medium text-violet-400/50">/ {String(totalSlides).padStart(2, "0")}</span>
+        </div>
+        
+        {/* Decorative top element */}
+        <div className="mb-8 flex items-center gap-4">
+          <div className="w-16 h-px bg-gradient-to-r from-transparent to-violet-500/50" />
+          <div className="w-4 h-4 rotate-45 border border-violet-500/50" />
+          <div className="w-16 h-px bg-gradient-to-l from-transparent to-violet-500/50" />
+        </div>
+        
+        {/* Central glow effect */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-40 bg-gradient-to-r from-violet-500/15 via-fuchsia-500/20 to-violet-500/15 blur-3xl rounded-full pointer-events-none" />
+        
+        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-light mb-8 max-w-5xl leading-tight relative tracking-wide" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "0.02em" }} isOwner={canEdit} isHovered={isHovered} />
+        {slide.subtitle && (
+          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#c4b5fd" }} isOwner={canEdit} isHovered={isHovered} />
+        )}
+        
+        {/* Bottom decorative element */}
+        <div className="flex items-center gap-4 mt-12">
+          <div className="w-2 h-2 rounded-full bg-violet-400/60 animate-pulse" />
+          <div className="w-2 h-2 rounded-full bg-fuchsia-400/60 animate-pulse" style={{ animationDelay: "0.3s" }} />
+          <div className="w-2 h-2 rounded-full bg-blue-400/60 animate-pulse" style={{ animationDelay: "0.6s" }} />
+        </div>
+      </div>
+      
+      {/* Bottom accent line */}
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-violet-500/40 to-transparent" />
+    </div>
+  );
+}
+
+// ARCHITECTURAL MONOCHROME - Bold B&W with geometric precision
+function ArchitecturalTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+  const bgImage = theme.backgroundImage;
+  return (
+    <div className="h-full relative overflow-hidden">
+      {/* Architectural background image */}
+      {bgImage && !hasImage && (
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${bgImage})` }}
+        />
+      )}
+      {/* Dark overlay for contrast */}
+      <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/60 to-black/70" />
+      
+      {/* Bold geometric frame */}
+      <div className="absolute top-0 left-0 w-full h-2 bg-white" />
+      <div className="absolute bottom-0 left-0 w-full h-2 bg-white" />
+      <div className="absolute top-0 left-0 w-2 h-full bg-white" />
+      <div className="absolute top-0 right-0 w-2 h-full bg-white" />
+      
+      {/* Inner frame accent */}
+      <div className="absolute top-8 left-8 right-8 bottom-8 border border-white/20" />
+      
+      {hasImage && <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/70 to-black/50" />}
+      
+      <div className="relative h-full flex flex-col items-center justify-center p-16 text-center">
+        {/* Slide indicator */}
+        <div className="absolute top-12 left-12 flex items-center gap-4">
+          <span className="text-6xl font-black text-white/20">{String(index + 1).padStart(2, "0")}</span>
+          <div className="flex flex-col items-start">
+            <div className="w-16 h-1 bg-white mb-2" />
+            <span className="text-xs font-bold text-white/50 uppercase tracking-[0.3em]">of {String(totalSlides).padStart(2, "0")}</span>
+          </div>
+        </div>
+        
+        {/* Decorative top element */}
+        <div className="mb-8 flex items-center gap-6">
+          <div className="w-24 h-px bg-white" />
+          <div className="w-3 h-3 bg-white rotate-45" />
+          <div className="w-24 h-px bg-white" />
+        </div>
+        
+        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-black uppercase tracking-tight mb-8 max-w-5xl leading-none" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "-0.02em" }} isOwner={canEdit} isHovered={isHovered} />
+        {slide.subtitle && (
+          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl font-medium" style={{ fontFamily: theme.fonts.body.family, color: "#a3a3a3" }} isOwner={canEdit} isHovered={isHovered} />
+        )}
+        
+        {/* Bottom decorative element */}
+        <div className="flex items-center gap-4 mt-12">
+          <div className="w-4 h-4 border-2 border-white" />
+          <div className="w-32 h-px bg-white" />
+          <div className="w-4 h-4 bg-white" />
+          <div className="w-32 h-px bg-white" />
+          <div className="w-4 h-4 border-2 border-white" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ANIME DREAMSCAPE - Soft dreamy anime aesthetic
+function AnimeTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+  const bgImage = theme.backgroundImage;
+  return (
+    <div className="h-full relative overflow-hidden">
+      {/* Anime sky background */}
+      {bgImage && !hasImage && (
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${bgImage})` }}
+        />
+      )}
+      {/* Soft overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#1a1625]/30 via-[#251f35]/40 to-[#1a1625]/50" />
+      
+      {/* Floating soft orbs */}
+      <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-fuchsia-500/15 rounded-full blur-3xl" />
+      <div className="absolute bottom-1/3 left-1/4 w-48 h-48 bg-sky-400/10 rounded-full blur-3xl" />
+      <div className="absolute top-1/2 left-1/2 w-32 h-32 bg-pink-400/10 rounded-full blur-2xl" />
+      
+      {/* Soft frame */}
+      <div className="absolute top-10 left-10 right-10 bottom-10 border border-fuchsia-500/15 rounded-3xl" />
+      
+      {hasImage && <div className="absolute inset-0 bg-gradient-to-t from-[#1a1625]/90 via-[#1a1625]/60 to-[#1a1625]/30" />}
+      
+      <div className="relative h-full flex flex-col items-center justify-center p-16 text-center">
+        {/* Slide indicator */}
+        <div className="absolute top-14 left-14 flex items-center gap-3">
+          <div className="px-4 py-1.5 rounded-full bg-fuchsia-500/20 border border-fuchsia-500/30">
+            <span className="text-fuchsia-300 text-sm font-medium">✦ {String(index + 1).padStart(2, "0")}</span>
+          </div>
+          <div className="w-12 h-px bg-gradient-to-r from-fuchsia-500/50 to-transparent" />
+          <span className="text-fuchsia-300/50 text-xs">/ {String(totalSlides).padStart(2, "0")}</span>
+        </div>
+        
+        {/* Decorative top element */}
+        <div className="mb-8 flex items-center gap-4">
+          <div className="w-16 h-px bg-gradient-to-r from-transparent to-fuchsia-500/40" />
+          <div className="w-3 h-3 rounded-full bg-fuchsia-400/50" />
+          <div className="w-16 h-px bg-gradient-to-l from-transparent to-fuchsia-500/40" />
+        </div>
+        
+        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-semibold mb-8 max-w-5xl leading-tight" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "0.01em" }} isOwner={canEdit} isHovered={isHovered} />
+        {slide.subtitle && (
+          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#d8b4fe" }} isOwner={canEdit} isHovered={isHovered} />
+        )}
+        
+        {/* Bottom decorative element */}
+        <div className="flex items-center gap-3 mt-12">
+          <div className="w-2 h-2 rounded-full bg-fuchsia-400/60" />
+          <div className="w-2 h-2 rounded-full bg-pink-400/60" />
+          <div className="w-2 h-2 rounded-full bg-sky-400/60" />
+        </div>
+      </div>
+      
+      {/* Bottom accent */}
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-fuchsia-500/30 to-transparent" />
+    </div>
+  );
+}
+
+// HACKER TERMINAL - Cybersecurity/Linux hacker aesthetic with neon green
+function HackerTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+  const bgImage = theme.backgroundImage;
+  return (
+    <div className="h-full relative overflow-hidden">
+      {/* Kali Linux background */}
+      {bgImage && !hasImage && (
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${bgImage})` }}
+        />
+      )}
+      {/* Dark overlay with scanlines effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0d0d0d]/80 via-[#141414]/60 to-[#0d0d0d]/70" />
+      
+      {/* Scanlines effect */}
+      <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 65, 0.03) 2px, rgba(0, 255, 65, 0.03) 4px)" }} />
+      
+      {/* Matrix-style falling code effect (static representation) */}
+      <div className="absolute inset-0 overflow-hidden opacity-20 pointer-events-none">
+        <div className="absolute top-0 left-[10%] w-px h-32 bg-gradient-to-b from-[#00ff41] to-transparent" />
+        <div className="absolute top-0 left-[25%] w-px h-48 bg-gradient-to-b from-[#00ff41] to-transparent" />
+        <div className="absolute top-0 left-[40%] w-px h-24 bg-gradient-to-b from-[#00ff41] to-transparent" />
+        <div className="absolute top-0 left-[60%] w-px h-40 bg-gradient-to-b from-[#00ff41] to-transparent" />
+        <div className="absolute top-0 left-[75%] w-px h-36 bg-gradient-to-b from-[#00ff41] to-transparent" />
+        <div className="absolute top-0 left-[90%] w-px h-28 bg-gradient-to-b from-[#00ff41] to-transparent" />
+      </div>
+      
+      {/* Terminal window frame */}
+      <div className="absolute top-8 left-8 right-8 bottom-8 border border-[#00ff41]/30 rounded-lg overflow-hidden">
+        {/* Terminal header bar */}
+        <div className="absolute top-0 left-0 right-0 h-8 bg-[#0d0d0d]/90 border-b border-[#00ff41]/30 flex items-center px-4 gap-2">
+          <div className="w-3 h-3 rounded-full bg-[#ff0040]" />
+          <div className="w-3 h-3 rounded-full bg-[#ffff00]" />
+          <div className="w-3 h-3 rounded-full bg-[#00ff41]" />
+          <span className="ml-4 text-[#00ff41]/60 text-xs font-mono">root@kali:~/presentation</span>
+        </div>
+      </div>
+      
+      {/* Corner tech elements */}
+      <div className="absolute top-12 right-12 flex items-center gap-2">
+        <div className="w-2 h-2 rounded-full bg-[#00ff41] animate-pulse" />
+        <span className="text-[#00ff41]/60 text-xs font-mono">SECURE</span>
+      </div>
+      
+      {hasImage && <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d0d]/95 via-[#0d0d0d]/60 to-[#0d0d0d]/30" />}
+      
+      <div className="relative h-full flex flex-col items-center justify-center p-16 text-center pt-20">
+        {/* Slide indicator - terminal style */}
+        <div className="absolute top-16 left-12 flex items-center gap-3">
+          <span className="text-[#00ff41]/60 font-mono text-sm">$</span>
+          <div className="px-3 py-1 border border-[#00ff41]/40 bg-[#00ff41]/10 rounded">
+            <span className="font-mono text-sm font-bold text-[#00ff41]">{String(index + 1).padStart(2, "0")}</span>
+          </div>
+          <div className="w-16 h-px bg-gradient-to-r from-[#00ff41]/50 to-transparent" />
+          <span className="text-xs font-mono text-[#00ff41]/50">/ {String(totalSlides).padStart(2, "0")}</span>
+        </div>
+        
+        {/* Decorative top element */}
+        <div className="mb-8 flex items-center gap-4">
+          <div className="w-16 h-px bg-gradient-to-r from-transparent to-[#00ff41]/50" />
+          <div className="w-3 h-3 border border-[#00ff41]/60 rotate-45" />
+          <div className="w-16 h-px bg-gradient-to-l from-transparent to-[#00ff41]/50" />
+        </div>
+        
+        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight" style={{ fontFamily: theme.fonts.heading.family, color: "#00ff41", letterSpacing: "0.02em", textShadow: "0 0 30px rgba(0, 255, 65, 0.4)" }} isOwner={canEdit} isHovered={isHovered} />
+        {slide.subtitle && (
+          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl font-mono" style={{ fontFamily: theme.fonts.body.family, color: "#39ff14" }} isOwner={canEdit} isHovered={isHovered} />
+        )}
+        
+        {/* Bottom decorative element - command prompt style */}
+        <div className="flex items-center gap-4 mt-12">
+          <span className="text-[#00ff41]/40 font-mono text-sm">&gt;_</span>
+          <div className="w-24 h-px bg-gradient-to-r from-[#00ff41]/60 to-transparent" />
+          <div className="w-2 h-4 bg-[#00ff41]/80 animate-pulse" />
+          <div className="w-24 h-px bg-gradient-to-l from-[#00ff41]/60 to-transparent" />
+          <span className="text-[#00ff41]/40 font-mono text-sm">_&lt;</span>
+        </div>
+      </div>
+      
+      {/* Bottom accent line */}
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#00ff41]/40 to-transparent" />
     </div>
   );
 }

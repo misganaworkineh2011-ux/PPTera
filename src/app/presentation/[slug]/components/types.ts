@@ -11,7 +11,11 @@ export type ThemeType =
   | "midnight"
   | "cyber"
   | "alien"
-  | "corporate";
+  | "corporate"
+  | "cosmic"
+  | "architectural"
+  | "anime"
+  | "hacker";
 
 export function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "arctic-frost") return "light";
@@ -23,6 +27,10 @@ export function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "cyber-neon") return "cyber";
   if (theme.id === "alien-tech") return "alien";
   if (theme.id === "corporate-clean") return "corporate";
+  if (theme.id === "cosmic-voyage") return "cosmic";
+  if (theme.id === "architectural-mono") return "architectural";
+  if (theme.id === "anime-dreamscape") return "anime";
+  if (theme.id === "hacker-terminal") return "hacker";
   return "dark"; // elegant-noir and default
 }
 

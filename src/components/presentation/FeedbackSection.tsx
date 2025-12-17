@@ -10,7 +10,7 @@ interface FeedbackSectionProps {
   theme?: Theme;
 }
 
-type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber" | "alien" | "corporate";
+type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber" | "alien" | "corporate" | "cosmic" | "architectural" | "anime" | "hacker";
 
 function getThemeType(theme?: Theme): ThemeType {
   if (!theme) return "light";
@@ -23,6 +23,10 @@ function getThemeType(theme?: Theme): ThemeType {
   if (theme.id === "cyber-neon") return "cyber";
   if (theme.id === "alien-tech") return "alien";
   if (theme.id === "corporate-clean") return "corporate";
+  if (theme.id === "cosmic-voyage") return "cosmic";
+  if (theme.id === "architectural-mono") return "architectural";
+  if (theme.id === "anime-dreamscape") return "anime";
+  if (theme.id === "hacker-terminal") return "hacker";
   return "dark";
 }
 
@@ -157,6 +161,58 @@ function getThemeColors(themeType: ThemeType, theme?: Theme) {
       ratingSelected: "border-blue-500 bg-blue-50",
       hideText: "text-gray-400 hover:text-gray-600",
       thankYou: "text-gray-600",
+    },
+    cosmic: {
+      bg: "bg-[#0a0612]/90",
+      border: "border-violet-500/30",
+      title: "text-white",
+      subtitle: "text-violet-300/70",
+      buttonPrimary: "from-violet-500 to-fuchsia-500",
+      buttonSecondary: "bg-[#120a1f]/80 border-violet-500/30 text-violet-200 hover:bg-[#1a0a2e]/80",
+      ratingBorder: "border-violet-500/30",
+      ratingHover: "hover:border-violet-400 hover:bg-violet-500/20",
+      ratingSelected: "border-violet-400 bg-violet-500/30",
+      hideText: "text-violet-400/60 hover:text-violet-300",
+      thankYou: "text-violet-300/70",
+    },
+    architectural: {
+      bg: "bg-[#0a0a0a]/95",
+      border: "border-white/20",
+      title: "text-white",
+      subtitle: "text-neutral-400",
+      buttonPrimary: "from-white to-neutral-300",
+      buttonSecondary: "bg-[#141414]/90 border-white/20 text-neutral-300 hover:bg-[#1a1a1a]/90",
+      ratingBorder: "border-white/20",
+      ratingHover: "hover:border-white/40 hover:bg-white/10",
+      ratingSelected: "border-white bg-white/20",
+      hideText: "text-neutral-500 hover:text-neutral-300",
+      thankYou: "text-neutral-400",
+    },
+    anime: {
+      bg: "bg-[#1a1625]/90",
+      border: "border-fuchsia-500/25",
+      title: "text-white",
+      subtitle: "text-fuchsia-300/70",
+      buttonPrimary: "from-fuchsia-500 to-pink-400",
+      buttonSecondary: "bg-[#251f35]/80 border-fuchsia-500/25 text-fuchsia-200 hover:bg-[#2d2640]/80",
+      ratingBorder: "border-fuchsia-500/25",
+      ratingHover: "hover:border-fuchsia-400 hover:bg-fuchsia-500/20",
+      ratingSelected: "border-fuchsia-400 bg-fuchsia-500/30",
+      hideText: "text-fuchsia-400/60 hover:text-fuchsia-300",
+      thankYou: "text-fuchsia-300/70",
+    },
+    hacker: {
+      bg: "bg-[#0d0d0d]/95",
+      border: "border-[#00ff41]/30",
+      title: "text-[#00ff41]",
+      subtitle: "text-[#39ff14]/70",
+      buttonPrimary: "from-[#00ff41] to-[#39ff14]",
+      buttonSecondary: "bg-[#141414]/90 border-[#00ff41]/30 text-[#00ff41] hover:bg-[#1a1a1a]/90",
+      ratingBorder: "border-[#00ff41]/30",
+      ratingHover: "hover:border-[#00ff41] hover:bg-[#00ff41]/20",
+      ratingSelected: "border-[#00ff41] bg-[#00ff41]/30",
+      hideText: "text-[#00ff41]/60 hover:text-[#00ff41]",
+      thankYou: "text-[#39ff14]/70",
     },
   };
   return colors[themeType];

@@ -21,6 +21,10 @@ import { midnightGarden } from "./midnight-garden";
 import { cyberNeon } from "./cyber-neon";
 import { alienTech } from "./alien-tech";
 import { corporateClean } from "./corporate-clean";
+import { cosmicVoyage } from "./cosmic-voyage";
+import { architecturalMono } from "./architectural-mono";
+import { animeDreamscape } from "./anime-dreamscape";
+import { hackerTerminal } from "./hacker-terminal";
 
 // Re-export individual themes for direct imports
 export {
@@ -34,6 +38,10 @@ export {
   cyberNeon,
   alienTech,
   corporateClean,
+  cosmicVoyage,
+  architecturalMono,
+  animeDreamscape,
+  hackerTerminal,
 };
 
 // All themes array - add new themes here
@@ -48,6 +56,10 @@ export const themes = [
   cyberNeon,
   alienTech,
   corporateClean,
+  cosmicVoyage,
+  architecturalMono,
+  animeDreamscape,
+  hackerTerminal,
 ];
 
 // Helper functions

@@ -11,7 +11,7 @@ interface ExportModalProps {
 }
 
 // Theme type detection
-type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber" | "alien" | "corporate";
+type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber" | "alien" | "corporate" | "cosmic" | "architectural" | "anime" | "hacker";
 function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "arctic-frost") return "light";
   if (theme.id === "sunset-gradient") return "sunset";
@@ -22,6 +22,10 @@ function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "cyber-neon") return "cyber";
   if (theme.id === "alien-tech") return "alien";
   if (theme.id === "corporate-clean") return "corporate";
+  if (theme.id === "cosmic-voyage") return "cosmic";
+  if (theme.id === "architectural-mono") return "architectural";
+  if (theme.id === "anime-dreamscape") return "anime";
+  if (theme.id === "hacker-terminal") return "hacker";
   return "dark";
 }
 
@@ -130,6 +134,46 @@ export default function ExportModal({ isExporting, theme, onExport, onClose }: E
       cardBorder: "border-gray-200",
       cardHover: "hover:border-blue-400/50 hover:bg-blue-50/50",
       closeHover: "hover:bg-gray-100 text-gray-400 hover:text-gray-600",
+    },
+    cosmic: {
+      bg: "bg-[#0a0612]",
+      border: "border-violet-500/30",
+      text: "text-white",
+      textMuted: "text-violet-300/70",
+      cardBg: "bg-[#120a1f]/80",
+      cardBorder: "border-violet-500/25",
+      cardHover: "hover:border-violet-400/50 hover:bg-violet-500/10",
+      closeHover: "hover:bg-violet-500/20 text-violet-300/70 hover:text-violet-100",
+    },
+    architectural: {
+      bg: "bg-[#0a0a0a]",
+      border: "border-white/20",
+      text: "text-white",
+      textMuted: "text-neutral-400",
+      cardBg: "bg-[#141414]/90",
+      cardBorder: "border-white/15",
+      cardHover: "hover:border-white/30 hover:bg-white/5",
+      closeHover: "hover:bg-white/10 text-neutral-400 hover:text-white",
+    },
+    anime: {
+      bg: "bg-[#1a1625]",
+      border: "border-fuchsia-500/25",
+      text: "text-white",
+      textMuted: "text-fuchsia-300/70",
+      cardBg: "bg-[#251f35]/80",
+      cardBorder: "border-fuchsia-500/20",
+      cardHover: "hover:border-fuchsia-400/40 hover:bg-fuchsia-500/10",
+      closeHover: "hover:bg-fuchsia-500/20 text-fuchsia-300/70 hover:text-fuchsia-100",
+    },
+    hacker: {
+      bg: "bg-[#0d0d0d]",
+      border: "border-[#00ff41]/30",
+      text: "text-[#00ff41]",
+      textMuted: "text-[#39ff14]/70",
+      cardBg: "bg-[#141414]/90",
+      cardBorder: "border-[#00ff41]/25",
+      cardHover: "hover:border-[#00ff41]/50 hover:bg-[#00ff41]/10",
+      closeHover: "hover:bg-[#00ff41]/20 text-[#39ff14]/70 hover:text-[#00ff41]",
     },
   };
   

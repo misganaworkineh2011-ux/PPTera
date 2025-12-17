@@ -225,8 +225,14 @@ export default function ThemeSelector({
           <div
             className="flex-1 overflow-hidden relative flex flex-col items-center justify-center p-6"
             style={{
-              background: previewTheme.slideStyles.title.background,
-              backgroundImage: previewTheme.slideStyles.title.pattern || "none",
+              background: previewTheme.previewBackgroundImage 
+                ? "transparent" 
+                : previewTheme.slideStyles.title.background,
+              backgroundImage: previewTheme.previewBackgroundImage 
+                ? `url(${previewTheme.previewBackgroundImage})` 
+                : (previewTheme.slideStyles.title.pattern || "none"),
+              backgroundSize: previewTheme.previewBackgroundImage ? "cover" : "auto",
+              backgroundPosition: previewTheme.previewBackgroundImage ? "center" : "center",
             }}
           >
             {/* Overlay for depth */}

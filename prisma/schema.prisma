@@ -23,17 +23,17 @@ model User {
   nextResetDate       DateTime?
   polarCustomerId     String?
   polarSubscriptionId String?
-  presentations       Presentation[]
-  images              Image[]
+  activities          Activity[]
   charts              Chart[]
+  collaborations      Collaboration[]
+  images              Image[]
+  pinnedProjects      PinnedProject[]
+  resources           Resource[]
   templates           Template[]
   themes              Theme[]
-  resources           Resource[]
-  activities          Activity[]
-  collaborations      Collaboration[]
-  pinnedProjects      PinnedProject[]
-  outlines            Outline[]
   notifications       Notification[]
+  outlines            Outline[]
+  presentations       Presentation[]
 
   @@map("user")
 }
@@ -46,17 +46,17 @@ model Presentation {
   slides         Json
   thumbnailUrl   String?
   isPinned       Boolean         @default(false)
-  isPublic       Boolean         @default(false)
-  shareToken     String?         @unique
   userId         String
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
-  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  images         Image[]
+  isPublic       Boolean         @default(false)
+  shareToken     String?         @unique
+  activities     Activity[]
   charts         Chart[]
   collaborations Collaboration[]
-  activities     Activity[]
+  images         Image[]
   pinnedBy       PinnedProject[]
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("presentation")
 }
@@ -69,27 +69,27 @@ model Image {
   userId         String
   presentationId String?
   createdAt      DateTime      @default(now())
-  user           User          @relation(fields: [userId], references: [id])
   presentation   Presentation? @relation(fields: [presentationId], references: [id])
+  user           User          @relation(fields: [userId], references: [id])
 }
 
 model Chart {
   id             String        @id @default(cuid())
-  type           String // pie, bar, line, table, etc.
+  type           String
   data           Json
   config         Json
   previewUrl     String?
   userId         String
   presentationId String?
   createdAt      DateTime      @default(now())
-  user           User          @relation(fields: [userId], references: [id])
   presentation   Presentation? @relation(fields: [presentationId], references: [id])
+  user           User          @relation(fields: [userId], references: [id])
 }
 
 model Template {
   id         String   @id @default(cuid())
   name       String
-  category   String // theme, style, industry
+  category   String
   previewUrl String
   config     Json
   isPublic   Boolean  @default(false)
@@ -112,7 +112,7 @@ model Theme {
 
 model Resource {
   id        String   @id @default(cuid())
-  type      String // font, icon, logo, illustration, photo, component
+  type      String
   name      String
   url       String
   category  String?
@@ -124,25 +124,25 @@ model Resource {
 
 model Activity {
   id             String        @id @default(cuid())
-  type           String // edit, create, delete, share, etc.
+  type           String
   description    String
   userId         String
   presentationId String?
   metadata       Json?
   createdAt      DateTime      @default(now())
-  user           User          @relation(fields: [userId], references: [id])
   presentation   Presentation? @relation(fields: [presentationId], references: [id])
+  user           User          @relation(fields: [userId], references: [id])
 }
 
 model Collaboration {
   id             String       @id @default(cuid())
   presentationId String
-  userId         String?      // null if invited by email but not yet registered
-  email          String       // email of the collaborator
-  role           String       // editor, viewer
-  status         String       @default("pending") // pending, accepted
-  inviteToken    String?      @unique
+  userId         String?
+  role           String
   createdAt      DateTime     @default(now())
+  email          String
+  inviteToken    String?      @unique
+  status         String       @default("pending")
   updatedAt      DateTime     @updatedAt
   presentation   Presentation @relation(fields: [presentationId], references: [id], onDelete: Cascade)
   user           User?        @relation(fields: [userId], references: [id])
@@ -155,18 +155,17 @@ model PinnedProject {
   userId         String
   presentationId String
   pinnedAt       DateTime     @default(now())
-  user           User         @relation(fields: [userId], references: [id])
   presentation   Presentation @relation(fields: [presentationId], references: [id])
+  user           User         @relation(fields: [userId], references: [id])
 }
 
-// Landing Page Models
 model ContactSubmission {
   id        String   @id @default(cuid())
   name      String
   email     String
   subject   String
   message   String
-  status    String   @default("pending") // pending, replied, closed
+  status    String   @default("pending")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -174,19 +173,19 @@ model ContactSubmission {
 }
 
 model CommunityPost {
-  id          String            @id @default(cuid())
+  id          String             @id @default(cuid())
   title       String
   content     String
-  category    String // show-tell, discussion, tips, feature-request
+  category    String
   authorId    String?
   authorName  String
   authorEmail String?
-  likes       Int               @default(0)
-  views       Int               @default(0)
-  isPinned    Boolean           @default(false)
-  isApproved  Boolean           @default(false)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  likes       Int                @default(0)
+  views       Int                @default(0)
+  isPinned    Boolean            @default(false)
+  isApproved  Boolean            @default(false)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
   comments    CommunityComment[]
 
   @@map("community_post")
@@ -207,36 +206,36 @@ model CommunityComment {
 }
 
 model JobPosting {
-  id          String   @id @default(cuid())
-  title       String
-  department  String // Engineering, Design, Marketing, Sales, etc.
-  location    String // Remote, San Francisco, etc.
-  type        String // Full-time, Part-time, Contract
-  description String
+  id           String           @id @default(cuid())
+  title        String
+  department   String
+  location     String
+  type         String
+  description  String
   requirements String
-  benefits    String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  benefits     String?
+  isActive     Boolean          @default(true)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
   applications JobApplication[]
 
   @@map("job_posting")
 }
 
 model JobApplication {
-  id        String     @id @default(cuid())
-  jobId     String
-  name      String
-  email     String
-  phone     String?
-  resume    String // URL to uploaded resume
+  id          String     @id @default(cuid())
+  jobId       String
+  name        String
+  email       String
+  phone       String?
+  resume      String
   coverLetter String?
-  linkedIn  String?
-  portfolio String?
-  status    String     @default("pending") // pending, reviewing, interview, rejected, accepted
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  job       JobPosting @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  linkedIn    String?
+  portfolio   String?
+  status      String     @default("pending")
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  job         JobPosting @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   @@map("job_application")
 }
@@ -246,7 +245,7 @@ model InspirationGallery {
   title       String
   description String?
   imageUrl    String
-  category    String // business, education, marketing, design, etc.
+  category    String
   tags        String[]
   likes       Int      @default(0)
   views       Int      @default(0)
@@ -261,47 +260,47 @@ model InspirationGallery {
 }
 
 model InsightPost {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   title       String
-  slug        String   @unique
+  slug        String    @unique
   excerpt     String
   content     String
   coverImage  String
-  category    String // ai-technology, design, best-practices
+  category    String
   tags        String[]
   author      String
   authorImage String?
-  readTime    Int // in minutes
-  views       Int      @default(0)
-  likes       Int      @default(0)
-  isPublished Boolean  @default(false)
-  isFeatured  Boolean  @default(false)
+  readTime    Int
+  views       Int       @default(0)
+  likes       Int       @default(0)
+  isPublished Boolean   @default(false)
+  isFeatured  Boolean   @default(false)
   publishedAt DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@map("insight_post")
 }
 
 model Newsletter {
-  id          String   @id @default(cuid())
-  email       String   @unique
-  isActive    Boolean  @default(true)
-  subscribedAt DateTime @default(now())
+  id             String    @id @default(cuid())
+  email          String    @unique
+  isActive       Boolean   @default(true)
+  subscribedAt   DateTime  @default(now())
   unsubscribedAt DateTime?
 
   @@map("newsletter")
 }
 
 model Outline {
-  id          String   @id @default(cuid())
-  userId      String
-  slides      Json     // Array of slide objects
-  metadata    Json     // topic, totalSlides, tone, language
-  status      String   @default("generating") // generating, completed, failed
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  userId    String
+  slides    Json
+  metadata  Json
+  status    String   @default("generating")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("outline")
 }
@@ -309,7 +308,7 @@ model Outline {
 model Notification {
   id        String   @id @default(cuid())
   userId    String
-  type      String   // success, info, warning, error, promo
+  type      String
   title     String
   message   String
   link      String?
@@ -317,6 +316,6 @@ model Notification {
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("notification")
   @@index([userId, isRead])
+  @@map("notification")
 }
