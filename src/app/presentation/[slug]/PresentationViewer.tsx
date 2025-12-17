@@ -8,6 +8,8 @@ import {
   Minimize2,
   Sparkles,
   PlusCircle,
+  Undo2,
+  Redo2,
 } from "lucide-react";
 import { getThemeById, getDefaultTheme, type Theme } from "~/lib/themes";
 import { type LayoutType } from "~/lib/slide-layouts";
@@ -112,6 +114,15 @@ export default function PresentationViewer({
   const theme = getThemeById(content.theme || "") || getDefaultTheme();
   const fontsUrl = getGoogleFontsUrl(theme);
 
+  // Undo/Redo history management
+  const [history, setHistory] = useState<SlideData[][]>([presentation.slides]);
+  const [historyIndex, setHistoryIndex] = useState(0);
+  const isUndoRedoAction = useRef(false);
+  const maxHistorySize = 50;
+
+  const canUndo = historyIndex > 0;
+  const canRedo = historyIndex < history.length - 1;
+
   useEffect(() => {
     slidesRef.current = slidesData;
   }, [slidesData]);
@@ -135,10 +146,69 @@ export default function PresentationViewer({
     }
   }, [isOwner, presentation.id]);
 
+  const undo = useCallback(() => {
+    if (canUndo) {
+      isUndoRedoAction.current = true;
+      const newIndex = historyIndex - 1;
+      setHistoryIndex(newIndex);
+      const previousState = history[newIndex];
+      if (previousState) {
+        setSlidesData(previousState);
+        slidesRef.current = previousState;
+        setHasUnsavedChanges(true);
+        // Trigger save after undo
+        if (saveTimeoutRef.current) {
+          clearTimeout(saveTimeoutRef.current);
+        }
+        saveTimeoutRef.current = setTimeout(() => {
+          saveSlides();
+        }, 2000);
+      }
+    }
+  }, [canUndo, historyIndex, history, saveSlides]);
+
+  const redo = useCallback(() => {
+    if (canRedo) {
+      isUndoRedoAction.current = true;
+      const newIndex = historyIndex + 1;
+      setHistoryIndex(newIndex);
+      const nextState = history[newIndex];
+      if (nextState) {
+        setSlidesData(nextState);
+        slidesRef.current = nextState;
+        setHasUnsavedChanges(true);
+        // Trigger save after redo
+        if (saveTimeoutRef.current) {
+          clearTimeout(saveTimeoutRef.current);
+        }
+        saveTimeoutRef.current = setTimeout(() => {
+          saveSlides();
+        }, 2000);
+      }
+    }
+  }, [canRedo, historyIndex, history, saveSlides]);
+
   const updateSlidesWithSave = useCallback((newSlides: SlideData[]) => {
     setSlidesData(newSlides);
     slidesRef.current = newSlides;
     setHasUnsavedChanges(true);
+    
+    // Add to history only if this is not an undo/redo action
+    if (!isUndoRedoAction.current) {
+      setHistory(prev => {
+        // Remove any future history if we're not at the end
+        const newHistory = prev.slice(0, historyIndex + 1);
+        // Add new state
+        newHistory.push(newSlides);
+        // Limit history size
+        if (newHistory.length > maxHistorySize) {
+          newHistory.shift();
+        }
+        return newHistory;
+      });
+      setHistoryIndex(prev => Math.min(prev + 1, maxHistorySize - 1));
+    }
+    isUndoRedoAction.current = false;
     
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
@@ -146,7 +216,7 @@ export default function PresentationViewer({
     saveTimeoutRef.current = setTimeout(() => {
       saveSlides();
     }, 2000);
-  }, [saveSlides]);
+  }, [saveSlides, historyIndex]);
 
   useEffect(() => {
     return () => {
@@ -241,6 +311,18 @@ export default function PresentationViewer({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Handle undo/redo even when editing text
+      if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.key === "y" || (e.key === "z" && e.shiftKey))) {
+        e.preventDefault();
+        redo();
+        return;
+      }
+      
       if (editingText) return;
       if (e.key === "ArrowRight" || e.key === " ") {
         e.preventDefault();
@@ -257,7 +339,7 @@ export default function PresentationViewer({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [nextSlide, prevSlide, isFullscreen, editingText]);
+  }, [nextSlide, prevSlide, isFullscreen, editingText, undo, redo]);
 
   useEffect(() => {
     const handleFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
@@ -724,6 +806,8 @@ export default function PresentationViewer({
             isSaving={isSaving}
             hasUnsavedChanges={hasUnsavedChanges}
             isMobile={isMobile}
+            canUndo={canUndo}
+            canRedo={canRedo}
             onBack={() => router.push("/dashboard")}
             onEditTitle={() => setIsEditingTitle(true)}
             onTitleChange={setEditedTitle}
@@ -734,6 +818,8 @@ export default function PresentationViewer({
             onExport={() => setShowExportModal(true)}
             onShare={() => setShowShareModal(true)}
             onPresent={toggleFullscreen}
+            onUndo={undo}
+            onRedo={redo}
           />
         )}
 

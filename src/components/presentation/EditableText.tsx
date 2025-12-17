@@ -43,11 +43,13 @@ export default function EditableText({
   useEffect(() => {
     if (isEditing) {
       setLocalValue(value);
-      // Focus and select after a small delay to ensure the element is rendered
+      // Focus and move cursor to end after a small delay to ensure the element is rendered
       requestAnimationFrame(() => {
         if (inputRef.current) {
           inputRef.current.focus();
-          inputRef.current.select();
+          // Move cursor to end instead of selecting all text
+          const length = inputRef.current.value.length;
+          inputRef.current.setSelectionRange(length, length);
         }
       });
     }

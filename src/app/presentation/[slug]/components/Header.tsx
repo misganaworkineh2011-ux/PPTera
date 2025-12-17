@@ -11,6 +11,8 @@ import {
   LayoutGrid,
   Loader2,
   Menu,
+  Undo2,
+  Redo2,
 } from "lucide-react";
 import { useState } from "react";
 import type { Theme } from "~/lib/themes";
@@ -30,6 +32,8 @@ interface HeaderProps {
   isSaving?: boolean;
   hasUnsavedChanges?: boolean;
   isMobile?: boolean;
+  canUndo?: boolean;
+  canRedo?: boolean;
   onBack: () => void;
   onEditTitle: () => void;
   onTitleChange: (v: string) => void;
@@ -40,6 +44,8 @@ interface HeaderProps {
   onExport: () => void;
   onShare: () => void;
   onPresent: () => void;
+  onUndo?: () => void;
+  onRedo?: () => void;
 }
 
 export function Header({
@@ -55,6 +61,8 @@ export function Header({
   isSaving,
   hasUnsavedChanges,
   isMobile = false,
+  canUndo = false,
+  canRedo = false,
   onBack,
   onEditTitle,
   onTitleChange,
@@ -65,6 +73,8 @@ export function Header({
   onExport,
   onShare,
   onPresent,
+  onUndo,
+  onRedo,
 }: HeaderProps) {
   const themeType = getThemeType(theme);
   const ui = getUIColors(themeType);
@@ -143,6 +153,27 @@ export function Header({
 
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center gap-1">
+          {isOwner && onUndo && onRedo && (
+            <>
+              <button
+                onClick={onUndo}
+                disabled={!canUndo}
+                className={`p-2 rounded transition-colors ${canUndo ? `${ui.headerHover} ${ui.headerIcon}` : `${ui.headerIcon} opacity-40 cursor-not-allowed`}`}
+                title="Undo (Ctrl+Z)"
+              >
+                <Undo2 size={18} />
+              </button>
+              <button
+                onClick={onRedo}
+                disabled={!canRedo}
+                className={`p-2 rounded transition-colors ${canRedo ? `${ui.headerHover} ${ui.headerIcon}` : `${ui.headerIcon} opacity-40 cursor-not-allowed`}`}
+                title="Redo (Ctrl+Y)"
+              >
+                <Redo2 size={18} />
+              </button>
+              <div className={`h-5 w-px mx-1 ${ui.divider}`} />
+            </>
+          )}
           <button
             onClick={onToggleViewMode}
             className={`p-2 rounded transition-colors ${ui.headerHover} ${ui.headerIcon}`}
@@ -213,6 +244,33 @@ export function Header({
                 className={`absolute right-0 top-full mt-2 w-48 rounded-lg shadow-xl border backdrop-blur-md z-50 ${ui.headerBg} ${ui.divider}`}
               >
                 <div className="p-2 space-y-1">
+                  {isOwner && onUndo && onRedo && (
+                    <>
+                      <button
+                        onClick={() => {
+                          onUndo();
+                          setShowMobileMenu(false);
+                        }}
+                        disabled={!canUndo}
+                        className={`w-full flex items-center gap-3 px-3 py-2 rounded transition-colors ${canUndo ? `${ui.headerHover} ${ui.headerText}` : `${ui.headerText} opacity-40`} text-sm`}
+                      >
+                        <Undo2 size={16} />
+                        <span>Undo</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          onRedo();
+                          setShowMobileMenu(false);
+                        }}
+                        disabled={!canRedo}
+                        className={`w-full flex items-center gap-3 px-3 py-2 rounded transition-colors ${canRedo ? `${ui.headerHover} ${ui.headerText}` : `${ui.headerText} opacity-40`} text-sm`}
+                      >
+                        <Redo2 size={16} />
+                        <span>Redo</span>
+                      </button>
+                      <div className={`h-px my-1 ${ui.divider}`} />
+                    </>
+                  )}
                   {isOwner && (
                     <>
                       <button
