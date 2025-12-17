@@ -58,10 +58,10 @@ export default function ThemeSelector({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="flex h-[90vh] w-[95vw] max-w-7xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="flex h-[90vh] w-full max-w-7xl overflow-hidden rounded-2xl bg-white shadow-2xl">
         {/* Left Panel - Theme Selection */}
-        <div className="flex w-[45%] flex-col border-r border-slate-200 bg-slate-50">
+        <div className="flex w-full md:w-[45%] flex-col border-r border-slate-200 bg-slate-50">
           {/* Header */}
           <div className="border-b border-slate-200 bg-white p-6">
             <div className="mb-2">
@@ -116,7 +116,7 @@ export default function ThemeSelector({
           </div>
 
           {/* Theme Grid */}
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="flex-1 overflow-y-auto p-6 pb-24 md:pb-6">
             <div className="grid grid-cols-2 gap-4">
               {filteredThemes.map((theme) => {
                 const isSelected = theme.id === previewThemeId;
@@ -203,10 +203,27 @@ export default function ThemeSelector({
               })}
             </div>
           </div>
+
+          {/* Bottom Actions - Mobile (fixed at bottom, matching modal width) */}
+          <div className="md:hidden fixed bottom-0 left-0 right-0 border-t border-slate-200 bg-white shadow-lg z-10">
+            <div className="p-4 max-w-7xl mx-auto">
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={onClose} className="flex-1 px-6 py-3">
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSelect}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4]"
+                >
+                  Select theme
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Right Panel - Theme Preview */}
-        <div className="flex w-[55%] flex-col bg-white">
+        {/* Right Panel - Theme Preview (hidden on mobile) */}
+        <div className="hidden md:flex w-[55%] flex-col bg-white">
           {/* Preview Header */}
           <div className="flex items-center justify-between border-b border-slate-200 p-6">
             <div>
@@ -396,7 +413,7 @@ export default function ThemeSelector({
             </div>
           </div>
 
-          {/* Bottom Actions */}
+          {/* Bottom Actions - Desktop */}
           <div className="border-t border-slate-200 bg-white p-6">
             <div className="flex items-center justify-end gap-4">
               <Button variant="outline" onClick={onClose} className="px-6">

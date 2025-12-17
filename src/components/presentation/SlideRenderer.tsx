@@ -522,12 +522,12 @@ export default function SlideRenderer({
   };
 
   const SlideIndicator = ({ position = "top-left" }: { position?: "top-left" | "top-right" | "bottom-left" }) => {
-    const posClass = position === "top-left" ? "top-8 left-8" : position === "top-right" ? "top-8 right-8" : "bottom-8 left-8";
+    const posClass = position === "top-left" ? "top-2 left-2 sm:top-4 sm:left-4 md:top-8 md:left-8" : position === "top-right" ? "top-2 right-2 sm:top-4 sm:right-4 md:top-8 md:right-8" : "bottom-2 left-2 sm:bottom-4 sm:left-4 md:bottom-8 md:left-8";
     return (
-      <div className={`absolute ${posClass} flex items-center gap-3 z-10`}>
-        <span className="font-mono text-sm font-medium" style={{ color: colors.accent }}>{String(index + 1).padStart(2, "0")}</span>
-        <div className={`w-12 h-px bg-gradient-to-r ${colors.accentLine} to-transparent`} />
-        <span className={`text-xs font-medium uppercase tracking-widest ${colors.indicatorMuted}`}>/ {String(totalSlides).padStart(2, "0")}</span>
+      <div className={`absolute ${posClass} flex items-center gap-1 sm:gap-2 md:gap-3 z-10`}>
+        <span className="font-mono font-medium" style={{ color: colors.accent, fontSize: "clamp(0.5rem, 1.2vw + 0.15rem, 0.875rem)" }}>{String(index + 1).padStart(2, "0")}</span>
+        <div className={`w-4 sm:w-8 md:w-12 h-px bg-gradient-to-r ${colors.accentLine} to-transparent`} />
+        <span className={`font-medium uppercase tracking-widest ${colors.indicatorMuted}`} style={{ fontSize: "clamp(0.4rem, 1vw + 0.1rem, 0.75rem)" }}>/ {String(totalSlides).padStart(2, "0")}</span>
       </div>
     );
   };
@@ -540,19 +540,25 @@ export default function SlideRenderer({
       onChange={(val) => onUpdateContent(index, "title", val)}
       onFinish={onFinishEditing}
       className={`font-bold leading-tight ${className}`}
-      style={{ fontFamily: theme.fonts.heading.family, color: colors.text, letterSpacing: "-0.03em", textAlign: align }}
+      style={{ 
+        fontFamily: theme.fonts.heading.family, 
+        color: colors.text, 
+        letterSpacing: "-0.03em", 
+        textAlign: align,
+        fontSize: "clamp(0.875rem, 2.5vw + 0.25rem, 2.5rem)"
+      }}
       isOwner={canEdit}
       isHovered={isHovered}
     />
   );
 
   const BulletPoints = ({ compact = false }: { compact?: boolean }) => (
-    <div className={compact ? "space-y-2" : "space-y-3"}>
+    <div className={compact ? "space-y-1 sm:space-y-2" : "space-y-2 sm:space-y-3"}>
       {bulletPoints.map((point, i) => (
-        <div key={i} className="flex items-start gap-4 group/bullet">
-          <div className={`${compact ? "mt-1.5" : "mt-2"} flex items-center gap-2 shrink-0`}>
-            <div className={`${compact ? "w-1.5 h-1.5" : "w-2 h-2"} rounded-full ${colors.accentMuted}`} />
-            <div className={`${compact ? "w-4" : "w-8"} h-px ${themeType === "dark" ? "bg-zinc-700" : themeType === "sunset" ? "bg-pink-900/50" : "bg-slate-300"}`} />
+        <div key={i} className="flex items-start gap-2 sm:gap-4 group/bullet">
+          <div className={`${compact ? "mt-1" : "mt-1.5"} flex items-center gap-1 sm:gap-2 shrink-0`}>
+            <div className={`${compact ? "w-1 h-1 sm:w-1.5 sm:h-1.5" : "w-1.5 h-1.5 sm:w-2 sm:h-2"} rounded-full ${colors.accentMuted}`} />
+            <div className={`${compact ? "w-2 sm:w-4" : "w-4 sm:w-8"} h-px ${themeType === "dark" ? "bg-zinc-700" : themeType === "sunset" ? "bg-pink-900/50" : "bg-slate-300"}`} />
           </div>
           <EditableText
             value={point}
@@ -560,8 +566,12 @@ export default function SlideRenderer({
             onStartEdit={() => onStartEditing(index, "bullet", i)}
             onChange={(val) => onUpdateContent(index, "bullet", val, i)}
             onFinish={onFinishEditing}
-            className={`flex-1 ${compact ? "text-base" : "text-lg"} leading-relaxed`}
-            style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+            className={`flex-1 leading-relaxed`}
+            style={{ 
+              fontFamily: theme.fonts.body.family, 
+              color: colors.textMuted,
+              fontSize: compact ? "clamp(0.625rem, 1.2vw + 0.15rem, 1rem)" : "clamp(0.75rem, 1.5vw + 0.2rem, 1.125rem)"
+            }}
             isOwner={canEdit}
             isHovered={isHovered}
             onDelete={() => onDeleteBullet(index, i)}
@@ -569,8 +579,12 @@ export default function SlideRenderer({
         </div>
       ))}
       {canEdit && isHovered && (
-        <button onClick={() => onAddBullet(index)} className={`flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors ml-10`}>
-          <Plus size={14} /> Add point
+        <button 
+          onClick={() => onAddBullet(index)} 
+          className={`flex items-center gap-1 sm:gap-2 ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors ml-6 sm:ml-10`}
+          style={{ fontSize: "clamp(0.625rem, 1.2vw + 0.15rem, 0.875rem)" }}
+        >
+          <Plus size={12} className="sm:w-[14px] sm:h-[14px]" /> <span className="hidden sm:inline">Add point</span><span className="sm:hidden">Add</span>
         </button>
       )}
     </div>

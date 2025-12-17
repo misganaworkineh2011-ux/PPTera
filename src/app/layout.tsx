@@ -10,6 +10,11 @@ export const metadata: Metadata = {
     default: "PPTMaster | Best AI PowerPoint Generator & Presentation Maker",
     template: "%s | PPT Master"
   },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+  },
   description: "PPTMaster is the best free AI-powered PowerPoint generator that helps you create stunning presentations and visuals effortlessly — no design or coding skills needed.",
   keywords: [
     "PPTMaster",

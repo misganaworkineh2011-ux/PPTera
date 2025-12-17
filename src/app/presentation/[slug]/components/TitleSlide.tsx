@@ -44,23 +44,37 @@ export function TitleSlide({
   const themeType = getThemeType(theme);
   const props = { slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, onStartEditing, onUpdateContent, onFinishEditing };
 
-  switch (themeType) {
-    case "dark": return <DarkTitleSlide {...props} />;
-    case "light": return <LightTitleSlide {...props} />;
-    case "sunset": return <SunsetTitleSlide {...props} />;
-    case "ocean": return <OceanTitleSlide {...props} />;
-    case "aurora": return <AuroraTitleSlide {...props} />;
-    case "ember": return <EmberTitleSlide {...props} />;
-    case "midnight": return <MidnightTitleSlide {...props} />;
-    case "cyber": return <CyberTitleSlide {...props} />;
-    case "alien": return <AlienTitleSlide {...props} />;
-    case "corporate": return <CorporateTitleSlide {...props} />;
-    case "cosmic": return <CosmicTitleSlide {...props} />;
-    case "architectural": return <ArchitecturalTitleSlide {...props} />;
-    case "anime": return <AnimeTitleSlide {...props} />;
-    case "hacker": return <HackerTitleSlide {...props} />;
-    default: return <DarkTitleSlide {...props} />;
-  }
+  return (
+    <>
+      <style jsx global>{`
+        .title-slide-heading {
+          font-size: clamp(1rem, 3.5vw + 0.5rem, 4.5rem);
+        }
+        .title-slide-subtitle {
+          font-size: clamp(0.75rem, 1.5vw + 0.25rem, 1.5rem);
+        }
+      `}</style>
+      {(() => {
+        switch (themeType) {
+          case "dark": return <DarkTitleSlide {...props} />;
+          case "light": return <LightTitleSlide {...props} />;
+          case "sunset": return <SunsetTitleSlide {...props} />;
+          case "ocean": return <OceanTitleSlide {...props} />;
+          case "aurora": return <AuroraTitleSlide {...props} />;
+          case "ember": return <EmberTitleSlide {...props} />;
+          case "midnight": return <MidnightTitleSlide {...props} />;
+          case "cyber": return <CyberTitleSlide {...props} />;
+          case "alien": return <AlienTitleSlide {...props} />;
+          case "corporate": return <CorporateTitleSlide {...props} />;
+          case "cosmic": return <CosmicTitleSlide {...props} />;
+          case "architectural": return <ArchitecturalTitleSlide {...props} />;
+          case "anime": return <AnimeTitleSlide {...props} />;
+          case "hacker": return <HackerTitleSlide {...props} />;
+          default: return <DarkTitleSlide {...props} />;
+        }
+      })()}
+    </>
+  );
 }
 
 // ELEGANT NOIR - Sophisticated dark with geometric accents
@@ -87,9 +101,9 @@ function DarkTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, i
         </div>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[60%] border border-zinc-800/50 rounded-lg pointer-events-none" />
         
-        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight" style={{ fontFamily: theme.fonts.heading.family, color: "#fafafa", letterSpacing: "-0.03em" }} isOwner={canEdit} isHovered={isHovered} />
+        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="title-slide-heading font-bold mb-4 sm:mb-6 md:mb-8 max-w-5xl leading-tight" style={{ fontFamily: theme.fonts.heading.family, color: "#fafafa", letterSpacing: "-0.03em" }} isOwner={canEdit} isHovered={isHovered} />
         {slide.subtitle && (
-          <EditableText value={slide.subtitle} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#a1a1aa" }} isOwner={canEdit} isHovered={isHovered} />
+          <EditableText value={slide.subtitle} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="title-slide-subtitle max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#a1a1aa" }} isOwner={canEdit} isHovered={isHovered} />
         )}
         
         <div className="flex items-center gap-4 mt-12">

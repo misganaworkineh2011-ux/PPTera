@@ -581,8 +581,8 @@ export default function CreatePresentationClient({
 
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Description - Compact when streaming */}
-              <div className={showOutline ? "flex items-start gap-4" : ""}>
-                <div className={showOutline ? "flex-1" : ""}>
+              <div className={showOutline ? "flex flex-col md:flex-row items-start gap-4" : ""}>
+                <div className={showOutline ? "flex-1 w-full" : ""}>
                   {!showOutline && mode === "ai" && (
                     <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-3">
                       What to Create
@@ -699,12 +699,12 @@ export default function CreatePresentationClient({
 
                 {/* Inline controls when streaming/completed */}
                 {showOutline && (
-                  <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex flex-wrap items-center gap-2 w-full md:w-auto md:shrink-0">
                     <select
                       value={formData.numberOfSlides}
                       disabled={isStreaming}
                       onChange={(e) => handleChange("numberOfSlides", parseInt(e.target.value))}
-                      className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 disabled:opacity-60"
+                      className="flex-1 md:flex-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 disabled:opacity-60 min-w-[100px]"
                     >
                       {allSlideOptions
                         .filter((opt) => opt.value > 0)
@@ -718,7 +718,7 @@ export default function CreatePresentationClient({
                       value={formData.tone}
                       disabled={isStreaming}
                       onChange={(e) => handleChange("tone", e.target.value)}
-                      className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 disabled:opacity-60"
+                      className="flex-1 md:flex-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 disabled:opacity-60 min-w-[120px]"
                     >
                       <option value="professional">Professional</option>
                       <option value="casual">Casual</option>
@@ -730,7 +730,7 @@ export default function CreatePresentationClient({
                       value={formData.language}
                       disabled={isStreaming}
                       onChange={(e) => handleChange("language", e.target.value)}
-                      className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 disabled:opacity-60"
+                      className="flex-1 md:flex-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 disabled:opacity-60 min-w-[100px]"
                     >
                       <option value="english">English</option>
                       <option value="spanish">Spanish</option>
@@ -1210,8 +1210,8 @@ export default function CreatePresentationClient({
                   <span className="text-slate-500">Slides:</span>
                   <strong className="text-[#1e3a8a]">{slides.length || streamState.totalSlides || 0}</strong>
                 </span>
-                <span className="text-slate-300">•</span>
-                <span className="flex items-center gap-1">
+                <span className="hidden sm:inline text-slate-300">•</span>
+                <span className="hidden sm:flex items-center gap-1">
                   <span className="text-slate-500">Characters:</span>
                   <strong className="text-[#1e3a8a]">{totalCharacters.toLocaleString()}</strong>
                 </span>
@@ -1230,10 +1230,14 @@ export default function CreatePresentationClient({
                 {isCreatingPresentation ? (
                   <>
                     <Loader2 size={15} className="animate-spin" />
-                    <span>{formData.imageSource === "stock-photos" ? "Fetching Images..." : "Creating..."}</span>
+                    <span className="hidden sm:inline">{formData.imageSource === "stock-photos" ? "Fetching Images..." : "Creating..."}</span>
+                    <span className="sm:hidden">Creating...</span>
                   </>
                 ) : (
-                  "Create Presentation"
+                  <>
+                    <span className="hidden sm:inline">Create Presentation</span>
+                    <span className="sm:hidden">Create</span>
+                  </>
                 )}
               </button>
             </div>

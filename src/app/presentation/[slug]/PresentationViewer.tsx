@@ -55,14 +55,41 @@ export default function PresentationViewer({
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(isPublicView);
-  const [showThumbnails, setShowThumbnails] = useState(!isPublicView);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
-  const [viewMode, setViewMode] = useState<"slides" | "scroll">("slides");
+  const [isMobile, setIsMobile] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState(presentation.title);
   const [showExportModal, setShowExportModal] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  
+  // Initialize based on screen size
+  const [showThumbnails, setShowThumbnails] = useState(
+    typeof window !== 'undefined' ? window.innerWidth >= 768 : true
+  );
+  const [viewMode, setViewMode] = useState<"slides" | "scroll">(
+    typeof window !== 'undefined' && window.innerWidth < 768 ? "scroll" : "scroll"
+  );
+  
+  // Detect mobile and set view mode
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) {
+        setViewMode("scroll");
+        setShowThumbnails(false);
+      } else {
+        // On desktop, default to scroll view with thumbnails visible
+        if (!showThumbnails) {
+          setShowThumbnails(true);
+        }
+      }
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, [showThumbnails]);
   
   const canEdit = isOwner || collaboratorRole === "editor";
 
@@ -469,7 +496,7 @@ export default function PresentationViewer({
       // Thumbnail view
       const themeType = getThemeType(theme);
       const ui = getUIColors(themeType);
-      const bgColors: Record<ThemeType, string> = { dark: "#0a0a0b", light: "#f8fafc", sunset: "#1c1017", ocean: "#0a1628", aurora: "#0f0a1a", ember: "#1a0a0a", midnight: "#0c0a1d", cyber: "#0a0a0f", alien: "#0a0f0a", corporate: "#ffffff" };
+      const bgColors: Record<ThemeType, string> = { dark: "#0a0a0b", light: "#f8fafc", sunset: "#1c1017", ocean: "#0a1628", aurora: "#0f0a1a", ember: "#1a0a0a", midnight: "#0c0a1d", cyber: "#0a0a0f", alien: "#0a0f0a", corporate: "#ffffff", cosmic: "#0a0612", architectural: "#0a0a0a", anime: "#1a1625", hacker: "#0d0d0d" };
       const thumbnailBg: React.CSSProperties = isTitle ? backgroundStyle : { background: bgColors[themeType] };
       
       return (
@@ -513,7 +540,7 @@ export default function PresentationViewer({
 
     return (
       <div
-        className="w-full h-full relative overflow-hidden transition-all duration-500 group"
+        className="w-full h-full relative overflow-hidden transition-all duration-500 group slide-content-container"
         style={backgroundStyle}
         onMouseEnter={() => canEdit && !isFullscreen && !isPublicView && setActiveSlideIndex(index)}
         onMouseLeave={() => !isEditing && setActiveSlideIndex(null)}
@@ -579,30 +606,30 @@ export default function PresentationViewer({
   const renderScrollableView = () => {
     const ui = getUIColors(getThemeType(theme));
     return (
-      <div className="max-w-6xl mx-auto space-y-12 pb-12">
+      <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-8 md:space-y-12 pb-12 px-3 sm:px-4">
         {slides.map((slide, index) => {
           const isTitle = slide.type === "title";
           
           if (isTitle) {
             return (
-              <div key={index} id={`slide-${index}`} className={`w-full aspect-video rounded-lg shadow-2xl overflow-hidden scroll-mt-24 ring-1 ${ui.ring}`}>
+              <div key={index} id={`slide-${index}`} className={`w-full rounded-md sm:rounded-lg shadow-xl sm:shadow-2xl overflow-hidden scroll-mt-20 ring-1 ${ui.ring}`} style={{ aspectRatio: "16/9", maxWidth: "100%" }}>
                 {renderSlide(slide, index, true)}
               </div>
             );
           }
           
           return (
-            <div key={index} id={`slide-${index}`} className={`w-full rounded-lg shadow-2xl overflow-hidden scroll-mt-24 ring-1 ${ui.ring}`}>
+            <div key={index} id={`slide-${index}`} className={`w-full rounded-md sm:rounded-lg shadow-xl sm:shadow-2xl overflow-hidden scroll-mt-20 ring-1 ${ui.ring}`} style={{ maxWidth: "100%" }}>
               <ScrollSlideContent slide={slide} index={index} theme={theme} renderSlide={renderSlide} />
             </div>
           );
         })}
-        <div className="text-center py-8">
-          <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-full backdrop-blur-sm shadow-lg border ${ui.endCard}`}>
-            <Sparkles size={20} style={{ color: theme.colors.primary }} />
-            <span className={`font-semibold ${ui.endText}`}>End of Presentation</span>
+        <div className="text-center py-6 sm:py-8">
+          <div className={`inline-flex items-center gap-2 px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-full backdrop-blur-sm shadow-lg border ${ui.endCard}`}>
+            <Sparkles size={14} className="sm:w-4 sm:h-4 md:w-5 md:h-5" style={{ color: theme.colors.primary }} />
+            <span className={`font-semibold text-xs sm:text-sm md:text-base ${ui.endText}`}>End of Presentation</span>
           </div>
-          <p className={`mt-4 ${ui.endMuted}`}>{slides.length} slides • Created with PPT Master</p>
+          <p className={`mt-3 sm:mt-4 text-[10px] sm:text-xs md:text-sm ${ui.endMuted}`}>{slides.length} slides • Created with PPT Master</p>
         </div>
       </div>
     );
@@ -619,6 +646,67 @@ export default function PresentationViewer({
         .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
         .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(100, 100, 100, 0.4); border-radius: 3px; }
         .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: rgba(100, 100, 100, 0.6); }
+        
+        /* Responsive slide content padding and sizing */
+        @media (max-width: 640px) {
+          .slide-content-container > div[class*="p-12"],
+          .slide-content-container > div[class*="p-16"],
+          .slide-content-container > div[class*="p-20"],
+          .slide-content-container div[class*="p-12"],
+          .slide-content-container div[class*="p-16"],
+          .slide-content-container div[class*="p-20"] {
+            padding: 0.75rem !important;
+          }
+          .slide-content-container > div[class*="pt-20"],
+          .slide-content-container div[class*="pt-20"] {
+            padding-top: 1rem !important;
+          }
+          .slide-content-container > div[class*="pb-16"],
+          .slide-content-container div[class*="pb-16"] {
+            padding-bottom: 1rem !important;
+          }
+          .slide-content-container > div[class*="pr-16"],
+          .slide-content-container div[class*="pr-16"] {
+            padding-right: 0.75rem !important;
+          }
+          .slide-content-container > div[class*="pl-16"],
+          .slide-content-container div[class*="pl-16"],
+          .slide-content-container > div[class*="pl-32"],
+          .slide-content-container div[class*="pl-32"] {
+            padding-left: 0.75rem !important;
+          }
+          /* Make layout widths responsive */
+          .slide-content-container div[class*="w-[55%]"],
+          .slide-content-container div[class*="w-[60%]"],
+          .slide-content-container div[class*="w-[48%]"] {
+            width: 100% !important;
+          }
+          /* Hide decorative elements on mobile */
+          .slide-content-container .absolute[class*="w-32"],
+          .slide-content-container .absolute[class*="w-24"],
+          .slide-content-container .absolute[class*="w-20"],
+          .slide-content-container .absolute[class*="w-16"],
+          .slide-content-container .absolute[class*="w-64"],
+          .slide-content-container .absolute[class*="w-52"],
+          .slide-content-container .absolute[class*="w-40"],
+          .slide-content-container .absolute[class*="w-48"] {
+            display: none !important;
+          }
+          /* Scale down margins and gaps */
+          .slide-content-container div[class*="mb-8"],
+          .slide-content-container div[class*="mb-10"] {
+            margin-bottom: 0.75rem !important;
+          }
+          .slide-content-container div[class*="mb-6"] {
+            margin-bottom: 0.5rem !important;
+          }
+          .slide-content-container div[class*="gap-8"] {
+            gap: 0.5rem !important;
+          }
+          .slide-content-container div[class*="gap-6"] {
+            gap: 0.375rem !important;
+          }
+        }
       `}</style>
 
       <div className={`min-h-screen ${getUIColors(getThemeType(theme)).pageBg}`}>
@@ -635,23 +723,24 @@ export default function PresentationViewer({
             theme={theme}
             isSaving={isSaving}
             hasUnsavedChanges={hasUnsavedChanges}
+            isMobile={isMobile}
             onBack={() => router.push("/dashboard")}
             onEditTitle={() => setIsEditingTitle(true)}
             onTitleChange={setEditedTitle}
             onSaveTitle={handleSaveTitle}
             onCancelEditTitle={() => { setEditedTitle(presentation.title); setIsEditingTitle(false); }}
-            onToggleViewMode={() => { setViewMode(viewMode === "slides" ? "scroll" : "slides"); if (viewMode === "scroll") setShowThumbnails(true); }}
-            onToggleThumbnails={() => setShowThumbnails(!showThumbnails)}
+            onToggleViewMode={() => { if (!isMobile) { setViewMode(viewMode === "slides" ? "scroll" : "slides"); if (viewMode === "scroll") setShowThumbnails(true); } }}
+            onToggleThumbnails={() => { if (!isMobile) setShowThumbnails(!showThumbnails); }}
             onExport={() => setShowExportModal(true)}
             onShare={() => setShowShareModal(true)}
             onPresent={toggleFullscreen}
           />
         )}
 
-        <div className={`${isFullscreen ? "" : "px-4 py-8"}`}>
+        <div className={`${isFullscreen ? "" : "px-0 sm:px-2 md:px-4 py-4 sm:py-8"} max-w-full`}>
           {viewMode === "scroll" && !isFullscreen ? (
             <div className="flex gap-6 max-w-7xl mx-auto">
-              {showThumbnails && !isPublicView && (
+              {showThumbnails && !isPublicView && !isMobile && (
                 <ThumbnailSidebar
                   slides={slides}
                   onSlideClick={(index) => document.getElementById(`slide-${index}`)?.scrollIntoView({ behavior: "smooth", block: "center" })}
@@ -662,12 +751,12 @@ export default function PresentationViewer({
                   isOwner={canEdit}
                 />
               )}
-              <div className="flex-1">{renderScrollableView()}</div>
+              <div className="flex-1 w-full min-w-0">{renderScrollableView()}</div>
             </div>
           ) : (
-            <div className={`flex gap-6 ${isFullscreen || isPublicView ? "h-screen" : "max-w-7xl mx-auto"}`}>
+            <div className={`flex gap-6 ${isFullscreen || isPublicView ? "h-screen w-screen" : "max-w-7xl mx-auto"} overflow-x-hidden`}>
               {showThumbnails && !isFullscreen && !isPublicView && viewMode === "slides" && (
-                <div className={`w-44 shrink-0 space-y-2 max-h-[calc(100vh-140px)] overflow-y-auto scrollbar-thin pr-2 sticky top-20 ${getUIColors(getThemeType(theme)).scrollbar}`}>
+                <div className={`hidden lg:block w-44 shrink-0 space-y-2 max-h-[calc(100vh-140px)] overflow-y-auto scrollbar-thin pr-2 sticky top-20 ${getUIColors(getThemeType(theme)).scrollbar}`}>
                   {slides.map((slide, index) => {
                     const ui = getUIColors(getThemeType(theme));
                     return (
@@ -687,7 +776,7 @@ export default function PresentationViewer({
                 </div>
               )}
 
-              <div className={`flex-1 flex flex-col ${isFullscreen ? "h-full" : ""}`}>
+              <div className={`flex-1 flex flex-col ${isFullscreen ? "h-full justify-center items-center w-full" : ""} max-w-full overflow-hidden`}>
                 {(() => {
                   const isTitle = currentSlideData.type === "title";
                   const bulletCount = currentSlideData.bulletPoints?.length || 0;
@@ -696,14 +785,16 @@ export default function PresentationViewer({
                   
                   if (useFixedRatio) {
                     return (
-                      <div className={`relative overflow-hidden ${isFullscreen ? "w-full h-full" : `aspect-video w-full rounded-lg shadow-2xl ring-1 ${getUIColors(getThemeType(theme)).ring}`}`}>
-                        {renderSlide(currentSlideData, currentSlide, true)}
+                      <div className={`relative overflow-hidden ${isFullscreen ? "w-full h-full max-h-screen flex items-center justify-center" : `w-full rounded-lg shadow-2xl ring-1 ${getUIColors(getThemeType(theme)).ring}`}`} style={!isFullscreen ? { aspectRatio: "16/9", maxHeight: "calc(100vh - 200px)" } : {}}>
+                        <div className="w-full h-full">
+                          {renderSlide(currentSlideData, currentSlide, true)}
+                        </div>
                       </div>
                     );
                   }
                   
                   return (
-                    <div className={`relative overflow-hidden w-full rounded-lg shadow-2xl ring-1 ${getUIColors(getThemeType(theme)).ring}`} style={{ height: `${dynamicHeight}px` }}>
+                    <div className={`relative overflow-hidden w-full rounded-lg shadow-2xl ring-1 ${getUIColors(getThemeType(theme)).ring}`} style={{ height: `min(${dynamicHeight}px, calc(100vh - 200px))` }}>
                       {renderSlide(currentSlideData, currentSlide, true)}
                     </div>
                   );
@@ -720,15 +811,15 @@ export default function PresentationViewer({
                 />
 
                 {!isFullscreen && !isPublicView && (
-                  <div className={`mt-4 text-center text-sm ${getUIColors(getThemeType(theme)).endMuted}`}>
+                  <div className={`mt-4 text-center text-xs sm:text-sm ${getUIColors(getThemeType(theme)).endMuted}`}>
                     <span>Slide {currentSlide + 1} of {slides.length}</span>
-                    <span className="ml-2 opacity-70">• Press <kbd className={`px-1.5 py-0.5 rounded text-xs ${getUIColors(getThemeType(theme)).kbd}`}>F</kbd> for fullscreen</span>
+                    <span className="hidden sm:inline ml-2 opacity-70">• Press <kbd className={`px-1.5 py-0.5 rounded text-xs ${getUIColors(getThemeType(theme)).kbd}`}>F</kbd> for fullscreen</span>
                   </div>
                 )}
                 
                 {isPublicView && (
-                  <div className="fixed top-4 left-4 z-40">
-                    <h1 className={`text-lg font-semibold ${getUIColors(getThemeType(theme)).headerText} bg-black/30 backdrop-blur-sm px-4 py-2 rounded-lg`}>
+                  <div className="fixed top-2 sm:top-4 left-2 sm:left-4 right-2 sm:right-auto z-40">
+                    <h1 className={`text-sm sm:text-lg font-semibold ${getUIColors(getThemeType(theme)).headerText} bg-black/30 backdrop-blur-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg truncate`}>
                       {presentation.title}
                     </h1>
                   </div>
@@ -739,8 +830,8 @@ export default function PresentationViewer({
         </div>
 
         {isFullscreen && (
-          <button onClick={toggleFullscreen} className="fixed top-6 right-6 p-3 rounded-xl bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-colors z-50">
-            <Minimize2 size={20} />
+          <button onClick={toggleFullscreen} className="fixed top-2 sm:top-6 right-2 sm:right-6 p-2 sm:p-3 rounded-xl bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-colors z-50">
+            <Minimize2 size={18} className="sm:w-5 sm:h-5" />
           </button>
         )}
 
@@ -785,7 +876,10 @@ function ScrollSlideContent({ slide, index, theme, renderSlide }: {
 }) {
   const themeType = getThemeType(theme);
   const bulletCount = slide.bulletPoints?.length || 0;
-  const calculatedHeight = Math.max(450, 380 + bulletCount * 65);
+  // Responsive height calculation - smaller base on mobile
+  const baseHeight = typeof window !== 'undefined' && window.innerWidth < 640 ? 300 : 380;
+  const bulletHeight = typeof window !== 'undefined' && window.innerWidth < 640 ? 45 : 65;
+  const calculatedHeight = Math.max(baseHeight, baseHeight + bulletCount * bulletHeight);
   
   const bgColors: Record<ThemeType, string> = {
     dark: "bg-gradient-to-br from-zinc-900 via-zinc-950 to-black",
@@ -798,10 +892,14 @@ function ScrollSlideContent({ slide, index, theme, renderSlide }: {
     cyber: "bg-gradient-to-br from-[#0a0a0f] via-[#0f0f18] to-[#151520]",
     alien: "bg-gradient-to-br from-[#0a0f0a] via-[#0d140d] to-[#121a12]",
     corporate: "bg-gradient-to-br from-white via-gray-50 to-white",
+    cosmic: "bg-gradient-to-br from-[#0a0612] via-[#120a1f] to-[#1a0a2e]",
+    architectural: "bg-gradient-to-br from-[#0a0a0a] via-[#141414] to-[#0a0a0a]",
+    anime: "bg-gradient-to-br from-[#1a1625] via-[#251f35] to-[#1a1625]",
+    hacker: "bg-gradient-to-br from-[#0d0d0d] via-[#141414] to-[#0d0d0d]",
   };
   
   return (
-    <div className={`w-full ${bgColors[themeType]} relative`} style={{ height: `${calculatedHeight}px` }}>
+    <div className={`w-full ${bgColors[themeType]} relative`} style={{ height: `min(${calculatedHeight}px, calc(100vh - 150px))` }}>
       {renderSlide(slide, index, true)}
     </div>
   );
