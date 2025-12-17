@@ -53,6 +53,14 @@ export function TitleSlide({
         .title-slide-subtitle {
           font-size: clamp(0.75rem, 1.5vw + 0.25rem, 1.5rem);
         }
+        @media (max-width: 640px) {
+          .title-slide-heading {
+            font-size: clamp(1.25rem, 5vw, 2rem);
+          }
+          .title-slide-subtitle {
+            font-size: clamp(0.75rem, 3vw, 1rem);
+          }
+        }
       `}</style>
       {(() => {
         switch (themeType) {

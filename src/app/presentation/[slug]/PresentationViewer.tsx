@@ -583,11 +583,22 @@ export default function PresentationViewer({
       
       return (
         <div className="w-full h-full relative overflow-hidden" style={thumbnailBg}>
-          {isTitle && hasImage && <div className={`absolute inset-0 ${themeType === "light" ? "bg-gradient-to-t from-white/70 via-white/30 to-transparent" : "bg-gradient-to-t from-black/70 via-black/30 to-transparent"}`} />}
+          {/* Full cover image for title slides with images */}
+          {isTitle && hasImage && slide.image?.url && (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img 
+                src={slide.image.url} 
+                alt={slide.title} 
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <div className={`absolute inset-0 ${themeType === "light" ? "bg-gradient-to-t from-white/70 via-white/30 to-transparent" : "bg-gradient-to-t from-black/70 via-black/30 to-transparent"}`} />
+            </>
+          )}
           <div className="absolute inset-0 transform scale-[0.18] origin-top-left" style={{ width: "555%", height: "555%" }}>
             {isTitle ? (
-              <div className={`h-full flex flex-col items-center justify-center p-12 text-center ${ui.titleBg}`}>
-                <div className={`absolute top-0 right-0 w-96 h-96 ${ui.orb1} rounded-full blur-3xl`} />
+              <div className={`h-full flex flex-col items-center justify-center p-12 text-center ${hasImage ? "" : ui.titleBg}`}>
+                {!hasImage && <div className={`absolute top-0 right-0 w-96 h-96 ${ui.orb1} rounded-full blur-3xl`} />}
                 <h1 className="text-5xl font-bold mb-4 relative" style={{ fontFamily: theme.fonts.heading.family, color: hasImage ? "#fff" : theme.colors.heading }}>
                   {slide.title}
                 </h1>
@@ -623,10 +634,21 @@ export default function PresentationViewer({
     return (
       <div
         className="w-full h-full relative overflow-hidden transition-all duration-500 group slide-content-container"
-        style={backgroundStyle}
+        style={!hasImage ? backgroundStyle : undefined}
         onMouseEnter={() => canEdit && !isFullscreen && !isPublicView && setActiveSlideIndex(index)}
         onMouseLeave={() => !isEditing && setActiveSlideIndex(null)}
       >
+        {/* Full cover background image for title slides */}
+        {isTitle && hasImage && slide.image?.url && (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img 
+              src={slide.image.url} 
+              alt={slide.title} 
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          </>
+        )}
         {theme.overlay && !hasImage && <div className="absolute inset-0" style={{ background: theme.overlay }} />}
 
         {canEdit && !isFullscreen && !isPublicView && (isHovered || showSlideMenu === index) && (
@@ -693,8 +715,14 @@ export default function PresentationViewer({
           const isTitle = slide.type === "title";
           
           if (isTitle) {
+            // On mobile, use min-height instead of aspect-ratio to allow content to expand
             return (
-              <div key={index} id={`slide-${index}`} className={`w-full rounded-md sm:rounded-lg shadow-xl sm:shadow-2xl overflow-hidden scroll-mt-20 ring-1 ${ui.ring}`} style={{ aspectRatio: "16/9", maxWidth: "100%" }}>
+              <div 
+                key={index} 
+                id={`slide-${index}`} 
+                className={`w-full rounded-md sm:rounded-lg shadow-xl sm:shadow-2xl overflow-hidden scroll-mt-20 ring-1 ${ui.ring}`} 
+                style={isMobile ? { minHeight: "280px", maxWidth: "100%" } : { aspectRatio: "16/9", maxWidth: "100%" }}
+              >
                 {renderSlide(slide, index, true)}
               </div>
             );
@@ -702,7 +730,7 @@ export default function PresentationViewer({
           
           return (
             <div key={index} id={`slide-${index}`} className={`w-full rounded-md sm:rounded-lg shadow-xl sm:shadow-2xl overflow-hidden scroll-mt-20 ring-1 ${ui.ring}`} style={{ maxWidth: "100%" }}>
-              <ScrollSlideContent slide={slide} index={index} theme={theme} renderSlide={renderSlide} />
+              <ScrollSlideContent slide={slide} index={index} theme={theme} renderSlide={renderSlide} isMobile={isMobile} />
             </div>
           );
         })}
@@ -731,17 +759,25 @@ export default function PresentationViewer({
         
         /* Responsive slide content padding and sizing */
         @media (max-width: 640px) {
+          /* Make slide containers use min-height instead of fixed height on mobile */
+          .slide-content-container > div.h-full {
+            height: auto !important;
+            min-height: 100% !important;
+          }
           .slide-content-container > div[class*="p-12"],
           .slide-content-container > div[class*="p-16"],
           .slide-content-container > div[class*="p-20"],
           .slide-content-container div[class*="p-12"],
           .slide-content-container div[class*="p-16"],
           .slide-content-container div[class*="p-20"] {
-            padding: 0.75rem !important;
+            padding: 1rem !important;
+            padding-top: 2.5rem !important;
           }
           .slide-content-container > div[class*="pt-20"],
-          .slide-content-container div[class*="pt-20"] {
-            padding-top: 1rem !important;
+          .slide-content-container div[class*="pt-20"],
+          .slide-content-container > div[class*="pt-12"],
+          .slide-content-container div[class*="pt-12"] {
+            padding-top: 3rem !important;
           }
           .slide-content-container > div[class*="pb-16"],
           .slide-content-container div[class*="pb-16"] {
@@ -757,10 +793,13 @@ export default function PresentationViewer({
           .slide-content-container div[class*="pl-32"] {
             padding-left: 0.75rem !important;
           }
-          /* Make layout widths responsive */
+          /* Make layout widths responsive - stack vertically */
           .slide-content-container div[class*="w-[55%]"],
           .slide-content-container div[class*="w-[60%]"],
-          .slide-content-container div[class*="w-[48%]"] {
+          .slide-content-container div[class*="w-[48%]"],
+          .slide-content-container div[class*="w-[45%]"],
+          .slide-content-container div[class*="w-[40%]"],
+          .slide-content-container div[class*="w-1/2"] {
             width: 100% !important;
           }
           /* Hide decorative elements on mobile */
@@ -771,12 +810,20 @@ export default function PresentationViewer({
           .slide-content-container .absolute[class*="w-64"],
           .slide-content-container .absolute[class*="w-52"],
           .slide-content-container .absolute[class*="w-40"],
-          .slide-content-container .absolute[class*="w-48"] {
+          .slide-content-container .absolute[class*="w-48"],
+          .slide-content-container .absolute[class*="w-96"],
+          .slide-content-container .absolute[class*="w-80"],
+          .slide-content-container .absolute[class*="w-72"],
+          .slide-content-container .absolute[class*="w-[500px]"],
+          .slide-content-container .absolute[class*="w-[600px]"],
+          .slide-content-container .absolute[class*="w-[400px]"],
+          .slide-content-container .absolute[class*="w-[300px]"] {
             display: none !important;
           }
           /* Scale down margins and gaps */
           .slide-content-container div[class*="mb-8"],
-          .slide-content-container div[class*="mb-10"] {
+          .slide-content-container div[class*="mb-10"],
+          .slide-content-container div[class*="mb-12"] {
             margin-bottom: 0.75rem !important;
           }
           .slide-content-container div[class*="mb-6"] {
@@ -787,6 +834,53 @@ export default function PresentationViewer({
           }
           .slide-content-container div[class*="gap-6"] {
             gap: 0.375rem !important;
+          }
+          .slide-content-container div[class*="mt-12"],
+          .slide-content-container div[class*="mt-8"] {
+            margin-top: 0.75rem !important;
+          }
+          /* Make flex containers stack on mobile */
+          .slide-content-container > div > .flex:not(.items-center):not(.gap-2):not(.gap-3):not(.gap-4) {
+            flex-direction: column !important;
+          }
+          /* Inner flex containers should also be auto height */
+          .slide-content-container .h-full.flex {
+            height: auto !important;
+            min-height: 100% !important;
+          }
+          /* Responsive text sizes */
+          .slide-content-container .text-5xl,
+          .slide-content-container .text-6xl,
+          .slide-content-container .text-7xl {
+            font-size: 1.5rem !important;
+            line-height: 1.2 !important;
+          }
+          .slide-content-container .text-4xl {
+            font-size: 1.25rem !important;
+            line-height: 1.3 !important;
+          }
+          .slide-content-container .text-3xl {
+            font-size: 1.125rem !important;
+            line-height: 1.3 !important;
+          }
+          .slide-content-container .text-2xl {
+            font-size: 1rem !important;
+          }
+          .slide-content-container .text-xl {
+            font-size: 0.875rem !important;
+          }
+          .slide-content-container .text-lg {
+            font-size: 0.8125rem !important;
+          }
+          /* Grid layouts - single column on mobile */
+          .slide-content-container .grid-cols-2 {
+            grid-template-columns: 1fr !important;
+          }
+          /* Max width adjustments */
+          .slide-content-container .max-w-5xl,
+          .slide-content-container .max-w-4xl,
+          .slide-content-container .max-w-3xl {
+            max-width: 100% !important;
           }
         }
       `}</style>
@@ -954,17 +1048,18 @@ export default function PresentationViewer({
 }
 
 // Component for scroll view slides with dynamic height
-function ScrollSlideContent({ slide, index, theme, renderSlide }: { 
+function ScrollSlideContent({ slide, index, theme, renderSlide, isMobile }: { 
   slide: SlideData; 
   index: number; 
   theme: Theme;
   renderSlide: (slide: SlideData, index: number, isMain: boolean) => React.ReactNode;
+  isMobile?: boolean;
 }) {
   const themeType = getThemeType(theme);
   const bulletCount = slide.bulletPoints?.length || 0;
   // Responsive height calculation - smaller base on mobile
-  const baseHeight = typeof window !== 'undefined' && window.innerWidth < 640 ? 300 : 380;
-  const bulletHeight = typeof window !== 'undefined' && window.innerWidth < 640 ? 45 : 65;
+  const baseHeight = isMobile ? 280 : 380;
+  const bulletHeight = isMobile ? 50 : 65;
   const calculatedHeight = Math.max(baseHeight, baseHeight + bulletCount * bulletHeight);
   
   const bgColors: Record<ThemeType, string> = {
@@ -983,6 +1078,15 @@ function ScrollSlideContent({ slide, index, theme, renderSlide }: {
     anime: "bg-gradient-to-br from-[#1a1625] via-[#251f35] to-[#1a1625]",
     hacker: "bg-gradient-to-br from-[#0d0d0d] via-[#141414] to-[#0d0d0d]",
   };
+  
+  // On mobile, use min-height to allow content to expand; on desktop use fixed height
+  if (isMobile) {
+    return (
+      <div className={`w-full ${bgColors[themeType]} relative`} style={{ minHeight: `${calculatedHeight}px` }}>
+        {renderSlide(slide, index, true)}
+      </div>
+    );
+  }
   
   return (
     <div className={`w-full ${bgColors[themeType]} relative`} style={{ height: `min(${calculatedHeight}px, calc(100vh - 150px))` }}>

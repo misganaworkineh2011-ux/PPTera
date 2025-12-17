@@ -694,27 +694,27 @@ export default function SlideRenderer({
     return (
       <div className="h-full relative overflow-hidden">
         <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
-        <div className={`absolute top-0 right-0 w-96 h-96 ${colors.orb1} rounded-full blur-3xl`} />
-        <div className={`absolute bottom-0 left-0 w-80 h-80 ${colors.orb2} rounded-full blur-3xl`} />
+        <div className={`absolute top-0 right-0 w-96 h-96 ${colors.orb1} rounded-full blur-3xl hidden sm:block`} />
+        <div className={`absolute bottom-0 left-0 w-80 h-80 ${colors.orb2} rounded-full blur-3xl hidden sm:block`} />
         
         <SlideIndicator position="top-left" />
         
-        <div className="relative h-full flex">
-          <div className={`flex flex-col justify-center p-12 pt-20 ${hasImage ? "w-[55%]" : "w-full"}`}>
-            <Title className="text-4xl md:text-5xl mb-8" />
+        <div className="relative h-full flex flex-col sm:flex-row">
+          <div className={`flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 ${hasImage ? "w-full sm:w-[55%]" : "w-full"}`}>
+            <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-4 sm:mb-6 md:mb-8" />
             {bulletPoints.length > 0 && <BulletPoints />}
           </div>
           
           {hasImage && (
-            <div className="w-[45%] relative flex items-center justify-center p-8">
+            <div className="w-full sm:w-[45%] relative flex items-center justify-center p-4 sm:p-6 md:p-8 min-h-[150px] sm:min-h-0">
               {hasMultipleImages ? (
-                <ImageGallery className="w-full h-full" layout="stack" />
+                <ImageGallery className="w-full h-full max-h-[200px] sm:max-h-full" layout="stack" />
               ) : (
-                <ImageBlock className="w-full h-full" />
+                <ImageBlock className="w-full h-full max-h-[200px] sm:max-h-full" />
               )}
             </div>
           )}
-          {slide.image?.source === "placeholder" && <div className="w-[45%] p-8"><Placeholder /></div>}
+          {slide.image?.source === "placeholder" && <div className="w-full sm:w-[45%] p-4 sm:p-8"><Placeholder /></div>}
         </div>
         <div className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${colors.borderLine} to-transparent`} />
       </div>
@@ -726,27 +726,27 @@ export default function SlideRenderer({
     return (
       <div className="h-full relative overflow-hidden">
         <div className={`absolute inset-0 bg-gradient-to-bl ${colors.bg}`} />
-        <div className={`absolute top-0 left-0 w-96 h-96 ${colors.orb2} rounded-full blur-3xl`} />
-        <div className={`absolute bottom-0 right-0 w-80 h-80 ${colors.orb1} rounded-full blur-3xl`} />
+        <div className={`absolute top-0 left-0 w-96 h-96 ${colors.orb2} rounded-full blur-3xl hidden sm:block`} />
+        <div className={`absolute bottom-0 right-0 w-80 h-80 ${colors.orb1} rounded-full blur-3xl hidden sm:block`} />
         
         <SlideIndicator position="top-right" />
         
-        <div className="relative h-full flex flex-row-reverse">
-          <div className={`flex flex-col justify-center p-12 pt-20 ${hasImage ? "w-[55%]" : "w-full"}`}>
-            <Title className="text-4xl md:text-5xl mb-8" />
+        <div className="relative h-full flex flex-col-reverse sm:flex-row-reverse">
+          <div className={`flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-4 sm:pt-16 md:pt-20 ${hasImage ? "w-full sm:w-[55%]" : "w-full"}`}>
+            <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-4 sm:mb-6 md:mb-8" />
             {bulletPoints.length > 0 && <BulletPoints />}
           </div>
           
           {hasImage && (
-            <div className="w-[45%] relative flex items-center justify-center p-8">
+            <div className="w-full sm:w-[45%] relative flex items-center justify-center p-4 sm:p-6 md:p-8 min-h-[150px] sm:min-h-0">
               {hasMultipleImages ? (
-                <ImageGallery className="w-full h-full" layout="stack" />
+                <ImageGallery className="w-full h-full max-h-[200px] sm:max-h-full" layout="stack" />
               ) : (
-                <ImageBlock className="w-full h-full" />
+                <ImageBlock className="w-full h-full max-h-[200px] sm:max-h-full" />
               )}
             </div>
           )}
-          {slide.image?.source === "placeholder" && <div className="w-[45%] p-8"><Placeholder /></div>}
+          {slide.image?.source === "placeholder" && <div className="w-full sm:w-[45%] p-4 sm:p-8"><Placeholder /></div>}
         </div>
         <div className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${colors.borderLine} to-transparent`} />
       </div>
@@ -758,27 +758,27 @@ export default function SlideRenderer({
     return (
       <div className="h-full relative overflow-hidden">
         <div className={`absolute inset-0 bg-gradient-to-b ${colors.bg}`} />
-        <div className={`absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] ${colors.orb1} rounded-full blur-3xl`} />
+        <div className={`absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] ${colors.orb1} rounded-full blur-3xl hidden sm:block`} />
         
         <SlideIndicator position="top-left" />
         
-        <div className="relative h-full flex flex-col items-center justify-center p-12 text-center">
+        <div className="relative h-full flex flex-col items-center justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-8 md:pt-12 text-center overflow-y-auto">
           {hasImage && (
-            <div className={`w-full ${hasMultipleImages ? "max-w-4xl" : "max-w-2xl"} mb-8 relative`}>
+            <div className={`w-full ${hasMultipleImages ? "max-w-4xl" : "max-w-2xl"} mb-4 sm:mb-6 md:mb-8 relative`}>
               {hasMultipleImages ? (
-                <ImageGallery className="w-full" layout="row" />
+                <ImageGallery className="w-full max-h-[120px] sm:max-h-[180px] md:max-h-none" layout="row" />
               ) : (
-                <div className="h-48">
+                <div className="h-28 sm:h-36 md:h-48">
                   <ImageBlock className="w-full h-full" size="medium" />
                 </div>
               )}
             </div>
           )}
           
-          <Title className="text-4xl md:text-5xl mb-6 max-w-4xl" align="center" />
+          <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-3 sm:mb-4 md:mb-6 max-w-4xl" align="center" />
           
           {bulletPoints.length > 0 && (
-            <div className="max-w-2xl w-full text-left mt-4">
+            <div className="max-w-2xl w-full text-left mt-2 sm:mt-3 md:mt-4">
               <BulletPoints compact />
             </div>
           )}
@@ -796,31 +796,31 @@ export default function SlideRenderer({
         <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
         
         {hasImage && firstImage && (
-          <div className="absolute inset-0 clip-diagonal">
+          <div className="absolute inset-0 clip-diagonal hidden sm:block">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={firstImage.url} alt={firstImage.alt || slide.title} className={`absolute inset-0 w-full h-full object-cover ${themeType === "light" ? "opacity-20" : "opacity-30"}`} />
             <div className={`absolute inset-0 ${colors.imgOverlay}`} />
           </div>
         )}
         
-        <div className={`absolute top-0 right-1/4 w-72 h-72 ${colors.orb1Strong} rounded-full blur-3xl`} />
-        <div className={`absolute bottom-0 left-1/4 w-64 h-64 ${colors.orb2Strong} rounded-full blur-3xl`} />
+        <div className={`absolute top-0 right-1/4 w-72 h-72 ${colors.orb1Strong} rounded-full blur-3xl hidden sm:block`} />
+        <div className={`absolute bottom-0 left-1/4 w-64 h-64 ${colors.orb2Strong} rounded-full blur-3xl hidden sm:block`} />
         
         <SlideIndicator position="bottom-left" />
         
-        <div className="relative h-full flex">
-          <div className="w-[60%] flex flex-col justify-center p-12">
-            <div className="mb-4">
-              <div className={`w-16 h-1 bg-gradient-to-r ${colors.accentLine} to-transparent mb-6`} />
+        <div className="relative h-full flex flex-col sm:flex-row">
+          <div className="w-full sm:w-[60%] flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-8 md:pt-12">
+            <div className="mb-2 sm:mb-4">
+              <div className={`w-10 sm:w-12 md:w-16 h-0.5 sm:h-1 bg-gradient-to-r ${colors.accentLine} to-transparent mb-3 sm:mb-4 md:mb-6`} />
             </div>
-            <Title className="text-4xl md:text-5xl lg:text-6xl mb-8" />
+            <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl mb-4 sm:mb-6 md:mb-8" />
             {bulletPoints.length > 0 && <BulletPoints />}
           </div>
           
           {hasImage && (
-            <div className="w-[40%] relative flex items-center justify-end p-8">
-              <div className="relative w-[90%] h-[70%]">
-                <div className={`absolute -inset-2 bg-gradient-to-br ${colors.accentGlow} rounded-lg blur-sm`} />
+            <div className="w-full sm:w-[40%] relative flex items-center justify-center sm:justify-end p-4 sm:p-6 md:p-8 min-h-[150px] sm:min-h-0">
+              <div className="relative w-full sm:w-[90%] h-[150px] sm:h-[70%]">
+                <div className={`absolute -inset-2 bg-gradient-to-br ${colors.accentGlow} rounded-lg blur-sm hidden sm:block`} />
                 {hasMultipleImages ? (
                   <ImageGallery className="w-full h-full" layout="grid" />
                 ) : (
@@ -944,18 +944,18 @@ export default function SlideRenderer({
     return (
       <div className="h-full relative overflow-hidden">
         <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
-        <div className={`absolute top-1/3 right-0 w-80 h-80 ${colors.orb1} rounded-full blur-3xl`} />
+        <div className={`absolute top-1/3 right-0 w-80 h-80 ${colors.orb1} rounded-full blur-3xl hidden sm:block`} />
         
         <SlideIndicator position="top-left" />
         
-        <div className="relative h-full p-12 pt-20">
-          <Title className="text-3xl md:text-4xl mb-8" />
+        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
+          <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8" />
           
-          <div className="grid grid-cols-2 gap-4 mt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4 mt-3 sm:mt-4 md:mt-6">
             {bulletPoints.map((point, i) => (
-              <div key={i} className={`p-5 rounded-xl border backdrop-blur-sm ${colors.cardBg}`}>
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ backgroundColor: colors.accent, color: themeType === "light" ? "#fff" : "#000" }}>
+              <div key={i} className={`p-3 sm:p-4 md:p-5 rounded-lg sm:rounded-xl border backdrop-blur-sm ${colors.cardBg}`}>
+                <div className="flex items-start gap-2 sm:gap-3">
+                  <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-md sm:rounded-lg flex items-center justify-center text-xs sm:text-sm font-bold shrink-0" style={{ backgroundColor: colors.accent, color: themeType === "light" ? "#fff" : "#000" }}>
                     {i + 1}
                   </div>
                   <EditableText
@@ -964,7 +964,7 @@ export default function SlideRenderer({
                     onStartEdit={() => onStartEditing(index, "bullet", i)}
                     onChange={(val) => onUpdateContent(index, "bullet", val, i)}
                     onFinish={onFinishEditing}
-                    className="flex-1 text-base leading-relaxed"
+                    className="flex-1 text-sm sm:text-base leading-relaxed"
                     style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
                     isOwner={canEdit}
                     isHovered={isHovered}
@@ -976,14 +976,14 @@ export default function SlideRenderer({
           </div>
           
           {canEdit && isHovered && (
-            <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
-              <Plus size={14} /> Add card
+            <button onClick={() => onAddBullet(index)} className={`mt-3 sm:mt-4 flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+              <Plus size={12} className="sm:w-[14px] sm:h-[14px]" /> Add card
             </button>
           )}
         </div>
         
         {hasImage && (
-          <div className={`absolute bottom-8 right-8 ${hasMultipleImages ? "w-64" : "w-48"} h-32`}>
+          <div className={`absolute bottom-4 right-4 sm:bottom-8 sm:right-8 ${hasMultipleImages ? "w-32 sm:w-48 md:w-64" : "w-24 sm:w-36 md:w-48"} h-20 sm:h-24 md:h-32 hidden sm:block`}>
             {hasMultipleImages ? (
               <ImageGallery className="w-full h-full" layout="row" />
             ) : (
@@ -3961,38 +3961,38 @@ export default function SlideRenderer({
         <div className="absolute inset-0 bg-gradient-to-br from-[#0d0d0d]/85 via-[#141414]/70 to-[#0d0d0d]/80" />
         
         {/* Scanlines */}
-        <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 65, 0.1) 2px, rgba(0, 255, 65, 0.1) 4px)" }} />
+        <div className="absolute inset-0 opacity-5 pointer-events-none hidden sm:block" style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 65, 0.1) 2px, rgba(0, 255, 65, 0.1) 4px)" }} />
         
         {/* Terminal window */}
-        <div className="absolute top-8 left-8 right-8 bottom-8 border border-[#00ff41]/40 rounded-lg overflow-hidden bg-[#0d0d0d]/60 backdrop-blur-sm">
+        <div className="absolute top-2 left-2 right-2 bottom-2 sm:top-4 sm:left-4 sm:right-4 sm:bottom-4 md:top-8 md:left-8 md:right-8 md:bottom-8 border border-[#00ff41]/40 rounded-lg overflow-hidden bg-[#0d0d0d]/60 backdrop-blur-sm">
           {/* Terminal header */}
-          <div className="h-10 bg-[#141414] border-b border-[#00ff41]/30 flex items-center px-4 gap-3">
-            <div className="flex gap-2">
-              <div className="w-3 h-3 rounded-full bg-[#ff0040]" />
-              <div className="w-3 h-3 rounded-full bg-[#ffff00]" />
-              <div className="w-3 h-3 rounded-full bg-[#00ff41]" />
+          <div className="h-7 sm:h-8 md:h-10 bg-[#141414] border-b border-[#00ff41]/30 flex items-center px-2 sm:px-3 md:px-4 gap-2 sm:gap-3">
+            <div className="flex gap-1 sm:gap-2">
+              <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 rounded-full bg-[#ff0040]" />
+              <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 rounded-full bg-[#ffff00]" />
+              <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 rounded-full bg-[#00ff41]" />
             </div>
-            <span className="ml-4 text-[#00ff41]/70 text-xs font-mono">root@kali:~# ./presentation --slide {index + 1}</span>
+            <span className="ml-2 sm:ml-3 md:ml-4 text-[#00ff41]/70 text-[10px] sm:text-xs font-mono truncate">root@kali:~# ./presentation --slide {index + 1}</span>
           </div>
           
-          <div className="p-8 h-[calc(100%-2.5rem)] flex flex-col justify-center">
-            <div className="mb-6">
-              <span className="text-[#00ff41]/60 font-mono text-sm">$ cat slide_{index + 1}.txt</span>
+          <div className="p-3 sm:p-5 md:p-8 h-[calc(100%-1.75rem)] sm:h-[calc(100%-2rem)] md:h-[calc(100%-2.5rem)] flex flex-col justify-center overflow-y-auto">
+            <div className="mb-3 sm:mb-4 md:mb-6">
+              <span className="text-[#00ff41]/60 font-mono text-[10px] sm:text-xs md:text-sm">$ cat slide_{index + 1}.txt</span>
             </div>
-            <Title className="text-4xl md:text-5xl mb-8" align="left" />
+            <Title className="text-lg sm:text-2xl md:text-4xl lg:text-5xl mb-4 sm:mb-6 md:mb-8" align="left" />
             
             {bulletPoints.length > 0 && (
-              <div className="space-y-3 mt-4">
+              <div className="space-y-2 sm:space-y-3 mt-2 sm:mt-3 md:mt-4">
                 {bulletPoints.map((point, i) => (
-                  <div key={i} className="flex items-start gap-3 group">
-                    <span className="text-[#00ff41]/60 font-mono text-sm mt-1">[{i}]</span>
+                  <div key={i} className="flex items-start gap-2 sm:gap-3 group">
+                    <span className="text-[#00ff41]/60 font-mono text-[10px] sm:text-xs md:text-sm mt-0.5 sm:mt-1">[{i}]</span>
                     <EditableText
                       value={point}
                       isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
                       onStartEdit={() => onStartEditing(index, "bullet", i)}
                       onChange={(val) => onUpdateContent(index, "bullet", val, i)}
                       onFinish={onFinishEditing}
-                      className="flex-1 text-lg leading-relaxed font-mono"
+                      className="flex-1 text-sm sm:text-base md:text-lg leading-relaxed font-mono"
                       style={{ fontFamily: theme.fonts.body.family, color: "#39ff14" }}
                       isOwner={canEdit}
                       isHovered={isHovered}
@@ -4004,14 +4004,14 @@ export default function SlideRenderer({
             )}
             
             {canEdit && isHovered && (
-              <button onClick={() => onAddBullet(index)} className="mt-4 flex items-center gap-2 text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
-                <Plus size={14} /> Add entry
+              <button onClick={() => onAddBullet(index)} className="mt-3 sm:mt-4 flex items-center gap-2 text-xs sm:text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
+                <Plus size={12} className="sm:w-[14px] sm:h-[14px]" /> Add entry
               </button>
             )}
             
-            <div className="mt-8 flex items-center gap-2">
-              <span className="text-[#00ff41]/60 font-mono text-sm">$</span>
-              <div className="w-3 h-5 bg-[#00ff41] animate-pulse" />
+            <div className="mt-4 sm:mt-6 md:mt-8 flex items-center gap-2">
+              <span className="text-[#00ff41]/60 font-mono text-xs sm:text-sm">$</span>
+              <div className="w-2 h-4 sm:w-3 sm:h-5 bg-[#00ff41] animate-pulse" />
             </div>
           </div>
         </div>
@@ -4030,7 +4030,7 @@ export default function SlideRenderer({
         <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d0d]/80 via-[#141414]/60 to-[#0d0d0d]/85" />
         
         {/* Matrix rain columns */}
-        <div className="absolute inset-0 overflow-hidden opacity-15 pointer-events-none">
+        <div className="absolute inset-0 overflow-hidden opacity-15 pointer-events-none hidden sm:block">
           {[10, 20, 30, 45, 55, 70, 80, 90].map((left, idx) => (
             <div key={idx} className="absolute top-0 w-px bg-gradient-to-b from-[#00ff41] via-[#00ff41]/50 to-transparent" style={{ left: `${left}%`, height: `${30 + idx * 8}%` }} />
           ))}
@@ -4038,23 +4038,23 @@ export default function SlideRenderer({
         
         <SlideIndicator position="top-left" />
         
-        <div className="relative h-full flex flex-col justify-center p-12">
-          <div className="mb-8">
-            <span className="text-[#00ff41]/50 font-mono text-xs uppercase tracking-widest">// System Output</span>
-            <Title className="text-4xl md:text-5xl mt-2" align="left" />
+        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-8 md:pt-12 overflow-y-auto">
+          <div className="mb-4 sm:mb-6 md:mb-8">
+            <span className="text-[#00ff41]/50 font-mono text-[10px] sm:text-xs uppercase tracking-widest">// System Output</span>
+            <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl mt-1 sm:mt-2" align="left" />
           </div>
           
           {bulletPoints.length > 0 && (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
               {bulletPoints.map((point, i) => (
                 <div key={i} className="group relative">
                   <div className="absolute inset-0 bg-[#00ff41]/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="relative p-5 rounded-lg border border-[#00ff41]/30 bg-[#0d0d0d]/70 backdrop-blur-sm hover:border-[#00ff41]/50 transition-colors">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-8 h-8 rounded border border-[#00ff41]/40 flex items-center justify-center bg-[#00ff41]/10">
-                        <span className="text-[#00ff41] font-mono text-sm font-bold">{String(i).padStart(2, "0")}</span>
+                  <div className="relative p-3 sm:p-4 md:p-5 rounded-lg border border-[#00ff41]/30 bg-[#0d0d0d]/70 backdrop-blur-sm hover:border-[#00ff41]/50 transition-colors">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                      <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded border border-[#00ff41]/40 flex items-center justify-center bg-[#00ff41]/10">
+                        <span className="text-[#00ff41] font-mono text-xs sm:text-sm font-bold">{String(i).padStart(2, "0")}</span>
                       </div>
-                      <div className="w-2 h-2 rounded-full bg-[#00ff41] animate-pulse" />
+                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#00ff41] animate-pulse" />
                     </div>
                     <EditableText
                       value={point}
@@ -4062,7 +4062,7 @@ export default function SlideRenderer({
                       onStartEdit={() => onStartEditing(index, "bullet", i)}
                       onChange={(val) => onUpdateContent(index, "bullet", val, i)}
                       onFinish={onFinishEditing}
-                      className="text-base leading-relaxed"
+                      className="text-sm sm:text-base leading-relaxed"
                       style={{ fontFamily: theme.fonts.body.family, color: "#39ff14" }}
                       isOwner={canEdit}
                       isHovered={isHovered}
@@ -4075,8 +4075,8 @@ export default function SlideRenderer({
           )}
           
           {canEdit && isHovered && (
-            <button onClick={() => onAddBullet(index)} className="mt-6 flex items-center gap-2 text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
-              <Plus size={14} /> Add module
+            <button onClick={() => onAddBullet(index)} className="mt-4 sm:mt-6 flex items-center gap-2 text-xs sm:text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
+              <Plus size={12} className="sm:w-[14px] sm:h-[14px]" /> Add module
             </button>
           )}
         </div>
@@ -4096,39 +4096,39 @@ export default function SlideRenderer({
         
         <SlideIndicator position="top-left" />
         
-        <div className="relative h-full flex items-center p-12">
+        <div className="relative h-full flex items-center p-3 sm:p-6 md:p-12 pt-10 sm:pt-6 md:pt-12 overflow-y-auto">
           <div className="w-full max-w-5xl mx-auto">
             {/* Code editor style container */}
-            <div className="rounded-xl border border-[#00ff41]/30 bg-[#0d0d0d]/80 backdrop-blur-sm overflow-hidden">
+            <div className="rounded-lg sm:rounded-xl border border-[#00ff41]/30 bg-[#0d0d0d]/80 backdrop-blur-sm overflow-hidden">
               {/* Editor tabs */}
-              <div className="flex items-center gap-1 px-4 py-2 bg-[#141414] border-b border-[#00ff41]/20">
-                <div className="px-3 py-1 rounded-t bg-[#0d0d0d] border border-[#00ff41]/30 border-b-0">
-                  <span className="text-[#00ff41] text-xs font-mono">slide_{index + 1}.md</span>
+              <div className="flex items-center gap-1 px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 bg-[#141414] border-b border-[#00ff41]/20">
+                <div className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-t bg-[#0d0d0d] border border-[#00ff41]/30 border-b-0">
+                  <span className="text-[#00ff41] text-[10px] sm:text-xs font-mono">slide_{index + 1}.md</span>
                 </div>
-                <div className="px-3 py-1 text-[#00ff41]/40 text-xs font-mono">config.yml</div>
+                <div className="px-2 sm:px-3 py-0.5 sm:py-1 text-[#00ff41]/40 text-[10px] sm:text-xs font-mono hidden sm:block">config.yml</div>
               </div>
               
               {/* Line numbers + content */}
               <div className="flex">
-                <div className="py-6 px-4 border-r border-[#00ff41]/20 bg-[#0a0a0a]/50">
-                  <div className="text-[#00ff41]/30 font-mono text-sm space-y-1">
+                <div className="py-3 sm:py-4 md:py-6 px-2 sm:px-3 md:px-4 border-r border-[#00ff41]/20 bg-[#0a0a0a]/50 hidden sm:block">
+                  <div className="text-[#00ff41]/30 font-mono text-xs sm:text-sm space-y-1">
                     {Array.from({ length: Math.max(bulletPoints.length + 3, 6) }, (_, i) => (
                       <div key={i}>{String(i + 1).padStart(2, " ")}</div>
                     ))}
                   </div>
                 </div>
                 
-                <div className="flex-1 py-6 px-6">
-                  <div className="mb-4">
+                <div className="flex-1 py-3 sm:py-4 md:py-6 px-3 sm:px-4 md:px-6">
+                  <div className="mb-2 sm:mb-3 md:mb-4">
                     <span className="text-[#ff0040] font-mono"># </span>
-                    <Title className="text-3xl md:text-4xl inline" align="left" />
+                    <Title className="text-lg sm:text-2xl md:text-3xl lg:text-4xl inline" align="left" />
                   </div>
-                  <div className="text-[#00ff41]/50 font-mono text-sm mb-4">---</div>
+                  <div className="text-[#00ff41]/50 font-mono text-xs sm:text-sm mb-2 sm:mb-3 md:mb-4">---</div>
                   
                   {bulletPoints.length > 0 && (
-                    <div className="space-y-2">
+                    <div className="space-y-1.5 sm:space-y-2">
                       {bulletPoints.map((point, i) => (
-                        <div key={i} className="flex items-start gap-3">
+                        <div key={i} className="flex items-start gap-2 sm:gap-3">
                           <span className="text-[#00d4ff] font-mono">-</span>
                           <EditableText
                             value={point}
@@ -4136,7 +4136,7 @@ export default function SlideRenderer({
                             onStartEdit={() => onStartEditing(index, "bullet", i)}
                             onChange={(val) => onUpdateContent(index, "bullet", val, i)}
                             onFinish={onFinishEditing}
-                            className="flex-1 text-base leading-relaxed"
+                            className="flex-1 text-sm sm:text-base leading-relaxed"
                             style={{ fontFamily: theme.fonts.body.family, color: "#39ff14" }}
                             isOwner={canEdit}
                             isHovered={isHovered}
@@ -4148,8 +4148,8 @@ export default function SlideRenderer({
                   )}
                   
                   {canEdit && isHovered && (
-                    <button onClick={() => onAddBullet(index)} className="mt-4 flex items-center gap-2 text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
-                      <Plus size={14} /> Add line
+                    <button onClick={() => onAddBullet(index)} className="mt-3 sm:mt-4 flex items-center gap-2 text-xs sm:text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
+                      <Plus size={12} className="sm:w-[14px] sm:h-[14px]" /> Add line
                     </button>
                   )}
                 </div>
@@ -4172,36 +4172,36 @@ export default function SlideRenderer({
         <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d0d]/80 via-[#141414]/65 to-[#0d0d0d]/85" />
         
         {/* CRT scanline effect */}
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0, 255, 65, 0.5) 1px, rgba(0, 255, 65, 0.5) 2px)" }} />
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none hidden sm:block" style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0, 255, 65, 0.5) 1px, rgba(0, 255, 65, 0.5) 2px)" }} />
         
         <SlideIndicator position="top-left" />
         
-        <div className="relative h-full flex flex-col justify-center p-12">
+        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-8 md:pt-12 overflow-y-auto">
           <div className="max-w-4xl">
             {/* Command prompt header */}
-            <div className="mb-6 flex items-center gap-2">
+            <div className="mb-3 sm:mb-4 md:mb-6 flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm md:text-base">
               <span className="text-[#00ff41] font-mono font-bold">root@kali</span>
               <span className="text-white font-mono">:</span>
               <span className="text-[#00d4ff] font-mono">~/slides</span>
               <span className="text-white font-mono">$</span>
-              <span className="text-[#39ff14] font-mono ml-2">cat README.md</span>
+              <span className="text-[#39ff14] font-mono ml-1 sm:ml-2">cat README.md</span>
             </div>
             
-            <div className="pl-4 border-l-2 border-[#00ff41]/40">
-              <Title className="text-4xl md:text-5xl mb-6" align="left" />
+            <div className="pl-2 sm:pl-3 md:pl-4 border-l-2 border-[#00ff41]/40">
+              <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-3 sm:mb-4 md:mb-6" align="left" />
               
               {bulletPoints.length > 0 && (
-                <div className="space-y-4 mt-6">
+                <div className="space-y-2 sm:space-y-3 md:space-y-4 mt-3 sm:mt-4 md:mt-6">
                   {bulletPoints.map((point, i) => (
-                    <div key={i} className="flex items-start gap-4">
-                      <span className="text-[#ffff00] font-mono text-sm mt-1">→</span>
+                    <div key={i} className="flex items-start gap-2 sm:gap-3 md:gap-4">
+                      <span className="text-[#ffff00] font-mono text-xs sm:text-sm mt-0.5 sm:mt-1">→</span>
                       <EditableText
                         value={point}
                         isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
                         onStartEdit={() => onStartEditing(index, "bullet", i)}
                         onChange={(val) => onUpdateContent(index, "bullet", val, i)}
                         onFinish={onFinishEditing}
-                        className="flex-1 text-lg leading-relaxed"
+                        className="flex-1 text-sm sm:text-base md:text-lg leading-relaxed"
                         style={{ fontFamily: theme.fonts.body.family, color: "#39ff14" }}
                         isOwner={canEdit}
                         isHovered={isHovered}
@@ -4214,18 +4214,18 @@ export default function SlideRenderer({
             </div>
             
             {canEdit && isHovered && (
-              <button onClick={() => onAddBullet(index)} className="mt-6 ml-4 flex items-center gap-2 text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
-                <Plus size={14} /> Add command
+              <button onClick={() => onAddBullet(index)} className="mt-4 sm:mt-6 ml-2 sm:ml-3 md:ml-4 flex items-center gap-2 text-xs sm:text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
+                <Plus size={12} className="sm:w-[14px] sm:h-[14px]" /> Add command
               </button>
             )}
             
             {/* Blinking cursor */}
-            <div className="mt-8 flex items-center gap-2">
+            <div className="mt-4 sm:mt-6 md:mt-8 flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm md:text-base">
               <span className="text-[#00ff41] font-mono font-bold">root@kali</span>
               <span className="text-white font-mono">:</span>
               <span className="text-[#00d4ff] font-mono">~/slides</span>
               <span className="text-white font-mono">$</span>
-              <div className="w-3 h-5 bg-[#00ff41] animate-pulse ml-2" />
+              <div className="w-2 h-4 sm:w-3 sm:h-5 bg-[#00ff41] animate-pulse ml-1 sm:ml-2" />
             </div>
           </div>
         </div>
@@ -4244,47 +4244,47 @@ export default function SlideRenderer({
         <div className="absolute inset-0 bg-gradient-to-br from-[#0d0d0d]/85 via-[#141414]/70 to-[#0d0d0d]/80" />
         
         {/* Grid pattern */}
-        <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: "linear-gradient(to right, #00ff41 1px, transparent 1px), linear-gradient(to bottom, #00ff41 1px, transparent 1px)", backgroundSize: "50px 50px" }} />
+        <div className="absolute inset-0 opacity-10 pointer-events-none hidden sm:block" style={{ backgroundImage: "linear-gradient(to right, #00ff41 1px, transparent 1px), linear-gradient(to bottom, #00ff41 1px, transparent 1px)", backgroundSize: "50px 50px" }} />
         
         {/* Corner accents */}
-        <div className="absolute top-0 left-0 w-32 h-32">
+        <div className="absolute top-0 left-0 w-16 h-16 sm:w-24 sm:h-24 md:w-32 md:h-32 hidden sm:block">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#00ff41] to-transparent" />
           <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[#00ff41] to-transparent" />
         </div>
-        <div className="absolute bottom-0 right-0 w-32 h-32">
+        <div className="absolute bottom-0 right-0 w-16 h-16 sm:w-24 sm:h-24 md:w-32 md:h-32 hidden sm:block">
           <div className="absolute bottom-0 right-0 w-full h-1 bg-gradient-to-l from-[#00ff41] to-transparent" />
           <div className="absolute bottom-0 right-0 w-1 h-full bg-gradient-to-t from-[#00ff41] to-transparent" />
         </div>
         
         <SlideIndicator position="top-left" />
         
-        <div className="relative h-full flex items-center p-12">
-          <div className="grid grid-cols-2 gap-8 w-full max-w-6xl mx-auto">
+        <div className="relative h-full flex items-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-8 md:pt-12 overflow-y-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8 w-full max-w-6xl mx-auto">
             {/* Left: Title */}
             <div className="flex flex-col justify-center">
-              <div className="mb-4 flex items-center gap-3">
-                <div className="w-3 h-3 bg-[#00ff41] animate-pulse" />
-                <span className="text-[#00ff41]/60 font-mono text-xs uppercase tracking-widest">Active Node</span>
+              <div className="mb-2 sm:mb-3 md:mb-4 flex items-center gap-2 sm:gap-3">
+                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-[#00ff41] animate-pulse" />
+                <span className="text-[#00ff41]/60 font-mono text-[10px] sm:text-xs uppercase tracking-widest">Active Node</span>
               </div>
-              <Title className="text-4xl md:text-5xl" align="left" />
+              <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl" align="left" />
               
               {hasImage && (
-                <div className="mt-8">
+                <div className="mt-4 sm:mt-6 md:mt-8 hidden sm:block">
                   <ImageBlock size="medium" />
                 </div>
               )}
             </div>
             
             {/* Right: Content grid */}
-            <div className="space-y-4">
+            <div className="space-y-2 sm:space-y-3 md:space-y-4">
               {bulletPoints.length > 0 && bulletPoints.map((point, i) => (
                 <div key={i} className="group relative">
-                  <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-2 h-2 border border-[#00ff41]/50 rotate-45 group-hover:bg-[#00ff41]/50 transition-colors" />
-                  <div className="p-4 border border-[#00ff41]/25 bg-[#0d0d0d]/60 backdrop-blur-sm hover:border-[#00ff41]/50 transition-colors">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="text-[#00d4ff] font-mono text-xs">NODE_{String(i).padStart(2, "0")}</span>
+                  <div className="absolute -left-2 sm:-left-3 md:-left-4 top-1/2 -translate-y-1/2 w-1.5 h-1.5 sm:w-2 sm:h-2 border border-[#00ff41]/50 rotate-45 group-hover:bg-[#00ff41]/50 transition-colors hidden sm:block" />
+                  <div className="p-3 sm:p-4 border border-[#00ff41]/25 bg-[#0d0d0d]/60 backdrop-blur-sm hover:border-[#00ff41]/50 transition-colors">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
+                      <span className="text-[#00d4ff] font-mono text-[10px] sm:text-xs">NODE_{String(i).padStart(2, "0")}</span>
                       <div className="flex-1 h-px bg-gradient-to-r from-[#00ff41]/30 to-transparent" />
-                      <div className="w-2 h-2 rounded-full bg-[#00ff41] animate-pulse" />
+                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#00ff41] animate-pulse" />
                     </div>
                     <EditableText
                       value={point}
@@ -4292,7 +4292,7 @@ export default function SlideRenderer({
                       onStartEdit={() => onStartEditing(index, "bullet", i)}
                       onChange={(val) => onUpdateContent(index, "bullet", val, i)}
                       onFinish={onFinishEditing}
-                      className="text-base leading-relaxed"
+                      className="text-sm sm:text-base leading-relaxed"
                       style={{ fontFamily: theme.fonts.body.family, color: "#39ff14" }}
                       isOwner={canEdit}
                       isHovered={isHovered}
@@ -4303,8 +4303,8 @@ export default function SlideRenderer({
               ))}
               
               {canEdit && isHovered && (
-                <button onClick={() => onAddBullet(index)} className="flex items-center gap-2 text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
-                  <Plus size={14} /> Add node
+                <button onClick={() => onAddBullet(index)} className="flex items-center gap-2 text-xs sm:text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
+                  <Plus size={12} className="sm:w-[14px] sm:h-[14px]" /> Add node
                 </button>
               )}
             </div>
@@ -4325,32 +4325,32 @@ export default function SlideRenderer({
         <div className="absolute inset-0 bg-gradient-to-r from-[#0d0d0d]/90 via-[#141414]/70 to-[#0d0d0d]/60" />
         
         {/* Diagonal accent line */}
-        <div className="absolute top-0 left-1/2 w-px h-full bg-gradient-to-b from-[#00ff41]/50 via-[#00ff41]/20 to-[#00ff41]/50 transform -skew-x-12" />
+        <div className="absolute top-0 left-1/2 w-px h-full bg-gradient-to-b from-[#00ff41]/50 via-[#00ff41]/20 to-[#00ff41]/50 transform -skew-x-12 hidden sm:block" />
         
         <SlideIndicator position="top-left" />
         
-        <div className="relative h-full flex">
+        <div className="relative h-full flex flex-col sm:flex-row pb-8 sm:pb-0">
           {/* Left side - Content */}
-          <div className="w-1/2 flex flex-col justify-center p-12 pr-16">
-            <div className="mb-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="px-3 py-1 border border-[#00ff41]/40 bg-[#00ff41]/10 rounded">
-                  <span className="text-[#00ff41] font-mono text-xs">ENCRYPTED</span>
+          <div className="w-full sm:w-1/2 flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-8 md:pt-12 sm:pr-8 md:pr-16 overflow-y-auto">
+            <div className="mb-3 sm:mb-4 md:mb-6">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3 md:mb-4">
+                <div className="px-2 sm:px-3 py-0.5 sm:py-1 border border-[#00ff41]/40 bg-[#00ff41]/10 rounded">
+                  <span className="text-[#00ff41] font-mono text-[10px] sm:text-xs">ENCRYPTED</span>
                 </div>
-                <div className="w-2 h-2 rounded-full bg-[#00ff41] animate-pulse" />
+                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#00ff41] animate-pulse" />
               </div>
-              <Title className="text-4xl md:text-5xl" align="left" />
+              <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl" align="left" />
             </div>
             
             {bulletPoints.length > 0 && (
-              <div className="space-y-4">
+              <div className="space-y-2 sm:space-y-3 md:space-y-4">
                 {bulletPoints.map((point, i) => (
-                  <div key={i} className="flex items-start gap-4 group">
-                    <div className="mt-1 flex items-center gap-2">
-                      <div className="w-6 h-6 border border-[#00ff41]/40 flex items-center justify-center bg-[#00ff41]/5 group-hover:bg-[#00ff41]/20 transition-colors">
-                        <span className="text-[#00ff41] font-mono text-xs">{i + 1}</span>
+                  <div key={i} className="flex items-start gap-2 sm:gap-3 md:gap-4 group">
+                    <div className="mt-0.5 sm:mt-1 flex items-center gap-1 sm:gap-2 shrink-0">
+                      <div className="w-5 h-5 sm:w-6 sm:h-6 border border-[#00ff41]/40 flex items-center justify-center bg-[#00ff41]/5 group-hover:bg-[#00ff41]/20 transition-colors">
+                        <span className="text-[#00ff41] font-mono text-[10px] sm:text-xs">{i + 1}</span>
                       </div>
-                      <div className="w-4 h-px bg-[#00ff41]/40" />
+                      <div className="w-2 sm:w-3 md:w-4 h-px bg-[#00ff41]/40" />
                     </div>
                     <EditableText
                       value={point}
@@ -4358,7 +4358,7 @@ export default function SlideRenderer({
                       onStartEdit={() => onStartEditing(index, "bullet", i)}
                       onChange={(val) => onUpdateContent(index, "bullet", val, i)}
                       onFinish={onFinishEditing}
-                      className="flex-1 text-lg leading-relaxed"
+                      className="flex-1 text-sm sm:text-base md:text-lg leading-relaxed"
                       style={{ fontFamily: theme.fonts.body.family, color: "#39ff14" }}
                       isOwner={canEdit}
                       isHovered={isHovered}
@@ -4370,30 +4370,30 @@ export default function SlideRenderer({
             )}
             
             {canEdit && isHovered && (
-              <button onClick={() => onAddBullet(index)} className="mt-6 flex items-center gap-2 text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
-                <Plus size={14} /> Add data
+              <button onClick={() => onAddBullet(index)} className="mt-4 sm:mt-6 flex items-center gap-2 text-xs sm:text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
+                <Plus size={12} className="sm:w-[14px] sm:h-[14px]" /> Add data
               </button>
             )}
           </div>
           
-          {/* Right side - Image or decorative */}
-          <div className="w-1/2 flex items-center justify-center p-12 pl-16">
+          {/* Right side - Image or decorative (hidden on mobile) */}
+          <div className="hidden sm:flex w-1/2 items-center justify-center p-4 sm:p-8 md:p-12 sm:pl-8 md:pl-16">
             {hasImage ? (
               <div className="relative w-full h-full max-h-[80%]">
                 <div className="absolute inset-0 border border-[#00ff41]/30 rounded-lg overflow-hidden">
                   <ImageBlock className="w-full h-full" size="large" />
-                  <div className="absolute top-4 left-4 px-2 py-1 bg-[#0d0d0d]/80 border border-[#00ff41]/30 rounded">
-                    <span className="text-[#00ff41] font-mono text-xs">IMG_LOADED</span>
+                  <div className="absolute top-2 sm:top-4 left-2 sm:left-4 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-[#0d0d0d]/80 border border-[#00ff41]/30 rounded">
+                    <span className="text-[#00ff41] font-mono text-[10px] sm:text-xs">IMG_LOADED</span>
                   </div>
                 </div>
               </div>
             ) : (
               <div className="w-full h-[60%] border border-[#00ff41]/20 rounded-lg flex items-center justify-center bg-[#0d0d0d]/40">
                 <div className="text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 border-2 border-[#00ff41]/30 rounded-lg flex items-center justify-center">
-                    <ImageIcon size={32} className="text-[#00ff41]/40" />
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-2 sm:mb-4 border-2 border-[#00ff41]/30 rounded-lg flex items-center justify-center">
+                    <ImageIcon size={24} className="sm:w-8 sm:h-8 text-[#00ff41]/40" />
                   </div>
-                  <span className="text-[#00ff41]/40 font-mono text-sm">NO_DATA</span>
+                  <span className="text-[#00ff41]/40 font-mono text-xs sm:text-sm">NO_DATA</span>
                 </div>
               </div>
             )}
@@ -4401,11 +4401,11 @@ export default function SlideRenderer({
         </div>
         
         {/* Bottom status bar */}
-        <div className="absolute bottom-0 left-0 right-0 h-8 bg-[#0d0d0d]/80 border-t border-[#00ff41]/30 flex items-center px-6 justify-between">
-          <span className="text-[#00ff41]/50 font-mono text-xs">STATUS: ACTIVE</span>
-          <div className="flex items-center gap-4">
-            <span className="text-[#00ff41]/50 font-mono text-xs">SLIDE {index + 1}/{totalSlides}</span>
-            <div className="w-2 h-2 rounded-full bg-[#00ff41] animate-pulse" />
+        <div className="absolute bottom-0 left-0 right-0 h-6 sm:h-8 bg-[#0d0d0d]/80 border-t border-[#00ff41]/30 flex items-center px-3 sm:px-6 justify-between">
+          <span className="text-[#00ff41]/50 font-mono text-[10px] sm:text-xs">STATUS: ACTIVE</span>
+          <div className="flex items-center gap-2 sm:gap-4">
+            <span className="text-[#00ff41]/50 font-mono text-[10px] sm:text-xs">SLIDE {index + 1}/{totalSlides}</span>
+            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#00ff41] animate-pulse" />
           </div>
         </div>
       </div>
