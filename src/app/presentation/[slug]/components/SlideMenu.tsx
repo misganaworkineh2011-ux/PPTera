@@ -9,6 +9,7 @@ import {
   Trash2,
   PlusCircle,
   ImagePlus,
+  BarChart3,
 } from "lucide-react";
 
 interface SlideMenuProps {
@@ -16,12 +17,15 @@ interface SlideMenuProps {
   totalSlides: number;
   showMenu: boolean;
   imageCount: number;
+  hasChart?: boolean;
   onToggleMenu: () => void;
   onChangeLayout: () => void;
   onDuplicate: () => void;
   onAddSlide: () => void;
   onAddImage: () => void;
   onManageImages: () => void;
+  onAddChart: () => void;
+  onRemoveChart?: () => void;
   onMoveUp: () => void;
   onMoveDown: () => void;
   onDelete: () => void;
@@ -32,11 +36,14 @@ export function SlideMenu({
   totalSlides,
   showMenu,
   imageCount,
+  hasChart,
   onToggleMenu,
   onChangeLayout,
   onDuplicate,
   onAddSlide,
   onAddImage,
+  onAddChart,
+  onRemoveChart,
   onMoveUp,
   onMoveDown,
   onDelete,
@@ -84,6 +91,24 @@ export function SlideMenu({
             <ImagePlus size={16} />
             {imageCount > 0 ? `Manage Images (${imageCount})` : "Add Image"}
           </button>
+          <button
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={handleAction(onAddChart)}
+            className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-amber-400 hover:bg-amber-900/30"
+          >
+            <BarChart3 size={16} />
+            {hasChart ? "Edit Chart" : "Add Chart"}
+          </button>
+          {hasChart && onRemoveChart && (
+            <button
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={handleAction(onRemoveChart)}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-red-400/80 hover:bg-red-900/20"
+            >
+              <BarChart3 size={16} className="opacity-50" />
+              Remove Chart
+            </button>
+          )}
           <div className="border-t border-zinc-700 my-1" />
           <button
             onMouseDown={(e) => e.stopPropagation()}

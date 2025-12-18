@@ -89,4 +89,49 @@
   .animation-delay-1000 {
     animation-delay: 1s;
   }
+
+  /* Chart animations */
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes chart-grow {
+    0% {
+      transform: scaleY(0);
+      opacity: 0;
+    }
+    100% {
+      transform: scaleY(1);
+      opacity: 1;
+    }
+  }
+
+  .animate-chart-grow {
+    animation: chart-grow 0.8s ease-out forwards;
+    transform-origin: bottom;
+  }
+
+  @keyframes chart-fade-in {
+    0% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-chart-fade-in {
+    animation: chart-fade-in 0.5s ease-out forwards;
+  }
 }

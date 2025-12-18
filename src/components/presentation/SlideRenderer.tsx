@@ -2,7 +2,7 @@
 
 import { ImageIcon, Plus } from "lucide-react";
 import { type Theme } from "~/lib/themes";
-import { type SlideData, type EditingState } from "./types";
+import { type SlideData, type EditingState, type SlideChartData } from "./types";
 import EditableText from "./EditableText";
 import ChartRenderer from "./ChartRenderer";
 import TransformedContentRenderer from "./TransformedContent";
@@ -689,31 +689,66 @@ export default function SlideRenderer({
   // Enhanced content rendering with transformed content, charts, and icons
   const EnhancedContent = ({ compact = false }: { compact?: boolean }) => {
     const hasTransformedContent = slide.transformedContent && slide.transformedContent.items.length > 0;
-    const hasChart = !!slide.chart;
     const hasIcons = slide.icons && slide.icons.length > 0;
+    
+    // Check for chart - cast to SlideChartData for proper type checking
+    const slideChart = slide.chart as SlideChartData | null | undefined;
+    const hasChart = !!(slideChart && slideChart.data && Array.isArray(slideChart.data) && slideChart.data.length > 0);
 
-    // Debug logging to help diagnose rendering issues
-    if (process.env.NODE_ENV === "development") {
-      if (hasChart || hasIcons) {
-        console.log(`[SlideRenderer] Slide "${slide.title}":`, {
-          hasChart,
-          hasIcons,
-          hasTransformedContent,
-          chartType: slide.chart?.type,
-          iconsCount: slide.icons?.length,
-        });
-      }
+
+
+    // When chart is present, use a chart-optimized layout
+    if (hasChart && slideChart && slideChart.data) {
+      const chartData = {
+        type: slideChart.type || "bar",
+        title: slideChart.title,
+        data: slideChart.data,
+        labels: slideChart.labels || slideChart.data.map(d => d.label),
+        config: slideChart.config || {},
+        css: slideChart.css || "",
+      };
+      
+      return (
+        <div className="space-y-3">
+          {/* Chart container - responsive sizing without fixed minHeight */}
+          <div 
+            className={`${compact ? "p-2 sm:p-3" : "p-3 sm:p-4"} rounded-xl border backdrop-blur-sm overflow-hidden`}
+            style={{ 
+              backgroundColor: `${theme.colors.surface}40`,
+              borderColor: `${theme.colors.border}50`,
+            }}
+          >
+            <ChartRenderer chart={chartData} theme={theme} compact={compact} />
+          </div>
+
+          {/* Icons row if available */}
+          {hasIcons && (
+            <div className="mt-2">
+              <IconRenderer icons={slide.icons!} theme={theme} size={compact ? "sm" : "md"} layout="inline" />
+            </div>
+          )}
+
+          {/* Bullet points below chart - more compact when chart is present */}
+          {bulletPoints.length > 0 && (
+            <div className="mt-2">
+              {hasTransformedContent ? (
+                <TransformedContentRenderer 
+                  content={slide.transformedContent!} 
+                  theme={theme} 
+                  compact={true}
+                />
+              ) : (
+                <BulletPoints compact={true} />
+              )}
+            </div>
+          )}
+        </div>
+      );
     }
 
+    // Standard layout without chart
     return (
       <div className={compact ? "space-y-3" : "space-y-4"}>
-        {/* Chart if available - show first as it's most prominent */}
-        {hasChart && (
-          <div className={`${compact ? "p-3" : "p-4"} rounded-lg bg-white/5 border border-white/10`}>
-            <ChartRenderer chart={slide.chart!} theme={theme} compact={compact} />
-          </div>
-        )}
-
         {/* Icons row if available - show even with transformed content, just above it */}
         {hasIcons && (
           <div className="mb-2">

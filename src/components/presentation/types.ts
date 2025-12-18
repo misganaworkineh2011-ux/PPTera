@@ -1,7 +1,6 @@
 import { type LayoutType } from "~/lib/slide-layouts";
 import type { 
   TransformedContent, 
-  ChartData, 
   IconPlaceholder,
   VisualStrategy 
 } from "~/lib/presentation/types";
@@ -12,6 +11,16 @@ export interface SlideImage {
   photographer?: string;
   photographerUrl?: string;
   source: string;
+}
+
+// Flexible chart data type that accepts both legacy and new formats
+export interface SlideChartData {
+  type: string;
+  title?: string;
+  data: Array<{ label: string; value: number; color?: string }>;
+  labels?: string[];
+  config: Record<string, unknown>;
+  css?: string;
 }
 
 export interface SlideData {
@@ -25,7 +34,8 @@ export interface SlideData {
   layout?: LayoutType;
   // Enhanced content from visual metadata transformations
   transformedContent?: TransformedContent;
-  chart?: ChartData | null;
+  // Chart data - use flexible type
+  chart?: SlideChartData | null;
   icons?: IconPlaceholder[];
   // Visual metadata for reference
   semanticIntent?: string;

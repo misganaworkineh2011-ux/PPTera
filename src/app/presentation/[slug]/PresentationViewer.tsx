@@ -25,6 +25,8 @@ import LayoutModal from "~/components/presentation/LayoutModal";
 import ExportModal from "~/components/presentation/ExportModal";
 import ShareModal from "~/components/presentation/ShareModal";
 import FeedbackSection from "~/components/presentation/FeedbackSection";
+import ChartModal from "~/components/charts/ChartModal";
+import { type ChartData } from "~/lib/charts/types";
 
 // Import extracted components
 import {
@@ -105,6 +107,7 @@ export default function PresentationViewer({
   const [editingImageIndex, setEditingImageIndex] = useState<number | null>(null);
   const [imageUrl, setImageUrl] = useState("");
   const [isLoadingImage, setIsLoadingImage] = useState(false);
+  const [showChartModal, setShowChartModal] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const slidesRef = useRef<SlideData[]>(presentation.slides);
@@ -506,6 +509,40 @@ export default function PresentationViewer({
     setEditingText({ slideIndex, field, bulletIndex });
   };
 
+  // Chart operations
+  const updateSlideChart = (slideIndex: number, chart: ChartData | null) => {
+    const slide = slidesData[slideIndex];
+    if (slide) {
+      const newSlides = [...slidesData];
+      // Convert new chart format to storage format
+      const chartData = chart ? {
+        type: chart.type,
+        title: chart.title,
+        data: chart.data.map(d => ({
+          label: d.label,
+          value: d.value,
+          color: d.color,
+        })),
+        labels: chart.data.map(d => d.label),
+        config: {
+          showLegend: chart.config.showLegend ?? true,
+          showLabels: chart.config.showLabels ?? true,
+          showValues: chart.config.showValues ?? true,
+          showGrid: chart.config.showGrid ?? true,
+          showAnimation: chart.config.showAnimation ?? true,
+          maxValue: chart.config.maxValue,
+          unit: chart.config.unit,
+          colorScheme: chart.config.colorScheme ?? "default",
+        },
+        css: "",
+      } : null;
+      
+      newSlides[slideIndex] = { ...slide, chart: chartData };
+      updateSlidesWithSave(newSlides);
+    }
+    setShowChartModal(null);
+  };
+
   const getSlideImages = (slide: SlideData) => {
     const images = [...(slide.images || [])];
     if (slide.image?.url && !images.some(img => img.url === slide.image?.url)) {
@@ -701,12 +738,15 @@ export default function PresentationViewer({
             totalSlides={slides.length}
             showMenu={showSlideMenu === index}
             imageCount={getSlideImages(slide).length}
+            hasChart={!!slide.chart}
             onToggleMenu={() => setShowSlideMenu(showSlideMenu === index ? null : index)}
             onChangeLayout={() => { setActiveSlideIndex(index); setShowLayoutModal(true); setShowSlideMenu(null); }}
             onDuplicate={() => duplicateSlide(index)}
             onAddSlide={() => addSlideAt(index)}
             onAddImage={() => { setShowImageModal(index); setEditingImageIndex(null); setImageUrl(""); setShowSlideMenu(null); }}
             onManageImages={() => { setShowImageModal(index); setEditingImageIndex(null); setImageUrl(""); setShowSlideMenu(null); }}
+            onAddChart={() => { setShowChartModal(index); setShowSlideMenu(null); }}
+            onRemoveChart={() => { updateSlideChart(index, null); setShowSlideMenu(null); }}
             onMoveUp={() => moveSlide(index, "up")}
             onMoveDown={() => moveSlide(index, "down")}
             onDelete={() => deleteSlide(index)}
@@ -1105,6 +1145,21 @@ export default function PresentationViewer({
         {showExportModal && isOwner && <ExportModal isExporting={isExporting} theme={theme} onExport={handleExport} onClose={() => setShowExportModal(false)} />}
 
         {showShareModal && isOwner && <ShareModal presentationId={presentation.id} onClose={() => setShowShareModal(false)} />}
+
+        {showChartModal !== null && canEdit && (
+          <ChartModal
+            isOpen={true}
+            onClose={() => setShowChartModal(null)}
+            onInsert={(chart) => updateSlideChart(showChartModal, chart)}
+            theme={theme}
+            existingChart={slidesData[showChartModal]?.chart ? {
+              type: slidesData[showChartModal]!.chart!.type as any,
+              title: slidesData[showChartModal]!.chart!.title,
+              data: slidesData[showChartModal]!.chart!.data,
+              config: slidesData[showChartModal]!.chart!.config,
+            } : null}
+          />
+        )}
       </div>
     </>
   );
@@ -1120,10 +1175,16 @@ function ScrollSlideContent({ slide, index, theme, renderSlide, isMobile }: {
 }) {
   const themeType = getThemeType(theme);
   const bulletCount = slide.bulletPoints?.length || 0;
+  const hasChart = !!slide.chart;
+  const hasIcons = slide.icons && slide.icons.length > 0;
+  
   // Responsive height calculation - smaller base on mobile
+  // Add extra height for charts and icons
   const baseHeight = isMobile ? 280 : 380;
   const bulletHeight = isMobile ? 50 : 65;
-  const calculatedHeight = Math.max(baseHeight, baseHeight + bulletCount * bulletHeight);
+  const chartHeight = hasChart ? (isMobile ? 280 : 350) : 0;
+  const iconsHeight = hasIcons ? (isMobile ? 60 : 80) : 0;
+  const calculatedHeight = Math.max(baseHeight, baseHeight + bulletCount * bulletHeight + chartHeight + iconsHeight);
   
   const bgColors: Record<ThemeType, string> = {
     dark: "bg-gradient-to-br from-zinc-900 via-zinc-950 to-black",
