@@ -134,9 +134,17 @@ export async function POST(request: Request) {
         : undefined;
 
       // Generate chart if slide has chart metadata
-      const chart = slide.type === "content" && slide.assets?.chart
-        ? generateChart(slide)
-        : null;
+      let chart: ChartData | null = null;
+      if (slide.type === "content" && slide.assets?.chart) {
+        chart = generateChart(slide);
+        if (chart) {
+          console.log(`[create-presentation] Generated chart for slide "${slide.title}":`, {
+            type: chart.type,
+            dataPoints: chart.data?.length || 0,
+            labels: chart.labels?.slice(0, 3),
+          });
+        }
+      }
 
       // Generate icon placeholders if slide has icon metadata
       const icons = slide.type === "content" && slide.assets?.icons

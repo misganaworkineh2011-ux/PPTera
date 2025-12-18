@@ -27,13 +27,16 @@ function extractDataFromBullets(bullets: string[]): ChartDataPoint[] {
   const dataPoints: ChartDataPoint[] = [];
 
   bullets.forEach((bullet, index) => {
+    // Skip empty bullets
+    if (!bullet || bullet.trim().length === 0) return;
+
     // Look for percentage patterns (e.g., "45%", "45 percent")
     const percentMatch = bullet.match(/(\d+(?:\.\d+)?)\s*(%|percent)/i);
     if (percentMatch) {
       const label = extractLabel(bullet, percentMatch[0]);
       dataPoints.push({
-        label,
-        value: parseFloat(percentMatch[1]),
+        label: label || `Item ${index + 1}`,
+        value: parseFloat(percentMatch[1]!),
         color: CHART_COLORS[index % CHART_COLORS.length],
       });
       return;
@@ -42,7 +45,7 @@ function extractDataFromBullets(bullets: string[]): ChartDataPoint[] {
     // Look for number patterns with context (e.g., "increased by 30", "$5M revenue")
     const numberMatch = bullet.match(/(\$?\d+(?:,\d{3})*(?:\.\d+)?)\s*(M|B|K|million|billion|thousand)?/i);
     if (numberMatch) {
-      let value = parseFloat(numberMatch[1].replace(/[$,]/g, ""));
+      let value = parseFloat(numberMatch[1]!.replace(/[$,]/g, ""));
       const multiplier = numberMatch[2]?.toLowerCase();
       
       if (multiplier === "k" || multiplier === "thousand") value *= 1000;
@@ -51,21 +54,39 @@ function extractDataFromBullets(bullets: string[]): ChartDataPoint[] {
 
       const label = extractLabel(bullet, numberMatch[0]);
       dataPoints.push({
-        label,
+        label: label || `Item ${index + 1}`,
         value,
         color: CHART_COLORS[index % CHART_COLORS.length],
       });
       return;
     }
 
-    // If no numbers found, create placeholder data point
-    const words = bullet.split(" ").slice(0, 3).join(" ");
+    // If no numbers found, create placeholder data point with meaningful label
+    // Extract first few meaningful words from the bullet
+    const cleanBullet = bullet.replace(/^[\-•*]\s*/, "").trim();
+    const words = cleanBullet.split(/\s+/).filter(w => w.length > 0);
+    const label = words.slice(0, 3).join(" ") || `Item ${index + 1}`;
+    
+    // Generate a deterministic value based on the bullet content for consistency
+    const hashValue = cleanBullet.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const value = 30 + (hashValue % 70); // Value between 30-100
+    
     dataPoints.push({
-      label: words || `Item ${index + 1}`,
-      value: 50 + Math.random() * 50, // Random value for visual representation
+      label,
+      value,
       color: CHART_COLORS[index % CHART_COLORS.length],
     });
   });
+
+  // Ensure we have at least some data points
+  if (dataPoints.length === 0) {
+    // Create default data points if no bullets provided
+    return [
+      { label: "Category A", value: 75, color: CHART_COLORS[0] },
+      { label: "Category B", value: 60, color: CHART_COLORS[1] },
+      { label: "Category C", value: 45, color: CHART_COLORS[2] },
+    ];
+  }
 
   return dataPoints;
 }
@@ -317,19 +338,33 @@ export function generateChart(slide: Slide): ChartData | null {
   const chartMeta = slide.assets?.chart;
   if (!chartMeta) return null;
 
-  const bullets = slide.bulletPoints || [];
-  if (bullets.length === 0) return null;
+  // Get chart type, default to "bar" if not specified
+  const chartType = (chartMeta.type || "bar").toLowerCase();
 
-  // Extract data from bullets
+  const bullets = slide.bulletPoints || [];
+  
+  // Extract data from bullets - this now always returns valid data
   const data = extractDataFromBullets(bullets);
+  
+  // Ensure we have valid data
+  if (data.length === 0) {
+    // Create default data if extraction failed
+    const defaultData: ChartDataPoint[] = [
+      { label: "Category A", value: 75, color: CHART_COLORS[0] },
+      { label: "Category B", value: 60, color: CHART_COLORS[1] },
+      { label: "Category C", value: 45, color: CHART_COLORS[2] },
+    ];
+    data.push(...defaultData);
+  }
+
   const labels = data.map((d) => d.label);
 
   // Calculate max value for bar chart scaling
-  const maxValue = Math.max(...data.map((d) => d.value));
+  const maxValue = Math.max(...data.map((d) => d.value), 1);
 
   // Generate chart structure
   const chartData: ChartData = {
-    type: chartMeta.type.toLowerCase(),
+    type: chartType,
     data,
     labels,
     title: slide.title,
@@ -340,11 +375,11 @@ export function generateChart(slide: Slide): ChartData | null {
       maxValue,
       unit: data.some((d) => d.value > 0 && d.value <= 100) ? "%" : undefined,
     },
-    css: getChartCSS(chartMeta.type),
+    css: getChartCSS(chartType),
   };
 
   // Add pie chart specific gradient
-  if (chartData.type === "pie") {
+  if (chartData.type === "pie" || chartData.type === "donut") {
     (chartData as ChartData & { gradient?: string }).gradient = calculatePieGradient(data);
   }
 

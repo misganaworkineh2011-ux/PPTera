@@ -692,18 +692,19 @@ export default function SlideRenderer({
     const hasIcons = slide.icons && slide.icons.length > 0;
     
     // Check for chart - cast to SlideChartData for proper type checking
+    // Be more lenient - if chart object exists with a type, try to render it
     const slideChart = slide.chart as SlideChartData | null | undefined;
-    const hasChart = !!(slideChart && slideChart.data && Array.isArray(slideChart.data) && slideChart.data.length > 0);
-
-
+    const hasChart = !!(slideChart && (slideChart.type || (slideChart.data && slideChart.data.length > 0)));
 
     // When chart is present, use a chart-optimized layout
-    if (hasChart && slideChart && slideChart.data) {
+    if (hasChart && slideChart) {
+      // Ensure data array exists, even if empty (ChartRenderer will handle fallback)
+      const chartDataArray = slideChart.data && Array.isArray(slideChart.data) ? slideChart.data : [];
       const chartData = {
         type: slideChart.type || "bar",
         title: slideChart.title,
-        data: slideChart.data,
-        labels: slideChart.labels || slideChart.data.map(d => d.label),
+        data: chartDataArray,
+        labels: slideChart.labels || chartDataArray.map(d => d.label),
         config: slideChart.config || {},
         css: slideChart.css || "",
       };

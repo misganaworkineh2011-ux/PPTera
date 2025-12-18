@@ -79,12 +79,16 @@ export default function InteractiveChart({
     switch (type) {
       case "bar":
       case "horizontal-bar":
+      case "stacked-bar":
+      case "waterfall":
+      case "histogram":
         return <BarChart data={data} config={config} colors={colors} maxValue={maxValue} compact={compact} 
           hoveredIndex={hoveredIndex} setHoveredIndex={setHoveredIndex} getPointColor={getPointColor}
           animationProgress={animationProgress} horizontal={type === "horizontal-bar"} onPointClick={handlePointClick} />;
       
       case "line":
       case "area":
+      case "scatter":
         return <LineAreaChart data={data} config={config} colors={colors} maxValue={maxValue} compact={compact}
           hoveredIndex={hoveredIndex} setHoveredIndex={setHoveredIndex} getPointColor={getPointColor}
           animationProgress={animationProgress} showArea={type === "area"} onPointClick={handlePointClick} />;

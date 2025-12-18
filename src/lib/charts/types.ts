@@ -21,6 +21,7 @@ export type ChartType =
   | "treemap"
   | "heatmap"
   | "waterfall"
+  | "histogram"
   | "comparison"
   | "progress"
   | "kpi"
