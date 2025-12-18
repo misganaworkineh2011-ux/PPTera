@@ -7,6 +7,7 @@ import { useOutlineStream, type Slide, type OutlineMetadata } from "~/lib/dashbo
 import { themes, getThemeById, type Theme } from "~/lib/themes";
 import { isCustomThemeId, getCustomThemeDbId, convertCustomThemeToTheme } from "~/lib/custom-theme-utils";
 import ThemeSelector from "~/components/ThemeSelector";
+import RecentOutlines from "~/components/createpresentation/RecentOutlines";
 
 interface ExistingOutline {
   id: string;
@@ -15,11 +16,18 @@ interface ExistingOutline {
   status: string;
 }
 
+interface RecentOutline {
+  id: string;
+  title: string;
+  createdAt: string;
+}
+
 interface CreatePresentationClientProps {
   maxSlides: number;
   subscriptionPlan?: string | null;
   mode: string;
   existingOutline?: ExistingOutline;
+  recentOutlines?: RecentOutline[];
 }
 
 // Define all slide options by plan
@@ -236,6 +244,7 @@ export default function CreatePresentationClient({
   subscriptionPlan,
   mode,
   existingOutline,
+  recentOutlines = [],
 }: CreatePresentationClientProps) {
   const router = useRouter();
   const { state: streamState, startStream, cancel, reset } = useOutlineStream();
@@ -312,10 +321,19 @@ export default function CreatePresentationClient({
 
   const allSlideOptions = getAllSlideOptions(subscriptionPlan);
 
+  // Track if we've started a new generation (to override existingOutline behavior)
+  const [hasStartedGeneration, setHasStartedGeneration] = useState(false);
+
   // Update view based on stream state
   useEffect(() => {
+    // Don't override view if we have an existing outline (loaded from DB) AND haven't started a new generation
+    if (existingOutline && !hasStartedGeneration && streamState.status === "idle") {
+      return;
+    }
+    
     if (streamState.status === "streaming" || streamState.status === "connecting") {
       setView("streaming");
+      setHasStartedGeneration(true);
     } else if (streamState.status === "completed") {
       setView("completed");
       setSlides(streamState.slides);
@@ -326,7 +344,7 @@ export default function CreatePresentationClient({
       // Clear any partial slides
       setSlides([]);
     }
-  }, [streamState.status, streamState.slides, streamState.outlineId]);
+  }, [existingOutline, hasStartedGeneration, streamState.status, streamState.slides, streamState.outlineId]);
 
   // Update URL when outline ID is available
   useEffect(() => {
@@ -373,6 +391,7 @@ export default function CreatePresentationClient({
     setView("streaming");
     setSlides([]);
     setOutlineId(idForStream);
+    setHasStartedGeneration(true);
 
     await startStream({
       description: trimmed,
@@ -502,7 +521,11 @@ export default function CreatePresentationClient({
 
   // Check actual streaming status, not just view state
   const isStreaming = streamState.status === "streaming" || streamState.status === "connecting";
-  const isCompleted = streamState.status === "completed" && view === "completed";
+  // If we've started a new generation, only use streamState for completion status
+  // Otherwise, consider existingOutline for initial load
+  const isCompleted = hasStartedGeneration 
+    ? (streamState.status === "completed" && view === "completed")
+    : ((streamState.status === "completed" && view === "completed") || !!existingOutline);
   const hasError = streamState.status === "error";
   const showOutline = (isStreaming || isCompleted) && !hasError;
 
@@ -910,6 +933,11 @@ export default function CreatePresentationClient({
                 </button>
               </div>
             </form>
+            
+            {/* Recent Outlines - Only show when form is visible */}
+            {!showOutline && mode === "ai" && recentOutlines.length > 0 && (
+              <RecentOutlines outlines={recentOutlines.map(o => ({ ...o, createdAt: new Date(o.createdAt) }))} mode={mode} />
+            )}
           </div>
         </div>
 
@@ -1230,8 +1258,8 @@ export default function CreatePresentationClient({
         )}
       </div>
 
-      {/* Bottom sticky stats & action bar (only when outline is ready) */}
-      {isCompleted && (
+      {/* Bottom sticky stats & action bar (only when outline is ready and NOT streaming) */}
+      {isCompleted && !isStreaming && (
         <div className="fixed inset-x-0 bottom-0 z-20">
           <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pb-4">
             <div className="flex items-center justify-between rounded-xl bg-white px-4 py-3 shadow-lg border border-slate-200">

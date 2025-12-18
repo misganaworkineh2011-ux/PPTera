@@ -140,6 +140,58 @@ CRITICAL QUALITY STANDARDS:
 
 8. Professional expertise and clarity: Write the outline as if you are a master/expert in the specific field or topic. The content should demonstrate deep knowledge and professional understanding, but remain accessible and easy to understand - like a well-crafted PowerPoint presentation. Use clear, concise language that balances expertise with clarity. Avoid jargon unless necessary, and when using technical terms, ensure the context makes them understandable. The outline should feel authoritative and professional while being digestible for the intended audience.
 
+––––––––––––––––––––––––––––––––––––––
+
+VISUAL & DESIGN INTELLIGENCE (CRITICAL)
+
+––––––––––––––––––––––––––––––––––––––
+
+Each slide MUST encode visual meaning—not just text.
+
+For every CONTENT slide, determine and include:
+
+1. "semanticIntent":
+A short, descriptive label that captures the core meaning of the slide in natural language.
+This is NOT a fixed category system and MUST NOT be treated as a limited set.
+You may invent new intent labels freely when they better express the idea.
+Illustrative examples (non-exhaustive, non-binding): process, concept, comparison, hierarchy, timeline, framework, data insight, causal chain, mental model, transformation, pattern, trade-off, narrative moment.
+
+2. "visualStrategy":
+Describe how the idea wants to be visually expressed.
+This is guidance, not a preset library.
+You may combine, invent, or adapt patterns freely as needed.
+Fields:
+- primary: the dominant visual form (free-form, e.g., diagram, icons, image, chart, mixed)
+- pattern: a descriptive layout metaphor (free-form text, e.g., stairs, split, cards, grid, pyramid, spotlight, flow)
+- emphasis: what the visual should highlight (free-form text, e.g., progression, contrast, relationship, scale, emotion, clarity)
+
+3. "assets":
+Describe visual assets meaningfully. Invent freely if better suited.
+CRITICAL: Visual assets (icons, images, charts) MUST be generated AFTER bullet points are created, so you have the full picture of the slide content.
+- icons: The number of icons MUST match the number of bullet points generated (e.g., if 4 bullet points, provide 4 icon concepts). USE SPARINGLY - max 1-3 slides per 10 slides, only for emphasis. Each icon should represent one bullet point concept.
+- image:
+  - required: true | false (TITLE slide ALWAYS true, content slides: 5-7 out of 10 slides should have images)
+  - style: free-form style descriptor (e.g., conceptual-illustration, realistic-photo, abstract, flat-illustration, mockup)
+  - promptHint: short meaning-driven description (never decorative, think outside the box using both title AND bullet points)
+- chart (ONLY when data exists):
+  - type: SPECIFIC chart type (e.g., bar, line, pie, stacked, comparison, table, area, scatter, histogram, waterfall)
+  - purpose: what insight the chart communicates
+
+VISUAL BALANCING RULES:
+- TITLE slide ALWAYS requires an image
+- Balance images and charts: if a slide has a chart, avoid image to give space
+- Images: 5-7 out of 10 slides (think outside the box using title + bullet points for inspiration)
+- Icons: LEAST needed (max 1-3 slides per 10, only for strong emphasis)
+- Icons count MUST match bullet points count (e.g., 4 bullet points = 4 icons)
+- Charts: When data exists, specify exact chart type (bar, line, pie, table, etc.)
+- IMPORTANT: Generate bullet points FIRST, then generate visual assets (icons, images, charts) based on the complete slide content
+
+RULES:
+- One primary visual per slide
+- Images, charts, and icons must be meaning-driven
+- NEVER add visuals arbitrarily
+- Charts only when real data exists
+
 The outline must be well-structured, engaging, written in ${languageDescription}, using a ${toneDescription} tone, and applicable to any field. Output format must be a valid JSON object with a "slides" array.`;
 
     const userPrompt = `Create a presentation outline with exactly ${numberOfSlides} slides based on: "${description}"
@@ -156,9 +208,14 @@ CRITICAL REQUIREMENTS:
    - "subtitle": A brief, compelling tagline or subtitle that expands on the title
 
 2. CONTENT slides (${contentSlides} slides):
+Each slide MUST include (IN THIS ORDER):
    - "type": "content"
-   - "title": A clear, descriptive heading that creates a strong narrative flow
-   - "bulletPoints": An array of 3-6 bullet points (strings), each being:
+   - "title": A clear, narrative-advancing heading
+   - "semanticIntent"
+   - "visualStrategy"
+   - "bulletPoints": 3–6 bullets that are:
+     (Generate bullet points FIRST, then generate assets based on the full content)
+   - "assets": (Generate AFTER bullet points - icons count must match bullet points count)
      * CRITICAL: Bullet points must be SUBSTANTIAL, DETAILED, and SELF-CONTAINED - they should fully explain the concept within themselves, not be brief statements that feel like they need expansion
      * Slide-bullet style (not prose): one idea per bullet; short, skimmable cues that can be spoken over; avoid paragraph-like sentences. Bullets should create quick visual hierarchy (primary vs. supporting), be readable in 3–5 seconds, and stay modular (can be revealed or rearranged). Good: "Urban HIV prevalence is higher than rural areas". Bad: "Urban areas tend to show significantly higher HIV prevalence due to migration, population density, and access to services."
      * Count variety: Use a mix of counts (3-6). Favor 4-6 bullets when advising, teaching, or giving frameworks; 3 is acceptable only when truly sufficient.
@@ -200,20 +257,56 @@ CRITICAL REQUIREMENTS:
    - Titles on every slide must be clear, precise, and catchy—address the main point directly with crisp wording (questions, bold claims, vivid phrases). Keep the outline expert-level yet easily skimmable.
    - Write as a master/expert in the specific topic area - demonstrate professional expertise while keeping content clear and accessible, like a well-crafted PowerPoint presentation
 
-Return ONLY a valid JSON object with this exact structure:
+5. VISUAL BALANCING RULES (CRITICAL):
+   - TITLE slide ALWAYS requires an image (required: true)
+   - Content slides: 5-7 out of 10 slides should have images (required: true)
+   - For image generation: Don't depend only on title - also examine bullet points and think outside the box for meaningful visual representation
+   - Balance images and charts: If a slide has a chart, avoid image to give space
+   - Icons: LEAST needed (max 1-3 slides per 10 slides total, only for strong emphasis when you want to highlight key concepts)
+   - Icons count MUST match bullet points count (e.g., 4 bullet points = 4 icons)
+   - Charts: When data exists, specify exact chart type (bar, line, pie, stacked, comparison, table, area, scatter, histogram, waterfall, etc.)
+   - IMPORTANT: Generate bullet points FIRST, then generate visual assets (icons, images, charts) based on the complete slide content
+
+REQUIRED OUTPUT FORMAT
+
+Return ONLY a valid JSON object in this exact structure:
+
 {
   "slides": [
     {
       "type": "title",
       "title": "Title text",
-      "subtitle": "Subtitle text"
+      "subtitle": "Subtitle text",
+      "image": {
+        "required": true,
+        "style": "style descriptor",
+        "promptHint": "meaning-driven description"
+      }
     },
     {
       "type": "content",
       "title": "Slide title",
-      "bulletPoints": ["Bullet point 1", "Bullet point 2", "Bullet point 3"]
+      "semanticIntent": "core meaning of the slide (invented freely, non-restrictive)",
+      "visualStrategy": {
+        "primary": "dominant visual form (free-form, e.g., diagram, icons, image, chart, mixed)",
+        "pattern": "layout metaphor or pattern (free-form text)",
+        "emphasis": "visual emphasis or focus (free-form text)"
+      },
+      "bulletPoints": [
+        "Bullet point 1",
+        "Bullet point 2",
+        "Bullet point 3"
+      ],
+      "assets": {
+        "icons": ["icon1", "icon2", "icon3"],
+        "image": {
+          "required": false,
+          "style": null,
+          "promptHint": null
+        },
+        "chart": null
+      }
     }
-    // ... more content slides
   ],
   "metadata": {
     "topic": "${description}",

@@ -1,4 +1,5 @@
 import { requireAuth } from "~/lib/clerk-server";
+import { db } from "~/server/db";
 import CreatePresentationClient from "./CreatePresentationClient";
 
 interface PageProps {
@@ -21,11 +22,40 @@ export default async function CreatePresentationPage({ searchParams }: PageProps
 
   const maxSlides = getMaxSlides(user?.subscriptionPlan);
 
+  // Fetch only the first 3 completed outlines for initial display
+  const outlines = await db.outline.findMany({
+    where: {
+      userId: user.id,
+      status: "completed",
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: 3, // Only fetch 3 initially, more will be loaded on "See More" click
+  });
+
+  // Extract title from metadata
+  const recentOutlines = outlines.map((outline) => {
+    const metadata = outline.metadata as {
+      topic?: string;
+      totalSlides?: number;
+      tone?: string;
+      language?: string;
+    };
+    
+    return {
+      id: outline.id,
+      title: metadata.topic || "Untitled Presentation",
+      createdAt: outline.createdAt.toISOString(),
+    };
+  });
+
   return (
     <CreatePresentationClient
       maxSlides={maxSlides}
       subscriptionPlan={user?.subscriptionPlan}
       mode={mode || "ai"}
+      recentOutlines={recentOutlines}
     />
   );
 }
