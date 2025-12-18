@@ -2,10 +2,44 @@ import { requireAuth } from "~/lib/clerk-server";
 import { db } from "~/server/db";
 import { notFound } from "next/navigation";
 import CreatePresentationClient from "../../CreatePresentationClient";
+import type { Slide } from "~/lib/dashboard/hooks/useOutlineStream";
 
 interface OutlinePageProps {
   params: Promise<{ outlineId: string }>;
   searchParams: Promise<{ mode?: string }>;
+}
+
+// Type for the raw slide data stored in the database
+interface StoredSlide {
+  type: "title" | "content";
+  title: string;
+  subtitle?: string;
+  bulletPoints?: string[];
+  // Visual metadata from outline generation
+  semanticIntent?: string;
+  visualStrategy?: {
+    primary: string;
+    pattern: string;
+    emphasis: string;
+  };
+  assets?: {
+    icons: string[];
+    image: {
+      required: boolean;
+      style?: string | null;
+      promptHint?: string | null;
+    };
+    chart?: {
+      type: string;
+      purpose: string;
+    } | null;
+  };
+  // Title slide specific image metadata
+  image?: {
+    required: boolean;
+    style?: string | null;
+    promptHint?: string | null;
+  };
 }
 
 export default async function OutlinePage({ params, searchParams }: OutlinePageProps) {
@@ -41,6 +75,20 @@ export default async function OutlinePage({ params, searchParams }: OutlinePageP
     language?: string;
   };
 
+  // Parse slides with full visual metadata
+  const storedSlides = outline.slides as StoredSlide[];
+  const slides: Slide[] = storedSlides.map(slide => ({
+    type: slide.type,
+    title: slide.title,
+    subtitle: slide.subtitle,
+    bulletPoints: slide.bulletPoints,
+    // Include visual metadata
+    semanticIntent: slide.semanticIntent,
+    visualStrategy: slide.visualStrategy,
+    assets: slide.assets,
+    image: slide.image,
+  }));
+
   return (
     <CreatePresentationClient
       maxSlides={maxSlides}
@@ -48,12 +96,7 @@ export default async function OutlinePage({ params, searchParams }: OutlinePageP
       mode={mode || "ai"}
       existingOutline={{
         id: outline.id,
-        slides: outline.slides as Array<{
-          type: "title" | "content";
-          title: string;
-          subtitle?: string;
-          bulletPoints?: string[];
-        }>,
+        slides,
         metadata: {
           topic: metadata.topic || "",
           totalSlides: metadata.totalSlides || 0,

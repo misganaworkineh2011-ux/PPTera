@@ -4,6 +4,9 @@ import { ImageIcon, Plus } from "lucide-react";
 import { type Theme } from "~/lib/themes";
 import { type SlideData, type EditingState } from "./types";
 import EditableText from "./EditableText";
+import ChartRenderer from "./ChartRenderer";
+import TransformedContentRenderer from "./TransformedContent";
+import IconRenderer from "./IconRenderer";
 
 interface SlideRendererProps {
   slide: SlideData;
@@ -683,6 +686,55 @@ export default function SlideRenderer({
     );
   };
 
+  // Enhanced content rendering with transformed content, charts, and icons
+  const EnhancedContent = ({ compact = false }: { compact?: boolean }) => {
+    const hasTransformedContent = slide.transformedContent && slide.transformedContent.items.length > 0;
+    const hasChart = !!slide.chart;
+    const hasIcons = slide.icons && slide.icons.length > 0;
+
+    // Debug logging to help diagnose rendering issues
+    if (process.env.NODE_ENV === "development") {
+      if (hasChart || hasIcons) {
+        console.log(`[SlideRenderer] Slide "${slide.title}":`, {
+          hasChart,
+          hasIcons,
+          hasTransformedContent,
+          chartType: slide.chart?.type,
+          iconsCount: slide.icons?.length,
+        });
+      }
+    }
+
+    return (
+      <div className={compact ? "space-y-3" : "space-y-4"}>
+        {/* Chart if available - show first as it's most prominent */}
+        {hasChart && (
+          <div className={`${compact ? "p-3" : "p-4"} rounded-lg bg-white/5 border border-white/10`}>
+            <ChartRenderer chart={slide.chart!} theme={theme} compact={compact} />
+          </div>
+        )}
+
+        {/* Icons row if available - show even with transformed content, just above it */}
+        {hasIcons && (
+          <div className="mb-2">
+            <IconRenderer icons={slide.icons!} theme={theme} size={compact ? "sm" : "md"} layout="inline" />
+          </div>
+        )}
+
+        {/* Transformed content or fallback to bullet points */}
+        {hasTransformedContent ? (
+          <TransformedContentRenderer 
+            content={slide.transformedContent!} 
+            theme={theme} 
+            compact={compact}
+          />
+        ) : (
+          <BulletPoints compact={compact} />
+        )}
+      </div>
+    );
+  };
+
   // Single image block (uses first image)
   const ImageBlock = ({ className = "", size = "large", imageIndex = 0 }: { className?: string; size?: "small" | "medium" | "large"; imageIndex?: number }) => {
     const img = allImages[imageIndex];
@@ -696,11 +748,6 @@ export default function SlideRenderer({
           <img src={img.url} alt={img.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
           <div className={`absolute inset-0 bg-gradient-to-t ${colors.overlay} via-transparent to-transparent`} />
         </div>
-        {img.source === "pexels" && img.photographer && (
-          <div className={`absolute bottom-3 right-3 backdrop-blur-sm text-xs px-2 py-1 rounded ${themeType === "light" ? "bg-white/80" : "bg-black/60"}`} style={{ color: colors.textMuted }}>
-            <a href={img.photographerUrl} target="_blank" rel="noopener noreferrer" style={{ color: colors.accent }}>{img.photographer}</a>
-          </div>
-        )}
       </div>
     );
   };
@@ -795,7 +842,7 @@ export default function SlideRenderer({
         <div className="relative h-full flex flex-col sm:flex-row">
           <div className={`flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 ${hasImage ? "w-full sm:w-[55%]" : "w-full"}`}>
             <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-4 sm:mb-6 md:mb-8" />
-            {bulletPoints.length > 0 && <BulletPoints />}
+            <EnhancedContent />
           </div>
           
           {hasImage && (
@@ -827,7 +874,7 @@ export default function SlideRenderer({
         <div className="relative h-full flex flex-col-reverse sm:flex-row-reverse">
           <div className={`flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-4 sm:pt-16 md:pt-20 ${hasImage ? "w-full sm:w-[55%]" : "w-full"}`}>
             <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-4 sm:mb-6 md:mb-8" />
-            {bulletPoints.length > 0 && <BulletPoints />}
+            <EnhancedContent />
           </div>
           
           {hasImage && (
@@ -870,11 +917,9 @@ export default function SlideRenderer({
           
           <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-3 sm:mb-4 md:mb-6 max-w-4xl" align="center" />
           
-          {bulletPoints.length > 0 && (
-            <div className="max-w-2xl w-full text-left mt-2 sm:mt-3 md:mt-4">
-              <BulletPoints compact />
-            </div>
-          )}
+          <div className="max-w-2xl w-full text-left mt-2 sm:mt-3 md:mt-4">
+            <EnhancedContent compact />
+          </div>
         </div>
         <div className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${colors.borderLine} to-transparent`} />
       </div>
@@ -907,7 +952,7 @@ export default function SlideRenderer({
               <div className={`w-10 sm:w-12 md:w-16 h-0.5 sm:h-1 bg-gradient-to-r ${colors.accentLine} to-transparent mb-3 sm:mb-4 md:mb-6`} />
             </div>
             <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl mb-4 sm:mb-6 md:mb-8" />
-            {bulletPoints.length > 0 && <BulletPoints />}
+            <EnhancedContent />
           </div>
           
           {hasImage && (
@@ -956,11 +1001,9 @@ export default function SlideRenderer({
               <div className={`w-20 h-px bg-gradient-to-r ${colors.accentLine} to-transparent opacity-50`} />
             </div>
             <Title className="text-4xl md:text-5xl lg:text-6xl mb-6" />
-            {bulletPoints.length > 0 && (
-              <div className={`mt-6 backdrop-blur-sm rounded-lg p-6 border ${colors.cardBg}`}>
-                <BulletPoints compact />
-              </div>
-            )}
+            <div className={`mt-6 backdrop-blur-sm rounded-lg p-6 border ${colors.cardBg}`}>
+              <EnhancedContent compact />
+            </div>
           </div>
         </div>
         
@@ -1002,7 +1045,7 @@ export default function SlideRenderer({
         <div className="relative h-full flex">
           <div className="w-[50%] flex flex-col justify-center pl-16 pr-8 py-12">
             <Title className="text-3xl md:text-4xl lg:text-5xl mb-8" />
-            {bulletPoints.length > 0 && <BulletPoints />}
+            <EnhancedContent />
           </div>
           
           <div className="w-[50%] relative flex items-center justify-center p-8">
@@ -1237,7 +1280,7 @@ export default function SlideRenderer({
             </div>
             
             <Title className="text-4xl md:text-5xl mb-8" />
-            {bulletPoints.length > 0 && <BulletPoints />}
+            <EnhancedContent />
           </div>
         </div>
         
@@ -1268,7 +1311,7 @@ export default function SlideRenderer({
           {/* Content side */}
           <div className="w-[55%] flex flex-col justify-center p-12">
             <Title className="text-4xl md:text-5xl mb-8" />
-            {bulletPoints.length > 0 && <BulletPoints />}
+            <EnhancedContent />
           </div>
           
           {/* Circular images */}
@@ -1433,7 +1476,7 @@ export default function SlideRenderer({
             </div>
             
             <Title className="text-4xl md:text-5xl mb-8" />
-            {bulletPoints.length > 0 && <BulletPoints />}
+            <EnhancedContent />
           </div>
           
           {/* Hexagonal image frame */}
@@ -1673,7 +1716,7 @@ export default function SlideRenderer({
             </div>
             
             <Title className="text-4xl md:text-5xl mb-8" />
-            {bulletPoints.length > 0 && <BulletPoints />}
+            <EnhancedContent />
           </div>
           
           {/* Diamond image frame */}
@@ -1821,7 +1864,7 @@ export default function SlideRenderer({
           {/* Left content side */}
           <div className="w-[48%] flex flex-col justify-center p-12 pr-16">
             <Title className="text-4xl md:text-5xl mb-8" />
-            {bulletPoints.length > 0 && <BulletPoints />}
+            <EnhancedContent />
           </div>
           
           {/* Right image side */}
@@ -1901,7 +1944,7 @@ export default function SlideRenderer({
             </div>
             
             <Title className="text-4xl md:text-5xl mb-8" />
-            {bulletPoints.length > 0 && <BulletPoints />}
+            <EnhancedContent />
           </div>
           
           {/* Arch image frame */}
@@ -2066,7 +2109,7 @@ export default function SlideRenderer({
           {/* Left content side */}
           <div className="w-[48%] flex flex-col justify-center p-12 pr-16">
             <Title className="text-4xl md:text-5xl mb-8" />
-            {bulletPoints.length > 0 && <BulletPoints />}
+            <EnhancedContent />
           </div>
           
           {/* Right image side */}
@@ -2143,7 +2186,7 @@ export default function SlideRenderer({
             </div>
             
             <Title className="text-4xl md:text-5xl mb-8" />
-            {bulletPoints.length > 0 && <BulletPoints />}
+            <EnhancedContent />
           </div>
           
           {/* Glitch image frame */}

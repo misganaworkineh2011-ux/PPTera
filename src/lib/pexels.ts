@@ -179,16 +179,66 @@ export function extractKeywordsFromSlide(slide: {
   return words.slice(0, 4).join(" ") || "professional presentation";
 }
 
+// Slide with visual metadata for enhanced image fetching
+export interface SlideWithVisualMetadata {
+  type: "title" | "content";
+  title: string;
+  subtitle?: string;
+  bulletPoints?: string[];
+  // Visual metadata from outline
+  assets?: {
+    image?: {
+      required: boolean;
+      style?: string | null;
+      promptHint?: string | null;
+    };
+  };
+  // Title slide specific image metadata
+  image?: {
+    required: boolean;
+    style?: string | null;
+    promptHint?: string | null;
+  };
+}
+
+/**
+ * Get search query from slide - prioritizes promptHint from visual metadata
+ */
+function getSearchQuery(slide: SlideWithVisualMetadata): string {
+  // Priority 1: Use promptHint from assets.image (for content slides)
+  if (slide.type === "content" && slide.assets?.image?.promptHint) {
+    return slide.assets.image.promptHint;
+  }
+  
+  // Priority 2: Use promptHint from direct image property (for title slides)
+  if (slide.type === "title" && slide.image?.promptHint) {
+    return slide.image.promptHint;
+  }
+  
+  // Priority 3: Fallback to keyword extraction from title/bullets
+  return extractKeywordsFromSlide(slide);
+}
+
+/**
+ * Check if a slide requires an image based on visual metadata
+ */
+function slideRequiresImage(slide: SlideWithVisualMetadata): boolean {
+  if (slide.type === "title") {
+    // Title slides require images by default, or check explicit requirement
+    return slide.image?.required ?? true;
+  }
+  
+  // Content slides: check assets.image.required
+  return slide.assets?.image?.required ?? false;
+}
+
 /**
  * Fetch images for multiple slides
+ * 
+ * Enhanced version that uses promptHint from visual metadata when available.
  */
 export async function fetchImagesForSlides(
-  slides: Array<{
-    type: "title" | "content";
-    title: string;
-    subtitle?: string;
-    bulletPoints?: string[];
-  }>
+  slides: SlideWithVisualMetadata[]
 ): Promise<Map<number, PexelsPhoto | null>> {
   const imageMap = new Map<number, PexelsPhoto | null>();
   
@@ -201,24 +251,16 @@ export async function fetchImagesForSlides(
     const promises = batch.map(async (slide, batchIndex) => {
       const slideIndex = i + batchIndex;
       
-      // For title slides, use the title itself as the search query for relevant images
-      if (slide.type === "title") {
-        // Extract keywords from the title for a relevant image
-        const titleKeywords = extractKeywordsFromSlide({
-          title: slide.title,
-          subtitle: slide.subtitle,
-          bulletPoints: [],
-        });
-        // Search with more results and pick randomly for variety
-        const photos = await searchPexelsPhotos(titleKeywords || "professional business", 5);
-        const photo = photos.length > 0 
-          ? photos[Math.floor(Math.random() * photos.length)]!
-          : null;
-        return { index: slideIndex, photo };
+      // Skip slides that don't require images
+      if (!slideRequiresImage(slide)) {
+        return { index: slideIndex, photo: null };
       }
       
-      const keywords = extractKeywordsFromSlide(slide);
-      const photos = await searchPexelsPhotos(keywords, 5);
+      // Get search query (prioritizes promptHint)
+      const searchQuery = getSearchQuery(slide);
+      
+      // Search for photos
+      const photos = await searchPexelsPhotos(searchQuery || "professional business", 5);
       
       // Pick a random photo from the results for variety
       const photo = photos.length > 0 
@@ -235,6 +277,65 @@ export async function fetchImagesForSlides(
     }
     
     // Small delay between batches to be nice to the API
+    if (i + batchSize < slides.length) {
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+  }
+  
+  return imageMap;
+}
+
+/**
+ * Fetch images for slides using only promptHint (strict mode)
+ * 
+ * Only fetches images for slides that have explicit promptHint in their visual metadata.
+ */
+export async function fetchImagesWithPromptHints(
+  slides: SlideWithVisualMetadata[]
+): Promise<Map<number, PexelsPhoto | null>> {
+  const imageMap = new Map<number, PexelsPhoto | null>();
+  const batchSize = 5;
+  
+  for (let i = 0; i < slides.length; i += batchSize) {
+    const batch = slides.slice(i, i + batchSize);
+    
+    const promises = batch.map(async (slide, batchIndex) => {
+      const slideIndex = i + batchIndex;
+      
+      // Get promptHint based on slide type
+      const promptHint = slide.type === "title" 
+        ? slide.image?.promptHint 
+        : slide.assets?.image?.promptHint;
+      
+      // Skip slides without promptHint
+      if (!promptHint) {
+        return { index: slideIndex, photo: null };
+      }
+      
+      // Check if image is required
+      const required = slide.type === "title"
+        ? slide.image?.required ?? true
+        : slide.assets?.image?.required ?? false;
+      
+      if (!required) {
+        return { index: slideIndex, photo: null };
+      }
+      
+      // Search using promptHint
+      const photos = await searchPexelsPhotos(promptHint, 5);
+      const photo = photos.length > 0 
+        ? photos[Math.floor(Math.random() * photos.length)]!
+        : null;
+      
+      return { index: slideIndex, photo };
+    });
+    
+    const results = await Promise.all(promises);
+    
+    for (const { index, photo } of results) {
+      imageMap.set(index, photo);
+    }
+    
     if (i + batchSize < slides.length) {
       await new Promise(resolve => setTimeout(resolve, 200));
     }

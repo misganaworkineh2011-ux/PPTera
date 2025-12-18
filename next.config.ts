@@ -10,7 +10,7 @@ const config: NextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ["images.unsplash.com", "images.pexels.com", "img.clerk.com"],
+    domains: ["images.unsplash.com", "images.pexels.com", "img.clerk.com", "res.cloudinary.com"],
     remotePatterns: [
       {
         protocol: "https",
@@ -25,6 +25,11 @@ const config: NextConfig = {
       {
         protocol: "https",
         hostname: "img.clerk.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
         pathname: "/**",
       },
     ],

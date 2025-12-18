@@ -101,16 +101,25 @@ export default async function ImagesPage() {
               >
                 {/* Image Thumbnail */}
                 <div className="aspect-square w-full bg-gradient-to-br from-[#1e3a8a]/10 to-[#06b6d4]/10 relative overflow-hidden">
-                  {/* Logo as Placeholder - replace with actual image when available */}
-                  <div className="absolute inset-0 flex items-center justify-center p-4">
+                  {/* Actual image thumbnail (fallback to logo if url missing) */}
+                  {img.url ? (
                     <Image
-                      src="/logo.png"
+                      src={img.url}
                       alt={img.filename}
-                      width={150}
-                      height={150}
-                      className="object-contain opacity-60 group-hover:opacity-80 transition-opacity"
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
                     />
-                  </div>
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center p-4">
+                      <Image
+                        src="/logo.png"
+                        alt={img.filename}
+                        width={150}
+                        height={150}
+                        className="object-contain opacity-60 group-hover:opacity-80 transition-opacity"
+                      />
+                    </div>
+                  )}
                   {/* Gradient Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-br from-[#1e3a8a]/5 to-[#06b6d4]/5 group-hover:from-[#1e3a8a]/10 group-hover:to-[#06b6d4]/10 transition-colors" />
                   

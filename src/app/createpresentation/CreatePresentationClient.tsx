@@ -268,6 +268,13 @@ export default function CreatePresentationClient({
     imageSource: "no-images",
     textDensity: "concise" as "minimal" | "concise" | "detailed" | "extensive",
     imageLicensing: "all-images" as "all-images" | "free-to-use" | "free-commercial",
+    // Default AI image model ("Nano Banana" - Gemini 2.5 Flash Image)
+    imageModel: "gemini-2.5-flash-image" as
+      | "gemini-3-pro-image-preview"
+      | "gemini-2.5-flash-image"
+      | "imagen-4.0-generate-001"
+      | "imagen-4.0-ultra-generate-001"
+      | "imagen-4.0-fast-generate-001",
   });
 
   const [lastDescription, setLastDescription] = useState(
@@ -475,6 +482,21 @@ export default function CreatePresentationClient({
     setIsCreatingPresentation(true);
 
     try {
+      // Prepare slides with full visual metadata
+      // The slides already contain semanticIntent, visualStrategy, and assets from the outline
+      const slidesWithMetadata = slides.map(slide => ({
+        type: slide.type,
+        title: slide.title,
+        subtitle: slide.subtitle,
+        bulletPoints: slide.bulletPoints,
+        // Include visual metadata for server-side transformations
+        semanticIntent: slide.semanticIntent,
+        visualStrategy: slide.visualStrategy,
+        assets: slide.assets,
+        // Title slide specific image metadata
+        image: slide.image,
+      }));
+
       const response = await fetch("/api/create-presentation", {
         method: "POST",
         headers: {
@@ -482,15 +504,17 @@ export default function CreatePresentationClient({
         },
         body: JSON.stringify({
           outlineId: outlineId || existingOutline?.id,
-          slides: slides,
+          slides: slidesWithMetadata,
           theme: formData.theme,
           imageSource: formData.imageSource,
+          textDensity: formData.textDensity,
           metadata: {
             topic: formData.description || existingOutline?.metadata?.topic || "Presentation",
             totalSlides: slides.length,
             tone: formData.tone,
             language: formData.language,
           },
+          imageModel: formData.imageModel,
         }),
       });
 
@@ -1203,48 +1227,82 @@ export default function CreatePresentationClient({
                     </select>
                   </div>
 
-                  {/* Image Licensing Selection */}
+                  {/* Second selector: AI model (for AI images) or licensing (for external images) */}
                   <div>
-                    <div className="relative">
-                      <select
-                        id="imageLicensing-outline"
-                        value={formData.imageLicensing}
-                        onChange={(e) => handleChange("imageLicensing", e.target.value)}
-                        disabled={formData.imageSource === "no-images" || formData.imageSource === "placeholders"}
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all disabled:opacity-50 disabled:cursor-not-allowed appearance-none"
-                      >
-                        <option value="all-images">All images</option>
-                        <option value="free-to-use">Free to use</option>
-                        <option value="free-commercial">Free to use commercially</option>
-                      </select>
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                        <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </div>
-                    </div>
-                    
-                    {/* Licensing Info Tooltip */}
-                    {formData.imageLicensing !== "all-images" && formData.imageSource !== "no-images" && formData.imageSource !== "placeholders" && (
-                      <div className="mt-2 p-2 rounded-lg bg-blue-50 border border-blue-100">
-                        <div className="flex items-start gap-2">
-                          <svg className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    {formData.imageSource === "ai-generated" ? (
+                      <div className="relative">
+                        <select
+                          id="imageModel-outline"
+                          value={formData.imageModel}
+                          onChange={(e) => handleChange("imageModel", e.target.value)}
+                          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all appearance-none"
+                        >
+                          <option value="gemini-2.5-flash-image">
+                            Nano Banana (Gemini 2.5 Flash Image)
+                          </option>
+                          <option value="gemini-3-pro-image-preview">
+                            Nano Banana Pro (Gemini 3 Pro Image Preview)
+                          </option>
+                          <option value="imagen-4.0-generate-001">
+                            Imagen 4
+                          </option>
+                          <option value="imagen-4.0-ultra-generate-001">
+                            Imagen 4 Ultra
+                          </option>
+                          <option value="imagen-4.0-fast-generate-001">
+                            Imagen 4 Fast
+                          </option>
+                        </select>
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                          <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                           </svg>
-                          <div className="text-[10px] text-blue-700 leading-relaxed">
-                            {formData.imageLicensing === "free-to-use" && (
-                              <span>
-                                <strong>Free to use:</strong> Only use images licensed for personal use, like a school project.
-                              </span>
-                            )}
-                            {formData.imageLicensing === "free-commercial" && (
-                              <span>
-                                <strong>Free to use commercially:</strong> Only use images licensed for commercial use, like a sales pitch.
-                              </span>
-                            )}
-                          </div>
                         </div>
                       </div>
+                    ) : (
+                      <>
+                        <div className="relative">
+                          <select
+                            id="imageLicensing-outline"
+                            value={formData.imageLicensing}
+                            onChange={(e) => handleChange("imageLicensing", e.target.value)}
+                            disabled={formData.imageSource === "no-images" || formData.imageSource === "placeholders"}
+                            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all disabled:opacity-50 disabled:cursor-not-allowed appearance-none"
+                          >
+                            <option value="all-images">All images</option>
+                            <option value="free-to-use">Free to use</option>
+                            <option value="free-commercial">Free to use commercially</option>
+                          </select>
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                            <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                        </div>
+                        
+                        {/* Licensing Info Tooltip */}
+                        {formData.imageLicensing !== "all-images" && formData.imageSource !== "no-images" && formData.imageSource !== "placeholders" && (
+                          <div className="mt-2 p-2 rounded-lg bg-blue-50 border border-blue-100">
+                            <div className="flex items-start gap-2">
+                              <svg className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                              </svg>
+                              <div className="text-[10px] text-blue-700 leading-relaxed">
+                                {formData.imageLicensing === "free-to-use" && (
+                                  <span>
+                                    <strong>Free to use:</strong> Only use images licensed for personal use, like a school project.
+                                  </span>
+                                )}
+                                {formData.imageLicensing === "free-commercial" && (
+                                  <span>
+                                    <strong>Free to use commercially:</strong> Only use images licensed for commercial use, like a sales pitch.
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
 

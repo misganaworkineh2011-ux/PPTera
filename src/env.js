@@ -18,6 +18,10 @@ export const env = createEnv({
     CRON_SECRET: z.string().optional(),
     OPENAI_API_KEY: z.string(),
     PEXELS_API_KEY: z.string().optional(),
+    GEMINI_API_KEY: z.string().optional(),
+    // Cloudinary configuration (optional, required for AI image uploads)
+    CLOUDINARY_CLOUD_NAME: z.string().optional(),
+    CLOUDINARY_UPLOAD_PRESET: z.string().optional(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -42,6 +46,9 @@ export const env = createEnv({
     CRON_SECRET: process.env.CRON_SECRET,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     PEXELS_API_KEY: process.env.PEXELS_API_KEY,
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+    CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_UPLOAD_PRESET: process.env.CLOUDINARY_UPLOAD_PRESET,
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
   },

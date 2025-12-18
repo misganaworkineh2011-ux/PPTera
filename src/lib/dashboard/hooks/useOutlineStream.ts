@@ -2,11 +2,41 @@
 
 import { useState, useCallback, useRef } from "react";
 
+// Visual metadata types for intelligent presentation generation
+export interface VisualStrategy {
+  primary: string; // dominant visual form (e.g., diagram, icons, image, chart, mixed)
+  pattern: string; // layout metaphor or pattern (e.g., spotlight, flow, cards, split, timeline)
+  emphasis: string; // visual emphasis or focus (e.g., progression, contrast, relationship)
+}
+
+export interface SlideImage {
+  required: boolean;
+  style?: string | null; // e.g., conceptual-illustration, realistic-photo, abstract
+  promptHint?: string | null; // meaning-driven description for image generation
+}
+
+export interface SlideChart {
+  type: string; // e.g., bar, line, pie, stacked, comparison, table, area, scatter
+  purpose: string; // what insight the chart communicates
+}
+
+export interface SlideAssets {
+  icons: string[]; // icon names matching bullet points count
+  image: SlideImage;
+  chart?: SlideChart | null;
+}
+
 export interface Slide {
   type: "title" | "content";
   title: string;
   subtitle?: string;
   bulletPoints?: string[];
+  // Visual metadata for intelligent presentation generation
+  semanticIntent?: string; // core meaning of the slide (free-form, e.g., process, concept, comparison)
+  visualStrategy?: VisualStrategy;
+  assets?: SlideAssets;
+  // Title slide specific
+  image?: SlideImage;
 }
 
 export interface OutlineMetadata {

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { requireAuth } from "~/lib/clerk-server";
 import { db } from "~/server/db";
 import PresentationViewer from "./PresentationViewer";
+import type { SlideData } from "~/components/presentation/types";
 
 interface PresentationPageProps {
   params: Promise<{
@@ -106,27 +107,15 @@ export default async function PresentationPage({
   }
 
   // Parse the presentation data - handle both string and object JSON
-  let slides: Array<{
-    type: "title" | "content";
-    title: string;
-    subtitle?: string;
-    bulletPoints?: string[];
-    image?: {
-      url: string;
-      alt: string;
-      photographer?: string;
-      photographerUrl?: string;
-      source: string;
-    } | null;
-    layout?: string;
-  }> = [];
+  // SlideData includes all fields: chart, icons, transformedContent, images, etc.
+  let slides: SlideData[] = [];
 
   try {
     const rawSlides = presentation.slides;
     if (typeof rawSlides === "string") {
-      slides = JSON.parse(rawSlides);
+      slides = JSON.parse(rawSlides) as SlideData[];
     } else if (Array.isArray(rawSlides)) {
-      slides = rawSlides as typeof slides;
+      slides = rawSlides as unknown as SlideData[];
     }
   } catch (e) {
     console.error("Error parsing slides:", e);
@@ -154,6 +143,10 @@ export default async function PresentationPage({
     slidesCount: slides.length,
     slideTitles: slides.map(s => s.title),
     theme: content.theme,
+    // Debug: check if enhanced data is present
+    slidesWithCharts: slides.filter(s => s.chart).length,
+    slidesWithIcons: slides.filter(s => s.icons?.length).length,
+    slidesWithTransformedContent: slides.filter(s => s.transformedContent).length,
   });
 
   return (

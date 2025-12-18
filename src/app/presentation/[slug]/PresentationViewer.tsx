@@ -117,6 +117,23 @@ export default function PresentationViewer({
   const [customTheme, setCustomTheme] = useState<Theme | null>(null);
   const [isLoadingTheme, setIsLoadingTheme] = useState(false);
   
+  // Debug: Log slide data to check for icons/charts
+  useEffect(() => {
+    if (process.env.NODE_ENV === "development") {
+      const slidesWithCharts = slidesData.filter(s => s.chart);
+      const slidesWithIcons = slidesData.filter(s => s.icons && s.icons.length > 0);
+      if (slidesWithCharts.length > 0 || slidesWithIcons.length > 0) {
+        console.log("[PresentationViewer] Slides with enhanced content:", {
+          totalSlides: slidesData.length,
+          slidesWithCharts: slidesWithCharts.length,
+          slidesWithIcons: slidesWithIcons.length,
+          chartSlides: slidesWithCharts.map(s => ({ title: s.title, chartType: s.chart?.type })),
+          iconSlides: slidesWithIcons.map(s => ({ title: s.title, iconsCount: s.icons?.length })),
+        });
+      }
+    }
+  }, [slidesData]);
+
   // Load custom theme if needed
   useEffect(() => {
     const themeId = content.theme || "";
