@@ -88,14 +88,6 @@
     <priority>0.7</priority>
   </url>
   
-  <!-- Templates Page -->
-  <url>
-    <loc>https://www.pptmaster.app/templates</loc>
-    <lastmod>2024-12-14T00:00:00+00:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
   <!-- Prompt Guide Page -->
   <url>
     <loc>https://www.pptmaster.app/prompt-guide</loc>
