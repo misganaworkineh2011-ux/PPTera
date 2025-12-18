@@ -3,15 +3,6 @@
 import { useStickyContext } from "~/components/dashboard/DashboardLayout";
 import DashboardContent from "./DashboardContent";
 
-interface SlideData {
-  type: string;
-  title: string;
-  image?: {
-    url: string;
-    alt?: string;
-  } | null;
-}
-
 interface Presentation {
   id: string;
   title: string;
@@ -19,7 +10,7 @@ interface Presentation {
   isPinned: boolean;
   createdAt: Date;
   updatedAt: Date;
-  slides: SlideData[];
+  thumbnailUrl: string | null;
   shareToken?: string | null;
 }
 

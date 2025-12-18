@@ -24,7 +24,6 @@ interface ImageData {
   id: string;
   url: string | null;
   filename: string;
-  tags: string[];
   createdAt: Date;
 }
 
@@ -51,12 +50,8 @@ export default function ImagesPageClient({
   const [selectedImage, setSelectedImage] = useState<ImageData | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const filteredImages = images.filter(
-    (img) =>
-      img.filename.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      img.tags.some((tag) =>
-        tag.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+  const filteredImages = images.filter((img) =>
+    img.filename.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleImageGenerated = useCallback(async (imageUrl: string) => {
@@ -263,25 +258,6 @@ export default function ImagesPageClient({
                   <h3 className="line-clamp-1 text-sm font-medium text-slate-900 dark:text-white" title={img.filename}>
                     {img.filename}
                   </h3>
-                  
-                  {/* Tags */}
-                  {img.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {img.tags.slice(0, 2).map((tag, idx) => (
-                        <span
-                          key={idx}
-                          className="inline-flex items-center rounded-full bg-[#e0f2fe] dark:bg-[#06b6d4]/20 px-2 py-0.5 text-[10px] font-medium text-[#06b6d4]"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                      {img.tags.length > 2 && (
-                        <span className="inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-700 px-2 py-0.5 text-[10px] font-medium text-slate-500">
-                          +{img.tags.length - 2}
-                        </span>
-                      )}
-                    </div>
-                  )}
                 </div>
               </div>
             ))}
@@ -318,30 +294,20 @@ export default function ImagesPageClient({
                     {formatDate(img.createdAt)}
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
-                  {img.tags.slice(0, 2).map((tag, idx) => (
-                    <span
-                      key={idx}
-                      className="hidden sm:inline-flex items-center rounded-full bg-[#e0f2fe] dark:bg-[#06b6d4]/20 px-2 py-0.5 text-xs font-medium text-[#06b6d4]"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteImage(img.id);
-                    }}
-                    disabled={deletingId === img.id}
-                    className="p-2 text-slate-400 hover:text-red-500 transition"
-                  >
-                    {deletingId === img.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteImage(img.id);
+                  }}
+                  disabled={deletingId === img.id}
+                  className="p-2 text-slate-400 hover:text-red-500 transition"
+                >
+                  {deletingId === img.id ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-4 w-4" />
+                  )}
+                </button>
               </div>
             ))}
           </div>
@@ -440,18 +406,7 @@ export default function ImagesPageClient({
                   <ImageIcon className="h-16 w-16 text-slate-300" />
                 </div>
               )}
-              {selectedImage.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-4">
-                  {selectedImage.tags.map((tag, idx) => (
-                    <span
-                      key={idx}
-                      className="inline-flex items-center rounded-full bg-[#e0f2fe] dark:bg-[#06b6d4]/20 px-3 py-1 text-sm font-medium text-[#06b6d4]"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
+
             </div>
           </div>
         </div>

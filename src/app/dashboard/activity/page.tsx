@@ -5,6 +5,7 @@ import { FileEdit, Plus, UserPlus, Trash2, History, Loader2, Eye, Download, Refr
 import Link from "next/link";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
+import { getPresentationUrl } from "~/lib/utils";
 
 interface Activity {
   id: string;
@@ -166,7 +167,7 @@ export default function ActivityPage() {
                           <>
                             <span>•</span>
                             <Link 
-                              href={`/presentation/${activity.presentation.id}`}
+                              href={getPresentationUrl(activity.presentation.id, activity.presentation.title)}
                               className="text-[#06b6d4] hover:underline"
                             >
                               {activity.presentation.title}

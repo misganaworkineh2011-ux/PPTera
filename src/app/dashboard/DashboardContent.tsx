@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Filter, Grid, List as ListIcon, MoreHorizontal, Upload, Star, Globe, Lock, Share2, Edit3, Copy, Trash2, Link2, Loader2 } from "lucide-react";
 import Image from "next/image";
@@ -8,19 +9,7 @@ import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
 import { useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
-
-interface SlideImage {
-  url: string;
-  alt?: string;
-  source?: string;
-}
-
-interface SlideData {
-  type: string;
-  title: string;
-  image?: SlideImage | null;
-  images?: SlideImage[];
-}
+import { getPresentationUrl } from "~/lib/utils";
 
 interface Presentation {
   id: string;
@@ -29,7 +18,7 @@ interface Presentation {
   isPinned: boolean;
   createdAt: Date;
   updatedAt: Date;
-  slides: SlideData[];
+  thumbnailUrl: string | null;
   shareToken?: string | null;
 }
 
@@ -50,6 +39,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
   const [filterMode, setFilterMode] = useState<FilterMode>("all");
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
   const [showShareModal, setShowShareModal] = useState<string | null>(null);
   const [showRenameDialog, setShowRenameDialog] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
@@ -104,26 +94,10 @@ export default function DashboardContent({ presentations: initialPresentations, 
     }
   }, [activeMenu, showFilterMenu]);
 
-  // Get thumbnail from first slide with image or fallback to logo
+  // Get thumbnail from thumbnailUrl or fallback to logo
   const getThumbnail = (pres: Presentation) => {
-    // Check each slide for images (both legacy image field and images array)
-    for (const slide of pres.slides || []) {
-      // Check images array first (newer format)
-      if (slide.images && slide.images.length > 0) {
-        // Find first image with a valid URL (not placeholder)
-        const validImage = slide.images.find(img => 
-          img.url && 
-          img.url.startsWith("http") && 
-          img.source !== "placeholder"
-        );
-        if (validImage) return validImage.url;
-      }
-      // Check legacy image field - accept any valid URL
-      if (slide.image?.url && 
-          slide.image.url.startsWith("http") && 
-          slide.image.source !== "placeholder") {
-        return slide.image.url;
-      }
+    if (pres.thumbnailUrl && pres.thumbnailUrl.startsWith("http")) {
+      return pres.thumbnailUrl;
     }
     return "/logo.png";
   };
@@ -157,7 +131,10 @@ export default function DashboardContent({ presentations: initialPresentations, 
     
     switch (action) {
       case "share":
-        window.open(`/presentation/${presId}`, "_blank");
+        const sharePres = presentations.find(p => p.id === presId);
+        if (sharePres) {
+          window.open(getPresentationUrl(presId, sharePres.title), "_blank");
+        }
         break;
         
       case "rename":
@@ -219,7 +196,10 @@ export default function DashboardContent({ presentations: initialPresentations, 
         break;
         
       case "copyLink":
-        const url = `${window.location.origin}/presentation/${presId}`;
+        const copyPres = presentations.find(p => p.id === presId);
+        const url = copyPres 
+          ? `${window.location.origin}${getPresentationUrl(presId, copyPres.title)}`
+          : `${window.location.origin}/presentation/${presId}`;
         try {
           await navigator.clipboard.writeText(url);
           setCopiedId(presId);
@@ -425,7 +405,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
             {filteredPresentations.map((pres) => (
               <a
                 key={pres.id}
-                href={`/presentation/${pres.id}`}
+                href={getPresentationUrl(pres.id, pres.title)}
                 className="group relative flex flex-col overflow-hidden rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-lg hover:shadow-[#06b6d4]/10 cursor-pointer"
               >
                 {/* Thumbnail */}
@@ -446,10 +426,13 @@ export default function DashboardContent({ presentations: initialPresentations, 
                 </div>
 
                 {/* Content Section */}
-                <div className="flex flex-col p-2 sm:p-3">
-                  <h3 className="mb-1.5 sm:mb-2 line-clamp-2 text-xs sm:text-sm font-bold text-[#1e3a8a] dark:text-white" title={pres.title}>
-                    {pres.title}
-                  </h3>
+                <div className="flex flex-col flex-1 p-2 sm:p-3">
+                  {/* Title - fixed height with line clamp */}
+                  <div className="h-8 sm:h-10 mb-1.5 sm:mb-2">
+                    <h3 className="line-clamp-2 text-xs sm:text-sm font-bold text-[#1e3a8a] dark:text-white" title={pres.title}>
+                      {pres.title}
+                    </h3>
+                  </div>
 
                   {/* Public/Private Indicator */}
                   <div className="flex items-center gap-1 sm:gap-1.5 mb-1.5 sm:mb-2">
@@ -492,91 +475,20 @@ export default function DashboardContent({ presentations: initialPresentations, 
                       <button
                         onClick={(e) => {
                           e.preventDefault();
-                          setActiveMenu(activeMenu === pres.id ? null : pres.id);
+                          e.stopPropagation();
+                          if (activeMenu === pres.id) {
+                            setActiveMenu(null);
+                            setMenuPosition(null);
+                          } else {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setMenuPosition({ top: rect.top - 50, left: rect.left - 180 });
+                            setActiveMenu(pres.id);
+                          }
                         }}
-                        className="text-slate-300 hover:text-[#06b6d4] dark:text-slate-500 dark:hover:text-[#06b6d4]"
+                        className="p-1 rounded-md text-slate-400 hover:text-[#06b6d4] hover:bg-slate-100 dark:text-slate-500 dark:hover:text-[#06b6d4] dark:hover:bg-slate-700 transition-colors"
                       >
-                        <MoreHorizontal size={14} />
+                        <MoreHorizontal size={16} />
                       </button>
-                      {activeMenu === pres.id && (
-                        <div className="absolute right-0 bottom-full mb-1 w-48 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg z-50">
-                          <div className="p-1">
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                handleMenuAction("share", pres.id);
-                              }}
-                              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                            >
-                              <Share2 size={14} /> {t.share || "Share"}
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                handleMenuAction("rename", pres.id);
-                              }}
-                              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
-                            >
-                              <Edit3 size={14} /> {t.rename || "Rename"}
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                handleMenuAction("favorite", pres.id);
-                              }}
-                              disabled={loadingAction?.id === pres.id && loadingAction?.action === "favorite"}
-                              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-700"
-                            >
-                              {loadingAction?.id === pres.id && loadingAction?.action === "favorite" ? (
-                                <Loader2 size={14} className="animate-spin" />
-                              ) : (
-                                <Star size={14} />
-                              )}
-                              {loadingAction?.id === pres.id && loadingAction?.action === "favorite" 
-                                ? (t.updating || "Updating...") 
-                                : (pres.isPinned ? (t.removeFromFavorites || "Remove from favorites") : (t.addToFavorites || "Add to favorites"))}
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                handleMenuAction("duplicate", pres.id);
-                              }}
-                              disabled={loadingAction?.id === pres.id && loadingAction?.action === "duplicate"}
-                              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-700"
-                            >
-                              {loadingAction?.id === pres.id && loadingAction?.action === "duplicate" ? (
-                                <Loader2 size={14} className="animate-spin" />
-                              ) : (
-                                <Copy size={14} />
-                              )}
-                              {loadingAction?.id === pres.id && loadingAction?.action === "duplicate" ? (t.duplicating || "Duplicating...") : (t.duplicate || "Duplicate")}
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                handleMenuAction("copyLink", pres.id);
-                              }}
-                              className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm ${
-                                copiedId === pres.id
-                                  ? "bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400"
-                                  : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
-                              }`}
-                            >
-                              <Link2 size={14} /> {copiedId === pres.id ? (t.linkCopied || "Link copied!") : (t.copyLink || "Copy link")}
-                            </button>
-                            <div className="my-1 border-t border-slate-100 dark:border-slate-700" />
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                handleMenuAction("delete", pres.id);
-                              }}
-                              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
-                            >
-                              <Trash2 size={14} /> {t.delete || "Delete"}
-                            </button>
-                          </div>
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -588,7 +500,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
             {filteredPresentations.map((pres) => (
               <a
                 key={pres.id}
-                href={`/presentation/${pres.id}`}
+                href={getPresentationUrl(pres.id, pres.title)}
                 className="group flex items-center gap-2 sm:gap-4 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 sm:p-3 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-md cursor-pointer"
               >
                 {/* Thumbnail */}
@@ -640,91 +552,20 @@ export default function DashboardContent({ presentations: initialPresentations, 
                   <button
                     onClick={(e) => {
                       e.preventDefault();
-                      setActiveMenu(activeMenu === pres.id ? null : pres.id);
+                      e.stopPropagation();
+                      if (activeMenu === pres.id) {
+                        setActiveMenu(null);
+                        setMenuPosition(null);
+                      } else {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        setMenuPosition({ top: rect.top - 50, left: rect.left - 180 });
+                        setActiveMenu(pres.id);
+                      }
                     }}
-                    className="text-slate-300 hover:text-[#06b6d4]"
+                    className="p-1.5 rounded-md text-slate-400 hover:text-[#06b6d4] hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                   >
                     <MoreHorizontal size={18} />
                   </button>
-                  {activeMenu === pres.id && (
-                    <div className="absolute right-0 top-full mt-1 w-48 rounded-lg border border-slate-200 bg-white shadow-lg z-50 dark:border-slate-700 dark:bg-slate-800">
-                      <div className="p-1">
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleMenuAction("share", pres.id);
-                          }}
-                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
-                        >
-                          <Share2 size={14} /> {t.share || "Share"}
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleMenuAction("rename", pres.id);
-                          }}
-                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
-                        >
-                          <Edit3 size={14} /> {t.rename || "Rename"}
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleMenuAction("favorite", pres.id);
-                          }}
-                          disabled={loadingAction?.id === pres.id && loadingAction?.action === "favorite"}
-                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-700"
-                        >
-                          {loadingAction?.id === pres.id && loadingAction?.action === "favorite" ? (
-                            <Loader2 size={14} className="animate-spin" />
-                          ) : (
-                            <Star size={14} />
-                          )}
-                          {loadingAction?.id === pres.id && loadingAction?.action === "favorite" 
-                            ? (t.updating || "Updating...") 
-                            : (pres.isPinned ? (t.removeFromFavorites || "Remove from favorites") : (t.addToFavorites || "Add to favorites"))}
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleMenuAction("duplicate", pres.id);
-                          }}
-                          disabled={loadingAction?.id === pres.id && loadingAction?.action === "duplicate"}
-                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-700"
-                        >
-                          {loadingAction?.id === pres.id && loadingAction?.action === "duplicate" ? (
-                            <Loader2 size={14} className="animate-spin" />
-                          ) : (
-                            <Copy size={14} />
-                          )}
-                          {loadingAction?.id === pres.id && loadingAction?.action === "duplicate" ? (t.duplicating || "Duplicating...") : (t.duplicate || "Duplicate")}
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleMenuAction("copyLink", pres.id);
-                          }}
-                          className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm ${
-                            copiedId === pres.id
-                              ? "bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400"
-                              : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
-                          }`}
-                        >
-                          <Link2 size={14} /> {copiedId === pres.id ? (t.linkCopied || "Link copied!") : (t.copyLink || "Copy link")}
-                        </button>
-                        <div className="my-1 border-t border-slate-100 dark:border-slate-700" />
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleMenuAction("delete", pres.id);
-                          }}
-                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
-                        >
-                          <Trash2 size={14} /> {t.delete || "Delete"}
-                        </button>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </a>
             ))}
@@ -814,6 +655,80 @@ export default function DashboardContent({ presentations: initialPresentations, 
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#06b6d4]"></div>
           </div>
         </div>
+      )}
+
+      {/* Portal Dropdown Menu */}
+      {activeMenu && menuPosition && typeof document !== "undefined" && createPortal(
+        <>
+          <div 
+            className="fixed inset-0 z-[9998]" 
+            onClick={() => {
+              setActiveMenu(null);
+              setMenuPosition(null);
+            }}
+          />
+          <div 
+            className="fixed w-44 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xl z-[9999] animate-in fade-in slide-in-from-top-2 duration-200"
+            style={{ top: menuPosition.top, left: Math.max(8, menuPosition.left) }}
+          >
+            <div className="p-1.5">
+              <button
+                onClick={() => handleMenuAction("share", activeMenu)}
+                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              >
+                <Share2 size={15} /> {t.share || "Share"}
+              </button>
+              <button
+                onClick={() => handleMenuAction("rename", activeMenu)}
+                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors"
+              >
+                <Edit3 size={15} /> {t.rename || "Rename"}
+              </button>
+              <button
+                onClick={() => handleMenuAction("favorite", activeMenu)}
+                disabled={loadingAction?.id === activeMenu && loadingAction?.action === "favorite"}
+                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors"
+              >
+                {loadingAction?.id === activeMenu && loadingAction?.action === "favorite" ? (
+                  <Loader2 size={15} className="animate-spin" />
+                ) : (
+                  <Star size={15} className={presentations.find(p => p.id === activeMenu)?.isPinned ? "fill-yellow-400 text-yellow-400" : ""} />
+                )}
+                {presentations.find(p => p.id === activeMenu)?.isPinned ? (t.unfavorite || "Unfavorite") : (t.favorite || "Favorite")}
+              </button>
+              <button
+                onClick={() => handleMenuAction("duplicate", activeMenu)}
+                disabled={loadingAction?.id === activeMenu && loadingAction?.action === "duplicate"}
+                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors"
+              >
+                {loadingAction?.id === activeMenu && loadingAction?.action === "duplicate" ? (
+                  <Loader2 size={15} className="animate-spin" />
+                ) : (
+                  <Copy size={15} />
+                )}
+                {t.duplicate || "Duplicate"}
+              </button>
+              <button
+                onClick={() => handleMenuAction("copyLink", activeMenu)}
+                className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${
+                  copiedId === activeMenu
+                    ? "bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400"
+                    : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
+                }`}
+              >
+                <Link2 size={15} /> {copiedId === activeMenu ? (t.copied || "Copied!") : (t.copyLink || "Copy link")}
+              </button>
+              <div className="my-1.5 border-t border-slate-100 dark:border-slate-700" />
+              <button
+                onClick={() => handleMenuAction("delete", activeMenu)}
+                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30 transition-colors"
+              >
+                <Trash2 size={15} /> {t.delete || "Delete"}
+              </button>
+            </div>
+          </div>
+        </>,
+        document.body
       )}
     </>
   );

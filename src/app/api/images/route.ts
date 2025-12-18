@@ -17,6 +17,12 @@ export async function GET() {
         images: {
           orderBy: { createdAt: "desc" },
           take: 50,
+          select: {
+            id: true,
+            url: true,
+            filename: true,
+            createdAt: true,
+          },
         },
       },
     });

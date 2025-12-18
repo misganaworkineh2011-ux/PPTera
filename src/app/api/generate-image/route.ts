@@ -143,7 +143,6 @@ export async function POST(req: Request) {
         data: {
           url: imageUrl,
           filename: `ai-generated-${Date.now()}.png`,
-          tags: ["ai-generated", model, quality],
           userId: user.id,
           presentationId,
         },

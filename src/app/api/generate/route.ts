@@ -5,6 +5,7 @@ import PptxGenJS from "pptxgenjs";
 import { db } from "~/server/db";
 import { env } from "~/env";
 import { calculateSlideCredits, CREDIT_COSTS } from "~/lib/credits";
+import { generateSlug } from "~/lib/utils";
 
 const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
 
@@ -131,6 +132,7 @@ export async function POST(req: Request) {
 
     // Non-critical operations can happen after response (fire and forget)
     // Using Promise.all for parallel execution, but not awaiting
+    const slug = generateSlug(topic);
     Promise.all([
       db.notification.create({
         data: {
@@ -138,7 +140,7 @@ export async function POST(req: Request) {
           type: "success",
           title: "Presentation created",
           message: `Your presentation "${topic}" is ready to view. Used ${creditsUsed} credits (${actualSlideCount} slides × ${CREDIT_COSTS.SLIDE} credits).`,
-          link: `/presentation/${presentation.id}`,
+          link: `/presentation/${slug}-${presentation.id}`,
         },
       }),
       db.activity.create({

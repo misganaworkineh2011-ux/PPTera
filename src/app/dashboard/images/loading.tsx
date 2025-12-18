@@ -1,11 +1,5 @@
-"use client";
-
-import { Loader2 } from "lucide-react";
+import ImagesGridSkeleton from "./ImagesGridSkeleton";
 
 export default function ImagesLoading() {
-  return (
-    <div className="flex h-[400px] items-center justify-center">
-      <Loader2 className="h-8 w-8 animate-spin text-[#06b6d4]" />
-    </div>
-  );
+  return <ImagesGridSkeleton />;
 }

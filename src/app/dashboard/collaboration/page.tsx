@@ -5,6 +5,7 @@ import { FolderOpen, Mail, Users, UserPlus, Loader2, ExternalLink, Trash2 } from
 import Link from "next/link";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
+import { getPresentationUrl } from "~/lib/utils";
 
 interface Collaborator {
   id: string;
@@ -181,7 +182,7 @@ export default function CollaborationPage() {
                     </div>
                   </div>
                   <Link
-                    href={`/presentation/${collab.presentation.id}`}
+                    href={getPresentationUrl(collab.presentation.id, collab.presentation.title)}
                     className="flex items-center gap-2 rounded-lg bg-[#1e3a8a] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#1e3a8a]/90 transition"
                   >
                     <ExternalLink size={14} /> {t.open}

@@ -16,6 +16,7 @@ import {
   type SlideAssets,
   type SlideImage,
 } from "~/lib/presentation";
+import { generateSlug } from "~/lib/utils";
 
 interface SlideInput {
   type: "title" | "content";
@@ -69,20 +70,6 @@ interface PresentationSlide {
   // Preserved visual metadata
   semanticIntent?: string;
   visualStrategy?: VisualStrategy;
-}
-
-/**
- * Generate a URL-friendly slug from a title
- */
-function generateSlug(title: string, maxLength: number = 50): string {
-  return title
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, "") // Remove special chars
-    .replace(/\s+/g, "-") // Replace spaces with hyphens
-    .replace(/-+/g, "-") // Replace multiple hyphens with single
-    .trim()
-    .substring(0, maxLength)
-    .replace(/-$/, ""); // Remove trailing hyphen
 }
 
 export async function POST(request: Request) {
@@ -272,11 +259,19 @@ export async function POST(request: Request) {
       chartsAdded: presentationSlides.filter(s => s.chart).length,
     });
 
+    // Extract thumbnail from title slide (first slide)
+    const titleSlide = presentationSlides[0];
+    const thumbnailUrl =
+      titleSlide?.image?.url && titleSlide.image.url.startsWith("http")
+        ? titleSlide.image.url
+        : null;
+
     // Create the presentation in the database
     const presentation = await db.presentation.create({
       data: {
         title: presentationTitle,
         description: metadata.topic,
+        thumbnailUrl,
         content: {
           theme: theme,
           themeConfig: themeConfig || null,
@@ -308,7 +303,6 @@ export async function POST(request: Request) {
           data: aiSlideImages.map(({ slide, index }) => ({
             url: slide.image!.url,
             filename: `${slug}-slide-${index + 1}.png`,
-            tags: ["ai-generated", "presentation", theme],
             userId: user.id,
             presentationId: presentation.id,
           })),
