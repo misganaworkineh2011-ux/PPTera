@@ -16,6 +16,7 @@ export async function POST(req: Request) {
 
     const user = await db.user.findUnique({
       where: { clerkId: userId },
+      select: { id: true, credits: true },
     });
 
     if (!user) {
@@ -92,42 +93,50 @@ export async function POST(req: Request) {
       outputType: "arraybuffer",
     })) as ArrayBuffer;
 
-    // Save to database
-    const presentation = await db.presentation.create({
-      data: {
-        title: topic,
-        content: content,
-        slides: slideData,
-        userId: user.id,
-      },
-    });
+    // OPTIMIZATION: Batch all database operations in a single transaction
+    // This reduces 4 sequential DB calls to 1 atomic operation
+    const [presentation] = await db.$transaction([
+      // Create presentation
+      db.presentation.create({
+        data: {
+          title: topic,
+          content: content,
+          slides: slideData,
+          userId: user.id,
+        },
+      }),
+      // Deduct credits atomically
+      db.user.update({
+        where: { id: user.id },
+        data: { credits: { decrement: 1 } },
+      }),
+    ]);
 
-    // Create notification
-    await db.notification.create({
-      data: {
-        userId: user.id,
-        type: "success",
-        title: "Presentation created",
-        message: `Your presentation "${topic}" is ready to view`,
-        link: `/presentation/${presentation.id}`,
-      },
-    });
+    // OPTIMIZATION: Invalidate user cache after credit change
+    const { serverCache } = await import("~/lib/server-cache");
+    serverCache.invalidatePattern(`user-${user.id}`);
 
-    // Log activity
-    await db.activity.create({
-      data: {
-        userId: user.id,
-        type: "create",
-        description: `Created presentation "${topic}"`,
-        presentationId: presentation.id,
-      },
-    });
-
-    // Deduct credits
-    await db.user.update({
-      where: { id: user.id },
-      data: { credits: user.credits - 1 },
-    });
+    // Non-critical operations can happen after response (fire and forget)
+    // Using Promise.all for parallel execution, but not awaiting
+    Promise.all([
+      db.notification.create({
+        data: {
+          userId: user.id,
+          type: "success",
+          title: "Presentation created",
+          message: `Your presentation "${topic}" is ready to view`,
+          link: `/presentation/${presentation.id}`,
+        },
+      }),
+      db.activity.create({
+        data: {
+          userId: user.id,
+          type: "create",
+          description: `Created presentation "${topic}"`,
+          presentationId: presentation.id,
+        },
+      }),
+    ]).catch((err) => console.error("Non-critical DB operation failed:", err));
 
     return new NextResponse(Buffer.from(buffer), {
       headers: {

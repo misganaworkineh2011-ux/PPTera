@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Filter, Grid, List as ListIcon, MoreHorizontal, Upload, Star, Globe, Lock, Share2, Edit3, Copy, Trash2, Link2, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
 import { useUser } from "@clerk/nextjs";
+import { toast } from "sonner";
 
 interface SlideImage {
   url: string;
@@ -58,6 +59,32 @@ export default function DashboardContent({ presentations: initialPresentations, 
   const [showDeleteDialog, setShowDeleteDialog] = useState<string | null>(null);
   const { language } = useLanguage();
   const t = dashboardTranslations[language] || dashboardTranslations.en;
+
+  // OPTIMIZATION: Optimistic update helpers
+  const optimisticUpdate = useCallback(<T extends Partial<Presentation>>(
+    presId: string,
+    updates: T,
+    rollback: () => void
+  ) => {
+    // Immediately update UI
+    setPresentations(prev => 
+      prev.map(p => p.id === presId ? { ...p, ...updates } : p)
+    );
+    return rollback;
+  }, []);
+
+  const optimisticRemove = useCallback((presId: string) => {
+    const removed = presentations.find(p => p.id === presId);
+    setPresentations(prev => prev.filter(p => p.id !== presId));
+    // Return rollback function
+    return () => {
+      if (removed) {
+        setPresentations(prev => [...prev, removed].sort((a, b) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        ));
+      }
+    };
+  }, [presentations]);
 
   // Close menus when clicking outside
   useEffect(() => {
@@ -142,24 +169,29 @@ export default function DashboardContent({ presentations: initialPresentations, 
         break;
         
       case "favorite":
-        try {
-          setLoadingAction({ id: presId, action: "favorite" });
-          const response = await fetch(`/api/presentations/${presId}/favorite`, {
-            method: "PATCH",
+        // OPTIMIZATION: Optimistic update - update UI immediately
+        const currentPres = presentations.find(p => p.id === presId);
+        if (!currentPres) break;
+        
+        const newPinnedState = !currentPres.isPinned;
+        const rollbackFavorite = optimisticUpdate(presId, { isPinned: newPinnedState }, () => {
+          setPresentations(prev => 
+            prev.map(p => p.id === presId ? { ...p, isPinned: currentPres.isPinned } : p)
+          );
+        });
+        
+        // Make API call in background
+        fetch(`/api/presentations/${presId}/favorite`, { method: "PATCH" })
+          .then(async (response) => {
+            if (!response.ok) {
+              throw new Error("Failed to update");
+            }
+          })
+          .catch((error) => {
+            console.error("Error toggling favorite:", error);
+            rollbackFavorite();
+            toast?.error?.("Failed to update favorite status") || alert("Failed to update favorite status");
           });
-          
-          if (response.ok) {
-            const data = await response.json();
-            setPresentations(prev => 
-              prev.map(p => p.id === presId ? { ...p, isPinned: data.isPinned } : p)
-            );
-          }
-        } catch (error) {
-          console.error("Error toggling favorite:", error);
-          alert("Failed to update favorite status");
-        } finally {
-          setLoadingAction(null);
-        }
         break;
         
       case "duplicate":
@@ -206,48 +238,59 @@ export default function DashboardContent({ presentations: initialPresentations, 
 
   const handleRename = async (presId: string) => {
     if (!renameValue.trim()) {
-      alert("Title cannot be empty");
+      toast?.error?.("Title cannot be empty") || alert("Title cannot be empty");
       return;
     }
 
+    // OPTIMIZATION: Optimistic update for rename
+    const currentPres = presentations.find(p => p.id === presId);
+    const oldTitle = currentPres?.title || "";
+    const newTitle = renameValue.trim();
+    
+    // Update UI immediately
+    setPresentations(prev =>
+      prev.map(p => p.id === presId ? { ...p, title: newTitle } : p)
+    );
+    setShowRenameDialog(null);
+    setRenameValue("");
+
     try {
-      setIsLoading(true);
       const response = await fetch(`/api/presentations/${presId}/rename`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: renameValue }),
+        body: JSON.stringify({ title: newTitle }),
       });
 
-      if (response.ok) {
-        const data = await response.json();
+      if (!response.ok) {
+        // Rollback on failure
         setPresentations(prev =>
-          prev.map(p => p.id === presId ? { ...p, title: data.title } : p)
+          prev.map(p => p.id === presId ? { ...p, title: oldTitle } : p)
         );
-        setShowRenameDialog(null);
-        setRenameValue("");
-      } else {
-        alert("Failed to rename presentation");
+        toast?.error?.("Failed to rename presentation") || alert("Failed to rename presentation");
       }
     } catch (error) {
       console.error("Error renaming:", error);
-      alert("Failed to rename presentation");
-    } finally {
-      setIsLoading(false);
+      // Rollback on error
+      setPresentations(prev =>
+        prev.map(p => p.id === presId ? { ...p, title: oldTitle } : p)
+      );
+      toast?.error?.("Failed to rename presentation") || alert("Failed to rename presentation");
     }
   };
 
   const handleDelete = async (presId: string) => {
+    // OPTIMIZATION: Optimistic delete - remove from UI immediately
+    const rollbackDelete = optimisticRemove(presId);
+    setShowDeleteDialog(null);
+
     try {
-      setIsLoading(true);
       const response = await fetch(`/api/presentations/${presId}/delete`, {
         method: "DELETE",
       });
       
-      if (response.ok) {
-        setPresentations(prev => prev.filter(p => p.id !== presId));
-        setShowDeleteDialog(null);
-      } else {
-        alert("Failed to delete presentation");
+      if (!response.ok) {
+        rollbackDelete();
+        toast?.error?.("Failed to delete presentation") || alert("Failed to delete presentation");
       }
     } catch (error) {
       console.error("Error deleting:", error);

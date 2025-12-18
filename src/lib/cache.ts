@@ -14,6 +14,16 @@ export const CACHE_TTL = {
   PRESENTATIONS: 5 * 60 * 1000,  // 5 minutes - presentations list
   THEMES: 10 * 60 * 1000,        // 10 minutes - themes rarely change
   STATIC: 30 * 60 * 1000,        // 30 minutes - static content
+  DASHBOARD_INIT: 60 * 1000,     // 1 minute - combined dashboard data
+} as const;
+
+// Cache keys for consistent access
+export const CACHE_KEYS = {
+  DASHBOARD_INIT: "dashboard-init",
+  USER_DATA: "user-data",
+  PRESENTATIONS: "presentations",
+  THEMES: "themes",
+  ACTIVITIES: "activities",
 } as const;
 
 class ClientCache {
@@ -206,6 +216,89 @@ export async function deduplicatedFetch<T>(
 
   pendingRequests.set(key, request);
   return request;
+}
+
+/**
+ * Optimistic update helper - updates cache immediately and rolls back on failure
+ */
+export function createOptimisticUpdate<T>(cacheKey: string) {
+  return {
+    /**
+     * Execute an optimistic update
+     * @param currentData - Current cached data
+     * @param optimisticData - Data to show immediately
+     * @param apiCall - The actual API call to make
+     * @param onSuccess - Callback on success with server response
+     * @param onError - Callback on error (receives original data for rollback)
+     */
+    async execute(
+      currentData: T,
+      optimisticData: T,
+      apiCall: () => Promise<Response>,
+      onSuccess?: (serverData: unknown) => void,
+      onError?: (originalData: T, error: Error) => void
+    ): Promise<{ success: boolean; data?: unknown; error?: Error }> {
+      // Immediately update cache with optimistic data
+      clientCache.set(cacheKey, optimisticData, CACHE_TTL.PRESENTATIONS);
+
+      try {
+        const response = await apiCall();
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const serverData = await response.json();
+        
+        // Update cache with server response
+        onSuccess?.(serverData);
+        return { success: true, data: serverData };
+      } catch (error) {
+        // Rollback to original data
+        clientCache.set(cacheKey, currentData, CACHE_TTL.PRESENTATIONS);
+        onError?.(currentData, error as Error);
+        return { success: false, error: error as Error };
+      }
+    },
+  };
+}
+
+/**
+ * Visibility-aware polling - pauses when tab is hidden
+ */
+export function createVisibilityAwareInterval(
+  callback: () => void,
+  interval: number
+): () => void {
+  let timerId: NodeJS.Timeout | null = null;
+  let isVisible = typeof document !== "undefined" ? !document.hidden : true;
+
+  const start = () => {
+    if (timerId) clearInterval(timerId);
+    timerId = setInterval(() => {
+      if (isVisible) callback();
+    }, interval);
+  };
+
+  const handleVisibilityChange = () => {
+    isVisible = !document.hidden;
+    if (isVisible) {
+      // Immediately fetch when becoming visible
+      callback();
+    }
+  };
+
+  if (typeof document !== "undefined") {
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+  }
+
+  start();
+
+  // Return cleanup function
+  return () => {
+    if (timerId) clearInterval(timerId);
+    if (typeof document !== "undefined") {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    }
+  };
 }
 
 /**

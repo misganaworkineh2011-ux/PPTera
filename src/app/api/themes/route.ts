@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "~/server/db";
+import { serverCache, SERVER_CACHE_TTL } from "~/lib/server-cache";
 
 // Curated color palettes - must match CustomThemeCreator
 const CURATED_PALETTES: Record<string, { background: string; backgroundAlt: string; text: string; heading: string; primary: string; accent: string }> = {
@@ -18,7 +19,7 @@ const CURATED_PALETTES: Record<string, { background: string; backgroundAlt: stri
   "warm-earth": { background: "#faf5f0", backgroundAlt: "#f5ebe0", text: "#78350f", heading: "#451a03", primary: "#b45309", accent: "#d97706" },
 };
 
-// GET - Fetch user's custom themes with caching
+// GET - Fetch user's custom themes with server-side caching
 export async function GET() {
   try {
     const { userId } = await auth();
@@ -28,26 +29,33 @@ export async function GET() {
 
     const user = await db.user.findUnique({
       where: { clerkId: userId },
-      select: { id: true }, // Only select what we need
+      select: { id: true },
     });
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const themes = await db.theme.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        name: true,
-        colors: true,
-        fonts: true,
-        designElements: true,
-        isDefault: true,
-        createdAt: true,
-      },
-    });
+    // OPTIMIZATION: Server-side caching for themes
+    const cacheKey = `themes-${user.id}`;
+    let themes = serverCache.get<unknown[]>(cacheKey);
+    
+    if (!themes) {
+      themes = await db.theme.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          name: true,
+          colors: true,
+          fonts: true,
+          designElements: true,
+          isDefault: true,
+          createdAt: true,
+        },
+      });
+      serverCache.set(cacheKey, themes, SERVER_CACHE_TTL.THEMES);
+    }
 
     return NextResponse.json(
       { themes },
@@ -128,6 +136,9 @@ export async function POST(request: NextRequest) {
         userId: user.id,
       },
     });
+
+    // OPTIMIZATION: Invalidate server cache when theme is created
+    serverCache.invalidate(`themes-${user.id}`);
 
     return NextResponse.json({ theme }, { status: 201 });
   } catch (error) {

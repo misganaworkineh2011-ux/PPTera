@@ -3,6 +3,7 @@ import { requireAuth } from "~/lib/clerk-server";
 import { db } from "~/server/db";
 import PresentationViewer from "./PresentationViewer";
 import type { SlideData } from "~/components/presentation/types";
+import { isCustomThemeId, getCustomThemeDbId } from "~/lib/custom-theme-utils";
 
 interface PresentationPageProps {
   params: Promise<{
@@ -149,6 +150,30 @@ export default async function PresentationPage({
     slidesWithTransformedContent: slides.filter(s => s.transformedContent).length,
   });
 
+  // OPTIMIZATION: Prefetch custom theme during SSR to avoid client-side fetch
+  let prefetchedCustomTheme = null;
+  const themeId = content.theme || "";
+  if (isCustomThemeId(themeId)) {
+    const dbId = getCustomThemeDbId(themeId);
+    try {
+      const customTheme = await db.theme.findUnique({
+        where: { id: dbId },
+        select: {
+          id: true,
+          name: true,
+          colors: true,
+          fonts: true,
+          designElements: true,
+        },
+      });
+      if (customTheme) {
+        prefetchedCustomTheme = customTheme;
+      }
+    } catch (e) {
+      console.error("Error prefetching custom theme:", e);
+    }
+  }
+
   return (
     <PresentationViewer
       presentation={{
@@ -163,6 +188,7 @@ export default async function PresentationPage({
       mode={mode || "view"}
       isOwner={isOwner}
       collaboratorRole={collaboration?.role}
+      prefetchedCustomTheme={prefetchedCustomTheme}
     />
   );
 }

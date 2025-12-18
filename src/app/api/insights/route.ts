@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/server/db";
+import { serverCache, SERVER_CACHE_TTL } from "~/lib/server-cache";
 
-// GET - Fetch insight posts
+// GET - Fetch insight posts with server-side caching
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -9,6 +10,21 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "9");
     const offset = parseInt(searchParams.get("offset") || "0");
     const featured = searchParams.get("featured") === "true";
+
+    // OPTIMIZATION: Server-side caching for insights
+    const cacheKey = `insights-${category || "all"}-${limit}-${offset}-${featured}`;
+    let cachedResult = serverCache.get<{ posts: unknown[]; total: number }>(cacheKey);
+
+    if (cachedResult) {
+      return NextResponse.json({
+        ...cachedResult,
+        hasMore: offset + limit < cachedResult.total,
+      }, {
+        headers: {
+          "Cache-Control": "public, max-age=300, stale-while-revalidate=600",
+        },
+      });
+    }
 
     const where = {
       isPublished: true,
@@ -29,10 +45,17 @@ export async function GET(req: NextRequest) {
       db.insightPost.count({ where }),
     ]);
 
+    // Cache the result
+    serverCache.set(cacheKey, { posts, total }, SERVER_CACHE_TTL.INSIGHTS);
+
     return NextResponse.json({
       posts,
       total,
       hasMore: offset + limit < total,
+    }, {
+      headers: {
+        "Cache-Control": "public, max-age=300, stale-while-revalidate=600",
+      },
     });
   } catch (error) {
     console.error("Fetch insights error:", error);

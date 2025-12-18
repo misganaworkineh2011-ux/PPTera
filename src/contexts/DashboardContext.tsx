@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from "react";
-import { clientCache, CACHE_TTL } from "~/lib/cache";
+import { clientCache, CACHE_TTL, CACHE_KEYS, deduplicatedFetch } from "~/lib/cache";
 
 interface UserData {
   id: string;
@@ -10,6 +10,25 @@ interface UserData {
   credits: number;
   subscriptionPlan: string | null;
   image: string | null;
+}
+
+interface Presentation {
+  id: string;
+  title: string;
+  isPublic: boolean;
+  isPinned: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  slides: unknown[];
+  shareToken?: string | null;
+}
+
+interface DashboardInitData {
+  user: UserData & { counts: { presentations: number; themes: number } };
+  presentations: Presentation[];
+  themes: unknown[];
+  recentActivity: unknown[];
+  meta: { timestamp: string; presentationCount: number; themeCount: number };
 }
 
 interface DashboardContextType {
@@ -22,12 +41,28 @@ interface DashboardContextType {
   credits: number;
   updateCredits: (newCredits: number) => void;
   
+  // Presentations
+  presentations: Presentation[];
+  setPresentations: React.Dispatch<React.SetStateAction<Presentation[]>>;
+  
   // Presentation counts
   presentationCount: number;
   updatePresentationCount: (delta: number) => void;
   
+  // Themes
+  themes: unknown[];
+  
+  // Recent activity
+  recentActivity: unknown[];
+  
   // Global loading state
   isInitialized: boolean;
+  
+  // Full refresh
+  refreshDashboard: () => Promise<void>;
+  
+  // Invalidate cache
+  invalidateCache: (key?: string) => void;
 }
 
 const DashboardContext = createContext<DashboardContextType | null>(null);
@@ -35,19 +70,69 @@ const DashboardContext = createContext<DashboardContextType | null>(null);
 interface DashboardProviderProps {
   children: ReactNode;
   initialUser?: UserData | null;
+  initialPresentations?: Presentation[];
 }
 
-export function DashboardProvider({ children, initialUser }: DashboardProviderProps) {
+export function DashboardProvider({ children, initialUser, initialPresentations }: DashboardProviderProps) {
   const [user, setUser] = useState<UserData | null>(initialUser || null);
   const [userLoading, setUserLoading] = useState(!initialUser);
   const [credits, setCredits] = useState(initialUser?.credits || 0);
-  const [presentationCount, setPresentationCount] = useState(0);
+  const [presentations, setPresentations] = useState<Presentation[]>(initialPresentations || []);
+  const [presentationCount, setPresentationCount] = useState(initialPresentations?.length || 0);
+  const [themes, setThemes] = useState<unknown[]>([]);
+  const [recentActivity, setRecentActivity] = useState<unknown[]>([]);
   const [isInitialized, setIsInitialized] = useState(!!initialUser);
   const mountedRef = useRef(true);
 
-  const refreshUser = useCallback(async () => {
+  // Combined dashboard initialization - single API call
+  const refreshDashboard = useCallback(async () => {
     // Check cache first
-    const cached = clientCache.get<UserData>("user-data");
+    const cached = clientCache.get<DashboardInitData>(CACHE_KEYS.DASHBOARD_INIT);
+    if (cached) {
+      setUser(cached.user);
+      setCredits(cached.user.credits);
+      setPresentations(cached.presentations);
+      setPresentationCount(cached.meta.presentationCount);
+      setThemes(cached.themes);
+      setRecentActivity(cached.recentActivity);
+      setUserLoading(false);
+      setIsInitialized(true);
+      return;
+    }
+
+    setUserLoading(true);
+    try {
+      // Use deduplicatedFetch to prevent duplicate requests
+      const data = await deduplicatedFetch<DashboardInitData>("/api/dashboard/init");
+      
+      if (mountedRef.current) {
+        setUser(data.user);
+        setCredits(data.user.credits);
+        setPresentations(data.presentations);
+        setPresentationCount(data.meta.presentationCount);
+        setThemes(data.themes);
+        setRecentActivity(data.recentActivity);
+        
+        // Cache the combined data
+        clientCache.set(CACHE_KEYS.DASHBOARD_INIT, data, CACHE_TTL.DASHBOARD_INIT);
+        // Also cache individual pieces for granular access
+        clientCache.set(CACHE_KEYS.USER_DATA, data.user, CACHE_TTL.USER_DATA);
+        clientCache.set(CACHE_KEYS.PRESENTATIONS, data.presentations, CACHE_TTL.PRESENTATIONS);
+        clientCache.set(CACHE_KEYS.THEMES, data.themes, CACHE_TTL.THEMES);
+      }
+    } catch (error) {
+      console.error("Failed to initialize dashboard:", error);
+    } finally {
+      if (mountedRef.current) {
+        setUserLoading(false);
+        setIsInitialized(true);
+      }
+    }
+  }, []);
+
+  // Lightweight user refresh (for credit updates, etc.)
+  const refreshUser = useCallback(async () => {
+    const cached = clientCache.get<UserData>(CACHE_KEYS.USER_DATA);
     if (cached) {
       setUser(cached);
       setCredits(cached.credits);
@@ -63,7 +148,7 @@ export function DashboardProvider({ children, initialUser }: DashboardProviderPr
         if (mountedRef.current) {
           setUser(data);
           setCredits(data.credits);
-          clientCache.set("user-data", data, CACHE_TTL.USER_DATA);
+          clientCache.set(CACHE_KEYS.USER_DATA, data, CACHE_TTL.USER_DATA);
         }
       }
     } catch (error) {
@@ -78,10 +163,17 @@ export function DashboardProvider({ children, initialUser }: DashboardProviderPr
 
   const updateCredits = useCallback((newCredits: number) => {
     setCredits(newCredits);
-    // Update cache
-    const cached = clientCache.get<UserData>("user-data");
-    if (cached) {
-      clientCache.set("user-data", { ...cached, credits: newCredits }, CACHE_TTL.USER_DATA);
+    // Update both caches
+    const cachedUser = clientCache.get<UserData>(CACHE_KEYS.USER_DATA);
+    if (cachedUser) {
+      clientCache.set(CACHE_KEYS.USER_DATA, { ...cachedUser, credits: newCredits }, CACHE_TTL.USER_DATA);
+    }
+    const cachedInit = clientCache.get<DashboardInitData>(CACHE_KEYS.DASHBOARD_INIT);
+    if (cachedInit) {
+      clientCache.set(CACHE_KEYS.DASHBOARD_INIT, {
+        ...cachedInit,
+        user: { ...cachedInit.user, credits: newCredits },
+      }, CACHE_TTL.DASHBOARD_INIT);
     }
   }, []);
 
@@ -89,18 +181,34 @@ export function DashboardProvider({ children, initialUser }: DashboardProviderPr
     setPresentationCount(prev => Math.max(0, prev + delta));
   }, []);
 
-  // Initial fetch if no initial data
+  const invalidateCache = useCallback((key?: string) => {
+    if (key) {
+      clientCache.invalidate(key);
+    } else {
+      // Invalidate all dashboard-related caches
+      clientCache.invalidate(CACHE_KEYS.DASHBOARD_INIT);
+      clientCache.invalidate(CACHE_KEYS.USER_DATA);
+      clientCache.invalidate(CACHE_KEYS.PRESENTATIONS);
+      clientCache.invalidate(CACHE_KEYS.THEMES);
+      clientCache.invalidate(CACHE_KEYS.ACTIVITIES);
+    }
+  }, []);
+
+  // Initial fetch if no initial data provided via SSR
   useEffect(() => {
     mountedRef.current = true;
     
-    if (!initialUser) {
-      refreshUser();
+    if (!initialUser && !initialPresentations) {
+      refreshDashboard();
+    } else if (initialUser && !initialPresentations) {
+      // Have user but need presentations
+      refreshDashboard();
     }
 
     return () => {
       mountedRef.current = false;
     };
-  }, [initialUser, refreshUser]);
+  }, [initialUser, initialPresentations, refreshDashboard]);
 
   return (
     <DashboardContext.Provider
@@ -110,9 +218,15 @@ export function DashboardProvider({ children, initialUser }: DashboardProviderPr
         refreshUser,
         credits,
         updateCredits,
+        presentations,
+        setPresentations,
         presentationCount,
         updatePresentationCount,
+        themes,
+        recentActivity,
         isInitialized,
+        refreshDashboard,
+        invalidateCache,
       }}
     >
       {children}
@@ -138,4 +252,31 @@ export function useCredits() {
 export function useUserData() {
   const { user, userLoading, refreshUser } = useDashboard();
   return { user, loading: userLoading, refresh: refreshUser };
+}
+
+// Hook for presentations with optimistic updates
+export function usePresentations() {
+  const { presentations, setPresentations, invalidateCache } = useDashboard();
+  
+  const updatePresentation = useCallback((id: string, updates: Partial<Presentation>) => {
+    setPresentations(prev => 
+      prev.map(p => p.id === id ? { ...p, ...updates } : p)
+    );
+  }, [setPresentations]);
+
+  const removePresentation = useCallback((id: string) => {
+    setPresentations(prev => prev.filter(p => p.id !== id));
+  }, [setPresentations]);
+
+  const addPresentation = useCallback((presentation: Presentation) => {
+    setPresentations(prev => [presentation, ...prev]);
+  }, [setPresentations]);
+
+  return {
+    presentations,
+    updatePresentation,
+    removePresentation,
+    addPresentation,
+    invalidateCache: () => invalidateCache(CACHE_KEYS.PRESENTATIONS),
+  };
 }

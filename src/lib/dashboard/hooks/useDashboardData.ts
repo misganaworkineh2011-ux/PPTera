@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { clientCache, deduplicatedFetch, CACHE_TTL } from "~/lib/cache";
+import { clientCache, deduplicatedFetch, CACHE_TTL, CACHE_KEYS, createVisibilityAwareInterval } from "~/lib/cache";
 
 interface UseDashboardDataOptions<T> {
   /** API endpoint to fetch from */
@@ -18,6 +18,8 @@ interface UseDashboardDataOptions<T> {
   deps?: unknown[];
   /** Transform response data */
   transform?: (data: unknown) => T;
+  /** Enable stale-while-revalidate pattern */
+  staleWhileRevalidate?: boolean;
 }
 
 interface UseDashboardDataResult<T> {
@@ -26,10 +28,12 @@ interface UseDashboardDataResult<T> {
   error: Error | null;
   refetch: () => Promise<void>;
   invalidate: () => void;
+  isStale: boolean;
 }
 
 /**
  * Optimized hook for fetching dashboard data with caching and deduplication
+ * Now supports stale-while-revalidate pattern for better UX
  */
 export function useDashboardData<T>({
   endpoint,
@@ -39,24 +43,40 @@ export function useDashboardData<T>({
   fetchOnMount = true,
   deps = [],
   transform,
+  staleWhileRevalidate = true,
 }: UseDashboardDataOptions<T>): UseDashboardDataResult<T> {
   const key = cacheKey || endpoint;
   const [data, setData] = useState<T | null>(initialData || null);
   const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState<Error | null>(null);
+  const [isStale, setIsStale] = useState(false);
   const mountedRef = useRef(true);
+  const lastFetchRef = useRef<number>(0);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (background = false) => {
     // Check cache first
     const cached = clientCache.get<T>(key);
     if (cached) {
       setData(cached);
-      setLoading(false);
+      if (!background) setLoading(false);
+      
+      // If stale-while-revalidate is enabled and cache is getting old, refetch in background
+      if (staleWhileRevalidate) {
+        const now = Date.now();
+        const cacheAge = now - lastFetchRef.current;
+        if (cacheAge > cacheTTL * 0.7) {
+          setIsStale(true);
+          // Revalidate in background
+          fetchData(true);
+        }
+      }
       return;
     }
 
-    setLoading(true);
-    setError(null);
+    if (!background) {
+      setLoading(true);
+      setError(null);
+    }
 
     try {
       const response = await deduplicatedFetch<unknown>(endpoint);
@@ -65,20 +85,23 @@ export function useDashboardData<T>({
       if (mountedRef.current) {
         setData(transformedData);
         clientCache.set(key, transformedData, cacheTTL);
+        lastFetchRef.current = Date.now();
+        setIsStale(false);
       }
     } catch (err) {
-      if (mountedRef.current) {
+      if (mountedRef.current && !background) {
         setError(err as Error);
       }
     } finally {
-      if (mountedRef.current) {
+      if (mountedRef.current && !background) {
         setLoading(false);
       }
     }
-  }, [endpoint, key, cacheTTL, transform]);
+  }, [endpoint, key, cacheTTL, transform, staleWhileRevalidate]);
 
   const invalidate = useCallback(() => {
     clientCache.invalidate(key);
+    lastFetchRef.current = 0;
   }, [key]);
 
   const refetch = useCallback(async () => {
@@ -98,7 +121,20 @@ export function useDashboardData<T>({
     };
   }, [fetchOnMount, ...deps]);
 
-  return { data, loading, error, refetch, invalidate };
+  return { data, loading, error, refetch, invalidate, isStale };
+}
+
+/**
+ * Hook for combined dashboard initialization
+ * Fetches all dashboard data in a single request
+ */
+export function useDashboardInit() {
+  return useDashboardData({
+    endpoint: "/api/dashboard/init",
+    cacheKey: CACHE_KEYS.DASHBOARD_INIT,
+    cacheTTL: CACHE_TTL.DASHBOARD_INIT,
+    staleWhileRevalidate: true,
+  });
 }
 
 /**
@@ -207,6 +243,7 @@ export function usePaginatedData<T>({
 
 /**
  * Hook for real-time data with polling
+ * OPTIMIZATION: Now uses visibility-aware polling to pause when tab is hidden
  */
 interface UsePollingDataOptions<T> {
   endpoint: string;
@@ -252,9 +289,10 @@ export function usePollingData<T>({
 
     if (enabled) {
       fetchData();
-      const timer = setInterval(fetchData, interval);
+      // OPTIMIZATION: Use visibility-aware interval that pauses when tab is hidden
+      const cleanup = createVisibilityAwareInterval(fetchData, interval);
       return () => {
-        clearInterval(timer);
+        cleanup();
         mountedRef.current = false;
       };
     }

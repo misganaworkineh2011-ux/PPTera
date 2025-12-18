@@ -42,12 +42,22 @@ import {
   type ThemeType,
 } from "./components";
 
+interface CustomThemeData {
+  id: string;
+  name: string;
+  colors: unknown;
+  fonts: unknown;
+  designElements: unknown;
+}
+
 interface PresentationViewerProps {
   presentation: PresentationData;
   mode: string;
   isOwner: boolean;
   collaboratorRole?: string;
   isPublicView?: boolean;
+  /** OPTIMIZATION: Prefetched custom theme from SSR to avoid client-side fetch */
+  prefetchedCustomTheme?: CustomThemeData | null;
 }
 
 export default function PresentationViewer({
@@ -56,6 +66,7 @@ export default function PresentationViewer({
   isOwner,
   collaboratorRole,
   isPublicView = false,
+  prefetchedCustomTheme,
 }: PresentationViewerProps) {
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -116,8 +127,13 @@ export default function PresentationViewer({
   const slides = slidesData;
   const { content } = presentation;
   
-  // Custom theme state
-  const [customTheme, setCustomTheme] = useState<Theme | null>(null);
+  // Custom theme state - OPTIMIZATION: Initialize with prefetched theme if available
+  const [customTheme, setCustomTheme] = useState<Theme | null>(() => {
+    if (prefetchedCustomTheme) {
+      return convertCustomThemeToTheme(prefetchedCustomTheme);
+    }
+    return null;
+  });
   const [isLoadingTheme, setIsLoadingTheme] = useState(false);
   
   // Debug: Log slide data to check for icons/charts
@@ -137,8 +153,11 @@ export default function PresentationViewer({
     }
   }, [slidesData]);
 
-  // Load custom theme if needed
+  // Load custom theme if needed - OPTIMIZATION: Skip if prefetched
   useEffect(() => {
+    // Skip if we already have a prefetched theme
+    if (prefetchedCustomTheme) return;
+    
     const themeId = content.theme || "";
     if (isCustomThemeId(themeId)) {
       setIsLoadingTheme(true);
