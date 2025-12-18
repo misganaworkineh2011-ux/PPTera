@@ -8,9 +8,79 @@
  * - Outlines: 5 credits
  */
 
-import { CREDIT_COSTS, PLAN_CONFIG } from "./polar-products";
+/**
+ * Credit costs for different operations
+ * - Slides: 4 credits per slide generated
+ * - AI Images: Varies by model
+ */
+export const CREDIT_COSTS = {
+  // Slide generation
+  SLIDE: 4,                    // 4 credits per slide
+  
+  // OpenAI DALL-E 3 Image generation
+  IMAGE_BASIC: 10,             // DALL-E 3 standard quality
+  IMAGE_HD: 15,                // DALL-E 3 HD quality
+  
+  // Google Gemini Image generation
+  GEMINI_IMAGEN: 8,            // Gemini Imagen 3 (faster, cheaper)
+  GEMINI_IMAGEN_HD: 12,        // Gemini Imagen 3 HD
+  
+  // Legacy (for backwards compatibility)
+  IMAGE_PREMIUM: 25,           // Reserved for future premium models
+  
+  // Other operations
+  CHART_GENERATION: 2,         // AI-generated chart
+  OUTLINE_GENERATION: 5,       // AI outline generation
+  CONTENT_ENHANCEMENT: 3,      // AI content improvement
+} as const;
 
-export { CREDIT_COSTS, PLAN_CONFIG };
+/**
+ * Plan configurations with credit allocations
+ */
+export const PLAN_CONFIG = {
+  plus: {
+    credits: 1000,
+    cardsPerPrompt: 20,
+    features: [
+      "1,000 AI credits / month",
+      "~250 slides or ~100 AI images",
+      "20 cards per prompt",
+      "Unlimited PDF exports",
+      "Basic templates",
+      "7-day version history",
+    ],
+  },
+  pro: {
+    credits: 4000,
+    cardsPerPrompt: 60,
+    features: [
+      "4,000 AI credits / month",
+      "~1,000 slides or ~400 AI images",
+      "60 cards per prompt",
+      "Remove PPTMaster branding",
+      "Export to PowerPoint (PPTX)",
+      "Premium AI image models",
+      "Premium templates",
+      "30-day version history",
+      "Priority support",
+    ],
+  },
+  ultra: {
+    credits: 20000,
+    cardsPerPrompt: 75,
+    features: [
+      "20,000 AI credits / month",
+      "~5,000 slides or ~2,000 AI images",
+      "75 cards per prompt",
+      "Everything in Pro",
+      "Access to most advanced AI models",
+      "Shared team workspace",
+      "Custom fonts & themes",
+      "Advanced analytics",
+      "Dedicated support",
+    ],
+  },
+} as const;
 
 /**
  * Calculate credits needed for slide generation

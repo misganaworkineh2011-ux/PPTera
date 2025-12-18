@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
   Image as ImageIcon,
@@ -13,12 +12,11 @@ import {
   ChevronRight,
   MoreVertical,
   X,
-  Loader2,
   CreditCard,
   TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { cn } from "~/lib/utils";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { useLanguage } from "~/contexts/LanguageContext";
@@ -33,29 +31,9 @@ interface SidebarProps {
 
 export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan, onCloseMobile }: SidebarProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const { user } = useUser();
   const { language } = useLanguage();
   const t = dashboardTranslations[language] || dashboardTranslations.en;
-  
-  // Track which route is being navigated to
-  const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
-  
-  // Clear navigating state when pathname changes (navigation complete)
-  useEffect(() => {
-    setNavigatingTo(null);
-  }, [pathname]);
-  
-  // Handle navigation with loading state
-  const handleNavigation = (href: string, e: React.MouseEvent) => {
-    // Don't show loading if already on this page
-    if (pathname === href) return;
-    
-    e.preventDefault();
-    setNavigatingTo(href);
-    onCloseMobile?.();
-    router.push(href);
-  };
 
   const navGroups = [
     {
@@ -131,35 +109,26 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
               <div className="space-y-1">
                 {group.items.map((item) => {
                   const isActive = pathname === item.href;
-                  const isNavigating = navigatingTo === item.href;
                   return (
                     <Link
                       key={item.href}
                       href={item.href}
-                      onClick={(e) => handleNavigation(item.href, e)}
+                      onClick={() => onCloseMobile?.()}
                       className={cn(
                         "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-semibold transition-all",
                         isActive
                           ? "bg-[#e0f2fe] text-[#06b6d4] shadow-sm dark:bg-[#06b6d4]/20"
                           : "text-slate-700 hover:bg-slate-50 hover:text-[#1e3a8a] dark:text-slate-300 dark:hover:bg-slate-700",
-                        isNavigating && "bg-slate-100 dark:bg-slate-700",
                         isCollapsed && "lg:justify-center lg:px-2"
                       )}
                     >
-                      {isNavigating ? (
-                        <Loader2
-                          size={17}
-                          className="animate-spin text-[#06b6d4] flex-shrink-0"
-                        />
-                      ) : (
-                        <item.icon
-                          size={17}
-                          className={cn(
-                            "transition-colors flex-shrink-0",
-                            isActive ? "text-[#06b6d4]" : "text-slate-600 group-hover:text-[#1e3a8a] dark:text-slate-400"
-                          )}
-                        />
-                      )}
+                      <item.icon
+                        size={17}
+                        className={cn(
+                          "transition-colors flex-shrink-0",
+                          isActive ? "text-[#06b6d4]" : "text-slate-600 group-hover:text-[#1e3a8a] dark:text-slate-400"
+                        )}
+                      />
                       {/* Show text on mobile always, on desktop only when not collapsed */}
                       <span className={cn(
                         "flex-1",
@@ -167,7 +136,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
                       )}>
                         {item.name}
                       </span>
-                      {isActive && !isNavigating && (
+                      {isActive && (
                         <div className={cn(
                           "h-1.5 w-1.5 rounded-full bg-[#06b6d4]",
                           isCollapsed && "lg:hidden"

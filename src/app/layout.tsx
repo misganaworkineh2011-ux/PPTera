@@ -1,6 +1,7 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
 import { LanguageProvider } from "~/contexts/LanguageContext";
+import { NavigationProvider } from "~/contexts/NavigationContext";
 import "~/styles/globals.css";
 import { type Metadata } from "next";
 
@@ -174,7 +175,9 @@ export default function RootLayout({
             dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationSchema) }}
           />
           <LanguageProvider>
-            {children}
+            <NavigationProvider>
+              {children}
+            </NavigationProvider>
           </LanguageProvider>
           <Toaster />
         </body>

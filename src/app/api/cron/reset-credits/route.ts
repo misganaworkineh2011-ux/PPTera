@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "~/server/db";
 import { env } from "~/env";
-import { PLAN_CONFIG } from "~/lib/polar-products";
+import { PLAN_CONFIG } from "~/lib/credits";
 
 export const dynamic = "force-dynamic";
 
