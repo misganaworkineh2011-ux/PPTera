@@ -10,6 +10,7 @@ import {
   PlusCircle,
   ImagePlus,
   BarChart3,
+  Shapes,
 } from "lucide-react";
 
 interface SlideMenuProps {
@@ -18,6 +19,7 @@ interface SlideMenuProps {
   showMenu: boolean;
   imageCount: number;
   hasChart?: boolean;
+  elementCount?: number;
   onToggleMenu: () => void;
   onChangeLayout: () => void;
   onDuplicate: () => void;
@@ -26,6 +28,7 @@ interface SlideMenuProps {
   onManageImages: () => void;
   onAddChart: () => void;
   onRemoveChart?: () => void;
+  onAddElement: () => void;
   onMoveUp: () => void;
   onMoveDown: () => void;
   onDelete: () => void;
@@ -37,6 +40,7 @@ export function SlideMenu({
   showMenu,
   imageCount,
   hasChart,
+  elementCount = 0,
   onToggleMenu,
   onChangeLayout,
   onDuplicate,
@@ -44,6 +48,7 @@ export function SlideMenu({
   onAddImage,
   onAddChart,
   onRemoveChart,
+  onAddElement,
   onMoveUp,
   onMoveDown,
   onDelete,
@@ -109,6 +114,14 @@ export function SlideMenu({
               Remove Chart
             </button>
           )}
+          <button
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={handleAction(onAddElement)}
+            className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-purple-400 hover:bg-purple-900/30"
+          >
+            <Shapes size={16} />
+            {elementCount > 0 ? `Elements (${elementCount})` : "Add Element"}
+          </button>
           <div className="border-t border-zinc-700 my-1" />
           <button
             onMouseDown={(e) => e.stopPropagation()}

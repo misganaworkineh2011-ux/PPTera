@@ -10,7 +10,7 @@ export const dashboardTranslations: Record<Language, Record<string, string>> = {
     presentations: "Presentations",
     images: "Images",
     charts: "Charts",
-    resources: "Resources",
+    resources: "Elements",
     themes: "Themes",
     aiSuggestions: "AI Suggestions",
     collaboration: "Collaboration",

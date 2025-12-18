@@ -18,7 +18,7 @@ const CURATED_PALETTES: Record<string, { background: string; backgroundAlt: stri
   "warm-earth": { background: "#faf5f0", backgroundAlt: "#f5ebe0", text: "#78350f", heading: "#451a03", primary: "#b45309", accent: "#d97706" },
 };
 
-// GET - Fetch user's custom themes
+// GET - Fetch user's custom themes with caching
 export async function GET() {
   try {
     const { userId } = await auth();
@@ -28,6 +28,7 @@ export async function GET() {
 
     const user = await db.user.findUnique({
       where: { clerkId: userId },
+      select: { id: true }, // Only select what we need
     });
 
     if (!user) {
@@ -37,9 +38,25 @@ export async function GET() {
     const themes = await db.theme.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        name: true,
+        colors: true,
+        fonts: true,
+        designElements: true,
+        isDefault: true,
+        createdAt: true,
+      },
     });
 
-    return NextResponse.json({ themes });
+    return NextResponse.json(
+      { themes },
+      {
+        headers: {
+          "Cache-Control": "private, max-age=120, stale-while-revalidate=300",
+        },
+      }
+    );
   } catch (error) {
     console.error("Error fetching themes:", error);
     return NextResponse.json({ error: "Failed to fetch themes" }, { status: 500 });

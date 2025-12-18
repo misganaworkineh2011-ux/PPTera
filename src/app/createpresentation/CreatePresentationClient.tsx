@@ -25,10 +25,14 @@ interface RecentOutline {
 interface CreatePresentationClientProps {
   maxSlides: number;
   subscriptionPlan?: string | null;
+  userCredits?: number;
   mode: string;
   existingOutline?: ExistingOutline;
   recentOutlines?: RecentOutline[];
 }
+
+// Credit cost per presentation generation
+const CREDIT_COST_PER_GENERATION = 10;
 
 // Define all slide options by plan
 const getAllSlideOptions = (userPlan: string | null | undefined) => {
@@ -37,28 +41,29 @@ const getAllSlideOptions = (userPlan: string | null | undefined) => {
   const options: Array<{ value: number; label: string; plan: string; isGroupHeader?: boolean; disabled?: boolean }> = [];
 
   const hasFree = true;
-  const hasStarter = userPlanLower !== "free";
-  const hasPro = userPlanLower === "pro" || userPlanLower === "enterprise";
-  const hasEnterprise = userPlanLower === "enterprise";
+  const hasPlus = userPlanLower === "plus" || userPlanLower === "pro" || userPlanLower === "ultra";
+  const hasPro = userPlanLower === "pro" || userPlanLower === "ultra";
+  const hasUltra = userPlanLower === "ultra";
 
   options.push({ value: -1, label: "Free Plan: 1-10 slides", plan: "Free", isGroupHeader: true, disabled: false });
   for (let i = 1; i <= 10; i++) {
     options.push({ value: i, label: `${i} ${i === 1 ? "slide" : "slides"}`, plan: "Free", disabled: false });
   }
 
-  options.push({ value: -2, label: "Starter Plan: 15, 20 slides", plan: "Starter", isGroupHeader: true, disabled: false });
-  options.push({ value: 15, label: "15 slides", plan: "Starter", disabled: !hasStarter });
-  options.push({ value: 20, label: "20 slides", plan: "Starter", disabled: !hasStarter });
+  options.push({ value: -2, label: "Plus Plan: 15, 20 slides", plan: "Plus", isGroupHeader: true, disabled: false });
+  options.push({ value: 15, label: "15 slides", plan: "Plus", disabled: !hasPlus });
+  options.push({ value: 20, label: "20 slides", plan: "Plus", disabled: !hasPlus });
 
-  options.push({ value: -3, label: "Pro Plan: 25, 30, 40, 50 slides", plan: "Pro", isGroupHeader: true, disabled: false });
+  options.push({ value: -3, label: "Pro Plan: 25, 30, 40, 50, 60 slides", plan: "Pro", isGroupHeader: true, disabled: false });
   options.push({ value: 25, label: "25 slides", plan: "Pro", disabled: !hasPro });
   options.push({ value: 30, label: "30 slides", plan: "Pro", disabled: !hasPro });
   options.push({ value: 40, label: "40 slides", plan: "Pro", disabled: !hasPro });
   options.push({ value: 50, label: "50 slides", plan: "Pro", disabled: !hasPro });
+  options.push({ value: 60, label: "60 slides", plan: "Pro", disabled: !hasPro });
 
-  options.push({ value: -4, label: "Enterprise Plan: 60, 70 slides", plan: "Enterprise", isGroupHeader: true, disabled: false });
-  options.push({ value: 60, label: "60 slides", plan: "Enterprise", disabled: !hasEnterprise });
-  options.push({ value: 70, label: "70 slides", plan: "Enterprise", disabled: !hasEnterprise });
+  options.push({ value: -4, label: "Ultra Plan: 70, 75 slides", plan: "Ultra", isGroupHeader: true, disabled: false });
+  options.push({ value: 70, label: "70 slides", plan: "Ultra", disabled: !hasUltra });
+  options.push({ value: 75, label: "75 slides", plan: "Ultra", disabled: !hasUltra });
 
   return options;
 };
@@ -242,12 +247,18 @@ function SlideCard({
 export default function CreatePresentationClient({
   maxSlides,
   subscriptionPlan,
+  userCredits = 0,
   mode,
   existingOutline,
   recentOutlines = [],
 }: CreatePresentationClientProps) {
   const router = useRouter();
   const { state: streamState, startStream, cancel, reset } = useOutlineStream();
+
+  // Credit check state
+  const [showCreditWarning, setShowCreditWarning] = useState(false);
+  const hasEnoughCredits = userCredits >= CREDIT_COST_PER_GENERATION;
+  const isFreeUser = !subscriptionPlan || subscriptionPlan === 'free';
 
   // View state: 'form' | 'streaming' | 'completed'
   const [view, setView] = useState<"form" | "streaming" | "completed">(
@@ -365,6 +376,21 @@ export default function CreatePresentationClient({
   const handleGenerate = async () => {
     const trimmed = formData.description.trim();
     if (!trimmed) return;
+
+    // Credit check for AI generation (not scratch mode)
+    if (mode !== "scratch") {
+      // Free users without subscription should upgrade
+      if (isFreeUser) {
+        setShowCreditWarning(true);
+        return;
+      }
+      
+      // Paid users with insufficient credits should upgrade or wait for reset
+      if (!hasEnoughCredits) {
+        setShowCreditWarning(true);
+        return;
+      }
+    }
 
     // For scratch mode, create blank slides immediately
     if (mode === "scratch") {
@@ -559,6 +585,44 @@ export default function CreatePresentationClient({
 
   return (
     <div className="min-h-screen w-full relative overflow-hidden">
+      {/* Credit Warning Modal */}
+      {showCreditWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-8 max-w-md mx-4 shadow-2xl">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 mb-2">
+                {isFreeUser ? "Upgrade to Create Presentations" : "Insufficient Credits"}
+              </h3>
+              <p className="text-slate-600 mb-6">
+                {isFreeUser 
+                  ? "AI presentation generation requires a subscription. Upgrade to Plus, Pro, or Ultra to start creating amazing presentations."
+                  : `You need ${CREDIT_COST_PER_GENERATION} credits to generate a presentation. Your current balance is ${userCredits} credits.`
+                }
+              </p>
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={() => setShowCreditWarning(false)}
+                  className="px-4 py-2 text-slate-600 hover:text-slate-800 font-medium transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => router.push("/pricing")}
+                  className="px-6 py-2 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white rounded-lg font-semibold hover:opacity-90 transition"
+                >
+                  {isFreeUser ? "View Plans" : "Get More Credits"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Load Google Fonts */}
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Outfit:wght@400;700&family=Playfair+Display:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap');

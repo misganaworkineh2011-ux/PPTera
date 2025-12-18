@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Search, X } from "lucide-react";
+import { Shapes, Search, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useStickyContext } from "~/components/dashboard/DashboardLayout";
 
@@ -23,7 +23,9 @@ export default function ResourcesStickyHeader() {
     }
 
     const observer = new IntersectionObserver(
-      ([entry]) => {
+      (entries) => {
+        const entry = entries[0];
+        if (!entry) return;
         // Trigger when 50% of the header is out of view
         const sticky = entry.intersectionRatio < 0.5;
         setIsSticky(sticky);
@@ -31,10 +33,10 @@ export default function ResourcesStickyHeader() {
         if (sticky) {
           setStickyTitleContent(
             <>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
-                <Box size={18} />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-cyan-500 text-white shadow-md">
+                <Shapes size={18} />
               </div>
-              <h1 className="text-xl font-bold tracking-tight text-[#1e3a8a] whitespace-nowrap">Resources</h1>
+              <h1 className="text-xl font-bold tracking-tight text-[#1e3a8a] whitespace-nowrap">Slide Elements</h1>
             </>
           );
         } else {
@@ -70,10 +72,13 @@ export default function ResourcesStickyHeader() {
         }`}
       >
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
-            <Box size={22} />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-cyan-500 text-white shadow-md">
+            <Shapes size={22} />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-[#1e3a8a]">Resources</h1>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-[#1e3a8a]">Slide Elements</h1>
+            <p className="text-sm text-slate-500">Shapes, callouts, badges & icons for your slides</p>
+          </div>
         </div>
         {/* Search - responsive: icon button on mobile, full bar on desktop */}
         <div className="flex items-center gap-2">

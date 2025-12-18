@@ -41,29 +41,29 @@ type PolarWebhookPayload = {
   };
 };
 
-function getPlanConfig(productId: string): { credits: number; plan: string; type: string } | null {
-  // Basic plan
-  if (productId === env.POLAR_PRODUCT_BASIC) {
-    return { credits: 50, plan: 'basic', type: 'monthly' };
+function getPlanConfig(productId: string): { credits: number; plan: string; type: string; cardsPerPrompt: number } | null {
+  // Plus plan - $10/mo ($8/yr), 1,000 credits, 20 cards/prompt
+  if (productId === env.POLAR_PRODUCT_PLUS) {
+    return { credits: 1000, plan: 'plus', type: 'monthly', cardsPerPrompt: 20 };
   }
-  if (productId === env.POLAR_PRODUCT_YEARLY_BASIC) {
-    return { credits: 50, plan: 'basic', type: 'annual' };
+  if (productId === env.POLAR_PRODUCT_YEARLY_PLUS) {
+    return { credits: 1000, plan: 'plus', type: 'annual', cardsPerPrompt: 20 };
   }
 
-  // Pro plan
+  // Pro plan - $25/mo ($18/yr), 4,000 credits, 60 cards/prompt
   if (productId === env.POLAR_PRODUCT_PRO) {
-    return { credits: 200, plan: 'pro', type: 'monthly' };
+    return { credits: 4000, plan: 'pro', type: 'monthly', cardsPerPrompt: 60 };
   }
   if (productId === env.POLAR_PRODUCT_YEARLY_PRO) {
-    return { credits: 200, plan: 'pro', type: 'annual' };
+    return { credits: 4000, plan: 'pro', type: 'annual', cardsPerPrompt: 60 };
   }
 
-  // Business plan
-  if (productId === env.POLAR_PRODUCT_BUSINESS) {
-    return { credits: 500, plan: 'business', type: 'monthly' };
+  // Ultra plan - $100/mo ($90/yr), 20,000 credits, 75 cards/prompt
+  if (productId === env.POLAR_PRODUCT_ULTRA) {
+    return { credits: 20000, plan: 'ultra', type: 'monthly', cardsPerPrompt: 75 };
   }
-  if (productId === env.POLAR_PRODUCT_YEARLY_BUSINESS) {
-    return { credits: 500, plan: 'business', type: 'annual' };
+  if (productId === env.POLAR_PRODUCT_YEARLY_ULTRA) {
+    return { credits: 20000, plan: 'ultra', type: 'annual', cardsPerPrompt: 75 };
   }
 
   return null;
@@ -132,12 +132,12 @@ export async function POST(req: NextRequest) {
       if (!planConfig) {
         console.error("[Polar Webhook] Unknown product ID:", productId);
         console.error("[Polar Webhook] Available products:", {
-          basic: env.POLAR_PRODUCT_BASIC,
-          yearlyBasic: env.POLAR_PRODUCT_YEARLY_BASIC,
+          plus: env.POLAR_PRODUCT_PLUS,
+          yearlyPlus: env.POLAR_PRODUCT_YEARLY_PLUS,
           pro: env.POLAR_PRODUCT_PRO,
           yearlyPro: env.POLAR_PRODUCT_YEARLY_PRO,
-          business: env.POLAR_PRODUCT_BUSINESS,
-          yearlyBusiness: env.POLAR_PRODUCT_YEARLY_BUSINESS,
+          ultra: env.POLAR_PRODUCT_ULTRA,
+          yearlyUltra: env.POLAR_PRODUCT_YEARLY_ULTRA,
         });
         return NextResponse.json(
           { error: "Unknown product" },
@@ -215,17 +215,26 @@ export async function POST(req: NextRequest) {
       const subscriptionId = payload.data.id;
       
       try {
-        await db.user.update({
+        // Find user by subscription ID first
+        const user = await db.user.findFirst({
           where: { polarSubscriptionId: subscriptionId },
-          data: {
-            subscriptionPlan: null,
-            subscriptionType: null,
-            polarSubscriptionId: null,
-            nextResetDate: null,
-          },
         });
+        
+        if (user) {
+          await db.user.update({
+            where: { id: user.id },
+            data: {
+              subscriptionPlan: null,
+              subscriptionType: null,
+              polarSubscriptionId: null,
+              nextResetDate: null,
+            },
+          });
+          console.log("[Polar Webhook] Subscription cancelled:", subscriptionId);
+        } else {
+          console.log("[Polar Webhook] No user found for subscription:", subscriptionId);
+        }
 
-        console.log("[Polar Webhook] Subscription cancelled:", subscriptionId);
         return NextResponse.json({ success: true });
       } catch (error) {
         console.error("[Polar Webhook] Error cancelling subscription:", error);

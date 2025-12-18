@@ -123,16 +123,8 @@ export default function PricingPage() {
     "offers": [
       {
         "@type": "Offer",
-        "name": "Free Plan",
-        "price": "0",
-        "priceCurrency": "USD",
-        "availability": "https://schema.org/InStock",
-        "url": "https://www.pptmaster.app/pricing"
-      },
-      {
-        "@type": "Offer",
-        "name": "Pro Plan - Monthly",
-        "price": "19.99",
+        "name": "Plus Plan - Monthly",
+        "price": "10",
         "priceCurrency": "USD",
         "priceValidUntil": "2026-12-31",
         "availability": "https://schema.org/InStock",
@@ -140,8 +132,17 @@ export default function PricingPage() {
       },
       {
         "@type": "Offer",
-        "name": "Pro Plan - Yearly",
-        "price": "199.99",
+        "name": "Pro Plan - Monthly",
+        "price": "25",
+        "priceCurrency": "USD",
+        "priceValidUntil": "2026-12-31",
+        "availability": "https://schema.org/InStock",
+        "url": "https://www.pptmaster.app/pricing"
+      },
+      {
+        "@type": "Offer",
+        "name": "Ultra Plan - Monthly",
+        "price": "100",
         "priceCurrency": "USD",
         "priceValidUntil": "2026-12-31",
         "availability": "https://schema.org/InStock",
@@ -205,9 +206,10 @@ export default function PricingPage() {
             </div>
           ) : (
             <div className="grid gap-8 md:grid-cols-3 items-start">
-              {products.map((product, i) => {
+              {products.map((product) => {
                 const priceData = isAnnual ? product.yearly : product.monthly;
                 const activePrice = priceData || product.monthly || product.yearly;
+                const isUltra = product.key === 'ultra';
 
                 if (!activePrice) return null;
 
@@ -226,6 +228,11 @@ export default function PricingPage() {
                     {isHighlighted && (
                       <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg">
                         MOST POPULAR
+                      </div>
+                    )}
+                    {isUltra && (
+                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg">
+                        INTRODUCTORY PRICE
                       </div>
                     )}
 

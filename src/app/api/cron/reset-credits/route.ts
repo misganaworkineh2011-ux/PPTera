@@ -6,14 +6,14 @@ export const dynamic = "force-dynamic";
 
 function getPlanCredits(plan: string): number {
   switch (plan) {
-    case 'basic':
-      return 50;
+    case 'plus':
+      return 1000;
     case 'pro':
-      return 200;
-    case 'business':
-      return 500;
+      return 4000;
+    case 'ultra':
+      return 20000;
     default:
-      return 50;
+      return 1000;
   }
 }
 

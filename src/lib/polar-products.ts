@@ -29,41 +29,44 @@ const polarClient = new Polar({
 
 // Custom UI descriptions for better presentation
 const UI_DESCRIPTIONS: Record<string, string> = {
-  "basic": `
-• 50 AI credits / mo
+  "plus": `
+• 1,000 AI credits / mo
+• 20 cards per prompt
 • Unlimited PDF exports
 • Basic templates
 • 7-day version history
 
-**Credits reset:** Monthly for subscriptions`,
+**Credits reset:** Monthly`,
 
   "pro": `
-• 200 AI credits / mo
+• 4,000 AI credits / mo
+• 60 cards per prompt
 • Remove PPTMaster branding
 • Export to PowerPoint (PPTX)
 • Premium templates
 • 30-day version history
 • Priority support
 
-**Credits reset:** Monthly for subscriptions`,
+**Credits reset:** Monthly`,
 
-  "business": `
-• 500 AI credits / mo
+  "ultra": `
+• 20,000 AI credits / mo
+• 75 cards per prompt
 • Everything in Pro
 • Shared team workspace
 • Custom fonts & themes
 • Advanced analytics
 • Dedicated support
 
-**Credits reset:** Monthly for subscriptions`
+**Credits reset:** Monthly`
 };
 
 export async function fetchPolarProductsFromEnv(): Promise<PolarPricingTier[]> {
   const tierConfigs = [
     {
-      key: "basic",
-      monthlyId: env.POLAR_PRODUCT_BASIC,
-      yearlyId: env.POLAR_PRODUCT_YEARLY_BASIC,
+      key: "plus",
+      monthlyId: env.POLAR_PRODUCT_PLUS,
+      yearlyId: env.POLAR_PRODUCT_YEARLY_PLUS,
     },
     {
       key: "pro",
@@ -71,9 +74,9 @@ export async function fetchPolarProductsFromEnv(): Promise<PolarPricingTier[]> {
       yearlyId: env.POLAR_PRODUCT_YEARLY_PRO,
     },
     {
-      key: "business",
-      monthlyId: env.POLAR_PRODUCT_BUSINESS,
-      yearlyId: env.POLAR_PRODUCT_YEARLY_BUSINESS,
+      key: "ultra",
+      monthlyId: env.POLAR_PRODUCT_ULTRA,
+      yearlyId: env.POLAR_PRODUCT_YEARLY_ULTRA,
     },
   ].filter((config) => config.monthlyId || config.yearlyId);
 

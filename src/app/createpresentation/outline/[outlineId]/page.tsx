@@ -61,13 +61,14 @@ export default async function OutlinePage({ params, searchParams }: OutlinePageP
   const getMaxSlides = (plan: string | null | undefined): number => {
     if (!plan) return 10;
     const planLower = plan.toLowerCase();
-    if (planLower === "starter") return 25;
-    if (planLower === "pro") return 50;
-    if (planLower === "enterprise") return 70;
+    if (planLower === "plus") return 20;
+    if (planLower === "pro") return 60;
+    if (planLower === "ultra") return 75;
     return 10;
   };
 
   const maxSlides = getMaxSlides(user.subscriptionPlan);
+  const userCredits = user.credits ?? 0;
   const metadata = outline.metadata as {
     topic?: string;
     totalSlides?: number;
@@ -93,6 +94,7 @@ export default async function OutlinePage({ params, searchParams }: OutlinePageP
     <CreatePresentationClient
       maxSlides={maxSlides}
       subscriptionPlan={user.subscriptionPlan}
+      userCredits={userCredits}
       mode={mode || "ai"}
       existingOutline={{
         id: outline.id,

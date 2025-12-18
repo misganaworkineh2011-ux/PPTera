@@ -14,13 +14,14 @@ export default async function CreatePresentationPage({ searchParams }: PageProps
   const getMaxSlides = (plan: string | null | undefined): number => {
     if (!plan) return 10; // Free account
     const planLower = plan.toLowerCase();
-    if (planLower === "starter") return 25;
-    if (planLower === "pro") return 50;
-    if (planLower === "enterprise") return 70;
+    if (planLower === "plus") return 20;
+    if (planLower === "pro") return 60;
+    if (planLower === "ultra") return 75;
     return 10; // Default to free
   };
 
   const maxSlides = getMaxSlides(user?.subscriptionPlan);
+  const userCredits = user?.credits ?? 0;
 
   // Fetch only the first 3 completed outlines for initial display
   const outlines = await db.outline.findMany({
@@ -54,6 +55,7 @@ export default async function CreatePresentationPage({ searchParams }: PageProps
     <CreatePresentationClient
       maxSlides={maxSlides}
       subscriptionPlan={user?.subscriptionPlan}
+      userCredits={userCredits}
       mode={mode || "ai"}
       recentOutlines={recentOutlines}
     />
