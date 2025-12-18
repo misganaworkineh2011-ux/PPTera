@@ -82,12 +82,6 @@ export const LandingNavbar = () => {
                                                 <div className="text-xs text-slate-500">{t.aiPresentationsDesc}</div>
                                             </div>
                                         </LoadingLink>
-                                        <LoadingLink href="/templates" className="flex items-start gap-3 rounded-xl p-3 hover:bg-slate-50">
-                                            <div>
-                                                <div className="font-semibold text-slate-900">{t.templates}</div>
-                                                <div className="text-xs text-slate-500">{t.templatesDesc}</div>
-                                            </div>
-                                        </LoadingLink>
                                     </div>
                                 </div>
                             )}

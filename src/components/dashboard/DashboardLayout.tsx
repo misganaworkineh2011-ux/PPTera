@@ -3,6 +3,7 @@
 import { useState, createContext, useContext, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
+import Onboarding from "~/components/Onboarding";
 import { cn } from "~/lib/utils";
 import { useUser } from "@clerk/nextjs";
 
@@ -41,11 +42,23 @@ export default function DashboardLayout({ children, subscriptionPlan, credits, o
   const [isTitleSticky, setIsTitleSticky] = useState(false);
   const [stickyTitleContent, setStickyTitleContent] = useState<React.ReactNode | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const { user } = useUser();
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     onSearch?.(query);
   };
+
+  // Check if onboarding should be shown
+  useEffect(() => {
+    const onboardingComplete = localStorage.getItem("onboarding_complete");
+    if (!onboardingComplete) {
+      // Small delay to let the dashboard load first
+      const timer = setTimeout(() => setShowOnboarding(true), 500);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   // Close mobile sidebar when clicking outside or on route change
   useEffect(() => {
@@ -98,6 +111,14 @@ export default function DashboardLayout({ children, subscriptionPlan, credits, o
             {children}
           </main>
         </div>
+
+        {/* Onboarding Modal */}
+        {showOnboarding && (
+          <Onboarding
+            userName={user?.firstName || undefined}
+            onComplete={() => setShowOnboarding(false)}
+          />
+        )}
       </div>
     </StickyContext.Provider>
   );

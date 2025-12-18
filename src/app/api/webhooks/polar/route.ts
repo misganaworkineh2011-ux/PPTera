@@ -42,6 +42,14 @@ type PolarWebhookPayload = {
   };
 };
 
+// Credit top-up product mapping
+function getTopupCredits(productId: string): number | null {
+  if (productId === env.POLAR_TOPUP_500) return 500;
+  if (productId === env.POLAR_TOPUP_1000) return 1000;
+  if (productId === env.POLAR_TOPUP_2500) return 2500;
+  return null;
+}
+
 function getPlanConfig(productId: string): { credits: number; plan: string; type: string; cardsPerPrompt: number } | null {
   // Plus plan - $10/mo ($8/yr), 1,000 credits, 20 cards/prompt
   if (productId === env.POLAR_PRODUCT_PLUS) {
@@ -141,12 +149,67 @@ export async function POST(req: NextRequest) {
       const productId = (data as any).product_id || (data as any).product?.id;
       const customerId = (data as any).customer_id || (data as any).customer?.id;
       const subscriptionId = (data as any).subscription_id || (data as any).id;
+      const metadata = data.metadata || (data as any).checkout?.metadata || {};
 
       console.log(`[Polar Webhook] Processing product ID: ${productId}`);
 
       if (!productId) {
         console.error("[Polar Webhook] Could not find product ID in payload");
         return NextResponse.json({ error: "Missing product ID" }, { status: 400 });
+      }
+
+      // Check if this is a credit top-up purchase
+      const topupCredits = getTopupCredits(productId);
+      if (topupCredits !== null || metadata.type === "credit_topup") {
+        const credits = topupCredits || parseInt(metadata.credits || "0", 10);
+        const userId = metadata.userId;
+
+        if (!userId || !credits) {
+          console.error("[Polar Webhook] Missing userId or credits for top-up");
+          return NextResponse.json({ error: "Missing top-up data" }, { status: 400 });
+        }
+
+        console.log("[Polar Webhook] Processing credit top-up:", { userId, credits });
+
+        try {
+          const user = await db.user.update({
+            where: { id: userId },
+            data: {
+              credits: { increment: credits },
+            },
+          });
+
+          // Log activity
+          await db.activity.create({
+            data: {
+              userId: user.id,
+              type: "credit_topup",
+              description: `Purchased ${credits.toLocaleString()} credits`,
+              metadata: { credits, productId },
+            },
+          });
+
+          // Create notification
+          await db.notification.create({
+            data: {
+              userId: user.id,
+              type: "credits",
+              title: "Credits Added!",
+              message: `${credits.toLocaleString()} credits have been added to your account.`,
+            },
+          }).catch(err => console.error("[Polar Webhook] Failed to create notification:", err));
+
+          console.log("[Polar Webhook] Credit top-up successful:", {
+            userId: user.id,
+            creditsAdded: credits,
+            newBalance: user.credits,
+          });
+
+          return NextResponse.json({ success: true, creditsAdded: credits });
+        } catch (error) {
+          console.error("[Polar Webhook] Top-up database error:", error);
+          return NextResponse.json({ error: "Failed to add credits" }, { status: 500 });
+        }
       }
 
       const planConfig = getPlanConfig(productId);

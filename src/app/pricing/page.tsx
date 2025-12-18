@@ -104,11 +104,44 @@ export default function PricingPage() {
     return desc.split('\n').filter(line => line.trim().startsWith('•')).map(line => line.replace('•', '').trim());
   };
 
+  const [topupLoadingId, setTopupLoadingId] = useState<number | null>(null);
+
   const topUpOptions = [
     { credits: 500, price: "$9.99", popular: false, slides: 125, images: 50 },
     { credits: 1000, price: "$17.99", popular: true, slides: 250, images: 100 },
     { credits: 2500, price: "$39.99", popular: false, slides: 625, images: 250 },
   ];
+
+  const handleTopup = async (credits: number, index: number) => {
+    if (!isSignedIn) {
+      router.push("/sign-in");
+      return;
+    }
+
+    setTopupLoadingId(index);
+    try {
+      const res = await fetch("/api/polar/topup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credits: credits.toString() }),
+      });
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to start checkout");
+      }
+      
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || "Failed to start checkout");
+      setTopupLoadingId(null);
+    }
+  };
 
   // Product Schema for SEO
   const productSchema = {
@@ -278,7 +311,7 @@ export default function PricingPage() {
 
           {/* Top-up Cards - Only show for subscribed users */}
           {hasSubscription && (
-            <div className="mt-24">
+            <div id="topup" className="mt-24 scroll-mt-32">
               <div className="text-center mb-12">
                 <div className="inline-flex items-center gap-2 rounded-full border border-[#06b6d4] bg-cyan-50 px-4 py-2 mb-4">
                   <Zap className="h-4 w-4 text-[#06b6d4]" />
@@ -316,14 +349,20 @@ export default function PricingPage() {
                       </div>
                       <div className="text-2xl font-bold text-[#1e3a8a] mb-6">{option.price}</div>
                       <button
+                        onClick={() => handleTopup(option.credits, i)}
+                        disabled={topupLoadingId !== null}
                         className={cn(
-                          "w-full rounded-full py-2.5 px-6 font-semibold text-sm transition-all hover:scale-105",
+                          "w-full rounded-full py-2.5 px-6 font-semibold text-sm transition-all hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed",
                           option.popular
                             ? "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white shadow-lg hover:shadow-xl"
                             : "border-2 border-[#06b6d4] text-[#1e3a8a] hover:bg-cyan-50"
                         )}
                       >
-                        Purchase
+                        {topupLoadingId === i ? (
+                          <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+                        ) : (
+                          "Purchase"
+                        )}
                       </button>
                     </div>
                   </div>

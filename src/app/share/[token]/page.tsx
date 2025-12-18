@@ -16,6 +16,7 @@ export default async function SharedPresentationPage({
           id: true,
           name: true,
           image: true,
+          subscriptionPlan: true,
         },
       },
     },
@@ -24,6 +25,10 @@ export default async function SharedPresentationPage({
   if (!presentation || !presentation.isPublic) {
     notFound();
   }
+
+  // Check if watermark should be shown (free users)
+  const showWatermark = !presentation.user?.subscriptionPlan || 
+    !["plus", "pro", "ultra"].includes(presentation.user.subscriptionPlan);
 
   // Parse slides and content
   let slides: SlideData[] = [];
@@ -58,19 +63,33 @@ export default async function SharedPresentationPage({
   }
 
   return (
-    <PresentationViewer
-      presentation={{
-        id: presentation.id,
-        title: presentation.title,
-        description: presentation.description,
-        slides: slides,
-        content: content,
-        createdAt: presentation.createdAt,
-        updatedAt: presentation.updatedAt,
-      }}
-      mode="view"
-      isOwner={false}
-      isPublicView={true}
-    />
+    <div className="relative">
+      <PresentationViewer
+        presentation={{
+          id: presentation.id,
+          title: presentation.title,
+          description: presentation.description,
+          slides: slides,
+          content: content,
+          createdAt: presentation.createdAt,
+          updatedAt: presentation.updatedAt,
+        }}
+        mode="view"
+        isOwner={false}
+        isPublicView={true}
+      />
+      
+      {/* Watermark for free users */}
+      {showWatermark && (
+        <a
+          href="https://www.pptmaster.app"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fixed bottom-4 right-4 z-50 px-4 py-2 bg-black/70 backdrop-blur-sm rounded-full text-white text-sm font-medium hover:bg-black/80 transition shadow-lg"
+        >
+          Made with PPTMaster
+        </a>
+      )}
+    </div>
   );
 }

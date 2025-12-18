@@ -302,10 +302,14 @@ export default function CreatePresentationClient({
   const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
   const [isCreatingPresentation, setIsCreatingPresentation] = useState(false);
   
-  // Track recently selected themes for quick access
+  // Track recently selected themes for quick access (6 themes for 3x2 grid)
   const [quickSelectThemes, setQuickSelectThemes] = useState<string[]>([
     themes[0]?.id || "corporate-professional",
     themes[1]?.id || "elegant-dark",
+    themes[2]?.id || "modern-minimal",
+    themes[3]?.id || "creative-bold",
+    themes[4]?.id || "nature-green",
+    themes[5]?.id || "tech-blue",
   ]);
   
   // Cache for custom themes
@@ -1173,9 +1177,9 @@ export default function CreatePresentationClient({
                       </button>
                     </div>
                     
-                    {/* Popular Themes Grid */}
-                    <div className="grid grid-cols-2 gap-3">
-                      {quickSelectThemes.map((themeId) => {
+                    {/* Popular Themes Grid - 3 columns, 2 rows */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {quickSelectThemes.slice(0, 6).map((themeId) => {
                         const theme = getThemeForDisplay(themeId);
                         if (!theme) return null;
                         const isSelected = formData.theme === theme.id;
@@ -1188,7 +1192,7 @@ export default function CreatePresentationClient({
                               // Move selected theme to front of quick-select
                               setQuickSelectThemes((prev) => {
                                 if (prev[0] === theme.id) return prev; // Already first
-                                return [theme.id, ...prev.filter(id => id !== theme.id)].slice(0, 2);
+                                return [theme.id, ...prev.filter(id => id !== theme.id)].slice(0, 6);
                               });
                             }}
                             className={`group relative overflow-hidden rounded-lg border text-left transition-all hover:shadow-md ${

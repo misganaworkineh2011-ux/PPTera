@@ -14,6 +14,8 @@ import {
   MoreVertical,
   X,
   Loader2,
+  CreditCard,
+  TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -80,6 +82,8 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
       items: [
         { name: t.collaboration, href: "/dashboard/collaboration", icon: Users },
         { name: t.activity, href: "/dashboard/activity", icon: History },
+        { name: "Analytics", href: "/dashboard/analytics", icon: TrendingUp },
+        { name: "Billing", href: "/dashboard/billing", icon: CreditCard },
         { name: t.settings, href: "/dashboard/settings", icon: Settings },
       ],
     },

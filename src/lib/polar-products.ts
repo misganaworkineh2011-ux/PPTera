@@ -30,16 +30,22 @@ const polarClient = new Polar({
 /**
  * Credit costs for different operations
  * - Slides: 4 credits per slide generated
- * - AI Images: Varies by model quality
+ * - AI Images: Varies by model
  */
 export const CREDIT_COSTS = {
   // Slide generation
   SLIDE: 4,                    // 4 credits per slide
   
-  // AI Image generation (varies by model)
-  IMAGE_BASIC: 10,             // Basic AI image (DALL-E 3 standard)
-  IMAGE_HD: 15,                // HD AI image (DALL-E 3 HD)
-  IMAGE_PREMIUM: 25,           // Premium model (future: Midjourney, etc.)
+  // OpenAI DALL-E 3 Image generation
+  IMAGE_BASIC: 10,             // DALL-E 3 standard quality
+  IMAGE_HD: 15,                // DALL-E 3 HD quality
+  
+  // Google Gemini Image generation
+  GEMINI_IMAGEN: 8,            // Gemini Imagen 3 (faster, cheaper)
+  GEMINI_IMAGEN_HD: 12,        // Gemini Imagen 3 HD
+  
+  // Legacy (for backwards compatibility)
+  IMAGE_PREMIUM: 25,           // Reserved for future premium models
   
   // Other operations
   CHART_GENERATION: 2,         // AI-generated chart
