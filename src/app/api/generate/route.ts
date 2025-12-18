@@ -4,6 +4,7 @@ import OpenAI from "openai";
 import PptxGenJS from "pptxgenjs";
 import { db } from "~/server/db";
 import { env } from "~/env";
+import { calculateSlideCredits, CREDIT_COSTS } from "~/lib/credits";
 
 const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
 
@@ -23,14 +24,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    if (user.credits < 1) {
+    const { topic, slides } = await req.json();
+    
+    // Calculate credits needed: 4 credits per slide
+    const creditsNeeded = calculateSlideCredits(slides);
+
+    if (user.credits < creditsNeeded) {
       return NextResponse.json(
-        { error: "Insufficient credits" },
+        { 
+          error: "Insufficient credits",
+          required: creditsNeeded,
+          available: user.credits,
+          costPerSlide: CREDIT_COSTS.SLIDE,
+        },
         { status: 403 }
       );
     }
-
-    const { topic, slides } = await req.json();
 
     // Generate content with OpenAI
     const completion = await openai.chat.completions.create({
@@ -93,6 +102,10 @@ export async function POST(req: Request) {
       outputType: "arraybuffer",
     })) as ArrayBuffer;
 
+    // Calculate actual credits used based on slides generated
+    const actualSlideCount = slideData.length;
+    const creditsUsed = calculateSlideCredits(actualSlideCount);
+
     // OPTIMIZATION: Batch all database operations in a single transaction
     // This reduces 4 sequential DB calls to 1 atomic operation
     const [presentation] = await db.$transaction([
@@ -105,10 +118,10 @@ export async function POST(req: Request) {
           userId: user.id,
         },
       }),
-      // Deduct credits atomically
+      // Deduct credits atomically (4 credits per slide)
       db.user.update({
         where: { id: user.id },
-        data: { credits: { decrement: 1 } },
+        data: { credits: { decrement: creditsUsed } },
       }),
     ]);
 
@@ -124,7 +137,7 @@ export async function POST(req: Request) {
           userId: user.id,
           type: "success",
           title: "Presentation created",
-          message: `Your presentation "${topic}" is ready to view`,
+          message: `Your presentation "${topic}" is ready to view. Used ${creditsUsed} credits (${actualSlideCount} slides × ${CREDIT_COSTS.SLIDE} credits).`,
           link: `/presentation/${presentation.id}`,
         },
       }),
@@ -132,7 +145,7 @@ export async function POST(req: Request) {
         data: {
           userId: user.id,
           type: "create",
-          description: `Created presentation "${topic}"`,
+          description: `Created presentation "${topic}" (${actualSlideCount} slides, ${creditsUsed} credits)`,
           presentationId: presentation.id,
         },
       }),

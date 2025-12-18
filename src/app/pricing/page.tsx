@@ -105,9 +105,9 @@ export default function PricingPage() {
   };
 
   const topUpOptions = [
-    { credits: 50, price: "$9.99", popular: false },
-    { credits: 100, price: "$17.99", popular: true },
-    { credits: 250, price: "$39.99", popular: false },
+    { credits: 500, price: "$9.99", popular: false, slides: 125, images: 50 },
+    { credits: 1000, price: "$17.99", popular: true, slides: 250, images: 100 },
+    { credits: 2500, price: "$39.99", popular: false, slides: 625, images: 250 },
   ];
 
   // Product Schema for SEO
@@ -309,8 +309,11 @@ export default function PricingPage() {
                       <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white mb-4">
                         <Plus className="w-8 h-8" />
                       </div>
-                      <div className="text-3xl font-bold text-slate-900 mb-1">{option.credits}</div>
-                      <div className="text-sm text-slate-500 mb-4">Credits</div>
+                      <div className="text-3xl font-bold text-slate-900 mb-1">{option.credits.toLocaleString()}</div>
+                      <div className="text-sm text-slate-500 mb-2">Credits</div>
+                      <div className="text-xs text-slate-400 mb-4">
+                        ~{option.slides} slides or ~{option.images} AI images
+                      </div>
                       <div className="text-2xl font-bold text-[#1e3a8a] mb-6">{option.price}</div>
                       <button
                         className={cn(
@@ -325,6 +328,11 @@ export default function PricingPage() {
                     </div>
                   </div>
                 ))}
+              </div>
+              
+              {/* Credit cost explanation */}
+              <div className="mt-8 text-center text-sm text-slate-500">
+                <p>Credit costs: <span className="font-medium">4 credits/slide</span> • <span className="font-medium">10 credits/AI image</span> • <span className="font-medium">15 credits/HD image</span></p>
               </div>
             </div>
           )}

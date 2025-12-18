@@ -1,29 +1,54 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "~/server/db";
 import { env } from "~/env";
+import { PLAN_CONFIG } from "~/lib/polar-products";
 
 export const dynamic = "force-dynamic";
 
 function getPlanCredits(plan: string): number {
   switch (plan) {
     case 'plus':
-      return 1000;
+      return PLAN_CONFIG.plus.credits;
     case 'pro':
-      return 4000;
+      return PLAN_CONFIG.pro.credits;
     case 'ultra':
-      return 20000;
+      return PLAN_CONFIG.ultra.credits;
     default:
-      return 1000;
+      return PLAN_CONFIG.plus.credits;
   }
 }
 
-function getNextResetDate(): Date {
+/**
+ * Calculate next reset date based on subscription start date
+ * Credits reset on the same day of month as the subscription started
+ */
+function getNextResetDate(subscriptionStartDate: Date | null): Date {
   const now = new Date();
-  const nextMonth = new Date(now);
-  nextMonth.setMonth(now.getMonth() + 1);
-  nextMonth.setDate(1);
-  nextMonth.setHours(0, 0, 0, 0);
-  return nextMonth;
+  
+  // If no subscription start date, default to 1st of next month
+  if (!subscriptionStartDate) {
+    const nextMonth = new Date(now);
+    nextMonth.setMonth(now.getMonth() + 1);
+    nextMonth.setDate(1);
+    nextMonth.setHours(0, 0, 0, 0);
+    return nextMonth;
+  }
+  
+  const startDay = subscriptionStartDate.getDate();
+  
+  // Calculate next month's reset on the same day
+  const nextReset = new Date(now);
+  nextReset.setMonth(now.getMonth() + 1);
+  // Handle months with fewer days (e.g., if subscribed on 31st, reset on 28th/30th)
+  const daysInNextMonth = getDaysInMonth(nextReset.getFullYear(), nextReset.getMonth());
+  nextReset.setDate(Math.min(startDay, daysInNextMonth));
+  nextReset.setHours(0, 0, 0, 0);
+  
+  return nextReset;
+}
+
+function getDaysInMonth(year: number, month: number): number {
+  return new Date(year, month + 1, 0).getDate();
 }
 
 export async function GET(req: NextRequest) {
@@ -40,36 +65,51 @@ export async function GET(req: NextRequest) {
 
     const now = new Date();
 
-    // Find users who need a reset
-    // This includes annual subscribers who get monthly credit refreshes
+    // Find annual subscribers whose reset date has passed
+    // Annual subscribers get monthly credit refreshes on their subscription anniversary day
     const usersToReset = await db.user.findMany({
       where: {
         subscriptionType: "annual",
+        subscriptionPlan: { not: null },
         nextResetDate: {
-          lte: now, // Date is in the past or today
+          lte: now, // Reset date is in the past or today
         },
       },
     });
 
-    console.log(`[Credit Reset] Found ${usersToReset.length} users to reset`);
+    console.log(`[Credit Reset] Found ${usersToReset.length} annual subscribers to reset`);
 
     let resetCount = 0;
     const errors: string[] = [];
 
     for (const user of usersToReset) {
       try {
-        const planCredits = getPlanCredits(user.subscriptionPlan || 'basic');
-        const nextReset = getNextResetDate();
+        const planCredits = getPlanCredits(user.subscriptionPlan || 'plus');
+        // Calculate next reset based on their subscription start date (or current reset date as fallback)
+        const subscriptionStart = (user as any).subscriptionStartDate || user.nextResetDate;
+        const nextReset = getNextResetDate(subscriptionStart);
 
-        await db.user.update({
-          where: { id: user.id },
-          data: {
-            credits: planCredits, // Reset to plan credits (replaces leftover credits)
-            nextResetDate: nextReset,
-          },
-        });
+        await db.$transaction([
+          // Reset credits to full plan amount (replaces any leftover credits)
+          db.user.update({
+            where: { id: user.id },
+            data: {
+              credits: planCredits,
+              nextResetDate: nextReset,
+            },
+          }),
+          // Create notification about credit reset
+          db.notification.create({
+            data: {
+              userId: user.id,
+              type: "credits",
+              title: "Credits Refreshed!",
+              message: `Your monthly credits have been reset to ${planCredits.toLocaleString()}. Next reset: ${nextReset.toLocaleDateString()}.`,
+            },
+          }),
+        ]);
 
-        console.log(`[Credit Reset] Reset user ${user.id} (${user.subscriptionPlan}): ${planCredits} credits, next reset: ${nextReset}`);
+        console.log(`[Credit Reset] Reset user ${user.id} (${user.subscriptionPlan}): ${planCredits} credits, next reset: ${nextReset.toISOString()}`);
         resetCount++;
       } catch (error) {
         const errorMsg = `Failed to reset user ${user.id}: ${error}`;
@@ -83,6 +123,7 @@ export async function GET(req: NextRequest) {
       message: `Credit reset completed`,
       resetCount,
       totalUsers: usersToReset.length,
+      timestamp: now.toISOString(),
       errors: errors.length > 0 ? errors : undefined,
     });
   } catch (error) {

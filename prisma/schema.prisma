@@ -8,32 +8,33 @@ datasource db {
 }
 
 model User {
-  id                  String          @id @default(cuid())
-  clerkId             String          @unique
-  name                String
-  email               String
-  emailVerified       Boolean         @default(false)
-  image               String?
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @default(now()) @updatedAt
-  credits             Int             @default(0)
-  subscriptionPlan    String?
-  subscriptionType    String?
-  productId           String?
-  nextResetDate       DateTime?
-  polarCustomerId     String?
-  polarSubscriptionId String?
-  activities          Activity[]
-  charts              Chart[]
-  collaborations      Collaboration[]
-  images              Image[]
-  pinnedProjects      PinnedProject[]
-  resources           Resource[]
-  templates           Template[]
-  themes              Theme[]
-  notifications       Notification[]
-  outlines            Outline[]
-  presentations       Presentation[]
+  id                    String          @id @default(cuid())
+  clerkId               String          @unique
+  name                  String
+  email                 String
+  emailVerified         Boolean         @default(false)
+  image                 String?
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @default(now()) @updatedAt
+  credits               Int             @default(0)
+  subscriptionPlan      String?         // plus, pro, ultra
+  subscriptionType      String?         // monthly, annual
+  subscriptionStartDate DateTime?       // When subscription started (for anniversary resets)
+  productId             String?
+  nextResetDate         DateTime?       // Next credit reset date (for annual subscribers)
+  polarCustomerId       String?
+  polarSubscriptionId   String?
+  activities            Activity[]
+  charts                Chart[]
+  collaborations        Collaboration[]
+  images                Image[]
+  pinnedProjects        PinnedProject[]
+  resources             Resource[]
+  templates             Template[]
+  themes                Theme[]
+  notifications         Notification[]
+  outlines              Outline[]
+  presentations         Presentation[]
 
   @@map("user")
 }

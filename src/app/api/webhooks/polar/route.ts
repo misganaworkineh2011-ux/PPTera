@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { validateEvent } from "@polar-sh/sdk/webhooks";
 import { db } from "~/server/db";
 import { env } from "~/env";
+import { PLAN_CONFIG } from "~/lib/polar-products";
 
 export const dynamic = "force-dynamic";
 
@@ -44,38 +45,59 @@ type PolarWebhookPayload = {
 function getPlanConfig(productId: string): { credits: number; plan: string; type: string; cardsPerPrompt: number } | null {
   // Plus plan - $10/mo ($8/yr), 1,000 credits, 20 cards/prompt
   if (productId === env.POLAR_PRODUCT_PLUS) {
-    return { credits: 1000, plan: 'plus', type: 'monthly', cardsPerPrompt: 20 };
+    return { credits: PLAN_CONFIG.plus.credits, plan: 'plus', type: 'monthly', cardsPerPrompt: PLAN_CONFIG.plus.cardsPerPrompt };
   }
   if (productId === env.POLAR_PRODUCT_YEARLY_PLUS) {
-    return { credits: 1000, plan: 'plus', type: 'annual', cardsPerPrompt: 20 };
+    return { credits: PLAN_CONFIG.plus.credits, plan: 'plus', type: 'annual', cardsPerPrompt: PLAN_CONFIG.plus.cardsPerPrompt };
   }
 
   // Pro plan - $25/mo ($18/yr), 4,000 credits, 60 cards/prompt
   if (productId === env.POLAR_PRODUCT_PRO) {
-    return { credits: 4000, plan: 'pro', type: 'monthly', cardsPerPrompt: 60 };
+    return { credits: PLAN_CONFIG.pro.credits, plan: 'pro', type: 'monthly', cardsPerPrompt: PLAN_CONFIG.pro.cardsPerPrompt };
   }
   if (productId === env.POLAR_PRODUCT_YEARLY_PRO) {
-    return { credits: 4000, plan: 'pro', type: 'annual', cardsPerPrompt: 60 };
+    return { credits: PLAN_CONFIG.pro.credits, plan: 'pro', type: 'annual', cardsPerPrompt: PLAN_CONFIG.pro.cardsPerPrompt };
   }
 
   // Ultra plan - $100/mo ($90/yr), 20,000 credits, 75 cards/prompt
   if (productId === env.POLAR_PRODUCT_ULTRA) {
-    return { credits: 20000, plan: 'ultra', type: 'monthly', cardsPerPrompt: 75 };
+    return { credits: PLAN_CONFIG.ultra.credits, plan: 'ultra', type: 'monthly', cardsPerPrompt: PLAN_CONFIG.ultra.cardsPerPrompt };
   }
   if (productId === env.POLAR_PRODUCT_YEARLY_ULTRA) {
-    return { credits: 20000, plan: 'ultra', type: 'annual', cardsPerPrompt: 75 };
+    return { credits: PLAN_CONFIG.ultra.credits, plan: 'ultra', type: 'annual', cardsPerPrompt: PLAN_CONFIG.ultra.cardsPerPrompt };
   }
 
   return null;
 }
 
-function getNextResetDate(type: string): Date {
+/**
+ * Calculate next reset date based on subscription start date
+ * For annual subscribers, credits reset monthly on the same day they subscribed
+ */
+function getNextResetDate(subscriptionStartDate: Date): Date {
   const now = new Date();
-  const nextMonth = new Date(now);
-  nextMonth.setMonth(now.getMonth() + 1);
-  nextMonth.setDate(1);
-  nextMonth.setHours(0, 0, 0, 0);
-  return nextMonth;
+  const startDay = subscriptionStartDate.getDate();
+  
+  // Get next month's reset date on the same day as subscription started
+  const nextReset = new Date(now);
+  nextReset.setMonth(now.getMonth() + 1);
+  nextReset.setDate(Math.min(startDay, getDaysInMonth(nextReset.getFullYear(), nextReset.getMonth())));
+  nextReset.setHours(0, 0, 0, 0);
+  
+  // If we're past this month's reset day, use next month
+  const thisMonthReset = new Date(now);
+  thisMonthReset.setDate(Math.min(startDay, getDaysInMonth(now.getFullYear(), now.getMonth())));
+  thisMonthReset.setHours(0, 0, 0, 0);
+  
+  if (now < thisMonthReset) {
+    return thisMonthReset;
+  }
+  
+  return nextReset;
+}
+
+function getDaysInMonth(year: number, month: number): number {
+  return new Date(year, month + 1, 0).getDate();
 }
 
 export async function POST(req: NextRequest) {
@@ -172,21 +194,34 @@ export async function POST(req: NextRequest) {
 
       // Update user credits and plan info
       try {
-        // Set next reset date for annual plans (monthly resets)
+        const subscriptionStartDate = new Date();
+        
+        // For annual plans, set monthly reset date based on subscription start
+        // For monthly plans, Polar handles billing cycle, no reset needed
         const shouldSetResetDate = planConfig.type === 'annual';
-        const nextReset = shouldSetResetDate ? getNextResetDate(planConfig.type) : null;
+        const nextReset = shouldSetResetDate ? getNextResetDate(subscriptionStartDate) : null;
+        
+        // Build update data - subscriptionStartDate may not exist in older schemas
+        const updateData: Record<string, unknown> = {
+          credits: planConfig.credits, // SET credits, replacing old value (fresh start)
+          subscriptionPlan: planConfig.plan,
+          subscriptionType: planConfig.type,
+          productId: productId,
+          polarCustomerId: customerId,
+          polarSubscriptionId: subscriptionId || null,
+          nextResetDate: nextReset,
+        };
+        
+        // Try to set subscriptionStartDate if the field exists
+        try {
+          updateData.subscriptionStartDate = subscriptionStartDate;
+        } catch {
+          // Field doesn't exist in schema yet, skip it
+        }
         
         const user = await db.user.update({
           where: { clerkId },
-          data: {
-            credits: planConfig.credits, // SET credits, replacing old value
-            subscriptionPlan: planConfig.plan,
-            subscriptionType: planConfig.type,
-            productId: productId,
-            polarCustomerId: customerId,
-            polarSubscriptionId: subscriptionId || null,
-            nextResetDate: nextReset,
-          },
+          data: updateData as any,
         });
 
         console.log("[Polar Webhook] Subscription updated successfully:", {
@@ -194,8 +229,19 @@ export async function POST(req: NextRequest) {
           newBalance: user.credits,
           plan: user.subscriptionPlan,
           type: user.subscriptionType,
+          subscriptionStart: subscriptionStartDate,
           nextReset: user.nextResetDate,
         });
+
+        // Create notification for user
+        await db.notification.create({
+          data: {
+            userId: user.id,
+            type: "subscription",
+            title: `Welcome to ${planConfig.plan.charAt(0).toUpperCase() + planConfig.plan.slice(1)}!`,
+            message: `Your account has been credited with ${planConfig.credits.toLocaleString()} credits. Credits reset monthly.`,
+          },
+        }).catch(err => console.error("[Polar Webhook] Failed to create notification:", err));
 
         return NextResponse.json({
           success: true,

@@ -27,38 +27,115 @@ const polarClient = new Polar({
   server: env.POLAR_ENV,
 });
 
+/**
+ * Credit costs for different operations
+ * - Slides: 4 credits per slide generated
+ * - AI Images: Varies by model quality
+ */
+export const CREDIT_COSTS = {
+  // Slide generation
+  SLIDE: 4,                    // 4 credits per slide
+  
+  // AI Image generation (varies by model)
+  IMAGE_BASIC: 10,             // Basic AI image (DALL-E 3 standard)
+  IMAGE_HD: 15,                // HD AI image (DALL-E 3 HD)
+  IMAGE_PREMIUM: 25,           // Premium model (future: Midjourney, etc.)
+  
+  // Other operations
+  CHART_GENERATION: 2,         // AI-generated chart
+  OUTLINE_GENERATION: 5,       // AI outline generation
+  CONTENT_ENHANCEMENT: 3,      // AI content improvement
+} as const;
+
+/**
+ * Plan configurations with credit allocations
+ */
+export const PLAN_CONFIG = {
+  plus: {
+    credits: 1000,
+    cardsPerPrompt: 20,
+    features: [
+      "1,000 AI credits / month",
+      "~250 slides or ~100 AI images",
+      "20 cards per prompt",
+      "Unlimited PDF exports",
+      "Basic templates",
+      "7-day version history",
+    ],
+  },
+  pro: {
+    credits: 4000,
+    cardsPerPrompt: 60,
+    features: [
+      "4,000 AI credits / month",
+      "~1,000 slides or ~400 AI images",
+      "60 cards per prompt",
+      "Remove PPTMaster branding",
+      "Export to PowerPoint (PPTX)",
+      "Premium AI image models",
+      "Premium templates",
+      "30-day version history",
+      "Priority support",
+    ],
+  },
+  ultra: {
+    credits: 20000,
+    cardsPerPrompt: 75,
+    features: [
+      "20,000 AI credits / month",
+      "~5,000 slides or ~2,000 AI images",
+      "75 cards per prompt",
+      "Everything in Pro",
+      "Access to most advanced AI models",
+      "Shared team workspace",
+      "Custom fonts & themes",
+      "Advanced analytics",
+      "Dedicated support",
+    ],
+  },
+} as const;
+
 // Custom UI descriptions for better presentation
 const UI_DESCRIPTIONS: Record<string, string> = {
   "plus": `
 • 1,000 AI credits / mo
+• ~250 slides (4 credits each)
+• ~100 AI images (10 credits each)
 • 20 cards per prompt
 • Unlimited PDF exports
 • Basic templates
 • 7-day version history
 
-**Credits reset:** Monthly`,
+**Credits reset:** Monthly on subscription date`,
 
   "pro": `
 • 4,000 AI credits / mo
+• ~1,000 slides (4 credits each)
+• ~400 AI images (10 credits each)
 • 60 cards per prompt
 • Remove PPTMaster branding
 • Export to PowerPoint (PPTX)
+• Premium AI image models (HD: 15 credits)
 • Premium templates
 • 30-day version history
 • Priority support
 
-**Credits reset:** Monthly`,
+**Credits reset:** Monthly on subscription date`,
 
   "ultra": `
 • 20,000 AI credits / mo
+• ~5,000 slides (4 credits each)
+• ~2,000 AI images (10 credits each)
 • 75 cards per prompt
 • Everything in Pro
+• Access to most advanced AI models
+• Premium images (25 credits)
 • Shared team workspace
 • Custom fonts & themes
 • Advanced analytics
 • Dedicated support
 
-**Credits reset:** Monthly`
+**Credits reset:** Monthly on subscription date`
 };
 
 export async function fetchPolarProductsFromEnv(): Promise<PolarPricingTier[]> {
