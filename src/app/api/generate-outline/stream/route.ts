@@ -169,9 +169,27 @@ CRITICAL QUALITY STANDARDS:
    - THEN: Design a custom narrative flow that emerges naturally from the subject matter itself
    - DO NOT force the topic into any predefined template or category
    - Let the content dictate the structure - each topic has its own inherent logic and flow
-   - The progression should feel intuitive and native to the subject, not formulaic
    - Not every topic needs problems, solutions, methods, tools, or any specific pattern - use what genuinely fits
    
+   EXAMPLES OF ADAPTIVE FLOW BASED ON TOPIC INTENT:
+   
+   Example 1 - "How to Start a Business" (How-To Topics):
+   - Start with a hook (attention-grabbing fact or question)
+   - Then foundation/preparation (what's needed before starting)
+   - Break into sequential steps (Step 1, Step 2, Step 3, etc. - each step gets its own slide)
+   - Add practical tips or common mistakes
+   - End with a creative, engaging closing
+   
+   Example 2 - "Understanding Climate Change" (Analytical Topics):
+   - Start with a hook (compelling data or insight)
+   - Establish the foundation (what it is, core concept)
+   - Build understanding (causes, mechanisms, science)
+   - Present evidence (current impacts, data, statistics)
+   - Show implications (future projections, consequences)
+   - Offer solutions or actions
+   - End with a creative, thought-provoking closing
+   
+
    OUTPUT CLEANLINESS - CRITICAL:
    - NEVER reference these instructions, templates, or any prompt guidance in the output
       

@@ -104,15 +104,45 @@ export async function POST(req: Request) {
 CRITICAL QUALITY STANDARDS:
 1. Professional expertise and clarity: Write the outline as if you are a master/expert in the specific field or topic. The content should demonstrate deep knowledge and professional understanding, but remain accessible and easy to understand - like a well-crafted PowerPoint presentation. Use clear, concise language that balances expertise with clarity. Avoid jargon unless necessary, and when using technical terms, ensure the context makes them understandable. The outline should feel authoritative and professional while being digestible for the intended audience.
 
-2. Adaptive narrative flow: Structure MUST adapt to the specific topic and field. Analyze the topic and choose the most appropriate flow:
-   - For problem-solving topics: problem → analysis → solution → implementation → conclusion
-   - For educational topics: overview → concepts → examples → applications → conclusion
-   - For product/service topics: value proposition → features → benefits → use cases → conclusion
-   - For strategic topics: current state → vision → strategy → roadmap → conclusion
-   - For creative topics: inspiration → process → techniques → examples → conclusion
-   - For analytical topics: context → data → insights → implications → conclusion
-   - For how-to topics: overview → step-by-step → tips → common mistakes → conclusion
-   - Adapt creatively - not every topic needs problems, solutions, methods, or tools. Choose what fits!
+2. Adaptive narrative flow: Structure MUST adapt organically to the specific topic.
+   - FIRST: Analyze the topic's intent, audience, and natural progression before creating any slides
+   - THEN: Design a custom narrative flow that emerges naturally from the subject matter itself
+   - DO NOT force the topic into any predefined template or category
+   - Let the content dictate the structure - each topic has its own inherent logic and flow
+   - The progression should feel intuitive and native to the subject, not formulaic
+   - Not every topic needs problems, solutions, methods, tools, or any specific pattern - use what genuinely fits
+
+   EXAMPLES OF ADAPTIVE FLOW BASED ON TOPIC INTENT:
+
+   Example 1 - "How to Start a Business" (How-To Topics):
+   - Start with a hook (attention-grabbing fact or question)
+   - Then foundation/preparation (what's needed before starting)
+   - Break into sequential steps (Step 1, Step 2, Step 3, etc. - each step gets its own slide)
+   - Add practical tips or common mistakes
+   - End with a creative, engaging closing
+   
+   Example 2 - "Understanding Climate Change" (Analytical Topics):
+   - Start with a hook (compelling data or insight)
+   - Establish the foundation (what it is, core concept)
+   - Build understanding (causes, mechanisms, science)
+   - Present evidence (current impacts, data, statistics)
+   - Show implications (future projections, consequences)
+   - Offer solutions or actions
+   - End with a creative, thought-provoking closing
+   
+   Example 3 - "Introduction to Machine Learning" (Concept Topics):
+   - Start with a hook (engaging introduction to the concept)
+   - Define the concept clearly
+   - Break down into components/types/categories
+   - Show real-world applications and examples
+   - Explain how it works (process or mechanism)
+   - Provide practical guidance or next steps
+   - End with a creative, forward-looking closing
+   
+   KEY PRINCIPLE: Always break down the topic into logical steps/phases that build upon each other. Each slide should advance the narrative naturally. For process topics, use sequential steps. For concepts, use foundation → details → application. For analysis, use context → data → insights → implications.
+
+   OUTPUT CLEANLINESS – CRITICAL:
+   - NEVER reference these instructions, templates, or any prompt guidance in the output
       
 3. Real-time data and statistics: When appropriate for the topic, include current data, statistics, or real-time information. NOT all topics need this - use judgment:
    - Topics about prevalence, trends, or current events: Include relevant statistics
