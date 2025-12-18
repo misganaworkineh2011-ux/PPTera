@@ -27,6 +27,7 @@ import ShareModal from "~/components/presentation/ShareModal";
 import FeedbackSection from "~/components/presentation/FeedbackSection";
 import ChartModal from "~/components/charts/ChartModal";
 import { type ChartData } from "~/lib/charts/types";
+import { RateUsModal, incrementPresentationCount, shouldShowRatePrompt, checkExistingReview } from "~/components/RateUsModal";
 
 // Import extracted components
 import {
@@ -78,6 +79,7 @@ export default function PresentationViewer({
   const [editedTitle, setEditedTitle] = useState(presentation.title);
   const [showExportModal, setShowExportModal] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [showRateModal, setShowRateModal] = useState(false);
   
   // Initialize based on screen size
   const [showThumbnails, setShowThumbnails] = useState(
@@ -86,6 +88,27 @@ export default function PresentationViewer({
   const [viewMode, setViewMode] = useState<"slides" | "scroll">(
     typeof window !== 'undefined' && window.innerWidth < 768 ? "scroll" : "scroll"
   );
+  
+  // Check for rate prompt on new presentation view
+  useEffect(() => {
+    // Only check for owners viewing their own presentations
+    if (!isOwner || isPublicView) return;
+    
+    const checkRatePrompt = async () => {
+      // First check if user already has a review
+      const hasReview = await checkExistingReview();
+      if (hasReview) return;
+      
+      // Increment count and check if we should show prompt
+      const shouldShow = incrementPresentationCount();
+      if (shouldShow) {
+        // Small delay to let the presentation load first
+        setTimeout(() => setShowRateModal(true), 2000);
+      }
+    };
+    
+    checkRatePrompt();
+  }, [isOwner, isPublicView]);
   
   // Detect mobile and set view mode
   useEffect(() => {
@@ -1178,6 +1201,10 @@ export default function PresentationViewer({
               config: slidesData[showChartModal]!.chart!.config,
             } : null}
           />
+        )}
+
+        {showRateModal && (
+          <RateUsModal onClose={() => setShowRateModal(false)} />
         )}
 
       </div>

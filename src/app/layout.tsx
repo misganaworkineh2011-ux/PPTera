@@ -3,18 +3,19 @@ import { Toaster } from "sonner";
 import { LanguageProvider } from "~/contexts/LanguageContext";
 import { NavigationProvider } from "~/contexts/NavigationContext";
 import "~/styles/globals.css";
-import { type Metadata } from "next";
+import { type Metadata, type Viewport } from "next";
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://www.pptmaster.app'),
   title: {
     default: "PPTMaster | Best AI PowerPoint Generator & Presentation Maker",
     template: "%s | PPT Master"
-  },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 5,
   },
   description: "PPTMaster is the best free AI-powered PowerPoint generator that helps you create stunning presentations and visuals effortlessly — no design or coding skills needed.",
   keywords: [
@@ -83,13 +84,13 @@ export const metadata: Metadata = {
         url: "/og-image.jpeg",
         width: 1200,
         height: 630,
-        alt: "PPTMaster - AI Presentation Generator"
+        alt: "PPTMaster - AI PowerPoint Generator | Best Free PowerPoint Maker"
       }
     ]
   },
   twitter: {
     card: "summary_large_image",
-    title: "PPT Master: AI PowerPoint Generator",
+    title: "PPT Master: AI PowerPoint Generator | Best Free PowerPoint Maker",
     description: "Create professional PowerPoint presentations with AI. Transform ideas into stunning slides instantly with PPT Master, the best AI PowerPoint generator.",
     images: ["/og-image.jpeg"],
     site: "@pptmaster",

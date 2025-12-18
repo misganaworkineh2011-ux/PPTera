@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, Shield, CreditCard, Bell, Monitor, ChevronRight, Loader2, Check, Save, ExternalLink, Sun, Moon, Laptop, AlertTriangle } from "lucide-react";
+import { User, Shield, CreditCard, Bell, Monitor, ChevronRight, Loader2, Check, Save, ExternalLink, Sun, Moon, Laptop, AlertTriangle, MessageSquare } from "lucide-react";
+import ReviewWidget from "~/components/dashboard/ReviewWidget";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { useSettings } from "~/contexts/SettingsContext";
 import { useLanguage } from "~/contexts/LanguageContext";
@@ -157,6 +158,7 @@ export default function SettingsPage() {
     { id: "billing", label: t.billing, icon: CreditCard, description: t.billingDesc },
     { id: "notifications", label: t.notifications, icon: Bell, description: t.notificationsDesc },
     { id: "security", label: t.security, icon: Shield, description: t.securityDesc },
+    { id: "feedback", label: t.feedback || "Feedback", icon: MessageSquare, description: t.feedbackDesc || "Share your thoughts" },
   ];
 
   if (isLoading) {
@@ -435,6 +437,10 @@ export default function SettingsPage() {
                 </div>
               </div>
             </div>
+          )}
+
+          {activeTab === "feedback" && (
+            <ReviewWidget />
           )}
         </main>
       </div>

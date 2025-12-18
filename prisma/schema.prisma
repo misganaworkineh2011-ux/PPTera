@@ -320,3 +320,20 @@ model Notification {
   @@index([userId, isRead])
   @@map("notification")
 }
+
+
+model Review {
+  id        String   @id @default(cuid())
+  userId    String?
+  name      String
+  email     String
+  rating    Int      // 1-5 stars
+  title     String
+  content   String
+  isPublic  Boolean  @default(false) // Admin approval required
+  isFeatured Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("review")
+}
