@@ -2,12 +2,11 @@
 
 import { ImageIcon, Plus } from "lucide-react";
 import { type Theme } from "~/lib/themes";
-import { type SlideData, type EditingState, type SlideChartData, type SlideElement } from "./types";
+import { type SlideData, type EditingState, type SlideChartData } from "./types";
 import EditableText from "./EditableText";
 import ChartRenderer from "./ChartRenderer";
 import TransformedContentRenderer from "./TransformedContent";
 import IconRenderer from "./IconRenderer";
-import ElementRenderer, { type SnapZoneData, type ElementPosition } from "~/components/elements/ElementRenderer";
 
 interface SlideRendererProps {
   slide: SlideData;
@@ -24,10 +23,6 @@ interface SlideRendererProps {
   onFinishEditing: () => void;
   onAddBullet: (slideIndex: number) => void;
   onDeleteBullet: (slideIndex: number, bulletIndex: number) => void;
-  // Element management
-  onElementClick?: (element: SlideElement) => void;
-  onElementDelete?: (elementId: string) => void;
-  onElementPositionChange?: (elementId: string, position: ElementPosition) => void;
 }
 
 type LayoutVariant = "left-content" | "right-content" | "centered" | "split-diagonal" | "image-focus" | "minimal-left" | "cards-grid" | "quote-style" | "timeline" | "diagonal-cut" | "circle-focus" | "wave-layout" | "hexagon-frame" | "glass-cards" | "aurora-glow" | "diamond-frame" | "ember-cards" | "molten-split" | "arch-frame" | "botanical-cards" | "elegant-split" | "glitch-frame" | "neon-grid" | "holo-cards" | "scan-frame" | "bio-cards" | "transmission-split" | "clean-frame" | "pro-cards" | "executive-split" | "nebula-float" | "orbital-rings" | "starfield-cards" | "cosmic-portal" | "galaxy-split" | "celestial-frame" | "mono-brutalist" | "geometric-slice" | "contrast-blocks" | "angular-frame" | "stripe-accent" | "bold-stack" | "cloud-float" | "sakura-cards" | "dreamy-split" | "soft-bubble" | "twilight-frame" | "pastel-stack" | "terminal-window" | "matrix-cards" | "code-block" | "shell-prompt" | "cyber-grid" | "hack-split";
@@ -192,7 +187,6 @@ function getSlideImages(slide: SlideData) {
 export default function SlideRenderer({
   slide, index, totalSlides, theme, isOwner, isFullscreen, isHovered, isEditing,
   editingText, onStartEditing, onUpdateContent, onFinishEditing, onAddBullet, onDeleteBullet,
-  onElementClick, onElementDelete, onElementPositionChange,
 }: SlideRendererProps) {
   const allImages = getSlideImages(slide);
   const hasImage = allImages.length > 0;
@@ -871,143 +865,6 @@ export default function SlideRenderer({
     </div>
   );
 
-  // Generate snap zones based on slide content
-  const generateSnapZones = (): SnapZoneData[] => {
-    const zones: SnapZoneData[] = [];
-    const bulletCount = bulletPoints.length;
-    
-    // Title area snap zones
-    zones.push({
-      id: "before-title",
-      type: "before-title",
-      x: 5,
-      y: 8,
-      width: 90,
-      height: 8,
-      label: "Before Title",
-    });
-    
-    zones.push({
-      id: "after-title",
-      type: "after-title",
-      x: 5,
-      y: 22,
-      width: 90,
-      height: 8,
-      label: "After Title",
-    });
-    
-    // Content area snap zones
-    if (bulletCount > 0) {
-      zones.push({
-        id: "before-content",
-        type: "before-content",
-        x: 5,
-        y: 32,
-        width: hasImage ? 45 : 90,
-        height: 8,
-        label: "Before Content",
-      });
-      
-      // Between bullets snap zones
-      for (let i = 0; i < bulletCount; i++) {
-        const yPos = 42 + (i * 10);
-        if (yPos < 85) {
-          zones.push({
-            id: `between-bullets-${i}`,
-            type: "between-bullets",
-            x: 5,
-            y: yPos,
-            width: hasImage ? 45 : 90,
-            height: 6,
-            label: `After Bullet ${i + 1}`,
-            bulletIndex: i,
-          });
-        }
-      }
-      
-      zones.push({
-        id: "after-content",
-        type: "after-content",
-        x: 5,
-        y: Math.min(42 + (bulletCount * 10), 85),
-        width: hasImage ? 45 : 90,
-        height: 8,
-        label: "After Content",
-      });
-    }
-    
-    // Chart area snap zones
-    if (hasChart) {
-      zones.push({
-        id: "before-chart",
-        type: "before-chart",
-        x: hasImage ? 55 : 50,
-        y: 35,
-        width: 40,
-        height: 8,
-        label: "Before Chart",
-      });
-      
-      zones.push({
-        id: "after-chart",
-        type: "after-chart",
-        x: hasImage ? 55 : 50,
-        y: 75,
-        width: 40,
-        height: 8,
-        label: "After Chart",
-      });
-    }
-    
-    // Image area snap zones (if no image, use right side)
-    if (!hasImage) {
-      zones.push({
-        id: "right-side",
-        type: "free",
-        x: 55,
-        y: 50,
-        width: 40,
-        height: 40,
-        label: "Right Side",
-      });
-    }
-    
-    return zones;
-  };
-
-  // Elements overlay component - renders slide elements on top of any layout
-  const ElementsOverlay = () => {
-    if (!slide.elements || slide.elements.length === 0) {
-      // Still render the container for drag-and-drop even if no elements
-      if (canEdit && isHovered && onElementPositionChange) {
-        return (
-          <ElementRenderer 
-            elements={[]} 
-            theme={theme} 
-            isEditing={true}
-            snapZones={generateSnapZones()}
-            onElementClick={onElementClick}
-            onElementDelete={onElementDelete}
-            onElementPositionChange={onElementPositionChange}
-          />
-        );
-      }
-      return null;
-    }
-    return (
-      <ElementRenderer 
-        elements={slide.elements} 
-        theme={theme} 
-        isEditing={canEdit && isHovered}
-        snapZones={canEdit && isHovered ? generateSnapZones() : []}
-        onElementClick={onElementClick}
-        onElementDelete={onElementDelete}
-        onElementPositionChange={onElementPositionChange}
-      />
-    );
-  };
-
   // LAYOUT 1: Left Content - Image Right (supports multiple images in stack layout)
   if (layout === "left-content") {
     return (
@@ -1036,7 +893,6 @@ export default function SlideRenderer({
           {slide.image?.source === "placeholder" && <div className="w-full sm:w-[45%] p-4 sm:p-8"><Placeholder /></div>}
         </div>
         <div className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${colors.borderLine} to-transparent`} />
-        <ElementsOverlay />
       </div>
     );
   }
@@ -1069,7 +925,6 @@ export default function SlideRenderer({
           {slide.image?.source === "placeholder" && <div className="w-full sm:w-[45%] p-4 sm:p-8"><Placeholder /></div>}
         </div>
         <div className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${colors.borderLine} to-transparent`} />
-        <ElementsOverlay />
       </div>
     );
   }
@@ -1103,7 +958,6 @@ export default function SlideRenderer({
           </div>
         </div>
         <div className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${colors.borderLine} to-transparent`} />
-        <ElementsOverlay />
       </div>
     );
   }
@@ -1152,7 +1006,6 @@ export default function SlideRenderer({
         </div>
         
         <style jsx>{`.clip-diagonal { clip-path: polygon(50% 0, 100% 0, 100% 100%, 30% 100%); }`}</style>
-        <ElementsOverlay />
       </div>
     );
   }
@@ -1207,7 +1060,6 @@ export default function SlideRenderer({
             <a href={firstImage.photographerUrl} target="_blank" rel="noopener noreferrer" style={{ color: colors.accent }}>{firstImage.photographer}</a>
           </div>
         )}
-        <ElementsOverlay />
       </div>
     );
   }
@@ -1255,7 +1107,6 @@ export default function SlideRenderer({
         
         {/* Bottom accent */}
         <div className={`absolute bottom-0 right-0 w-1/3 h-px bg-gradient-to-l ${colors.accentLine} to-transparent opacity-50`} />
-        <ElementsOverlay />
       </div>
     );
   }
@@ -1312,7 +1163,6 @@ export default function SlideRenderer({
             )}
           </div>
         )}
-        <ElementsOverlay />
       </div>
     );
   }
@@ -4738,7 +4588,6 @@ export default function SlideRenderer({
   return (
     <div className={`h-full relative overflow-hidden ${colors.bgSolid} flex items-center justify-center`}>
       <p style={{ color: colors.textMuted }}>Slide {index + 1}</p>
-      <ElementsOverlay />
     </div>
   );
 }

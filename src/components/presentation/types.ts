@@ -13,77 +13,6 @@ export interface SlideImage {
   source: string;
 }
 
-// Slide Element Types
-export type ElementType = 
-  | "shape" 
-  | "icon" 
-  | "callout" 
-  | "divider" 
-  | "badge" 
-  | "quote-box" 
-  | "stat-card" 
-  | "highlight-box"
-  | "arrow"
-  | "bracket";
-
-export type ShapeVariant = 
-  | "rectangle" 
-  | "rounded-rectangle" 
-  | "circle" 
-  | "oval" 
-  | "triangle" 
-  | "diamond" 
-  | "hexagon" 
-  | "star";
-
-export type DividerVariant = 
-  | "solid" 
-  | "dashed" 
-  | "dotted" 
-  | "gradient" 
-  | "double" 
-  | "wave";
-
-export type CalloutVariant = 
-  | "info" 
-  | "success" 
-  | "warning" 
-  | "tip" 
-  | "note" 
-  | "important";
-
-export type BadgeVariant = 
-  | "solid" 
-  | "outline" 
-  | "gradient" 
-  | "pill" 
-  | "tag";
-
-export interface SlideElement {
-  id: string;
-  type: ElementType;
-  // Position (percentage-based for responsiveness)
-  x: number; // 0-100
-  y: number; // 0-100
-  width: number; // percentage
-  height: number; // percentage
-  // Content
-  content?: string;
-  icon?: string; // Lucide icon name
-  // Styling
-  variant?: string;
-  color?: string;
-  backgroundColor?: string;
-  borderColor?: string;
-  opacity?: number;
-  rotation?: number;
-  // Additional properties
-  fontSize?: "xs" | "sm" | "md" | "lg" | "xl";
-  fontWeight?: "normal" | "medium" | "semibold" | "bold";
-  textAlign?: "left" | "center" | "right";
-  zIndex?: number;
-}
-
 // Flexible chart data type that accepts both legacy and new formats
 export interface SlideChartData {
   type: string;
@@ -108,8 +37,6 @@ export interface SlideData {
   // Chart data - use flexible type
   chart?: SlideChartData | null;
   icons?: IconPlaceholder[];
-  // Slide elements (shapes, callouts, badges, etc.)
-  elements?: SlideElement[];
   // Visual metadata for reference
   semanticIntent?: string;
   visualStrategy?: VisualStrategy;

@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { clientCache, deduplicatedFetch } from "~/lib/cache";
+import { clientCache, deduplicatedFetch, CACHE_TTL } from "~/lib/cache";
 
 interface UseDashboardDataOptions<T> {
   /** API endpoint to fetch from */
   endpoint: string;
   /** Cache key (defaults to endpoint) */
   cacheKey?: string;
-  /** Cache TTL in milliseconds (default: 5 minutes) */
+  /** Cache TTL in milliseconds (default: CACHE_TTL.PRESENTATIONS) */
   cacheTTL?: number;
   /** Initial data (for SSR) */
   initialData?: T;
@@ -34,7 +34,7 @@ interface UseDashboardDataResult<T> {
 export function useDashboardData<T>({
   endpoint,
   cacheKey,
-  cacheTTL = 5 * 60 * 1000,
+  cacheTTL = CACHE_TTL.PRESENTATIONS,
   initialData,
   fetchOnMount = true,
   deps = [],

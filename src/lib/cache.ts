@@ -8,6 +8,14 @@ interface CacheEntry<T> {
   expiresAt: number;
 }
 
+// Cache TTL constants for different data types
+export const CACHE_TTL = {
+  USER_DATA: 2 * 60 * 1000,      // 2 minutes - user data changes frequently
+  PRESENTATIONS: 5 * 60 * 1000,  // 5 minutes - presentations list
+  THEMES: 10 * 60 * 1000,        // 10 minutes - themes rarely change
+  STATIC: 30 * 60 * 1000,        // 30 minutes - static content
+} as const;
+
 class ClientCache {
   private cache = new Map<string, CacheEntry<unknown>>();
   private defaultTTL = 5 * 60 * 1000; // 5 minutes

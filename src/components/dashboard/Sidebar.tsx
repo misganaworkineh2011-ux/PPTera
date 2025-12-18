@@ -6,7 +6,6 @@ import {
   Image as ImageIcon,
   BarChart,
   Palette,
-  Shapes,
   Settings,
   History,
   Users,
@@ -68,7 +67,6 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
       items: [
         { name: t.images, href: "/dashboard/images", icon: ImageIcon },
         { name: t.charts, href: "/dashboard/charts", icon: BarChart },
-        { name: t.resources, href: "/dashboard/resources", icon: Shapes },
       ],
     },
     {

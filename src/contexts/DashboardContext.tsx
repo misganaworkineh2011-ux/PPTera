@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from "react";
-import { clientCache } from "~/lib/cache";
+import { clientCache, CACHE_TTL } from "~/lib/cache";
 
 interface UserData {
   id: string;
@@ -63,7 +63,7 @@ export function DashboardProvider({ children, initialUser }: DashboardProviderPr
         if (mountedRef.current) {
           setUser(data);
           setCredits(data.credits);
-          clientCache.set("user-data", data, 60 * 1000); // 1 minute cache
+          clientCache.set("user-data", data, CACHE_TTL.USER_DATA);
         }
       }
     } catch (error) {
@@ -81,7 +81,7 @@ export function DashboardProvider({ children, initialUser }: DashboardProviderPr
     // Update cache
     const cached = clientCache.get<UserData>("user-data");
     if (cached) {
-      clientCache.set("user-data", { ...cached, credits: newCredits }, 60 * 1000);
+      clientCache.set("user-data", { ...cached, credits: newCredits }, CACHE_TTL.USER_DATA);
     }
   }, []);
 

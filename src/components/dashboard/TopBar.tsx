@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bell, Search, Sparkles, Gift, AlertCircle, AlertTriangle, FileText, Image as ImageIcon, BarChart, Box, Palette, Sparkles as SparklesIcon, Users, History, Menu, Settings } from "lucide-react";
+import { Bell, Search, Sparkles, Gift, AlertCircle, AlertTriangle, FileText, Image as ImageIcon, BarChart, Palette, Sparkles as SparklesIcon, Users, History, Menu, Settings } from "lucide-react";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { useStickyContext } from "./DashboardLayout";
 import { usePathname } from "next/navigation";
@@ -46,7 +46,6 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
       "/dashboard": { title: t.presentations || "Presentations", icon: <FileText size={14} /> },
       "/dashboard/images": { title: t.images || "Images", icon: <ImageIcon size={14} /> },
       "/dashboard/charts": { title: t.charts || "Charts", icon: <BarChart size={14} /> },
-      "/dashboard/resources": { title: t.resources || "Resources", icon: <Box size={14} /> },
       "/dashboard/themes": { title: t.themes || "Themes", icon: <Palette size={14} /> },
       "/dashboard/ai": { title: t.aiSuggestions || "AI Suggestions", icon: <SparklesIcon size={14} /> },
       "/dashboard/collaboration": { title: t.collaboration || "Collaboration", icon: <Users size={14} /> },

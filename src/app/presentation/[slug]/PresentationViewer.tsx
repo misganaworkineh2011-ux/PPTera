@@ -26,9 +26,7 @@ import ExportModal from "~/components/presentation/ExportModal";
 import ShareModal from "~/components/presentation/ShareModal";
 import FeedbackSection from "~/components/presentation/FeedbackSection";
 import ChartModal from "~/components/charts/ChartModal";
-import ElementModal from "~/components/elements/ElementModal";
 import { type ChartData } from "~/lib/charts/types";
-import { type SlideElement } from "~/components/presentation/types";
 
 // Import extracted components
 import {
@@ -110,8 +108,6 @@ export default function PresentationViewer({
   const [imageUrl, setImageUrl] = useState("");
   const [isLoadingImage, setIsLoadingImage] = useState(false);
   const [showChartModal, setShowChartModal] = useState<number | null>(null);
-  const [showElementModal, setShowElementModal] = useState<number | null>(null);
-  const [editingElement, setEditingElement] = useState<SlideElement | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const slidesRef = useRef<SlideData[]>(presentation.slides);
@@ -547,52 +543,6 @@ export default function PresentationViewer({
     setShowChartModal(null);
   };
 
-  // Element operations
-  const addSlideElement = (slideIndex: number, element: SlideElement) => {
-    const slide = slidesData[slideIndex];
-    if (slide) {
-      const newSlides = [...slidesData];
-      const existingElements = slide.elements || [];
-      newSlides[slideIndex] = { ...slide, elements: [...existingElements, element] };
-      updateSlidesWithSave(newSlides);
-    }
-    setShowElementModal(null);
-    setEditingElement(null);
-  };
-
-  const updateSlideElement = (slideIndex: number, element: SlideElement) => {
-    const slide = slidesData[slideIndex];
-    if (slide && slide.elements) {
-      const newSlides = [...slidesData];
-      const updatedElements = slide.elements.map(el => el.id === element.id ? element : el);
-      newSlides[slideIndex] = { ...slide, elements: updatedElements };
-      updateSlidesWithSave(newSlides);
-    }
-    setShowElementModal(null);
-    setEditingElement(null);
-  };
-
-  const removeSlideElement = (slideIndex: number, elementId: string) => {
-    const slide = slidesData[slideIndex];
-    if (slide && slide.elements) {
-      const newSlides = [...slidesData];
-      newSlides[slideIndex] = { ...slide, elements: slide.elements.filter(el => el.id !== elementId) };
-      updateSlidesWithSave(newSlides);
-    }
-  };
-
-  const updateElementPosition = (slideIndex: number, elementId: string, position: { x: number; y: number; snapZone?: string; bulletIndex?: number }) => {
-    const slide = slidesData[slideIndex];
-    if (slide && slide.elements) {
-      const newSlides = [...slidesData];
-      const updatedElements = slide.elements.map(el => 
-        el.id === elementId ? { ...el, x: position.x, y: position.y } : el
-      );
-      newSlides[slideIndex] = { ...slide, elements: updatedElements };
-      updateSlidesWithSave(newSlides);
-    }
-  };
-
   const getSlideImages = (slide: SlideData) => {
     const images = [...(slide.images || [])];
     if (slide.image?.url && !images.some(img => img.url === slide.image?.url)) {
@@ -789,7 +739,6 @@ export default function PresentationViewer({
             showMenu={showSlideMenu === index}
             imageCount={getSlideImages(slide).length}
             hasChart={!!slide.chart}
-            elementCount={slide.elements?.length || 0}
             onToggleMenu={() => setShowSlideMenu(showSlideMenu === index ? null : index)}
             onChangeLayout={() => { setActiveSlideIndex(index); setShowLayoutModal(true); setShowSlideMenu(null); }}
             onDuplicate={() => duplicateSlide(index)}
@@ -798,7 +747,6 @@ export default function PresentationViewer({
             onManageImages={() => { setShowImageModal(index); setEditingImageIndex(null); setImageUrl(""); setShowSlideMenu(null); }}
             onAddChart={() => { setShowChartModal(index); setShowSlideMenu(null); }}
             onRemoveChart={() => { updateSlideChart(index, null); setShowSlideMenu(null); }}
-            onAddElement={() => { setShowElementModal(index); setEditingElement(null); setShowSlideMenu(null); }}
             onMoveUp={() => moveSlide(index, "up")}
             onMoveDown={() => moveSlide(index, "down")}
             onDelete={() => deleteSlide(index)}
@@ -837,9 +785,6 @@ export default function PresentationViewer({
             onFinishEditing={() => setEditingText(null)}
             onAddBullet={addBulletPoint}
             onDeleteBullet={deleteBulletPoint}
-            onElementClick={(element) => { setShowElementModal(index); setEditingElement(element); }}
-            onElementDelete={(elementId) => removeSlideElement(index, elementId)}
-            onElementPositionChange={(elementId, position) => updateElementPosition(index, elementId, position)}
           />
         )}
       </div>
@@ -1216,21 +1161,6 @@ export default function PresentationViewer({
           />
         )}
 
-        {showElementModal !== null && canEdit && (
-          <ElementModal
-            isOpen={true}
-            onClose={() => { setShowElementModal(null); setEditingElement(null); }}
-            onInsert={(element) => {
-              if (editingElement) {
-                updateSlideElement(showElementModal, element);
-              } else {
-                addSlideElement(showElementModal, element);
-              }
-            }}
-            theme={theme}
-            existingElement={editingElement}
-          />
-        )}
       </div>
     </>
   );
