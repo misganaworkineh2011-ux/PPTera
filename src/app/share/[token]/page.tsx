@@ -1,7 +1,68 @@
 import { notFound } from "next/navigation";
+import { type Metadata } from "next";
 import { db } from "~/server/db";
 import PresentationViewer from "~/app/presentation/[slug]/PresentationViewer";
 import { type SlideData } from "~/components/presentation/types";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { token: string };
+}): Promise<Metadata> {
+  const presentation = await db.presentation.findUnique({
+    where: { shareToken: params.token },
+  });
+
+  if (!presentation || !presentation.isPublic) {
+    return {
+      title: "Presentation Not Found | PPTMaster",
+    };
+  }
+
+  // Parse slides to get title slide image
+  let slides: SlideData[] = [];
+  try {
+    const rawSlides = presentation.slides;
+    if (typeof rawSlides === "string") {
+      slides = JSON.parse(rawSlides) as SlideData[];
+    } else if (Array.isArray(rawSlides)) {
+      slides = rawSlides as unknown as SlideData[];
+    }
+  } catch (e) {
+    console.error("Error parsing slides:", e);
+  }
+
+  // Get title slide (first slide) image
+  const titleSlide = slides[0];
+  const ogImage = titleSlide?.image?.url || titleSlide?.images?.[0]?.url || "/og-image.jpeg";
+  
+  const title = `${presentation.title}`;
+  const description = presentation.description || `View "${presentation.title}" presentation created with PPTMaster`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: presentation.title,
+        },
+      ],
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImage],
+    },
+  };
+}
 
 export default async function SharedPresentationPage({
   params,
@@ -85,8 +146,13 @@ export default async function SharedPresentationPage({
           href="https://www.pptmaster.app"
           target="_blank"
           rel="noopener noreferrer"
-          className="fixed bottom-4 right-4 z-50 px-4 py-2 bg-black/70 backdrop-blur-sm rounded-full text-white text-sm font-medium hover:bg-black/80 transition shadow-lg"
+          className="fixed bottom-4 right-4 z-50 flex items-center gap-2 px-4 py-2 bg-black/70 backdrop-blur-sm rounded-full text-white text-sm font-medium hover:bg-black/80 transition shadow-lg"
         >
+          <img 
+            src="/logo.png" 
+            alt="PPTMaster" 
+            className="w-5 h-5 object-contain"
+          />
           Made with PPTMaster
         </a>
       )}

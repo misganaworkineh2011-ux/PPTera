@@ -17,13 +17,13 @@ model User {
   createdAt             DateTime        @default(now())
   updatedAt             DateTime        @default(now()) @updatedAt
   credits               Int             @default(0)
-  subscriptionPlan      String?         // plus, pro, ultra
-  subscriptionType      String?         // monthly, annual
-  subscriptionStartDate DateTime?       // When subscription started (for anniversary resets)
+  subscriptionPlan      String?
+  subscriptionType      String?
   productId             String?
-  nextResetDate         DateTime?       // Next credit reset date (for annual subscribers)
+  nextResetDate         DateTime?
   polarCustomerId       String?
   polarSubscriptionId   String?
+  subscriptionStartDate DateTime?
   activities            Activity[]
   charts                Chart[]
   collaborations        Collaboration[]
@@ -66,6 +66,7 @@ model Image {
   id             String        @id @default(cuid())
   url            String
   filename       String
+  tags           String[]
   userId         String
   presentationId String?
   createdAt      DateTime      @default(now())
@@ -320,19 +321,18 @@ model Notification {
   @@map("notification")
 }
 
-
 model Review {
-  id        String   @id @default(cuid())
-  userId    String?
-  name      String
-  email     String
-  rating    Int      // 1-5 stars
-  title     String
-  content   String
-  isPublic  Boolean  @default(false) // Admin approval required
-  isFeatured Boolean @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(cuid())
+  userId     String?
+  name       String
+  email      String
+  rating     Int
+  title      String
+  content    String
+  isPublic   Boolean  @default(false)
+  isFeatured Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@map("review")
 }

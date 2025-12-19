@@ -126,17 +126,13 @@ export default function PresentationViewer({
       if (mobile) {
         setViewMode("scroll");
         setShowThumbnails(false);
-      } else {
-        // On desktop, default to scroll view with thumbnails visible
-        if (!showThumbnails) {
-          setShowThumbnails(true);
-        }
       }
+      // On desktop, let user control thumbnail visibility - don't force it open
     };
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
-  }, [showThumbnails]);
+  }, []); // Remove showThumbnails from dependencies to prevent re-triggering
   
   const canEdit = isOwner || collaboratorRole === "editor";
 
@@ -344,17 +340,28 @@ export default function PresentationViewer({
     }
   };
 
-  const handleExport = async (format: "pdf" | "pptx" | "images") => {
+  const handleExport = async (format: "pdf" | "pptx" | "images", options?: { range: "all" | "current" | "custom"; customRange?: { from: number; to: number } }) => {
     // Close modal immediately for better UX
     setShowExportModal(false);
     setIsExporting(true);
     setExportingFormat(format);
     
     try {
+      // Build request body with format and options
+      const requestBody: Record<string, unknown> = { format };
+      if (options) {
+        requestBody.range = options.range;
+        if (options.range === "current") {
+          requestBody.customRange = { from: currentSlide + 1, to: currentSlide + 1 };
+        } else if (options.range === "custom" && options.customRange) {
+          requestBody.customRange = options.customRange;
+        }
+      }
+      
       const response = await fetch(`/api/presentations/${presentation.id}/export`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ format }),
+        body: JSON.stringify(requestBody),
       });
       
       if (!response.ok) {
@@ -1192,26 +1199,69 @@ export default function PresentationViewer({
                     <span className="hidden sm:inline ml-2 opacity-70">• Press <kbd className={`px-1.5 py-0.5 rounded text-xs ${getUIColors(getThemeType(theme)).kbd}`}>F</kbd> for fullscreen</span>
                   </div>
                 )}
-                
-                {isPublicView && (
-                  <div className="fixed top-2 sm:top-4 left-2 sm:left-4 right-2 sm:right-auto z-40">
-                    <h1 className={`text-sm sm:text-lg font-semibold ${getUIColors(getThemeType(theme)).headerText} bg-black/30 backdrop-blur-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg truncate`}>
-                      {presentation.title}
-                    </h1>
-                  </div>
-                )}
               </div>
             </div>
           )}
         </div>
 
-        {isFullscreen && (
+        {/* Public View Controls - Always visible */}
+        {isPublicView && (
+          <>
+            <div className="fixed top-2 sm:top-4 left-2 sm:left-4 right-2 sm:right-auto z-50 max-w-md">
+              <h1 className={`text-sm sm:text-lg font-semibold ${getUIColors(getThemeType(theme)).headerText} bg-black/30 backdrop-blur-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg truncate`}>
+                {presentation.title}
+              </h1>
+            </div>
+            
+            <div className="fixed top-2 sm:top-4 right-2 sm:right-4 z-50 flex items-center gap-2">
+              {/* View Mode Toggle */}
+              {!isFullscreen && (
+                <button
+                  onClick={() => setViewMode(viewMode === "slides" ? "scroll" : "slides")}
+                  className={`p-2 sm:p-2.5 rounded-lg backdrop-blur-sm transition-colors ${getUIColors(getThemeType(theme)).headerBg} ${getUIColors(getThemeType(theme)).headerText} hover:opacity-80`}
+                  title={viewMode === "slides" ? "Switch to scroll view" : "Switch to slides view"}
+                >
+                  {viewMode === "slides" ? (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <line x1="3" y1="9" x2="21" y2="9" />
+                      <line x1="3" y1="15" x2="21" y2="15" />
+                    </svg>
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="2" y="3" width="20" height="14" rx="2" />
+                      <line x1="8" y1="21" x2="16" y2="21" />
+                      <line x1="12" y1="17" x2="12" y2="21" />
+                    </svg>
+                  )}
+                </button>
+              )}
+              
+              {/* Present Mode Toggle */}
+              <button
+                onClick={toggleFullscreen}
+                className={`p-2 sm:p-2.5 rounded-lg backdrop-blur-sm transition-colors ${getUIColors(getThemeType(theme)).headerBg} ${getUIColors(getThemeType(theme)).headerText} hover:opacity-80`}
+                title={isFullscreen ? "Exit present mode" : "Enter present mode"}
+              >
+                {isFullscreen ? (
+                  <Minimize2 size={18} />
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+                  </svg>
+                )}
+              </button>
+            </div>
+          </>
+        )}
+
+        {isFullscreen && !isPublicView && (
           <button onClick={toggleFullscreen} className="fixed top-2 sm:top-6 right-2 sm:right-6 p-2 sm:p-3 rounded-xl bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-colors z-50">
             <Minimize2 size={18} className="sm:w-5 sm:h-5" />
           </button>
         )}
 
-        {viewMode === "scroll" && !isFullscreen && <FeedbackSection presentationId={presentation.id} theme={theme} />}
+        {viewMode === "scroll" && !isFullscreen && !isPublicView && <FeedbackSection presentationId={presentation.id} theme={theme} />}
 
         {showLayoutModal && activeSlideIndex !== null && (
           <LayoutModal currentLayout={slides[activeSlideIndex]?.layout} onSelect={(layoutId) => changeSlideLayout(activeSlideIndex, layoutId)} onClose={() => setShowLayoutModal(false)} />
@@ -1251,7 +1301,8 @@ export default function PresentationViewer({
             presentationId={presentation.id} 
             initialIsPublic={presentation.isPublic}
             initialShareToken={presentation.shareToken}
-            onClose={() => setShowShareModal(false)} 
+            onClose={() => setShowShareModal(false)}
+            theme={theme}
           />
         )}
 
