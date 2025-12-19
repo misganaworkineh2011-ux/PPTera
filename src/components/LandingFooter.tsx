@@ -93,7 +93,7 @@ export const LandingFooter = () => {
                                         alt="PPTMaster Logo"
                                         width={120}
                                         height={45}
-                                        className="h-10 w-auto object-contain brightness-0 invert"
+                                        className="h-10 w-auto object-contain"
                                     />
                                 </LoadingLink>
                             </div>
