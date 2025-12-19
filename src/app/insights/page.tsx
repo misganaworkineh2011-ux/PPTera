@@ -39,22 +39,40 @@ export default function InsightsPage() {
 
   const fetchFeaturedPost = async () => {
     try {
-      const response = await fetch("/api/insights?featured=true&limit=1");
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const response = await fetch("/api/insights?featured=true&limit=1", {
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) throw new Error("Failed to fetch");
+      
       const data = await response.json();
       if (data.posts && data.posts.length > 0) {
         setFeaturedPost(data.posts[0]);
       }
     } catch (error) {
       console.error("Failed to fetch featured post:", error);
+      // Don't block the page if featured post fails
     }
   };
 
   const fetchPosts = async (offset = 0) => {
     try {
       setLoading(true);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
       const response = await fetch(
-        `/api/insights?category=${selectedCategory}&limit=9&offset=${offset}`
+        `/api/insights?category=${selectedCategory}&limit=9&offset=${offset}`,
+        { signal: controller.signal }
       );
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) throw new Error("Failed to fetch posts");
+      
       const data = await response.json();
       
       if (offset === 0) {
@@ -65,6 +83,10 @@ export default function InsightsPage() {
       setHasMore(data.hasMore || false);
     } catch (error) {
       console.error("Failed to fetch posts:", error);
+      // Set empty array on error to show "no posts" message
+      if (offset === 0) {
+        setPosts([]);
+      }
     } finally {
       setLoading(false);
     }

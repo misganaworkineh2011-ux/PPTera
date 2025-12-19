@@ -33,9 +33,17 @@ export default function InspirationPage() {
   const fetchItems = async (offset = 0) => {
     try {
       setLoading(true);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
       const response = await fetch(
-        `/api/inspiration?category=${selectedCategory}&limit=18&offset=${offset}`
+        `/api/inspiration?category=${selectedCategory}&limit=18&offset=${offset}`,
+        { signal: controller.signal }
       );
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) throw new Error("Failed to fetch");
+      
       const data = await response.json();
       
       if (offset === 0) {
@@ -46,6 +54,9 @@ export default function InspirationPage() {
       setHasMore(data.hasMore || false);
     } catch (error) {
       console.error("Failed to fetch inspiration items:", error);
+      if (offset === 0) {
+        setItems([]);
+      }
     } finally {
       setLoading(false);
     }
