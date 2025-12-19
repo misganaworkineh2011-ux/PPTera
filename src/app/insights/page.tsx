@@ -101,6 +101,39 @@ export default function InsightsPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* JSON-LD Structured Data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Blog",
+            name: "PPT Master Insights",
+            description: "Expert tips, guides, and insights for creating better presentations with AI powerpoint generator tools",
+            url: "https://www.pptmaster.app/insights",
+            publisher: {
+              "@type": "Organization",
+              name: "PPT Master",
+              logo: {
+                "@type": "ImageObject",
+                url: "https://www.pptmaster.app/logo.png",
+              },
+            },
+            blogPost: posts.slice(0, 10).map(post => ({
+              "@type": "BlogPosting",
+              headline: post.title,
+              description: post.excerpt,
+              image: post.coverImage,
+              datePublished: post.publishedAt,
+              author: {
+                "@type": "Person",
+                name: post.author,
+              },
+              url: `https://www.pptmaster.app/insights/${post.slug}`,
+            })),
+          }),
+        }}
+      />
       <LandingNavbar />
 
       {/* Hero Section */}

@@ -6,6 +6,8 @@ import { useLanguage } from "~/contexts/LanguageContext";
 import { BookOpen, Heart, Eye, ArrowLeft, Share2, Clock, User } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface InsightPost {
   id: string;
@@ -298,11 +300,30 @@ export default function InsightPostPage() {
           </div>
 
           {/* Article Content */}
-          <div className="prose prose-lg prose-slate max-w-none mb-16">
-            <div 
-              className="text-slate-700 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
+          <div className="prose prose-xl max-w-none mb-16">
+            <ReactMarkdown 
+              remarkPlugins={[remarkGfm]}
+              components={{
+                h1: ({node, ...props}) => <h1 className="text-4xl font-bold text-slate-900 mt-12 mb-6 leading-tight" {...props} />,
+                h2: ({node, ...props}) => <h2 className="text-3xl font-bold text-slate-900 mt-16 mb-6 leading-snug" {...props} />,
+                h3: ({node, ...props}) => <h3 className="text-2xl font-semibold text-slate-800 mt-10 mb-4 leading-snug" {...props} />,
+                p: ({node, ...props}) => <p className="text-lg text-slate-700 leading-relaxed mb-6 font-normal" {...props} />,
+                ul: ({node, ...props}) => <ul className="my-8 space-y-3 text-lg text-slate-700" {...props} />,
+                ol: ({node, ...props}) => <ol className="my-8 space-y-3 text-lg text-slate-700 list-decimal list-inside" {...props} />,
+                li: ({node, ...props}) => <li className="leading-relaxed pl-2" {...props} />,
+                strong: ({node, ...props}) => <strong className="font-semibold text-slate-900" {...props} />,
+                em: ({node, ...props}) => <em className="italic text-slate-800" {...props} />,
+                a: ({node, ...props}) => <a className="text-[#06b6d4] hover:text-[#0891b2] underline decoration-2 underline-offset-2 transition-colors" {...props} />,
+                blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-[#06b6d4] pl-6 py-2 my-8 italic text-slate-600 bg-slate-50 rounded-r-lg" {...props} />,
+                code: ({node, inline, ...props}: any) => 
+                  inline ? 
+                    <code className="bg-slate-100 text-slate-800 px-2 py-1 rounded text-sm font-mono" {...props} /> :
+                    <code className="block bg-slate-900 text-slate-100 p-4 rounded-lg my-6 overflow-x-auto text-sm font-mono" {...props} />,
+                hr: ({node, ...props}) => <hr className="my-12 border-slate-200" {...props} />,
+              }}
+            >
+              {post.content}
+            </ReactMarkdown>
           </div>
 
           {/* Tags */}

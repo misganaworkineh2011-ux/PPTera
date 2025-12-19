@@ -111,7 +111,6 @@ export const LandingFooter = () => {
                             <ul className="space-y-4 text-sm text-slate-400">
                                 <li><LoadingLink href="/pricing" className="hover:text-white transition">{t.pricing}</LoadingLink></li>
                                 <li><LoadingLink href="/inspiration" className="hover:text-white transition">{t.inspiration}</LoadingLink></li>
-                                <li><LoadingLink href="/templates" className="hover:text-white transition">{t.templates}</LoadingLink></li>
                                 <li><LoadingLink href="/prompt-guide" className="hover:text-white transition">{t.promptGuide}</LoadingLink></li>
                                 <li><LoadingLink href="/insights" className="hover:text-white transition">{t.insights}</LoadingLink></li>
                             </ul>
