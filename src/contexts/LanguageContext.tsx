@@ -15,19 +15,28 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>("en");
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Check if user has a saved language preference
-    const savedLanguage = localStorage.getItem("language") as Language;
+    setMounted(true);
     
-    if (savedLanguage && translations[savedLanguage]) {
-      // Use saved preference
-      setLanguageState(savedLanguage);
-    } else {
-      // Auto-detect browser language on first visit
-      const browserLang = detectBrowserLanguage();
-      setLanguageState(browserLang);
-      localStorage.setItem("language", browserLang);
+    try {
+      // Check if user has a saved language preference
+      const savedLanguage = localStorage.getItem("language") as Language;
+      
+      if (savedLanguage && translations[savedLanguage]) {
+        // Use saved preference
+        setLanguageState(savedLanguage);
+      } else {
+        // Auto-detect browser language on first visit
+        const browserLang = detectBrowserLanguage();
+        setLanguageState(browserLang);
+        localStorage.setItem("language", browserLang);
+      }
+    } catch (error) {
+      console.error("Error loading language preference:", error);
+      // Fallback to English if there's any error
+      setLanguageState("en");
     }
   }, []);
 
@@ -63,7 +72,13 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem("language", lang);
+    try {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("language", lang);
+      }
+    } catch (error) {
+      console.error("Error saving language preference:", error);
+    }
   };
 
   // Merge selected language with English fallback

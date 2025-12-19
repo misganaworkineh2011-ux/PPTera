@@ -48,23 +48,29 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     setMounted(true);
     
-    const savedTheme = localStorage.getItem("dashboard-theme") as Theme;
-    const savedEmailNotifications = localStorage.getItem("email-notifications");
-    const savedCollaborationAlerts = localStorage.getItem("collaboration-alerts");
-    
-    if (savedTheme && ["light", "dark", "system"].includes(savedTheme)) {
-      setThemeState(savedTheme);
-      applyTheme(savedTheme);
-    } else {
+    try {
+      const savedTheme = localStorage.getItem("dashboard-theme") as Theme;
+      const savedEmailNotifications = localStorage.getItem("email-notifications");
+      const savedCollaborationAlerts = localStorage.getItem("collaboration-alerts");
+      
+      if (savedTheme && ["light", "dark", "system"].includes(savedTheme)) {
+        setThemeState(savedTheme);
+        applyTheme(savedTheme);
+      } else {
+        applyTheme("system");
+      }
+      
+      if (savedEmailNotifications !== null) {
+        setEmailNotificationsState(savedEmailNotifications === "true");
+      }
+      
+      if (savedCollaborationAlerts !== null) {
+        setCollaborationAlertsState(savedCollaborationAlerts === "true");
+      }
+    } catch (error) {
+      console.error("Error loading settings:", error);
+      // Fallback to defaults
       applyTheme("system");
-    }
-    
-    if (savedEmailNotifications !== null) {
-      setEmailNotificationsState(savedEmailNotifications === "true");
-    }
-    
-    if (savedCollaborationAlerts !== null) {
-      setCollaborationAlertsState(savedCollaborationAlerts === "true");
     }
   }, [applyTheme]);
 
