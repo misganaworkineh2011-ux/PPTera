@@ -184,6 +184,8 @@ export default async function PresentationPage({
         content: content,
         createdAt: presentation.createdAt,
         updatedAt: presentation.updatedAt,
+        isPublic: presentation.isPublic,
+        shareToken: presentation.shareToken,
       }}
       mode={mode || "view"}
       isOwner={isOwner}

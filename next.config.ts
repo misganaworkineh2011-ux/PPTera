@@ -9,6 +9,8 @@ const config: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  // External packages with native bindings (for API routes)
+  serverExternalPackages: ["@resvg/resvg-js", "sharp"],
   images: {
     domains: ["images.unsplash.com", "images.pexels.com", "img.clerk.com", "res.cloudinary.com"],
     remotePatterns: [

@@ -11,6 +11,7 @@ import {
   Undo2,
   Redo2,
 } from "lucide-react";
+import { toast } from "sonner";
 import { getThemeById, getDefaultTheme, type Theme } from "~/lib/themes";
 import { isCustomThemeId, getCustomThemeDbId, convertCustomThemeToTheme } from "~/lib/custom-theme-utils";
 import { type LayoutType } from "~/lib/slide-layouts";
@@ -79,6 +80,8 @@ export default function PresentationViewer({
   const [editedTitle, setEditedTitle] = useState(presentation.title);
   const [showExportModal, setShowExportModal] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [exportingFormat, setExportingFormat] = useState<"pdf" | "pptx" | "images" | null>(null);
+  const [downloadNotification, setDownloadNotification] = useState<{ url: string; filename: string; format: "pdf" | "pptx" | "images" } | null>(null);
   const [showRateModal, setShowRateModal] = useState(false);
   
   // Initialize based on screen size
@@ -337,49 +340,92 @@ export default function PresentationViewer({
   };
 
   const handleExport = async (format: "pdf" | "pptx" | "images") => {
+    // Close modal immediately for better UX
+    setShowExportModal(false);
     setIsExporting(true);
+    setExportingFormat(format);
+    
     try {
       const response = await fetch(`/api/presentations/${presentation.id}/export`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ format }),
       });
-      if (!response.ok) throw new Error("Export failed");
       
-      if (format === "pptx") {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${presentation.title}.pptx`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-      } else {
-        const html = await response.text();
-        const printWindow = window.open("", "_blank");
-        if (printWindow) {
-          printWindow.document.write(html);
-          printWindow.document.close();
-          setTimeout(() => {
-            const instructions = printWindow.document.createElement("div");
-            instructions.innerHTML = `
-              <div style="position: fixed; top: 0; left: 0; right: 0; background: #1a1a1d; color: white; padding: 16px; z-index: 9999; display: flex; justify-content: space-between; align-items: center; font-family: Arial, sans-serif;">
-                <span>${format === "pdf" ? "Press Ctrl+P (Cmd+P on Mac) to save as PDF" : "Right-click on slides to save as images"}</span>
-                <button onclick="this.parentElement.remove()" style="background: #f59e0b; color: black; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600;">Got it</button>
-              </div>
-            `;
-            printWindow.document.body.insertBefore(instructions, printWindow.document.body.firstChild);
-          }, 100);
-        }
+      if (!response.ok) {
+        throw new Error("Export failed");
       }
-      setShowExportModal(false);
-    } catch {
-      alert("Export failed. Please try again.");
-    } finally {
-      setIsExporting(false);
+      
+      // Get the blob for all formats
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      // Set filename based on format
+      let filename: string;
+      if (format === "pptx") {
+        filename = `${presentation.title}.pptx`;
+      } else if (format === "pdf") {
+        filename = `${presentation.title}.pdf`;
+      } else {
+        filename = `${presentation.title}-slides.zip`;
+      }
+      
+      // Show download notification
+      setDownloadNotification({ url, filename, format });
+      
+    } catch (err) {
+      console.error("Export error:", err);
+      toast.error("Export failed. Please try again.", { duration: 4000 });
     }
+    
+    // Reset exporting state
+    setIsExporting(false);
+    setExportingFormat(null);
+  };
+  
+  const handleDownloadClick = (e: React.MouseEvent) => {
+    // Prevent any default behavior or event bubbling
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (downloadNotification) {
+      try {
+        // Create a temporary link element
+        const link = document.createElement("a");
+        link.href = downloadNotification.url;
+        link.download = downloadNotification.filename;
+        link.style.display = "none";
+        link.setAttribute("target", "_self");
+        
+        // Append to body
+        document.body.appendChild(link);
+        
+        // Trigger download using setTimeout to avoid blocking
+        setTimeout(() => {
+          link.click();
+          
+          // Clean up after a delay to ensure download starts
+          setTimeout(() => {
+            document.body.removeChild(link);
+            // Revoke the blob URL after download starts
+            window.URL.revokeObjectURL(downloadNotification.url);
+            setDownloadNotification(null);
+            toast.success("Download started!", { duration: 2000 });
+          }, 100);
+        }, 0);
+      } catch (err) {
+        console.error("Download error:", err);
+        toast.error("Download failed. Please try again.");
+        setDownloadNotification(null);
+      }
+    }
+  };
+  
+  const handleCloseNotification = () => {
+    if (downloadNotification?.url) {
+      window.URL.revokeObjectURL(downloadNotification.url);
+    }
+    setDownloadNotification(null);
   };
 
   const goToSlide = useCallback(
@@ -1184,9 +1230,25 @@ export default function PresentationViewer({
           />
         )}
 
-        {showExportModal && isOwner && <ExportModal isExporting={isExporting} theme={theme} onExport={handleExport} onClose={() => setShowExportModal(false)} />}
+        {showExportModal && isOwner && (
+          <ExportModal 
+            isExporting={isExporting} 
+            theme={theme} 
+            totalSlides={slidesData.length} 
+            currentSlide={currentSlide + 1} 
+            onExport={handleExport} 
+            onClose={() => setShowExportModal(false)}
+          />
+        )}
 
-        {showShareModal && isOwner && <ShareModal presentationId={presentation.id} onClose={() => setShowShareModal(false)} />}
+        {showShareModal && isOwner && (
+          <ShareModal 
+            presentationId={presentation.id} 
+            initialIsPublic={presentation.isPublic}
+            initialShareToken={presentation.shareToken}
+            onClose={() => setShowShareModal(false)} 
+          />
+        )}
 
         {showChartModal !== null && canEdit && (
           <ChartModal
@@ -1205,6 +1267,59 @@ export default function PresentationViewer({
 
         {showRateModal && (
           <RateUsModal onClose={() => setShowRateModal(false)} />
+        )}
+
+        {/* Export Loading Notification */}
+        {isExporting && (
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-4 fade-in duration-300">
+            <div className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-zinc-900 border border-zinc-700 shadow-2xl">
+              <div className="w-5 h-5 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
+              <span className="text-sm font-medium text-white">
+                {exportingFormat === "pptx" 
+                  ? "Exporting PowerPoint..." 
+                  : exportingFormat === "pdf" 
+                    ? "Exporting PDF..." 
+                    : "Exporting Images..."}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Download Ready Notification */}
+        {downloadNotification && !isExporting && (
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-4 fade-in duration-300">
+            <div className="flex items-center gap-4 px-6 py-4 rounded-2xl bg-zinc-900 border border-zinc-700 shadow-2xl">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-500/20">
+                <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-white">Export ready!</p>
+                <p className="text-xs text-zinc-400 truncate max-w-[200px]">{downloadNotification.filename}</p>
+              </div>
+              <button
+                onClick={(e) => handleDownloadClick(e)}
+                type="button"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95"
+                style={{ backgroundColor: theme.colors.primary }}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Click here to download
+              </button>
+              <button
+                onClick={handleCloseNotification}
+                type="button"
+                className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
         )}
 
       </div>

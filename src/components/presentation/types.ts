@@ -55,6 +55,9 @@ export interface PresentationData {
   };
   createdAt: Date;
   updatedAt: Date;
+  // Share settings
+  isPublic?: boolean;
+  shareToken?: string | null;
 }
 
 export interface EditingState {
