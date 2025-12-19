@@ -158,11 +158,53 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <head>
+          <meta name="theme-color" content="#ffffff" />
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
           <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
         </head>
-        <body className="font-sans">
+        <body className="font-sans bg-white">
+          <noscript>
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'white',
+              zIndex: 9999,
+              padding: '2rem',
+              textAlign: 'center'
+            }}>
+              <div>
+                <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1rem', color: '#0f172a' }}>
+                  JavaScript Required
+                </h1>
+                <p style={{ fontSize: '1.125rem', color: '#64748b', marginBottom: '1.5rem' }}>
+                  PPT Master requires JavaScript to run. Please enable JavaScript in your browser settings.
+                </p>
+                <a 
+                  href="https://www.enable-javascript.com/" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-block',
+                    padding: '0.75rem 2rem',
+                    background: 'linear-gradient(to right, #1e3a8a, #06b6d4)',
+                    color: 'white',
+                    borderRadius: '0.5rem',
+                    fontWeight: '600',
+                    textDecoration: 'none'
+                  }}
+                >
+                  Learn How to Enable JavaScript
+                </a>
+              </div>
+            </div>
+          </noscript>
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}

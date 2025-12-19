@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut, SignInButton, useAuth } from "@clerk/nextjs";
 import {
     Play,
     CheckCircle2,
@@ -20,27 +20,51 @@ import { LoadingLink } from "~/components/LoadingLink";
 
 export default function HomePage() {
     const { t } = useLanguage();
-    
-    return (
-        <>
-            {/* Show Dashboard for signed-in users */}
-            <SignedIn>
-                <DashboardRedirect />
-            </SignedIn>
+    const { isSignedIn, isLoaded } = useAuth();
+    const [shouldRedirect, setShouldRedirect] = useState(false);
 
-            {/* Show Landing Page for signed-out users */}
-            <SignedOut>
-                <LandingPageContent t={t} />
-            </SignedOut>
-        </>
-    );
-}
+    useEffect(() => {
+        // Only redirect after client-side hydration is complete
+        if (isLoaded && isSignedIn) {
+            setShouldRedirect(true);
+            window.location.href = '/dashboard';
+        }
+    }, [isLoaded, isSignedIn]);
 
-// Component to handle dashboard redirect
-function DashboardRedirect() {
-    if (typeof window !== 'undefined') {
-        window.location.href = '/dashboard';
+    // Show loading during initial auth check to prevent flash
+    if (!isLoaded) {
+        return (
+            <div className="min-h-screen bg-white flex items-center justify-center">
+                <div className="text-center">
+                    <div className="relative w-16 h-16 mx-auto mb-4">
+                        <div className="absolute inset-0 border-4 border-slate-200 rounded-full"></div>
+                        <div className="absolute inset-0 border-4 border-transparent border-t-[#1e3a8a] border-r-[#06b6d4] rounded-full animate-spin"></div>
+                    </div>
+                </div>
+            </div>
+        );
     }
+
+    // If redirecting, show loading
+    if (shouldRedirect) {
+        return (
+            <div className="min-h-screen bg-white flex items-center justify-center">
+                <div className="text-center">
+                    <div className="relative w-16 h-16 mx-auto mb-4">
+                        <div className="absolute inset-0 border-4 border-slate-200 rounded-full"></div>
+                        <div className="absolute inset-0 border-4 border-transparent border-t-[#1e3a8a] border-r-[#06b6d4] rounded-full animate-spin"></div>
+                    </div>
+                    <p className="text-slate-600">Redirecting to dashboard...</p>
+                </div>
+            </div>
+        );
+    }
+    
+    // Show landing page for signed-out users
+    if (!isSignedIn) {
+        return <LandingPageContent t={t} />;
+    }
+
     return null;
 }
 
