@@ -3,13 +3,14 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { Filter, Grid, List as ListIcon, MoreHorizontal, Upload, Star, Globe, Lock, Share2, Edit3, Copy, Trash2, Link2, Loader2 } from "lucide-react";
+import { Filter, Grid, List as ListIcon, MoreHorizontal, Upload, Star, Globe, Lock, Share2, Edit3, Copy, Trash2, Link2, Loader2, Heart } from "lucide-react";
 import Image from "next/image";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
 import { useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { getPresentationUrl } from "~/lib/utils";
+import ShareModal from "~/components/presentation/ShareModal";
 
 interface Presentation {
   id: string;
@@ -126,26 +127,45 @@ export default function DashboardContent({ presentations: initialPresentations, 
     return filtered;
   }, [presentations, filterMode, searchQuery]);
 
-  const handleMenuAction = async (action: string, presId: string, pres?: Presentation) => {
-    setActiveMenu(null);
+  const handleMenuAction = async (action: string, presId: string, pres?: Presentation, e?: React.MouseEvent) => {
+    // Prevent event propagation
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     
+    // Handle actions first, then close menu
     switch (action) {
       case "share":
         const sharePres = presentations.find(p => p.id === presId);
         if (sharePres) {
-          window.open(getPresentationUrl(presId, sharePres.title), "_blank");
+          // Close menu first
+          setActiveMenu(null);
+          setMenuPosition(null);
+          // Then show modal
+          setTimeout(() => setShowShareModal(presId), 50);
         }
         break;
         
       case "rename":
         const presentation = presentations.find(p => p.id === presId);
         if (presentation) {
-          setRenameValue(presentation.title);
-          setShowRenameDialog(presId);
+          // Close menu first
+          setActiveMenu(null);
+          setMenuPosition(null);
+          // Then show dialog
+          setTimeout(() => {
+            setRenameValue(presentation.title);
+            setShowRenameDialog(presId);
+          }, 50);
         }
         break;
-        
+      
       case "favorite":
+        // Close menu first
+        setActiveMenu(null);
+        setMenuPosition(null);
+        
         // OPTIMIZATION: Optimistic update - update UI immediately
         const currentPres = presentations.find(p => p.id === presId);
         if (!currentPres) break;
@@ -157,6 +177,9 @@ export default function DashboardContent({ presentations: initialPresentations, 
           );
         });
         
+        // Show toast immediately
+        toast.success(newPinnedState ? "Added to favorites" : "Removed from favorites");
+        
         // Make API call in background
         fetch(`/api/presentations/${presId}/favorite`, { method: "PATCH" })
           .then(async (response) => {
@@ -167,11 +190,15 @@ export default function DashboardContent({ presentations: initialPresentations, 
           .catch((error) => {
             console.error("Error toggling favorite:", error);
             rollbackFavorite();
-            toast?.error?.("Failed to update favorite status") || alert("Failed to update favorite status");
+            toast.error("Failed to update favorite status");
           });
         break;
         
       case "duplicate":
+        // Close menu first
+        setActiveMenu(null);
+        setMenuPosition(null);
+        
         try {
           setIsLoading(true);
           setLoadingAction({ id: presId, action: "duplicate" });
@@ -183,12 +210,13 @@ export default function DashboardContent({ presentations: initialPresentations, 
             const data = await response.json();
             // Add the duplicated presentation to the list immediately
             setPresentations(prev => [data.presentation, ...prev]);
+            toast.success("Presentation duplicated!");
           } else {
-            alert("Failed to duplicate presentation");
+            toast.error("Failed to duplicate presentation");
           }
         } catch (error) {
           console.error("Error duplicating:", error);
-          alert("Failed to duplicate presentation");
+          toast.error("Failed to duplicate presentation");
         } finally {
           setIsLoading(false);
           setLoadingAction(null);
@@ -196,6 +224,10 @@ export default function DashboardContent({ presentations: initialPresentations, 
         break;
         
       case "copyLink":
+        // Close menu first
+        setActiveMenu(null);
+        setMenuPosition(null);
+        
         const copyPres = presentations.find(p => p.id === presId);
         const url = copyPres 
           ? `${window.location.origin}${getPresentationUrl(presId, copyPres.title)}`
@@ -204,14 +236,19 @@ export default function DashboardContent({ presentations: initialPresentations, 
           await navigator.clipboard.writeText(url);
           setCopiedId(presId);
           setTimeout(() => setCopiedId(null), 2000);
+          toast.success("Link copied to clipboard!");
         } catch (error) {
           console.error("Error copying link:", error);
-          alert("Failed to copy link");
+          toast.error("Failed to copy link");
         }
         break;
         
       case "delete":
-        setShowDeleteDialog(presId);
+        // Close menu first
+        setActiveMenu(null);
+        setMenuPosition(null);
+        
+        setTimeout(() => setShowDeleteDialog(presId), 50);
         break;
     }
   };
@@ -246,7 +283,9 @@ export default function DashboardContent({ presentations: initialPresentations, 
         setPresentations(prev =>
           prev.map(p => p.id === presId ? { ...p, title: oldTitle } : p)
         );
-        toast?.error?.("Failed to rename presentation") || alert("Failed to rename presentation");
+        toast.error("Failed to rename presentation");
+      } else {
+        toast.success("Presentation renamed successfully");
       }
     } catch (error) {
       console.error("Error renaming:", error);
@@ -254,7 +293,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
       setPresentations(prev =>
         prev.map(p => p.id === presId ? { ...p, title: oldTitle } : p)
       );
-      toast?.error?.("Failed to rename presentation") || alert("Failed to rename presentation");
+      toast.error("Failed to rename presentation");
     }
   };
 
@@ -417,12 +456,29 @@ export default function DashboardContent({ presentations: initialPresentations, 
                     className={`${getThumbnail(pres) === "/logo.png" ? "object-contain p-2 sm:p-3 opacity-60 group-hover:opacity-80" : "object-cover"} transition-opacity`}
                   />
                   <div className="absolute inset-0 bg-gradient-to-br from-[#1e3a8a]/5 to-[#06b6d4]/5 group-hover:from-[#1e3a8a]/10 group-hover:to-[#06b6d4]/10 transition-colors" />
-                  {pres.isPinned && (
-                    <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2">
-                      <Star size={14} className="sm:hidden fill-yellow-400 text-yellow-400" />
-                      <Star size={16} className="hidden sm:block fill-yellow-400 text-yellow-400" />
-                    </div>
-                  )}
+                  {/* Favorite Icon - Clickable */}
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleMenuAction("favorite", pres.id);
+                    }}
+                    className={`absolute top-1.5 right-1.5 sm:top-2 sm:right-2 p-1.5 rounded-full backdrop-blur-sm transition-all ${
+                      pres.isPinned 
+                        ? "bg-yellow-400/90 hover:bg-yellow-500" 
+                        : "bg-black/30 hover:bg-black/50"
+                    }`}
+                    title={pres.isPinned ? "Unfavorite" : "Favorite"}
+                  >
+                    <Heart 
+                      size={14} 
+                      className={`sm:hidden ${pres.isPinned ? "fill-white text-white" : "text-white"}`}
+                    />
+                    <Heart 
+                      size={16} 
+                      className={`hidden sm:block ${pres.isPinned ? "fill-white text-white" : "text-white"}`}
+                    />
+                  </button>
                 </div>
 
                 {/* Content Section */}
@@ -519,12 +575,29 @@ export default function DashboardContent({ presentations: initialPresentations, 
                     <h3 className="text-sm sm:text-base font-bold text-[#1e3a8a] dark:text-white truncate" title={pres.title}>
                       {pres.title}
                     </h3>
-                    {pres.isPinned && (
-                      <>
-                        <Star size={12} className="sm:hidden fill-yellow-400 text-yellow-400 flex-shrink-0" />
-                        <Star size={14} className="hidden sm:block fill-yellow-400 text-yellow-400 flex-shrink-0" />
-                      </>
-                    )}
+                    {/* Favorite Icon - Clickable */}
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleMenuAction("favorite", pres.id);
+                      }}
+                      className={`p-1 rounded-full transition-all flex-shrink-0 ${
+                        pres.isPinned 
+                          ? "bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/30" 
+                          : "hover:bg-slate-100 dark:hover:bg-slate-700"
+                      }`}
+                      title={pres.isPinned ? "Unfavorite" : "Favorite"}
+                    >
+                      <Heart 
+                        size={12} 
+                        className={`sm:hidden ${pres.isPinned ? "fill-yellow-500 text-yellow-500" : "text-slate-400"}`}
+                      />
+                      <Heart 
+                        size={14} 
+                        className={`hidden sm:block ${pres.isPinned ? "fill-yellow-500 text-yellow-500" : "text-slate-400"}`}
+                      />
+                    </button>
                   </div>
                   <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-slate-500">
                     <span className="hidden xs:inline">{new Date(pres.createdAt).toLocaleDateString()}</span>
@@ -575,7 +648,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
 
       {/* Rename Dialog */}
       {showRenameDialog && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/30 p-4" onClick={() => setShowRenameDialog(null)}>
+        <div className="fixed inset-0 flex items-center justify-center z-[10000] bg-black/30 p-4" onClick={() => setShowRenameDialog(null)}>
           <div className="bg-white rounded-lg sm:rounded-md p-4 sm:p-6 w-full max-w-md shadow-2xl border border-slate-200 dark:bg-slate-800 dark:border-slate-700" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-base sm:text-lg font-bold text-[#1e3a8a] mb-3 sm:mb-4 dark:text-white">{t.renamePresentation || "Rename Presentation"}</h3>
             <input
@@ -616,7 +689,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
 
       {/* Delete Confirmation Dialog */}
       {showDeleteDialog && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/30 p-4" onClick={() => setShowDeleteDialog(null)}>
+        <div className="fixed inset-0 flex items-center justify-center z-[10000] bg-black/30 p-4" onClick={() => setShowDeleteDialog(null)}>
           <div className="bg-white rounded-lg sm:rounded-md p-4 sm:p-6 w-full max-w-md shadow-2xl border border-slate-200 dark:bg-slate-800 dark:border-slate-700" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
               <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-md bg-red-100 dark:bg-red-900/50">
@@ -657,47 +730,85 @@ export default function DashboardContent({ presentations: initialPresentations, 
         </div>
       )}
 
+      {/* Share Modal */}
+      {showShareModal && (() => {
+        const pres = presentations.find(p => p.id === showShareModal);
+        return pres ? (
+          <ShareModal
+            presentationId={showShareModal}
+            initialIsPublic={pres.isPublic}
+            initialShareToken={pres.shareToken}
+            onClose={() => setShowShareModal(null)}
+          />
+        ) : null;
+      })()}
+
       {/* Portal Dropdown Menu */}
       {activeMenu && menuPosition && typeof document !== "undefined" && createPortal(
         <>
           <div 
             className="fixed inset-0 z-[9998]" 
-            onClick={() => {
-              setActiveMenu(null);
-              setMenuPosition(null);
+            onMouseDown={(e) => {
+              // Only close if clicking directly on backdrop, not if click started in menu
+              if (e.target === e.currentTarget) {
+                setActiveMenu(null);
+                setMenuPosition(null);
+              }
             }}
           />
           <div 
             className="fixed w-44 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xl z-[9999] animate-in fade-in slide-in-from-top-2 duration-200"
             style={{ top: menuPosition.top, left: Math.max(8, menuPosition.left) }}
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
           >
             <div className="p-1.5">
               <button
-                onClick={() => handleMenuAction("share", activeMenu)}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleMenuAction("share", activeMenu, undefined, e);
+                }}
                 className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
               >
                 <Share2 size={15} /> {t.share || "Share"}
               </button>
               <button
-                onClick={() => handleMenuAction("rename", activeMenu)}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleMenuAction("rename", activeMenu, undefined, e);
+                }}
                 className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors"
               >
                 <Edit3 size={15} /> {t.rename || "Rename"}
               </button>
               <button
-                onClick={() => handleMenuAction("favorite", activeMenu)}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleMenuAction("favorite", activeMenu, undefined, e);
+                }}
                 disabled={loadingAction?.id === activeMenu && loadingAction?.action === "favorite"}
                 className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors"
               >
                 {loadingAction?.id === activeMenu && loadingAction?.action === "favorite" ? (
                   <Loader2 size={15} className="animate-spin" />
                 ) : (
-                  <Star size={15} className={presentations.find(p => p.id === activeMenu)?.isPinned ? "fill-yellow-400 text-yellow-400" : ""} />
+                  <Heart size={15} className={presentations.find(p => p.id === activeMenu)?.isPinned ? "fill-yellow-500 text-yellow-500" : "text-slate-500"} />
                 )}
                 {presentations.find(p => p.id === activeMenu)?.isPinned ? (t.unfavorite || "Unfavorite") : (t.favorite || "Favorite")}
               </button>
               <button
-                onClick={() => handleMenuAction("duplicate", activeMenu)}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleMenuAction("duplicate", activeMenu, undefined, e);
+                }}
                 disabled={loadingAction?.id === activeMenu && loadingAction?.action === "duplicate"}
                 className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors"
               >
@@ -709,7 +820,12 @@ export default function DashboardContent({ presentations: initialPresentations, 
                 {t.duplicate || "Duplicate"}
               </button>
               <button
-                onClick={() => handleMenuAction("copyLink", activeMenu)}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleMenuAction("copyLink", activeMenu, undefined, e);
+                }}
                 className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${
                   copiedId === activeMenu
                     ? "bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400"
@@ -720,7 +836,12 @@ export default function DashboardContent({ presentations: initialPresentations, 
               </button>
               <div className="my-1.5 border-t border-slate-100 dark:border-slate-700" />
               <button
-                onClick={() => handleMenuAction("delete", activeMenu)}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleMenuAction("delete", activeMenu, undefined, e);
+                }}
                 className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30 transition-colors"
               >
                 <Trash2 size={15} /> {t.delete || "Delete"}

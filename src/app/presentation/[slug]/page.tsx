@@ -38,6 +38,8 @@ function extractPresentationId(slug: string): string | null {
   return null;
 }
 
+export const revalidate = 0; // Disable caching to always get fresh data
+
 export default async function PresentationPage({
   params,
   searchParams,

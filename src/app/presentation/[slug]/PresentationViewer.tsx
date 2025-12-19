@@ -78,6 +78,11 @@ export default function PresentationViewer({
   const [isMobile, setIsMobile] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState(presentation.title);
+  
+  // Sync title when presentation prop changes (e.g., after rename in dashboard)
+  useEffect(() => {
+    setEditedTitle(presentation.title);
+  }, [presentation.title]);
   const [showExportModal, setShowExportModal] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [exportingFormat, setExportingFormat] = useState<"pdf" | "pptx" | "images" | null>(null);
@@ -1079,7 +1084,7 @@ export default function PresentationViewer({
       >
         {!isFullscreen && !isPublicView && (
           <Header
-            title={presentation.title}
+            title={editedTitle || presentation.title}
             editedTitle={editedTitle}
             isEditingTitle={isEditingTitle}
             slidesCount={slides.length}
