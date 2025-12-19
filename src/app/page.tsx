@@ -333,7 +333,7 @@ function LandingPageContent({ t }: { t: any }) {
                 {/* Background Image - Full image shown at bottom */}
                 <div className="absolute inset-0 z-0">
                     <img
-                        src="/background.png"
+                        src="https://res.cloudinary.com/di76ibrro/image/upload/v1766157051/B3ackground-min_1_dyfstu.png"
                         alt="Background"
                         className="h-full w-full object-contain object-bottom opacity-80"
                     />
