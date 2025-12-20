@@ -128,7 +128,9 @@ interface FloatingToolbarProps {
 
 function FloatingToolbar({ position, onCommand, onClose }: FloatingToolbarProps) {
   const [activeMenu, setActiveMenu] = useState<"heading" | "color" | "highlight" | null>(null);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const toolbarRef = useRef<HTMLDivElement>(null);
+  const buttonRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
 
   // Close menus when clicking outside
   useEffect(() => {
@@ -142,7 +144,37 @@ function FloatingToolbar({ position, onCommand, onClose }: FloatingToolbarProps)
   }, []);
 
   const toggleMenu = (menu: "heading" | "color" | "highlight") => {
-    setActiveMenu(activeMenu === menu ? null : menu);
+    if (activeMenu === menu) {
+      setActiveMenu(null);
+      return;
+    }
+    
+    // Calculate menu position based on button position
+    const button = buttonRefs.current[menu];
+    if (button) {
+      const rect = button.getBoundingClientRect();
+      setMenuPosition({
+        top: rect.bottom + 4,
+        left: rect.left,
+      });
+    }
+    setActiveMenu(menu);
+  };
+
+  // Render dropdown menu via portal
+  const renderDropdown = (content: React.ReactNode) => {
+    if (!activeMenu) return null;
+    
+    return createPortal(
+      <div
+        className="fixed z-[999999] bg-white rounded-lg shadow-xl border border-slate-200 p-2"
+        style={{ top: menuPosition.top, left: menuPosition.left }}
+        onMouseDown={(e) => e.preventDefault()}
+      >
+        {content}
+      </div>,
+      document.body
+    );
   };
 
   return (
@@ -159,6 +191,7 @@ function FloatingToolbar({ position, onCommand, onClose }: FloatingToolbarProps)
       {/* Heading */}
       <div className="relative">
         <button
+          ref={(el) => { buttonRefs.current["heading"] = el; }}
           type="button"
           onMouseDown={(e) => {
             e.preventDefault();
@@ -169,31 +202,33 @@ function FloatingToolbar({ position, onCommand, onClose }: FloatingToolbarProps)
           <span className="w-6">H</span>
           <ChevronDown size={12} />
         </button>
-        {activeMenu === "heading" && (
-          <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-xl border border-slate-200 py-1 z-50 min-w-[80px]">
-            {HEADING_OPTIONS.map((opt) => (
-              <button
-                key={opt.tag}
-                type="button"
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  onCommand("formatBlock", opt.tag);
-                  setActiveMenu(null);
-                }}
-                className="w-full text-left px-3 py-1.5 hover:bg-slate-100 text-slate-700 text-sm"
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
+
+      {activeMenu === "heading" && renderDropdown(
+        <div className="min-w-[80px]">
+          {HEADING_OPTIONS.map((opt) => (
+            <button
+              key={opt.tag}
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                onCommand("formatBlock", opt.tag);
+                setActiveMenu(null);
+              }}
+              className="w-full text-left px-3 py-1.5 hover:bg-slate-100 text-slate-700 text-sm rounded"
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       <ToolbarDivider />
 
       {/* Text Color */}
       <div className="relative">
         <button
+          ref={(el) => { buttonRefs.current["color"] = el; }}
           type="button"
           onMouseDown={(e) => {
             e.preventDefault();
@@ -205,27 +240,26 @@ function FloatingToolbar({ position, onCommand, onClose }: FloatingToolbarProps)
           <Palette size={15} />
           <ChevronDown size={10} />
         </button>
-        {activeMenu === "color" && (
-          <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-xl border border-slate-200 p-2 z-50">
-            <div className="grid grid-cols-5 gap-1">
-              {TEXT_COLORS.map((c) => (
-                <button
-                  key={c.name}
-                  type="button"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    onCommand("foreColor", c.value || "#000000");
-                    setActiveMenu(null);
-                  }}
-                  title={c.name}
-                  className="w-6 h-6 rounded border border-slate-200 hover:scale-110 transition-transform"
-                  style={{ backgroundColor: c.value || "#fff" }}
-                />
-              ))}
-            </div>
-          </div>
-        )}
       </div>
+
+      {activeMenu === "color" && renderDropdown(
+        <div className="grid grid-cols-5 gap-1">
+          {TEXT_COLORS.map((c) => (
+            <button
+              key={c.name}
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                onCommand("foreColor", c.value || "#000000");
+                setActiveMenu(null);
+              }}
+              title={c.name}
+              className="w-6 h-6 rounded border border-slate-200 hover:scale-110 transition-transform"
+              style={{ backgroundColor: c.value || "#fff" }}
+            />
+          ))}
+        </div>
+      )}
 
       <ToolbarDivider />
 
@@ -286,6 +320,7 @@ function FloatingToolbar({ position, onCommand, onClose }: FloatingToolbarProps)
       {/* Highlight */}
       <div className="relative">
         <button
+          ref={(el) => { buttonRefs.current["highlight"] = el; }}
           type="button"
           onMouseDown={(e) => {
             e.preventDefault();
@@ -297,27 +332,26 @@ function FloatingToolbar({ position, onCommand, onClose }: FloatingToolbarProps)
           <Highlighter size={15} />
           <ChevronDown size={10} />
         </button>
-        {activeMenu === "highlight" && (
-          <div className="absolute top-full right-0 mt-1 bg-white rounded-lg shadow-xl border border-slate-200 p-2 z-50">
-            <div className="grid grid-cols-3 gap-1">
-              {HIGHLIGHT_COLORS.map((c) => (
-                <button
-                  key={c.name}
-                  type="button"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    onCommand("hiliteColor", c.value || "transparent");
-                    setActiveMenu(null);
-                  }}
-                  title={c.name}
-                  className="w-6 h-6 rounded border border-slate-200 hover:scale-110 transition-transform"
-                  style={{ backgroundColor: c.value || "#fff" }}
-                />
-              ))}
-            </div>
-          </div>
-        )}
       </div>
+
+      {activeMenu === "highlight" && renderDropdown(
+        <div className="grid grid-cols-3 gap-1">
+          {HIGHLIGHT_COLORS.map((c) => (
+            <button
+              key={c.name}
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                onCommand("hiliteColor", c.value || "transparent");
+                setActiveMenu(null);
+              }}
+              title={c.name}
+              className="w-6 h-6 rounded border border-slate-200 hover:scale-110 transition-transform"
+              style={{ backgroundColor: c.value || "#fff" }}
+            />
+          ))}
+        </div>
+      )}
 
       <ToolbarDivider />
 

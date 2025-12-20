@@ -140,7 +140,6 @@ export default function PresentationViewer({
   const [slidesData, setSlidesData] = useState<SlideData[]>(presentation.slides);
   const [activeSlideIndex, setActiveSlideIndex] = useState<number | null>(null);
   const [showLayoutModal, setShowLayoutModal] = useState(false);
-  const [showSlideMenu, setShowSlideMenu] = useState<number | null>(null);
   const [editingText, setEditingText] = useState<EditingState | null>(null);
   const [showImageModal, setShowImageModal] = useState<number | null>(null);
   const [editingImageIndex, setEditingImageIndex] = useState<number | null>(null);
@@ -495,16 +494,6 @@ export default function PresentationViewer({
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.closest('[data-slide-menu]')) return;
-      if (showSlideMenu !== null) setShowSlideMenu(null);
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showSlideMenu]);
-
   const toggleFullscreen = async () => {
     if (!document.fullscreenElement) {
       await document.documentElement.requestFullscreen();
@@ -550,7 +539,6 @@ export default function PresentationViewer({
       updateSlidesWithSave(newSlides);
       setCurrentSlide(index + 1);
     }
-    setShowSlideMenu(null);
   };
 
   const addSlideAt = (index: number) => {
@@ -564,7 +552,6 @@ export default function PresentationViewer({
     newSlides.splice(index + 1, 0, newSlide);
     updateSlidesWithSave(newSlides);
     setCurrentSlide(index + 1);
-    setShowSlideMenu(null);
   };
 
   const deleteSlide = (index: number) => {
@@ -572,7 +559,6 @@ export default function PresentationViewer({
     const newSlides = slidesData.filter((_, i) => i !== index);
     updateSlidesWithSave(newSlides);
     if (currentSlide >= newSlides.length) setCurrentSlide(newSlides.length - 1);
-    setShowSlideMenu(null);
   };
 
   const moveSlide = (index: number, direction: "up" | "down") => {
@@ -587,7 +573,6 @@ export default function PresentationViewer({
       updateSlidesWithSave(newSlides);
       setCurrentSlide(newIndex);
     }
-    setShowSlideMenu(null);
   };
 
   const addBulletPoint = (slideIndex: number) => {
@@ -835,21 +820,18 @@ export default function PresentationViewer({
         )}
         {theme.overlay && !hasImage && <div className="absolute inset-0" style={{ background: theme.overlay }} />}
 
-        {canEdit && !isFullscreen && !isPublicView && (isHovered || showSlideMenu === index) && (
+        {canEdit && !isFullscreen && !isPublicView && isHovered && (
           <SlideMenu
             index={index}
             totalSlides={slides.length}
-            showMenu={showSlideMenu === index}
             imageCount={getSlideImages(slide).length}
             hasChart={!!slide.chart}
-            onToggleMenu={() => setShowSlideMenu(showSlideMenu === index ? null : index)}
-            onChangeLayout={() => { setActiveSlideIndex(index); setShowLayoutModal(true); setShowSlideMenu(null); }}
+            onChangeLayout={() => { setActiveSlideIndex(index); setShowLayoutModal(true); }}
             onDuplicate={() => duplicateSlide(index)}
             onAddSlide={() => addSlideAt(index)}
-            onAddImage={() => { setShowImageModal(index); setEditingImageIndex(null); setImageUrl(""); setShowSlideMenu(null); }}
-            onManageImages={() => { setShowImageModal(index); setEditingImageIndex(null); setImageUrl(""); setShowSlideMenu(null); }}
-            onAddChart={() => { setShowChartModal(index); setShowSlideMenu(null); }}
-            onRemoveChart={() => { updateSlideChart(index, null); setShowSlideMenu(null); }}
+            onAddImage={() => { setShowImageModal(index); setEditingImageIndex(null); setImageUrl(""); }}
+            onAddChart={() => { setShowChartModal(index); }}
+            onRemoveChart={() => { updateSlideChart(index, null); }}
             onMoveUp={() => moveSlide(index, "up")}
             onMoveDown={() => moveSlide(index, "down")}
             onDelete={() => deleteSlide(index)}
