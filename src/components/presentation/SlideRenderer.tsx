@@ -25,7 +25,7 @@ interface SlideRendererProps {
   onDeleteBullet: (slideIndex: number, bulletIndex: number) => void;
 }
 
-type LayoutVariant = "left-content" | "right-content" | "centered" | "split-diagonal" | "image-focus" | "minimal-left" | "cards-grid" | "quote-style" | "timeline" | "diagonal-cut" | "circle-focus" | "wave-layout" | "hexagon-frame" | "glass-cards" | "aurora-glow" | "diamond-frame" | "ember-cards" | "molten-split" | "arch-frame" | "botanical-cards" | "elegant-split" | "glitch-frame" | "neon-grid" | "holo-cards" | "scan-frame" | "bio-cards" | "transmission-split" | "clean-frame" | "pro-cards" | "executive-split" | "nebula-float" | "orbital-rings" | "starfield-cards" | "cosmic-portal" | "galaxy-split" | "celestial-frame" | "mono-brutalist" | "geometric-slice" | "contrast-blocks" | "angular-frame" | "stripe-accent" | "bold-stack" | "cloud-float" | "sakura-cards" | "dreamy-split" | "soft-bubble" | "twilight-frame" | "pastel-stack" | "terminal-window" | "matrix-cards" | "code-block" | "shell-prompt" | "cyber-grid" | "hack-split";
+type LayoutVariant = "left-content" | "right-content" | "centered" | "split-diagonal" | "image-focus" | "minimal-left" | "cards-grid" | "quote-style" | "timeline" | "diagonal-cut" | "circle-focus" | "wave-layout" | "hexagon-frame" | "glass-cards" | "aurora-glow" | "diamond-frame" | "ember-cards" | "molten-split" | "arch-frame" | "botanical-cards" | "elegant-split" | "glitch-frame" | "neon-grid" | "holo-cards" | "scan-frame" | "bio-cards" | "transmission-split" | "clean-frame" | "pro-cards" | "executive-split" | "nebula-float" | "orbital-rings" | "starfield-cards" | "cosmic-portal" | "galaxy-split" | "celestial-frame" | "mono-brutalist" | "geometric-slice" | "contrast-blocks" | "angular-frame" | "stripe-accent" | "bold-stack" | "cloud-float" | "sakura-cards" | "dreamy-split" | "soft-bubble" | "twilight-frame" | "pastel-stack" | "terminal-window" | "matrix-cards" | "code-block" | "shell-prompt" | "cyber-grid" | "hack-split" | "grid-2-col" | "grid-3-col" | "grid-4-card" | "cards-2" | "cards-3" | "comparison" | "stats-grid" | "full-image" | "centered-image" | "feature-showcase";
 
 // Theme type detection
 type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber" | "alien" | "corporate" | "cosmic" | "architectural" | "anime" | "hacker" | "custom-dark" | "custom-light";
@@ -73,19 +73,19 @@ function getLayoutVariant(index: number, themeType: ThemeType, slideLayout?: str
       "title-left": "left-content",
       "content-left-image-right": "left-content",
       "content-right-image-left": "right-content",
-      "content-grid-2": "cards-grid",
-      "content-grid-3": "cards-grid",
-      "content-grid-4": "cards-grid",
-      "content-cards-2": "cards-grid",
-      "content-cards-3": "cards-grid",
-      "content-full-image": "image-focus",
+      "content-grid-2": "grid-2-col",
+      "content-grid-3": "grid-3-col",
+      "content-grid-4": "grid-4-card",
+      "content-cards-2": "cards-2",
+      "content-cards-3": "cards-3",
+      "content-full-image": "full-image",
       "content-split-diagonal": "split-diagonal",
       "content-timeline": "timeline",
-      "content-comparison": "cards-grid",
+      "content-comparison": "comparison",
       "content-quote": "quote-style",
-      "content-stats": "cards-grid",
-      "content-centered-image": "centered",
-      "content-feature-showcase": "image-focus",
+      "content-stats": "stats-grid",
+      "content-centered-image": "centered-image",
+      "content-feature-showcase": "feature-showcase",
       // Direct mappings for internal layout variants
       "left-content": "left-content",
       "right-content": "right-content",
@@ -145,6 +145,18 @@ function getLayoutVariant(index: number, themeType: ThemeType, slideLayout?: str
       "shell-prompt": "shell-prompt",
       "cyber-grid": "cyber-grid",
       "hack-split": "hack-split",
+      // New grid layouts
+      "grid-2-col": "grid-2-col",
+      "grid-3-col": "grid-3-col",
+      "grid-4-card": "grid-4-card",
+      "cards-2": "cards-2",
+      "cards-3": "cards-3",
+      "comparison": "comparison",
+      "stats-grid": "stats-grid",
+      // Media layouts
+      "full-image": "full-image",
+      "centered-image": "centered-image",
+      "feature-showcase": "feature-showcase",
     };
     const mappedLayout = layoutMap[slideLayout];
     if (mappedLayout) return mappedLayout;
@@ -1113,6 +1125,72 @@ export default function SlideRenderer({
 
   // LAYOUT 7: Cards Grid - Content as cards (great for light theme)
   if (layout === "cards-grid") {
+    // For hacker theme, use matrix-cards style without floating image
+    if (themeType === "hacker") {
+      const bgImage = theme.backgroundImage;
+      return (
+        <div className="h-full relative overflow-hidden">
+          {bgImage && (
+            <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${bgImage})` }} />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d0d]/80 via-[#141414]/60 to-[#0d0d0d]/85" />
+
+          {/* Matrix rain columns */}
+          <div className="absolute inset-0 overflow-hidden opacity-15 pointer-events-none hidden sm:block">
+            {[10, 20, 30, 45, 55, 70, 80, 90].map((left, idx) => (
+              <div key={idx} className="absolute top-0 w-px bg-gradient-to-b from-[#00ff41] via-[#00ff41]/50 to-transparent" style={{ left: `${left}%`, height: `${30 + idx * 8}%` }} />
+            ))}
+          </div>
+
+          <SlideIndicator position="top-left" />
+
+          <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-8 md:pt-12 overflow-y-auto">
+            <div className="mb-4 sm:mb-6 md:mb-8">
+              <span className="text-[#00ff41]/50 font-mono text-[10px] sm:text-xs uppercase tracking-widest">// System Output</span>
+              <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl mt-1 sm:mt-2" align="left" />
+            </div>
+
+            {bulletPoints.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
+                {bulletPoints.map((point, i) => (
+                  <div key={i} className="group relative">
+                    <div className="absolute inset-0 bg-[#00ff41]/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative p-3 sm:p-4 md:p-5 rounded-lg border border-[#00ff41]/30 bg-[#0d0d0d]/70 backdrop-blur-sm hover:border-[#00ff41]/50 transition-colors">
+                      <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                        <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded border border-[#00ff41]/40 flex items-center justify-center bg-[#00ff41]/10">
+                          <span className="text-[#00ff41] font-mono text-xs sm:text-sm font-bold">{String(i + 1).padStart(2, "0")}</span>
+                        </div>
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#00ff41] animate-pulse" />
+                      </div>
+                      <EditableText
+                        value={point}
+                        isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                        onStartEdit={() => onStartEditing(index, "bullet", i)}
+                        onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                        onFinish={onFinishEditing}
+                        className="text-sm sm:text-base leading-relaxed"
+                        style={{ fontFamily: theme.fonts.body.family, color: "#39ff14" }}
+                        isOwner={canEdit}
+                        isHovered={isHovered}
+                        onDelete={() => onDeleteBullet(index, i)}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {canEdit && isHovered && (
+              <button onClick={() => onAddBullet(index)} className="mt-4 sm:mt-6 flex items-center gap-2 text-xs sm:text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
+                <Plus size={12} className="sm:w-[14px] sm:h-[14px]" /> Add module
+              </button>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // Default cards-grid for other themes
     return (
       <div className="h-full relative overflow-hidden">
         <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
@@ -1127,7 +1205,7 @@ export default function SlideRenderer({
             {bulletPoints.map((point, i) => (
               <div key={i} className={`p-3 sm:p-4 md:p-5 rounded-lg sm:rounded-xl border backdrop-blur-sm ${colors.cardBg}`}>
                 <div className="flex items-start gap-2 sm:gap-3">
-                  <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-md sm:rounded-lg flex items-center justify-center text-xs sm:text-sm font-bold shrink-0" style={{ backgroundColor: colors.accent, color: themeType === "light" ? "#fff" : "#000" }}>
+                  <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-md sm:rounded-lg flex items-center justify-center text-xs sm:text-sm font-bold shrink-0" style={{ backgroundColor: colors.accent, color: themeType === "light" || themeType === "corporate" ? "#fff" : "#000" }}>
                     {i + 1}
                   </div>
                   <EditableText
@@ -1153,16 +1231,562 @@ export default function SlideRenderer({
             </button>
           )}
         </div>
+      </div>
+    );
+  }
 
-        {hasImage && (
-          <div className={`absolute bottom-4 right-4 sm:bottom-8 sm:right-8 ${hasMultipleImages ? "w-32 sm:w-48 md:w-64" : "w-24 sm:w-36 md:w-48"} h-20 sm:h-24 md:h-32 hidden sm:block`}>
-            {hasMultipleImages ? (
-              <ImageGallery className="w-full h-full" layout="row" />
-            ) : (
-              <ImageBlock className="w-full h-full" size="small" />
+  // LAYOUT 7a: Two Column Grid - Content split into 2 columns
+  if (layout === "grid-2-col") {
+    const midPoint = Math.ceil(bulletPoints.length / 2);
+    const leftColumn = bulletPoints.slice(0, midPoint);
+    const rightColumn = bulletPoints.slice(midPoint);
+
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute top-1/4 right-1/4 w-64 h-64 ${colors.orb1} rounded-full blur-3xl hidden sm:block`} />
+
+        <SlideIndicator position="top-left" />
+
+        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
+          <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8" />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
+            {/* Left Column */}
+            <div className={`p-4 sm:p-5 md:p-6 rounded-lg sm:rounded-xl border backdrop-blur-sm ${colors.cardBg}`}>
+              <div className="space-y-3 sm:space-y-4">
+                {leftColumn.map((point, i) => (
+                  <div key={i} className="flex items-start gap-2 sm:gap-3">
+                    <div className="w-2 h-2 rounded-full mt-2 shrink-0" style={{ backgroundColor: colors.accent }} />
+                    <EditableText
+                      value={point}
+                      isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                      onStartEdit={() => onStartEditing(index, "bullet", i)}
+                      onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                      onFinish={onFinishEditing}
+                      className="flex-1 text-sm sm:text-base leading-relaxed"
+                      style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+                      isOwner={canEdit}
+                      isHovered={isHovered}
+                      onDelete={() => onDeleteBullet(index, i)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Column */}
+            <div className={`p-4 sm:p-5 md:p-6 rounded-lg sm:rounded-xl border backdrop-blur-sm ${colors.cardBg}`}>
+              <div className="space-y-3 sm:space-y-4">
+                {rightColumn.map((point, i) => (
+                  <div key={i} className="flex items-start gap-2 sm:gap-3">
+                    <div className="w-2 h-2 rounded-full mt-2 shrink-0" style={{ backgroundColor: colors.accent }} />
+                    <EditableText
+                      value={point}
+                      isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === midPoint + i}
+                      onStartEdit={() => onStartEditing(index, "bullet", midPoint + i)}
+                      onChange={(val) => onUpdateContent(index, "bullet", val, midPoint + i)}
+                      onFinish={onFinishEditing}
+                      className="flex-1 text-sm sm:text-base leading-relaxed"
+                      style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+                      isOwner={canEdit}
+                      isHovered={isHovered}
+                      onDelete={() => onDeleteBullet(index, midPoint + i)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {canEdit && isHovered && (
+            <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+              <Plus size={14} /> Add point
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // LAYOUT 7b: Three Column Grid - Content split into 3 columns with icons
+  if (layout === "grid-3-col") {
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute bottom-0 left-1/3 w-72 h-72 ${colors.orb2} rounded-full blur-3xl hidden sm:block`} />
+
+        <SlideIndicator position="top-left" />
+
+        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
+          <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8 text-center" align="center" />
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+            {bulletPoints.map((point, i) => (
+              <div key={i} className={`p-4 sm:p-5 md:p-6 rounded-lg sm:rounded-xl border backdrop-blur-sm text-center ${colors.cardBg}`}>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full mx-auto mb-3 sm:mb-4 flex items-center justify-center" style={{ backgroundColor: `${colors.accent}20` }}>
+                  <span className="text-lg sm:text-xl font-bold" style={{ color: colors.accent }}>{i + 1}</span>
+                </div>
+                <EditableText
+                  value={point}
+                  isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                  onStartEdit={() => onStartEditing(index, "bullet", i)}
+                  onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                  onFinish={onFinishEditing}
+                  className="text-sm sm:text-base leading-relaxed"
+                  style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+                  isOwner={canEdit}
+                  isHovered={isHovered}
+                  onDelete={() => onDeleteBullet(index, i)}
+                />
+              </div>
+            ))}
+          </div>
+
+          {canEdit && isHovered && (
+            <button onClick={() => onAddBullet(index)} className={`mt-4 mx-auto flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+              <Plus size={14} /> Add column
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // LAYOUT 7c: Four Card Grid - 2x2 grid layout
+  if (layout === "grid-4-card") {
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 ${colors.orb1} rounded-full blur-3xl hidden sm:block`} />
+
+        <SlideIndicator position="top-left" />
+
+        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
+          <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8" />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-5 max-w-4xl">
+            {bulletPoints.slice(0, 4).map((point, i) => (
+              <div key={i} className={`p-4 sm:p-5 md:p-6 rounded-lg sm:rounded-xl border backdrop-blur-sm ${colors.cardBg}`}>
+                <div className="flex items-center gap-3 mb-2 sm:mb-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center font-bold text-sm sm:text-base" style={{ backgroundColor: colors.accent, color: themeType === "light" || themeType === "corporate" ? "#fff" : "#000" }}>
+                    {i + 1}
+                  </div>
+                  <div className="h-px flex-1" style={{ backgroundColor: `${colors.accent}30` }} />
+                </div>
+                <EditableText
+                  value={point}
+                  isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                  onStartEdit={() => onStartEditing(index, "bullet", i)}
+                  onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                  onFinish={onFinishEditing}
+                  className="text-sm sm:text-base leading-relaxed"
+                  style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+                  isOwner={canEdit}
+                  isHovered={isHovered}
+                  onDelete={() => onDeleteBullet(index, i)}
+                />
+              </div>
+            ))}
+          </div>
+
+          {canEdit && isHovered && bulletPoints.length < 4 && (
+            <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+              <Plus size={14} /> Add card
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // LAYOUT 7d: Two Cards - Two large content cards side by side
+  if (layout === "cards-2") {
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute top-0 right-0 w-80 h-80 ${colors.orb1Strong} rounded-full blur-3xl hidden sm:block`} />
+        <div className={`absolute bottom-0 left-0 w-64 h-64 ${colors.orb2} rounded-full blur-3xl hidden sm:block`} />
+
+        <SlideIndicator position="top-left" />
+
+        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 flex flex-col overflow-y-auto">
+          <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8" />
+
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
+            {bulletPoints.slice(0, 2).map((point, i) => (
+              <div key={i} className={`p-5 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl border-2 backdrop-blur-sm flex flex-col ${colors.cardBg}`} style={{ borderColor: `${colors.accent}40` }}>
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl mb-4 sm:mb-5 flex items-center justify-center" style={{ backgroundColor: `${colors.accent}15` }}>
+                  <span className="text-2xl sm:text-3xl font-bold" style={{ color: colors.accent }}>{i + 1}</span>
+                </div>
+                <EditableText
+                  value={point}
+                  isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                  onStartEdit={() => onStartEditing(index, "bullet", i)}
+                  onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                  onFinish={onFinishEditing}
+                  className="text-base sm:text-lg leading-relaxed flex-1"
+                  style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+                  isOwner={canEdit}
+                  isHovered={isHovered}
+                  onDelete={() => onDeleteBullet(index, i)}
+                />
+              </div>
+            ))}
+          </div>
+
+          {canEdit && isHovered && bulletPoints.length < 2 && (
+            <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+              <Plus size={14} /> Add card
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // LAYOUT 7e: Three Cards - Three content cards in a row
+  if (layout === "cards-3") {
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute top-1/3 left-1/4 w-72 h-72 ${colors.orb1} rounded-full blur-3xl hidden sm:block`} />
+
+        <SlideIndicator position="top-left" />
+
+        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 flex flex-col overflow-y-auto">
+          <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8 text-center" align="center" />
+
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+            {bulletPoints.slice(0, 3).map((point, i) => (
+              <div key={i} className={`p-4 sm:p-5 md:p-6 rounded-xl border backdrop-blur-sm flex flex-col items-center text-center ${colors.cardBg}`}>
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full mb-3 sm:mb-4 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${colors.accent}30, ${colors.accent}10)`, border: `2px solid ${colors.accent}40` }}>
+                  <span className="text-xl sm:text-2xl font-bold" style={{ color: colors.accent }}>{i + 1}</span>
+                </div>
+                <EditableText
+                  value={point}
+                  isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                  onStartEdit={() => onStartEditing(index, "bullet", i)}
+                  onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                  onFinish={onFinishEditing}
+                  className="text-sm sm:text-base leading-relaxed"
+                  style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+                  isOwner={canEdit}
+                  isHovered={isHovered}
+                  onDelete={() => onDeleteBullet(index, i)}
+                />
+              </div>
+            ))}
+          </div>
+
+          {canEdit && isHovered && bulletPoints.length < 3 && (
+            <button onClick={() => onAddBullet(index)} className={`mt-4 mx-auto flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+              <Plus size={14} /> Add card
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // LAYOUT 7f: Comparison - Side by side comparison layout
+  if (layout === "comparison") {
+    const midPoint = Math.ceil(bulletPoints.length / 2);
+    const leftItems = bulletPoints.slice(0, midPoint);
+    const rightItems = bulletPoints.slice(midPoint);
+
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+
+        <SlideIndicator position="top-left" />
+
+        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
+          <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8 text-center" align="center" />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-5xl mx-auto">
+            {/* Left Side */}
+            <div className={`p-4 sm:p-5 md:p-6 rounded-xl border-2 ${colors.cardBg}`} style={{ borderColor: `${colors.accent}50` }}>
+              <div className="text-center mb-4 pb-3 border-b" style={{ borderColor: `${colors.accent}30` }}>
+                <span className="text-sm sm:text-base font-semibold uppercase tracking-wider" style={{ color: colors.accent }}>Option A</span>
+              </div>
+              <div className="space-y-3">
+                {leftItems.map((point, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <span style={{ color: colors.accent }}>✓</span>
+                    <EditableText
+                      value={point}
+                      isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                      onStartEdit={() => onStartEditing(index, "bullet", i)}
+                      onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                      onFinish={onFinishEditing}
+                      className="flex-1 text-sm sm:text-base"
+                      style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+                      isOwner={canEdit}
+                      isHovered={isHovered}
+                      onDelete={() => onDeleteBullet(index, i)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Side */}
+            <div className={`p-4 sm:p-5 md:p-6 rounded-xl border-2 ${colors.cardBg}`} style={{ borderColor: `${colors.accent}30` }}>
+              <div className="text-center mb-4 pb-3 border-b" style={{ borderColor: `${colors.accent}20` }}>
+                <span className="text-sm sm:text-base font-semibold uppercase tracking-wider" style={{ color: colors.textMuted }}>Option B</span>
+              </div>
+              <div className="space-y-3">
+                {rightItems.map((point, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <span style={{ color: colors.textMuted }}>✓</span>
+                    <EditableText
+                      value={point}
+                      isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === midPoint + i}
+                      onStartEdit={() => onStartEditing(index, "bullet", midPoint + i)}
+                      onChange={(val) => onUpdateContent(index, "bullet", val, midPoint + i)}
+                      onFinish={onFinishEditing}
+                      className="flex-1 text-sm sm:text-base"
+                      style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+                      isOwner={canEdit}
+                      isHovered={isHovered}
+                      onDelete={() => onDeleteBullet(index, midPoint + i)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {canEdit && isHovered && (
+            <button onClick={() => onAddBullet(index)} className={`mt-4 mx-auto flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+              <Plus size={14} /> Add item
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // LAYOUT 7g: Stats Grid - Big numbers with labels
+  if (layout === "stats-grid") {
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute top-0 left-1/2 w-96 h-96 ${colors.orb1Strong} rounded-full blur-3xl hidden sm:block`} />
+
+        <SlideIndicator position="top-left" />
+
+        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
+          <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-6 sm:mb-8 md:mb-10 text-center" align="center" />
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6 max-w-5xl mx-auto">
+            {bulletPoints.map((point, i) => (
+              <div key={i} className={`p-4 sm:p-5 md:p-6 rounded-xl border text-center ${colors.cardBg}`}>
+                <div className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2" style={{ color: colors.accent }}>
+                  {i + 1}
+                </div>
+                <EditableText
+                  value={point}
+                  isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                  onStartEdit={() => onStartEditing(index, "bullet", i)}
+                  onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                  onFinish={onFinishEditing}
+                  className="text-xs sm:text-sm uppercase tracking-wider"
+                  style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+                  isOwner={canEdit}
+                  isHovered={isHovered}
+                  onDelete={() => onDeleteBullet(index, i)}
+                />
+              </div>
+            ))}
+          </div>
+
+          {canEdit && isHovered && (
+            <button onClick={() => onAddBullet(index)} className={`mt-4 mx-auto flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+              <Plus size={14} /> Add stat
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // LAYOUT 7h: Full Image - Full-bleed image with text overlay
+  if (layout === "full-image") {
+    const firstImage = allImages[0];
+    return (
+      <div className="h-full relative overflow-hidden">
+        {/* Full background image */}
+        {hasImage && firstImage && (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={firstImage.url} alt={firstImage.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
+            <div className={`absolute inset-0 ${colors.fullOverlay}`} />
+          </>
+        )}
+        {!hasImage && (
+          <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        )}
+
+        <SlideIndicator position="top-left" />
+
+        <div className="relative h-full flex flex-col justify-end p-4 sm:p-8 md:p-12 pb-8 sm:pb-12 md:pb-16">
+          <Title className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-4 sm:mb-6" />
+
+          {bulletPoints.length > 0 && (
+            <div className="max-w-2xl space-y-2 sm:space-y-3">
+              {bulletPoints.map((point, i) => (
+                <div key={i} className="flex items-start gap-2 sm:gap-3">
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full mt-2 shrink-0" style={{ backgroundColor: colors.accent }} />
+                  <EditableText
+                    value={point}
+                    isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                    onStartEdit={() => onStartEditing(index, "bullet", i)}
+                    onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                    onFinish={onFinishEditing}
+                    className="text-sm sm:text-base md:text-lg leading-relaxed"
+                    style={{ fontFamily: theme.fonts.body.family, color: hasImage ? "#fff" : colors.textMuted }}
+                    isOwner={canEdit}
+                    isHovered={isHovered}
+                    onDelete={() => onDeleteBullet(index, i)}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {canEdit && isHovered && (
+            <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-xs sm:text-sm ${hasImage ? "text-white/60 hover:text-white" : `${colors.indicatorMuted} ${colors.hoverAccent}`} transition-colors`}>
+              <Plus size={14} /> Add point
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // LAYOUT 7i: Centered Image - Image centered with content cards below
+  if (layout === "centered-image") {
+    const firstImage = allImages[0];
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 ${colors.orb1} rounded-full blur-3xl hidden sm:block`} />
+
+        <SlideIndicator position="top-left" />
+
+        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 flex flex-col overflow-y-auto">
+          <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 text-center" align="center" />
+
+          {/* Centered Image */}
+          {hasImage && firstImage && (
+            <div className="flex justify-center mb-4 sm:mb-6">
+              <div className="w-full max-w-md sm:max-w-lg md:max-w-xl h-40 sm:h-48 md:h-56 rounded-xl overflow-hidden shadow-lg">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={firstImage.url} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
+              </div>
+            </div>
+          )}
+
+          {/* Content cards below */}
+          {bulletPoints.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-3xl mx-auto">
+              {bulletPoints.map((point, i) => (
+                <div key={i} className={`p-3 sm:p-4 rounded-lg border backdrop-blur-sm ${colors.cardBg}`}>
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-md flex items-center justify-center text-xs font-bold shrink-0" style={{ backgroundColor: colors.accent, color: themeType === "light" || themeType === "corporate" ? "#fff" : "#000" }}>
+                      {i + 1}
+                    </div>
+                    <EditableText
+                      value={point}
+                      isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                      onStartEdit={() => onStartEditing(index, "bullet", i)}
+                      onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                      onFinish={onFinishEditing}
+                      className="flex-1 text-sm sm:text-base leading-relaxed"
+                      style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+                      isOwner={canEdit}
+                      isHovered={isHovered}
+                      onDelete={() => onDeleteBullet(index, i)}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {canEdit && isHovered && (
+            <button onClick={() => onAddBullet(index)} className={`mt-4 mx-auto flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+              <Plus size={14} /> Add card
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // LAYOUT 7j: Feature Showcase - Large image header with feature cards below
+  if (layout === "feature-showcase") {
+    const firstImage = allImages[0];
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+
+        <SlideIndicator position="top-left" />
+
+        <div className="relative h-full flex flex-col overflow-y-auto">
+          {/* Image header section */}
+          {hasImage && firstImage && (
+            <div className="relative h-1/3 sm:h-2/5 shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={firstImage.url} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
+              <div className={`absolute inset-0 ${colors.fullOverlay}`} />
+              <div className="absolute inset-0 flex items-center justify-center p-4">
+                <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl text-center" align="center" />
+              </div>
+            </div>
+          )}
+
+          {!hasImage && (
+            <div className="p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20">
+              <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl text-center" align="center" />
+            </div>
+          )}
+
+          {/* Feature cards section */}
+          <div className="flex-1 p-4 sm:p-6 md:p-8">
+            {bulletPoints.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 max-w-5xl mx-auto">
+                {bulletPoints.map((point, i) => (
+                  <div key={i} className={`p-4 sm:p-5 rounded-xl border backdrop-blur-sm text-center ${colors.cardBg}`}>
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: `${colors.accent}20` }}>
+                      <span className="text-lg sm:text-xl font-bold" style={{ color: colors.accent }}>{i + 1}</span>
+                    </div>
+                    <EditableText
+                      value={point}
+                      isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                      onStartEdit={() => onStartEditing(index, "bullet", i)}
+                      onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                      onFinish={onFinishEditing}
+                      className="text-sm sm:text-base leading-relaxed"
+                      style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+                      isOwner={canEdit}
+                      isHovered={isHovered}
+                      onDelete={() => onDeleteBullet(index, i)}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {canEdit && isHovered && (
+              <button onClick={() => onAddBullet(index)} className={`mt-4 mx-auto flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+                <Plus size={14} /> Add feature
+              </button>
             )}
           </div>
-        )}
+        </div>
       </div>
     );
   }
