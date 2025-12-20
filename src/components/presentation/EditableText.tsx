@@ -45,7 +45,6 @@ interface EditableTextProps {
 interface ToolbarPosition {
   top: number;
   left: number;
-  placement: "above" | "below";
 }
 
 // ============================================================================
@@ -84,19 +83,17 @@ const TOOLBAR_HEIGHT = 44;
 const TOOLBAR_GAP = 8;
 
 // ============================================================================
-// TOOLBAR COMPONENTS (Extracted for cleaner code)
+// TOOLBAR BUTTON
 // ============================================================================
 
 const ToolbarButton = ({
   onClick,
   title,
   children,
-  active,
 }: {
   onClick: () => void;
   title: string;
   children: React.ReactNode;
-  active?: boolean;
 }) => (
   <button
     type="button"
@@ -106,9 +103,7 @@ const ToolbarButton = ({
       onClick();
     }}
     title={title}
-    className={`p-1.5 rounded transition-colors ${
-      active ? "bg-slate-700 text-white" : "hover:bg-slate-100 text-slate-600"
-    }`}
+    className="p-1.5 rounded transition-colors hover:bg-slate-100 text-slate-600"
   >
     {children}
   </button>
@@ -117,22 +112,20 @@ const ToolbarButton = ({
 const ToolbarDivider = () => <div className="w-px h-5 bg-slate-200 mx-1" />;
 
 // ============================================================================
-// FLOATING TOOLBAR (Rendered via Portal)
+// FLOATING TOOLBAR
 // ============================================================================
 
 interface FloatingToolbarProps {
   position: ToolbarPosition;
   onCommand: (cmd: string, value?: string) => void;
-  onClose: () => void;
 }
 
-function FloatingToolbar({ position, onCommand, onClose }: FloatingToolbarProps) {
+function FloatingToolbar({ position, onCommand }: FloatingToolbarProps) {
   const [activeMenu, setActiveMenu] = useState<"heading" | "color" | "highlight" | null>(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const toolbarRef = useRef<HTMLDivElement>(null);
-  const buttonRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
+  const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
-  // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (toolbarRef.current && !toolbarRef.current.contains(e.target as Node)) {
@@ -148,23 +141,16 @@ function FloatingToolbar({ position, onCommand, onClose }: FloatingToolbarProps)
       setActiveMenu(null);
       return;
     }
-    
-    // Calculate menu position based on button position
     const button = buttonRefs.current[menu];
     if (button) {
       const rect = button.getBoundingClientRect();
-      setMenuPosition({
-        top: rect.bottom + 4,
-        left: rect.left,
-      });
+      setMenuPosition({ top: rect.bottom + 4, left: rect.left });
     }
     setActiveMenu(menu);
   };
 
-  // Render dropdown menu via portal
   const renderDropdown = (content: React.ReactNode) => {
     if (!activeMenu) return null;
-    
     return createPortal(
       <div
         className="fixed z-[999999] bg-white rounded-lg shadow-xl border border-slate-200 p-2"
@@ -181,28 +167,19 @@ function FloatingToolbar({ position, onCommand, onClose }: FloatingToolbarProps)
     <div
       ref={toolbarRef}
       className="fixed z-[99999] flex items-center gap-0.5 px-2 py-1 bg-white rounded-lg shadow-xl border border-slate-200"
-      style={{
-        top: position.top,
-        left: position.left,
-        transform: "translateX(-50%)",
-      }}
+      style={{ top: position.top, left: position.left, transform: "translateX(-50%)" }}
       onMouseDown={(e) => e.preventDefault()}
     >
       {/* Heading */}
-      <div className="relative">
-        <button
-          ref={(el) => { buttonRefs.current["heading"] = el; }}
-          type="button"
-          onMouseDown={(e) => {
-            e.preventDefault();
-            toggleMenu("heading");
-          }}
-          className="flex items-center gap-0.5 px-2 py-1 rounded hover:bg-slate-100 text-slate-600 text-sm font-medium"
-        >
-          <span className="w-6">H</span>
-          <ChevronDown size={12} />
-        </button>
-      </div>
+      <button
+        ref={(el) => { buttonRefs.current["heading"] = el; }}
+        type="button"
+        onMouseDown={(e) => { e.preventDefault(); toggleMenu("heading"); }}
+        className="flex items-center gap-0.5 px-2 py-1 rounded hover:bg-slate-100 text-slate-600 text-sm font-medium"
+      >
+        <span className="w-6">H</span>
+        <ChevronDown size={12} />
+      </button>
 
       {activeMenu === "heading" && renderDropdown(
         <div className="min-w-[80px]">
@@ -210,11 +187,7 @@ function FloatingToolbar({ position, onCommand, onClose }: FloatingToolbarProps)
             <button
               key={opt.tag}
               type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                onCommand("formatBlock", opt.tag);
-                setActiveMenu(null);
-              }}
+              onMouseDown={(e) => { e.preventDefault(); onCommand("formatBlock", opt.tag); setActiveMenu(null); }}
               className="w-full text-left px-3 py-1.5 hover:bg-slate-100 text-slate-700 text-sm rounded"
             >
               {opt.label}
@@ -226,21 +199,16 @@ function FloatingToolbar({ position, onCommand, onClose }: FloatingToolbarProps)
       <ToolbarDivider />
 
       {/* Text Color */}
-      <div className="relative">
-        <button
-          ref={(el) => { buttonRefs.current["color"] = el; }}
-          type="button"
-          onMouseDown={(e) => {
-            e.preventDefault();
-            toggleMenu("color");
-          }}
-          className="flex items-center gap-0.5 p-1.5 rounded hover:bg-slate-100 text-slate-600"
-          title="Text Color"
-        >
-          <Palette size={15} />
-          <ChevronDown size={10} />
-        </button>
-      </div>
+      <button
+        ref={(el) => { buttonRefs.current["color"] = el; }}
+        type="button"
+        onMouseDown={(e) => { e.preventDefault(); toggleMenu("color"); }}
+        className="flex items-center gap-0.5 p-1.5 rounded hover:bg-slate-100 text-slate-600"
+        title="Text Color"
+      >
+        <Palette size={15} />
+        <ChevronDown size={10} />
+      </button>
 
       {activeMenu === "color" && renderDropdown(
         <div className="grid grid-cols-5 gap-1">
@@ -248,11 +216,7 @@ function FloatingToolbar({ position, onCommand, onClose }: FloatingToolbarProps)
             <button
               key={c.name}
               type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                onCommand("foreColor", c.value || "#000000");
-                setActiveMenu(null);
-              }}
+              onMouseDown={(e) => { e.preventDefault(); onCommand("foreColor", c.value || "#000000"); setActiveMenu(null); }}
               title={c.name}
               className="w-6 h-6 rounded border border-slate-200 hover:scale-110 transition-transform"
               style={{ backgroundColor: c.value || "#fff" }}
@@ -263,76 +227,44 @@ function FloatingToolbar({ position, onCommand, onClose }: FloatingToolbarProps)
 
       <ToolbarDivider />
 
-      {/* Basic Formatting */}
-      <ToolbarButton onClick={() => onCommand("bold")} title="Bold (Ctrl+B)">
-        <Bold size={15} />
-      </ToolbarButton>
-      <ToolbarButton onClick={() => onCommand("italic")} title="Italic (Ctrl+I)">
-        <Italic size={15} />
-      </ToolbarButton>
-      <ToolbarButton onClick={() => onCommand("underline")} title="Underline (Ctrl+U)">
-        <Underline size={15} />
-      </ToolbarButton>
-      <ToolbarButton onClick={() => onCommand("strikeThrough")} title="Strikethrough">
-        <Strikethrough size={15} />
-      </ToolbarButton>
+      <ToolbarButton onClick={() => onCommand("bold")} title="Bold"><Bold size={15} /></ToolbarButton>
+      <ToolbarButton onClick={() => onCommand("italic")} title="Italic"><Italic size={15} /></ToolbarButton>
+      <ToolbarButton onClick={() => onCommand("underline")} title="Underline"><Underline size={15} /></ToolbarButton>
+      <ToolbarButton onClick={() => onCommand("strikeThrough")} title="Strikethrough"><Strikethrough size={15} /></ToolbarButton>
 
       <ToolbarDivider />
 
-      <ToolbarButton onClick={() => onCommand("code")} title="Code">
-        <Code size={15} />
-      </ToolbarButton>
-      <ToolbarButton onClick={() => onCommand("removeFormat")} title="Clear">
-        <RemoveFormatting size={15} />
-      </ToolbarButton>
+      <ToolbarButton onClick={() => onCommand("code")} title="Code"><Code size={15} /></ToolbarButton>
+      <ToolbarButton onClick={() => onCommand("removeFormat")} title="Clear"><RemoveFormatting size={15} /></ToolbarButton>
 
       <ToolbarDivider />
 
-      <ToolbarButton onClick={() => onCommand("createLink")} title="Link (Ctrl+K)">
-        <Link2 size={15} />
-      </ToolbarButton>
+      <ToolbarButton onClick={() => onCommand("createLink")} title="Link"><Link2 size={15} /></ToolbarButton>
 
       <ToolbarDivider />
 
-      {/* Lists */}
-      <ToolbarButton onClick={() => onCommand("insertUnorderedList")} title="Bullet List">
-        <List size={15} />
-      </ToolbarButton>
-      <ToolbarButton onClick={() => onCommand("insertOrderedList")} title="Numbered List">
-        <ListOrdered size={15} />
-      </ToolbarButton>
+      <ToolbarButton onClick={() => onCommand("insertUnorderedList")} title="Bullet List"><List size={15} /></ToolbarButton>
+      <ToolbarButton onClick={() => onCommand("insertOrderedList")} title="Numbered List"><ListOrdered size={15} /></ToolbarButton>
 
       <ToolbarDivider />
 
-      {/* Alignment */}
-      <ToolbarButton onClick={() => onCommand("justifyLeft")} title="Left">
-        <AlignLeft size={15} />
-      </ToolbarButton>
-      <ToolbarButton onClick={() => onCommand("justifyCenter")} title="Center">
-        <AlignCenter size={15} />
-      </ToolbarButton>
-      <ToolbarButton onClick={() => onCommand("justifyRight")} title="Right">
-        <AlignRight size={15} />
-      </ToolbarButton>
+      <ToolbarButton onClick={() => onCommand("justifyLeft")} title="Left"><AlignLeft size={15} /></ToolbarButton>
+      <ToolbarButton onClick={() => onCommand("justifyCenter")} title="Center"><AlignCenter size={15} /></ToolbarButton>
+      <ToolbarButton onClick={() => onCommand("justifyRight")} title="Right"><AlignRight size={15} /></ToolbarButton>
 
       <ToolbarDivider />
 
       {/* Highlight */}
-      <div className="relative">
-        <button
-          ref={(el) => { buttonRefs.current["highlight"] = el; }}
-          type="button"
-          onMouseDown={(e) => {
-            e.preventDefault();
-            toggleMenu("highlight");
-          }}
-          className="flex items-center gap-0.5 p-1.5 rounded hover:bg-slate-100 text-slate-600"
-          title="Highlight"
-        >
-          <Highlighter size={15} />
-          <ChevronDown size={10} />
-        </button>
-      </div>
+      <button
+        ref={(el) => { buttonRefs.current["highlight"] = el; }}
+        type="button"
+        onMouseDown={(e) => { e.preventDefault(); toggleMenu("highlight"); }}
+        className="flex items-center gap-0.5 p-1.5 rounded hover:bg-slate-100 text-slate-600"
+        title="Highlight"
+      >
+        <Highlighter size={15} />
+        <ChevronDown size={10} />
+      </button>
 
       {activeMenu === "highlight" && renderDropdown(
         <div className="grid grid-cols-3 gap-1">
@@ -340,11 +272,7 @@ function FloatingToolbar({ position, onCommand, onClose }: FloatingToolbarProps)
             <button
               key={c.name}
               type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                onCommand("hiliteColor", c.value || "transparent");
-                setActiveMenu(null);
-              }}
+              onMouseDown={(e) => { e.preventDefault(); onCommand("hiliteColor", c.value || "transparent"); setActiveMenu(null); }}
               title={c.name}
               className="w-6 h-6 rounded border border-slate-200 hover:scale-110 transition-transform"
               style={{ backgroundColor: c.value || "#fff" }}
@@ -355,16 +283,11 @@ function FloatingToolbar({ position, onCommand, onClose }: FloatingToolbarProps)
 
       <ToolbarDivider />
 
-      <ToolbarButton onClick={() => onCommand("undo")} title="Undo">
-        <Undo size={15} />
-      </ToolbarButton>
-      <ToolbarButton onClick={() => onCommand("redo")} title="Redo">
-        <Redo size={15} />
-      </ToolbarButton>
+      <ToolbarButton onClick={() => onCommand("undo")} title="Undo"><Undo size={15} /></ToolbarButton>
+      <ToolbarButton onClick={() => onCommand("redo")} title="Redo"><Redo size={15} /></ToolbarButton>
 
       <ToolbarDivider />
 
-      {/* AI Button */}
       <button
         type="button"
         onMouseDown={(e) => e.preventDefault()}
@@ -395,82 +318,53 @@ export default function EditableText({
   const editorRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [showToolbar, setShowToolbar] = useState(false);
-  const [toolbarPosition, setToolbarPosition] = useState<ToolbarPosition>({
-    top: 0,
-    left: 0,
-    placement: "above",
-  });
-  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
+  const [toolbarPosition, setToolbarPosition] = useState<ToolbarPosition>({ top: 0, left: 0 });
+  const initializedRef = useRef(false);
 
-  // Setup portal container on mount
+  // Initialize editor content ONLY when editing starts (not on every render)
   useEffect(() => {
-    setPortalContainer(document.body);
-  }, []);
-
-  // Sync content when not editing
-  useEffect(() => {
-    if (!isEditing && editorRef.current) {
-      editorRef.current.innerHTML = value;
-    }
-  }, [value, isEditing]);
-
-  // Initialize editor when editing starts
-  useEffect(() => {
-    if (isEditing && editorRef.current) {
+    if (isEditing && editorRef.current && !initializedRef.current) {
       editorRef.current.innerHTML = value;
       editorRef.current.focus();
-      // Select all text for easy replacement
+      // Place cursor at end
       const range = document.createRange();
-      range.selectNodeContents(editorRef.current);
       const sel = window.getSelection();
+      range.selectNodeContents(editorRef.current);
+      range.collapse(false);
       sel?.removeAllRanges();
       sel?.addRange(range);
+      initializedRef.current = true;
     }
     if (!isEditing) {
       setShowToolbar(false);
+      initializedRef.current = false;
     }
   }, [isEditing, value]);
 
-  // Calculate toolbar position based on selection
+  // Calculate toolbar position
   const updateToolbarPosition = useCallback(() => {
     const selection = window.getSelection();
-    if (!selection || selection.isCollapsed || !selection.rangeCount) {
-      return null;
-    }
+    if (!selection || selection.isCollapsed || !selection.rangeCount) return null;
 
     const range = selection.getRangeAt(0);
     const rect = range.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return null;
 
-    if (rect.width === 0 || rect.height === 0) {
-      return null;
-    }
-
-    // Calculate center of selection
     const centerX = rect.left + rect.width / 2;
-    
-    // Prefer above, but go below if not enough space
     let top = rect.top - TOOLBAR_HEIGHT - TOOLBAR_GAP;
-    let placement: "above" | "below" = "above";
-    
-    if (top < 10) {
-      top = rect.bottom + TOOLBAR_GAP;
-      placement = "below";
-    }
+    if (top < 10) top = rect.bottom + TOOLBAR_GAP;
 
-    // Keep within viewport horizontally
     const left = Math.max(200, Math.min(centerX, window.innerWidth - 200));
-
-    return { top, left, placement };
+    return { top, left };
   }, []);
 
   // Handle selection changes
   const handleSelectionChange = useCallback(() => {
-    if (!isEditing) return;
+    if (!isEditing || !editorRef.current) return;
 
     const selection = window.getSelection();
-    if (!selection || !editorRef.current) return;
+    if (!selection) return;
 
-    // Check if selection is within our editor
     const isInEditor = editorRef.current.contains(selection.anchorNode);
     const hasText = !selection.isCollapsed && selection.toString().trim().length > 0;
 
@@ -481,7 +375,6 @@ export default function EditableText({
         setShowToolbar(true);
       }
     } else {
-      // Delay hiding to allow toolbar clicks
       setTimeout(() => {
         const sel = window.getSelection();
         if (!sel || sel.isCollapsed || sel.toString().trim().length === 0) {
@@ -494,124 +387,75 @@ export default function EditableText({
   // Listen for selection changes
   useEffect(() => {
     if (!isEditing) return;
-
     document.addEventListener("selectionchange", handleSelectionChange);
     window.addEventListener("scroll", handleSelectionChange, true);
-    window.addEventListener("resize", handleSelectionChange);
-
     return () => {
       document.removeEventListener("selectionchange", handleSelectionChange);
       window.removeEventListener("scroll", handleSelectionChange, true);
-      window.removeEventListener("resize", handleSelectionChange);
     };
   }, [isEditing, handleSelectionChange]);
 
-  // Handle input changes
   const handleInput = useCallback(() => {
     if (editorRef.current) {
       onChange(editorRef.current.innerHTML);
     }
   }, [onChange]);
 
-  // Finish editing
   const handleFinish = useCallback(() => {
     setShowToolbar(false);
     onFinish();
   }, [onFinish]);
 
-  // Execute formatting command
-  const handleCommand = useCallback(
-    (cmd: string, value?: string) => {
-      if (cmd === "createLink") {
-        const url = prompt("Enter URL:");
-        if (url) {
-          document.execCommand("createLink", false, url);
-        }
-      } else if (cmd === "code") {
-        const sel = window.getSelection();
-        const text = sel?.toString() || "code";
-        document.execCommand(
-          "insertHTML",
-          false,
-          `<code class="bg-slate-200 px-1 rounded text-sm font-mono">${text}</code>`
-        );
-      } else {
-        document.execCommand(cmd, false, value);
-      }
-      editorRef.current?.focus();
-      handleInput();
-    },
-    [handleInput]
-  );
+  const handleCommand = useCallback((cmd: string, cmdValue?: string) => {
+    if (cmd === "createLink") {
+      const url = prompt("Enter URL:");
+      if (url) document.execCommand("createLink", false, url);
+    } else if (cmd === "code") {
+      const sel = window.getSelection();
+      const text = sel?.toString() || "code";
+      document.execCommand("insertHTML", false, `<code class="bg-slate-200 px-1 rounded text-sm font-mono">${text}</code>`);
+    } else {
+      document.execCommand(cmd, false, cmdValue);
+    }
+    editorRef.current?.focus();
+    handleInput();
+  }, [handleInput]);
 
-  // Keyboard shortcuts
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === "Escape") {
-        handleFinish();
-        return;
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    // Don't interfere with normal typing - only handle special keys
+    if (e.key === "Escape") { handleFinish(); return; }
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleFinish(); return; }
+    if (e.ctrlKey || e.metaKey) {
+      switch (e.key.toLowerCase()) {
+        case "b": e.preventDefault(); handleCommand("bold"); break;
+        case "i": e.preventDefault(); handleCommand("italic"); break;
+        case "u": e.preventDefault(); handleCommand("underline"); break;
+        case "k": e.preventDefault(); handleCommand("createLink"); break;
+        case "z": e.preventDefault(); handleCommand(e.shiftKey ? "redo" : "undo"); break;
       }
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        handleFinish();
-        return;
-      }
-      if (e.ctrlKey || e.metaKey) {
-        switch (e.key.toLowerCase()) {
-          case "b":
-            e.preventDefault();
-            handleCommand("bold");
-            break;
-          case "i":
-            e.preventDefault();
-            handleCommand("italic");
-            break;
-          case "u":
-            e.preventDefault();
-            handleCommand("underline");
-            break;
-          case "k":
-            e.preventDefault();
-            handleCommand("createLink");
-            break;
-          case "z":
-            e.preventDefault();
-            handleCommand(e.shiftKey ? "redo" : "undo");
-            break;
-        }
-      }
-    },
-    [handleFinish, handleCommand]
-  );
+    }
+    // Let all other keys (including backspace, delete, arrows) work normally
+  }, [handleFinish, handleCommand]);
 
-  // ============================================================================
-  // RENDER: Non-editing state
-  // ============================================================================
+  // Non-editing: show static content
   if (!isEditing) {
     return (
       <div
-        className="relative group"
+        className="relative"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
         <div
-          ref={editorRef}
-          className={`${className} cursor-pointer transition-all duration-150 ${
-            isOwner && isHovered ? "ring-2 ring-white/30 ring-offset-2 ring-offset-transparent rounded" : ""
-          }`}
+          className={`${className} ${isOwner && isHovered ? "cursor-pointer ring-2 ring-white/30 ring-offset-2 ring-offset-transparent rounded" : ""}`}
           style={style}
           onClick={isOwner ? onStartEdit : undefined}
           dangerouslySetInnerHTML={{ __html: value }}
         />
-        {/* Edit/Delete buttons */}
         {isOwner && isHovered && (
           <div className="absolute -right-10 top-1/2 -translate-y-1/2 flex flex-col gap-1 z-30">
             <button
               type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onStartEdit();
-              }}
+              onClick={(e) => { e.stopPropagation(); onStartEdit(); }}
               title="Edit"
               className="p-1.5 rounded-lg bg-white shadow-lg hover:bg-slate-50 transition-colors"
             >
@@ -620,10 +464,7 @@ export default function EditableText({
             {onDelete && (
               <button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete();
-                }}
+                onClick={(e) => { e.stopPropagation(); onDelete(); }}
                 title="Delete"
                 className="p-1.5 rounded-lg bg-white shadow-lg hover:bg-red-50 transition-colors"
               >
@@ -636,24 +477,9 @@ export default function EditableText({
     );
   }
 
-  // ============================================================================
-  // RENDER: Editing state
-  // ============================================================================
+  // Editing: show contentEditable
   return (
-    <>
-      {/* Toolbar via Portal - renders at document root, outside any transforms */}
-      {showToolbar &&
-        portalContainer &&
-        createPortal(
-          <FloatingToolbar
-            position={toolbarPosition}
-            onCommand={handleCommand}
-            onClose={() => setShowToolbar(false)}
-          />,
-          portalContainer
-        )}
-
-      {/* Editable content - maintains original styling */}
+    <div className="relative">
       <div
         ref={editorRef}
         contentEditable
@@ -665,6 +491,10 @@ export default function EditableText({
         className={`${className} outline-none ring-2 ring-cyan-400/60 rounded`}
         style={style}
       />
-    </>
+      {showToolbar && createPortal(
+        <FloatingToolbar position={toolbarPosition} onCommand={handleCommand} />,
+        document.body
+      )}
+    </div>
   );
 }
