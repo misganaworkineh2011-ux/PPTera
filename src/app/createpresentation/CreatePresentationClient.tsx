@@ -140,9 +140,8 @@ function SlideCard({
       onDragStart={(e) => onDragStart && onDragStart(e, index)}
       onDragOver={(e) => onDragOver && onDragOver(e)}
       onDrop={(e) => onDrop && onDrop(e, index)}
-      className={`rounded-lg border bg-white/95 backdrop-blur-sm p-4 shadow-sm transition-all hover:shadow-md ${
-        isDraggedOver ? "border-[#06b6d4] ring-2 ring-[#06b6d4]/20 shadow-lg" : "border-slate-200 hover:border-[#06b6d4]/40"
-      } ${isTitle ? "bg-gradient-to-br from-[#1e3a8a]/5 to-[#06b6d4]/5 border-[#1e3a8a]/20" : ""}`}
+      className={`rounded-lg border bg-white/95 backdrop-blur-sm p-4 shadow-sm transition-all hover:shadow-md ${isDraggedOver ? "border-[#06b6d4] ring-2 ring-[#06b6d4]/20 shadow-lg" : "border-slate-200 hover:border-[#06b6d4]/40"
+        } ${isTitle ? "bg-gradient-to-br from-[#1e3a8a]/5 to-[#06b6d4]/5 border-[#1e3a8a]/20" : ""}`}
     >
       <div className="flex items-start gap-3">
         {/* Drag Handle */}
@@ -154,11 +153,10 @@ function SlideCard({
 
         {/* Slide Number */}
         <div
-          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${
-            isTitle
+          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${isTitle
               ? "bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-sm"
               : "bg-[#1e3a8a]/10 text-[#1e3a8a] font-semibold"
-          }`}
+            }`}
         >
           <span className="text-xs font-bold">{index + 1}</span>
         </div>
@@ -301,7 +299,7 @@ export default function CreatePresentationClient({
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
   const [isCreatingPresentation, setIsCreatingPresentation] = useState(false);
-  
+
   // Track recently selected themes for quick access (6 themes for 3x2 grid)
   const [quickSelectThemes, setQuickSelectThemes] = useState<string[]>([
     themes[0]?.id || "corporate-professional",
@@ -311,10 +309,10 @@ export default function CreatePresentationClient({
     themes[4]?.id || "nature-green",
     themes[5]?.id || "tech-blue",
   ]);
-  
+
   // Cache for custom themes
   const [customThemesCache, setCustomThemesCache] = useState<Record<string, Theme>>({});
-  
+
   // Helper to get theme (built-in or custom)
   const getThemeForDisplay = (themeId: string): Theme | null => {
     if (isCustomThemeId(themeId)) {
@@ -322,7 +320,7 @@ export default function CreatePresentationClient({
     }
     return getThemeById(themeId);
   };
-  
+
   // Load custom theme when added to quick select
   useEffect(() => {
     quickSelectThemes.forEach(themeId => {
@@ -352,7 +350,7 @@ export default function CreatePresentationClient({
     if (existingOutline && !hasStartedGeneration && streamState.status === "idle") {
       return;
     }
-    
+
     if (streamState.status === "streaming" || streamState.status === "connecting") {
       setView("streaming");
       setHasStartedGeneration(true);
@@ -388,7 +386,7 @@ export default function CreatePresentationClient({
         setShowCreditWarning(true);
         return;
       }
-      
+
       // Paid users with insufficient credits should upgrade or wait for reset
       if (!hasEnoughCredits) {
         setShowCreditWarning(true);
@@ -410,7 +408,7 @@ export default function CreatePresentationClient({
           bulletPoints: ["Add your content here", "Edit this slide to customize"],
         })),
       ];
-      
+
       setSlides(blankSlides);
       setView("completed");
       setLastDescription(trimmed);
@@ -577,7 +575,7 @@ export default function CreatePresentationClient({
   const isStreaming = streamState.status === "streaming" || streamState.status === "connecting";
   // If we've started a new generation, only use streamState for completion status
   // Otherwise, consider existingOutline for initial load
-  const isCompleted = hasStartedGeneration 
+  const isCompleted = hasStartedGeneration
     ? (streamState.status === "completed" && view === "completed")
     : ((streamState.status === "completed" && view === "completed") || !!existingOutline);
   const hasError = streamState.status === "error";
@@ -603,7 +601,7 @@ export default function CreatePresentationClient({
                 {isFreeUser ? "Upgrade to Create Presentations" : "Insufficient Credits"}
               </h3>
               <p className="text-slate-600 mb-6">
-                {isFreeUser 
+                {isFreeUser
                   ? "AI presentation generation requires a subscription. Upgrade to Plus, Pro, or Ultra to start creating amazing presentations."
                   : `You need ${CREDIT_COST_PER_GENERATION} credits to generate a presentation. Your current balance is ${userCredits} credits.`
                 }
@@ -633,7 +631,7 @@ export default function CreatePresentationClient({
       `}</style>
 
       {/* Logo-Inspired Gradient Background - Extra Soft with More Upper M Color */}
-      <div 
+      <div
         className="absolute inset-0 z-0"
         style={{
           background: `linear-gradient(to bottom, 
@@ -653,7 +651,7 @@ export default function CreatePresentationClient({
       />
 
       {/* Extra Soft Light Overlay for Depth */}
-      <div 
+      <div
         className="absolute inset-0 z-0"
         style={{
           background: `
@@ -743,7 +741,7 @@ export default function CreatePresentationClient({
                       Presentation Title
                     </label>
                   )}
-                  
+
                   {/* AI Mode - Description textarea */}
                   {mode === "ai" && (
                     <textarea
@@ -753,9 +751,8 @@ export default function CreatePresentationClient({
                       placeholder="Define what you want to create in one sentence or more..."
                       rows={showOutline ? 2 : 4}
                       disabled={isStreaming}
-                      className={`w-full rounded-md border border-slate-200 bg-white px-5 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all resize-none shadow-sm ${
-                        isStreaming ? "opacity-60 cursor-not-allowed" : ""
-                      }`}
+                      className={`w-full rounded-md border border-slate-200 bg-white px-5 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all resize-none shadow-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""
+                        }`}
                       required
                     />
                   )}
@@ -818,9 +815,8 @@ export default function CreatePresentationClient({
                       placeholder="Your content..."
                       rows={2}
                       disabled={isStreaming}
-                      className={`w-full rounded-md border border-slate-200 bg-white px-5 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all resize-none shadow-sm ${
-                        isStreaming ? "opacity-60 cursor-not-allowed" : ""
-                      }`}
+                      className={`w-full rounded-md border border-slate-200 bg-white px-5 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all resize-none shadow-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""
+                        }`}
                       required
                     />
                   )}
@@ -834,9 +830,8 @@ export default function CreatePresentationClient({
                       onChange={(e) => handleChange("description", e.target.value)}
                       placeholder="Enter your presentation title..."
                       disabled={isStreaming}
-                      className={`w-full rounded-md border border-slate-200 bg-white px-5 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all shadow-sm ${
-                        isStreaming ? "opacity-60 cursor-not-allowed" : ""
-                      }`}
+                      className={`w-full rounded-md border border-slate-200 bg-white px-5 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all shadow-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""
+                        }`}
                       required
                     />
                   )}
@@ -1019,13 +1014,13 @@ export default function CreatePresentationClient({
                     mode === "scratch" ? "Creating…" : isSamePrompt ? "Regenerating…" : "Generating…"
                   ) : (
                     mode === "ai" ? (isSamePrompt ? "Regenerate outline" : "Generate outline") :
-                    mode === "docs" ? "Transform to Presentation" :
-                    "Create Blank Presentation"
+                      mode === "docs" ? "Transform to Presentation" :
+                        "Create Blank Presentation"
                   )}
                 </button>
               </div>
             </form>
-            
+
             {/* Recent Outlines - Only show when form is visible */}
             {!showOutline && mode === "ai" && recentOutlines.length > 0 && (
               <RecentOutlines outlines={recentOutlines.map(o => ({ ...o, createdAt: new Date(o.createdAt) }))} mode={mode} />
@@ -1042,7 +1037,7 @@ export default function CreatePresentationClient({
                 <div className="mb-6 text-sm text-[#06b6d4] flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-lg px-4 py-3 shadow-sm border border-[#06b6d4]/20">
                   <Loader2 size={16} className="animate-spin" />
                   <span className="font-medium">
-                    {streamState.currentSlideIndex >= 0 
+                    {streamState.currentSlideIndex >= 0
                       ? `Generating slide ${streamState.currentSlideIndex + 1} of ${streamState.totalSlides}...`
                       : `Preparing to generate ${streamState.totalSlides} slides...`}
                   </span>
@@ -1111,7 +1106,7 @@ export default function CreatePresentationClient({
                       </p>
                     </div>
                     <p className="text-xs text-slate-500 mb-3">Amount of text per card</p>
-                    
+
                     {/* Text Density Options */}
                     <div className="grid grid-cols-4 gap-2">
                       {[
@@ -1126,29 +1121,26 @@ export default function CreatePresentationClient({
                             key={option.id}
                             type="button"
                             onClick={() => handleChange("textDensity", option.id)}
-                            className={`relative rounded-lg border p-3 text-left transition-all hover:shadow-sm ${
-                              isSelected
+                            className={`relative rounded-lg border p-3 text-left transition-all hover:shadow-sm ${isSelected
                                 ? "border-[#06b6d4] ring-2 ring-[#06b6d4]/20 bg-[#06b6d4]/5"
                                 : "border-slate-200 hover:border-slate-300 bg-white"
-                            }`}
+                              }`}
                           >
                             {/* Text lines visualization */}
                             <div className="mb-2 space-y-1">
                               {Array.from({ length: option.lines }).map((_, i) => (
                                 <div
                                   key={i}
-                                  className={`h-1 rounded ${
-                                    isSelected ? "bg-[#06b6d4]" : "bg-slate-300"
-                                  }`}
+                                  className={`h-1 rounded ${isSelected ? "bg-[#06b6d4]" : "bg-slate-300"
+                                    }`}
                                   style={{
                                     width: i === option.lines - 1 ? "60%" : "100%",
                                   }}
                                 />
                               ))}
                             </div>
-                            <div className={`text-xs font-medium ${
-                              isSelected ? "text-[#06b6d4]" : "text-slate-700"
-                            }`}>
+                            <div className={`text-xs font-medium ${isSelected ? "text-[#06b6d4]" : "text-slate-700"
+                              }`}>
                               {option.label}
                             </div>
                           </button>
@@ -1176,7 +1168,7 @@ export default function CreatePresentationClient({
                         Browse all →
                       </button>
                     </div>
-                    
+
                     {/* Popular Themes Grid - 3 columns, 2 rows */}
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                       {quickSelectThemes.slice(0, 6).map((themeId) => {
@@ -1195,11 +1187,10 @@ export default function CreatePresentationClient({
                                 return [theme.id, ...prev.filter(id => id !== theme.id)].slice(0, 6);
                               });
                             }}
-                            className={`group relative overflow-hidden rounded-lg border text-left transition-all hover:shadow-md ${
-                              isSelected
+                            className={`group relative overflow-hidden rounded-lg border text-left transition-all hover:shadow-md ${isSelected
                                 ? "border-[#06b6d4] ring-2 ring-[#06b6d4]/20 shadow-sm"
                                 : "border-slate-200 hover:border-slate-300"
-                            }`}
+                              }`}
                           >
                             {/* Theme Preview Card */}
                             <div className="p-2">
@@ -1207,7 +1198,7 @@ export default function CreatePresentationClient({
                                 className="aspect-[1.8/1] w-full rounded shadow-sm relative overflow-hidden"
                                 style={{
                                   backgroundColor: theme.preview.titleBg,
-                                  backgroundImage: theme.previewBackgroundImage 
+                                  backgroundImage: theme.previewBackgroundImage
                                     ? `url(${theme.previewBackgroundImage})`
                                     : theme.slideStyles.title.pattern || "none",
                                   backgroundSize: theme.previewBackgroundImage ? "cover" : "auto",
@@ -1215,7 +1206,7 @@ export default function CreatePresentationClient({
                                 }}
                               >
                                 {/* Small content box overlaid on background */}
-                                <div 
+                                <div
                                   className="absolute bottom-1.5 left-1.5 right-1.5 rounded p-1.5 backdrop-blur-md transition-all duration-300"
                                   style={{
                                     backgroundColor: theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
@@ -1257,9 +1248,8 @@ export default function CreatePresentationClient({
 
                             {/* Theme Name Footer */}
                             <div
-                              className={`px-2 py-1 border-t flex items-center justify-between text-[11px] ${
-                                isSelected ? "bg-[#06b6d4]/5" : "bg-white"
-                              }`}
+                              className={`px-2 py-1 border-t flex items-center justify-between text-[11px] ${isSelected ? "bg-[#06b6d4]/5" : "bg-white"
+                                }`}
                               style={{ borderColor: isSelected ? "#06b6d4" : "#e2e8f0" }}
                             >
                               <div className="font-medium text-slate-700 truncate">
@@ -1347,7 +1337,7 @@ export default function CreatePresentationClient({
                             </svg>
                           </div>
                         </div>
-                        
+
                         {/* Licensing Info Tooltip */}
                         {formData.imageLicensing !== "all-images" && formData.imageSource !== "no-images" && formData.imageSource !== "placeholders" && (
                           <div className="mt-2 p-2 rounded-lg bg-blue-50 border border-blue-100">

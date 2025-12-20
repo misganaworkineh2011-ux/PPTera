@@ -6,6 +6,7 @@ import { db } from "~/server/db";
  * Combined dashboard initialization endpoint
  * Reduces multiple API calls to a single request for initial dashboard load
  * Returns: user data, presentations, recent activity, and custom themes
+ * Supports pagination for presentations
  */
 export async function GET(request: Request) {
   try {
@@ -16,17 +17,18 @@ export async function GET(request: Request) {
     const includeThemes = searchParams.get("themes") !== "false";
     const includeActivity = searchParams.get("activity") !== "false";
     const presentationLimit = Math.min(
-      parseInt(searchParams.get("presentationLimit") || "50", 10),
-      100
+      parseInt(searchParams.get("presentationLimit") || "12", 10),
+      50
     );
+    const presentationOffset = parseInt(searchParams.get("presentationOffset") || "0", 10);
     const activityLimit = Math.min(
       parseInt(searchParams.get("activityLimit") || "10", 10),
       50
     );
 
     // Parallel fetch all data needed for dashboard
-    const [user, themes, recentActivity] = await Promise.all([
-      // User with presentations
+    const [user, presentations, presentationCount, themes, recentActivity] = await Promise.all([
+      // User data (without presentations for pagination)
       db.user.findUnique({
         where: { id: authUser.id },
         select: {
@@ -37,20 +39,6 @@ export async function GET(request: Request) {
           subscriptionPlan: true,
           image: true,
           createdAt: true,
-          presentations: {
-            orderBy: { createdAt: "desc" },
-            take: presentationLimit,
-            select: {
-              id: true,
-              title: true,
-              isPublic: true,
-              isPinned: true,
-              createdAt: true,
-              updatedAt: true,
-              slides: true,
-              shareToken: true,
-            },
-          },
           _count: {
             select: {
               presentations: true,
@@ -58,6 +46,29 @@ export async function GET(request: Request) {
             },
           },
         },
+      }),
+
+      // Presentations with pagination
+      db.presentation.findMany({
+        where: { userId: authUser.id },
+        orderBy: { createdAt: "desc" },
+        take: presentationLimit,
+        skip: presentationOffset,
+        select: {
+          id: true,
+          title: true,
+          isPublic: true,
+          isPinned: true,
+          createdAt: true,
+          updatedAt: true,
+          slides: true,
+          shareToken: true,
+        },
+      }),
+
+      // Total presentation count for pagination
+      db.presentation.count({
+        where: { userId: authUser.id },
       }),
 
       // Custom themes (if requested)
@@ -100,6 +111,8 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    const hasMore = presentationOffset + presentations.length < presentationCount;
+
     return NextResponse.json(
       {
         user: {
@@ -112,12 +125,18 @@ export async function GET(request: Request) {
           createdAt: user.createdAt,
           counts: user._count,
         },
-        presentations: user.presentations,
+        presentations,
         themes,
         recentActivity,
+        pagination: {
+          total: presentationCount,
+          limit: presentationLimit,
+          offset: presentationOffset,
+          hasMore,
+        },
         meta: {
           timestamp: new Date().toISOString(),
-          presentationCount: user._count.presentations,
+          presentationCount,
           themeCount: user._count.themes,
         },
       },

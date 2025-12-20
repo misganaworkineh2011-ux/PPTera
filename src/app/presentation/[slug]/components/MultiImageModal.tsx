@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, ImagePlus, Trash2, CheckCircle2, Loader2 } from "lucide-react";
+import { X, ImagePlus, Trash2, CheckCircle2, Loader2, Settings2 } from "lucide-react";
 import type { Theme } from "~/lib/themes";
 import type { SlideImage } from "~/components/presentation/types";
 import { getThemeType } from "./types";
@@ -20,6 +20,7 @@ interface MultiImageModalProps {
   onEditImage: (idx: number) => void;
   onCancelEdit: () => void;
   onClose: () => void;
+  onOpenWysiwygEditor?: (idx: number) => void;
 }
 
 export function MultiImageModal({
@@ -36,6 +37,7 @@ export function MultiImageModal({
   onEditImage,
   onCancelEdit,
   onClose,
+  onOpenWysiwygEditor,
 }: MultiImageModalProps) {
   const themeType = getThemeType(theme);
   const isDark = themeType !== "light";
@@ -142,10 +144,19 @@ export function MultiImageModal({
                       />
                     </div>
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      {onOpenWysiwygEditor && (
+                        <button
+                          onClick={() => onOpenWysiwygEditor(idx)}
+                          className="p-2 rounded-lg bg-cyan-500/80 hover:bg-cyan-500 text-white transition-colors"
+                          title="Edit Image (Crop, Mask, Adjust)"
+                        >
+                          <Settings2 size={16} />
+                        </button>
+                      )}
                       <button
                         onClick={() => onEditImage(idx)}
                         className="p-2 rounded-lg bg-white/20 hover:bg-white/30 text-white transition-colors"
-                        title="Edit"
+                        title="Replace URL"
                       >
                         <ImagePlus size={16} />
                       </button>

@@ -23,11 +23,19 @@ interface Presentation {
   shareToken?: string | null;
 }
 
+interface PaginationInfo {
+  total: number;
+  limit: number;
+  offset: number;
+  hasMore: boolean;
+}
+
 interface DashboardInitData {
   user: UserData & { counts: { presentations: number; themes: number } };
   presentations: Presentation[];
   themes: unknown[];
   recentActivity: unknown[];
+  pagination: PaginationInfo;
   meta: { timestamp: string; presentationCount: number; themeCount: number };
 }
 
@@ -48,6 +56,11 @@ interface DashboardContextType {
   // Presentation counts
   presentationCount: number;
   updatePresentationCount: (delta: number) => void;
+  
+  // Pagination
+  pagination: PaginationInfo | null;
+  loadMorePresentations: () => Promise<void>;
+  isLoadingMore: boolean;
   
   // Themes
   themes: unknown[];
@@ -79,10 +92,37 @@ export function DashboardProvider({ children, initialUser, initialPresentations 
   const [credits, setCredits] = useState(initialUser?.credits || 0);
   const [presentations, setPresentations] = useState<Presentation[]>(initialPresentations || []);
   const [presentationCount, setPresentationCount] = useState(initialPresentations?.length || 0);
+  const [pagination, setPagination] = useState<PaginationInfo | null>(null);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [themes, setThemes] = useState<unknown[]>([]);
   const [recentActivity, setRecentActivity] = useState<unknown[]>([]);
   const [isInitialized, setIsInitialized] = useState(!!initialUser);
   const mountedRef = useRef(true);
+
+  // Load more presentations (pagination)
+  const loadMorePresentations = useCallback(async () => {
+    if (!pagination?.hasMore || isLoadingMore) return;
+    
+    setIsLoadingMore(true);
+    try {
+      const newOffset = pagination.offset + pagination.limit;
+      const response = await fetch(`/api/dashboard/init?presentationOffset=${newOffset}&themes=false&activity=false`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (mountedRef.current) {
+          setPresentations(prev => [...prev, ...data.presentations]);
+          setPagination(data.pagination);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to load more presentations:", error);
+    } finally {
+      if (mountedRef.current) {
+        setIsLoadingMore(false);
+      }
+    }
+  }, [pagination, isLoadingMore]);
 
   // Combined dashboard initialization - single API call
   const refreshDashboard = useCallback(async () => {
@@ -110,6 +150,7 @@ export function DashboardProvider({ children, initialUser, initialPresentations 
         setCredits(data.user.credits);
         setPresentations(data.presentations);
         setPresentationCount(data.meta.presentationCount);
+        setPagination(data.pagination);
         setThemes(data.themes);
         setRecentActivity(data.recentActivity);
         
@@ -222,6 +263,9 @@ export function DashboardProvider({ children, initialUser, initialPresentations 
         setPresentations,
         presentationCount,
         updatePresentationCount,
+        pagination,
+        loadMorePresentations,
+        isLoadingMore,
         themes,
         recentActivity,
         isInitialized,
@@ -256,7 +300,7 @@ export function useUserData() {
 
 // Hook for presentations with optimistic updates
 export function usePresentations() {
-  const { presentations, setPresentations, invalidateCache } = useDashboard();
+  const { presentations, setPresentations, invalidateCache, pagination, loadMorePresentations, isLoadingMore } = useDashboard();
   
   const updatePresentation = useCallback((id: string, updates: Partial<Presentation>) => {
     setPresentations(prev => 
@@ -277,6 +321,9 @@ export function usePresentations() {
     updatePresentation,
     removePresentation,
     addPresentation,
+    pagination,
+    loadMore: loadMorePresentations,
+    isLoadingMore,
     invalidateCache: () => invalidateCache(CACHE_KEYS.PRESENTATIONS),
   };
 }

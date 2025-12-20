@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { useRouter } from "next/navigation";
 import { Filter, Grid, List as ListIcon, MoreHorizontal, Upload, Star, Globe, Lock, Share2, Edit3, Copy, Trash2, Link2, Loader2, Heart } from "lucide-react";
 import Image from "next/image";
 import { useLanguage } from "~/contexts/LanguageContext";
@@ -23,17 +22,26 @@ interface Presentation {
   shareToken?: string | null;
 }
 
+interface PaginationInfo {
+  total: number;
+  limit: number;
+  offset: number;
+  hasMore: boolean;
+}
+
 interface DashboardContentProps {
   presentations: Presentation[];
   userName: string | null;
   searchQuery?: string;
+  pagination?: PaginationInfo;
+  onLoadMore?: () => void;
+  isLoadingMore?: boolean;
 }
 
 type ViewMode = "grid" | "list";
 type FilterMode = "all" | "favorites" | "public" | "private";
 
-export default function DashboardContent({ presentations: initialPresentations, userName, searchQuery = "" }: DashboardContentProps) {
-  const router = useRouter();
+export default function DashboardContent({ presentations: initialPresentations, userName, searchQuery = "", pagination, onLoadMore, isLoadingMore }: DashboardContentProps) {
   const { user } = useUser();
   const [presentations, setPresentations] = useState(initialPresentations);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -58,7 +66,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
     rollback: () => void
   ) => {
     // Immediately update UI
-    setPresentations(prev => 
+    setPresentations(prev =>
       prev.map(p => p.id === presId ? { ...p, ...updates } : p)
     );
     return rollback;
@@ -70,7 +78,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
     // Return rollback function
     return () => {
       if (removed) {
-        setPresentations(prev => [...prev, removed].sort((a, b) => 
+        setPresentations(prev => [...prev, removed].sort((a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         ));
       }
@@ -110,7 +118,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
     // Apply search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(p => 
+      filtered = filtered.filter(p =>
         p.title.toLowerCase().includes(query)
       );
     }
@@ -133,7 +141,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
       e.preventDefault();
       e.stopPropagation();
     }
-    
+
     // Handle actions first, then close menu
     switch (action) {
       case "share":
@@ -146,7 +154,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
           setTimeout(() => setShowShareModal(presId), 50);
         }
         break;
-        
+
       case "rename":
         const presentation = presentations.find(p => p.id === presId);
         if (presentation) {
@@ -160,26 +168,26 @@ export default function DashboardContent({ presentations: initialPresentations, 
           }, 50);
         }
         break;
-      
+
       case "favorite":
         // Close menu first
         setActiveMenu(null);
         setMenuPosition(null);
-        
+
         // OPTIMIZATION: Optimistic update - update UI immediately
         const currentPres = presentations.find(p => p.id === presId);
         if (!currentPres) break;
-        
+
         const newPinnedState = !currentPres.isPinned;
         const rollbackFavorite = optimisticUpdate(presId, { isPinned: newPinnedState }, () => {
-          setPresentations(prev => 
+          setPresentations(prev =>
             prev.map(p => p.id === presId ? { ...p, isPinned: currentPres.isPinned } : p)
           );
         });
-        
+
         // Show toast immediately
         toast.success(newPinnedState ? "Added to favorites" : "Removed from favorites");
-        
+
         // Make API call in background
         fetch(`/api/presentations/${presId}/favorite`, { method: "PATCH" })
           .then(async (response) => {
@@ -193,19 +201,19 @@ export default function DashboardContent({ presentations: initialPresentations, 
             toast.error("Failed to update favorite status");
           });
         break;
-        
+
       case "duplicate":
         // Close menu first
         setActiveMenu(null);
         setMenuPosition(null);
-        
+
         try {
           setIsLoading(true);
           setLoadingAction({ id: presId, action: "duplicate" });
           const response = await fetch(`/api/presentations/${presId}/duplicate`, {
             method: "POST",
           });
-          
+
           if (response.ok) {
             const data = await response.json();
             // Add the duplicated presentation to the list immediately
@@ -222,14 +230,14 @@ export default function DashboardContent({ presentations: initialPresentations, 
           setLoadingAction(null);
         }
         break;
-        
+
       case "copyLink":
         // Close menu first
         setActiveMenu(null);
         setMenuPosition(null);
-        
+
         const copyPres = presentations.find(p => p.id === presId);
-        const url = copyPres 
+        const url = copyPres
           ? `${window.location.origin}${getPresentationUrl(presId, copyPres.title)}`
           : `${window.location.origin}/presentation/${presId}`;
         try {
@@ -242,12 +250,12 @@ export default function DashboardContent({ presentations: initialPresentations, 
           toast.error("Failed to copy link");
         }
         break;
-        
+
       case "delete":
         // Close menu first
         setActiveMenu(null);
         setMenuPosition(null);
-        
+
         setTimeout(() => setShowDeleteDialog(presId), 50);
         break;
     }
@@ -263,7 +271,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
     const currentPres = presentations.find(p => p.id === presId);
     const oldTitle = currentPres?.title || "";
     const newTitle = renameValue.trim();
-    
+
     // Update UI immediately
     setPresentations(prev =>
       prev.map(p => p.id === presId ? { ...p, title: newTitle } : p)
@@ -306,7 +314,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
       const response = await fetch(`/api/presentations/${presId}/delete`, {
         method: "DELETE",
       });
-      
+
       if (!response.ok) {
         rollbackDelete();
         toast?.error?.("Failed to delete presentation") || alert("Failed to delete presentation");
@@ -326,11 +334,10 @@ export default function DashboardContent({ presentations: initialPresentations, 
         <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 sm:pb-0 -mx-1 px-1">
           <button
             onClick={() => setFilterMode("all")}
-            className={`flex items-center gap-1.5 sm:gap-2 whitespace-nowrap rounded-lg px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition ${
-              filterMode === "all"
+            className={`flex items-center gap-1.5 sm:gap-2 whitespace-nowrap rounded-lg px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition ${filterMode === "all"
                 ? "bg-[#1e3a8a]/10 font-bold text-[#1e3a8a] dark:bg-[#1e3a8a]/30 dark:text-white"
                 : "text-slate-600 hover:bg-slate-100 hover:text-[#1e3a8a] dark:text-slate-300 dark:hover:bg-slate-700"
-            }`}
+              }`}
           >
             <Grid size={14} className="sm:hidden" />
             <Grid size={16} className="hidden sm:block" />
@@ -338,11 +345,10 @@ export default function DashboardContent({ presentations: initialPresentations, 
           </button>
           <button
             onClick={() => setFilterMode("favorites")}
-            className={`flex items-center gap-1.5 sm:gap-2 whitespace-nowrap rounded-lg px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition ${
-              filterMode === "favorites"
+            className={`flex items-center gap-1.5 sm:gap-2 whitespace-nowrap rounded-lg px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition ${filterMode === "favorites"
                 ? "bg-[#1e3a8a]/10 font-bold text-[#1e3a8a] dark:bg-[#1e3a8a]/30 dark:text-white"
                 : "text-slate-600 hover:bg-slate-100 hover:text-[#1e3a8a] dark:text-slate-300 dark:hover:bg-slate-700"
-            }`}
+              }`}
           >
             <Star size={14} className="sm:hidden" />
             <Star size={16} className="hidden sm:block" />
@@ -388,11 +394,10 @@ export default function DashboardContent({ presentations: initialPresentations, 
           <div className="flex items-center gap-0.5 sm:gap-1 rounded-lg bg-slate-100 p-0.5 sm:p-1 dark:bg-slate-700">
             <button
               onClick={() => setViewMode("grid")}
-              className={`flex items-center gap-1 sm:gap-2 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 transition ${
-                viewMode === "grid"
+              className={`flex items-center gap-1 sm:gap-2 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 transition ${viewMode === "grid"
                   ? "bg-white text-[#1e3a8a] shadow-sm dark:bg-slate-600 dark:text-white"
                   : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-              }`}
+                }`}
             >
               <Grid size={16} className="sm:hidden" />
               <Grid size={20} className="hidden sm:block" />
@@ -400,11 +405,10 @@ export default function DashboardContent({ presentations: initialPresentations, 
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`flex items-center gap-1 sm:gap-2 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 transition ${
-                viewMode === "list"
+              className={`flex items-center gap-1 sm:gap-2 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 transition ${viewMode === "list"
                   ? "bg-white text-[#1e3a8a] shadow-sm dark:bg-slate-600 dark:text-white"
                   : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-              }`}
+                }`}
             >
               <ListIcon size={16} className="sm:hidden" />
               <ListIcon size={20} className="hidden sm:block" />
@@ -463,19 +467,18 @@ export default function DashboardContent({ presentations: initialPresentations, 
                       e.stopPropagation();
                       handleMenuAction("favorite", pres.id);
                     }}
-                    className={`absolute top-1.5 right-1.5 sm:top-2 sm:right-2 p-1.5 rounded-full backdrop-blur-sm transition-all ${
-                      pres.isPinned 
-                        ? "bg-yellow-400/90 hover:bg-yellow-500" 
+                    className={`absolute top-1.5 right-1.5 sm:top-2 sm:right-2 p-1.5 rounded-full backdrop-blur-sm transition-all ${pres.isPinned
+                        ? "bg-yellow-400/90 hover:bg-yellow-500"
                         : "bg-black/30 hover:bg-black/50"
-                    }`}
+                      }`}
                     title={pres.isPinned ? "Unfavorite" : "Favorite"}
                   >
-                    <Heart 
-                      size={14} 
+                    <Heart
+                      size={14}
                       className={`sm:hidden ${pres.isPinned ? "fill-white text-white" : "text-white"}`}
                     />
-                    <Heart 
-                      size={16} 
+                    <Heart
+                      size={16}
                       className={`hidden sm:block ${pres.isPinned ? "fill-white text-white" : "text-white"}`}
                     />
                   </button>
@@ -582,19 +585,18 @@ export default function DashboardContent({ presentations: initialPresentations, 
                         e.stopPropagation();
                         handleMenuAction("favorite", pres.id);
                       }}
-                      className={`p-1 rounded-full transition-all flex-shrink-0 ${
-                        pres.isPinned 
-                          ? "bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/30" 
+                      className={`p-1 rounded-full transition-all flex-shrink-0 ${pres.isPinned
+                          ? "bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/30"
                           : "hover:bg-slate-100 dark:hover:bg-slate-700"
-                      }`}
+                        }`}
                       title={pres.isPinned ? "Unfavorite" : "Favorite"}
                     >
-                      <Heart 
-                        size={12} 
+                      <Heart
+                        size={12}
                         className={`sm:hidden ${pres.isPinned ? "fill-yellow-500 text-yellow-500" : "text-slate-400"}`}
                       />
-                      <Heart 
-                        size={14} 
+                      <Heart
+                        size={14}
                         className={`hidden sm:block ${pres.isPinned ? "fill-yellow-500 text-yellow-500" : "text-slate-400"}`}
                       />
                     </button>
@@ -645,6 +647,28 @@ export default function DashboardContent({ presentations: initialPresentations, 
           </div>
         )}
       </div>
+
+      {/* Load More Button */}
+      {pagination?.hasMore && (
+        <div className="flex justify-center pt-6 pb-2">
+          <button
+            onClick={onLoadMore}
+            disabled={isLoadingMore}
+            className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-sm transition-colors disabled:opacity-50 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-300"
+          >
+            {isLoadingMore ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Loading...
+              </>
+            ) : (
+              <>
+                Load More ({pagination.total - pagination.offset - filteredPresentations.length} remaining)
+              </>
+            )}
+          </button>
+        </div>
+      )}
 
       {/* Rename Dialog */}
       {showRenameDialog && (
@@ -746,8 +770,8 @@ export default function DashboardContent({ presentations: initialPresentations, 
       {/* Portal Dropdown Menu */}
       {activeMenu && menuPosition && typeof document !== "undefined" && createPortal(
         <>
-          <div 
-            className="fixed inset-0 z-[9998]" 
+          <div
+            className="fixed inset-0 z-[9998]"
             onMouseDown={(e) => {
               // Only close if clicking directly on backdrop, not if click started in menu
               if (e.target === e.currentTarget) {
@@ -756,7 +780,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
               }
             }}
           />
-          <div 
+          <div
             className="fixed w-44 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xl z-[9999] animate-in fade-in slide-in-from-top-2 duration-200"
             style={{ top: menuPosition.top, left: Math.max(8, menuPosition.left) }}
             onClick={(e) => e.stopPropagation()}
@@ -826,11 +850,10 @@ export default function DashboardContent({ presentations: initialPresentations, 
                   e.stopPropagation();
                   handleMenuAction("copyLink", activeMenu, undefined, e);
                 }}
-                className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${
-                  copiedId === activeMenu
+                className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${copiedId === activeMenu
                     ? "bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400"
                     : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
-                }`}
+                  }`}
               >
                 <Link2 size={15} /> {copiedId === activeMenu ? (t.copied || "Copied!") : (t.copyLink || "Copy link")}
               </button>

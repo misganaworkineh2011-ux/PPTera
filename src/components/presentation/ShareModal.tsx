@@ -26,41 +26,41 @@ interface ShareModalProps {
   theme?: Theme;
 }
 
-export default function ShareModal({ 
-  presentationId, 
+export default function ShareModal({
+  presentationId,
   initialIsPublic = false,
   initialShareToken = null,
   onClose,
   theme
 }: ShareModalProps) {
   const [activeTab, setActiveTab] = useState<"collaborate" | "share" | "export" | "embed">("share");
-  
+
   // Theme colors
   const bgColor = theme?.colors.background || "#ffffff";
   const textColor = theme?.colors.text || "#1e293b";
   const headingColor = theme?.colors.heading || "#0f172a";
   const primaryColor = theme?.colors.primary || "#06b6d4";
   const mutedColor = theme?.colors.textMuted || "#64748b";
-  
+
   // Determine if theme is dark
-  const isDark = theme?.colors.background.startsWith("#") && 
+  const isDark = theme?.colors.background.startsWith("#") &&
     parseInt(theme.colors.background.slice(1, 3), 16) < 128;
 
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div 
+      <div
         className="relative w-full max-w-3xl rounded-2xl shadow-2xl"
         style={{ backgroundColor: bgColor }}
       >
         {/* Header */}
-        <div 
+        <div
           className="flex items-center justify-between px-8 py-5"
-          style={{ 
-            borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` 
+          style={{
+            borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`
           }}
         >
           <div className="flex items-center gap-3">
-            <div 
+            <div
               className="w-10 h-10 rounded-lg flex items-center justify-center"
               style={{ backgroundColor: primaryColor + '20' }}
             >
@@ -71,7 +71,7 @@ export default function ShareModal({
           <button
             onClick={onClose}
             className="rounded-full p-2 transition-colors"
-            style={{ 
+            style={{
               color: mutedColor,
               backgroundColor: 'transparent'
             }}
@@ -141,8 +141,8 @@ export default function ShareModal({
         <div className="p-8">
           {activeTab === "collaborate" && <CollaborateTab presentationId={presentationId} theme={theme} />}
           {activeTab === "share" && (
-            <ShareTab 
-              presentationId={presentationId} 
+            <ShareTab
+              presentationId={presentationId}
               initialIsPublic={initialIsPublic}
               initialShareToken={initialShareToken}
               theme={theme}
@@ -159,7 +159,7 @@ export default function ShareModal({
 function ExportTab({ theme }: { theme?: Theme }) {
   const textColor = theme?.colors.text || "#1e293b";
   const mutedColor = theme?.colors.textMuted || "#64748b";
-  
+
   return (
     <div className="space-y-6">
       <div>
@@ -173,8 +173,8 @@ function ExportTab({ theme }: { theme?: Theme }) {
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-lg bg-red-100 flex items-center justify-center group-hover:bg-red-200 transition">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-red-600">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <polyline points="14 2 14 8 20 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <polyline points="14 2 14 8 20 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
             <div className="text-left">
@@ -194,8 +194,8 @@ function ExportTab({ theme }: { theme?: Theme }) {
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-lg bg-orange-100 flex items-center justify-center group-hover:bg-orange-200 transition">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-orange-600">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <polyline points="14 2 14 8 20 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <polyline points="14 2 14 8 20 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
             <div className="text-left">
@@ -215,9 +215,9 @@ function ExportTab({ theme }: { theme?: Theme }) {
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center group-hover:bg-purple-200 transition">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-purple-600">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" strokeWidth="2"/>
-                <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
-                <polyline points="21 15 16 10 5 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" strokeWidth="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
+                <polyline points="21 15 16 10 5 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
             <div className="text-left">
@@ -238,11 +238,20 @@ function ExportTab({ theme }: { theme?: Theme }) {
 
 function EmbedTab({ presentationId, theme }: { presentationId: string; theme?: Theme }) {
   const [copied, setCopied] = useState(false);
+  const [embedSize, setEmbedSize] = useState<"responsive" | "fixed">("responsive");
+  const [width, setWidth] = useState(960);
+  const [height, setHeight] = useState(540);
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-  const embedCode = `<iframe src="${baseUrl}/present/${presentationId}" width="960" height="540" frameborder="0" allowfullscreen></iframe>`;
   
-  const textColor = theme?.colors.text || "#1e293b";
-  const mutedColor = theme?.colors.textMuted || "#64748b";
+  const embedCode = embedSize === "responsive" 
+    ? `<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;max-width:100%;">
+  <iframe src="${baseUrl}/present/${presentationId}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" allowfullscreen></iframe>
+</div>`
+    : `<iframe src="${baseUrl}/present/${presentationId}" width="${width}" height="${height}" style="border:0;" allowfullscreen></iframe>`;
+
+  const primaryColor = theme?.colors.primary || "#06b6d4";
+  const isDark = theme?.colors.background.startsWith("#") &&
+    parseInt(theme.colors.background.slice(1, 3), 16) < 128;
 
   const copyEmbedCode = () => {
     navigator.clipboard.writeText(embedCode);
@@ -258,20 +267,66 @@ function EmbedTab({ presentationId, theme }: { presentationId: string; theme?: T
         <p className="text-sm text-slate-500">Add this presentation to your website or blog</p>
       </div>
 
+      {/* Size Options */}
+      <div className="space-y-3">
+        <label className="text-sm font-semibold text-slate-700">Embed Size</label>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setEmbedSize("responsive")}
+            className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all border ${
+              embedSize === "responsive"
+                ? "border-cyan-500 bg-cyan-50 text-cyan-700"
+                : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            Responsive
+          </button>
+          <button
+            onClick={() => setEmbedSize("fixed")}
+            className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all border ${
+              embedSize === "fixed"
+                ? "border-cyan-500 bg-cyan-50 text-cyan-700"
+                : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            Fixed Size
+          </button>
+        </div>
+        
+        {embedSize === "fixed" && (
+          <div className="flex gap-3 mt-3">
+            <div className="flex-1">
+              <label className="text-xs text-slate-500 mb-1 block">Width (px)</label>
+              <input
+                type="number"
+                value={width}
+                onChange={(e) => setWidth(Number(e.target.value))}
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="text-xs text-slate-500 mb-1 block">Height (px)</label>
+              <input
+                type="number"
+                value={height}
+                onChange={(e) => setHeight(Number(e.target.value))}
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Preview */}
       <div className="rounded-xl border-2 border-slate-200 p-4 bg-slate-50">
         <p className="text-xs font-semibold text-slate-600 mb-3 uppercase tracking-wide">Preview</p>
-        <div className="aspect-video bg-white rounded-lg border border-slate-200 flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center mx-auto mb-3">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                <line x1="8" y1="21" x2="16" y2="21"/>
-                <line x1="12" y1="17" x2="12" y2="21"/>
-              </svg>
-            </div>
-            <p className="text-sm font-medium text-slate-600">Your presentation will appear here</p>
-          </div>
+        <div className="aspect-video bg-white rounded-lg border border-slate-200 overflow-hidden">
+          <iframe
+            src={`${baseUrl}/present/${presentationId}`}
+            className="w-full h-full"
+            style={{ border: 0 }}
+            title="Presentation Preview"
+          />
         </div>
       </div>
 
@@ -279,38 +334,34 @@ function EmbedTab({ presentationId, theme }: { presentationId: string; theme?: T
       <div className="space-y-3">
         <label className="text-sm font-semibold text-slate-700">Embed Code</label>
         <div className="relative">
-          <textarea
-            value={embedCode}
-            readOnly
-            rows={4}
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-mono text-slate-700 resize-none focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500"
-          />
+          <pre className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-mono text-slate-700 overflow-x-auto whitespace-pre-wrap break-all">
+            {embedCode}
+          </pre>
           <button
             onClick={copyEmbedCode}
-            className={`absolute top-3 right-3 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-              copied 
-                ? "bg-green-500 text-white" 
+            className={`absolute top-3 right-3 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${copied
+                ? "bg-green-500 text-white"
                 : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
-            }`}
+              }`}
           >
             {copied ? <CheckCircle2 size={16} /> : <Copy size={16} />}
             {copied ? "Copied!" : "Copy"}
           </button>
         </div>
         <p className="text-xs text-slate-500 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
-          💡 Paste this code into your website's HTML to embed the presentation
+          💡 Paste this code into your website&apos;s HTML to embed the presentation
         </p>
       </div>
     </div>
   );
 }
 
-function ShareTab({ 
+function ShareTab({
   presentationId,
   initialIsPublic,
   initialShareToken,
   theme,
-}: { 
+}: {
   presentationId: string;
   initialIsPublic?: boolean;
   initialShareToken?: string | null;
@@ -332,17 +383,17 @@ function ShareTab({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isPublic: !isPublic }),
       });
-      
+
       if (!res.ok) throw new Error("Failed to update");
-      
+
       const data = await res.json();
       setIsPublic(data.isPublic);
-      
+
       if (data.shareUrl) {
         const urlParts = data.shareUrl.split("/");
         setShareToken(urlParts[urlParts.length - 1] || null);
       }
-      
+
       toast.success(data.isPublic ? "Link sharing enabled!" : "Link sharing disabled");
     } catch {
       toast.error("Failed to update sharing settings");
@@ -365,9 +416,9 @@ function ShareTab({
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-blue-600">
-              <path d="M18 20V10"/>
-              <path d="M12 20V4"/>
-              <path d="M6 20v-6"/>
+              <path d="M18 20V10" />
+              <path d="M12 20V4" />
+              <path d="M6 20v-6" />
             </svg>
           </div>
           <div>
@@ -378,13 +429,12 @@ function ShareTab({
         <button
           onClick={copyToClipboard}
           disabled={!isPublic || !shareUrl}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-            copied 
-              ? "bg-green-50 text-green-600 border border-green-200" 
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${copied
+              ? "bg-green-50 text-green-600 border border-green-200"
               : isPublic && shareUrl
                 ? "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
                 : "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
-          }`}
+            }`}
         >
           <Link2 size={16} />
           {copied ? "Copied!" : "Copy link"}
@@ -424,11 +474,10 @@ function ShareTab({
               </div>
               <button
                 onClick={copyToClipboard}
-                className={`p-3 rounded-lg transition-all ${
-                  copied 
-                    ? "bg-green-500 text-white" 
+                className={`p-3 rounded-lg transition-all ${copied
+                    ? "bg-green-500 text-white"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
+                  }`}
               >
                 {copied ? <CheckCircle2 size={18} /> : <Copy size={18} />}
               </button>
@@ -460,7 +509,7 @@ function ShareTab({
 function CollaborateTab({ presentationId, theme }: { presentationId: string; theme?: Theme }) {
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
   const [isOwner, setIsOwner] = useState(false);
-  
+
   const textColor = theme?.colors.text || "#1e293b";
   const mutedColor = theme?.colors.textMuted || "#64748b";
   const [email, setEmail] = useState("");
@@ -549,8 +598,8 @@ function CollaborateTab({ presentationId, theme }: { presentationId: string; the
       <div className="relative">
         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8"/>
-            <path d="m21 21-4.35-4.35"/>
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
           </svg>
         </div>
         <input
@@ -578,10 +627,10 @@ function CollaborateTab({ presentationId, theme }: { presentationId: string; the
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-600">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
             </div>
             <span className="text-sm font-semibold text-slate-700">Workspace members</span>

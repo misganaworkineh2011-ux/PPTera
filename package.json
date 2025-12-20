@@ -41,6 +41,8 @@
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "react-markdown": "^10.1.0",
+    "react-moveable": "^0.56.0",
+    "react-selecto": "^1.26.3",
     "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.1",
     "server-only": "^0.0.1",

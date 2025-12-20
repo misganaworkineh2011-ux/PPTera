@@ -29,6 +29,7 @@ import FeedbackSection from "~/components/presentation/FeedbackSection";
 import ChartModal from "~/components/charts/ChartModal";
 import { type ChartData } from "~/lib/charts/types";
 import { RateUsModal, incrementPresentationCount, shouldShowRatePrompt, checkExistingReview } from "~/components/RateUsModal";
+import { ImageEditor, type ImageBlock } from "~/lib/blocks";
 
 // Import extracted components
 import {
@@ -78,7 +79,7 @@ export default function PresentationViewer({
   const [isMobile, setIsMobile] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState(presentation.title);
-  
+
   // Sync title when presentation prop changes (e.g., after rename in dashboard)
   useEffect(() => {
     setEditedTitle(presentation.title);
@@ -88,7 +89,7 @@ export default function PresentationViewer({
   const [exportingFormat, setExportingFormat] = useState<"pdf" | "pptx" | "images" | null>(null);
   const [downloadNotification, setDownloadNotification] = useState<{ url: string; filename: string; format: "pdf" | "pptx" | "images" } | null>(null);
   const [showRateModal, setShowRateModal] = useState(false);
-  
+
   // Initialize based on screen size
   const [showThumbnails, setShowThumbnails] = useState(
     typeof window !== 'undefined' ? window.innerWidth >= 768 : true
@@ -96,17 +97,17 @@ export default function PresentationViewer({
   const [viewMode, setViewMode] = useState<"slides" | "scroll">(
     typeof window !== 'undefined' && window.innerWidth < 768 ? "scroll" : "scroll"
   );
-  
+
   // Check for rate prompt on new presentation view
   useEffect(() => {
     // Only check for owners viewing their own presentations
     if (!isOwner || isPublicView) return;
-    
+
     const checkRatePrompt = async () => {
       // First check if user already has a review
       const hasReview = await checkExistingReview();
       if (hasReview) return;
-      
+
       // Increment count and check if we should show prompt
       const shouldShow = incrementPresentationCount();
       if (shouldShow) {
@@ -114,10 +115,10 @@ export default function PresentationViewer({
         setTimeout(() => setShowRateModal(true), 2000);
       }
     };
-    
+
     checkRatePrompt();
   }, [isOwner, isPublicView]);
-  
+
   // Detect mobile and set view mode
   useEffect(() => {
     const checkMobile = () => {
@@ -133,7 +134,7 @@ export default function PresentationViewer({
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []); // Remove showThumbnails from dependencies to prevent re-triggering
-  
+
   const canEdit = isOwner || collaboratorRole === "editor";
 
   const [slidesData, setSlidesData] = useState<SlideData[]>(presentation.slides);
@@ -148,12 +149,14 @@ export default function PresentationViewer({
   const [showChartModal, setShowChartModal] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  // WYSIWYG Image Editor state
+  const [showImageEditor, setShowImageEditor] = useState<{ slideIndex: number; imageIndex: number } | null>(null);
   const slidesRef = useRef<SlideData[]>(presentation.slides);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const slides = slidesData;
   const { content } = presentation;
-  
+
   // Custom theme state - OPTIMIZATION: Initialize with prefetched theme if available
   const [customTheme, setCustomTheme] = useState<Theme | null>(() => {
     if (prefetchedCustomTheme) {
@@ -162,7 +165,7 @@ export default function PresentationViewer({
     return null;
   });
   const [isLoadingTheme, setIsLoadingTheme] = useState(false);
-  
+
   // Debug: Log slide data to check for icons/charts
   useEffect(() => {
     if (process.env.NODE_ENV === "development") {
@@ -184,7 +187,7 @@ export default function PresentationViewer({
   useEffect(() => {
     // Skip if we already have a prefetched theme
     if (prefetchedCustomTheme) return;
-    
+
     const themeId = content.theme || "";
     if (isCustomThemeId(themeId)) {
       setIsLoadingTheme(true);
@@ -200,7 +203,7 @@ export default function PresentationViewer({
         .finally(() => setIsLoadingTheme(false));
     }
   }, [content.theme]);
-  
+
   // Get the theme - either custom or built-in
   const theme = customTheme || getThemeById(content.theme || "") || getDefaultTheme();
   const fontsUrl = getGoogleFontsUrl(theme);
@@ -283,7 +286,7 @@ export default function PresentationViewer({
     setSlidesData(newSlides);
     slidesRef.current = newSlides;
     setHasUnsavedChanges(true);
-    
+
     // Add to history only if this is not an undo/redo action
     if (!isUndoRedoAction.current) {
       setHistory(prev => {
@@ -300,7 +303,7 @@ export default function PresentationViewer({
       setHistoryIndex(prev => Math.min(prev + 1, maxHistorySize - 1));
     }
     isUndoRedoAction.current = false;
-    
+
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
@@ -345,7 +348,7 @@ export default function PresentationViewer({
     setShowExportModal(false);
     setIsExporting(true);
     setExportingFormat(format);
-    
+
     try {
       // Build request body with format and options
       const requestBody: Record<string, unknown> = { format };
@@ -357,21 +360,21 @@ export default function PresentationViewer({
           requestBody.customRange = options.customRange;
         }
       }
-      
+
       const response = await fetch(`/api/presentations/${presentation.id}/export`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
       });
-      
+
       if (!response.ok) {
         throw new Error("Export failed");
       }
-      
+
       // Get the blob for all formats
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      
+
       // Set filename based on format
       let filename: string;
       if (format === "pptx") {
@@ -381,25 +384,25 @@ export default function PresentationViewer({
       } else {
         filename = `${presentation.title}-slides.zip`;
       }
-      
+
       // Show download notification
       setDownloadNotification({ url, filename, format });
-      
+
     } catch (err) {
       console.error("Export error:", err);
       toast.error("Export failed. Please try again.", { duration: 4000 });
     }
-    
+
     // Reset exporting state
     setIsExporting(false);
     setExportingFormat(null);
   };
-  
+
   const handleDownloadClick = (e: React.MouseEvent) => {
     // Prevent any default behavior or event bubbling
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (downloadNotification) {
       try {
         // Create a temporary link element
@@ -408,14 +411,14 @@ export default function PresentationViewer({
         link.download = downloadNotification.filename;
         link.style.display = "none";
         link.setAttribute("target", "_self");
-        
+
         // Append to body
         document.body.appendChild(link);
-        
+
         // Trigger download using setTimeout to avoid blocking
         setTimeout(() => {
           link.click();
-          
+
           // Clean up after a delay to ensure download starts
           setTimeout(() => {
             document.body.removeChild(link);
@@ -432,7 +435,7 @@ export default function PresentationViewer({
       }
     }
   };
-  
+
   const handleCloseNotification = () => {
     if (downloadNotification?.url) {
       window.URL.revokeObjectURL(downloadNotification.url);
@@ -467,7 +470,7 @@ export default function PresentationViewer({
         redo();
         return;
       }
-      
+
       if (editingText) return;
       if (e.key === "ArrowRight" || e.key === " ") {
         e.preventDefault();
@@ -636,7 +639,7 @@ export default function PresentationViewer({
         },
         css: "",
       } : null;
-      
+
       newSlides[slideIndex] = { ...slide, chart: chartData };
       updateSlidesWithSave(newSlides);
     }
@@ -761,16 +764,16 @@ export default function PresentationViewer({
       // Use custom theme background if available
       const thumbnailBgColor = theme.pageBackground ? theme.colors.background : bgColors[themeType];
       const thumbnailBg: React.CSSProperties = isTitle ? backgroundStyle : { background: thumbnailBgColor };
-      
+
       return (
         <div className="w-full h-full relative overflow-hidden" style={thumbnailBg}>
           {/* Full cover image for title slides with images */}
           {isTitle && hasImage && slide.image?.url && (
             <>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img 
-                src={slide.image.url} 
-                alt={slide.title} 
+              <img
+                src={slide.image.url}
+                alt={slide.title}
                 className="absolute inset-0 w-full h-full object-cover"
               />
               <div className={`absolute inset-0 ${themeType === "light" ? "bg-gradient-to-t from-white/70 via-white/30 to-transparent" : "bg-gradient-to-t from-black/70 via-black/30 to-transparent"}`} />
@@ -800,11 +803,11 @@ export default function PresentationViewer({
                 isHovered={false}
                 isEditing={false}
                 editingText={null}
-                onStartEditing={() => {}}
-                onUpdateContent={() => {}}
-                onFinishEditing={() => {}}
-                onAddBullet={() => {}}
-                onDeleteBullet={() => {}}
+                onStartEditing={() => { }}
+                onUpdateContent={() => { }}
+                onFinishEditing={() => { }}
+                onAddBullet={() => { }}
+                onDeleteBullet={() => { }}
               />
             )}
           </div>
@@ -823,9 +826,9 @@ export default function PresentationViewer({
         {isTitle && hasImage && slide.image?.url && (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
-              src={slide.image.url} 
-              alt={slide.title} 
+            <img
+              src={slide.image.url}
+              alt={slide.title}
               className="absolute inset-0 w-full h-full object-cover"
             />
           </>
@@ -897,21 +900,21 @@ export default function PresentationViewer({
       <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-8 md:space-y-12 pb-12 px-3 sm:px-4">
         {slides.map((slide, index) => {
           const isTitle = slide.type === "title";
-          
+
           if (isTitle) {
             // On mobile, use min-height instead of aspect-ratio to allow content to expand
             return (
-              <div 
-                key={index} 
-                id={`slide-${index}`} 
-                className={`w-full rounded-md sm:rounded-lg shadow-xl sm:shadow-2xl overflow-hidden scroll-mt-20 ring-1 ${ui.ring}`} 
+              <div
+                key={index}
+                id={`slide-${index}`}
+                className={`w-full rounded-md sm:rounded-lg shadow-xl sm:shadow-2xl overflow-hidden scroll-mt-20 ring-1 ${ui.ring}`}
                 style={isMobile ? { minHeight: "280px", maxWidth: "100%" } : { aspectRatio: "16/9", maxWidth: "100%" }}
               >
                 {renderSlide(slide, index, true)}
               </div>
             );
           }
-          
+
           return (
             <div key={index} id={`slide-${index}`} className={`w-full rounded-md sm:rounded-lg shadow-xl sm:shadow-2xl overflow-hidden scroll-mt-20 ring-1 ${ui.ring}`} style={{ maxWidth: "100%" }}>
               <ScrollSlideContent slide={slide} index={index} theme={theme} renderSlide={renderSlide} isMobile={isMobile} />
@@ -919,22 +922,22 @@ export default function PresentationViewer({
           );
         })}
         <div className="text-center py-6 sm:py-8">
-          <div 
+          <div
             className={`inline-flex items-center gap-2 px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-full backdrop-blur-sm shadow-lg border ${ui.endCard}`}
-            style={theme.pageBackground ? { 
-              background: theme.colors.backgroundAlt, 
-              borderColor: theme.colors.border 
+            style={theme.pageBackground ? {
+              background: theme.colors.backgroundAlt,
+              borderColor: theme.colors.border
             } : {}}
           >
             <Sparkles size={14} className="sm:w-4 sm:h-4 md:w-5 md:h-5" style={{ color: theme.colors.primary }} />
-            <span 
+            <span
               className={`font-semibold text-xs sm:text-sm md:text-base ${ui.endText}`}
               style={theme.pageBackground ? { color: theme.colors.heading } : {}}
             >
               End of Presentation
             </span>
           </div>
-          <p 
+          <p
             className={`mt-3 sm:mt-4 text-[10px] sm:text-xs md:text-sm ${ui.endMuted}`}
             style={theme.pageBackground ? { color: theme.colors.textMuted } : {}}
           >
@@ -1085,7 +1088,7 @@ export default function PresentationViewer({
         }
       `}</style>
 
-      <div 
+      <div
         className={`min-h-screen ${theme.pageBackground ? "" : getUIColors(getThemeType(theme)).pageBg}`}
         style={theme.pageBackground ? { background: theme.pageBackground } : {}}
       >
@@ -1144,7 +1147,7 @@ export default function PresentationViewer({
                     const ui = getUIColors(getThemeType(theme));
                     return (
                       <button key={index} onClick={() => goToSlide(index)} className="w-full group relative">
-                        <div 
+                        <div
                           className={`aspect-video overflow-hidden transition-all duration-200 ring-1 ${currentSlide === index ? "ring-2 shadow-lg" : `${ui.ringHover} opacity-70 hover:opacity-100`}`}
                           style={currentSlide === index ? { boxShadow: `0 0 0 2px ${theme.colors.primary}` } : {}}
                         >
@@ -1165,7 +1168,7 @@ export default function PresentationViewer({
                   const bulletCount = currentSlideData.bulletPoints?.length || 0;
                   const useFixedRatio = isFullscreen || isTitle || bulletCount <= 3;
                   const dynamicHeight = Math.max(450, 380 + bulletCount * 65);
-                  
+
                   if (useFixedRatio) {
                     return (
                       <div className={`relative overflow-hidden ${isFullscreen ? "w-full h-full max-h-screen flex items-center justify-center" : `w-full rounded-lg shadow-2xl ring-1 ${getUIColors(getThemeType(theme)).ring}`}`} style={!isFullscreen ? { aspectRatio: "16/9", maxHeight: "calc(100vh - 200px)" } : {}}>
@@ -1175,7 +1178,7 @@ export default function PresentationViewer({
                       </div>
                     );
                   }
-                  
+
                   return (
                     <div className={`relative overflow-hidden w-full rounded-lg shadow-2xl ring-1 ${getUIColors(getThemeType(theme)).ring}`} style={{ height: `min(${dynamicHeight}px, calc(100vh - 200px))` }}>
                       {renderSlide(currentSlideData, currentSlide, true)}
@@ -1212,7 +1215,7 @@ export default function PresentationViewer({
                 {presentation.title}
               </h1>
             </div>
-            
+
             <div className="fixed top-2 sm:top-4 right-2 sm:right-4 z-50 flex items-center gap-2">
               {/* View Mode Toggle */}
               {!isFullscreen && (
@@ -1236,7 +1239,7 @@ export default function PresentationViewer({
                   )}
                 </button>
               )}
-              
+
               {/* Present Mode Toggle */}
               <button
                 onClick={toggleFullscreen}
@@ -1282,23 +1285,27 @@ export default function PresentationViewer({
             onEditImage={(idx) => { setEditingImageIndex(idx); setImageUrl(getSlideImages(slides[showImageModal]!)[idx]?.url || ""); }}
             onCancelEdit={() => { setEditingImageIndex(null); setImageUrl(""); }}
             onClose={() => { setShowImageModal(null); setImageUrl(""); setEditingImageIndex(null); }}
+            onOpenWysiwygEditor={(idx) => {
+              setShowImageModal(null);
+              setShowImageEditor({ slideIndex: showImageModal, imageIndex: idx });
+            }}
           />
         )}
 
         {showExportModal && isOwner && (
-          <ExportModal 
-            isExporting={isExporting} 
-            theme={theme} 
-            totalSlides={slidesData.length} 
-            currentSlide={currentSlide + 1} 
-            onExport={handleExport} 
+          <ExportModal
+            isExporting={isExporting}
+            theme={theme}
+            totalSlides={slidesData.length}
+            currentSlide={currentSlide + 1}
+            onExport={handleExport}
             onClose={() => setShowExportModal(false)}
           />
         )}
 
         {showShareModal && isOwner && (
-          <ShareModal 
-            presentationId={presentation.id} 
+          <ShareModal
+            presentationId={presentation.id}
             initialIsPublic={presentation.isPublic}
             initialShareToken={presentation.shareToken}
             onClose={() => setShowShareModal(false)}
@@ -1325,16 +1332,60 @@ export default function PresentationViewer({
           <RateUsModal onClose={() => setShowRateModal(false)} />
         )}
 
+        {/* WYSIWYG Image Editor Modal */}
+        {showImageEditor && canEdit && (() => {
+          const slide = slidesData[showImageEditor.slideIndex];
+          const images = getSlideImages(slide!);
+          const image = images[showImageEditor.imageIndex];
+          if (!image) return null;
+          
+          // Convert SlideImage to ImageBlock format
+          const imageBlock: ImageBlock = {
+            id: `img-${showImageEditor.slideIndex}-${showImageEditor.imageIndex}`,
+            type: "image",
+            url: image.url,
+            alt: image.alt || slide?.title || "Image",
+          };
+          
+          return (
+            <ImageEditor
+              block={imageBlock}
+              onSave={(updatedBlock) => {
+                // Update the image in the slide
+                const newSlides = [...slidesData];
+                const slideToUpdate = newSlides[showImageEditor.slideIndex];
+                if (slideToUpdate) {
+                  const currentImages = [...getSlideImages(slideToUpdate)];
+                  currentImages[showImageEditor.imageIndex] = {
+                    url: updatedBlock.url,
+                    alt: updatedBlock.alt,
+                    source: "edited",
+                  };
+                  newSlides[showImageEditor.slideIndex] = {
+                    ...slideToUpdate,
+                    images: currentImages,
+                    image: currentImages[0] || null,
+                  };
+                  updateSlidesWithSave(newSlides);
+                }
+                setShowImageEditor(null);
+                toast.success("Image updated!");
+              }}
+              onCancel={() => setShowImageEditor(null)}
+            />
+          );
+        })()}
+
         {/* Export Loading Notification */}
         {isExporting && (
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-4 fade-in duration-300">
             <div className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-zinc-900 border border-zinc-700 shadow-2xl">
               <div className="w-5 h-5 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
               <span className="text-sm font-medium text-white">
-                {exportingFormat === "pptx" 
-                  ? "Exporting PowerPoint..." 
-                  : exportingFormat === "pdf" 
-                    ? "Exporting PDF..." 
+                {exportingFormat === "pptx"
+                  ? "Exporting PowerPoint..."
+                  : exportingFormat === "pdf"
+                    ? "Exporting PDF..."
                     : "Exporting Images..."}
               </span>
             </div>
@@ -1384,9 +1435,9 @@ export default function PresentationViewer({
 }
 
 // Component for scroll view slides with dynamic height
-function ScrollSlideContent({ slide, index, theme, renderSlide, isMobile }: { 
-  slide: SlideData; 
-  index: number; 
+function ScrollSlideContent({ slide, index, theme, renderSlide, isMobile }: {
+  slide: SlideData;
+  index: number;
   theme: Theme;
   renderSlide: (slide: SlideData, index: number, isMain: boolean) => React.ReactNode;
   isMobile?: boolean;
@@ -1395,7 +1446,7 @@ function ScrollSlideContent({ slide, index, theme, renderSlide, isMobile }: {
   const bulletCount = slide.bulletPoints?.length || 0;
   const hasChart = !!slide.chart;
   const hasIcons = slide.icons && slide.icons.length > 0;
-  
+
   // Responsive height calculation - smaller base on mobile
   // Add extra height for charts and icons
   const baseHeight = isMobile ? 280 : 380;
@@ -1403,7 +1454,7 @@ function ScrollSlideContent({ slide, index, theme, renderSlide, isMobile }: {
   const chartHeight = hasChart ? (isMobile ? 280 : 350) : 0;
   const iconsHeight = hasIcons ? (isMobile ? 60 : 80) : 0;
   const calculatedHeight = Math.max(baseHeight, baseHeight + bulletCount * bulletHeight + chartHeight + iconsHeight);
-  
+
   const bgColors: Record<ThemeType, string> = {
     dark: "bg-gradient-to-br from-zinc-900 via-zinc-950 to-black",
     light: "bg-gradient-to-br from-slate-50 via-white to-slate-100",
@@ -1423,12 +1474,12 @@ function ScrollSlideContent({ slide, index, theme, renderSlide, isMobile }: {
     "custom-dark": "",
     "custom-light": "",
   };
-  
+
   // Use custom pageBackground if available, otherwise fall back to themeType-based classes
   const hasCustomPageBg = !!theme.pageBackground;
   const bgClass = hasCustomPageBg ? "" : bgColors[themeType];
   const bgStyle = hasCustomPageBg ? { background: theme.pageBackground } : {};
-  
+
   // On mobile, use min-height to allow content to expand; on desktop use fixed height
   if (isMobile) {
     return (
@@ -1437,7 +1488,7 @@ function ScrollSlideContent({ slide, index, theme, renderSlide, isMobile }: {
       </div>
     );
   }
-  
+
   return (
     <div className={`w-full ${bgClass} relative`} style={{ height: `min(${calculatedHeight}px, calc(100vh - 150px))`, ...bgStyle }}>
       {renderSlide(slide, index, true)}

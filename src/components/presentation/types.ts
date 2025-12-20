@@ -1,9 +1,10 @@
 import { type LayoutType } from "~/lib/slide-layouts";
-import type { 
-  TransformedContent, 
+import type {
+  TransformedContent,
   IconPlaceholder,
-  VisualStrategy 
+  VisualStrategy
 } from "~/lib/presentation/types";
+import type { ContentBlock } from "~/lib/blocks/types";
 
 export interface SlideImage {
   url: string;
@@ -40,6 +41,9 @@ export interface SlideData {
   // Visual metadata for reference
   semanticIntent?: string;
   visualStrategy?: VisualStrategy;
+  // Block-based content (Gamma-style)
+  blocks?: ContentBlock[];
+  layoutMode?: "legacy" | "flow" | "canvas";
 }
 
 export interface PresentationData {
