@@ -153,6 +153,7 @@ function FloatingToolbar({ position, onCommand }: FloatingToolbarProps) {
     if (!activeMenu) return null;
     return createPortal(
       <div
+        data-toolbar="true"
         className="fixed z-[999999] bg-white rounded-lg shadow-xl border border-slate-200 p-2"
         style={{ top: menuPosition.top, left: menuPosition.left }}
         onMouseDown={(e) => e.preventDefault()}
@@ -166,6 +167,7 @@ function FloatingToolbar({ position, onCommand }: FloatingToolbarProps) {
   return (
     <div
       ref={toolbarRef}
+      data-toolbar="true"
       className="fixed z-[99999] flex items-center gap-0.5 px-2 py-1 bg-white rounded-lg shadow-xl border border-slate-200"
       style={{ top: position.top, left: position.left, transform: "translateX(-50%)" }}
       onMouseDown={(e) => e.preventDefault()}
@@ -316,6 +318,7 @@ export default function EditableText({
   onDelete,
 }: EditableTextProps) {
   const editorRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [showToolbar, setShowToolbar] = useState(false);
   const [toolbarPosition, setToolbarPosition] = useState<ToolbarPosition>({ top: 0, left: 0 });
@@ -337,9 +340,31 @@ export default function EditableText({
     }
     if (!isEditing) {
       setShowToolbar(false);
+      setIsHovered(false);
       initializedRef.current = false;
     }
   }, [isEditing, value]);
+
+  // Handle clicks outside to finish editing
+  useEffect(() => {
+    if (!isEditing) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      // Check if click is outside the editor and not on toolbar
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(target) &&
+        !(target as Element).closest?.('[data-toolbar="true"]')
+      ) {
+        onFinish();
+      }
+    };
+
+    // Use mousedown to catch clicks before they trigger other elements
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isEditing, onFinish]);
 
   // Calculate toolbar position
   const updateToolbarPosition = useCallback(() => {
@@ -441,6 +466,7 @@ export default function EditableText({
   if (!isEditing) {
     return (
       <div
+        ref={containerRef}
         className="relative"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -448,14 +474,14 @@ export default function EditableText({
         <div
           className={`${className} ${isOwner && isHovered ? "cursor-pointer ring-2 ring-white/30 ring-offset-2 ring-offset-transparent rounded" : ""}`}
           style={style}
-          onClick={isOwner ? onStartEdit : undefined}
+          onMouseDown={isOwner ? (e) => { e.preventDefault(); e.stopPropagation(); onStartEdit(); } : undefined}
           dangerouslySetInnerHTML={{ __html: value }}
         />
         {isOwner && isHovered && (
           <div className="absolute -right-10 top-1/2 -translate-y-1/2 flex flex-col gap-1 z-30">
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); onStartEdit(); }}
+              onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onStartEdit(); }}
               title="Edit"
               className="p-1.5 rounded-lg bg-white shadow-lg hover:bg-slate-50 transition-colors"
             >
@@ -464,7 +490,7 @@ export default function EditableText({
             {onDelete && (
               <button
                 type="button"
-                onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(); }}
                 title="Delete"
                 className="p-1.5 rounded-lg bg-white shadow-lg hover:bg-red-50 transition-colors"
               >
@@ -479,13 +505,12 @@ export default function EditableText({
 
   // Editing: show contentEditable
   return (
-    <div className="relative">
+    <div ref={containerRef} className="relative">
       <div
         ref={editorRef}
         contentEditable
         suppressContentEditableWarning
         onInput={handleInput}
-        onBlur={handleFinish}
         onKeyDown={handleKeyDown}
         onMouseUp={handleSelectionChange}
         className={`${className} outline-none ring-2 ring-cyan-400/60 rounded`}
