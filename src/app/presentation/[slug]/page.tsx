@@ -11,6 +11,7 @@ interface PresentationPageProps {
   }>;
   searchParams: Promise<{
     mode?: string;
+    streaming?: string;
   }>;
 }
 
@@ -45,7 +46,8 @@ export default async function PresentationPage({
   searchParams,
 }: PresentationPageProps) {
   const { slug } = await params;
-  const { mode } = await searchParams;
+  const { mode, streaming } = await searchParams;
+  const isStreaming = streaming === "true";
   
   // requireAuth() returns the database user directly
   const user = await requireAuth();
@@ -53,7 +55,7 @@ export default async function PresentationPage({
   // Extract ID from slug
   const presentationId = extractPresentationId(slug);
   
-  console.log("[presentation] Extracting ID from slug:", { slug, presentationId });
+  console.log("[presentation] Extracting ID from slug:", { slug, presentationId, isStreaming });
   
   if (!presentationId) {
     console.error("[presentation] Could not extract ID from slug:", slug);
@@ -176,6 +178,10 @@ export default async function PresentationPage({
     }
   }
 
+  // Get pending slides count for streaming mode
+  const pendingSlides = (content as Record<string, unknown>)?.pendingSlides as unknown[] | undefined;
+  const totalSlidesForStreaming = pendingSlides?.length || slides.length;
+
   return (
     <PresentationViewer
       presentation={{
@@ -193,6 +199,8 @@ export default async function PresentationPage({
       isOwner={isOwner}
       collaboratorRole={collaboration?.role}
       prefetchedCustomTheme={prefetchedCustomTheme}
+      isStreaming={isStreaming}
+      totalSlidesForStreaming={totalSlidesForStreaming}
     />
   );
 }

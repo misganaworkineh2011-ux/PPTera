@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Clock, Calendar, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { Clock, Calendar, ChevronDown, ChevronUp, Loader2, BookOpen, FileText } from "lucide-react";
 
 interface Outline {
   id: string;
   title: string;
   createdAt: Date;
   mode?: string;
+  presentationCount?: number;
 }
 
 interface RecentOutlinesProps {
@@ -63,7 +64,7 @@ export default function RecentOutlines({ outlines: initialOutlines, mode = "ai" 
       if (!response.ok) throw new Error("Failed to fetch outlines");
       
       const data = await response.json();
-      const newOutlines = data.outlines.map((o: { id: string; title: string; createdAt: string }) => ({
+      const newOutlines = data.outlines.map((o: { id: string; title: string; createdAt: string; presentationCount?: number }) => ({
         ...o,
         createdAt: new Date(o.createdAt),
       }));
@@ -124,6 +125,8 @@ export default function RecentOutlines({ outlines: initialOutlines, mode = "ai" 
               const diffDays = Math.floor(diffHours / 24);
               const isDays = diffDays > 0;
               const isNavigatingToThis = isNavigating === outline.id;
+              const presentationCount = outline.presentationCount ?? 0;
+              const hasPresentation = presentationCount > 0;
 
               return (
                 <button
@@ -132,12 +135,43 @@ export default function RecentOutlines({ outlines: initialOutlines, mode = "ai" 
                   disabled={isNavigating !== null}
                   className="w-full text-left group disabled:opacity-50 disabled:cursor-wait"
                 >
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-white/60 hover:bg-white/80 transition-all duration-200 hover:shadow-md border border-white/50 group-hover:border-[#06b6d4]/30">
-                    <div className="flex-1 min-w-0">
+                  <div className="relative flex items-center justify-between p-3 rounded-lg bg-white/60 hover:bg-white/80 transition-all duration-200 hover:shadow-md border border-white/50 group-hover:border-[#06b6d4]/30">
+                    {/* Status badge - inside card, top right corner */}
+                    <div className="absolute top-2 right-2 z-10">
+                      {hasPresentation ? (
+                        <div className="relative group/badge">
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-600 cursor-help">
+                            <BookOpen size={11} className="text-emerald-500" />
+                            {presentationCount}
+                          </span>
+                          {/* Tooltip */}
+                          <div className="absolute bottom-full right-0 mb-1.5 px-2 py-1 bg-slate-800 text-white text-[10px] rounded-md whitespace-nowrap opacity-0 invisible group-hover/badge:opacity-100 group-hover/badge:visible transition-all duration-200 shadow-lg">
+                            {presentationCount === 1 
+                              ? "You created 1 presentation from this outline" 
+                              : `You created ${presentationCount} presentations from this outline`}
+                            <div className="absolute top-full right-3 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-800"></div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="relative group/badge">
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-600 cursor-help">
+                            <FileText size={11} className="text-amber-500" />
+                            Draft
+                          </span>
+                          {/* Tooltip */}
+                          <div className="absolute bottom-full right-0 mb-1.5 px-2 py-1 bg-slate-800 text-white text-[10px] rounded-md whitespace-nowrap opacity-0 invisible group-hover/badge:opacity-100 group-hover/badge:visible transition-all duration-200 shadow-lg">
+                            No presentation created yet
+                            <div className="absolute top-full right-3 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-800"></div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex-1 min-w-0 pr-6">
                       <p className="text-sm font-medium text-slate-800 truncate group-hover:text-[#1e3a8a] transition-colors">
                         {outline.title}
                       </p>
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="flex items-center gap-1 mt-1">
                         {isDays ? (
                           <>
                             <Calendar size={12} className="text-slate-400" />
@@ -176,7 +210,40 @@ export default function RecentOutlines({ outlines: initialOutlines, mode = "ai" 
             })}
           </div>
 
-          {hasMore && (
+          {/* Show "See More" when not showing all - will either expand or load more */}
+          {!showAll && (
+            <button
+              onClick={async () => {
+                // If we have more than 3 loaded, just expand
+                if (outlines.length > 3) {
+                  setShowAll(true);
+                } else if (hasMore) {
+                  // Load more from server
+                  await handleLoadMore();
+                } else {
+                  // No more to load, just show all we have
+                  setShowAll(true);
+                }
+              }}
+              disabled={isLoadingMore}
+              className="mt-4 w-full flex items-center justify-center gap-2 text-sm font-medium text-[#06b6d4] hover:text-[#1e3a8a] transition-colors py-2 rounded-lg hover:bg-white/60 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoadingMore ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  <span>Loading...</span>
+                </>
+              ) : (
+                <>
+                  <ChevronDown size={16} />
+                  <span>See More</span>
+                </>
+              )}
+            </button>
+          )}
+          
+          {/* Show "Load More" when showing all but there are more on server */}
+          {showAll && hasMore && (
             <button
               onClick={handleLoadMore}
               disabled={isLoadingMore}
@@ -190,7 +257,7 @@ export default function RecentOutlines({ outlines: initialOutlines, mode = "ai" 
               ) : (
                 <>
                   <ChevronDown size={16} />
-                  <span>See More</span>
+                  <span>Load More</span>
                 </>
               )}
             </button>

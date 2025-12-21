@@ -3,13 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
-  ChevronLeft,
-  ChevronRight,
   Minimize2,
   Sparkles,
-  PlusCircle,
-  Undo2,
-  Redo2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { getThemeById, getDefaultTheme, type Theme } from "~/lib/themes";
@@ -17,7 +12,6 @@ import { isCustomThemeId, getCustomThemeDbId, convertCustomThemeToTheme } from "
 import { type LayoutType } from "~/lib/slide-layouts";
 import {
   type SlideData,
-  type SlideImage,
   type PresentationData,
   type EditingState,
 } from "~/components/presentation/types";
@@ -28,7 +22,7 @@ import ShareModal from "~/components/presentation/ShareModal";
 import FeedbackSection from "~/components/presentation/FeedbackSection";
 import ChartModal from "~/components/charts/ChartModal";
 import { type ChartData } from "~/lib/charts/types";
-import { RateUsModal, incrementPresentationCount, shouldShowRatePrompt, checkExistingReview } from "~/components/RateUsModal";
+import { RateUsModal, incrementPresentationCount, checkExistingReview } from "~/components/RateUsModal";
 import { ImageEditor, type ImageBlock } from "~/lib/blocks";
 
 // Import extracted components
@@ -61,6 +55,10 @@ interface PresentationViewerProps {
   isPublicView?: boolean;
   /** OPTIMIZATION: Prefetched custom theme from SSR to avoid client-side fetch */
   prefetchedCustomTheme?: CustomThemeData | null;
+  /** Enable streaming mode - content will be streamed from server */
+  isStreaming?: boolean;
+  /** Total slides expected when streaming */
+  totalSlidesForStreaming?: number;
 }
 
 export default function PresentationViewer({
@@ -70,6 +68,8 @@ export default function PresentationViewer({
   collaboratorRole,
   isPublicView = false,
   prefetchedCustomTheme,
+  isStreaming = false,
+  totalSlidesForStreaming = 0,
 }: PresentationViewerProps) {
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -152,6 +152,336 @@ export default function PresentationViewer({
   const [showImageEditor, setShowImageEditor] = useState<{ slideIndex: number; imageIndex: number } | null>(null);
   const slidesRef = useRef<SlideData[]>(presentation.slides);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Streaming state
+  const [streamingStatus, setStreamingStatus] = useState<"idle" | "loading" | "streaming" | "complete">(
+    isStreaming ? "loading" : "idle"
+  );
+  const [streamingSlideIndex, setStreamingSlideIndex] = useState(-1);
+  const [imagesLoading, setImagesLoading] = useState<Set<number>>(new Set());
+  const [imageLoadedStates, setImageLoadedStates] = useState<Record<number, boolean>>({});
+  // Use ref for streaming text to avoid stale closure issues
+  const streamingTextRef = useRef<Record<number, Record<string, string>>>({});
+  // Track EventSource to prevent duplicates - use window to persist across re-renders
+  const eventSourceRef = useRef<EventSource | null>(null);
+
+  // Connect to streaming endpoint when in streaming mode
+  useEffect(() => {
+    if (!isStreaming || streamingStatus !== "loading") return;
+    
+    // Check if there's already a global EventSource for this presentation
+    const globalKey = `__streaming_${presentation.id}`;
+    const existingEventSource = (window as unknown as Record<string, EventSource | undefined>)[globalKey];
+    
+    if (existingEventSource && existingEventSource.readyState !== EventSource.CLOSED) {
+      console.log("[Streaming] Using existing global EventSource");
+      eventSourceRef.current = existingEventSource;
+      return;
+    }
+    
+    if (eventSourceRef.current && eventSourceRef.current.readyState !== EventSource.CLOSED) {
+      console.log("[Streaming] Already have an active EventSource");
+      return;
+    }
+
+    console.log("[Streaming] Creating new EventSource for presentation:", presentation.id);
+    const eventSource = new EventSource(`/api/presentations/${presentation.id}/stream-content`);
+    eventSourceRef.current = eventSource;
+    // Store globally to persist across re-renders
+    (window as unknown as Record<string, EventSource>)[globalKey] = eventSource;
+    
+    // Handle connection open
+    eventSource.onopen = () => {
+      console.log("[Streaming] Connection opened successfully");
+    };
+    
+    eventSource.addEventListener("start", (e) => {
+      const data = JSON.parse(e.data);
+      console.log("[Streaming] ✓ Received START event, total slides:", data.totalSlides);
+      setStreamingStatus("streaming");
+      // Start with EMPTY slides array - slides will be added progressively
+      setSlidesData([]);
+      streamingTextRef.current = {};
+    });
+
+    eventSource.addEventListener("slideStart", (e) => {
+      const data = JSON.parse(e.data);
+      console.log("[Streaming] ✓ Received SLIDE_START event:", data.slideIndex, data.type, "hasImage:", data.hasImage);
+      setStreamingSlideIndex(data.slideIndex);
+      
+      // ADD the new slide to the array (progressive creation)
+      setSlidesData(prev => {
+        console.log("[Streaming] Adding slide", data.slideIndex, "to slidesData, current length:", prev.length);
+        const newSlides = [...prev];
+        // Add the new slide at the correct index
+        newSlides[data.slideIndex] = {
+          type: data.type,
+          title: "",
+          bulletPoints: [],
+          image: data.hasImage ? { url: "", alt: "Loading...", source: "placeholder" } : undefined,
+        };
+        return newSlides;
+      });
+      
+      // Reset streaming text ref for this slide (including bullet index)
+      streamingTextRef.current[data.slideIndex] = { "_currentBulletIndex": "0" };
+      
+      if (data.hasImage) {
+        setImagesLoading(prev => new Set(prev).add(data.slideIndex));
+      }
+    });
+
+    eventSource.addEventListener("char", (e) => {
+      const data = JSON.parse(e.data);
+      const { slideIndex, field, char } = data;
+      
+      // Update ref
+      if (!streamingTextRef.current[slideIndex]) {
+        streamingTextRef.current[slideIndex] = {};
+      }
+      
+      // Handle bullet streaming separately (it's an array)
+      if (field === "bullet") {
+        // Get current bullet index from ref or start at 0
+        const currentBulletKey = "_currentBulletIndex";
+        const bulletIndex = parseInt(streamingTextRef.current[slideIndex]![currentBulletKey] ?? "0", 10);
+        const bulletKey = `bullet_${bulletIndex}`;
+        
+        streamingTextRef.current[slideIndex]![bulletKey] = 
+          (streamingTextRef.current[slideIndex]![bulletKey] || "") + char;
+        
+        const currentBulletText = streamingTextRef.current[slideIndex]![bulletKey] || "";
+        
+        setSlidesData(prev => {
+          const newSlides = [...prev];
+          if (newSlides[slideIndex]) {
+            const bullets = [...(newSlides[slideIndex]!.bulletPoints || [])];
+            bullets[bulletIndex] = currentBulletText;
+            newSlides[slideIndex] = {
+              ...newSlides[slideIndex]!,
+              bulletPoints: bullets,
+            };
+          }
+          return newSlides;
+        });
+      } else {
+        // Handle other fields (title, subtitle, etc.)
+        streamingTextRef.current[slideIndex]![field] = 
+          (streamingTextRef.current[slideIndex]![field] || "") + char;
+        
+        const currentText = streamingTextRef.current[slideIndex]![field];
+        setSlidesData(prev => {
+          const newSlides = [...prev];
+          if (newSlides[slideIndex]) {
+            newSlides[slideIndex] = {
+              ...newSlides[slideIndex]!,
+              [field]: currentText,
+            };
+          }
+          return newSlides;
+        });
+      }
+    });
+
+    eventSource.addEventListener("fieldComplete", (e) => {
+      const data = JSON.parse(e.data);
+      console.log("[Streaming] ✓ Received FIELD_COMPLETE:", data.slideIndex, data.field, "value length:", data.value?.length);
+      setSlidesData(prev => {
+        const newSlides = [...prev];
+        if (newSlides[data.slideIndex]) {
+          newSlides[data.slideIndex] = {
+            ...newSlides[data.slideIndex]!,
+            [data.field]: data.value,
+          };
+        }
+        return newSlides;
+      });
+    });
+
+    eventSource.addEventListener("bulletComplete", (e) => {
+      const data = JSON.parse(e.data);
+      const { slideIndex, bulletIndex, value } = data;
+      console.log("[Streaming] ✓ Received BULLET_COMPLETE:", slideIndex, "bullet", bulletIndex);
+      
+      // Update the current bullet index for the next bullet
+      if (streamingTextRef.current[slideIndex]) {
+        streamingTextRef.current[slideIndex]!["_currentBulletIndex"] = String(bulletIndex + 1);
+      }
+      
+      setSlidesData(prev => {
+        const newSlides = [...prev];
+        if (newSlides[slideIndex]) {
+          const bullets = [...(newSlides[slideIndex]!.bulletPoints || [])];
+          bullets[bulletIndex] = value;
+          newSlides[slideIndex] = {
+            ...newSlides[slideIndex]!,
+            bulletPoints: bullets,
+          };
+        }
+        return newSlides;
+      });
+    });
+
+    eventSource.addEventListener("imageReady", (e) => {
+      const data = JSON.parse(e.data);
+      console.log("[Streaming] ✓ Received IMAGE_READY:", data.slideIndex, "url:", data.image?.url?.substring(0, 50));
+      setSlidesData(prev => {
+        const newSlides = [...prev];
+        if (newSlides[data.slideIndex]) {
+          newSlides[data.slideIndex] = {
+            ...newSlides[data.slideIndex]!,
+            image: data.image,
+          };
+        }
+        return newSlides;
+      });
+      setImagesLoading(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(data.slideIndex);
+        return newSet;
+      });
+    });
+
+    eventSource.addEventListener("chartReady", (e) => {
+      const data = JSON.parse(e.data);
+      setSlidesData(prev => {
+        const newSlides = [...prev];
+        if (newSlides[data.slideIndex]) {
+          newSlides[data.slideIndex] = {
+            ...newSlides[data.slideIndex]!,
+            chart: data.chart,
+          };
+        }
+        return newSlides;
+      });
+    });
+
+    eventSource.addEventListener("iconsReady", (e) => {
+      const data = JSON.parse(e.data);
+      console.log("[Streaming] ✓ Received ICONS_READY:", data.slideIndex);
+      setSlidesData(prev => {
+        const newSlides = [...prev];
+        if (newSlides[data.slideIndex]) {
+          newSlides[data.slideIndex] = {
+            ...newSlides[data.slideIndex]!,
+            icons: data.icons,
+          };
+        }
+        return newSlides;
+      });
+    });
+
+    eventSource.addEventListener("slideComplete", (e) => {
+      const data = JSON.parse(e.data);
+      console.log("[Streaming] ✓ Received SLIDE_COMPLETE:", data.slideIndex, "title:", data.slide?.title);
+      setSlidesData(prev => {
+        const newSlides = [...prev];
+        const existingSlide = newSlides[data.slideIndex];
+        // Preserve image, chart, and icons that may have been set by earlier events
+        newSlides[data.slideIndex] = {
+          ...data.slide,
+          image: data.slide.image?.url ? data.slide.image : existingSlide?.image,
+          chart: data.slide.chart || existingSlide?.chart,
+          icons: data.slide.icons || existingSlide?.icons,
+        };
+        console.log("[Streaming] Updated slidesData, new length:", newSlides.length);
+        return newSlides;
+      });
+    });
+
+    eventSource.addEventListener("complete", (e) => {
+      const data = JSON.parse(e.data);
+      console.log("[Streaming] ✓ Received COMPLETE event, slides:", data.slides?.length);
+      // Merge server slides with any images that were already loaded on client
+      setSlidesData(prev => {
+        return data.slides.map((serverSlide: SlideData, index: number) => {
+          const clientSlide = prev[index];
+          return {
+            ...serverSlide,
+            // Prefer server image if it has a URL, otherwise keep client image
+            image: serverSlide.image?.url ? serverSlide.image : clientSlide?.image,
+          };
+        });
+      });
+      setStreamingStatus("complete");
+      setStreamingSlideIndex(-1);
+      // Remove streaming param from URL
+      const url = new URL(window.location.href);
+      url.searchParams.delete("streaming");
+      window.history.replaceState({}, "", url.toString());
+      // Clean up EventSource and global reference
+      eventSource.close();
+      eventSourceRef.current = null;
+      const globalKey = `__streaming_${presentation.id}`;
+      delete (window as unknown as Record<string, unknown>)[globalKey];
+    });
+    
+    // Handle server-sent error events
+    eventSource.addEventListener("error", (e: Event) => {
+      console.error("[Streaming] ✗ Error event received:", e);
+      // Check if this is a MessageEvent (server-sent error) or a connection error
+      if (e instanceof MessageEvent) {
+        try {
+          const data = JSON.parse(e.data);
+          console.error("[Streaming] Server error:", data.message);
+          toast.error(data.message || "Streaming error occurred");
+        } catch {
+          console.error("[Streaming] Error parsing error event");
+        }
+        // Only close on server-sent errors, not connection errors
+        setStreamingStatus("complete");
+        eventSource.close();
+        eventSourceRef.current = null;
+        const globalKey = `__streaming_${presentation.id}`;
+        delete (window as unknown as Record<string, unknown>)[globalKey];
+      } else {
+        // Connection error - might be temporary, don't close immediately
+        console.error("[Streaming] EventSource connection error:", e);
+        if (eventSource.readyState === EventSource.CLOSED) {
+          console.error("[Streaming] Connection was closed by server/network");
+          setStreamingStatus("complete");
+          eventSourceRef.current = null;
+          const globalKey = `__streaming_${presentation.id}`;
+          delete (window as unknown as Record<string, unknown>)[globalKey];
+        }
+      }
+    });
+    
+    // Also listen for the generic "message" event in case server sends non-typed events
+    eventSource.onmessage = (e) => {
+      console.log("[Streaming] Generic message:", e.data);
+    };
+
+    // Note: We intentionally don't close the EventSource in cleanup
+    // because React StrictMode will unmount/remount and we want to keep the connection alive.
+    // The EventSource will be closed when:
+    // 1. The "complete" event is received
+    // 2. An error occurs
+    // 3. The user navigates away (browser handles this)
+    return () => {
+      // Don't close the EventSource here - let it continue streaming
+      // It will be closed when complete or error events are received
+      console.log("[Streaming] Cleanup called, but keeping EventSource alive (global)");
+    };
+  }, [isStreaming, streamingStatus, presentation.id]);
+
+  // Cleanup EventSource when component truly unmounts (navigation away)
+  useEffect(() => {
+    const presentationId = presentation.id;
+    return () => {
+      console.log("[Streaming] Component unmounting, cleaning up");
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
+      const globalKey = `__streaming_${presentationId}`;
+      const globalEventSource = (window as unknown as Record<string, EventSource | undefined>)[globalKey];
+      if (globalEventSource) {
+        globalEventSource.close();
+        delete (window as unknown as Record<string, unknown>)[globalKey];
+      }
+    };
+  }, [presentation.id]);
 
   const slides = slidesData;
   const { content } = presentation;
@@ -705,7 +1035,61 @@ export default function PresentationViewer({
 
   const currentSlideData = slides[currentSlide];
 
+  // Show app's standard loading during initial streaming setup
+  if (streamingStatus === "loading") {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center max-w-md px-6">
+          {/* Spinner Animation */}
+          <div className="relative w-24 h-24 mx-auto mb-8">
+            {/* Outer Ring */}
+            <div className="absolute inset-0 border-4 border-slate-200 rounded-full"></div>
+            
+            {/* Spinning Gradient Ring */}
+            <div className="absolute inset-0 border-4 border-transparent border-t-[#1e3a8a] border-r-[#06b6d4] rounded-full animate-spin"></div>
+            
+            {/* Inner Pulsing Circle */}
+            <div className="absolute inset-3 bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] rounded-full animate-pulse"></div>
+          </div>
+
+          {/* Loading Text */}
+          <div className="space-y-2 mb-6">
+            <h2 className="text-xl font-bold text-slate-900">Loading...</h2>
+            <div className="flex gap-1 justify-center">
+              <div className="h-2 w-2 bg-[#1e3a8a] rounded-full animate-bounce"></div>
+              <div className="h-2 w-2 bg-[#06b6d4] rounded-full animate-bounce [animation-delay:100ms]"></div>
+              <div className="h-2 w-2 bg-[#1e3a8a] rounded-full animate-bounce [animation-delay:200ms]"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!currentSlideData) {
+    // During streaming, show loading if we don't have slides yet
+    if (streamingStatus === "streaming" && slides.length === 0) {
+      return (
+        <div className="min-h-screen bg-white flex items-center justify-center">
+          <div className="text-center max-w-md px-6">
+            <div className="relative w-24 h-24 mx-auto mb-8">
+              <div className="absolute inset-0 border-4 border-slate-200 rounded-full"></div>
+              <div className="absolute inset-0 border-4 border-transparent border-t-[#1e3a8a] border-r-[#06b6d4] rounded-full animate-spin"></div>
+              <div className="absolute inset-3 bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] rounded-full animate-pulse"></div>
+            </div>
+            <div className="space-y-2 mb-6">
+              <h2 className="text-xl font-bold text-slate-900">Generating slides...</h2>
+              <div className="flex gap-1 justify-center">
+                <div className="h-2 w-2 bg-[#1e3a8a] rounded-full animate-bounce"></div>
+                <div className="h-2 w-2 bg-[#06b6d4] rounded-full animate-bounce [animation-delay:100ms]"></div>
+                <div className="h-2 w-2 bg-[#1e3a8a] rounded-full animate-bounce [animation-delay:200ms]"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
         <div className="text-center text-white">
@@ -730,9 +1114,12 @@ export default function PresentationViewer({
   // Render slide
   const renderSlide = (slide: SlideData, index: number, isMain: boolean = false) => {
     const hasImage = slide.image?.url && slide.image.source !== "placeholder";
+    const isImageLoading = imagesLoading.has(index);
+    const isImageLoaded = imageLoadedStates[index];
     const isTitle = slide.type === "title";
     const isHovered = activeSlideIndex === index;
     const isEditing = editingText?.slideIndex === index;
+    const isCurrentlyStreaming = streamingStatus === "streaming" && streamingSlideIndex === index;
 
     let backgroundStyle: React.CSSProperties = {};
     if (isTitle && hasImage) {
@@ -759,17 +1146,28 @@ export default function PresentationViewer({
               <img
                 src={slide.image.url}
                 alt={slide.title}
-                className="absolute inset-0 w-full h-full object-cover"
+                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${isImageLoaded ? "opacity-100" : "opacity-0"}`}
+                onLoad={() => setImageLoadedStates(prev => ({ ...prev, [index]: true }))}
               />
+              {/* Loading placeholder for thumbnail */}
+              {!isImageLoaded && (
+                <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-900 animate-pulse" />
+              )}
               <div className={`absolute inset-0 ${themeType === "light" ? "bg-gradient-to-t from-white/70 via-white/30 to-transparent" : "bg-gradient-to-t from-black/70 via-black/30 to-transparent"}`} />
             </>
+          )}
+          {/* Image loading indicator for thumbnail */}
+          {isTitle && isImageLoading && (
+            <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center">
+              <div className="w-4 h-4 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
+            </div>
           )}
           <div className="absolute inset-0 transform scale-[0.18] origin-top-left" style={{ width: "555%", height: "555%" }}>
             {isTitle ? (
               <div className={`h-full flex flex-col items-center justify-center p-12 text-center ${hasImage ? "" : ui.titleBg}`}>
                 {!hasImage && <div className={`absolute top-0 right-0 w-96 h-96 ${ui.orb1} rounded-full blur-3xl`} />}
                 <h1 className="text-5xl font-bold mb-4 relative" style={{ fontFamily: theme.fonts.heading.family, color: hasImage ? "#fff" : theme.colors.heading }}>
-                  {slide.title}
+                  {slide.title || (isCurrentlyStreaming ? "..." : "")}
                 </h1>
                 {slide.subtitle && (
                   <p className="text-2xl opacity-80 relative" style={{ fontFamily: theme.fonts.body.family, color: hasImage ? "#e2e8f0" : theme.colors.textMuted }}>
@@ -796,6 +1194,10 @@ export default function PresentationViewer({
               />
             )}
           </div>
+          {/* Streaming indicator on thumbnail */}
+          {isCurrentlyStreaming && (
+            <div className="absolute bottom-1 right-1 w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+          )}
         </div>
       );
     }
@@ -814,9 +1216,23 @@ export default function PresentationViewer({
             <img
               src={slide.image.url}
               alt={slide.title}
-              className="absolute inset-0 w-full h-full object-cover"
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${isImageLoaded ? "opacity-100" : "opacity-0"}`}
+              onLoad={() => setImageLoadedStates(prev => ({ ...prev, [index]: true }))}
             />
+            {/* Loading placeholder with shimmer effect */}
+            {!isImageLoaded && (
+              <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 via-zinc-700 to-zinc-800 animate-pulse" />
+            )}
           </>
+        )}
+        {/* Image loading placeholder for title slides */}
+        {isTitle && isImageLoading && (
+          <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-8 h-8 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
+              <span className="text-xs text-zinc-400">Loading image...</span>
+            </div>
+          </div>
         )}
         {theme.overlay && !hasImage && <div className="absolute inset-0" style={{ background: theme.overlay }} />}
 
@@ -878,10 +1294,14 @@ export default function PresentationViewer({
 
   const renderScrollableView = () => {
     const ui = getUIColors(getThemeType(theme));
+    const isCurrentlyStreaming = streamingStatus === "streaming";
+    
     return (
       <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-8 md:space-y-12 pb-12 px-3 sm:px-4">
         {slides.map((slide, index) => {
           const isTitle = slide.type === "title";
+          const isSlideStreaming = isCurrentlyStreaming && streamingSlideIndex === index;
+          const isNewSlide = isCurrentlyStreaming && index === slides.length - 1;
 
           if (isTitle) {
             // On mobile, use min-height instead of aspect-ratio to allow content to expand
@@ -889,8 +1309,11 @@ export default function PresentationViewer({
               <div
                 key={index}
                 id={`slide-${index}`}
-                className={`w-full rounded-md sm:rounded-lg shadow-xl sm:shadow-2xl overflow-hidden scroll-mt-20 ring-1 ${ui.ring}`}
-                style={isMobile ? { minHeight: "280px", maxWidth: "100%" } : { aspectRatio: "16/9", maxWidth: "100%" }}
+                className={`w-full rounded-md sm:rounded-lg shadow-xl sm:shadow-2xl overflow-hidden scroll-mt-20 ring-1 ${ui.ring} ${isNewSlide ? "animate-fade-in" : ""} ${isSlideStreaming ? "ring-2" : ""}`}
+                style={{
+                  ...(isMobile ? { minHeight: "280px", maxWidth: "100%" } : { aspectRatio: "16/9", maxWidth: "100%" }),
+                  ...(isSlideStreaming ? { boxShadow: `0 0 20px ${theme.colors.primary}40` } : {}),
+                }}
               >
                 {renderSlide(slide, index, true)}
               </div>
@@ -898,34 +1321,55 @@ export default function PresentationViewer({
           }
 
           return (
-            <div key={index} id={`slide-${index}`} className={`w-full rounded-md sm:rounded-lg shadow-xl sm:shadow-2xl overflow-hidden scroll-mt-20 ring-1 ${ui.ring}`} style={{ maxWidth: "100%" }}>
+            <div 
+              key={index} 
+              id={`slide-${index}`} 
+              className={`w-full rounded-md sm:rounded-lg shadow-xl sm:shadow-2xl overflow-hidden scroll-mt-20 ring-1 ${ui.ring} ${isNewSlide ? "animate-fade-in" : ""} ${isSlideStreaming ? "ring-2" : ""}`} 
+              style={{
+                maxWidth: "100%",
+                ...(isSlideStreaming ? { boxShadow: `0 0 20px ${theme.colors.primary}40` } : {}),
+              }}
+            >
               <ScrollSlideContent slide={slide} index={index} theme={theme} renderSlide={renderSlide} isMobile={isMobile} />
             </div>
           );
         })}
-        <div className="text-center py-6 sm:py-8">
-          <div
-            className={`inline-flex items-center gap-2 px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-full backdrop-blur-sm shadow-lg border ${ui.endCard}`}
-            style={theme.pageBackground ? {
-              background: theme.colors.backgroundAlt,
-              borderColor: theme.colors.border
-            } : {}}
-          >
-            <Sparkles size={14} className="sm:w-4 sm:h-4 md:w-5 md:h-5" style={{ color: theme.colors.primary }} />
-            <span
-              className={`font-semibold text-xs sm:text-sm md:text-base ${ui.endText}`}
-              style={theme.pageBackground ? { color: theme.colors.heading } : {}}
-            >
-              End of Presentation
-            </span>
+        
+        {/* Streaming indicator at the bottom */}
+        {isCurrentlyStreaming && (
+          <div className="flex items-center justify-center py-8">
+            <div className="flex items-center gap-3 px-6 py-3 rounded-full bg-zinc-900/80 backdrop-blur-sm border border-zinc-700">
+              <div className="w-4 h-4 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
+              <span className="text-sm text-white/80">Generating slides...</span>
+            </div>
           </div>
-          <p
-            className={`mt-3 sm:mt-4 text-[10px] sm:text-xs md:text-sm ${ui.endMuted}`}
-            style={theme.pageBackground ? { color: theme.colors.textMuted } : {}}
-          >
-            {slides.length} slides • Created with PPT Master
-          </p>
-        </div>
+        )}
+        
+        {streamingStatus !== "streaming" && (
+          <div className="text-center py-6 sm:py-8">
+            <div
+              className={`inline-flex items-center gap-2 px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-full backdrop-blur-sm shadow-lg border ${ui.endCard}`}
+              style={theme.pageBackground ? {
+                background: theme.colors.backgroundAlt,
+                borderColor: theme.colors.border
+              } : {}}
+            >
+              <Sparkles size={14} className="sm:w-4 sm:h-4 md:w-5 md:h-5" style={{ color: theme.colors.primary }} />
+              <span
+                className={`font-semibold text-xs sm:text-sm md:text-base ${ui.endText}`}
+                style={theme.pageBackground ? { color: theme.colors.heading } : {}}
+              >
+                End of Presentation
+              </span>
+            </div>
+            <p
+              className={`mt-3 sm:mt-4 text-[10px] sm:text-xs md:text-sm ${ui.endMuted}`}
+              style={theme.pageBackground ? { color: theme.colors.textMuted } : {}}
+            >
+              {slides.length} slides • Created with PPT Master
+            </p>
+          </div>
+        )}
       </div>
     );
   };

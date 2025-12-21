@@ -204,10 +204,11 @@ function SlideCard({
                 <p className="text-sm text-slate-500 italic mt-1">{slide.subtitle}</p>
               )}
               {!isTitle && slide.bulletPoints && (
-                <ul className="space-y-1 list-disc list-inside marker:text-[#06b6d4] text-xs text-slate-600 leading-relaxed">
+                <ul className="space-y-1.5 text-xs text-slate-600">
                   {slide.bulletPoints.map((bullet, i) => (
-                    <li key={i} className="leading-relaxed">
-                      {bullet}
+                    <li key={i} className="flex gap-2 leading-relaxed">
+                      <span className="text-[#06b6d4] flex-shrink-0">•</span>
+                      <span>{bullet}</span>
                     </li>
                   ))}
                 </ul>
@@ -511,27 +512,25 @@ export default function CreatePresentationClient({
 
     try {
       // Prepare slides with full visual metadata
-      // The slides already contain semanticIntent, visualStrategy, and assets from the outline
       const slidesWithMetadata = slides.map(slide => ({
         type: slide.type,
         title: slide.title,
         subtitle: slide.subtitle,
         bulletPoints: slide.bulletPoints,
-        // Include visual metadata for server-side transformations
         semanticIntent: slide.semanticIntent,
         visualStrategy: slide.visualStrategy,
         assets: slide.assets,
-        // Title slide specific image metadata
         image: slide.image,
       }));
 
+      // Create presentation with streaming mode (Gamma-style)
+      // This creates the presentation immediately and redirects to the page
+      // where content will be streamed in real-time
       const response = await fetch("/api/create-presentation", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          outlineId: outlineId || existingOutline?.id,
+          outlineId: outlineId || existingOutline?.id || "",
           slides: slidesWithMetadata,
           theme: formData.theme,
           imageSource: formData.imageSource,
@@ -543,6 +542,7 @@ export default function CreatePresentationClient({
             language: formData.language,
           },
           imageModel: formData.imageModel,
+          streaming: true, // Enable Gamma-style streaming
         }),
       });
 
@@ -552,12 +552,11 @@ export default function CreatePresentationClient({
         throw new Error(data.error || "Failed to create presentation");
       }
 
-      // Redirect to the presentation page
+      // Redirect to presentation page where streaming will happen
       router.push(data.redirectUrl);
     } catch (error) {
       console.error("Error creating presentation:", error);
       setIsCreatingPresentation(false);
-      // You could add a toast notification here
     }
   };
 

@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     const skip = parseInt(searchParams.get("skip") || "0", 10);
     const take = parseInt(searchParams.get("take") || "5", 10);
 
-    // Fetch recent completed outlines for the user
+    // Fetch recent completed outlines for the user with presentation count
     const outlines = await db.outline.findMany({
       where: {
         userId: user.id,
@@ -20,9 +20,16 @@ export async function GET(request: NextRequest) {
       },
       skip,
       take,
+      include: {
+        _count: {
+          select: {
+            presentations: true,
+          },
+        },
+      },
     });
 
-    // Extract title from metadata
+    // Extract title from metadata and include presentation count
     const formattedOutlines = outlines.map((outline) => {
       const metadata = outline.metadata as {
         topic?: string;
@@ -35,6 +42,7 @@ export async function GET(request: NextRequest) {
         id: outline.id,
         title: metadata.topic || "Untitled Presentation",
         createdAt: outline.createdAt.toISOString(),
+        presentationCount: outline._count.presentations,
       };
     });
 

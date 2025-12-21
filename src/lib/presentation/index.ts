@@ -13,6 +13,15 @@ export {
   transformAllSlides 
 } from "./transform-bullets";
 
+// Outline to presentation transformation (LLM-powered)
+export {
+  transformOutlineToPresentation,
+  transformOutlineToPresentationStream,
+  type OutlineSlide,
+  type TransformedSlide,
+  type TransformOptions,
+} from "./transform-outline-to-presentation";
+
 // Chart generation
 export { 
   generateChart, 

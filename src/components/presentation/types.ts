@@ -29,6 +29,15 @@ export interface SlideData {
   title: string;
   subtitle?: string;
   bulletPoints?: string[];
+  // New: sections for card-style layouts (from LLM transformation)
+  sections?: Array<{
+    heading: string;
+    description: string;
+  }>;
+  // New: intro text before content
+  introText?: string;
+  // New: tagline for title slides
+  tagline?: string;
   // Support both single image (legacy) and multiple images
   image?: SlideImage | null;
   images?: SlideImage[];

@@ -45,6 +45,8 @@ interface CreatePresentationRequest {
     tone: string;
     language: string;
   };
+  // New: enable streaming mode (Gamma-style)
+  streaming?: boolean;
 }
 
 interface PresentationSlide {
@@ -91,7 +93,7 @@ export async function POST(request: Request) {
 
     // Parse request
     const body: CreatePresentationRequest = await request.json();
-    const { outlineId, slides, theme, imageSource, imageModel, textDensity = "concise", metadata } = body;
+    const { outlineId, slides, theme, imageSource, imageModel, textDensity = "concise", metadata, streaming = true } = body;
 
     console.log("[create-presentation] Received request:", {
       outlineId,
@@ -100,6 +102,7 @@ export async function POST(request: Request) {
       imageSource,
       textDensity,
       metadata,
+      streaming,
     });
 
     if (!slides || slides.length === 0) {
@@ -113,6 +116,51 @@ export async function POST(request: Request) {
     // Get theme configuration
     const themeConfig = getThemeById(theme);
 
+    // STREAMING MODE: Create presentation immediately with pending slides, redirect to page
+    if (streaming) {
+      const presentationTitle = slides[0]?.type === "title" && slides[0]?.title
+        ? slides[0].title
+        : metadata.topic || "Untitled Presentation";
+      const slug = generateSlug(presentationTitle);
+
+      // Create presentation with empty slides but store pending content
+      const presentation = await db.presentation.create({
+        data: {
+          title: presentationTitle,
+          description: metadata.topic,
+          thumbnailUrl: null,
+          content: {
+            theme,
+            themeConfig: themeConfig || null,
+            imageSource,
+            imageModel,
+            textDensity,
+            metadata,
+            createdFrom: "outline",
+            outlineId,
+            // Store slides for streaming processing
+            pendingSlides: slides,
+            streamingComplete: false,
+          },
+          slides: [], // Empty - will be populated by streaming
+          userId: user.id,
+          outlineId: outlineId || null,
+        },
+      });
+
+      const redirectUrl = `/presentation/${slug}-${presentation.id}?mode=ai&streaming=true`;
+
+      return NextResponse.json({
+        success: true,
+        presentationId: presentation.id,
+        title: presentationTitle,
+        slug,
+        redirectUrl,
+        streaming: true,
+      });
+    }
+
+    // NON-STREAMING MODE: Process everything before responding (legacy)
     // Step 1: Transform slides with all visual enhancements
     let presentationSlides: PresentationSlide[] = slides.map((slide) => {
       // Transform bullet points based on semantic intent and visual strategy
@@ -283,6 +331,7 @@ export async function POST(request: Request) {
         },
         slides: presentationSlides,
         userId: user.id,
+        outlineId: outlineId || null,
       },
     });
 

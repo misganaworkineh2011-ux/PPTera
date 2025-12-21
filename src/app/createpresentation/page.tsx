@@ -23,7 +23,7 @@ export default async function CreatePresentationPage({ searchParams }: PageProps
   const maxSlides = getMaxSlides(user?.subscriptionPlan);
   const userCredits = user?.credits ?? 0;
 
-  // Fetch only the first 3 completed outlines for initial display
+  // Fetch only the first 3 completed outlines for initial display with presentation count
   const outlines = await db.outline.findMany({
     where: {
       userId: user.id,
@@ -33,9 +33,16 @@ export default async function CreatePresentationPage({ searchParams }: PageProps
       createdAt: "desc",
     },
     take: 3, // Only fetch 3 initially, more will be loaded on "See More" click
+    include: {
+      _count: {
+        select: {
+          presentations: true,
+        },
+      },
+    },
   });
 
-  // Extract title from metadata
+  // Extract title from metadata and include presentation count
   const recentOutlines = outlines.map((outline) => {
     const metadata = outline.metadata as {
       topic?: string;
@@ -48,6 +55,7 @@ export default async function CreatePresentationPage({ searchParams }: PageProps
       id: outline.id,
       title: metadata.topic || "Untitled Presentation",
       createdAt: outline.createdAt.toISOString(),
+      presentationCount: outline._count.presentations,
     };
   });
 
