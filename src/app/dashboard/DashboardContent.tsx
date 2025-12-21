@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Filter, Grid, List as ListIcon, MoreHorizontal, Upload, Star, Globe, Lock, Share2, Edit3, Copy, Trash2, Link2, Loader2, Heart } from "lucide-react";
 import Image from "next/image";
@@ -10,6 +10,96 @@ import { useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { getPresentationUrl } from "~/lib/utils";
 import ShareModal from "~/components/presentation/ShareModal";
+
+// Infinite Scroll Trigger Component with Intersection Observer
+function InfiniteScrollTrigger({ 
+  onLoadMore, 
+  isLoading, 
+  remainingCount 
+}: { 
+  onLoadMore: () => void; 
+  isLoading: boolean;
+  remainingCount: number;
+}) {
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const hasTriggered = useRef(false);
+  const isInitialized = useRef(false);
+
+  useEffect(() => {
+    const trigger = triggerRef.current;
+    if (!trigger) return;
+
+    // Delay observer setup to prevent immediate trigger on page load
+    const initTimeout = setTimeout(() => {
+      isInitialized.current = true;
+    }, 500);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        // Only trigger if initialized (after delay), visible, not loading, and not already triggered
+        if (entry?.isIntersecting && !isLoading && !hasTriggered.current && isInitialized.current) {
+          hasTriggered.current = true;
+          onLoadMore();
+        }
+      },
+      { 
+        rootMargin: "100px", // Start loading 100px before reaching the trigger
+        threshold: 0.1 
+      }
+    );
+
+    observer.observe(trigger);
+    return () => {
+      clearTimeout(initTimeout);
+      observer.disconnect();
+    };
+  }, [onLoadMore, isLoading]);
+
+  // Reset trigger flag when loading completes
+  useEffect(() => {
+    if (!isLoading) {
+      hasTriggered.current = false;
+    }
+  }, [isLoading]);
+
+  return (
+    <div ref={triggerRef} className="py-6">
+      {isLoading ? (
+        <div className="flex flex-col items-center gap-4">
+          {/* Modern loading animation */}
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              {/* Outer ring */}
+              <div className="w-10 h-10 rounded-full border-2 border-slate-200 dark:border-slate-700" />
+              {/* Spinning gradient ring */}
+              <div className="absolute inset-0 w-10 h-10 rounded-full border-2 border-transparent border-t-[#1e3a8a] border-r-[#06b6d4] animate-spin" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+            <span>Loading more presentations</span>
+            <span className="flex gap-1">
+              <span className="w-1.5 h-1.5 bg-[#1e3a8a] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+              <span className="w-1.5 h-1.5 bg-[#06b6d4] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+              <span className="w-1.5 h-1.5 bg-[#1e3a8a] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+            </span>
+          </div>
+        </div>
+      ) : remainingCount > 0 ? (
+        <button 
+          onClick={onLoadMore}
+          className="flex flex-col items-center gap-2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer group w-full"
+        >
+          <div className="flex items-center gap-1.5">
+            <div className="w-8 h-[2px] bg-gradient-to-r from-transparent via-slate-300 to-transparent dark:via-slate-600 rounded-full group-hover:via-slate-400" />
+            <span className="text-xs font-medium">Scroll for {remainingCount} more</span>
+            <div className="w-8 h-[2px] bg-gradient-to-r from-transparent via-slate-300 to-transparent dark:via-slate-600 rounded-full group-hover:via-slate-400" />
+          </div>
+        </button>
+      ) : null}
+    </div>
+  );
+}
 
 interface Presentation {
   id: string;
@@ -419,7 +509,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
       </div>
 
       {/* Content Display */}
-      <div className="min-h-[300px] sm:min-h-[400px] lg:min-h-[600px]">
+      <div className="min-h-[300px] sm:min-h-[400px] lg:min-h-[600px] pb-8 sm:pb-12 lg:pb-16">
         {filteredPresentations.length === 0 ? (
           <div className="flex h-[250px] sm:h-[300px] lg:h-[400px] flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-200 bg-slate-50/50 text-center px-4 dark:border-slate-700 dark:bg-slate-800/50">
             <div className="mb-3 sm:mb-4 flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-md bg-white shadow-lg ring-1 ring-slate-100 dark:bg-slate-700 dark:ring-slate-600">
@@ -445,11 +535,12 @@ export default function DashboardContent({ presentations: initialPresentations, 
           </div>
         ) : viewMode === "grid" ? (
           <div className="grid gap-3 sm:gap-4 grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-            {filteredPresentations.map((pres) => (
+            {filteredPresentations.map((pres, index) => (
               <a
                 key={pres.id}
                 href={getPresentationUrl(pres.id, pres.title)}
-                className="group relative flex flex-col overflow-hidden rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-lg hover:shadow-[#06b6d4]/10 cursor-pointer"
+                className="group relative flex flex-col overflow-hidden rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-lg hover:shadow-[#06b6d4]/10 cursor-pointer animate-in fade-in slide-in-from-bottom-2 duration-300"
+                style={{ animationDelay: `${Math.min(index * 50, 400)}ms`, animationFillMode: "backwards" }}
               >
                 {/* Thumbnail */}
                 <div className="aspect-[16/9] w-full bg-gradient-to-br from-[#1e3a8a]/10 to-[#06b6d4]/10 relative overflow-hidden">
@@ -556,11 +647,12 @@ export default function DashboardContent({ presentations: initialPresentations, 
           </div>
         ) : (
           <div className="space-y-2">
-            {filteredPresentations.map((pres) => (
+            {filteredPresentations.map((pres, index) => (
               <a
                 key={pres.id}
                 href={getPresentationUrl(pres.id, pres.title)}
-                className="group flex items-center gap-2 sm:gap-4 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 sm:p-3 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-md cursor-pointer"
+                className="group flex items-center gap-2 sm:gap-4 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 sm:p-3 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-md cursor-pointer animate-in fade-in slide-in-from-left-2 duration-300"
+                style={{ animationDelay: `${Math.min(index * 30, 300)}ms`, animationFillMode: "backwards" }}
               >
                 {/* Thumbnail */}
                 <div className="w-14 h-10 sm:w-20 sm:h-14 flex-shrink-0 bg-gradient-to-br from-[#1e3a8a]/10 to-[#06b6d4]/10 rounded relative overflow-hidden">
@@ -648,26 +740,13 @@ export default function DashboardContent({ presentations: initialPresentations, 
         )}
       </div>
 
-      {/* Load More Button */}
+      {/* Infinite Scroll Trigger & Loading */}
       {pagination?.hasMore && (
-        <div className="flex justify-center pt-6 pb-2">
-          <button
-            onClick={onLoadMore}
-            disabled={isLoadingMore}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-sm transition-colors disabled:opacity-50 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-300"
-          >
-            {isLoadingMore ? (
-              <>
-                <Loader2 size={16} className="animate-spin" />
-                Loading...
-              </>
-            ) : (
-              <>
-                Load More ({pagination.total - pagination.offset - filteredPresentations.length} remaining)
-              </>
-            )}
-          </button>
-        </div>
+        <InfiniteScrollTrigger 
+          onLoadMore={onLoadMore!} 
+          isLoading={isLoadingMore || false}
+          remainingCount={pagination.total - presentations.length}
+        />
       )}
 
       {/* Rename Dialog */}
