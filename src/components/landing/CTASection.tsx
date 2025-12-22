@@ -20,7 +20,7 @@ export function CTASection({ t }: CTASectionProps) {
 
       {/* Text + Button - Starts at top, scales proportionally */}
       <div className="relative z-10 mx-auto max-w-4xl text-center px-4 sm:px-6 flex-shrink-0">
-        <h2 className="mb-2 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl sm:mb-3 md:text-3xl md:mb-4 lg:text-4xl lg:mb-5 xl:text-5xl xl:mb-6 2xl:text-6xl 2xl:mb-8">
+        <h2 className="mb-2 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl sm:mb-3 md:text-3xl md:mb-4 lg:text-4xl lg:mb-5 xl:text-5xl xl:mb-6 2xl:text-4xl 2xl:mb-8">
           {t.footerCtaTitle}
         </h2>
 
