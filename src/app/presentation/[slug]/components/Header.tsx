@@ -14,6 +14,7 @@ import {
   Undo2,
   Redo2,
   Hash,
+  Palette,
 } from "lucide-react";
 import { useState } from "react";
 import type { Theme } from "~/lib/themes";
@@ -49,6 +50,7 @@ interface HeaderProps {
   onPresent: () => void;
   onUndo?: () => void;
   onRedo?: () => void;
+  onOpenThemes?: () => void;
 }
 
 export function Header({
@@ -80,6 +82,7 @@ export function Header({
   onPresent,
   onUndo,
   onRedo,
+  onOpenThemes,
 }: HeaderProps) {
   const themeType = getThemeType(theme);
   const ui = getUIColors(themeType);
@@ -205,6 +208,15 @@ export function Header({
 
           {isOwner && (
             <>
+              {onOpenThemes && (
+                <button
+                  onClick={onOpenThemes}
+                  className={`p-2 rounded transition-colors ${ui.headerHover} ${ui.headerIcon}`}
+                  title="Change Theme"
+                >
+                  <Palette size={18} />
+                </button>
+              )}
               <button
                 onClick={onExport}
                 className={`p-2 rounded transition-colors ${ui.headerHover} ${ui.headerIcon}`}
@@ -285,6 +297,18 @@ export function Header({
                   )}
                   {isOwner && (
                     <>
+                      {onOpenThemes && (
+                        <button
+                          onClick={() => {
+                            onOpenThemes();
+                            setShowMobileMenu(false);
+                          }}
+                          className={`w-full flex items-center gap-3 px-3 py-2 rounded transition-colors ${ui.headerHover} ${ui.headerText} text-sm`}
+                        >
+                          <Palette size={16} />
+                          <span>Change Theme</span>
+                        </button>
+                      )}
                       <button
                         onClick={() => {
                           onExport();

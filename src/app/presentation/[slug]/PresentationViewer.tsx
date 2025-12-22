@@ -33,6 +33,7 @@ import {
   ThumbnailSidebar,
   MultiImageModal,
   TitleSlide,
+  ThemeSidebar,
   getThemeType,
   getGoogleFontsUrl,
   getUIColors,
@@ -117,10 +118,12 @@ export default function PresentationViewer({
   const [isFullscreen, setIsFullscreen] = useState(isPublicView);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showThemeSidebar, setShowThemeSidebar] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState(presentation.title);
   const [showPageNumbers, setShowPageNumbers] = useState(true);
+  const [currentThemeId, setCurrentThemeId] = useState(presentation.content.theme || "elegant-noir");
 
   // Sync title when presentation prop changes (e.g., after rename in dashboard)
   useEffect(() => {
@@ -575,11 +578,33 @@ export default function PresentationViewer({
         .catch(err => console.error("Failed to load custom theme:", err))
         .finally(() => setIsLoadingTheme(false));
     }
-  }, [content.theme]);
+  }, [content.theme, currentThemeId]);
 
-  // Get the theme - either custom or built-in
-  const theme = customTheme || getThemeById(content.theme || "") || getDefaultTheme();
+  // Get the theme - either custom or built-in (use currentThemeId for live updates)
+  const theme = customTheme || getThemeById(currentThemeId || content.theme || "") || getDefaultTheme();
   const fontsUrl = getGoogleFontsUrl(theme);
+
+  // Handle theme change from sidebar
+  const handleThemeChange = useCallback((newThemeId: string) => {
+    setCurrentThemeId(newThemeId);
+    // If it's a custom theme, we need to fetch it
+    if (newThemeId.startsWith("custom-")) {
+      const dbId = newThemeId.replace("custom-", "");
+      setIsLoadingTheme(true);
+      fetch(`/api/themes/custom/${dbId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.theme) {
+            setCustomTheme(convertCustomThemeToTheme(data.theme));
+          }
+        })
+        .catch(err => console.error("Failed to load custom theme:", err))
+        .finally(() => setIsLoadingTheme(false));
+    } else {
+      // Built-in theme, clear custom theme
+      setCustomTheme(null);
+    }
+  }, []);
 
   // Undo/Redo history management
   const [history, setHistory] = useState<SlideData[][]>([presentation.slides]);
@@ -1654,6 +1679,7 @@ export default function PresentationViewer({
             onPresent={toggleFullscreen}
             onUndo={undo}
             onRedo={redo}
+            onOpenThemes={() => setShowThemeSidebar(true)}
           />
         )}
 
@@ -1962,6 +1988,15 @@ export default function PresentationViewer({
             </div>
           </div>
         )}
+
+        {/* Theme Sidebar */}
+        <ThemeSidebar
+          isOpen={showThemeSidebar}
+          onClose={() => setShowThemeSidebar(false)}
+          currentThemeId={currentThemeId}
+          onThemeChange={handleThemeChange}
+          presentationId={presentation.id}
+        />
 
       </div>
     </>

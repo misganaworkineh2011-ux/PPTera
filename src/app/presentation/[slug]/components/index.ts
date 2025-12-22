@@ -5,6 +5,7 @@ export { SlideMenu } from "./SlideMenu";
 export { ThumbnailSidebar } from "./ThumbnailSidebar";
 export { MultiImageModal } from "./MultiImageModal";
 export { TitleSlide } from "./TitleSlide";
+export { ThemeSidebar } from "./ThemeSidebar";
 
 // Re-export types and utilities
 export { getThemeType, getGoogleFontsUrl, type ThemeType } from "./types";
