@@ -23,6 +23,9 @@ export const LandingNavbar = () => {
     const [productsOpen, setProductsOpen] = useState(false);
     const [solutionsOpen, setSolutionsOpen] = useState(false);
     const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+    const [mobileLangOpen, setMobileLangOpen] = useState(false);
+    const [mobileProductsOpen, setMobileProductsOpen] = useState(false);
+    const [mobileSolutionsOpen, setMobileSolutionsOpen] = useState(false);
     
     const { language, setLanguage, t } = useLanguage();
 
@@ -177,36 +180,98 @@ export const LandingNavbar = () => {
                 </div>
             </nav>
 
-            {/* Mobile Menu - Fixed to prevent overflow/unnecessary flow */}
+            {/* Mobile Menu - Fixed with max-height and scrollable content */}
             {mobileOpen && (
-                <div className="absolute top-20 left-4 right-4 z-40 rounded-3xl border border-slate-100 bg-white p-4 shadow-2xl md:hidden origin-top animate-fade-in-up [animation-duration:0.2s]">
+                <div className="absolute top-20 left-4 right-4 z-40 rounded-3xl border border-slate-100 bg-white p-4 shadow-2xl md:hidden origin-top animate-fade-in-up [animation-duration:0.2s] max-h-[calc(100vh-6rem)] overflow-y-auto">
                     <div className="flex flex-col gap-2">
-                        <LoadingLink href="/dashboard" className="flex items-center justify-between rounded-xl bg-slate-50 p-3 font-semibold text-slate-900">
-                            {t.products} <ChevronDown className="h-4 w-4" />
-                        </LoadingLink>
-                        <LoadingLink href="/education" className="flex items-center justify-between rounded-xl bg-slate-50 p-3 font-semibold text-slate-900">
-                            {t.solutions} <ChevronDown className="h-4 w-4" />
-                        </LoadingLink>
-                        <LoadingLink href="/about" className="rounded-xl p-3 font-semibold text-slate-600 hover:bg-slate-50">{t.about}</LoadingLink>
-                        <LoadingLink href="/pricing" className="rounded-xl p-3 font-semibold text-slate-600 hover:bg-slate-50">{t.pricing}</LoadingLink>
+                        {/* Products - Expandable */}
+                        <div>
+                            <button 
+                                onClick={() => setMobileProductsOpen(!mobileProductsOpen)}
+                                className="w-full flex items-center justify-between rounded-xl bg-slate-50 p-3 font-semibold text-slate-900"
+                            >
+                                {t.products}
+                                <ChevronDown className={cn("h-4 w-4 transition-transform", mobileProductsOpen && "rotate-180")} />
+                            </button>
+                            {mobileProductsOpen && (
+                                <div className="mt-1 ml-2 space-y-1">
+                                    <LoadingLink 
+                                        href="/dashboard" 
+                                        className="block rounded-lg p-3 hover:bg-slate-50"
+                                        onClick={() => setMobileOpen(false)}
+                                    >
+                                        <div className="font-medium text-slate-900">{t.aiPresentations}</div>
+                                        <div className="text-xs text-slate-500">{t.aiPresentationsDesc}</div>
+                                    </LoadingLink>
+                                </div>
+                            )}
+                        </div>
 
-                        {/* Mobile Language Selector */}
+                        {/* Solutions - Expandable */}
+                        <div>
+                            <button 
+                                onClick={() => setMobileSolutionsOpen(!mobileSolutionsOpen)}
+                                className="w-full flex items-center justify-between rounded-xl bg-slate-50 p-3 font-semibold text-slate-900"
+                            >
+                                {t.solutions}
+                                <ChevronDown className={cn("h-4 w-4 transition-transform", mobileSolutionsOpen && "rotate-180")} />
+                            </button>
+                            {mobileSolutionsOpen && (
+                                <div className="mt-1 ml-2 space-y-1">
+                                    <LoadingLink 
+                                        href="/education" 
+                                        className="block rounded-lg p-3 hover:bg-slate-50"
+                                        onClick={() => setMobileOpen(false)}
+                                    >
+                                        <div className="font-medium text-slate-900">{t.forEducation}</div>
+                                        <div className="text-xs text-slate-500">{t.forEducationDesc}</div>
+                                    </LoadingLink>
+                                    <LoadingLink 
+                                        href="/community" 
+                                        className="block rounded-lg p-3 hover:bg-slate-50"
+                                        onClick={() => setMobileOpen(false)}
+                                    >
+                                        <div className="font-medium text-slate-900">{t.community}</div>
+                                        <div className="text-xs text-slate-500">Join our community</div>
+                                    </LoadingLink>
+                                </div>
+                            )}
+                        </div>
+
+                        <LoadingLink href="/about" className="rounded-xl p-3 font-semibold text-slate-600 hover:bg-slate-50" onClick={() => setMobileOpen(false)}>{t.about}</LoadingLink>
+                        <LoadingLink href="/pricing" className="rounded-xl p-3 font-semibold text-slate-600 hover:bg-slate-50" onClick={() => setMobileOpen(false)}>{t.pricing}</LoadingLink>
+
+                        {/* Mobile Language Selector - Collapsible */}
                         <div className="border-t border-slate-100 pt-2 mt-2">
-                            <div className="px-3 py-2 text-xs font-semibold text-slate-500 uppercase">Language</div>
-                            {(Object.keys(languageNames) as Language[]).map((lang) => (
-                                <button
-                                    key={lang}
-                                    onClick={() => {
-                                        setLanguage(lang);
-                                        setMobileOpen(false);
-                                    }}
-                                    className={`w-full text-left rounded-xl px-3 py-2 text-sm transition ${
-                                        language === lang ? 'bg-slate-100 font-semibold text-slate-900' : 'text-slate-700 hover:bg-slate-50'
-                                    }`}
-                                >
-                                    {languageNames[lang]}
-                                </button>
-                            ))}
+                            <button 
+                                onClick={() => setMobileLangOpen(!mobileLangOpen)}
+                                className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-50"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <Globe className="h-4 w-4 text-slate-500" />
+                                    <span className="text-sm font-semibold text-slate-700">{languageNames[language]}</span>
+                                </div>
+                                <ChevronDown className={cn("h-4 w-4 text-slate-500 transition-transform", mobileLangOpen && "rotate-180")} />
+                            </button>
+                            
+                            {mobileLangOpen && (
+                                <div className="mt-1 grid grid-cols-2 gap-1 px-1">
+                                    {(Object.keys(languageNames) as Language[]).map((lang) => (
+                                        <button
+                                            key={lang}
+                                            onClick={() => {
+                                                setLanguage(lang);
+                                                setMobileLangOpen(false);
+                                            }}
+                                            className={`text-left rounded-lg px-3 py-2 text-sm transition ${
+                                                language === lang ? 'bg-slate-100 font-semibold text-slate-900' : 'text-slate-600 hover:bg-slate-50'
+                                            }`}
+                                        >
+                                            {languageNames[lang]}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         <SignedIn>
