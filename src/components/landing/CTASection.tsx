@@ -14,7 +14,7 @@ export function CTASection({ t }: CTASectionProps) {
         <img
           src="https://res.cloudinary.com/di76ibrro/image/upload/v1766157051/B3ackground-min_1_dyfstu.png"
           alt="Background"
-          className="h-full w-full object-contain object-bottom opacity-80"
+          className="h-full w-full object-contain object-bottom "
         />
       </div>
 
