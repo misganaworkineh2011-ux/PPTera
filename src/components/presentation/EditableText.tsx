@@ -23,6 +23,16 @@ import {
   Redo,
   RemoveFormatting,
   Sparkles,
+  Wand2,
+  Minimize2,
+  Maximize2,
+  Briefcase,
+  MessageCircle,
+  CheckCircle,
+  Zap,
+  Smile,
+  Languages,
+  Loader2,
 } from "lucide-react";
 
 // ============================================================================
@@ -46,6 +56,18 @@ interface ToolbarPosition {
   top: number;
   left: number;
 }
+
+type AIAction = 
+  | "improve"
+  | "shorten"
+  | "expand"
+  | "professional"
+  | "casual"
+  | "fix-grammar"
+  | "simplify"
+  | "make-bold"
+  | "add-emoji"
+  | "translate";
 
 // ============================================================================
 // CONSTANTS
@@ -73,10 +95,23 @@ const HIGHLIGHT_COLORS = [
 ];
 
 const HEADING_OPTIONS = [
-  { label: "H1", tag: "h1" },
-  { label: "H2", tag: "h2" },
-  { label: "H3", tag: "h3" },
-  { label: "P", tag: "p" },
+  { label: "H1", tag: "h1", size: "2em" },
+  { label: "H2", tag: "h2", size: "1.5em" },
+  { label: "H3", tag: "h3", size: "1.17em" },
+  { label: "P", tag: "p", size: "1em" },
+];
+
+const AI_ACTIONS: { action: AIAction; label: string; icon: React.ReactNode; description: string }[] = [
+  { action: "improve", label: "Improve Writing", icon: <Wand2 size={14} />, description: "Make it clearer and more engaging" },
+  { action: "shorten", label: "Make Shorter", icon: <Minimize2 size={14} />, description: "Condense to key points" },
+  { action: "expand", label: "Make Longer", icon: <Maximize2 size={14} />, description: "Add more details" },
+  { action: "professional", label: "Professional Tone", icon: <Briefcase size={14} />, description: "Formal business style" },
+  { action: "casual", label: "Casual Tone", icon: <MessageCircle size={14} />, description: "Friendly and relaxed" },
+  { action: "fix-grammar", label: "Fix Grammar", icon: <CheckCircle size={14} />, description: "Correct errors" },
+  { action: "simplify", label: "Simplify", icon: <Zap size={14} />, description: "Easier to understand" },
+  { action: "make-bold", label: "Make Bold", icon: <Sparkles size={14} />, description: "More impactful" },
+  { action: "add-emoji", label: "Add Emoji", icon: <Smile size={14} />, description: "Visual appeal" },
+  { action: "translate", label: "Translate/Improve", icon: <Languages size={14} />, description: "To English" },
 ];
 
 const TOOLBAR_HEIGHT = 44;
@@ -118,11 +153,14 @@ const ToolbarDivider = () => <div className="w-px h-5 bg-slate-200 mx-1" />;
 interface FloatingToolbarProps {
   position: ToolbarPosition;
   onCommand: (cmd: string, value?: string) => void;
+  onAIAction: (action: AIAction, selectedText: string) => Promise<string | null>;
 }
 
-function FloatingToolbar({ position, onCommand }: FloatingToolbarProps) {
-  const [activeMenu, setActiveMenu] = useState<"heading" | "color" | "highlight" | null>(null);
+function FloatingToolbar({ position, onCommand, onAIAction }: FloatingToolbarProps) {
+  const [activeMenu, setActiveMenu] = useState<"heading" | "color" | "highlight" | "ai" | null>(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+  const [isAILoading, setIsAILoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
   const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
@@ -136,26 +174,57 @@ function FloatingToolbar({ position, onCommand }: FloatingToolbarProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const toggleMenu = (menu: "heading" | "color" | "highlight") => {
+  const toggleMenu = (menu: "heading" | "color" | "highlight" | "ai") => {
     if (activeMenu === menu) {
       setActiveMenu(null);
       return;
     }
+    setAiError(null);
     const button = buttonRefs.current[menu];
     if (button) {
       const rect = button.getBoundingClientRect();
-      setMenuPosition({ top: rect.bottom + 4, left: rect.left });
+      // For AI menu, position it to the left to avoid going off-screen
+      const leftPos = menu === "ai" ? Math.max(10, rect.left - 150) : rect.left;
+      setMenuPosition({ top: rect.bottom + 4, left: leftPos });
     }
     setActiveMenu(menu);
   };
 
-  const renderDropdown = (content: React.ReactNode) => {
+  const handleAIAction = async (action: AIAction) => {
+    const selection = window.getSelection();
+    const selectedText = selection?.toString().trim() || "";
+    
+    if (!selectedText) {
+      setAiError("Please select some text first");
+      return;
+    }
+
+    setIsAILoading(true);
+    setAiError(null);
+
+    try {
+      const result = await onAIAction(action, selectedText);
+      if (result) {
+        // Replace selected text with AI result
+        document.execCommand("insertText", false, result);
+        setActiveMenu(null);
+      } else {
+        setAiError("No result returned from AI");
+      }
+    } catch (error) {
+      setAiError(error instanceof Error ? error.message : "AI enhancement failed");
+    } finally {
+      setIsAILoading(false);
+    }
+  };
+
+  const renderDropdown = (content: React.ReactNode, isAI = false) => {
     if (!activeMenu) return null;
     return createPortal(
       <div
         data-toolbar="true"
-        className="fixed z-[999999] bg-white rounded-lg shadow-xl border border-slate-200 p-2"
-        style={{ top: menuPosition.top, left: menuPosition.left }}
+        className={`fixed z-[999999] bg-white rounded-lg shadow-xl border border-slate-200 ${isAI ? "p-1" : "p-2"}`}
+        style={{ top: menuPosition.top, left: menuPosition.left, maxHeight: "400px", overflowY: "auto" }}
         onMouseDown={(e) => e.preventDefault()}
       >
         {content}
@@ -189,8 +258,9 @@ function FloatingToolbar({ position, onCommand }: FloatingToolbarProps) {
             <button
               key={opt.tag}
               type="button"
-              onMouseDown={(e) => { e.preventDefault(); onCommand("formatBlock", opt.tag); setActiveMenu(null); }}
+              onMouseDown={(e) => { e.preventDefault(); onCommand("fontSize", opt.size); setActiveMenu(null); }}
               className="w-full text-left px-3 py-1.5 hover:bg-slate-100 text-slate-700 text-sm rounded"
+              style={{ fontSize: opt.size }}
             >
               {opt.label}
             </button>
@@ -290,14 +360,47 @@ function FloatingToolbar({ position, onCommand }: FloatingToolbarProps) {
 
       <ToolbarDivider />
 
+      {/* AI Actions */}
       <button
+        ref={(el) => { buttonRefs.current["ai"] = el; }}
         type="button"
-        onMouseDown={(e) => e.preventDefault()}
-        title="AI Visualize"
-        className="flex items-center gap-1 px-2 py-1 rounded bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-medium hover:opacity-90"
+        onMouseDown={(e) => { e.preventDefault(); toggleMenu("ai"); }}
+        title="AI Enhance"
+        className="flex items-center gap-1 px-2 py-1 rounded bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-medium hover:opacity-90 transition-opacity"
       >
-        <Sparkles size={12} />
+        {isAILoading ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+        <span className="hidden sm:inline">AI</span>
+        <ChevronDown size={10} />
       </button>
+
+      {activeMenu === "ai" && renderDropdown(
+        <div className="min-w-[220px]">
+          {aiError && (
+            <div className="px-3 py-2 text-xs text-red-600 bg-red-50 rounded mb-1">
+              {aiError}
+            </div>
+          )}
+          <div className="text-xs text-slate-500 px-3 py-1.5 font-medium uppercase tracking-wide">
+            AI Actions (1 credit each)
+          </div>
+          {AI_ACTIONS.map((item) => (
+            <button
+              key={item.action}
+              type="button"
+              disabled={isAILoading}
+              onMouseDown={(e) => { e.preventDefault(); handleAIAction(item.action); }}
+              className="w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-100 text-slate-700 text-sm rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span className="text-purple-500">{item.icon}</span>
+              <div className="flex-1 text-left">
+                <div className="font-medium">{item.label}</div>
+                <div className="text-xs text-slate-400">{item.description}</div>
+              </div>
+            </button>
+          ))}
+        </div>,
+        true
+      )}
     </div>
   );
 }
@@ -439,6 +542,13 @@ export default function EditableText({
       const sel = window.getSelection();
       const text = sel?.toString() || "code";
       document.execCommand("insertHTML", false, `<code class="bg-slate-200 px-1 rounded text-sm font-mono">${text}</code>`);
+    } else if (cmd === "fontSize") {
+      // Apply font-size using a span with inline style
+      const sel = window.getSelection();
+      const text = sel?.toString() || "";
+      if (text && cmdValue) {
+        document.execCommand("insertHTML", false, `<span style="font-size: ${cmdValue}">${text}</span>`);
+      }
     } else {
       document.execCommand(cmd, false, cmdValue);
     }
@@ -461,6 +571,48 @@ export default function EditableText({
     }
     // Let all other keys (including backspace, delete, arrows) work normally
   }, [handleFinish, handleCommand]);
+
+  // AI Action Handler
+  const handleAIAction = useCallback(async (action: AIAction, selectedText: string): Promise<string | null> => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+    try {
+      const response = await fetch("/api/ai/enhance-text", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: selectedText, action }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        let errorMessage = "AI enhancement failed";
+        try {
+          const error = await response.json();
+          errorMessage = error.error || errorMessage;
+        } catch {
+          // If JSON parsing fails, use default message
+        }
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      if (data.success && data.text) {
+        // Update the editor content after AI replacement
+        setTimeout(() => handleInput(), 0);
+        return data.text;
+      }
+      throw new Error("No enhanced text returned");
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof Error && error.name === "AbortError") {
+        throw new Error("Request timed out. Please try again.");
+      }
+      throw error;
+    }
+  }, [handleInput]);
 
   // Non-editing: show static content
   if (!isEditing) {
@@ -517,7 +669,7 @@ export default function EditableText({
         style={style}
       />
       {showToolbar && createPortal(
-        <FloatingToolbar position={toolbarPosition} onCommand={handleCommand} />,
+        <FloatingToolbar position={toolbarPosition} onCommand={handleCommand} onAIAction={handleAIAction} />,
         document.body
       )}
     </div>

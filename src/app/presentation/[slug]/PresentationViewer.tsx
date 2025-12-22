@@ -39,6 +39,47 @@ import {
   type ThemeType,
 } from "./components";
 
+// Helper function to strip HTML tags from text
+const stripHtml = (html: string): string => {
+  if (!html) return "";
+  // Create a temporary element to parse HTML and extract text
+  if (typeof document !== "undefined") {
+    const tmp = document.createElement("div");
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || "";
+  }
+  // Fallback for SSR: simple regex strip
+  return html.replace(/<[^>]*>/g, "");
+};
+
+// Helper to get title slide text colors matching the TitleSlide component
+const getTitleSlideColors = (themeType: ThemeType, hasImage: boolean): { title: string; subtitle: string } => {
+  if (hasImage) {
+    return { title: "#ffffff", subtitle: "#e2e8f0" };
+  }
+  
+  const colorMap: Record<ThemeType, { title: string; subtitle: string }> = {
+    dark: { title: "#fafafa", subtitle: "#a1a1aa" },
+    light: { title: "#0f172a", subtitle: "#64748b" },
+    sunset: { title: "#ffffff", subtitle: "#f9a8d4" },
+    ocean: { title: "#ffffff", subtitle: "#7dd3fc" },
+    aurora: { title: "#ffffff", subtitle: "#c4b5fd" },
+    ember: { title: "#ffffff", subtitle: "#fca5a5" },
+    midnight: { title: "#ffffff", subtitle: "#fda4af" },
+    cyber: { title: "#ffffff", subtitle: "#67e8f9" },
+    alien: { title: "#ffffff", subtitle: "#a3ff00" },
+    corporate: { title: "#111827", subtitle: "#6b7280" },
+    cosmic: { title: "#ffffff", subtitle: "#c4b5fd" },
+    architectural: { title: "#ffffff", subtitle: "#a3a3a3" },
+    anime: { title: "#ffffff", subtitle: "#d8b4fe" },
+    hacker: { title: "#00ff41", subtitle: "#39ff14" },
+    "custom-dark": { title: "#fafafa", subtitle: "#a1a1aa" },
+    "custom-light": { title: "#0f172a", subtitle: "#64748b" },
+  };
+  
+  return colorMap[themeType] || colorMap.dark;
+};
+
 interface CustomThemeData {
   id: string;
   name: string;
@@ -149,6 +190,8 @@ export default function PresentationViewer({
   const [showChartModal, setShowChartModal] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  // AI editing state - tracks which slide is being edited by AI
+  const [aiEditingSlideIndex, setAiEditingSlideIndex] = useState<number | null>(null);
   // WYSIWYG Image Editor state
   const [showImageEditor, setShowImageEditor] = useState<{ slideIndex: number; imageIndex: number } | null>(null);
   const slidesRef = useRef<SlideData[]>(presentation.slides);
@@ -1167,12 +1210,12 @@ export default function PresentationViewer({
             {isTitle ? (
               <div className={`h-full flex flex-col items-center justify-center p-12 text-center ${hasImage ? "" : ui.titleBg}`}>
                 {!hasImage && <div className={`absolute top-0 right-0 w-96 h-96 ${ui.orb1} rounded-full blur-3xl`} />}
-                <h1 className="text-5xl font-bold mb-4 relative" style={{ fontFamily: theme.fonts.heading.family, color: hasImage ? "#fff" : theme.colors.heading }}>
-                  {slide.title || (isCurrentlyStreaming ? "..." : "")}
+                <h1 className="text-5xl font-bold mb-4 relative" style={{ fontFamily: theme.fonts.heading.family, color: getTitleSlideColors(themeType, !!hasImage).title }}>
+                  {stripHtml(slide.title) || (isCurrentlyStreaming ? "..." : "")}
                 </h1>
                 {slide.subtitle && (
-                  <p className="text-2xl opacity-80 relative" style={{ fontFamily: theme.fonts.body.family, color: hasImage ? "#e2e8f0" : theme.colors.textMuted }}>
-                    {slide.subtitle}
+                  <p className="text-2xl opacity-80 relative" style={{ fontFamily: theme.fonts.body.family, color: getTitleSlideColors(themeType, !!hasImage).subtitle }}>
+                    {stripHtml(slide.subtitle)}
                   </p>
                 )}
               </div>
@@ -1238,12 +1281,39 @@ export default function PresentationViewer({
         )}
         {theme.overlay && !hasImage && <div className="absolute inset-0" style={{ background: theme.overlay }} />}
 
-        {canEdit && !isFullscreen && !isPublicView && isHovered && (
+        {/* AI Editing Overlay */}
+        {aiEditingSlideIndex === index && (
+          <div className="absolute inset-0 z-40 bg-black/50 backdrop-blur-sm flex items-center justify-center rounded-lg">
+            <div className="flex flex-col items-center gap-3 text-white">
+              <div className="relative">
+                <Sparkles size={32} className="animate-pulse text-purple-400" />
+                <div className="absolute inset-0 animate-spin" style={{ animationDuration: "3s" }}>
+                  <div className="w-full h-full rounded-full border-2 border-transparent border-t-purple-400 border-r-pink-400" />
+                </div>
+              </div>
+              <p className="text-sm font-medium">AI is editing this slide...</p>
+            </div>
+          </div>
+        )}
+
+        {canEdit && !isFullscreen && !isPublicView && (isHovered || aiEditingSlideIndex === index) && (
           <SlideMenu
             index={index}
             totalSlides={slides.length}
             imageCount={getSlideImages(slide).length}
             hasChart={!!slide.chart}
+            slideContent={{
+              type: slide.type,
+              title: slide.title,
+              subtitle: slide.subtitle,
+              bullets: slide.bulletPoints,
+              sections: slide.sections,
+              introText: slide.introText,
+              tagline: slide.tagline,
+              layout: slide.layout,
+              image: slide.image,
+              images: slide.images,
+            }}
             onChangeLayout={() => { setActiveSlideIndex(index); setShowLayoutModal(true); }}
             onDuplicate={() => duplicateSlide(index)}
             onAddSlide={() => addSlideAt(index)}
@@ -1253,6 +1323,38 @@ export default function PresentationViewer({
             onMoveUp={() => moveSlide(index, "up")}
             onMoveDown={() => moveSlide(index, "down")}
             onDelete={() => deleteSlide(index)}
+            isAIEditing={aiEditingSlideIndex === index}
+            onAIEditingChange={(isEditing) => setAiEditingSlideIndex(isEditing ? index : null)}
+            onAIEdit={(editedSlide) => {
+              // Update the slide with AI-edited content - full slide replacement
+              const newSlides = [...slidesData];
+              const existingSlide = newSlides[index];
+              if (!existingSlide) return;
+              
+              const updatedSlide: SlideData = {
+                ...existingSlide,
+                // Text content
+                title: editedSlide.title || existingSlide.title,
+                subtitle: editedSlide.subtitle !== undefined ? editedSlide.subtitle : existingSlide.subtitle,
+                tagline: editedSlide.tagline !== undefined ? editedSlide.tagline : existingSlide.tagline,
+                introText: editedSlide.introText !== undefined ? editedSlide.introText : existingSlide.introText,
+                // Bullet points
+                bulletPoints: editedSlide.bullets && editedSlide.bullets.length > 0 
+                  ? editedSlide.bullets 
+                  : existingSlide.bulletPoints,
+                // Sections for card layouts
+                sections: editedSlide.sections !== undefined ? editedSlide.sections : existingSlide.sections,
+                // Layout
+                layout: editedSlide.layout || existingSlide.layout,
+                // Image - AI can add new image or remove existing
+                image: editedSlide.image !== undefined ? editedSlide.image : existingSlide.image,
+                images: editedSlide.images !== undefined ? editedSlide.images : existingSlide.images,
+              };
+              
+              newSlides[index] = updatedSlide;
+              updateSlidesWithSave(newSlides);
+              toast.success("Slide updated with AI");
+            }}
           />
         )}
 

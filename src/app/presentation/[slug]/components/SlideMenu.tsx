@@ -16,17 +16,42 @@ import {
   LayoutGrid,
   Link2,
   ChevronDown,
+  Loader2,
+  Send,
 } from "lucide-react";
+import { type LayoutType } from "~/lib/slide-layouts";
 
 // ============================================================================
 // TYPES
 // ============================================================================
+
+interface SlideImage {
+  url: string;
+  alt: string;
+  photographer?: string;
+  photographerUrl?: string;
+  source: string;
+}
+
+interface SlideContent {
+  type?: "title" | "content";
+  title: string;
+  subtitle?: string;
+  bullets?: string[];
+  sections?: Array<{ heading: string; description: string }>;
+  introText?: string;
+  tagline?: string;
+  layout?: LayoutType;
+  image?: SlideImage | null;
+  images?: SlideImage[];
+}
 
 interface SlideMenuProps {
   index: number;
   totalSlides: number;
   imageCount: number;
   hasChart?: boolean;
+  slideContent?: SlideContent;
   onChangeLayout: () => void;
   onDuplicate: () => void;
   onAddSlide: () => void;
@@ -36,6 +61,9 @@ interface SlideMenuProps {
   onMoveUp: () => void;
   onMoveDown: () => void;
   onDelete: () => void;
+  onAIEdit?: (editedSlide: SlideContent) => void;
+  isAIEditing?: boolean;
+  onAIEditingChange?: (isEditing: boolean) => void;
 }
 
 type ActivePanel = "none" | "more" | "styling" | "ai";
@@ -180,28 +208,146 @@ function StylingPanel({
   );
 }
 
-function AIPanel({ onClose }: { onClose: () => void }) {
+function AIPanel({ 
+  slideContent, 
+  onAIEdit, 
+  onClose,
+  onLoadingChange,
+}: { 
+  slideContent?: SlideContent;
+  onAIEdit?: (editedSlide: SlideContent) => void;
+  onClose: () => void;
+  onLoadingChange?: (isLoading: boolean) => void;
+}) {
   const [prompt, setPrompt] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Focus textarea when panel opens
+  useEffect(() => {
+    textareaRef.current?.focus();
+  }, []);
+
+  const handleSubmit = async () => {
+    if (!prompt.trim() || !slideContent || !onAIEdit) return;
+
+    setIsLoading(true);
+    onLoadingChange?.(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/ai/edit-slide", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          slide: slideContent,
+          prompt: prompt.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to edit slide");
+      }
+
+      const data = await response.json();
+      if (data.success && data.slide) {
+        onAIEdit(data.slide);
+        setPrompt("");
+        onClose();
+      } else {
+        throw new Error("No edited content returned");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to edit slide");
+    } finally {
+      setIsLoading(false);
+      onLoadingChange?.(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Stop propagation for all keys to prevent parent handlers from capturing them
+    e.stopPropagation();
+    
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+
+  const suggestions = [
+    "Add a relevant image",
+    "Change to 3-card layout",
+    "Make it more professional",
+    "Add more bullet points",
+    "Simplify the content",
+    "Add sections with icons",
+  ];
 
   return (
-    <div className="bg-white rounded-xl shadow-xl border border-slate-200 p-3 min-w-[280px]">
-      <p className="text-xs font-medium text-slate-500 mb-2">Edit with AI</p>
+    <div 
+      className="bg-white rounded-xl shadow-xl border border-slate-200 p-3 min-w-[300px] max-w-[350px]"
+      onKeyDown={(e) => e.stopPropagation()}
+      onKeyUp={(e) => e.stopPropagation()}
+      onKeyPress={(e) => e.stopPropagation()}
+    >
+      <div className="flex items-center gap-2 mb-2">
+        <div className="p-1.5 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500">
+          <Sparkles size={14} className="text-white" />
+        </div>
+        <p className="text-sm font-medium text-slate-700">Edit with AI</p>
+        <span className="text-xs text-slate-400 ml-auto">Full control</span>
+      </div>
+      
+      {error && (
+        <div className="mb-2 px-3 py-2 text-xs text-red-600 bg-red-50 rounded-lg">
+          {error}
+        </div>
+      )}
+
       <div className="relative">
         <textarea
+          ref={textareaRef}
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onKeyUp={(e) => e.stopPropagation()}
+          onKeyPress={(e) => e.stopPropagation()}
           placeholder="How would you like to edit this slide?"
-          className="w-full px-3 py-2 pr-10 border border-slate-300 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-400"
+          className="w-full px-3 py-2 pr-10 border border-slate-300 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-400 disabled:opacity-50 disabled:bg-slate-50"
           rows={2}
+          disabled={isLoading}
         />
         <button 
-          className="absolute bottom-2 right-2 p-1.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition-opacity"
-          onClick={onClose}
+          className="absolute bottom-2 right-2 p-1.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition-opacity disabled:opacity-50"
+          onClick={handleSubmit}
+          disabled={isLoading || !prompt.trim()}
         >
-          <Sparkles size={12} className="text-white" />
+          {isLoading ? (
+            <Loader2 size={12} className="text-white animate-spin" />
+          ) : (
+            <Send size={12} className="text-white" />
+          )}
         </button>
       </div>
-      <p className="text-xs text-slate-400 mt-2">AI features coming soon</p>
+
+      {/* Quick suggestions */}
+      <div className="mt-2 flex flex-wrap gap-1">
+        {suggestions.slice(0, 4).map((suggestion) => (
+          <button
+            key={suggestion}
+            onClick={() => setPrompt(suggestion)}
+            disabled={isLoading}
+            className="px-2 py-1 text-xs text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors disabled:opacity-50"
+          >
+            {suggestion}
+          </button>
+        ))}
+      </div>
+
+      <p className="text-xs text-slate-400 mt-2">2 credits per edit • Press Enter to submit</p>
     </div>
   );
 }
@@ -294,6 +440,7 @@ export function SlideMenu({
   totalSlides,
   imageCount,
   hasChart,
+  slideContent,
   onChangeLayout,
   onDuplicate,
   onAddSlide,
@@ -303,6 +450,9 @@ export function SlideMenu({
   onMoveUp,
   onMoveDown,
   onDelete,
+  onAIEdit,
+  isAIEditing,
+  onAIEditingChange,
 }: SlideMenuProps) {
   const [activePanel, setActivePanel] = useState<ActivePanel>("none");
   const [panelPosition, setPanelPosition] = useState({ top: 0, left: 0 });
@@ -385,7 +535,7 @@ export function SlideMenu({
             />
           );
         case "ai":
-          return <AIPanel onClose={closePanel} />;
+          return <AIPanel slideContent={slideContent} onAIEdit={onAIEdit} onClose={closePanel} onLoadingChange={onAIEditingChange} />;
         default:
           return null;
       }
