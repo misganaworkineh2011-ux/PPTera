@@ -132,7 +132,7 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
   return (
     <>
       {/* Filters & View Toggle - matching presentations exactly */}
-      <div className="flex flex-row items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-700 pb-3 sm:pb-4">
+      <div className="flex flex-row items-center justify-between gap-4 border-b border-slate-100 dark:border-neutral-800 pb-3 sm:pb-4">
         {/* Left side - Filter buttons */}
         <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 sm:pb-0 -mx-1 px-1">
           <button
@@ -145,13 +145,13 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
         </div>
 
         {/* Right side - Grid/List toggle */}
-        <div className="flex items-center gap-0.5 sm:gap-1 rounded-lg bg-slate-100 dark:bg-slate-700 p-0.5 sm:p-1">
+        <div className="flex items-center gap-0.5 sm:gap-1 rounded-lg bg-slate-100 dark:bg-neutral-800 p-0.5 sm:p-1">
           <button
             onClick={() => setViewMode("grid")}
             className={`flex items-center gap-1 sm:gap-2 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 transition ${
               viewMode === "grid"
-                ? "bg-white dark:bg-slate-600 text-[#1e3a8a] dark:text-white shadow-sm"
-                : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                ? "bg-white dark:bg-neutral-700 text-[#1e3a8a] dark:text-white shadow-sm"
+                : "text-slate-500 hover:text-slate-700 dark:text-neutral-400 dark:hover:text-neutral-200"
             }`}
           >
             <Grid size={16} className="sm:hidden" />
@@ -162,8 +162,8 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
             onClick={() => setViewMode("list")}
             className={`flex items-center gap-1 sm:gap-2 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 transition ${
               viewMode === "list"
-                ? "bg-white dark:bg-slate-600 text-[#1e3a8a] dark:text-white shadow-sm"
-                : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                ? "bg-white dark:bg-neutral-700 text-[#1e3a8a] dark:text-white shadow-sm"
+                : "text-slate-500 hover:text-slate-700 dark:text-neutral-400 dark:hover:text-neutral-200"
             }`}
           >
             <ListIcon size={16} className="sm:hidden" />
@@ -176,15 +176,15 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
       {/* Content Display */}
       <div className="min-h-[300px] sm:min-h-[400px] lg:min-h-[600px]">
         {themes.length === 0 ? (
-          <div className="flex h-[250px] sm:h-[300px] lg:h-[400px] flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-center px-4">
-            <div className="mb-3 sm:mb-4 flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-md bg-white dark:bg-slate-700 shadow-lg ring-1 ring-slate-100 dark:ring-slate-600">
+          <div className="flex h-[250px] sm:h-[300px] lg:h-[400px] flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-200 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-900/50 text-center px-4">
+            <div className="mb-3 sm:mb-4 flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-md bg-white dark:bg-neutral-800 shadow-lg ring-1 ring-slate-100 dark:ring-neutral-700">
               <Palette size={22} className="sm:hidden text-[#06b6d4]" />
               <Palette size={28} className="hidden sm:block text-[#06b6d4]" />
             </div>
             <h3 className="mb-1.5 sm:mb-2 text-base sm:text-lg font-bold text-[#1e3a8a] dark:text-white">
               {t.noCustomThemes || "No custom themes yet"}
             </h3>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400 max-w-xs mx-auto">
               {t.createFirstTheme || "Create your first custom theme to personalize your presentations."}
             </p>
           </div>
@@ -194,7 +194,7 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
               <div
                 key={theme.id}
                 onClick={() => setPreviewTheme(theme)}
-                className="group relative flex flex-col overflow-hidden rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-lg hover:shadow-[#06b6d4]/10 cursor-pointer"
+                className="group relative flex flex-col overflow-hidden rounded-md border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-lg hover:shadow-[#06b6d4]/10 cursor-pointer"
               >
                 {/* Color Preview - matching aspect ratio */}
                 <div className="aspect-[16/9] w-full relative overflow-hidden">
@@ -207,7 +207,7 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
                   
                   {/* Preview icon on hover */}
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-full p-2 shadow-lg">
+                    <div className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-full p-2 shadow-lg">
                       <Eye size={18} className="text-[#1e3a8a] dark:text-[#06b6d4]" />
                     </div>
                   </div>
@@ -221,12 +221,12 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
 
                   {/* Font indicator */}
                   <div className="flex items-center gap-1 sm:gap-1.5 mb-1.5 sm:mb-2">
-                    <span className="text-[10px] sm:text-xs font-medium text-slate-500 dark:text-slate-400">{getFontName(theme)}</span>
+                    <span className="text-[10px] sm:text-xs font-medium text-slate-500 dark:text-neutral-400">{getFontName(theme)}</span>
                   </div>
 
                   {/* Footer */}
-                  <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-slate-50 dark:border-slate-700">
-                    <span className="text-[9px] sm:text-[10px] text-slate-400 dark:text-slate-500">
+                  <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-slate-50 dark:border-neutral-800">
+                    <span className="text-[9px] sm:text-[10px] text-slate-400 dark:text-neutral-500">
                       {t.customTheme || "Custom Theme"}
                     </span>
                     <div className="relative menu-container">
@@ -235,12 +235,12 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
                           e.stopPropagation();
                           setActiveMenu(activeMenu === theme.id ? null : theme.id);
                         }}
-                        className="text-slate-300 hover:text-[#06b6d4] dark:text-slate-500 dark:hover:text-[#06b6d4]"
+                        className="text-slate-300 hover:text-[#06b6d4] dark:text-neutral-500 dark:hover:text-[#06b6d4]"
                       >
                         <MoreHorizontal size={14} />
                       </button>
                       {activeMenu === theme.id && (
-                        <div className="absolute right-0 bottom-full mb-1 w-36 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg z-50">
+                        <div className="absolute right-0 bottom-full mb-1 w-36 rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg z-50">
                           <div className="p-1">
                             <button
                               onClick={(e) => {
@@ -248,7 +248,7 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
                                 setPreviewTheme(theme);
                                 setActiveMenu(null);
                               }}
-                              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800"
                             >
                               <Eye size={14} /> {t.preview || "Preview"}
                             </button>
@@ -277,7 +277,7 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
               <div
                 key={theme.id}
                 onClick={() => setPreviewTheme(theme)}
-                className="group flex items-center gap-2 sm:gap-4 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 sm:p-3 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-md cursor-pointer"
+                className="group flex items-center gap-2 sm:gap-4 rounded-md border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-2 sm:p-3 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-md cursor-pointer"
               >
                 {/* Color Preview */}
                 <div className="w-14 h-10 sm:w-20 sm:h-14 flex-shrink-0 rounded relative overflow-hidden">
@@ -291,7 +291,7 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm sm:text-base font-bold text-[#1e3a8a] dark:text-white truncate">{theme.name}</h3>
-                  <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">{getFontName(theme)}</p>
+                  <p className="text-[10px] sm:text-xs text-slate-500 dark:text-neutral-400">{getFontName(theme)}</p>
                 </div>
 
                 {/* Actions */}
@@ -301,12 +301,12 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
                       e.stopPropagation();
                       setActiveMenu(activeMenu === theme.id ? null : theme.id);
                     }}
-                    className="text-slate-300 hover:text-[#06b6d4] dark:text-slate-500 dark:hover:text-[#06b6d4]"
+                    className="text-slate-300 hover:text-[#06b6d4] dark:text-neutral-500 dark:hover:text-[#06b6d4]"
                   >
                     <MoreHorizontal size={18} />
                   </button>
                   {activeMenu === theme.id && (
-                    <div className="absolute right-0 top-full mt-1 w-36 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg z-50">
+                    <div className="absolute right-0 top-full mt-1 w-36 rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg z-50">
                       <div className="p-1">
                         <button
                           onClick={(e) => {
@@ -314,7 +314,7 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
                             setPreviewTheme(theme);
                             setActiveMenu(null);
                           }}
-                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800"
                         >
                           <Eye size={14} /> {t.preview || "Preview"}
                         </button>
@@ -340,14 +340,14 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
       {/* Delete Confirmation Popup - No overlay */}
       {deleteConfirm && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4">
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
+          <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-slate-200 dark:border-neutral-800 p-4 sm:p-5">
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/50 flex items-center justify-center">
                 <Trash2 size={18} className="text-red-600 dark:text-red-400" />
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white">{t.deleteTheme || "Delete theme?"}</h3>
-                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400 mt-0.5">
                   &quot;{deleteConfirm.name}&quot; {t.willBeDeleted || "will be permanently deleted."}
                 </p>
               </div>
@@ -356,7 +356,7 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
               <button
                 onClick={() => setDeleteConfirm(null)}
                 disabled={isDeleting}
-                className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition disabled:opacity-50"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-slate-600 dark:text-neutral-300 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-neutral-800 rounded-lg transition disabled:opacity-50"
               >
                 {t.cancel || "Cancel"}
               </button>

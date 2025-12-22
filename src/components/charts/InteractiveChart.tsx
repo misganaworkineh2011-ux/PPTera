@@ -25,6 +25,22 @@ export default function InteractiveChart({
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [animationProgress, setAnimationProgress] = useState(1); // Start at 1 to avoid re-animation
   const hasAnimated = useRef(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Detect dark mode
+  useEffect(() => {
+    const checkDarkMode = () => {
+      setIsDarkMode(document.documentElement.classList.contains("dark"));
+    };
+    
+    checkDarkMode();
+    
+    // Watch for dark mode changes
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    
+    return () => observer.disconnect();
+  }, []);
 
   // Animation on mount - only animate once
   useEffect(() => {
@@ -43,16 +59,17 @@ export default function InteractiveChart({
     }
   }, []); // Empty dependency array - only run once on mount
 
-  // Get theme-aware colors
+  // Get theme-aware colors with dark mode support
   const colors = useMemo(() => {
     const accentColor = theme?.colors.accent || "#06b6d4";
-    const textColor = theme?.colors.text || "#1e293b";
-    const mutedColor = theme?.colors.textMuted || "#64748b";
-    const bgColor = theme?.colors.background || "#ffffff";
-    const surfaceColor = theme?.colors.surface || "#f8fafc";
+    // Use light colors for dark mode when no theme is provided
+    const textColor = theme?.colors.text || (isDarkMode ? "#ffffff" : "#1e293b");
+    const mutedColor = theme?.colors.textMuted || (isDarkMode ? "#a3a3a3" : "#64748b");
+    const bgColor = theme?.colors.background || (isDarkMode ? "#171717" : "#ffffff");
+    const surfaceColor = theme?.colors.surface || (isDarkMode ? "#262626" : "#f8fafc");
     
     return { accentColor, textColor, mutedColor, bgColor, surfaceColor };
-  }, [theme]);
+  }, [theme, isDarkMode]);
 
   // Calculate max value for scaling
   const maxValue = useMemo(() => {

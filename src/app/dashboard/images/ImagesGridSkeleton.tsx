@@ -39,11 +39,11 @@ export default function ImagesGridSkeleton() {
             type="text"
             placeholder="Search images..."
             disabled
-            className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400"
+            className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-slate-900 dark:text-white placeholder-slate-400"
           />
         </div>
-        <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
-          <button className="p-2 rounded-md bg-white dark:bg-slate-700 shadow-sm text-[#06b6d4]">
+        <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-neutral-900 rounded-lg">
+          <button className="p-2 rounded-md bg-white dark:bg-neutral-800 shadow-sm text-[#06b6d4]">
             <Grid className="h-4 w-4" />
           </button>
           <button className="p-2 rounded-md text-slate-500">
@@ -58,13 +58,13 @@ export default function ImagesGridSkeleton() {
           {Array.from({ length: 10 }).map((_, i) => (
             <div
               key={i}
-              className="flex flex-col overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+              className="flex flex-col overflow-hidden rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900"
             >
               {/* Image Thumbnail Skeleton */}
-              <div className="aspect-square w-full bg-slate-200 dark:bg-slate-700" />
+              <div className="aspect-square w-full bg-slate-200 dark:bg-neutral-800" />
               {/* Content Section */}
               <div className="p-3">
-                <div className="h-4 w-3/4 bg-slate-200 dark:bg-slate-700 rounded" />
+                <div className="h-4 w-3/4 bg-slate-200 dark:bg-neutral-800 rounded" />
               </div>
             </div>
           ))}

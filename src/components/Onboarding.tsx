@@ -114,9 +114,9 @@ export default function Onboarding({ userName, onComplete }: OnboardingProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
-      <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden animate-scale-in">
+      <div className="relative w-full max-w-lg bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl overflow-hidden animate-scale-in">
         {/* Progress Bar */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-slate-100 dark:bg-slate-800">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-slate-100 dark:bg-neutral-900">
           <div
             className="h-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] transition-all duration-300"
             style={{ width: `${((currentStep + 1) / ONBOARDING_STEPS.length) * 100}%` }}
@@ -145,7 +145,7 @@ export default function Onboarding({ userName, onComplete }: OnboardingProps) {
 
         {/* Content */}
         <div className="p-8">
-          <p className="text-slate-600 dark:text-slate-300 text-center mb-6">
+          <p className="text-slate-600 dark:text-neutral-300 text-center mb-6">
             {step.description}
           </p>
 
@@ -154,7 +154,7 @@ export default function Onboarding({ userName, onComplete }: OnboardingProps) {
               {step.tips.map((tip, idx) => (
                 <div key={idx} className="flex items-start gap-3">
                   <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-slate-600 dark:text-slate-400">{tip}</span>
+                  <span className="text-sm text-slate-600 dark:text-neutral-400">{tip}</span>
                 </div>
               ))}
             </div>
@@ -172,7 +172,7 @@ export default function Onboarding({ userName, onComplete }: OnboardingProps) {
                     ? "w-6 bg-[#06b6d4]"
                     : idx < currentStep
                     ? "bg-[#06b6d4]/50"
-                    : "bg-slate-200 dark:bg-slate-700"
+                    : "bg-slate-200 dark:bg-neutral-800"
                 )}
               />
             ))}
@@ -187,7 +187,7 @@ export default function Onboarding({ userName, onComplete }: OnboardingProps) {
                 "flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition",
                 isFirstStep
                   ? "text-slate-300 cursor-not-allowed"
-                  : "text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+                  : "text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:text-neutral-400 dark:hover:bg-slate-800"
               )}
             >
               <ChevronLeft className="h-4 w-4" />

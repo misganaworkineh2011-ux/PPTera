@@ -49,8 +49,8 @@ export default function PresentationsGridSkeleton() {
               <Filter size={18} className="hidden sm:block" />
             </button>
           </div>
-          <div className="flex items-center gap-0.5 sm:gap-1 rounded-lg bg-slate-100 p-0.5 sm:p-1 dark:bg-slate-700">
-            <button className="flex items-center gap-1 sm:gap-2 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 bg-white text-[#1e3a8a] shadow-sm dark:bg-slate-600 dark:text-white">
+          <div className="flex items-center gap-0.5 sm:gap-1 rounded-lg bg-slate-100 p-0.5 sm:p-1 dark:bg-neutral-800">
+            <button className="flex items-center gap-1 sm:gap-2 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 bg-white text-[#1e3a8a] shadow-sm dark:bg-neutral-700 dark:text-white">
               <Grid size={16} className="sm:hidden" />
               <Grid size={20} className="hidden sm:block" />
               <span className="text-xs sm:text-sm font-medium hidden xs:inline">{t.grid || "Grid"}</span>
@@ -70,31 +70,31 @@ export default function PresentationsGridSkeleton() {
           {Array.from({ length: 12 }).map((_, i) => (
             <div
               key={i}
-              className="flex flex-col overflow-hidden rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 animate-in fade-in duration-500"
+              className="flex flex-col overflow-hidden rounded-md border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 animate-in fade-in duration-500"
               style={{ animationDelay: `${i * 50}ms`, animationFillMode: "backwards" }}
             >
               {/* Thumbnail skeleton with shimmer */}
-              <div className="aspect-[16/9] w-full bg-slate-200 dark:bg-slate-700 relative overflow-hidden">
+              <div className="aspect-[16/9] w-full bg-slate-200 dark:bg-neutral-800 relative overflow-hidden">
                 <Shimmer />
               </div>
               {/* Content skeleton */}
               <div className="p-3 space-y-2.5">
-                <div className="h-4 w-4/5 bg-slate-200 dark:bg-slate-700 rounded relative overflow-hidden">
+                <div className="h-4 w-4/5 bg-slate-200 dark:bg-neutral-800 rounded relative overflow-hidden">
                   <Shimmer />
                 </div>
-                <div className="h-3 w-2/3 bg-slate-200 dark:bg-slate-700 rounded relative overflow-hidden">
+                <div className="h-3 w-2/3 bg-slate-200 dark:bg-neutral-800 rounded relative overflow-hidden">
                   <Shimmer />
                 </div>
-                <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-700">
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-neutral-800">
                   <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 relative overflow-hidden">
+                    <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-neutral-800 relative overflow-hidden">
                       <Shimmer />
                     </div>
-                    <div className="h-2.5 w-16 bg-slate-200 dark:bg-slate-700 rounded relative overflow-hidden">
+                    <div className="h-2.5 w-16 bg-slate-200 dark:bg-neutral-800 rounded relative overflow-hidden">
                       <Shimmer />
                     </div>
                   </div>
-                  <div className="w-6 h-6 rounded bg-slate-200 dark:bg-slate-700 relative overflow-hidden">
+                  <div className="w-6 h-6 rounded bg-slate-200 dark:bg-neutral-800 relative overflow-hidden">
                     <Shimmer />
                   </div>
                 </div>

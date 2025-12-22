@@ -130,9 +130,9 @@ export default function VersionHistory({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/50 backdrop-blur-sm">
-      <div className="h-full w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl animate-slide-in-right">
+      <div className="h-full w-full max-w-md bg-white dark:bg-neutral-900 shadow-2xl animate-slide-in-right">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-neutral-800">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
               <History className="h-5 w-5 text-purple-600 dark:text-purple-400" />
@@ -163,7 +163,7 @@ export default function VersionHistory({
                 value={saveDescription}
                 onChange={(e) => setSaveDescription(e.target.value)}
                 placeholder="Version description..."
-                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm"
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-sm"
                 autoFocus
               />
               <div className="flex gap-2">
@@ -193,7 +193,7 @@ export default function VersionHistory({
           ) : (
             <button
               onClick={() => setShowSaveForm(true)}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-400 hover:border-purple-500 hover:text-purple-600 transition"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-slate-200 dark:border-neutral-800 rounded-lg text-slate-600 dark:text-slate-400 hover:border-purple-500 hover:text-purple-600 transition"
             >
               <Save className="h-4 w-4" />
               Save Current Version
@@ -229,7 +229,7 @@ export default function VersionHistory({
                     "p-4 rounded-xl border transition",
                     idx === 0
                       ? "border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-900/20"
-                      : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
+                      : "border-slate-200 dark:border-neutral-800 hover:border-slate-300 dark:hover:border-slate-600"
                   )}
                 >
                   <div className="flex items-start justify-between">
@@ -239,7 +239,7 @@ export default function VersionHistory({
                           "text-xs font-medium px-2 py-0.5 rounded-full",
                           idx === 0
                             ? "bg-purple-200 dark:bg-purple-800 text-purple-700 dark:text-purple-300"
-                            : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400"
+                            : "bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-400"
                         )}>
                           {idx === 0 ? "Current" : `v${version.version}`}
                         </span>

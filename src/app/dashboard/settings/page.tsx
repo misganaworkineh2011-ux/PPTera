@@ -173,7 +173,7 @@ export default function SettingsPage() {
     <div className="mx-auto max-w-5xl space-y-6 py-4">
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold text-[#1e3a8a] dark:text-white">{t.settingsTitle}</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400">{t.settingsSubtitle}</p>
+        <p className="text-sm text-slate-500 dark:text-neutral-400">{t.settingsSubtitle}</p>
       </div>
 
       <div className="flex flex-col gap-6 lg:flex-row">
@@ -186,22 +186,22 @@ export default function SettingsPage() {
                 className={`group flex items-center justify-between rounded-xl border p-3 text-left transition-all hover:border-[#06b6d4]/30 ${
                   activeTab === tab.id
                     ? "border-[#06b6d4] bg-[#e0f2fe]/50 dark:bg-[#06b6d4]/20"
-                    : "border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800"
+                    : "border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-900"
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <div className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
                     activeTab === tab.id
                       ? "bg-[#06b6d4] text-white"
-                      : "bg-slate-100 text-slate-500 group-hover:bg-[#e0f2fe] group-hover:text-[#06b6d4] dark:bg-slate-700 dark:text-slate-400"
+                      : "bg-slate-100 text-slate-500 group-hover:bg-[#e0f2fe] group-hover:text-[#06b6d4] dark:bg-neutral-800 dark:text-neutral-400"
                   }`}>
                     <tab.icon size={18} />
                   </div>
                   <div>
-                    <span className={`block text-sm font-bold ${activeTab === tab.id ? "text-[#1e3a8a] dark:text-white" : "text-slate-700 dark:text-slate-300"}`}>
+                    <span className={`block text-sm font-bold ${activeTab === tab.id ? "text-[#1e3a8a] dark:text-white" : "text-slate-700 dark:text-neutral-300"}`}>
                       {tab.label}
                     </span>
-                    <span className="text-xs text-slate-500 hidden sm:block dark:text-slate-400">{tab.description}</span>
+                    <span className="text-xs text-slate-500 hidden sm:block dark:text-neutral-400">{tab.description}</span>
                   </div>
                 </div>
                 {activeTab === tab.id && <ChevronRight size={16} className="text-[#06b6d4]" />}
@@ -210,21 +210,21 @@ export default function SettingsPage() {
           </nav>
         </aside>
 
-        <main className="flex-1 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <main className="flex-1 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
           {activeTab === "general" && (
             <div className="space-y-6">
               <div>
                 <h2 className="text-lg font-bold text-[#1e3a8a] dark:text-white">{t.generalPreferences}</h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400">{t.customizeInterface}</p>
+                <p className="text-sm text-slate-500 dark:text-neutral-400">{t.customizeInterface}</p>
               </div>
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">{t.interfaceLanguage}</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-neutral-300">{t.interfaceLanguage}</label>
                   <select 
                     value={language}
                     onChange={(e) => setLanguage(e.target.value as Language)}
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-[#06b6d4] focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-[#06b6d4] focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
                   >
                     {Object.entries(languageNames).map(([code, name]) => (
                       <option key={code} value={code}>{name}</option>
@@ -233,7 +233,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">{t.appearance}</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-neutral-300">{t.appearance}</label>
                   <div className="grid grid-cols-3 gap-3">
                     {[
                       { value: "light", label: t.light, icon: Sun },
@@ -249,9 +249,9 @@ export default function SettingsPage() {
                           onChange={(e) => setTheme(e.target.value as "light" | "dark" | "system")}
                           className="peer sr-only" 
                         />
-                        <div className="flex flex-col items-center gap-2 rounded-lg border-2 border-slate-200 p-3 transition-all hover:border-[#06b6d4]/50 peer-checked:border-[#06b6d4] peer-checked:bg-[#e0f2fe]/30 dark:border-slate-600 dark:peer-checked:bg-[#06b6d4]/20">
+                        <div className="flex flex-col items-center gap-2 rounded-lg border-2 border-slate-200 p-3 transition-all hover:border-[#06b6d4]/50 peer-checked:border-[#06b6d4] peer-checked:bg-[#e0f2fe]/30 dark:border-neutral-700 dark:peer-checked:bg-[#06b6d4]/20">
                           <option.icon size={24} className={theme === option.value ? "text-[#06b6d4]" : "text-slate-400"} />
-                          <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{option.label}</span>
+                          <span className="text-xs font-medium text-slate-600 dark:text-neutral-300">{option.label}</span>
                         </div>
                       </label>
                     ))}
@@ -265,38 +265,38 @@ export default function SettingsPage() {
             <div className="space-y-6">
               <div>
                 <h2 className="text-lg font-bold text-[#1e3a8a] dark:text-white">{t.accountSettings}</h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400">{t.manageProfile}</p>
+                <p className="text-sm text-slate-500 dark:text-neutral-400">{t.manageProfile}</p>
               </div>
               
               <div className="space-y-4">
-                <div className="flex items-center gap-4 p-4 rounded-lg bg-slate-50 dark:bg-slate-700">
+                <div className="flex items-center gap-4 p-4 rounded-lg bg-slate-50 dark:bg-neutral-800">
                   <div className="h-16 w-16 rounded-full bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center text-white text-xl font-bold">
                     {clerkUser?.firstName?.[0] || userSettings?.name?.[0] || "U"}
                   </div>
                   <div>
                     <p className="font-bold text-[#1e3a8a] dark:text-white">{userSettings?.name || "User"}</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">{userSettings?.email}</p>
+                    <p className="text-sm text-slate-500 dark:text-neutral-400">{userSettings?.email}</p>
                     <p className="text-xs text-slate-400 mt-1">{t.memberSince} {userSettings?.createdAt ? new Date(userSettings.createdAt).toLocaleDateString() : "N/A"}</p>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">{t.displayName}</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-neutral-300">{t.displayName}</label>
                   <input
                     type="text"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-[#06b6d4] focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-[#06b6d4] focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">{t.emailAddress}</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-neutral-300">{t.emailAddress}</label>
                   <input
                     type="email"
                     value={userSettings?.email || ""}
                     disabled
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm bg-slate-50 text-slate-500 dark:border-slate-600 dark:bg-slate-600 dark:text-slate-400"
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm bg-slate-50 text-slate-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400"
                   />
                   <p className="text-xs text-slate-400 mt-1">{t.emailManaged}</p>
                 </div>
@@ -317,10 +317,10 @@ export default function SettingsPage() {
             <div className="space-y-6">
               <div>
                 <h2 className="text-lg font-bold text-[#1e3a8a] dark:text-white">{t.billingSubscription}</h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400">{t.managePlan}</p>
+                <p className="text-sm text-slate-500 dark:text-neutral-400">{t.managePlan}</p>
               </div>
               
-              <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-600">
+              <div className="rounded-lg border border-slate-200 p-4 dark:border-neutral-700">
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <p className="font-bold text-[#1e3a8a] dark:text-white">{t.currentPlan}</p>
@@ -333,8 +333,8 @@ export default function SettingsPage() {
                     <ExternalLink size={14} /> {t.upgrade}
                   </a>
                 </div>
-                <div className="pt-4 border-t border-slate-100 dark:border-slate-600">
-                  <p className="text-sm text-slate-600 dark:text-slate-400">{t.creditsRemaining}</p>
+                <div className="pt-4 border-t border-slate-100 dark:border-neutral-700">
+                  <p className="text-sm text-slate-600 dark:text-neutral-400">{t.creditsRemaining}</p>
                   <p className="text-3xl font-bold text-[#1e3a8a] dark:text-white">{userSettings?.credits ?? 0}</p>
                 </div>
               </div>
@@ -345,14 +345,14 @@ export default function SettingsPage() {
             <div className="space-y-6">
               <div>
                 <h2 className="text-lg font-bold text-[#1e3a8a] dark:text-white">{t.notificationPreferences}</h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400">{t.chooseUpdates}</p>
+                <p className="text-sm text-slate-500 dark:text-neutral-400">{t.chooseUpdates}</p>
               </div>
 
               <div className="space-y-3">
-                <label className="flex items-center justify-between p-4 rounded-lg border border-slate-200 cursor-pointer hover:border-[#06b6d4]/50 dark:border-slate-600">
+                <label className="flex items-center justify-between p-4 rounded-lg border border-slate-200 cursor-pointer hover:border-[#06b6d4]/50 dark:border-neutral-700">
                   <div>
-                    <span className="block text-sm font-medium text-slate-700 dark:text-slate-300">{t.emailNotifications}</span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">{t.emailNotificationsDesc}</span>
+                    <span className="block text-sm font-medium text-slate-700 dark:text-neutral-300">{t.emailNotifications}</span>
+                    <span className="text-xs text-slate-500 dark:text-neutral-400">{t.emailNotificationsDesc}</span>
                   </div>
                   <input 
                     type="checkbox" 
@@ -362,10 +362,10 @@ export default function SettingsPage() {
                   />
                 </label>
 
-                <label className="flex items-center justify-between p-4 rounded-lg border border-slate-200 cursor-pointer hover:border-[#06b6d4]/50 dark:border-slate-600">
+                <label className="flex items-center justify-between p-4 rounded-lg border border-slate-200 cursor-pointer hover:border-[#06b6d4]/50 dark:border-neutral-700">
                   <div>
-                    <span className="block text-sm font-medium text-slate-700 dark:text-slate-300">{t.collaborationAlerts}</span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">{t.collaborationAlertsDesc}</span>
+                    <span className="block text-sm font-medium text-slate-700 dark:text-neutral-300">{t.collaborationAlerts}</span>
+                    <span className="text-xs text-slate-500 dark:text-neutral-400">{t.collaborationAlertsDesc}</span>
                   </div>
                   <input 
                     type="checkbox" 
@@ -382,15 +382,15 @@ export default function SettingsPage() {
             <div className="space-y-6">
               <div>
                 <h2 className="text-lg font-bold text-[#1e3a8a] dark:text-white">{t.securitySettings}</h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400">{t.manageAccountSecurity}</p>
+                <p className="text-sm text-slate-500 dark:text-neutral-400">{t.manageAccountSecurity}</p>
               </div>
 
               <div className="space-y-4">
-                <div className="p-4 rounded-lg border border-slate-200 dark:border-slate-600">
+                <div className="p-4 rounded-lg border border-slate-200 dark:border-neutral-700">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-slate-700 dark:text-slate-300">{t.password}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{t.passwordManaged}</p>
+                      <p className="font-medium text-slate-700 dark:text-neutral-300">{t.password}</p>
+                      <p className="text-xs text-slate-500 dark:text-neutral-400">{t.passwordManaged}</p>
                     </div>
                     <button
                       onClick={() => openUserProfile()}
@@ -401,21 +401,21 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div className="p-4 rounded-lg border border-slate-200 dark:border-slate-600">
+                <div className="p-4 rounded-lg border border-slate-200 dark:border-neutral-700">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-slate-700 dark:text-slate-300">{t.twoFactorAuth}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{t.twoFactorDesc}</p>
+                      <p className="font-medium text-slate-700 dark:text-neutral-300">{t.twoFactorAuth}</p>
+                      <p className="text-xs text-slate-500 dark:text-neutral-400">{t.twoFactorDesc}</p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className={`text-xs font-medium px-2 py-1 rounded ${has2FA ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" : "bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400"}`}>
+                      <span className={`text-xs font-medium px-2 py-1 rounded ${has2FA ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" : "bg-slate-100 text-slate-500 dark:bg-neutral-800 dark:text-neutral-400"}`}>
                         {has2FA ? t.enabled : t.disabled}
                       </span>
                       <button
                         onClick={handle2FAToggle}
                         className={`px-3 py-1.5 text-sm font-medium rounded-lg transition ${
                           has2FA 
-                            ? "border border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-400" 
+                            ? "border border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-neutral-700 dark:text-neutral-400" 
                             : "bg-[#06b6d4] text-white hover:bg-[#06b6d4]/90"
                         }`}
                       >
@@ -448,25 +448,25 @@ export default function SettingsPage() {
       {/* Delete Account Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50" onClick={() => setShowDeleteModal(false)}>
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl dark:bg-slate-800" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl dark:bg-neutral-900" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-3 mb-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/50">
                 <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
               </div>
               <h3 className="text-lg font-bold text-red-700 dark:text-red-400">{t.deleteConfirmTitle}</h3>
             </div>
-            <p className="text-sm text-slate-600 mb-4 dark:text-slate-400">
+            <p className="text-sm text-slate-600 mb-4 dark:text-neutral-400">
               {t.deleteConfirmMessage}
             </p>
             <div className="mb-4">
-              <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">
+              <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-neutral-300">
                 {t.typeToConfirm}: <span className="font-bold text-red-600">{deleteConfirmWords[language]}</span>
               </label>
               <input
                 type="text"
                 value={deleteConfirmation}
                 onChange={(e) => setDeleteConfirmation(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-red-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-red-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
                 placeholder={deleteConfirmWords[language]}
               />
             </div>
@@ -476,7 +476,7 @@ export default function SettingsPage() {
                   setShowDeleteModal(false);
                   setDeleteConfirmation("");
                 }}
-                className="flex-1 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
+                className="flex-1 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
               >
                 {t.cancel}
               </button>

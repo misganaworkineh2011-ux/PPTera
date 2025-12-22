@@ -83,7 +83,7 @@ export default function ThemesStickyHeader({ onCreateClick }: ThemesStickyHeader
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-[#1e3a8a] dark:text-white">{t.myThemes || "My Themes"}</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">{t.themesSubtitle || "Create and manage your custom presentation themes"}</p>
+            <p className="text-sm text-slate-500 dark:text-neutral-400">{t.themesSubtitle || "Create and manage your custom presentation themes"}</p>
           </div>
         </div>
         <button 

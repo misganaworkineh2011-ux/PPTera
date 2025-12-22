@@ -144,7 +144,7 @@ export default function BillingPage() {
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
           Billing & Subscription
         </h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1">
+        <p className="text-slate-500 dark:text-neutral-400 mt-1">
           Manage your subscription and view credit usage
         </p>
       </div>
@@ -208,7 +208,7 @@ export default function BillingPage() {
       {/* Credit Usage */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Usage Progress */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-slate-200 dark:border-neutral-800 p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
               <BarChart3 className="h-5 w-5 text-[#06b6d4]" />
@@ -219,7 +219,7 @@ export default function BillingPage() {
             </span>
           </div>
 
-          <div className="relative h-4 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mb-4">
+          <div className="relative h-4 bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden mb-4">
             <div
               className={cn(
                 "absolute inset-y-0 left-0 rounded-full transition-all",
@@ -234,24 +234,24 @@ export default function BillingPage() {
           </div>
 
           <div className="flex justify-between text-sm">
-            <span className="text-slate-600 dark:text-slate-400">
+            <span className="text-slate-600 dark:text-neutral-400">
               {billing.credits.used.toLocaleString()} used
             </span>
-            <span className="text-slate-600 dark:text-slate-400">
+            <span className="text-slate-600 dark:text-neutral-400">
               {billing.credits.current.toLocaleString()} remaining
             </span>
           </div>
 
-          <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-700">
+          <div className="mt-6 pt-6 border-t border-slate-100 dark:border-neutral-800">
             <p className="text-sm text-slate-500 mb-3">With your remaining credits:</p>
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3">
+              <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-3">
                 <p className="text-2xl font-bold text-slate-900 dark:text-white">
                   {billing.usage.estimatedSlides}
                 </p>
                 <p className="text-xs text-slate-500">slides (4 credits each)</p>
               </div>
-              <div className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3">
+              <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-3">
                 <p className="text-2xl font-bold text-slate-900 dark:text-white">
                   {billing.usage.estimatedImages}
                 </p>
@@ -262,7 +262,7 @@ export default function BillingPage() {
         </div>
 
         {/* Plan Features */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-slate-200 dark:border-neutral-800 p-6">
           <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
             <CheckCircle2 className="h-5 w-5 text-green-500" />
             Plan Features
@@ -273,7 +273,7 @@ export default function BillingPage() {
               {billing.planDetails.features.map((feature, idx) => (
                 <li key={idx} className="flex items-start gap-3 text-sm">
                   <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-slate-600 dark:text-slate-300">{feature}</span>
+                  <span className="text-slate-600 dark:text-neutral-300">{feature}</span>
                 </li>
               ))}
             </ul>
@@ -296,7 +296,7 @@ export default function BillingPage() {
       <div className="grid gap-4 sm:grid-cols-3">
         <Link
           href="/pricing"
-          className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-[#06b6d4] transition group"
+          className="flex items-center gap-4 p-4 bg-white dark:bg-neutral-900 rounded-xl border border-slate-200 dark:border-neutral-800 hover:border-[#06b6d4] transition group"
         >
           <div className="p-3 bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] rounded-lg text-white">
             <TrendingUp className="h-5 w-5" />
@@ -310,7 +310,7 @@ export default function BillingPage() {
 
         <Link
           href="/pricing#topup"
-          className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-[#06b6d4] transition group"
+          className="flex items-center gap-4 p-4 bg-white dark:bg-neutral-900 rounded-xl border border-slate-200 dark:border-neutral-800 hover:border-[#06b6d4] transition group"
         >
           <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg text-white">
             <Zap className="h-5 w-5" />
@@ -324,7 +324,7 @@ export default function BillingPage() {
 
         <Link
           href="/dashboard/activity"
-          className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-[#06b6d4] transition group"
+          className="flex items-center gap-4 p-4 bg-white dark:bg-neutral-900 rounded-xl border border-slate-200 dark:border-neutral-800 hover:border-[#06b6d4] transition group"
         >
           <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg text-white">
             <Clock className="h-5 w-5" />
@@ -338,7 +338,7 @@ export default function BillingPage() {
       </div>
 
       {/* Recent Activity */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+      <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-slate-200 dark:border-neutral-800 p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
             <Clock className="h-5 w-5 text-[#06b6d4]" />
@@ -357,7 +357,7 @@ export default function BillingPage() {
             {activities.slice(0, 5).map((activity) => (
               <div
                 key={activity.id}
-                className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-700 last:border-0"
+                className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-neutral-800 last:border-0"
               >
                 <div className="flex items-center gap-3">
                   <div className={cn(
@@ -397,10 +397,10 @@ export default function BillingPage() {
       </div>
 
       {/* Account Info */}
-      <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 flex items-center justify-between">
+      <div className="bg-slate-50 dark:bg-neutral-900/50 rounded-xl p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Calendar className="h-5 w-5 text-slate-400" />
-          <span className="text-sm text-slate-600 dark:text-slate-400">
+          <span className="text-sm text-slate-600 dark:text-neutral-400">
             Member since {new Date(billing.memberSince).toLocaleDateString("en-US", {
               month: "long",
               year: "numeric",

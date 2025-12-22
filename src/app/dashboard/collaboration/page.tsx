@@ -131,17 +131,17 @@ export default function CollaborationPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#1e3a8a] dark:text-white">{t.collaborationTitle}</h1>
-          <p className="text-sm text-slate-500 mt-1 dark:text-slate-400">{t.collaborationSubtitle}</p>
+          <p className="text-sm text-slate-500 mt-1 dark:text-neutral-400">{t.collaborationSubtitle}</p>
         </div>
       </div>
 
-      <div className="flex gap-2 border-b border-slate-200 dark:border-slate-700">
+      <div className="flex gap-2 border-b border-slate-200 dark:border-neutral-800">
         <button
           onClick={() => setActiveTab("shared-with-me")}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
             activeTab === "shared-with-me"
               ? "border-[#06b6d4] text-[#1e3a8a] dark:text-white"
-              : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400"
+              : "border-transparent text-slate-500 hover:text-slate-700 dark:text-neutral-400"
           }`}
         >
           {t.sharedWithMe} ({collaborations.length})
@@ -151,7 +151,7 @@ export default function CollaborationPage() {
           className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
             activeTab === "shared-by-me"
               ? "border-[#06b6d4] text-[#1e3a8a] dark:text-white"
-              : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400"
+              : "border-transparent text-slate-500 hover:text-slate-700 dark:text-neutral-400"
           }`}
         >
           {t.sharedByMe} ({sharedByMe.length})
@@ -159,24 +159,24 @@ export default function CollaborationPage() {
       </div>
 
       {activeTab === "shared-with-me" ? (
-        <div className="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <div className="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
           {collaborations.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <Users className="h-12 w-12 text-slate-300 mb-4" />
               <h3 className="text-lg font-bold text-[#1e3a8a] dark:text-white">{t.noSharedPresentations}</h3>
-              <p className="text-sm text-slate-500 mt-1 dark:text-slate-400">{t.sharedWithMeEmpty}</p>
+              <p className="text-sm text-slate-500 mt-1 dark:text-neutral-400">{t.sharedWithMeEmpty}</p>
             </div>
           ) : (
             <div className="divide-y divide-slate-100 dark:divide-slate-700">
               {collaborations.map((collab) => (
-                <div key={collab.id} className="flex items-center justify-between p-4 hover:bg-slate-50 transition dark:hover:bg-slate-700">
+                <div key={collab.id} className="flex items-center justify-between p-4 hover:bg-slate-50 transition dark:hover:bg-neutral-800">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a]/10 to-[#06b6d4]/10 text-[#06b6d4]">
                       <FolderOpen size={20} />
                     </div>
                     <div>
                       <h3 className="font-bold text-[#1e3a8a] dark:text-white">{collab.presentation.title}</h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                      <p className="text-xs text-slate-500 dark:text-neutral-400">
                         {t.by} {collab.presentation.user?.name || "Unknown"} • {collab.role} • {t.updated} {formatDate(collab.presentation.updatedAt)}
                       </p>
                     </div>
@@ -195,24 +195,24 @@ export default function CollaborationPage() {
       ) : (
         <div className="space-y-4">
           {sharedByMe.length === 0 ? (
-            <div className="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+            <div className="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <UserPlus className="h-12 w-12 text-slate-300 mb-4" />
                 <h3 className="text-lg font-bold text-[#1e3a8a] dark:text-white">{t.noSharedPresentations}</h3>
-                <p className="text-sm text-slate-500 mt-1 dark:text-slate-400">{t.sharedByMeEmpty}</p>
+                <p className="text-sm text-slate-500 mt-1 dark:text-neutral-400">{t.sharedByMeEmpty}</p>
               </div>
             </div>
           ) : (
             sharedByMe.map((pres) => (
-              <div key={pres.id} className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden dark:border-slate-700 dark:bg-slate-800">
-                <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50 dark:border-slate-700 dark:bg-slate-700">
+              <div key={pres.id} className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden dark:border-neutral-800 dark:bg-neutral-900">
+                <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-800">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a]/10 to-[#06b6d4]/10 text-[#06b6d4]">
                       <FolderOpen size={20} />
                     </div>
                     <div>
                       <h3 className="font-bold text-[#1e3a8a] dark:text-white">{pres.title}</h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{pres.collaborations?.length || 0} {t.collaborators}</p>
+                      <p className="text-xs text-slate-500 dark:text-neutral-400">{pres.collaborations?.length || 0} {t.collaborators}</p>
                     </div>
                   </div>
                   <button
@@ -233,8 +233,8 @@ export default function CollaborationPage() {
                           {collab.user?.name?.[0] || collab.email?.[0]?.toUpperCase() || "?"}
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{collab.user?.name || collab.email}</p>
-                          <p className="text-xs text-slate-500 flex items-center gap-1 dark:text-slate-400">
+                          <p className="text-sm font-medium text-slate-700 dark:text-neutral-300">{collab.user?.name || collab.email}</p>
+                          <p className="text-xs text-slate-500 flex items-center gap-1 dark:text-neutral-400">
                             <Mail size={10} /> {collab.email}
                           </p>
                         </div>
@@ -266,25 +266,25 @@ export default function CollaborationPage() {
 
       {showInviteModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/30" onClick={() => setShowInviteModal(false)}>
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl dark:bg-slate-800" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl dark:bg-neutral-900" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-[#1e3a8a] mb-4 dark:text-white">{t.inviteCollaborator}</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-300">{t.emailAddressLabel}</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-neutral-300">{t.emailAddressLabel}</label>
                 <input
                   type="email"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   placeholder={t.emailPlaceholder}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-300">{t.role}</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-neutral-300">{t.role}</label>
                 <select
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-[#06b6d4] focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-[#06b6d4] focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
                 >
                   <option value="viewer">{t.viewer}</option>
                   <option value="editor">{t.editor}</option>
@@ -294,7 +294,7 @@ export default function CollaborationPage() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setShowInviteModal(false)}
-                className="flex-1 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
+                className="flex-1 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
               >
                 {t.cancel}
               </button>

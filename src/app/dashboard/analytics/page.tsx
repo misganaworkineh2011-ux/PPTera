@@ -101,7 +101,7 @@ export default function AnalyticsPage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
             Analytics
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-slate-500 dark:text-neutral-400 mt-1">
             Track your presentation performance
           </p>
         </div>
@@ -110,7 +110,7 @@ export default function AnalyticsPage() {
           <select
             value={period}
             onChange={(e) => setPeriod(Number(e.target.value))}
-            className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm"
+            className="px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-sm"
           >
             <option value={7}>Last 7 days</option>
             <option value={30}>Last 30 days</option>
@@ -121,7 +121,7 @@ export default function AnalyticsPage() {
 
       {/* Overview Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-slate-200 dark:border-neutral-800 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
               <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
@@ -143,12 +143,12 @@ export default function AnalyticsPage() {
           <p className="text-2xl font-bold text-slate-900 dark:text-white">
             {data.overview.totalPresentations}
           </p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-slate-500 dark:text-neutral-400">
             Total Presentations
           </p>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-slate-200 dark:border-neutral-800 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
               <Layers className="h-5 w-5 text-purple-600 dark:text-purple-400" />
@@ -157,12 +157,12 @@ export default function AnalyticsPage() {
           <p className="text-2xl font-bold text-slate-900 dark:text-white">
             {data.overview.totalSlides}
           </p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-slate-500 dark:text-neutral-400">
             Total Slides
           </p>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-slate-200 dark:border-neutral-800 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-cyan-100 dark:bg-cyan-900/30 rounded-xl">
               <Eye className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
@@ -171,12 +171,12 @@ export default function AnalyticsPage() {
           <p className="text-2xl font-bold text-slate-900 dark:text-white">
             {data.overview.totalViews}
           </p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-slate-500 dark:text-neutral-400">
             Total Views
           </p>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-slate-200 dark:border-neutral-800 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
               <BarChart3 className="h-5 w-5 text-amber-600 dark:text-amber-400" />
@@ -185,14 +185,14 @@ export default function AnalyticsPage() {
           <p className="text-2xl font-bold text-slate-900 dark:text-white">
             {data.overview.avgSlidesPerPresentation}
           </p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-slate-500 dark:text-neutral-400">
             Avg Slides/Presentation
           </p>
         </div>
       </div>
 
       {/* Activity Chart */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+      <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-slate-200 dark:border-neutral-800 p-6">
         <h3 className="font-semibold text-slate-900 dark:text-white mb-6">
           Activity Over Time
         </h3>
@@ -226,7 +226,7 @@ export default function AnalyticsPage() {
       {/* Bottom Section */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Top Presentations */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-slate-200 dark:border-neutral-800 p-6">
           <h3 className="font-semibold text-slate-900 dark:text-white mb-4">
             Top Presentations
           </h3>
@@ -236,9 +236,9 @@ export default function AnalyticsPage() {
                 <Link
                   key={pres.id}
                   href={getPresentationUrl(pres.id, pres.title)}
-                  className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition group"
+                  className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition group"
                 >
-                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 text-sm font-bold text-slate-600 dark:text-slate-300">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-neutral-800 text-sm font-bold text-slate-600 dark:text-neutral-300">
                     {idx + 1}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -265,7 +265,7 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Activity Breakdown */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-slate-200 dark:border-neutral-800 p-6">
           <h3 className="font-semibold text-slate-900 dark:text-white mb-4">
             Activity Breakdown
           </h3>
@@ -277,14 +277,14 @@ export default function AnalyticsPage() {
                 return (
                   <div key={type}>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300 capitalize">
+                      <span className="text-sm font-medium text-slate-700 dark:text-neutral-300 capitalize">
                         {type.replace(/_/g, " ")}
                       </span>
                       <span className="text-sm text-slate-500">
                         {count} ({percentage}%)
                       </span>
                     </div>
-                    <div className="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                    <div className="h-2 bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] rounded-full transition-all"
                         style={{ width: `${percentage}%` }}

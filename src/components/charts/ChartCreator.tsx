@@ -113,14 +113,14 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
   };
 
   return (
-    <div className={`bg-white dark:bg-slate-800 rounded-xl shadow-lg ${compact ? "p-4" : "p-6"}`}>
+    <div className={`bg-white dark:bg-neutral-900 rounded-xl shadow-lg ${compact ? "p-4" : "p-6"}`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-lg font-bold text-slate-800 dark:text-white">
             {initialChart ? "Edit Chart" : "Create Chart"}
           </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-slate-500 dark:text-neutral-400">
             Design interactive charts for your presentations
           </p>
         </div>
@@ -128,7 +128,7 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
           {onCancel && (
             <button
               onClick={onCancel}
-              className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors"
+              className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-neutral-400 hover:text-slate-800 dark:text-neutral-400 dark:hover:text-white transition-colors"
             >
               Cancel
             </button>
@@ -144,7 +144,7 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-700 rounded-lg mb-6">
+      <div className="flex gap-1 p-1 bg-slate-100 dark:bg-neutral-800 rounded-lg mb-6">
         {[
           { id: "type", label: "Chart Type", icon: <BarChart3 size={16} /> },
           { id: "data", label: "Data", icon: <Table size={16} /> },
@@ -157,7 +157,7 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
             className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-all ${
               activeTab === tab.id
                 ? "bg-white dark:bg-slate-600 text-[#06b6d4] shadow-sm"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
+                : "text-slate-600 dark:text-neutral-400 hover:text-slate-800 dark:hover:text-white"
             }`}
           >
             {tab.icon}
@@ -173,7 +173,7 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
           <div className="space-y-6">
             {/* Quick Templates */}
             <div>
-              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-slate-700 dark:text-neutral-300 mb-3 flex items-center gap-2">
                 <Sparkles size={16} className="text-[#06b6d4]" />
                 Quick Templates
               </h3>
@@ -182,12 +182,12 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
                   <button
                     key={template.id}
                     onClick={() => applyTemplate(template.id)}
-                    className="p-3 text-left rounded-lg border border-slate-200 dark:border-slate-600 hover:border-[#06b6d4] hover:bg-[#06b6d4]/5 transition-all group"
+                    className="p-3 text-left rounded-lg border border-slate-200 dark:border-neutral-700 hover:border-[#06b6d4] hover:bg-[#06b6d4]/5 transition-all group"
                   >
-                    <div className="text-xs font-medium text-slate-700 dark:text-slate-300 group-hover:text-[#06b6d4]">
+                    <div className="text-xs font-medium text-slate-700 dark:text-neutral-300 group-hover:text-[#06b6d4]">
                       {template.name}
                     </div>
-                    <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                    <div className="text-[10px] text-slate-500 dark:text-neutral-400 mt-0.5">
                       {template.description}
                     </div>
                   </button>
@@ -197,7 +197,7 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
 
             {/* Chart Types */}
             <div>
-              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+              <h3 className="text-sm font-semibold text-slate-700 dark:text-neutral-300 mb-3">
                 Chart Types
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
@@ -208,16 +208,16 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
                     className={`p-3 text-left rounded-lg border transition-all ${
                       chartData.type === option.type
                         ? "border-[#06b6d4] bg-[#06b6d4]/10 ring-2 ring-[#06b6d4]/20"
-                        : "border-slate-200 dark:border-slate-600 hover:border-[#06b6d4]/50"
+                        : "border-slate-200 dark:border-neutral-700 hover:border-[#06b6d4]/50"
                     }`}
                   >
                     <div className={`mb-2 ${chartData.type === option.type ? "text-[#06b6d4]" : "text-slate-500"}`}>
                       {option.icon}
                     </div>
-                    <div className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <div className="text-sm font-medium text-slate-700 dark:text-neutral-300">
                       {option.label}
                     </div>
-                    <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                    <div className="text-[10px] text-slate-500 dark:text-neutral-400 mt-0.5">
                       {option.description}
                     </div>
                   </button>
@@ -232,7 +232,7 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
           <div className="space-y-4">
             {/* Chart Title */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+              <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1.5">
                 Chart Title (optional)
               </label>
               <input
@@ -240,14 +240,14 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
                 value={chartData.title || ""}
                 onChange={(e) => setChartData(prev => ({ ...prev, title: e.target.value }))}
                 placeholder="Enter chart title..."
-                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4]"
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-slate-800 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4]"
               />
             </div>
 
             {/* Data Points */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                <label className="text-sm font-medium text-slate-700 dark:text-neutral-300">
                   Data Points
                 </label>
                 <button
@@ -263,7 +263,7 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
                 {chartData.data.map((point, index) => (
                   <div 
                     key={index}
-                    className="flex items-center gap-2 p-2 bg-slate-50 dark:bg-slate-700/50 rounded-lg group"
+                    className="flex items-center gap-2 p-2 bg-slate-50 dark:bg-neutral-800/50 rounded-lg group"
                   >
                     <GripVertical size={14} className="text-slate-400 cursor-grab" />
                     
@@ -272,7 +272,7 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
                       value={point.label}
                       onChange={(e) => updateDataPoint(index, { label: e.target.value })}
                       placeholder="Label"
-                      className="flex-1 px-2 py-1.5 text-sm rounded border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#06b6d4]"
+                      className="flex-1 px-2 py-1.5 text-sm rounded border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#06b6d4]"
                     />
                     
                     <input
@@ -280,7 +280,7 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
                       value={point.value}
                       onChange={(e) => updateDataPoint(index, { value: parseFloat(e.target.value) || 0 })}
                       placeholder="Value"
-                      className="w-24 px-2 py-1.5 text-sm rounded border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#06b6d4]"
+                      className="w-24 px-2 py-1.5 text-sm rounded border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#06b6d4]"
                     />
                     
                     <input
@@ -304,9 +304,9 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
 
             {/* KPI-specific options */}
             {chartData.type === "kpi" && (
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200 dark:border-slate-600">
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200 dark:border-neutral-700">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1.5">
                     Target Value
                   </label>
                   <input
@@ -314,17 +314,17 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
                     value={chartData.config.target || ""}
                     onChange={(e) => updateConfig({ target: parseFloat(e.target.value) || undefined })}
                     placeholder="e.g., 100"
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm"
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1.5">
                     Trend
                   </label>
                   <select
                     value={chartData.config.trend || "neutral"}
                     onChange={(e) => updateConfig({ trend: e.target.value as "up" | "down" | "neutral" })}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm"
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm"
                   >
                     <option value="up">↑ Up</option>
                     <option value="down">↓ Down</option>
@@ -341,7 +341,7 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
           <div className="space-y-6">
             {/* Color Scheme */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-2">
                 Color Scheme
               </label>
               <div className="grid grid-cols-4 gap-2">
@@ -352,7 +352,7 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
                     className={`p-2 rounded-lg border transition-all ${
                       chartData.config.colorScheme === name
                         ? "border-[#06b6d4] ring-2 ring-[#06b6d4]/20"
-                        : "border-slate-200 dark:border-slate-600 hover:border-[#06b6d4]/50"
+                        : "border-slate-200 dark:border-neutral-700 hover:border-[#06b6d4]/50"
                     }`}
                   >
                     <div className="flex gap-0.5 mb-1.5">
@@ -360,7 +360,7 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
                         <div key={i} className="w-3 h-3 rounded-sm" style={{ backgroundColor: color }} />
                       ))}
                     </div>
-                    <div className="text-[10px] font-medium text-slate-600 dark:text-slate-400 capitalize">
+                    <div className="text-[10px] font-medium text-slate-600 dark:text-neutral-400 capitalize">
                       {name}
                     </div>
                   </button>
@@ -370,7 +370,7 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
 
             {/* Display Options */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-2">
                 Display Options
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -384,7 +384,7 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
                 ].map(option => (
                   <label
                     key={option.key}
-                    className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-neutral-800/50 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                   >
                     <input
                       type="checkbox"
@@ -392,7 +392,7 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
                       onChange={(e) => updateConfig({ [option.key]: e.target.checked })}
                       className="w-4 h-4 rounded border-slate-300 text-[#06b6d4] focus:ring-[#06b6d4]"
                     />
-                    <span className="text-sm text-slate-700 dark:text-slate-300">{option.label}</span>
+                    <span className="text-sm text-slate-700 dark:text-neutral-300">{option.label}</span>
                   </label>
                 ))}
               </div>
@@ -400,7 +400,7 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
 
             {/* Value Formatting */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-2">
                 Value Formatting
               </label>
               <div className="grid grid-cols-3 gap-3">
@@ -411,7 +411,7 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
                     value={chartData.config.prefix || ""}
                     onChange={(e) => updateConfig({ prefix: e.target.value })}
                     placeholder="$"
-                    className="w-full px-2 py-1.5 text-sm rounded border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700"
+                    className="w-full px-2 py-1.5 text-sm rounded border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
                   />
                 </div>
                 <div>
@@ -421,7 +421,7 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
                     value={chartData.config.suffix || ""}
                     onChange={(e) => updateConfig({ suffix: e.target.value })}
                     placeholder="%"
-                    className="w-full px-2 py-1.5 text-sm rounded border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700"
+                    className="w-full px-2 py-1.5 text-sm rounded border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
                   />
                 </div>
                 <div>
@@ -431,7 +431,7 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
                     value={chartData.config.unit || ""}
                     onChange={(e) => updateConfig({ unit: e.target.value })}
                     placeholder="K"
-                    className="w-full px-2 py-1.5 text-sm rounded border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700"
+                    className="w-full px-2 py-1.5 text-sm rounded border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
                   />
                 </div>
               </div>
@@ -443,7 +443,7 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
         {activeTab === "preview" && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              <h3 className="text-sm font-medium text-slate-700 dark:text-neutral-300">
                 Chart Preview
               </h3>
               <button
@@ -455,7 +455,7 @@ export default function ChartCreator({ initialChart, onSave, onCancel, compact =
               </button>
             </div>
             
-            <div className="p-6 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-200 dark:border-slate-600">
+            <div className="p-6 bg-slate-50 dark:bg-neutral-800/50 rounded-xl border border-slate-200 dark:border-neutral-700">
               <InteractiveChart 
                 chart={chartData} 
                 interactive={true}

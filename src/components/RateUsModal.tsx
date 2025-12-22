@@ -86,7 +86,7 @@ export function RateUsModal({ onClose }: RateUsModalProps) {
             className={cn(
               star <= rating
                 ? "fill-yellow-400 text-yellow-400"
-                : "fill-slate-200 text-slate-200 dark:fill-slate-600 dark:text-slate-600"
+                : "fill-slate-200 text-slate-200 dark:fill-slate-600 dark:text-slate-600 dark:text-neutral-400"
             )}
           />
         </button>
@@ -97,7 +97,7 @@ export function RateUsModal({ onClose }: RateUsModalProps) {
   if (submitted) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-        <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 max-w-md mx-4 shadow-2xl text-center">
+        <div className="bg-white dark:bg-neutral-900 rounded-2xl p-8 max-w-md mx-4 shadow-2xl text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 mb-4">
             <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
           </div>
@@ -114,7 +114,7 @@ export function RateUsModal({ onClose }: RateUsModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={handleSkip}>
-      <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+      <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
         <div className="flex justify-between items-start mb-4">
           <div>
             <h2 className="text-xl font-bold text-slate-900 dark:text-white">
@@ -156,7 +156,7 @@ export function RateUsModal({ onClose }: RateUsModalProps) {
               minLength={5}
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent"
+              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent"
               placeholder="Title your review (e.g., 'Great for quick presentations!')"
             />
           </div>
@@ -169,7 +169,7 @@ export function RateUsModal({ onClose }: RateUsModalProps) {
               rows={3}
               value={formData.content}
               onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent resize-none"
+              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent resize-none"
               placeholder="What do you like most? Any suggestions for improvement?"
             />
           </div>
@@ -184,7 +184,7 @@ export function RateUsModal({ onClose }: RateUsModalProps) {
             <button
               type="button"
               onClick={handleSkip}
-              className="flex-1 px-4 py-2.5 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition"
+              className="flex-1 px-4 py-2.5 border border-slate-200 dark:border-neutral-700 text-slate-600 dark:text-slate-300 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition"
             >
               Maybe Later
             </button>

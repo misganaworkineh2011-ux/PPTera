@@ -105,7 +105,7 @@ export default function ImagesPageClient({
           <h1 className="text-2xl font-bold text-[#1e3a8a] dark:text-white">
             Images
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-sm text-slate-500 dark:text-neutral-400 mt-1">
             Manage your images and generate new ones with AI
           </p>
         </div>
@@ -136,17 +136,17 @@ export default function ImagesPageClient({
             placeholder="Search images..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent"
           />
         </div>
-        <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
+        <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-neutral-800 rounded-lg">
           <button
             onClick={() => setViewMode("grid")}
             className={cn(
               "p-2 rounded-md transition",
               viewMode === "grid"
-                ? "bg-white dark:bg-slate-700 shadow-sm text-[#06b6d4]"
-                : "text-slate-500 hover:text-slate-700"
+                ? "bg-white dark:bg-neutral-700 shadow-sm text-[#06b6d4] dark:text-white"
+                : "text-slate-500 hover:text-slate-700 dark:text-neutral-400 dark:hover:text-white"
             )}
           >
             <Grid className="h-4 w-4" />
@@ -156,8 +156,8 @@ export default function ImagesPageClient({
             className={cn(
               "p-2 rounded-md transition",
               viewMode === "list"
-                ? "bg-white dark:bg-slate-700 shadow-sm text-[#06b6d4]"
-                : "text-slate-500 hover:text-slate-700"
+                ? "bg-white dark:bg-neutral-700 shadow-sm text-[#06b6d4] dark:text-white"
+                : "text-slate-500 hover:text-slate-700 dark:text-neutral-400 dark:hover:text-white"
             )}
           >
             <ListIcon className="h-4 w-4" />
@@ -168,14 +168,14 @@ export default function ImagesPageClient({
       {/* Content */}
       <div className="min-h-[400px]">
         {filteredImages.length === 0 ? (
-          <div className="flex h-[400px] flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-center">
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white dark:bg-slate-700 shadow-lg ring-1 ring-slate-100 dark:ring-slate-600">
+          <div className="flex h-[400px] flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-900/50 text-center">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white dark:bg-neutral-800 shadow-lg ring-1 ring-slate-100 dark:ring-neutral-700">
               <ImageIcon size={28} className="text-[#06b6d4]" />
             </div>
             <h3 className="mb-2 text-lg font-bold text-[#1e3a8a] dark:text-white">
               {searchQuery ? "No images found" : "No images yet"}
             </h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 max-w-xs mx-auto mb-6">
+            <p className="text-sm text-slate-500 dark:text-neutral-400 max-w-xs mx-auto mb-6">
               {searchQuery
                 ? "Try a different search term"
                 : "Generate your first AI image or upload one to get started."}
@@ -196,7 +196,7 @@ export default function ImagesPageClient({
               <div
                 key={img.id}
                 onClick={() => setSelectedImage(img)}
-                className="group relative flex flex-col overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-lg hover:shadow-[#06b6d4]/10 cursor-pointer"
+                className="group relative flex flex-col overflow-hidden rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-lg hover:shadow-[#06b6d4]/10 cursor-pointer"
               >
                 {/* Image Thumbnail */}
                 <div className="aspect-square w-full bg-gradient-to-br from-[#1e3a8a]/10 to-[#06b6d4]/10 relative overflow-hidden">
@@ -269,9 +269,9 @@ export default function ImagesPageClient({
               <div
                 key={img.id}
                 onClick={() => setSelectedImage(img)}
-                className="flex items-center gap-4 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#06b6d4]/50 cursor-pointer transition"
+                className="flex items-center gap-4 p-3 rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-[#06b6d4]/50 cursor-pointer transition"
               >
-                <div className="h-16 w-16 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700 flex-shrink-0">
+                <div className="h-16 w-16 rounded-lg overflow-hidden bg-slate-100 dark:bg-neutral-800 flex-shrink-0">
                   {img.url ? (
                     <Image
                       src={img.url}
@@ -290,7 +290,7 @@ export default function ImagesPageClient({
                   <h3 className="font-medium text-slate-900 dark:text-white truncate">
                     {img.filename}
                   </h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                  <p className="text-sm text-slate-500 dark:text-neutral-400">
                     {formatDate(img.createdAt)}
                   </p>
                 </div>
@@ -317,8 +317,8 @@ export default function ImagesPageClient({
       {/* AI Image Generator Modal */}
       {showGenerator && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white dark:bg-slate-900 px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+          <div className="relative w-full max-w-lg bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white dark:bg-neutral-900 px-6 py-4 border-b border-slate-200 dark:border-neutral-800 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] rounded-xl">
                   <Sparkles className="h-5 w-5 text-white" />
@@ -327,7 +327,7 @@ export default function ImagesPageClient({
                   <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                     AI Image Generator
                   </h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                  <p className="text-xs text-slate-500 dark:text-neutral-400">
                     Powered by DALL-E 3
                   </p>
                 </div>
@@ -358,10 +358,10 @@ export default function ImagesPageClient({
           onClick={() => setSelectedImage(null)}
         >
           <div
-            className="relative max-w-4xl w-full bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden"
+            className="relative max-w-4xl w-full bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-neutral-800">
               <h3 className="font-semibold text-slate-900 dark:text-white truncate">
                 {selectedImage.filename}
               </h3>
@@ -402,7 +402,7 @@ export default function ImagesPageClient({
                   className="w-full h-auto max-h-[60vh] object-contain rounded-lg"
                 />
               ) : (
-                <div className="h-64 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-lg">
+                <div className="h-64 flex items-center justify-center bg-slate-100 dark:bg-neutral-800 rounded-lg">
                   <ImageIcon className="h-16 w-16 text-slate-300" />
                 </div>
               )}

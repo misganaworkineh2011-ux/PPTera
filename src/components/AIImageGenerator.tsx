@@ -154,7 +154,7 @@ export default function AIImageGenerator({
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             placeholder="A professional business presentation background with abstract blue shapes..."
-            className="w-full h-24 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent resize-none"
+            className="w-full h-24 px-4 py-3 rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent resize-none"
             disabled={loading}
           />
           <div className="absolute bottom-2 right-2 text-xs text-slate-400">
@@ -169,7 +169,7 @@ export default function AIImageGenerator({
               <button
                 key={idx}
                 onClick={() => setPrompt(suggestion)}
-                className="text-xs px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition"
+                className="text-xs px-3 py-1.5 rounded-full bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition"
               >
                 {suggestion.substring(0, 40)}...
               </button>
@@ -181,7 +181,7 @@ export default function AIImageGenerator({
       {/* Model Selection */}
       {!compact && (
         <div>
-          <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
+          <label className="block text-xs font-medium text-slate-500 dark:text-neutral-400 mb-2">
             AI Model
           </label>
           <div className="grid grid-cols-2 gap-3">
@@ -193,7 +193,7 @@ export default function AIImageGenerator({
                   "p-3 rounded-xl border-2 text-left transition",
                   model === m
                     ? "border-[#06b6d4] bg-[#06b6d4]/5"
-                    : "border-slate-200 dark:border-slate-700 hover:border-slate-300"
+                    : "border-slate-200 dark:border-neutral-800 hover:border-slate-300"
                 )}
               >
                 <div className="flex items-center justify-between mb-1">
@@ -204,7 +204,7 @@ export default function AIImageGenerator({
                     <div className="w-2 h-2 rounded-full bg-[#06b6d4]" />
                   )}
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-slate-500 dark:text-neutral-400">
                   {MODEL_INFO[m].description}
                 </p>
                 <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
@@ -221,7 +221,7 @@ export default function AIImageGenerator({
         <div className="grid grid-cols-3 gap-4">
           {/* Quality */}
           <div>
-            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
+            <label className="block text-xs font-medium text-slate-500 dark:text-neutral-400 mb-1.5">
               Quality
             </label>
             <div className="flex gap-2">
@@ -231,7 +231,7 @@ export default function AIImageGenerator({
                   "flex-1 px-3 py-2 rounded-lg text-xs font-medium transition",
                   quality === "standard"
                     ? "bg-[#06b6d4] text-white"
-                    : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                    : "bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
                 )}
               >
                 Standard
@@ -242,7 +242,7 @@ export default function AIImageGenerator({
                   "flex-1 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center justify-center gap-1",
                   quality === "hd"
                     ? "bg-[#06b6d4] text-white"
-                    : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                    : "bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
                 )}
               >
                 <Sparkles className="h-3 w-3" />
@@ -253,13 +253,13 @@ export default function AIImageGenerator({
 
           {/* Size */}
           <div>
-            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
+            <label className="block text-xs font-medium text-slate-500 dark:text-neutral-400 mb-1.5">
               Size
             </label>
             <select
               value={size}
               onChange={(e) => setSize(e.target.value as ImageSize)}
-              className="w-full px-3 py-2 rounded-lg text-xs bg-slate-100 dark:bg-slate-700 border-0 text-slate-700 dark:text-slate-300"
+              className="w-full px-3 py-2 rounded-lg text-xs bg-slate-100 dark:bg-neutral-800 border-0 text-slate-700 dark:text-slate-300"
             >
               {sizeOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -271,7 +271,7 @@ export default function AIImageGenerator({
 
           {/* Style (OpenAI only) */}
           <div>
-            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
+            <label className="block text-xs font-medium text-slate-500 dark:text-neutral-400 mb-1.5">
               Style {model !== "openai" && <span className="text-slate-400">(OpenAI only)</span>}
             </label>
             <div className="flex gap-2">
@@ -282,7 +282,7 @@ export default function AIImageGenerator({
                   "flex-1 px-3 py-2 rounded-lg text-xs font-medium transition",
                   style === "vivid" && model === "openai"
                     ? "bg-[#06b6d4] text-white"
-                    : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300",
+                    : "bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300",
                   model !== "openai" && "opacity-50 cursor-not-allowed"
                 )}
               >
@@ -295,7 +295,7 @@ export default function AIImageGenerator({
                   "flex-1 px-3 py-2 rounded-lg text-xs font-medium transition",
                   style === "natural" && model === "openai"
                     ? "bg-[#06b6d4] text-white"
-                    : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300",
+                    : "bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300",
                   model !== "openai" && "opacity-50 cursor-not-allowed"
                 )}
               >
@@ -307,8 +307,8 @@ export default function AIImageGenerator({
       )}
 
       {/* Credit Cost Info */}
-      <div className="flex items-center justify-between px-3 py-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+      <div className="flex items-center justify-between px-3 py-2 bg-slate-50 dark:bg-neutral-900/50 rounded-lg">
+        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-neutral-400">
           <Zap className="h-4 w-4 text-amber-500" />
           <span>Cost: <strong>{creditCost} credits</strong></span>
           <span className="text-xs text-slate-400">({modelInfo.name})</span>
@@ -345,7 +345,7 @@ export default function AIImageGenerator({
       {/* Generated Image Preview */}
       {generatedImage && (
         <div className="space-y-3">
-          <div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
+          <div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-neutral-800">
             <img
               src={generatedImage.url}
               alt="AI Generated"
@@ -373,8 +373,8 @@ export default function AIImageGenerator({
 
           {/* Revised Prompt */}
           {generatedImage.revisedPrompt && (
-            <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+            <div className="p-3 bg-slate-50 dark:bg-neutral-900/50 rounded-lg">
+              <p className="text-xs text-slate-500 dark:text-neutral-400 mb-1">
                 Enhanced prompt:
               </p>
               <p className="text-sm text-slate-700 dark:text-slate-300">

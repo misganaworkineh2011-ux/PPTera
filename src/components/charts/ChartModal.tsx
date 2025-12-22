@@ -68,9 +68,9 @@ export default function ChartModal({ isOpen, onClose, onInsert, theme, existingC
       />
       
       {/* Modal */}
-      <div className="relative w-full max-w-4xl max-h-[90vh] bg-white dark:bg-slate-800 rounded-2xl shadow-2xl overflow-hidden mx-4">
+      <div className="relative w-full max-w-4xl max-h-[90vh] bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl overflow-hidden mx-4">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-neutral-800">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-[#06b6d4]/10 rounded-lg">
               <BarChart3 size={20} className="text-[#06b6d4]" />
@@ -79,7 +79,7 @@ export default function ChartModal({ isOpen, onClose, onInsert, theme, existingC
               <h2 className="text-lg font-bold text-slate-800 dark:text-white">
                 {existingChart ? "Edit Chart" : "Add Chart"}
               </h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
+              <p className="text-sm text-slate-500 dark:text-neutral-400">
                 {mode === "templates" ? "Choose a template or create from scratch" : "Customize your chart"}
               </p>
             </div>
@@ -114,7 +114,7 @@ export default function ChartModal({ isOpen, onClose, onInsert, theme, existingC
 
                 return (
                   <div key={category} className="mb-6">
-                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 capitalize">
+                    <h3 className="text-sm font-semibold text-slate-700 dark:text-neutral-300 mb-3 capitalize">
                       {category} Charts
                     </h3>
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -122,10 +122,10 @@ export default function ChartModal({ isOpen, onClose, onInsert, theme, existingC
                         <button
                           key={template.id}
                           onClick={() => handleTemplateSelect(template.id)}
-                          className="group p-4 text-left rounded-xl border border-slate-200 dark:border-slate-600 hover:border-[#06b6d4] hover:shadow-md transition-all bg-white dark:bg-slate-700/50"
+                          className="group p-4 text-left rounded-xl border border-slate-200 dark:border-neutral-700 hover:border-[#06b6d4] hover:shadow-md transition-all bg-white dark:bg-neutral-800/50"
                         >
                           {/* Mini Preview */}
-                          <div className="h-24 mb-3 bg-slate-50 dark:bg-slate-800 rounded-lg p-2 overflow-hidden">
+                          <div className="h-24 mb-3 bg-slate-50 dark:bg-neutral-900 rounded-lg p-2 overflow-hidden">
                             <InteractiveChart
                               chart={{
                                 type: template.type,
@@ -137,10 +137,10 @@ export default function ChartModal({ isOpen, onClose, onInsert, theme, existingC
                               interactive={false}
                             />
                           </div>
-                          <div className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-[#06b6d4] transition-colors">
+                          <div className="text-sm font-medium text-slate-700 dark:text-neutral-300 group-hover:text-[#06b6d4] transition-colors">
                             {template.name}
                           </div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                          <div className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">
                             {template.description}
                           </div>
                         </button>

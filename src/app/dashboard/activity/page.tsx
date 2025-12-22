@@ -58,7 +58,7 @@ export default function ActivityPage() {
       case "delete":
         return { icon: Trash2, color: "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300", label: t.deleted };
       default:
-        return { icon: History, color: "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300", label: t.activity };
+        return { icon: History, color: "bg-slate-100 text-slate-600 dark:bg-neutral-800 dark:text-neutral-300", label: t.activity };
     }
   };
 
@@ -108,11 +108,11 @@ export default function ActivityPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#1e3a8a] dark:text-white">{t.activityTitle}</h1>
-          <p className="text-sm text-slate-500 mt-1 dark:text-slate-400">{t.activitySubtitle}</p>
+          <p className="text-sm text-slate-500 mt-1 dark:text-neutral-400">{t.activitySubtitle}</p>
         </div>
         <button
           onClick={fetchActivities}
-          className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
+          className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
         >
           <RefreshCw size={14} /> {t.refresh}
         </button>
@@ -126,7 +126,7 @@ export default function ActivityPage() {
             className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition ${
               filter === type
                 ? "bg-[#1e3a8a] text-white"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
             }`}
           >
             {getFilterLabel(type)}
@@ -134,12 +134,12 @@ export default function ActivityPage() {
         ))}
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+      <div className="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
         {filteredActivities.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <History className="h-12 w-12 text-slate-300 mb-4" />
             <h3 className="text-lg font-bold text-[#1e3a8a] dark:text-white">{t.noActivity}</h3>
-            <p className="text-sm text-slate-500 mt-1 dark:text-slate-400">{t.activityEmpty}</p>
+            <p className="text-sm text-slate-500 mt-1 dark:text-neutral-400">{t.activityEmpty}</p>
           </div>
         ) : (
           <div className="p-6">
@@ -150,7 +150,7 @@ export default function ActivityPage() {
                 return (
                   <div key={activity.id} className="relative flex gap-4">
                     {index !== filteredActivities.length - 1 && (
-                      <div className="absolute left-[19px] top-10 h-full w-0.5 bg-slate-100 dark:bg-slate-700"></div>
+                      <div className="absolute left-[19px] top-10 h-full w-0.5 bg-slate-100 dark:bg-neutral-800"></div>
                     )}
                     <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${config.color}`}>
                       <IconComponent size={18} />
@@ -159,7 +159,7 @@ export default function ActivityPage() {
                       <p className="text-sm font-semibold text-[#1e3a8a] dark:text-white">
                         {activity.description}
                       </p>
-                      <div className="mt-1 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                      <div className="mt-1 flex items-center gap-2 text-xs text-slate-500 dark:text-neutral-400">
                         <span className={`px-1.5 py-0.5 rounded ${config.color}`}>{config.label}</span>
                         <span>•</span>
                         <span>{formatDate(activity.createdAt)}</span>

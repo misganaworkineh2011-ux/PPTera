@@ -188,12 +188,12 @@ export default function CustomThemeCreator({ isOpen, onClose, onSave }: CustomTh
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="flex w-full max-w-5xl h-[85vh] max-h-[750px] overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow-2xl">
+      <div className="flex w-full max-w-5xl h-[85vh] max-h-[750px] overflow-hidden rounded-2xl bg-white dark:bg-black shadow-2xl">
         {/* Left Panel - Form */}
-        <div className="w-1/2 flex flex-col border-r border-slate-200 dark:border-slate-700">
+        <div className="w-1/2 flex flex-col border-r border-slate-200 dark:border-neutral-800">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 px-6 py-4">
-            <button onClick={handleClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-neutral-800 px-6 py-4">
+            <button onClick={handleClose} className="text-slate-400 hover:text-slate-600 dark:text-neutral-400 dark:hover:text-slate-300">
               <X size={20} />
             </button>
             <div className="flex items-center gap-2 text-[#06b6d4]">
@@ -209,7 +209,7 @@ export default function CustomThemeCreator({ isOpen, onClose, onSave }: CustomTh
           </div>
 
           {/* Progress Steps */}
-          <div className="flex items-center justify-center gap-2 px-6 py-4 border-b border-slate-100 dark:border-slate-700">
+          <div className="flex items-center justify-center gap-2 px-6 py-4 border-b border-slate-100 dark:border-neutral-800">
             {STEPS.map((step, idx) => (
               <div key={step.id} className="flex items-center">
                 <div
@@ -218,13 +218,13 @@ export default function CustomThemeCreator({ isOpen, onClose, onSave }: CustomTh
                       ? "bg-[#06b6d4] text-white"
                       : currentStep > step.id
                       ? "bg-green-500 text-white"
-                      : "bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400"
+                      : "bg-slate-200 dark:bg-neutral-800 text-slate-500 dark:text-neutral-400"
                   }`}
                 >
                   {currentStep > step.id ? <Check size={14} /> : step.id}
                 </div>
                 {idx < STEPS.length - 1 && (
-                  <div className={`mx-2 h-0.5 w-8 ${currentStep > step.id ? "bg-green-500" : "bg-slate-200 dark:bg-slate-700"}`} />
+                  <div className={`mx-2 h-0.5 w-8 ${currentStep > step.id ? "bg-green-500" : "bg-slate-200 dark:bg-neutral-800"}`} />
                 )}
               </div>
             ))}
@@ -253,11 +253,11 @@ export default function CustomThemeCreator({ isOpen, onClose, onSave }: CustomTh
           </div>
 
           {/* Footer Navigation */}
-          <div className="flex items-center justify-between border-t border-slate-200 dark:border-slate-700 px-6 py-4">
+          <div className="flex items-center justify-between border-t border-slate-200 dark:border-neutral-800 px-6 py-4">
             <button
               onClick={handleBack}
               disabled={currentStep === 1}
-              className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-slate-600 dark:text-neutral-400 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ChevronLeft size={16} /> {t.back || "Back"}
             </button>
@@ -282,7 +282,7 @@ export default function CustomThemeCreator({ isOpen, onClose, onSave }: CustomTh
         </div>
 
         {/* Right Panel - Preview */}
-        <div className="w-1/2 bg-slate-100 dark:bg-slate-800 p-6 overflow-y-auto">
+        <div className="w-1/2 bg-slate-100 dark:bg-neutral-900 p-6 overflow-y-auto">
           <ThemePreview
             colors={colors}
             headingFont={headingFont}
@@ -323,7 +323,7 @@ function Step1Colors({
             className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition ${
               themeData.colorMode === "curated"
                 ? "bg-[#06b6d4] text-white"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                : "bg-slate-100 text-slate-600 dark:text-neutral-400 hover:bg-slate-200"
             }`}
           >
             ✓ Curated
@@ -333,7 +333,7 @@ function Step1Colors({
             className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition ${
               themeData.colorMode === "custom"
                 ? "bg-[#06b6d4] text-white"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                : "bg-slate-100 text-slate-600 dark:text-neutral-400 hover:bg-slate-200"
             }`}
           >
             ✎ Customize
@@ -352,7 +352,7 @@ function Step1Colors({
                 className={`rounded-full px-3 py-1 text-xs font-medium transition ${
                   selectedCategory === cat
                     ? "bg-[#1e3a8a] text-white"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    : "bg-slate-100 text-slate-600 dark:text-neutral-400 hover:bg-slate-200"
                 }`}
               >
                 {cat}
@@ -378,7 +378,7 @@ function Step1Colors({
                   <div className="flex-1" style={{ backgroundColor: palette.colors.accent }} />
                 </div>
                 <div className="p-2 bg-white">
-                  <p className="text-xs font-medium text-slate-700 truncate">{palette.name}</p>
+                  <p className="text-xs font-medium text-slate-700 dark:text-neutral-300 truncate">{palette.name}</p>
                 </div>
                 {themeData.selectedPalette === palette.id && (
                   <div className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#06b6d4] text-white">
@@ -394,7 +394,7 @@ function Step1Colors({
         <div className="space-y-4">
           {Object.entries(themeData.customColors).map(([key, value]) => (
             <div key={key} className="flex items-center justify-between">
-              <label className="text-sm font-medium text-slate-700 capitalize">
+              <label className="text-sm font-medium text-slate-700 dark:text-neutral-300 capitalize">
                 {key.replace(/([A-Z])/g, " $1").trim()}
               </label>
               <div className="flex items-center gap-2">
@@ -443,7 +443,7 @@ function Step2Fonts({
 
       {/* Heading Font */}
       <div>
-        <h3 className="text-sm font-semibold text-slate-700 mb-3">Heading Font</h3>
+        <h3 className="text-sm font-semibold text-slate-700 dark:text-neutral-300 mb-3">Heading Font</h3>
         <div className="grid grid-cols-2 gap-2">
           {FONT_OPTIONS.map(font => (
             <button
@@ -455,7 +455,7 @@ function Step2Fonts({
                   : "border-slate-200 hover:border-slate-300"
               }`}
             >
-              <p className="font-bold text-slate-800" style={{ fontFamily: font.family }}>
+              <p className="font-bold text-slate-800 dark:text-white" style={{ fontFamily: font.family }}>
                 {font.name}
               </p>
               <p className="text-xs text-slate-500">{font.style}</p>
@@ -471,7 +471,7 @@ function Step2Fonts({
 
       {/* Body Font */}
       <div>
-        <h3 className="text-sm font-semibold text-slate-700 mb-3">Body Font</h3>
+        <h3 className="text-sm font-semibold text-slate-700 dark:text-neutral-300 mb-3">Body Font</h3>
         <div className="grid grid-cols-2 gap-2">
           {FONT_OPTIONS.map(font => (
             <button
@@ -483,7 +483,7 @@ function Step2Fonts({
                   : "border-slate-200 hover:border-slate-300"
               }`}
             >
-              <p className="text-slate-800" style={{ fontFamily: font.family }}>
+              <p className="text-slate-800 dark:text-white" style={{ fontFamily: font.family }}>
                 {font.name}
               </p>
               <p className="text-xs text-slate-500">{font.style}</p>
@@ -539,7 +539,7 @@ function Step3Design({
                 }`}
               />
             </div>
-            <p className="text-xs font-bold text-slate-700">{style.name}</p>
+            <p className="text-xs font-bold text-slate-700 dark:text-neutral-300">{style.name}</p>
             <p className="text-[10px] text-slate-500 mt-1">{style.description}</p>
             {themeData.cardStyle === style.id && (
               <div className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#06b6d4] text-white">
@@ -581,7 +581,7 @@ function Step4Name({
         <div className="flex items-start gap-4">
           <div className="flex-1">
             <div className="mb-2 rounded border border-[#06b6d4] p-3">
-              <p className="text-lg font-bold text-slate-800">Title</p>
+              <p className="text-lg font-bold text-slate-800 dark:text-white">Title</p>
               <p className="text-sm text-[#06b6d4]">Body & link</p>
             </div>
             <div className="flex items-center gap-2 mt-3">
@@ -591,7 +591,7 @@ function Step4Name({
                 <div className="h-6 w-6 rounded bg-slate-200" />
               )}
               <div>
-                <p className="text-xs font-medium text-slate-600">
+                <p className="text-xs font-medium text-slate-600 dark:text-neutral-400">
                   {themeData.themeName || "Untitled theme"}
                 </p>
                 <p className="text-[10px] text-slate-400">Created by you</p>
@@ -603,7 +603,7 @@ function Step4Name({
 
       {/* Theme Name Input */}
       <div>
-        <label className="block text-sm font-semibold text-slate-700 mb-2">Theme name</label>
+        <label className="block text-sm font-semibold text-slate-700 dark:text-neutral-300 mb-2">Theme name</label>
         <input
           type="text"
           value={themeData.themeName}
@@ -615,7 +615,7 @@ function Step4Name({
 
       {/* Logo Upload */}
       <div>
-        <label className="block text-sm font-semibold text-slate-700 mb-2">Logo (optional)</label>
+        <label className="block text-sm font-semibold text-slate-700 dark:text-neutral-300 mb-2">Logo (optional)</label>
         <p className="text-xs text-slate-500 mb-3">Optional: you can add your logo if you&apos;d like</p>
         <div className="rounded-lg border-2 border-dashed border-slate-200 p-6 text-center hover:border-[#06b6d4] transition-colors">
           {themeData.logoUrl ? (
@@ -649,7 +649,7 @@ function Step4Name({
       {/* Feedback Section */}
       <div className="rounded-lg bg-slate-50 p-4">
         <p className="text-xs text-slate-500 text-center mb-2">Help refine our product</p>
-        <p className="text-sm text-slate-700 text-center mb-3">How satisfied are you with the output?</p>
+        <p className="text-sm text-slate-700 dark:text-neutral-300 text-center mb-3">How satisfied are you with the output?</p>
         <div className="flex justify-center gap-4">
           <button className="p-2 rounded-full hover:bg-slate-200 transition">😊</button>
           <button className="p-2 rounded-full hover:bg-slate-200 transition">😐</button>

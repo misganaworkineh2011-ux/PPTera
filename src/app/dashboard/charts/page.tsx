@@ -167,7 +167,7 @@ export default function ChartsPage() {
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 dark:text-white">{t.charts || "Charts"}</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          <p className="mt-1 text-sm text-slate-500 dark:text-neutral-400">
             Create and manage interactive charts for your presentations
           </p>
         </div>
@@ -192,12 +192,12 @@ export default function ChartsPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search charts..."
-            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-800 dark:text-white focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
           />
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-700">
+          <div className="flex items-center gap-1 rounded-lg bg-slate-100 p-1 dark:bg-neutral-800">
             {[
               { id: "all", label: "All" },
               { id: "bar", label: "Bar", icon: <BarChart3 size={14} /> },
@@ -210,8 +210,8 @@ export default function ChartsPage() {
                 onClick={() => setFilterType(filter.id as FilterType)}
                 className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
                   filterType === filter.id
-                    ? "bg-white text-[#06b6d4] shadow-sm dark:bg-slate-600"
-                    : "text-slate-600 hover:text-slate-800 dark:text-slate-400"
+                    ? "bg-white text-[#06b6d4] shadow-sm dark:bg-neutral-700"
+                    : "text-slate-600 dark:text-neutral-400 hover:text-slate-800 dark:text-neutral-400"
                 }`}
               >
                 {filter.icon}
@@ -220,13 +220,13 @@ export default function ChartsPage() {
             ))}
           </div>
 
-          <div className="flex items-center gap-0.5 rounded-lg bg-slate-100 p-1 dark:bg-slate-700">
+          <div className="flex items-center gap-0.5 rounded-lg bg-slate-100 p-1 dark:bg-neutral-800">
             <button
               onClick={() => setViewMode("grid")}
               className={`rounded-md p-2 transition-all ${
                 viewMode === "grid"
-                  ? "bg-white text-[#06b6d4] shadow-sm dark:bg-slate-600"
-                  : "text-slate-500 hover:text-slate-700"
+                  ? "bg-white text-[#06b6d4] shadow-sm dark:bg-neutral-700"
+                  : "text-slate-500 hover:text-slate-700 dark:text-neutral-300"
               }`}
             >
               <Grid size={16} />
@@ -235,8 +235,8 @@ export default function ChartsPage() {
               onClick={() => setViewMode("list")}
               className={`rounded-md p-2 transition-all ${
                 viewMode === "list"
-                  ? "bg-white text-[#06b6d4] shadow-sm dark:bg-slate-600"
-                  : "text-slate-500 hover:text-slate-700"
+                  ? "bg-white text-[#06b6d4] shadow-sm dark:bg-neutral-700"
+                  : "text-slate-500 hover:text-slate-700 dark:text-neutral-300"
               }`}
             >
               <ListIcon size={16} />
@@ -248,13 +248,13 @@ export default function ChartsPage() {
       {/* Charts Grid/List */}
       {filteredCharts.length === 0 ? (
         <div className="flex flex-col items-center justify-center px-4 py-16">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-700">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-neutral-800">
             <BarChart3 size={32} className="text-slate-400" />
           </div>
-          <h3 className="mb-2 text-lg font-semibold text-slate-700 dark:text-slate-300">
+          <h3 className="mb-2 text-lg font-semibold text-slate-700 dark:text-neutral-300">
             {searchQuery ? "No charts found" : "No charts yet"}
           </h3>
-          <p className="mb-6 max-w-md text-center text-sm text-slate-500 dark:text-slate-400">
+          <p className="mb-6 max-w-md text-center text-sm text-slate-500 dark:text-neutral-400">
             {searchQuery
               ? "Try adjusting your search or filters"
               : "Create your first chart to visualize data in your presentations"}
@@ -270,56 +270,81 @@ export default function ChartsPage() {
           )}
         </div>
       ) : viewMode === "grid" ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredCharts.map((chart) => (
             <div
               key={chart.id}
-              className="group overflow-hidden rounded-xl border border-slate-200 bg-white transition-all hover:border-[#06b6d4]/50 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800"
+              className="group relative flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-xl hover:shadow-[#06b6d4]/10 dark:border-neutral-800 dark:bg-neutral-900"
             >
-              <div className="h-40 overflow-hidden bg-slate-50 p-4 dark:bg-slate-700/50">
-                <InteractiveChart chart={chart} compact={true} interactive={false} />
+              {/* Chart Preview */}
+              <div className="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 dark:from-neutral-800 dark:to-neutral-900">
+                <div className="absolute inset-3">
+                  <InteractiveChart chart={chart} compact={true} interactive={false} />
+                </div>
+                {/* Hover overlay with quick actions */}
+                <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/0 opacity-0 transition-all group-hover:bg-black/40 group-hover:opacity-100">
+                  <button
+                    onClick={() => handleEditChart(chart.id)}
+                    className="rounded-full bg-white p-2.5 text-slate-700 dark:text-neutral-300 shadow-lg transition-transform hover:scale-110 hover:bg-[#06b6d4] hover:text-white"
+                  >
+                    <Edit3 size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleDuplicateChart(chart.id)}
+                    className="rounded-full bg-white p-2.5 text-slate-700 dark:text-neutral-300 shadow-lg transition-transform hover:scale-110 hover:bg-[#06b6d4] hover:text-white"
+                  >
+                    <Copy size={16} />
+                  </button>
+                </div>
+                {/* Chart type badge */}
+                <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-[#06b6d4] shadow-sm backdrop-blur-sm dark:bg-neutral-900/90">
+                  {getChartIcon(chart.type)}
+                  <span className="capitalize">{chart.type}</span>
+                </div>
               </div>
-              <div className="p-4">
+              
+              {/* Card Content */}
+              <div className="flex flex-1 flex-col p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
-                    <div className="mb-1 flex items-center gap-2">
-                      <span className="text-[#06b6d4]">{getChartIcon(chart.type)}</span>
-                      <h3 className="truncate font-semibold text-slate-800 dark:text-white">
-                        {chart.title || "Untitled Chart"}
-                      </h3>
-                    </div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      {new Date(chart.createdAt).toLocaleDateString()} • {chart.type}
+                    <h3 className="mb-1 truncate text-sm font-bold text-slate-800 dark:text-white" title={chart.title || "Untitled Chart"}>
+                      {chart.title || "Untitled Chart"}
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-neutral-500">
+                      {new Date(chart.createdAt).toLocaleDateString()} • {chart.data.length} data points
                     </p>
                   </div>
-                  <div className="relative">
+                  <div className="relative flex-shrink-0">
                     <button
-                      onClick={() => setActiveMenu(activeMenu === chart.id ? null : chart.id)}
-                      className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-300"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveMenu(activeMenu === chart.id ? null : chart.id);
+                      }}
+                      className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
                     >
-                      <MoreHorizontal size={16} />
+                      <MoreHorizontal size={18} />
                     </button>
                     {activeMenu === chart.id && (
-                      <div className="absolute right-0 top-full z-10 mt-1 w-40 rounded-lg border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800">
-                        <div className="p-1">
+                      <div className="absolute right-0 bottom-full mb-2 w-44 rounded-xl border border-slate-200 bg-white shadow-xl dark:border-neutral-700 dark:bg-neutral-800 z-50">
+                        <div className="p-1.5">
                           <button
                             onClick={() => handleEditChart(chart.id)}
-                            className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
+                            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:text-neutral-300 dark:hover:bg-neutral-700"
                           >
-                            <Edit3 size={14} /> Edit
+                            <Edit3 size={15} /> Edit Chart
                           </button>
                           <button
                             onClick={() => handleDuplicateChart(chart.id)}
-                            className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
+                            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:text-neutral-300 dark:hover:bg-neutral-700"
                           >
-                            <Copy size={14} /> Duplicate
+                            <Copy size={15} /> Duplicate
                           </button>
-                          <div className="my-1 border-t border-slate-100 dark:border-slate-700" />
+                          <div className="my-1.5 border-t border-slate-100 dark:border-neutral-700" />
                           <button
                             onClick={() => handleDeleteChart(chart.id)}
-                            className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
                           >
-                            <Trash2 size={14} /> Delete
+                            <Trash2 size={15} /> Delete
                           </button>
                         </div>
                       </div>
@@ -331,44 +356,50 @@ export default function ChartsPage() {
           ))}
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {filteredCharts.map((chart) => (
             <div
               key={chart.id}
-              className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 transition-all hover:border-[#06b6d4]/50 hover:shadow-md dark:border-slate-700 dark:bg-slate-800"
+              className="group flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-lg dark:border-neutral-800 dark:bg-neutral-900"
             >
-              <div className="h-16 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-slate-50 dark:bg-slate-700/50">
+              <div className="h-20 w-32 flex-shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-slate-50 to-slate-100 p-2 dark:from-neutral-800 dark:to-neutral-900">
                 <InteractiveChart chart={chart} compact={true} interactive={false} />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="mb-1 flex items-center gap-2">
-                  <span className="text-[#06b6d4]">{getChartIcon(chart.type)}</span>
-                  <h3 className="truncate font-semibold text-slate-800 dark:text-white">
-                    {chart.title || "Untitled Chart"}
-                  </h3>
+                <div className="mb-1.5 flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 rounded-full bg-[#06b6d4]/10 px-2 py-0.5 text-xs font-medium text-[#06b6d4]">
+                    {getChartIcon(chart.type)}
+                    <span className="capitalize">{chart.type}</span>
+                  </div>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {new Date(chart.createdAt).toLocaleDateString()} • {chart.type} • {chart.data.length} data points
+                <h3 className="mb-1 truncate text-base font-bold text-slate-800 dark:text-white">
+                  {chart.title || "Untitled Chart"}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-neutral-500">
+                  Created {new Date(chart.createdAt).toLocaleDateString()} • {chart.data.length} data points
                 </p>
               </div>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => handleEditChart(chart.id)}
-                  className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-[#06b6d4]/10 hover:text-[#06b6d4]"
+                  className="rounded-lg p-2.5 text-slate-400 transition-colors hover:bg-[#06b6d4]/10 hover:text-[#06b6d4]"
+                  title="Edit"
                 >
-                  <Edit3 size={16} />
+                  <Edit3 size={18} />
                 </button>
                 <button
                   onClick={() => handleDuplicateChart(chart.id)}
-                  className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-[#06b6d4]/10 hover:text-[#06b6d4]"
+                  className="rounded-lg p-2.5 text-slate-400 transition-colors hover:bg-[#06b6d4]/10 hover:text-[#06b6d4]"
+                  title="Duplicate"
                 >
-                  <Copy size={16} />
+                  <Copy size={18} />
                 </button>
                 <button
                   onClick={() => handleDeleteChart(chart.id)}
-                  className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20"
+                  className="rounded-lg p-2.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20"
+                  title="Delete"
                 >
-                  <Trash2 size={16} />
+                  <Trash2 size={18} />
                 </button>
               </div>
             </div>
@@ -379,8 +410,13 @@ export default function ChartsPage() {
 
       {/* Templates Section */}
       <div className="mt-12">
-        <h2 className="mb-4 text-lg font-bold text-slate-800 dark:text-white">Quick Start Templates</h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+        <div className="mb-5 flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-slate-800 dark:text-white">Quick Start Templates</h2>
+            <p className="text-sm text-slate-500 dark:text-neutral-500">Click to instantly create a chart</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
           {CHART_TEMPLATES.map((template) => (
             <button
               key={template.id}
@@ -395,9 +431,9 @@ export default function ChartsPage() {
                 };
                 setCharts((prev) => [newChart, ...prev]);
               }}
-              className="group rounded-xl border border-slate-200 bg-white p-3 text-left transition-all hover:border-[#06b6d4] hover:shadow-md dark:border-slate-600 dark:bg-slate-800"
+              className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:border-[#06b6d4] hover:shadow-lg hover:shadow-[#06b6d4]/10 dark:border-neutral-800 dark:bg-neutral-900"
             >
-              <div className="mb-2 h-16 overflow-hidden rounded-lg bg-slate-50 p-1.5 dark:bg-slate-700/50">
+              <div className="aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 p-3 dark:from-neutral-800 dark:to-neutral-900">
                 <InteractiveChart
                   chart={{
                     type: template.type,
@@ -408,8 +444,11 @@ export default function ChartsPage() {
                   interactive={false}
                 />
               </div>
-              <div className="truncate text-xs font-medium text-slate-700 transition-colors group-hover:text-[#06b6d4] dark:text-slate-300">
-                {template.name}
+              <div className="flex items-center gap-2 p-3 border-t border-slate-100 dark:border-neutral-800">
+                <span className="text-[#06b6d4]">{getChartIcon(template.type)}</span>
+                <span className="truncate text-sm font-medium text-slate-700 dark:text-neutral-300 transition-colors group-hover:text-[#06b6d4] dark:text-neutral-300">
+                  {template.name}
+                </span>
               </div>
             </button>
           ))}

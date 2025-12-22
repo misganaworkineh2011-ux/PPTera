@@ -113,7 +113,7 @@ export default function ReviewWidget() {
             className={cn(
               star <= rating
                 ? "fill-yellow-400 text-yellow-400"
-                : "fill-slate-200 text-slate-200 dark:fill-slate-600 dark:text-slate-600"
+                : "fill-slate-200 text-slate-200 dark:fill-slate-600 dark:text-slate-600 dark:text-neutral-400"
             )}
           />
         </button>
@@ -138,7 +138,7 @@ export default function ReviewWidget() {
         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
           {existingReview ? "Review Updated!" : "Thank You for Your Feedback!"}
         </h3>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
+        <p className="text-sm text-slate-500 dark:text-neutral-400">
           Your review has been {existingReview ? "updated" : "submitted"} and will be visible after approval.
         </p>
       </div>
@@ -156,7 +156,7 @@ export default function ReviewWidget() {
             </div>
             <div>
               <h2 className="text-lg font-bold text-[#1e3a8a] dark:text-white">Your Review</h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
+              <p className="text-sm text-slate-500 dark:text-neutral-400">
                 {existingReview.isPublic ? "Published" : "Pending approval"}
               </p>
             </div>
@@ -170,10 +170,10 @@ export default function ReviewWidget() {
           </button>
         </div>
 
-        <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-700/50 space-y-3">
+        <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-800/50 space-y-3">
           <div className="flex items-center gap-2">
             <StarRating rating={existingReview.rating} readonly />
-            <span className="text-sm text-slate-500 dark:text-slate-400">
+            <span className="text-sm text-slate-500 dark:text-neutral-400">
               ({existingReview.rating}/5)
             </span>
           </div>
@@ -198,7 +198,7 @@ export default function ReviewWidget() {
           <h2 className="text-lg font-bold text-[#1e3a8a] dark:text-white">
             {isEditing ? "Edit Your Review" : "Share Your Feedback"}
           </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Help us improve PPTMaster</p>
+          <p className="text-sm text-slate-500 dark:text-neutral-400">Help us improve PPTMaster</p>
         </div>
       </div>
 
@@ -225,7 +225,7 @@ export default function ReviewWidget() {
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent text-sm"
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent text-sm"
               placeholder="Your name"
             />
           </div>
@@ -238,7 +238,7 @@ export default function ReviewWidget() {
               required
               value={formData.email}
               disabled
-              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-600 text-slate-500 dark:text-slate-400 text-sm cursor-not-allowed"
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-700 text-slate-500 dark:text-neutral-400 text-sm cursor-not-allowed"
             />
           </div>
         </div>
@@ -254,7 +254,7 @@ export default function ReviewWidget() {
             minLength={5}
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent text-sm"
+            className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent text-sm"
             placeholder="Summarize your experience"
           />
         </div>
@@ -270,7 +270,7 @@ export default function ReviewWidget() {
             rows={4}
             value={formData.content}
             onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-            className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent resize-none text-sm"
+            className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent resize-none text-sm"
             placeholder="Tell us what you love about PPTMaster and how we can improve..."
           />
         </div>
@@ -298,7 +298,7 @@ export default function ReviewWidget() {
                   });
                 }
               }}
-              className="flex-1 px-4 py-2.5 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition"
+              className="flex-1 px-4 py-2.5 border border-slate-200 dark:border-neutral-700 text-slate-700 dark:text-slate-300 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition"
             >
               Cancel
             </button>
