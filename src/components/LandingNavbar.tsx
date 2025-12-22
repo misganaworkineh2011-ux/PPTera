@@ -59,9 +59,9 @@ export const LandingNavbar = () => {
                             <Image
                                 src="/logo.png"
                                 alt="PPTMaster Logo"
-                                width={100}
-                                height={35}
-                                className="h-6 md:h-8 lg:h-10 w-auto object-contain"
+                                width={140}
+                                height={45}
+                                className="h-8 md:h-10 lg:h-12 w-auto object-contain"
                             />
                         </div>
                     </Link>
