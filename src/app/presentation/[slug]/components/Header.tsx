@@ -13,6 +13,7 @@ import {
   Menu,
   Undo2,
   Redo2,
+  Hash,
 } from "lucide-react";
 import { useState } from "react";
 import type { Theme } from "~/lib/themes";
@@ -27,6 +28,7 @@ interface HeaderProps {
   mode: string;
   viewMode: "slides" | "scroll";
   showThumbnails: boolean;
+  showPageNumbers: boolean;
   isOwner: boolean;
   theme: Theme;
   isSaving?: boolean;
@@ -41,6 +43,7 @@ interface HeaderProps {
   onCancelEditTitle: () => void;
   onToggleViewMode: () => void;
   onToggleThumbnails: () => void;
+  onTogglePageNumbers: () => void;
   onExport: () => void;
   onShare: () => void;
   onPresent: () => void;
@@ -56,6 +59,7 @@ export function Header({
   mode,
   viewMode,
   showThumbnails,
+  showPageNumbers,
   isOwner,
   theme,
   isSaving,
@@ -70,6 +74,7 @@ export function Header({
   onCancelEditTitle,
   onToggleViewMode,
   onToggleThumbnails,
+  onTogglePageNumbers,
   onExport,
   onShare,
   onPresent,
@@ -188,6 +193,13 @@ export function Header({
           >
             <LayoutGrid size={18} />
           </button>
+          <button
+            onClick={onTogglePageNumbers}
+            className={`p-2 rounded transition-colors ${showPageNumbers ? ui.headerActive : `${ui.headerIcon} ${ui.headerHover}`}`}
+            title="Toggle Page Numbers"
+          >
+            <Hash size={18} />
+          </button>
 
           <div className={`h-5 w-px mx-1 ${ui.divider}`} />
 
@@ -295,6 +307,16 @@ export function Header({
                       </button>
                     </>
                   )}
+                  <button
+                    onClick={() => {
+                      onTogglePageNumbers();
+                      setShowMobileMenu(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded transition-colors ${ui.headerHover} ${ui.headerText} text-sm`}
+                  >
+                    <Hash size={16} />
+                    <span>{showPageNumbers ? "Hide" : "Show"} Page Numbers</span>
+                  </button>
                   <div className={`h-px my-1 ${ui.divider}`} />
                   <button
                     onClick={() => {

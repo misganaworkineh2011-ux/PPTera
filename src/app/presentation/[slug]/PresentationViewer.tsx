@@ -79,6 +79,7 @@ export default function PresentationViewer({
   const [isMobile, setIsMobile] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState(presentation.title);
+  const [showPageNumbers, setShowPageNumbers] = useState(true);
 
   // Sync title when presentation prop changes (e.g., after rename in dashboard)
   useEffect(() => {
@@ -1186,6 +1187,7 @@ export default function PresentationViewer({
                 isHovered={false}
                 isEditing={false}
                 editingText={null}
+                showPageNumber={showPageNumbers}
                 onStartEditing={() => { }}
                 onUpdateContent={() => { }}
                 onFinishEditing={() => { }}
@@ -1266,6 +1268,7 @@ export default function PresentationViewer({
             isHovered={isHovered ?? false}
             isEditing={isEditing ?? false}
             editingText={editingText}
+            showPageNumber={showPageNumbers}
             onStartEditing={startEditing}
             onUpdateContent={updateSlideContent}
             onFinishEditing={() => setEditingText(null)}
@@ -1281,6 +1284,7 @@ export default function PresentationViewer({
             isHovered={isHovered ?? false}
             isEditing={isEditing ?? false}
             editingText={editingText}
+            showPageNumber={showPageNumbers}
             onStartEditing={startEditing}
             onUpdateContent={updateSlideContent}
             onFinishEditing={() => setEditingText(null)}
@@ -1527,6 +1531,7 @@ export default function PresentationViewer({
             mode={mode}
             viewMode={viewMode}
             showThumbnails={showThumbnails}
+            showPageNumbers={showPageNumbers}
             isOwner={isOwner}
             theme={theme}
             isSaving={isSaving}
@@ -1541,6 +1546,7 @@ export default function PresentationViewer({
             onCancelEditTitle={() => { setEditedTitle(presentation.title); setIsEditingTitle(false); }}
             onToggleViewMode={() => { if (!isMobile) { setViewMode(viewMode === "slides" ? "scroll" : "slides"); if (viewMode === "scroll") setShowThumbnails(true); } }}
             onToggleThumbnails={() => { if (!isMobile) setShowThumbnails(!showThumbnails); }}
+            onTogglePageNumbers={() => setShowPageNumbers(!showPageNumbers)}
             onExport={() => setShowExportModal(true)}
             onShare={() => setShowShareModal(true)}
             onPresent={toggleFullscreen}

@@ -16,6 +16,7 @@ interface TitleSlideProps {
   isHovered: boolean;
   isEditing: boolean;
   editingText: EditingState | null;
+  showPageNumber?: boolean;
   onStartEditing: (i: number, f: string, b?: number) => void;
   onUpdateContent: (i: number, f: string, v: string, b?: number) => void;
   onFinishEditing: () => void;
@@ -31,18 +32,19 @@ interface TitleSlideVariantProps {
   isHovered: boolean;
   isEditing: boolean;
   editingText: EditingState | null;
+  showPageNumber: boolean;
   onStartEditing: (i: number, f: string, b?: number) => void;
   onUpdateContent: (i: number, f: string, v: string, b?: number) => void;
   onFinishEditing: () => void;
 }
 
 export function TitleSlide({
-  slide, index, totalSlides, theme, hasImage, isOwner, isFullscreen, isHovered, isEditing, editingText,
+  slide, index, totalSlides, theme, hasImage, isOwner, isFullscreen, isHovered, isEditing, editingText, showPageNumber = true,
   onStartEditing, onUpdateContent, onFinishEditing,
 }: TitleSlideProps) {
   const canEdit = isOwner && !isFullscreen;
   const themeType = getThemeType(theme);
-  const props = { slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, onStartEditing, onUpdateContent, onFinishEditing };
+  const props = { slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing };
 
   return (
     <>
@@ -86,7 +88,7 @@ export function TitleSlide({
 }
 
 // ELEGANT NOIR - Sophisticated dark with geometric accents
-function DarkTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function DarkTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   return (
     <div className="h-full relative overflow-hidden">
       {!hasImage && (
@@ -102,11 +104,13 @@ function DarkTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, i
       {hasImage && <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/30" />}
       
       <div className="relative h-full flex flex-col items-center justify-center p-12 text-center">
-        <div className="absolute top-8 left-8 flex items-center gap-3">
-          <span className="font-mono text-sm font-medium text-amber-500">{String(index + 1).padStart(2, "0")}</span>
-          <div className="w-16 h-px bg-gradient-to-r from-amber-500 to-transparent" />
-          <span className="text-xs font-medium uppercase tracking-widest text-zinc-600">/ {String(totalSlides).padStart(2, "0")}</span>
-        </div>
+        {showPageNumber && (
+          <div className="absolute top-8 left-8 flex items-center gap-3">
+            <span className="font-mono text-sm font-medium text-amber-500">{String(index + 1).padStart(2, "0")}</span>
+            <div className="w-16 h-px bg-gradient-to-r from-amber-500 to-transparent" />
+            <span className="text-xs font-medium uppercase tracking-widest text-zinc-600">/ {String(totalSlides).padStart(2, "0")}</span>
+          </div>
+        )}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[60%] border border-zinc-800/50 rounded-lg pointer-events-none" />
         
         <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="title-slide-heading font-bold mb-4 sm:mb-6 md:mb-8 max-w-5xl leading-tight" style={{ fontFamily: theme.fonts.heading.family, color: "#fafafa", letterSpacing: "-0.03em" }} isOwner={canEdit} isHovered={isHovered} />
@@ -126,7 +130,7 @@ function DarkTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, i
 }
 
 // ARCTIC FROST - Clean, airy with floating elements
-function LightTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function LightTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   return (
     <div className="h-full relative overflow-hidden">
       {!hasImage && (
@@ -142,13 +146,15 @@ function LightTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, 
       {hasImage && <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-white/50 to-white/30" />}
       
       <div className="relative h-full flex flex-col items-center justify-center p-12 text-center">
-        <div className="absolute top-8 left-8 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full border-2 border-cyan-500/30 flex items-center justify-center">
-            <span className="font-mono text-sm font-bold text-cyan-600">{index + 1}</span>
+        {showPageNumber && (
+          <div className="absolute top-8 left-8 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full border-2 border-cyan-500/30 flex items-center justify-center">
+              <span className="font-mono text-sm font-bold text-cyan-600">{index + 1}</span>
+            </div>
+            <div className="w-12 h-px bg-gradient-to-r from-cyan-500/50 to-transparent" />
+            <span className="text-xs font-medium text-slate-400">of {totalSlides}</span>
           </div>
-          <div className="w-12 h-px bg-gradient-to-r from-cyan-500/50 to-transparent" />
-          <span className="text-xs font-medium text-slate-400">of {totalSlides}</span>
-        </div>
+        )}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent rounded-full" />
         
         <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight" style={{ fontFamily: theme.fonts.heading.family, color: "#0f172a", letterSpacing: "-0.03em" }} isOwner={canEdit} isHovered={isHovered} />
@@ -168,7 +174,7 @@ function LightTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, 
 }
 
 // SUNSET GRADIENT - Warm, dramatic with glowing accents
-function SunsetTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function SunsetTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   return (
     <div className="h-full relative overflow-hidden">
       {!hasImage && (
@@ -183,13 +189,15 @@ function SunsetTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit,
       {hasImage && <div className="absolute inset-0 bg-gradient-to-t from-[#1c1017]/95 via-[#1c1017]/60 to-[#1c1017]/30" />}
       
       <div className="relative h-full flex flex-col items-center justify-center p-12 text-center">
-        <div className="absolute top-8 left-8 flex items-center gap-3">
-          <div className="px-3 py-1 rounded-full bg-pink-500/20 border border-pink-500/30">
-            <span className="font-mono text-sm font-bold text-pink-300">{String(index + 1).padStart(2, "0")}</span>
+        {showPageNumber && (
+          <div className="absolute top-8 left-8 flex items-center gap-3">
+            <div className="px-3 py-1 rounded-full bg-pink-500/20 border border-pink-500/30">
+              <span className="font-mono text-sm font-bold text-pink-300">{String(index + 1).padStart(2, "0")}</span>
+            </div>
+            <div className="w-12 h-px bg-gradient-to-r from-pink-500/50 to-transparent" />
+            <span className="text-xs font-medium text-pink-300/50">/ {String(totalSlides).padStart(2, "0")}</span>
           </div>
-          <div className="w-12 h-px bg-gradient-to-r from-pink-500/50 to-transparent" />
-          <span className="text-xs font-medium text-pink-300/50">/ {String(totalSlides).padStart(2, "0")}</span>
-        </div>
+        )}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-32 bg-gradient-to-r from-pink-500/10 via-orange-500/10 to-pink-500/10 blur-2xl rounded-full pointer-events-none" />
         
         <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight relative" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "-0.03em" }} isOwner={canEdit} isHovered={isHovered} />
@@ -210,7 +218,7 @@ function SunsetTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit,
 
 
 // OCEAN DEPTHS - Deep teal with flowing waves and circular accents
-function OceanTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function OceanTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   return (
     <div className="h-full relative overflow-hidden">
       {!hasImage && (
@@ -228,13 +236,15 @@ function OceanTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, 
       {hasImage && <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628]/95 via-[#0a1628]/60 to-[#0a1628]/30" />}
       
       <div className="relative h-full flex flex-col items-center justify-center p-12 text-center">
-        <div className="absolute top-8 left-8 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full border-2 border-teal-500/40 flex items-center justify-center bg-[#0a1628]/50 backdrop-blur-sm">
-            <span className="font-mono text-sm font-bold text-teal-400">{String(index + 1).padStart(2, "0")}</span>
+        {showPageNumber && (
+          <div className="absolute top-8 left-8 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full border-2 border-teal-500/40 flex items-center justify-center bg-[#0a1628]/50 backdrop-blur-sm">
+              <span className="font-mono text-sm font-bold text-teal-400">{String(index + 1).padStart(2, "0")}</span>
+            </div>
+            <div className="w-16 h-px bg-gradient-to-r from-teal-500/50 to-transparent" />
+            <span className="text-xs font-medium text-cyan-400/50">/ {String(totalSlides).padStart(2, "0")}</span>
           </div>
-          <div className="w-16 h-px bg-gradient-to-r from-teal-500/50 to-transparent" />
-          <span className="text-xs font-medium text-cyan-400/50">/ {String(totalSlides).padStart(2, "0")}</span>
-        </div>
+        )}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-40 bg-gradient-to-r from-teal-500/10 via-cyan-500/15 to-teal-500/10 blur-3xl rounded-full pointer-events-none" />
         
         <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight relative" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "-0.02em" }} isOwner={canEdit} isHovered={isHovered} />
@@ -256,7 +266,7 @@ function OceanTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, 
 }
 
 // AURORA BOREALIS - Magical purple/green with hexagonal frames
-function AuroraTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function AuroraTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   return (
     <div className="h-full relative overflow-hidden">
       {!hasImage && (
@@ -272,13 +282,15 @@ function AuroraTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit,
       {hasImage && <div className="absolute inset-0 bg-gradient-to-t from-[#0f0a1a]/95 via-[#0f0a1a]/60 to-[#0f0a1a]/30" />}
       
       <div className="relative h-full flex flex-col items-center justify-center p-12 text-center">
-        <div className="absolute top-8 left-8 flex items-center gap-3">
-          <div className="w-10 h-10 border-2 border-purple-500/40 flex items-center justify-center bg-[#0f0a1a]/50 backdrop-blur-sm" style={{ clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)" }}>
-            <span className="font-mono text-sm font-bold text-purple-400">{String(index + 1).padStart(2, "0")}</span>
+        {showPageNumber && (
+          <div className="absolute top-8 left-8 flex items-center gap-3">
+            <div className="w-10 h-10 border-2 border-purple-500/40 flex items-center justify-center bg-[#0f0a1a]/50 backdrop-blur-sm" style={{ clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)" }}>
+              <span className="font-mono text-sm font-bold text-purple-400">{String(index + 1).padStart(2, "0")}</span>
+            </div>
+            <div className="w-16 h-px bg-gradient-to-r from-purple-500/50 via-emerald-500/30 to-transparent" />
+            <span className="text-xs font-medium text-purple-400/50">/ {String(totalSlides).padStart(2, "0")}</span>
           </div>
-          <div className="w-16 h-px bg-gradient-to-r from-purple-500/50 via-emerald-500/30 to-transparent" />
-          <span className="text-xs font-medium text-purple-400/50">/ {String(totalSlides).padStart(2, "0")}</span>
-        </div>
+        )}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-40 bg-gradient-to-r from-purple-500/10 via-emerald-500/10 to-purple-500/10 blur-3xl rounded-full pointer-events-none" />
         
         <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight relative" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "-0.02em" }} isOwner={canEdit} isHovered={isHovered} />
@@ -300,7 +312,7 @@ function AuroraTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit,
 }
 
 // EMBER FORGE - Fiery red/orange with diamond frames
-function EmberTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function EmberTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   return (
     <div className="h-full relative overflow-hidden">
       {!hasImage && (
@@ -317,13 +329,15 @@ function EmberTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, 
       {hasImage && <div className="absolute inset-0 bg-gradient-to-t from-[#1a0a0a]/95 via-[#1a0a0a]/60 to-[#1a0a0a]/30" />}
       
       <div className="relative h-full flex flex-col items-center justify-center p-12 text-center">
-        <div className="absolute top-8 left-8 flex items-center gap-3">
-          <div className="w-10 h-10 border-2 border-red-500/40 rotate-45 flex items-center justify-center bg-[#1a0a0a]/50 backdrop-blur-sm">
-            <span className="font-mono text-sm font-bold text-red-400 -rotate-45">{String(index + 1).padStart(2, "0")}</span>
+        {showPageNumber && (
+          <div className="absolute top-8 left-8 flex items-center gap-3">
+            <div className="w-10 h-10 border-2 border-red-500/40 rotate-45 flex items-center justify-center bg-[#1a0a0a]/50 backdrop-blur-sm">
+              <span className="font-mono text-sm font-bold text-red-400 -rotate-45">{String(index + 1).padStart(2, "0")}</span>
+            </div>
+            <div className="w-16 h-px bg-gradient-to-r from-red-500/50 via-orange-500/30 to-transparent" />
+            <span className="text-xs font-medium text-red-400/50">/ {String(totalSlides).padStart(2, "0")}</span>
           </div>
-          <div className="w-16 h-px bg-gradient-to-r from-red-500/50 via-orange-500/30 to-transparent" />
-          <span className="text-xs font-medium text-red-400/50">/ {String(totalSlides).padStart(2, "0")}</span>
-        </div>
+        )}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-40 bg-gradient-to-r from-red-500/10 via-orange-500/15 to-red-500/10 blur-3xl rounded-full pointer-events-none" />
         
         <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight relative" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "-0.02em" }} isOwner={canEdit} isHovered={isHovered} />
@@ -346,7 +360,7 @@ function EmberTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, 
 
 
 // MIDNIGHT GARDEN - Deep indigo with rose gold accents
-function MidnightTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function MidnightTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   return (
     <div className="h-full relative overflow-hidden">
       {!hasImage && (
@@ -363,13 +377,15 @@ function MidnightTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdi
       {hasImage && <div className="absolute inset-0 bg-gradient-to-t from-[#0c0a1d]/95 via-[#0c0a1d]/60 to-[#0c0a1d]/30" />}
       
       <div className="relative h-full flex flex-col items-center justify-center p-12 text-center">
-        <div className="absolute top-8 left-8 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full border-2 border-rose-500/40 flex items-center justify-center bg-[#0c0a1d]/50 backdrop-blur-sm">
-            <span className="font-mono text-sm font-bold text-rose-400">{String(index + 1).padStart(2, "0")}</span>
+        {showPageNumber && (
+          <div className="absolute top-8 left-8 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full border-2 border-rose-500/40 flex items-center justify-center bg-[#0c0a1d]/50 backdrop-blur-sm">
+              <span className="font-mono text-sm font-bold text-rose-400">{String(index + 1).padStart(2, "0")}</span>
+            </div>
+            <div className="w-16 h-px bg-gradient-to-r from-rose-500/50 via-indigo-500/30 to-transparent" />
+            <span className="text-xs font-medium text-rose-400/50">/ {String(totalSlides).padStart(2, "0")}</span>
           </div>
-          <div className="w-16 h-px bg-gradient-to-r from-rose-500/50 via-indigo-500/30 to-transparent" />
-          <span className="text-xs font-medium text-rose-400/50">/ {String(totalSlides).padStart(2, "0")}</span>
-        </div>
+        )}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-40 bg-gradient-to-r from-indigo-500/10 via-rose-500/10 to-indigo-500/10 blur-3xl rounded-full pointer-events-none" />
         
         <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight relative" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "-0.02em" }} isOwner={canEdit} isHovered={isHovered} />
@@ -391,7 +407,7 @@ function MidnightTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdi
 }
 
 // CYBER NEON - Futuristic with electric cyan, neon pink, lime green
-function CyberTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function CyberTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   return (
     <div className="h-full relative overflow-hidden">
       {!hasImage && (
@@ -410,13 +426,15 @@ function CyberTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, 
       {hasImage && <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f]/95 via-[#0a0a0f]/60 to-[#0a0a0f]/30" />}
       
       <div className="relative h-full flex flex-col items-center justify-center p-12 text-center">
-        <div className="absolute top-8 left-8 flex items-center gap-3">
-          <div className="px-3 py-1 border border-cyan-500/50 bg-cyan-500/10 backdrop-blur-sm" style={{ clipPath: "polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%)" }}>
-            <span className="font-mono text-sm font-bold text-cyan-400">{String(index + 1).padStart(2, "0")}</span>
+        {showPageNumber && (
+          <div className="absolute top-8 left-8 flex items-center gap-3">
+            <div className="px-3 py-1 border border-cyan-500/50 bg-cyan-500/10 backdrop-blur-sm" style={{ clipPath: "polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%)" }}>
+              <span className="font-mono text-sm font-bold text-cyan-400">{String(index + 1).padStart(2, "0")}</span>
+            </div>
+            <div className="w-16 h-px bg-gradient-to-r from-cyan-500/50 via-pink-500/30 to-transparent" />
+            <span className="text-xs font-medium text-cyan-400/50">/ {String(totalSlides).padStart(2, "0")}</span>
           </div>
-          <div className="w-16 h-px bg-gradient-to-r from-cyan-500/50 via-pink-500/30 to-transparent" />
-          <span className="text-xs font-medium text-cyan-400/50">/ {String(totalSlides).padStart(2, "0")}</span>
-        </div>
+        )}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-40 bg-gradient-to-r from-cyan-500/10 via-pink-500/10 to-cyan-500/10 blur-3xl rounded-full pointer-events-none" />
         
         <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight relative" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "-0.02em", textShadow: "0 0 30px rgba(34, 211, 238, 0.3)" }} isOwner={canEdit} isHovered={isHovered} />
@@ -439,7 +457,7 @@ function CyberTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, 
 
 
 // ALIEN TECH - Extraterrestrial sci-fi with bioluminescent greens and scanning effects
-function AlienTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function AlienTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   return (
     <div className="h-full relative overflow-hidden">
       {!hasImage && (
@@ -478,21 +496,23 @@ function AlienTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, 
       
       <div className="relative h-full flex flex-col items-center justify-center p-12 text-center">
         {/* Slide indicator with alien tech style */}
-        <div className="absolute top-8 left-8 flex items-center gap-3">
-          <div className="relative">
-            <div className="w-12 h-12 rounded-lg border border-lime-500/50 bg-[#0a0f0a]/70 backdrop-blur-sm flex items-center justify-center overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-lime-500/10 to-transparent" />
-              <span className="font-mono text-sm font-bold text-lime-400 relative z-10" style={{ fontFamily: "'Orbitron', monospace" }}>{String(index + 1).padStart(2, "0")}</span>
+        {showPageNumber && (
+          <div className="absolute top-8 left-8 flex items-center gap-3">
+            <div className="relative">
+              <div className="w-12 h-12 rounded-lg border border-lime-500/50 bg-[#0a0f0a]/70 backdrop-blur-sm flex items-center justify-center overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-lime-500/10 to-transparent" />
+                <span className="font-mono text-sm font-bold text-lime-400 relative z-10" style={{ fontFamily: "'Orbitron', monospace" }}>{String(index + 1).padStart(2, "0")}</span>
+              </div>
+              <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-lime-400 animate-pulse" />
             </div>
-            <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-lime-400 animate-pulse" />
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-px bg-gradient-to-r from-lime-500/60 to-transparent" />
+              <div className="w-1 h-1 rounded-full bg-lime-500/60" />
+              <div className="w-4 h-px bg-gradient-to-r from-lime-500/40 to-transparent" />
+            </div>
+            <span className="text-xs font-medium text-lime-400/50 font-mono">/ {String(totalSlides).padStart(2, "0")}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-px bg-gradient-to-r from-lime-500/60 to-transparent" />
-            <div className="w-1 h-1 rounded-full bg-lime-500/60" />
-            <div className="w-4 h-px bg-gradient-to-r from-lime-500/40 to-transparent" />
-          </div>
-          <span className="text-xs font-medium text-lime-400/50 font-mono">/ {String(totalSlides).padStart(2, "0")}</span>
-        </div>
+        )}
 
         {/* Central glow effect */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-48 bg-gradient-to-r from-lime-500/5 via-lime-400/15 to-lime-500/5 blur-3xl rounded-full pointer-events-none" />
@@ -525,7 +545,7 @@ function AlienTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, 
 
 
 // CORPORATE CLEAN - Professional minimalist white with clean geometric elements
-function CorporateTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function CorporateTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   return (
     <div className="h-full relative overflow-hidden">
       {!hasImage && (
@@ -548,15 +568,17 @@ function CorporateTitleSlide({ slide, index, totalSlides, theme, hasImage, canEd
       
       <div className="relative h-full flex flex-col items-center justify-center p-12 text-center">
         {/* Professional slide indicator */}
-        <div className="absolute top-8 left-8 flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-md bg-blue-500 flex items-center justify-center shadow-sm">
-              <span className="font-mono text-sm font-bold text-white">{index + 1}</span>
+        {showPageNumber && (
+          <div className="absolute top-8 left-8 flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-md bg-blue-500 flex items-center justify-center shadow-sm">
+                <span className="font-mono text-sm font-bold text-white">{index + 1}</span>
+              </div>
+              <div className="w-12 h-px bg-gradient-to-r from-blue-500 to-transparent" />
             </div>
-            <div className="w-12 h-px bg-gradient-to-r from-blue-500 to-transparent" />
+            <span className="text-xs font-medium text-gray-400 tracking-wide">of {totalSlides}</span>
           </div>
-          <span className="text-xs font-medium text-gray-400 tracking-wide">of {totalSlides}</span>
-        </div>
+        )}
 
         {/* Top accent bar */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
@@ -586,7 +608,7 @@ function CorporateTitleSlide({ slide, index, totalSlides, theme, hasImage, canEd
 }
 
 // COSMIC VOYAGE - Ethereal space theme with image background
-function CosmicTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function CosmicTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   const bgImage = theme.backgroundImage;
   return (
     <div className="h-full relative overflow-hidden">
@@ -619,13 +641,15 @@ function CosmicTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit,
       
       <div className="relative h-full flex flex-col items-center justify-center p-12 text-center">
         {/* Slide indicator */}
-        <div className="absolute top-8 left-8 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full border-2 border-violet-500/40 flex items-center justify-center bg-[#0a0612]/50 backdrop-blur-sm">
-            <span className="font-mono text-sm font-bold text-violet-400">{String(index + 1).padStart(2, "0")}</span>
+        {showPageNumber && (
+          <div className="absolute top-8 left-8 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full border-2 border-violet-500/40 flex items-center justify-center bg-[#0a0612]/50 backdrop-blur-sm">
+              <span className="font-mono text-sm font-bold text-violet-400">{String(index + 1).padStart(2, "0")}</span>
+            </div>
+            <div className="w-16 h-px bg-gradient-to-r from-violet-500/50 via-fuchsia-500/30 to-transparent" />
+            <span className="text-xs font-medium text-violet-400/50">/ {String(totalSlides).padStart(2, "0")}</span>
           </div>
-          <div className="w-16 h-px bg-gradient-to-r from-violet-500/50 via-fuchsia-500/30 to-transparent" />
-          <span className="text-xs font-medium text-violet-400/50">/ {String(totalSlides).padStart(2, "0")}</span>
-        </div>
+        )}
         
         {/* Decorative top element */}
         <div className="mb-8 flex items-center gap-4">
@@ -657,7 +681,7 @@ function CosmicTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit,
 }
 
 // ARCHITECTURAL MONOCHROME - Bold B&W with geometric precision
-function ArchitecturalTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function ArchitecturalTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   const bgImage = theme.backgroundImage;
   return (
     <div className="h-full relative overflow-hidden">
@@ -684,13 +708,15 @@ function ArchitecturalTitleSlide({ slide, index, totalSlides, theme, hasImage, c
       
       <div className="relative h-full flex flex-col items-center justify-center p-16 text-center">
         {/* Slide indicator */}
-        <div className="absolute top-12 left-12 flex items-center gap-4">
-          <span className="text-6xl font-black text-white/20">{String(index + 1).padStart(2, "0")}</span>
-          <div className="flex flex-col items-start">
-            <div className="w-16 h-1 bg-white mb-2" />
-            <span className="text-xs font-bold text-white/50 uppercase tracking-[0.3em]">of {String(totalSlides).padStart(2, "0")}</span>
+        {showPageNumber && (
+          <div className="absolute top-12 left-12 flex items-center gap-4">
+            <span className="text-6xl font-black text-white/20">{String(index + 1).padStart(2, "0")}</span>
+            <div className="flex flex-col items-start">
+              <div className="w-16 h-1 bg-white mb-2" />
+              <span className="text-xs font-bold text-white/50 uppercase tracking-[0.3em]">of {String(totalSlides).padStart(2, "0")}</span>
+            </div>
           </div>
-        </div>
+        )}
         
         {/* Decorative top element */}
         <div className="mb-8 flex items-center gap-6">
@@ -718,7 +744,7 @@ function ArchitecturalTitleSlide({ slide, index, totalSlides, theme, hasImage, c
 }
 
 // ANIME DREAMSCAPE - Soft dreamy anime aesthetic
-function AnimeTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function AnimeTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   const bgImage = theme.backgroundImage;
   return (
     <div className="h-full relative overflow-hidden">
@@ -744,13 +770,15 @@ function AnimeTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, 
       
       <div className="relative h-full flex flex-col items-center justify-center p-16 text-center">
         {/* Slide indicator */}
-        <div className="absolute top-14 left-14 flex items-center gap-3">
-          <div className="px-4 py-1.5 rounded-full bg-fuchsia-500/20 border border-fuchsia-500/30">
-            <span className="text-fuchsia-300 text-sm font-medium">✦ {String(index + 1).padStart(2, "0")}</span>
+        {showPageNumber && (
+          <div className="absolute top-14 left-14 flex items-center gap-3">
+            <div className="px-4 py-1.5 rounded-full bg-fuchsia-500/20 border border-fuchsia-500/30">
+              <span className="text-fuchsia-300 text-sm font-medium">✦ {String(index + 1).padStart(2, "0")}</span>
+            </div>
+            <div className="w-12 h-px bg-gradient-to-r from-fuchsia-500/50 to-transparent" />
+            <span className="text-fuchsia-300/50 text-xs">/ {String(totalSlides).padStart(2, "0")}</span>
           </div>
-          <div className="w-12 h-px bg-gradient-to-r from-fuchsia-500/50 to-transparent" />
-          <span className="text-fuchsia-300/50 text-xs">/ {String(totalSlides).padStart(2, "0")}</span>
-        </div>
+        )}
         
         {/* Decorative top element */}
         <div className="mb-8 flex items-center gap-4">
@@ -779,7 +807,7 @@ function AnimeTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, 
 }
 
 // HACKER TERMINAL - Cybersecurity/Linux hacker aesthetic with neon green
-function HackerTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function HackerTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   const bgImage = theme.backgroundImage;
   return (
     <div className="h-full relative overflow-hidden">
@@ -827,14 +855,16 @@ function HackerTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit,
       
       <div className="relative h-full flex flex-col items-center justify-center p-16 text-center pt-20">
         {/* Slide indicator - terminal style */}
-        <div className="absolute top-16 left-12 flex items-center gap-3">
-          <span className="text-[#00ff41]/60 font-mono text-sm">$</span>
-          <div className="px-3 py-1 border border-[#00ff41]/40 bg-[#00ff41]/10 rounded">
-            <span className="font-mono text-sm font-bold text-[#00ff41]">{String(index + 1).padStart(2, "0")}</span>
+        {showPageNumber && (
+          <div className="absolute top-16 left-12 flex items-center gap-3">
+            <span className="text-[#00ff41]/60 font-mono text-sm">$</span>
+            <div className="px-3 py-1 border border-[#00ff41]/40 bg-[#00ff41]/10 rounded">
+              <span className="font-mono text-sm font-bold text-[#00ff41]">{String(index + 1).padStart(2, "0")}</span>
+            </div>
+            <div className="w-16 h-px bg-gradient-to-r from-[#00ff41]/50 to-transparent" />
+            <span className="text-xs font-mono text-[#00ff41]/50">/ {String(totalSlides).padStart(2, "0")}</span>
           </div>
-          <div className="w-16 h-px bg-gradient-to-r from-[#00ff41]/50 to-transparent" />
-          <span className="text-xs font-mono text-[#00ff41]/50">/ {String(totalSlides).padStart(2, "0")}</span>
-        </div>
+        )}
         
         {/* Decorative top element */}
         <div className="mb-8 flex items-center gap-4">

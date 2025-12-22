@@ -18,6 +18,7 @@ interface SlideRendererProps {
   isHovered: boolean;
   isEditing: boolean;
   editingText: EditingState | null;
+  showPageNumber?: boolean;
   onStartEditing: (slideIndex: number, field: string, bulletIndex?: number) => void;
   onUpdateContent: (slideIndex: number, field: string, value: string, bulletIndex?: number) => void;
   onFinishEditing: () => void;
@@ -198,7 +199,7 @@ function getSlideImages(slide: SlideData) {
 
 export default function SlideRenderer({
   slide, index, totalSlides, theme, isOwner, isFullscreen, isHovered, isEditing,
-  editingText, onStartEditing, onUpdateContent, onFinishEditing, onAddBullet, onDeleteBullet,
+  editingText, showPageNumber = true, onStartEditing, onUpdateContent, onFinishEditing, onAddBullet, onDeleteBullet,
 }: SlideRendererProps) {
   const allImages = getSlideImages(slide);
   const hasImage = allImages.length > 0;
@@ -618,8 +619,9 @@ export default function SlideRenderer({
   // Custom theme background style - used for slide backgrounds
   const customBgStyle: React.CSSProperties = isCustomTheme ? { background: customBgGradient } : {};
 
-  const SlideIndicator = ({ position = "top-left" }: { position?: "top-left" | "top-right" | "bottom-left" }) => {
-    const posClass = position === "top-left" ? "top-2 left-2 sm:top-4 sm:left-4 md:top-8 md:left-8" : position === "top-right" ? "top-2 right-2 sm:top-4 sm:right-4 md:top-8 md:right-8" : "bottom-2 left-2 sm:bottom-4 sm:left-4 md:bottom-8 md:left-8";
+  const SlideIndicator = ({ position = "top-left" }: { position?: "top-left" | "top-right" }) => {
+    if (!showPageNumber) return null;
+    const posClass = position === "top-left" ? "top-2 left-2 sm:top-4 sm:left-4 md:top-8 md:left-8" : "top-2 right-2 sm:top-4 sm:right-4 md:top-8 md:right-8";
     return (
       <div className={`absolute ${posClass} flex items-center gap-1 sm:gap-2 md:gap-3 z-10`}>
         <span className="font-mono font-medium" style={{ color: colors.accent, fontSize: "clamp(0.5rem, 1.2vw + 0.15rem, 0.875rem)" }}>{String(index + 1).padStart(2, "0")}</span>
@@ -992,7 +994,7 @@ export default function SlideRenderer({
         <div className={`absolute top-0 right-1/4 w-72 h-72 ${colors.orb1Strong} rounded-full blur-3xl hidden sm:block`} />
         <div className={`absolute bottom-0 left-1/4 w-64 h-64 ${colors.orb2Strong} rounded-full blur-3xl hidden sm:block`} />
 
-        <SlideIndicator position="bottom-left" />
+        <SlideIndicator position="top-left" />
 
         <div className="relative h-full flex flex-col sm:flex-row">
           <div className="w-full sm:w-[60%] flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-8 md:pt-12">
@@ -3932,7 +3934,7 @@ export default function SlideRenderer({
         <div className="absolute bottom-12 left-12 w-2 h-2 bg-blue-400/80 rounded-full shadow-lg shadow-blue-500/50" />
         <div className="absolute bottom-12 right-12 w-3 h-3 bg-violet-400/80 rounded-full shadow-lg shadow-violet-500/50" />
 
-        <SlideIndicator position="bottom-left" />
+        <SlideIndicator position="top-left" />
 
         <div className="relative h-full flex flex-col items-center justify-center p-16 text-center">
           {/* Decorative top element */}
@@ -4204,7 +4206,7 @@ export default function SlideRenderer({
           <div className="absolute bottom-0 right-0 w-1 h-full bg-white" />
         </div>
 
-        <SlideIndicator position="bottom-left" />
+        <SlideIndicator position="top-left" />
 
         <div className="relative h-full flex flex-col items-center justify-center p-20 text-center">
           <div className="mb-6 flex items-center gap-6">
@@ -4644,7 +4646,7 @@ export default function SlideRenderer({
         <div className="absolute bottom-6 left-6 w-6 h-6 border-b-2 border-l-2 border-fuchsia-400/50 rounded-bl-xl" />
         <div className="absolute bottom-6 right-6 w-6 h-6 border-b-2 border-r-2 border-fuchsia-400/50 rounded-br-xl" />
 
-        <SlideIndicator position="bottom-left" />
+        <SlideIndicator position="top-left" />
 
         <div className="relative h-full flex flex-col items-center justify-center p-20 text-center">
           <div className="mb-6 flex items-center gap-4">
