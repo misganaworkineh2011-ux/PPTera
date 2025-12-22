@@ -1,0 +1,12 @@
+export { HeroSection } from "./HeroSection";
+export { HeroDemo } from "./HeroDemo";
+export { HowItWorksSection } from "./HowItWorksSection";
+export { ProductDemo } from "./ProductDemo";
+export { TrustedBySection } from "./TrustedBySection";
+export { FeaturesSection } from "./FeaturesSection";
+export { GenerateDemo } from "./GenerateDemo";
+export { EditDemo } from "./EditDemo";
+export { ExportDemo } from "./ExportDemo";
+export { TestimonialsSection } from "./TestimonialsSection";
+export { CTASection } from "./CTASection";
+export { StepCard } from "./StepCard";
