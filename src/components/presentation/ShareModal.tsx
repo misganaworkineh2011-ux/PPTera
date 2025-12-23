@@ -242,12 +242,12 @@ function EmbedTab({ presentationId, theme }: { presentationId: string; theme?: T
   const [width, setWidth] = useState(960);
   const [height, setHeight] = useState(540);
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-  
-  const embedCode = embedSize === "responsive" 
+
+  const embedCode = embedSize === "responsive"
     ? `<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;max-width:100%;">
-  <iframe src="${baseUrl}/present/${presentationId}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" allowfullscreen></iframe>
+  <iframe src="${baseUrl}/embed/${presentationId}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" allowfullscreen></iframe>
 </div>`
-    : `<iframe src="${baseUrl}/present/${presentationId}" width="${width}" height="${height}" style="border:0;" allowfullscreen></iframe>`;
+    : `<iframe src="${baseUrl}/embed/${presentationId}" width="${width}" height="${height}" style="border:0;" allowfullscreen></iframe>`;
 
   const primaryColor = theme?.colors.primary || "#06b6d4";
   const isDark = theme?.colors.background.startsWith("#") &&
@@ -273,26 +273,24 @@ function EmbedTab({ presentationId, theme }: { presentationId: string; theme?: T
         <div className="flex gap-2">
           <button
             onClick={() => setEmbedSize("responsive")}
-            className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all border ${
-              embedSize === "responsive"
-                ? "border-cyan-500 bg-cyan-50 text-cyan-700"
-                : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-            }`}
+            className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all border ${embedSize === "responsive"
+              ? "border-cyan-500 bg-cyan-50 text-cyan-700"
+              : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+              }`}
           >
             Responsive
           </button>
           <button
             onClick={() => setEmbedSize("fixed")}
-            className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all border ${
-              embedSize === "fixed"
-                ? "border-cyan-500 bg-cyan-50 text-cyan-700"
-                : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-            }`}
+            className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all border ${embedSize === "fixed"
+              ? "border-cyan-500 bg-cyan-50 text-cyan-700"
+              : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+              }`}
           >
             Fixed Size
           </button>
         </div>
-        
+
         {embedSize === "fixed" && (
           <div className="flex gap-3 mt-3">
             <div className="flex-1">
@@ -322,7 +320,7 @@ function EmbedTab({ presentationId, theme }: { presentationId: string; theme?: T
         <p className="text-xs font-semibold text-slate-600 mb-3 uppercase tracking-wide">Preview</p>
         <div className="aspect-video bg-white rounded-lg border border-slate-200 overflow-hidden">
           <iframe
-            src={`${baseUrl}/present/${presentationId}`}
+            src={`${baseUrl}/embed/${presentationId}`}
             className="w-full h-full"
             style={{ border: 0 }}
             title="Presentation Preview"
@@ -340,8 +338,8 @@ function EmbedTab({ presentationId, theme }: { presentationId: string; theme?: T
           <button
             onClick={copyEmbedCode}
             className={`absolute top-3 right-3 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${copied
-                ? "bg-green-500 text-white"
-                : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+              ? "bg-green-500 text-white"
+              : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
               }`}
           >
             {copied ? <CheckCircle2 size={16} /> : <Copy size={16} />}
@@ -430,10 +428,10 @@ function ShareTab({
           onClick={copyToClipboard}
           disabled={!isPublic || !shareUrl}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${copied
-              ? "bg-green-50 text-green-600 border border-green-200"
-              : isPublic && shareUrl
-                ? "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
-                : "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
+            ? "bg-green-50 text-green-600 border border-green-200"
+            : isPublic && shareUrl
+              ? "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
+              : "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
             }`}
         >
           <Link2 size={16} />
@@ -475,8 +473,8 @@ function ShareTab({
               <button
                 onClick={copyToClipboard}
                 className={`p-3 rounded-lg transition-all ${copied
-                    ? "bg-green-500 text-white"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  ? "bg-green-500 text-white"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                   }`}
               >
                 {copied ? <CheckCircle2 size={18} /> : <Copy size={18} />}
