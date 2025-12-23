@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { flushSync } from "react-dom";
 import { useRouter } from "next/navigation";
 import {
   Minimize2,
@@ -58,7 +59,7 @@ const getTitleSlideColors = (themeType: ThemeType, hasImage: boolean): { title: 
   if (hasImage) {
     return { title: "#ffffff", subtitle: "#e2e8f0" };
   }
-  
+
   const colorMap: Record<ThemeType, { title: string; subtitle: string }> = {
     dark: { title: "#fafafa", subtitle: "#a1a1aa" },
     light: { title: "#0f172a", subtitle: "#64748b" },
@@ -77,7 +78,7 @@ const getTitleSlideColors = (themeType: ThemeType, hasImage: boolean): { title: 
     "custom-dark": { title: "#fafafa", subtitle: "#a1a1aa" },
     "custom-light": { title: "#0f172a", subtitle: "#64748b" },
   };
-  
+
   return colorMap[themeType] || colorMap.dark;
 };
 
@@ -131,16 +132,19 @@ export default function PresentationViewer({
   }, [presentation.title]);
   const [showExportModal, setShowExportModal] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [exportingFormat, setExportingFormat] = useState<"pdf" | "pptx" | "images" | null>(null);
-  const [downloadNotification, setDownloadNotification] = useState<{ url: string; filename: string; format: "pdf" | "pptx" | "images" } | null>(null);
+  const [exportingFormat, setExportingFormat] = useState<
+    "pdf" | "pptx" | "images" | null
+  >(null);
   const [showRateModal, setShowRateModal] = useState(false);
 
   // Initialize based on screen size
   const [showThumbnails, setShowThumbnails] = useState(
-    typeof window !== 'undefined' ? window.innerWidth >= 768 : true
+    typeof window !== "undefined" ? window.innerWidth >= 768 : true,
   );
   const [viewMode, setViewMode] = useState<"slides" | "scroll">(
-    typeof window !== 'undefined' && window.innerWidth < 768 ? "scroll" : "scroll"
+    typeof window !== "undefined" && window.innerWidth < 768
+      ? "scroll"
+      : "scroll",
   );
 
   // Check for rate prompt on new presentation view
@@ -215,17 +219,17 @@ export default function PresentationViewer({
   // Connect to streaming endpoint when in streaming mode
   useEffect(() => {
     if (!isStreaming || streamingStatus !== "loading") return;
-    
+
     // Check if there's already a global EventSource for this presentation
     const globalKey = `__streaming_${presentation.id}`;
     const existingEventSource = (window as unknown as Record<string, EventSource | undefined>)[globalKey];
-    
+
     if (existingEventSource && existingEventSource.readyState !== EventSource.CLOSED) {
       console.log("[Streaming] Using existing global EventSource");
       eventSourceRef.current = existingEventSource;
       return;
     }
-    
+
     if (eventSourceRef.current && eventSourceRef.current.readyState !== EventSource.CLOSED) {
       console.log("[Streaming] Already have an active EventSource");
       return;
@@ -236,12 +240,12 @@ export default function PresentationViewer({
     eventSourceRef.current = eventSource;
     // Store globally to persist across re-renders
     (window as unknown as Record<string, EventSource>)[globalKey] = eventSource;
-    
+
     // Handle connection open
     eventSource.onopen = () => {
       console.log("[Streaming] Connection opened successfully");
     };
-    
+
     eventSource.addEventListener("start", (e) => {
       const data = JSON.parse(e.data);
       console.log("[Streaming] ✓ Received START event, total slides:", data.totalSlides);
@@ -255,7 +259,7 @@ export default function PresentationViewer({
       const data = JSON.parse(e.data);
       console.log("[Streaming] ✓ Received SLIDE_START event:", data.slideIndex, data.type, "hasImage:", data.hasImage);
       setStreamingSlideIndex(data.slideIndex);
-      
+
       // ADD the new slide to the array (progressive creation)
       setSlidesData(prev => {
         console.log("[Streaming] Adding slide", data.slideIndex, "to slidesData, current length:", prev.length);
@@ -269,10 +273,10 @@ export default function PresentationViewer({
         };
         return newSlides;
       });
-      
+
       // Reset streaming text ref for this slide (including bullet index)
       streamingTextRef.current[data.slideIndex] = { "_currentBulletIndex": "0" };
-      
+
       if (data.hasImage) {
         setImagesLoading(prev => new Set(prev).add(data.slideIndex));
       }
@@ -281,24 +285,24 @@ export default function PresentationViewer({
     eventSource.addEventListener("char", (e) => {
       const data = JSON.parse(e.data);
       const { slideIndex, field, char } = data;
-      
+
       // Update ref
       if (!streamingTextRef.current[slideIndex]) {
         streamingTextRef.current[slideIndex] = {};
       }
-      
+
       // Handle bullet streaming separately (it's an array)
       if (field === "bullet") {
         // Get current bullet index from ref or start at 0
         const currentBulletKey = "_currentBulletIndex";
         const bulletIndex = parseInt(streamingTextRef.current[slideIndex]![currentBulletKey] ?? "0", 10);
         const bulletKey = `bullet_${bulletIndex}`;
-        
-        streamingTextRef.current[slideIndex]![bulletKey] = 
+
+        streamingTextRef.current[slideIndex]![bulletKey] =
           (streamingTextRef.current[slideIndex]![bulletKey] || "") + char;
-        
+
         const currentBulletText = streamingTextRef.current[slideIndex]![bulletKey] || "";
-        
+
         setSlidesData(prev => {
           const newSlides = [...prev];
           if (newSlides[slideIndex]) {
@@ -313,9 +317,9 @@ export default function PresentationViewer({
         });
       } else {
         // Handle other fields (title, subtitle, etc.)
-        streamingTextRef.current[slideIndex]![field] = 
+        streamingTextRef.current[slideIndex]![field] =
           (streamingTextRef.current[slideIndex]![field] || "") + char;
-        
+
         const currentText = streamingTextRef.current[slideIndex]![field];
         setSlidesData(prev => {
           const newSlides = [...prev];
@@ -349,12 +353,12 @@ export default function PresentationViewer({
       const data = JSON.parse(e.data);
       const { slideIndex, bulletIndex, value } = data;
       console.log("[Streaming] ✓ Received BULLET_COMPLETE:", slideIndex, "bullet", bulletIndex);
-      
+
       // Update the current bullet index for the next bullet
       if (streamingTextRef.current[slideIndex]) {
         streamingTextRef.current[slideIndex]!["_currentBulletIndex"] = String(bulletIndex + 1);
       }
-      
+
       setSlidesData(prev => {
         const newSlides = [...prev];
         if (newSlides[slideIndex]) {
@@ -462,7 +466,7 @@ export default function PresentationViewer({
       const globalKey = `__streaming_${presentation.id}`;
       delete (window as unknown as Record<string, unknown>)[globalKey];
     });
-    
+
     // Handle server-sent error events
     eventSource.addEventListener("error", (e: Event) => {
       console.error("[Streaming] ✗ Error event received:", e);
@@ -493,7 +497,7 @@ export default function PresentationViewer({
         }
       }
     });
-    
+
     // Also listen for the generic "message" event in case server sends non-typed events
     eventSource.onmessage = (e) => {
       console.log("[Streaming] Generic message:", e.data);
@@ -741,104 +745,51 @@ export default function PresentationViewer({
     }
   };
 
-  const handleExport = async (format: "pdf" | "pptx" | "images", options?: { range: "all" | "current" | "custom"; customRange?: { from: number; to: number } }) => {
-    // Close modal immediately for better UX
-    setShowExportModal(false);
+  const handleExport = (
+    format: "pdf" | "pptx" | "images",
+    options?: {
+      range: "all" | "current" | "custom";
+      customRange?: { from: number; to: number };
+    },
+  ) => {
+    console.log("[PresentationViewer] Starting export via GET:", format);
     setIsExporting(true);
-    setExportingFormat(format);
 
     try {
-      // Build request body with format and options
-      const requestBody: Record<string, unknown> = { format };
+      // Build query params
+      const params = new URLSearchParams();
+      params.set("format", format);
+
       if (options) {
-        requestBody.range = options.range;
+        params.set("range", options.range);
         if (options.range === "current") {
-          requestBody.customRange = { from: currentSlide + 1, to: currentSlide + 1 };
+          params.set("from", String(currentSlide + 1));
         } else if (options.range === "custom" && options.customRange) {
-          requestBody.customRange = options.customRange;
+          params.set("from", String(options.customRange.from));
+          params.set("to", String(options.customRange.to));
         }
       }
 
-      const response = await fetch(`/api/presentations/${presentation.id}/export`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody),
-      });
+      const exportUrl = `/api/presentations/${presentation.id}/export?${params.toString()}`;
+      console.log("[PresentationViewer] Redirecting to:", exportUrl);
 
-      if (!response.ok) {
-        throw new Error("Export failed");
-      }
+      // Trigger native browser download
+      window.location.assign(exportUrl);
 
-      // Get the blob for all formats
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      // Optimistically clear loading state and close modal
+      // We assume the browser handles the download request successfully
+      toast.info("Download started...");
 
-      // Set filename based on format
-      let filename: string;
-      if (format === "pptx") {
-        filename = `${presentation.title}.pptx`;
-      } else if (format === "pdf") {
-        filename = `${presentation.title}.pdf`;
-      } else {
-        filename = `${presentation.title}-slides.zip`;
-      }
+      setTimeout(() => {
+        setIsExporting(false);
+        setShowExportModal(false);
+      }, 2000);
 
-      // Show download notification
-      setDownloadNotification({ url, filename, format });
-
-    } catch (err) {
-      console.error("Export error:", err);
-      toast.error("Export failed. Please try again.", { duration: 4000 });
+    } catch (error) {
+      console.error("[PresentationViewer] Export failed:", error);
+      toast.error("Export failed to start.");
+      setIsExporting(false);
     }
-
-    // Reset exporting state
-    setIsExporting(false);
-    setExportingFormat(null);
-  };
-
-  const handleDownloadClick = (e: React.MouseEvent) => {
-    // Prevent any default behavior or event bubbling
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (downloadNotification) {
-      try {
-        // Create a temporary link element
-        const link = document.createElement("a");
-        link.href = downloadNotification.url;
-        link.download = downloadNotification.filename;
-        link.style.display = "none";
-        link.setAttribute("target", "_self");
-
-        // Append to body
-        document.body.appendChild(link);
-
-        // Trigger download using setTimeout to avoid blocking
-        setTimeout(() => {
-          link.click();
-
-          // Clean up after a delay to ensure download starts
-          setTimeout(() => {
-            document.body.removeChild(link);
-            // Revoke the blob URL after download starts
-            window.URL.revokeObjectURL(downloadNotification.url);
-            setDownloadNotification(null);
-            toast.success("Download started!", { duration: 2000 });
-          }, 100);
-        }, 0);
-      } catch (err) {
-        console.error("Download error:", err);
-        toast.error("Download failed. Please try again.");
-        setDownloadNotification(null);
-      }
-    }
-  };
-
-  const handleCloseNotification = () => {
-    if (downloadNotification?.url) {
-      window.URL.revokeObjectURL(downloadNotification.url);
-    }
-    setDownloadNotification(null);
   };
 
   const goToSlide = useCallback(
@@ -849,7 +800,7 @@ export default function PresentationViewer({
         setTimeout(() => setIsAnimating(false), 300);
       }
     },
-    [slides.length, isAnimating]
+    [slides.length, isAnimating],
   );
 
   const nextSlide = useCallback(() => goToSlide(currentSlide + 1), [currentSlide, goToSlide]);
@@ -1113,10 +1064,10 @@ export default function PresentationViewer({
           <div className="relative w-24 h-24 mx-auto mb-8">
             {/* Outer Ring */}
             <div className="absolute inset-0 border-4 border-slate-200 rounded-full"></div>
-            
+
             {/* Spinning Gradient Ring */}
             <div className="absolute inset-0 border-4 border-transparent border-t-[#1e3a8a] border-r-[#06b6d4] rounded-full animate-spin"></div>
-            
+
             {/* Inner Pulsing Circle */}
             <div className="absolute inset-3 bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] rounded-full animate-pulse"></div>
           </div>
@@ -1158,7 +1109,7 @@ export default function PresentationViewer({
         </div>
       );
     }
-    
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
         <div className="text-center text-white">
@@ -1355,7 +1306,7 @@ export default function PresentationViewer({
               const newSlides = [...slidesData];
               const existingSlide = newSlides[index];
               if (!existingSlide) return;
-              
+
               const updatedSlide: SlideData = {
                 ...existingSlide,
                 // Text content
@@ -1364,8 +1315,8 @@ export default function PresentationViewer({
                 tagline: editedSlide.tagline !== undefined ? editedSlide.tagline : existingSlide.tagline,
                 introText: editedSlide.introText !== undefined ? editedSlide.introText : existingSlide.introText,
                 // Bullet points
-                bulletPoints: editedSlide.bullets && editedSlide.bullets.length > 0 
-                  ? editedSlide.bullets 
+                bulletPoints: editedSlide.bullets && editedSlide.bullets.length > 0
+                  ? editedSlide.bullets
                   : existingSlide.bulletPoints,
                 // Sections for card layouts
                 sections: editedSlide.sections !== undefined ? editedSlide.sections : existingSlide.sections,
@@ -1375,7 +1326,7 @@ export default function PresentationViewer({
                 image: editedSlide.image !== undefined ? editedSlide.image : existingSlide.image,
                 images: editedSlide.images !== undefined ? editedSlide.images : existingSlide.images,
               };
-              
+
               newSlides[index] = updatedSlide;
               updateSlidesWithSave(newSlides);
               toast.success("Slide updated with AI");
@@ -1426,7 +1377,7 @@ export default function PresentationViewer({
   const renderScrollableView = () => {
     const ui = getUIColors(getThemeType(theme));
     const isCurrentlyStreaming = streamingStatus === "streaming";
-    
+
     return (
       <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-8 md:space-y-12 pb-12 px-3 sm:px-4">
         {slides.map((slide, index) => {
@@ -1452,10 +1403,10 @@ export default function PresentationViewer({
           }
 
           return (
-            <div 
-              key={index} 
-              id={`slide-${index}`} 
-              className={`w-full rounded-md sm:rounded-lg shadow-xl sm:shadow-2xl overflow-hidden scroll-mt-20 ring-1 ${ui.ring} ${isNewSlide ? "animate-fade-in" : ""} ${isSlideStreaming ? "ring-2" : ""}`} 
+            <div
+              key={index}
+              id={`slide-${index}`}
+              className={`w-full rounded-md sm:rounded-lg shadow-xl sm:shadow-2xl overflow-hidden scroll-mt-20 ring-1 ${ui.ring} ${isNewSlide ? "animate-fade-in" : ""} ${isSlideStreaming ? "ring-2" : ""}`}
               style={{
                 maxWidth: "100%",
                 ...(isSlideStreaming ? { boxShadow: `0 0 20px ${theme.colors.primary}40` } : {}),
@@ -1465,7 +1416,7 @@ export default function PresentationViewer({
             </div>
           );
         })}
-        
+
         {/* Streaming indicator at the bottom */}
         {isCurrentlyStreaming && (
           <div className="flex items-center justify-center py-8">
@@ -1475,7 +1426,7 @@ export default function PresentationViewer({
             </div>
           </div>
         )}
-        
+
         {streamingStatus !== "streaming" && (
           <div className="text-center py-6 sm:py-8">
             <div
@@ -1898,7 +1849,7 @@ export default function PresentationViewer({
           const images = getSlideImages(slide!);
           const image = images[showImageEditor.imageIndex];
           if (!image) return null;
-          
+
           // Convert SlideImage to ImageBlock format
           const imageBlock: ImageBlock = {
             id: `img-${showImageEditor.slideIndex}-${showImageEditor.imageIndex}`,
@@ -1906,7 +1857,7 @@ export default function PresentationViewer({
             url: image.url,
             alt: image.alt || slide?.title || "Image",
           };
-          
+
           return (
             <ImageEditor
               block={imageBlock}
@@ -1935,59 +1886,6 @@ export default function PresentationViewer({
             />
           );
         })()}
-
-        {/* Export Loading Notification */}
-        {isExporting && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-4 fade-in duration-300">
-            <div className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-zinc-900 border border-zinc-700 shadow-2xl">
-              <div className="w-5 h-5 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
-              <span className="text-sm font-medium text-white">
-                {exportingFormat === "pptx"
-                  ? "Exporting PowerPoint..."
-                  : exportingFormat === "pdf"
-                    ? "Exporting PDF..."
-                    : "Exporting Images..."}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Download Ready Notification */}
-        {downloadNotification && !isExporting && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-4 fade-in duration-300">
-            <div className="flex items-center gap-4 px-6 py-4 rounded-2xl bg-zinc-900 border border-zinc-700 shadow-2xl">
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-500/20">
-                <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white">Export ready!</p>
-                <p className="text-xs text-zinc-400 truncate max-w-[200px]">{downloadNotification.filename}</p>
-              </div>
-              <button
-                onClick={(e) => handleDownloadClick(e)}
-                type="button"
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95"
-                style={{ backgroundColor: theme.colors.primary }}
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                Click here to download
-              </button>
-              <button
-                onClick={handleCloseNotification}
-                type="button"
-                className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* Theme Sidebar */}
         <ThemeSidebar
