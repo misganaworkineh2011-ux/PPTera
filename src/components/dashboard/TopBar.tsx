@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { Bell, Search, Sparkles, Gift, AlertCircle, AlertTriangle, FileText, Image as ImageIcon, BarChart, Palette, Sparkles as SparklesIcon, Users, History, Menu, Settings } from "lucide-react";
-import { UserButton, useUser } from "@clerk/nextjs";
+import { UserButton } from "@clerk/nextjs";
 import { useStickyContext } from "./DashboardLayout";
 import { usePathname } from "next/navigation";
-import Link from "next/link";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
+import { useDashboard } from "~/contexts/DashboardContext";
+import PricingModal from "./PricingModal";
 
 interface Notification {
   id: string;
@@ -31,7 +32,8 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
-  const { user } = useUser();
+  const [showPricingModal, setShowPricingModal] = useState(false);
+  const { user } = useDashboard();
   const pathname = usePathname();
   const { language } = useLanguage();
   const t = dashboardTranslations[language] || dashboardTranslations.en;
@@ -177,23 +179,23 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
         </button>
         
         {/* Upgrade Button - Always visible, text shows from xl+ */}
-        <Link
-          href="/pricing"
+        <button
+          onClick={() => setShowPricingModal(true)}
           className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 px-2.5 xl:px-4 py-1.5 xl:py-2 text-sm font-semibold text-white shadow-sm transition hover:shadow-md"
         >
           <Sparkles size={14} />
           <span className="hidden xl:inline">{t.upgrade || "Upgrade"}</span>
-        </Link>
+        </button>
         
         {/* Credits Badge - Hidden on small screens */}
-        <Link
-          href="/pricing"
+        <button
+          onClick={() => setShowPricingModal(true)}
           className="hidden md:flex items-center gap-2 rounded-full bg-white dark:bg-neutral-900 px-3 lg:px-4 py-2 text-xs lg:text-sm font-semibold text-slate-700 dark:text-white shadow-sm ring-1 ring-slate-200 dark:ring-neutral-800 transition hover:ring-[#06b6d4] hover:shadow-md cursor-pointer"
         >
           <span className="flex h-2 w-2 rounded-full bg-[#06b6d4]"></span>
           <span>{credits}</span>
           <span className="hidden lg:inline">{t.credits || "Credits"}</span>
-        </Link>
+        </button>
         
         {/* Notifications */}
         <div className="relative notifications-container">
@@ -320,6 +322,13 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
           </div>
         </div>
       )}
+
+      {/* Pricing Modal */}
+      <PricingModal
+        isOpen={showPricingModal}
+        onClose={() => setShowPricingModal(false)}
+        currentPlan={user?.subscriptionPlan}
+      />
     </header>
   );
 }

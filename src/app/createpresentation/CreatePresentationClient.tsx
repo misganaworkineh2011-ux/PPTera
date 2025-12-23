@@ -9,6 +9,7 @@ import { themes, getThemeById, type Theme } from "~/lib/themes";
 import { isCustomThemeId, getCustomThemeDbId, convertCustomThemeToTheme } from "~/lib/custom-theme-utils";
 import ThemeSelector from "~/components/ThemeSelector";
 import RecentOutlines from "~/components/createpresentation/RecentOutlines";
+import PricingModal from "~/components/dashboard/PricingModal";
 
 interface ExistingOutline {
   id: string;
@@ -588,43 +589,12 @@ export default function CreatePresentationClient({
 
   return (
     <div className="min-h-screen w-full relative overflow-hidden">
-      {/* Credit Warning Modal */}
-      {showCreditWarning && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl p-8 max-w-md mx-4 shadow-2xl">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-slate-800 mb-2">
-                {isFreeUser ? "Upgrade to Create Presentations" : "Insufficient Credits"}
-              </h3>
-              <p className="text-slate-600 mb-6">
-                {isFreeUser
-                  ? "AI presentation generation requires a subscription. Upgrade to Plus, Pro, or Ultra to start creating amazing presentations."
-                  : `You need ${CREDIT_COST_PER_GENERATION} credits to generate a presentation. Your current balance is ${userCredits} credits.`
-                }
-              </p>
-              <div className="flex gap-3 justify-center">
-                <button
-                  onClick={() => setShowCreditWarning(false)}
-                  className="px-4 py-2 text-slate-600 hover:text-slate-800 font-medium transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => router.push("/pricing")}
-                  className="px-6 py-2 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white rounded-lg font-semibold hover:opacity-90 transition"
-                >
-                  {isFreeUser ? "View Plans" : "Get More Credits"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Pricing Modal for Credit Warning */}
+      <PricingModal
+        isOpen={showCreditWarning}
+        onClose={() => setShowCreditWarning(false)}
+        currentPlan={subscriptionPlan}
+      />
 
       {/* Load Google Fonts */}
       <style jsx global>{`
@@ -935,7 +905,13 @@ export default function CreatePresentationClient({
                         value={formData.numberOfSlides}
                         onChange={(e) => {
                           const value = parseInt(e.target.value);
-                          if (value > 0 && !allSlideOptions.find((opt) => opt.value === value)?.disabled) {
+                          const selectedOption = allSlideOptions.find((opt) => opt.value === value);
+                          if (value > 0 && selectedOption?.disabled) {
+                            // Show pricing modal when trying to select a disabled (premium) option
+                            setShowCreditWarning(true);
+                            return;
+                          }
+                          if (value > 0) {
                             handleChange("numberOfSlides", value);
                           }
                         }}
@@ -951,7 +927,7 @@ export default function CreatePresentationClient({
                           }
                           const planLabel = option.plan !== "Free" ? option.plan : "";
                           const spaces = planLabel ? "\u00A0".repeat(Math.max(1, 15 - option.label.length)) : "";
-                          const lockIcon = option.disabled ? "🔒" : "";
+                          const lockIcon = option.disabled ? "" : "";
                           const displayLabel = planLabel
                             ? `${option.label}${spaces}${planLabel} ${lockIcon}`.trim()
                             : option.label;
@@ -960,7 +936,6 @@ export default function CreatePresentationClient({
                             <option
                               key={option.value}
                               value={option.value}
-                              disabled={option.disabled}
                               style={option.disabled ? { color: "#06b6d4" } : {}}
                             >
                               {displayLabel}

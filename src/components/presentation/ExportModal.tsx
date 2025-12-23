@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { X, Download, Crown } from "lucide-react";
-import Link from "next/link";
 import { type Theme } from "~/lib/themes";
+import PricingModal from "~/components/dashboard/PricingModal";
 
 interface ExportModalProps {
   isExporting: boolean;
@@ -291,6 +291,7 @@ export default function ExportModal({
   const [exportRange, setExportRange] = useState<ExportRange>("all");
   const [customFromInput, setCustomFromInput] = useState("1");
   const [customToInput, setCustomToInput] = useState(String(totalSlides));
+  const [showPricingModal, setShowPricingModal] = useState(false);
 
   // Update customTo when totalSlides changes
   useEffect(() => {
@@ -489,13 +490,13 @@ export default function ExportModal({
                 <p className={`text-xs mt-1 ${c.textMuted}`}>
                   Upgrade to remove branding from exports
                 </p>
-                <Link
-                  href="/pricing"
+                <button
+                  onClick={() => setShowPricingModal(true)}
                   className="inline-flex items-center gap-1 text-xs font-medium mt-2"
                   style={{ color: accentColor }}
                 >
                   View plans →
-                </Link>
+                </button>
               </div>
             </div>
           </div>
@@ -530,6 +531,13 @@ export default function ExportModal({
           </button>
         </div>
       </div>
+
+      {/* Pricing Modal */}
+      <PricingModal
+        isOpen={showPricingModal}
+        onClose={() => setShowPricingModal(false)}
+        currentPlan={subscriptionPlan}
+      />
     </div>
   );
 }

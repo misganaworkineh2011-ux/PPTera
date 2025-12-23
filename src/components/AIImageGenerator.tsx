@@ -13,12 +13,14 @@ import {
 } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { CREDIT_COSTS } from "~/lib/credits";
+import PricingModal from "~/components/dashboard/PricingModal";
 
 interface AIImageGeneratorProps {
   onImageGenerated?: (imageUrl: string) => void;
   presentationId?: string;
   className?: string;
   compact?: boolean;
+  subscriptionPlan?: string | null;
 }
 
 type ImageModel = "openai" | "gemini";
@@ -46,6 +48,7 @@ export default function AIImageGenerator({
   presentationId,
   className,
   compact = false,
+  subscriptionPlan,
 }: AIImageGeneratorProps) {
   const [prompt, setPrompt] = useState("");
   const [model, setModel] = useState<ImageModel>("openai");
@@ -54,6 +57,7 @@ export default function AIImageGenerator({
   const [style, setStyle] = useState<ImageStyle>("vivid");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPricingModal, setShowPricingModal] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<{
     url: string;
     revisedPrompt?: string;
@@ -104,7 +108,12 @@ export default function AIImageGenerator({
         onImageGenerated(data.image.url);
       }
     } catch (err: any) {
-      setError(err.message || "Failed to generate image");
+      const errorMessage = err.message || "Failed to generate image";
+      // Check if it's a credit-related error
+      if (errorMessage.toLowerCase().includes("credit") || errorMessage.toLowerCase().includes("insufficient")) {
+        setShowPricingModal(true);
+      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -391,6 +400,13 @@ export default function AIImageGenerator({
           )}
         </div>
       )}
+
+      {/* Pricing Modal */}
+      <PricingModal
+        isOpen={showPricingModal}
+        onClose={() => setShowPricingModal(false)}
+        currentPlan={subscriptionPlan}
+      />
     </div>
   );
 }
