@@ -20,13 +20,6 @@ export async function GET(request: NextRequest) {
       },
       skip,
       take,
-      include: {
-        _count: {
-          select: {
-            presentations: true,
-          },
-        },
-      },
     });
 
     // Extract title from metadata and include presentation count
@@ -37,12 +30,12 @@ export async function GET(request: NextRequest) {
         tone?: string;
         language?: string;
       };
-      
+
       return {
         id: outline.id,
         title: metadata.topic || "Untitled Presentation",
         createdAt: outline.createdAt.toISOString(),
-        presentationCount: outline._count.presentations,
+        presentationCount: 0,
       };
     });
 

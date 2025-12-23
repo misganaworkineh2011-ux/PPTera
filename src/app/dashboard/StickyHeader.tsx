@@ -5,12 +5,15 @@ import CreateProjectButton from "~/components/dashboard/CreateProjectButton";
 import { useEffect, useRef, useState } from "react";
 import { useStickyContext } from "~/components/dashboard/DashboardLayout";
 
+import { useRouter } from "next/navigation";
+
 interface StickyHeaderProps {
   userId: string;
   credits: number;
 }
 
 export default function StickyHeader({ userId, credits }: StickyHeaderProps) {
+  const router = useRouter();
   const [isSticky, setIsSticky] = useState(false);
   const headerRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -68,13 +71,12 @@ export default function StickyHeader({ userId, credits }: StickyHeaderProps) {
     <>
       {/* Sentinel element at the top to detect when header starts going out of view */}
       <div ref={sentinelRef} className="h-0 -mb-1" />
-      
+
       {/* Header that becomes sticky - hides when sticky */}
       <div
         ref={headerRef}
-        className={`flex flex-row items-center justify-between gap-4 transition-all duration-300 ${
-          isSticky ? "opacity-0 h-0 overflow-hidden pointer-events-none" : "opacity-100"
-        }`}
+        className={`flex flex-row items-center justify-between gap-4 transition-all duration-300 ${isSticky ? "opacity-0 h-0 overflow-hidden pointer-events-none" : "opacity-100"
+          }`}
       >
         {/* Title Section */}
         <div className="flex items-center gap-3">
@@ -83,11 +85,14 @@ export default function StickyHeader({ userId, credits }: StickyHeaderProps) {
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-[#1e3a8a]">Presentations</h1>
         </div>
-        
+
         {/* Action buttons - right aligned */}
         <div className="flex items-center gap-2 md:gap-3">
           <CreateProjectButton userId={userId} credits={credits} />
-          <button className="flex items-center gap-1.5 md:gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-[#1e3a8a] hover:border-[#1e3a8a]/20 whitespace-nowrap">
+          <button
+            onClick={() => router.push("/createpresentation?mode=docs")}
+            className="flex items-center gap-1.5 md:gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-[#1e3a8a] hover:border-[#1e3a8a]/20 whitespace-nowrap"
+          >
             <Import size={16} className="md:w-[18px] md:h-[18px]" />
             <span className="hidden sm:inline">Import</span>
           </button>

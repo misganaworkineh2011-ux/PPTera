@@ -33,13 +33,6 @@ export default async function CreatePresentationPage({ searchParams }: PageProps
       createdAt: "desc",
     },
     take: 3, // Only fetch 3 initially, more will be loaded on "See More" click
-    include: {
-      _count: {
-        select: {
-          presentations: true,
-        },
-      },
-    },
   });
 
   // Extract title from metadata and include presentation count
@@ -50,12 +43,12 @@ export default async function CreatePresentationPage({ searchParams }: PageProps
       tone?: string;
       language?: string;
     };
-    
+
     return {
       id: outline.id,
       title: metadata.topic || "Untitled Presentation",
       createdAt: outline.createdAt.toISOString(),
-      presentationCount: outline._count.presentations,
+      presentationCount: 0,
     };
   });
 

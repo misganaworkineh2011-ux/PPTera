@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, GripVertical, Trash2, Edit3, Check, X, Upload } from "lucide-react";
+import { toast } from "sonner";
 import { useOutlineStream, type Slide, type OutlineMetadata } from "~/lib/dashboard/hooks/useOutlineStream";
 import { themes, getThemeById, type Theme } from "~/lib/themes";
 import { isCustomThemeId, getCustomThemeDbId, convertCustomThemeToTheme } from "~/lib/custom-theme-utils";
@@ -154,8 +155,8 @@ function SlideCard({
         {/* Slide Number */}
         <div
           className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${isTitle
-              ? "bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-sm"
-              : "bg-[#1e3a8a]/10 text-[#1e3a8a] font-semibold"
+            ? "bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-sm"
+            : "bg-[#1e3a8a]/10 text-[#1e3a8a] font-semibold"
             }`}
         >
           <span className="text-xs font-bold">{index + 1}</span>
@@ -413,6 +414,7 @@ export default function CreatePresentationClient({
       setSlides(blankSlides);
       setView("completed");
       setLastDescription(trimmed);
+      setHasStartedGeneration(true);
       return;
     }
 
@@ -575,7 +577,7 @@ export default function CreatePresentationClient({
   // If we've started a new generation, only use streamState for completion status
   // Otherwise, consider existingOutline for initial load
   const isCompleted = hasStartedGeneration
-    ? (streamState.status === "completed" && view === "completed")
+    ? ((streamState.status === "completed" || mode === "scratch") && view === "completed")
     : ((streamState.status === "completed" && view === "completed") || !!existingOutline);
   const hasError = streamState.status === "error";
   const showOutline = (isStreaming || isCompleted) && !hasError;
@@ -764,18 +766,43 @@ export default function CreatePresentationClient({
                         <input
                           type="file"
                           id="file-upload"
-                          accept=".pdf,.doc,.docx,.txt"
-                          onChange={(e) => {
+                          accept=".pdf,.doc,.docx,.txt,.ppt,.pptx"
+                          onChange={async (e) => {
                             const file = e.target.files?.[0];
                             if (file) {
                               setUploadedFile(file);
-                              // Extract text from file and set as description
-                              const reader = new FileReader();
-                              reader.onload = (event) => {
-                                const text = event.target?.result as string;
-                                handleChange("description", text);
-                              };
-                              reader.readAsText(file);
+
+                              const formData = new FormData();
+                              formData.append("file", file);
+
+                              const loadingToast = toast.loading("Parsing document...");
+
+                              try {
+                                const response = await fetch("/api/parse-document", {
+                                  method: "POST",
+                                  body: formData,
+                                });
+
+                                if (!response.ok) {
+                                  // Attempt to read text if JSON fails, to catch HTML error pages
+                                  const text = await response.text();
+                                  console.error(`Upload failed: ${response.status} ${response.statusText}`, text);
+
+                                  try {
+                                    const errorData = JSON.parse(text);
+                                    throw new Error(errorData.error || `Upload failed: ${response.status}`);
+                                  } catch (e) {
+                                    throw new Error(`Server error (${response.status}): Check console for details.`);
+                                  }
+                                }
+
+                                const data = await response.json();
+                                handleChange("description", data.text);
+                                toast.success("Document parsed successfully", { id: loadingToast });
+                              } catch (error) {
+                                console.error("Parsing error:", error);
+                                toast.error(error instanceof Error ? error.message : "Failed to parse document", { id: loadingToast });
+                              }
                             }
                           }}
                           className="hidden"
@@ -787,7 +814,7 @@ export default function CreatePresentationClient({
                           Choose File
                         </label>
                         <p className="mt-2 text-xs text-slate-500">
-                          {uploadedFile ? uploadedFile.name : "PDF, Word, or Text files"}
+                          {uploadedFile ? uploadedFile.name : "PDF, Word, PowerPoint, or Text files"}
                         </p>
                       </div>
                       <div className="text-center text-sm text-slate-500">or</div>
@@ -1014,7 +1041,7 @@ export default function CreatePresentationClient({
                   ) : (
                     mode === "ai" ? (isSamePrompt ? "Regenerate outline" : "Generate outline") :
                       mode === "docs" ? "Transform to Presentation" :
-                        "Create Blank Presentation"
+                        mode === "scratch" ? "Create Presentation" : "Create Blank Presentation"
                   )}
                 </button>
               </div>
@@ -1028,307 +1055,288 @@ export default function CreatePresentationClient({
         </div>
 
         {/* Outline Section */}
-        {showOutline && (
-          <div className={`flex-1 px-4 sm:px-6 lg:px-8 ${isCompleted ? "pb-[140px]" : "pb-12"}`}>
-            <div className="mx-auto max-w-4xl">
-              {/* Simple status text above slides - only show when actually streaming */}
-              {isStreaming && !hasError && streamState.totalSlides > 0 && (
-                <div className="mb-6 text-sm text-[#06b6d4] flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-lg px-4 py-3 shadow-sm border border-[#06b6d4]/20">
-                  <Loader2 size={16} className="animate-spin" />
-                  <span className="font-medium">
-                    {streamState.currentSlideIndex >= 0
-                      ? `Generating slide ${streamState.currentSlideIndex + 1} of ${streamState.totalSlides}...`
-                      : `Preparing to generate ${streamState.totalSlides} slides...`}
-                  </span>
-                </div>
-              )}
+        {
+          showOutline && (
+            <div className={`flex-1 px-4 sm:px-6 lg:px-8 ${isCompleted ? "pb-[140px]" : "pb-12"}`}>
+              <div className="mx-auto max-w-4xl">
+                {/* Simple status text above slides - only show when actually streaming */}
+                {isStreaming && !hasError && streamState.totalSlides > 0 && (
+                  <div className="mb-6 text-sm text-[#06b6d4] flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-lg px-4 py-3 shadow-sm border border-[#06b6d4]/20">
+                    <Loader2 size={16} className="animate-spin" />
+                    <span className="font-medium">
+                      {streamState.currentSlideIndex >= 0
+                        ? `Generating slide ${streamState.currentSlideIndex + 1} of ${streamState.totalSlides}...`
+                        : `Preparing to generate ${streamState.totalSlides} slides...`}
+                    </span>
+                  </div>
+                )}
 
-              {/* Slides List - vertical - only show when not in error state */}
-              {!hasError && (
-                <div className="space-y-3" onDragEnd={handleDragEnd}>
-                  {isStreaming ? (
-                    // Show skeleton cards + completed slides during streaming
-                    <>
-                      {Array.from({ length: streamState.totalSlides }).map((_, index) => {
-                        const slide = streamState.slides[index];
-                        if (slide) {
-                          return (
-                            <div key={index} className="group">
-                              <SlideCard
-                                slide={slide}
-                                index={index}
-                                isStreaming={true}
-                              />
-                            </div>
-                          );
-                        }
-                        return <SkeletonCard key={index} index={index} />;
-                      })}
-                    </>
-                  ) : (
-                    // Show editable slides when completed
-                    slides.map((slide, index) => (
-                      <div
-                        key={index}
-                        className="group"
-                        onDragEnter={() => handleDragEnter(index)}
-                      >
-                        <SlideCard
-                          slide={slide}
-                          index={index}
-                          isStreaming={false}
-                          onEdit={handleEditSlide}
-                          onDelete={handleDeleteSlide}
-                          onDragStart={handleDragStart}
-                          onDragOver={handleDragOver}
-                          onDrop={handleDrop}
-                          isDraggedOver={dragOverIndex === index}
-                          canDelete={slides.length > 2}
-                        />
+                {/* Slides List - vertical - only show when not in error state */}
+                {!hasError && (
+                  <div className="space-y-3" onDragEnd={handleDragEnd}>
+                    {isStreaming ? (
+                      // Show skeleton cards + completed slides during streaming
+                      <>
+                        {Array.from({ length: streamState.totalSlides }).map((_, index) => {
+                          const slide = streamState.slides[index];
+                          if (slide) {
+                            return (
+                              <div key={index} className="group">
+                                <SlideCard
+                                  slide={slide}
+                                  index={index}
+                                  isStreaming={true}
+                                />
+                              </div>
+                            );
+                          }
+                          return <SkeletonCard key={index} index={index} />;
+                        })}
+                      </>
+                    ) : (
+                      // Show editable slides when completed
+                      slides.map((slide, index) => (
+                        <div
+                          key={index}
+                          className="group"
+                          onDragEnter={() => handleDragEnter(index)}
+                        >
+                          <SlideCard
+                            slide={slide}
+                            index={index}
+                            isStreaming={false}
+                            onEdit={handleEditSlide}
+                            onDelete={handleDeleteSlide}
+                            onDragStart={handleDragStart}
+                            onDragOver={handleDragOver}
+                            onDrop={handleDrop}
+                            isDraggedOver={dragOverIndex === index}
+                            canDelete={slides.length > 2}
+                          />
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+
+                {/* Presentation style box – used when creating slides from this outline */}
+                {isCompleted && (
+                  <div className="mt-6 mb-[60px] rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm px-4 py-4 shadow-sm">
+                    {/* Text Content Section */}
+                    <div className="mb-6 pb-6 border-b border-slate-200">
+                      <div className="flex items-center gap-2 mb-3">
+                        <svg className="w-4 h-4 text-[#06b6d4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                        </svg>
+                        <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                          Text Content
+                        </p>
                       </div>
-                    ))
-                  )}
-                </div>
-              )}
+                      <p className="text-xs text-slate-500 mb-3">Amount of text per card</p>
 
-              {/* Presentation style box – used when creating slides from this outline */}
-              {isCompleted && (
-                <div className="mt-6 mb-[60px] rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm px-4 py-4 shadow-sm">
-                  {/* Text Content Section */}
-                  <div className="mb-6 pb-6 border-b border-slate-200">
-                    <div className="flex items-center gap-2 mb-3">
-                      <svg className="w-4 h-4 text-[#06b6d4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
-                      </svg>
-                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                        Text Content
-                      </p>
-                    </div>
-                    <p className="text-xs text-slate-500 mb-3">Amount of text per card</p>
-
-                    {/* Text Density Options */}
-                    <div className="grid grid-cols-4 gap-2">
-                      {[
-                        { id: "minimal", label: "Minimal", lines: 2 },
-                        { id: "concise", label: "Concise", lines: 3 },
-                        { id: "detailed", label: "Detailed", lines: 4 },
-                        { id: "extensive", label: "Extensive", lines: 5 },
-                      ].map((option) => {
-                        const isSelected = formData.textDensity === option.id;
-                        return (
-                          <button
-                            key={option.id}
-                            type="button"
-                            onClick={() => handleChange("textDensity", option.id)}
-                            className={`relative rounded-lg border p-3 text-left transition-all hover:shadow-sm ${isSelected
+                      {/* Text Density Options */}
+                      <div className="grid grid-cols-4 gap-2">
+                        {[
+                          { id: "minimal", label: "Minimal", lines: 2 },
+                          { id: "concise", label: "Concise", lines: 3 },
+                          { id: "detailed", label: "Detailed", lines: 4 },
+                          { id: "extensive", label: "Extensive", lines: 5 },
+                        ].map((option) => {
+                          const isSelected = formData.textDensity === option.id;
+                          return (
+                            <button
+                              key={option.id}
+                              type="button"
+                              onClick={() => handleChange("textDensity", option.id)}
+                              className={`relative rounded-lg border p-3 text-left transition-all hover:shadow-sm ${isSelected
                                 ? "border-[#06b6d4] ring-2 ring-[#06b6d4]/20 bg-[#06b6d4]/5"
                                 : "border-slate-200 hover:border-slate-300 bg-white"
-                              }`}
-                          >
-                            {/* Text lines visualization */}
-                            <div className="mb-2 space-y-1">
-                              {Array.from({ length: option.lines }).map((_, i) => (
-                                <div
-                                  key={i}
-                                  className={`h-1 rounded ${isSelected ? "bg-[#06b6d4]" : "bg-slate-300"
-                                    }`}
-                                  style={{
-                                    width: i === option.lines - 1 ? "60%" : "100%",
-                                  }}
-                                />
-                              ))}
-                            </div>
-                            <div className={`text-xs font-medium ${isSelected ? "text-[#06b6d4]" : "text-slate-700"
-                              }`}>
-                              {option.label}
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Theme Selection */}
-                  <div className="mb-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                          Presentation Theme
-                        </p>
-                        <p className="text-[10px] text-slate-400 mt-0.5">
-                          Recently selected themes
-                        </p>
+                                }`}
+                            >
+                              {/* Text lines visualization */}
+                              <div className="mb-2 space-y-1">
+                                {Array.from({ length: option.lines }).map((_, i) => (
+                                  <div
+                                    key={i}
+                                    className={`h-1 rounded ${isSelected ? "bg-[#06b6d4]" : "bg-slate-300"
+                                      }`}
+                                    style={{
+                                      width: i === option.lines - 1 ? "60%" : "100%",
+                                    }}
+                                  />
+                                ))}
+                              </div>
+                              <div className={`text-xs font-medium ${isSelected ? "text-[#06b6d4]" : "text-slate-700"
+                                }`}>
+                                {option.label}
+                              </div>
+                            </button>
+                          );
+                        })}
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => setIsThemeSelectorOpen(true)}
-                        className="text-xs font-medium text-[#06b6d4] hover:text-[#0891b2] transition-colors"
-                      >
-                        Browse all →
-                      </button>
                     </div>
 
-                    {/* Popular Themes Grid - 3 columns, 2 rows */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                      {quickSelectThemes.slice(0, 6).map((themeId) => {
-                        const theme = getThemeForDisplay(themeId);
-                        if (!theme) return null;
-                        const isSelected = formData.theme === theme.id;
-                        return (
-                          <button
-                            key={theme.id}
-                            type="button"
-                            onClick={() => {
-                              handleChange("theme", theme.id);
-                              // Move selected theme to front of quick-select
-                              setQuickSelectThemes((prev) => {
-                                if (prev[0] === theme.id) return prev; // Already first
-                                return [theme.id, ...prev.filter(id => id !== theme.id)].slice(0, 6);
-                              });
-                            }}
-                            className={`group relative overflow-hidden rounded-lg border text-left transition-all hover:shadow-md ${isSelected
+                    {/* Theme Selection */}
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                            Presentation Theme
+                          </p>
+                          <p className="text-[10px] text-slate-400 mt-0.5">
+                            Recently selected themes
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setIsThemeSelectorOpen(true)}
+                          className="text-xs font-medium text-[#06b6d4] hover:text-[#0891b2] transition-colors"
+                        >
+                          Browse all →
+                        </button>
+                      </div>
+
+                      {/* Popular Themes Grid - 3 columns, 2 rows */}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {quickSelectThemes.slice(0, 6).map((themeId) => {
+                          const theme = getThemeForDisplay(themeId);
+                          if (!theme) return null;
+                          const isSelected = formData.theme === theme.id;
+                          return (
+                            <button
+                              key={theme.id}
+                              type="button"
+                              onClick={() => {
+                                handleChange("theme", theme.id);
+                                // Move selected theme to front of quick-select
+                                setQuickSelectThemes((prev) => {
+                                  if (prev[0] === theme.id) return prev; // Already first
+                                  return [theme.id, ...prev.filter(id => id !== theme.id)].slice(0, 6);
+                                });
+                              }}
+                              className={`group relative overflow-hidden rounded-lg border text-left transition-all hover:shadow-md ${isSelected
                                 ? "border-[#06b6d4] ring-2 ring-[#06b6d4]/20 shadow-sm"
                                 : "border-slate-200 hover:border-slate-300"
-                              }`}
-                          >
-                            {/* Theme Preview Card */}
-                            <div className="p-2">
-                              <div
-                                className="aspect-[1.8/1] w-full rounded shadow-sm relative overflow-hidden"
-                                style={{
-                                  backgroundColor: theme.preview.titleBg,
-                                  backgroundImage: theme.previewBackgroundImage
-                                    ? `url(${theme.previewBackgroundImage})`
-                                    : theme.slideStyles.title.pattern || "none",
-                                  backgroundSize: theme.previewBackgroundImage ? "cover" : "auto",
-                                  backgroundPosition: theme.previewBackgroundImage ? "center" : "center",
-                                }}
-                              >
-                                {/* Small content box overlaid on background */}
+                                }`}
+                            >
+                              {/* Theme Preview Card */}
+                              <div className="p-2">
                                 <div
-                                  className="absolute bottom-1.5 left-1.5 right-1.5 rounded p-1.5 backdrop-blur-md transition-all duration-300"
+                                  className="aspect-[1.8/1] w-full rounded shadow-sm relative overflow-hidden"
                                   style={{
-                                    backgroundColor: theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
-                                    border: theme.cardBox?.borderColor ? `1px solid ${theme.cardBox.borderColor}` : "none",
-                                    boxShadow: theme.cardBox?.shadow || "0 1px 3px rgba(0, 0, 0, 0.1)",
-                                    maxWidth: "70%",
+                                    backgroundColor: theme.preview.titleBg,
+                                    backgroundImage: theme.previewBackgroundImage
+                                      ? `url(${theme.previewBackgroundImage})`
+                                      : theme.slideStyles.title.pattern || "none",
+                                    backgroundSize: theme.previewBackgroundImage ? "cover" : "auto",
+                                    backgroundPosition: theme.previewBackgroundImage ? "center" : "center",
                                   }}
                                 >
+                                  {/* Small content box overlaid on background */}
                                   <div
-                                    className="text-[11px] font-bold mb-0.5 leading-tight"
+                                    className="absolute bottom-1.5 left-1.5 right-1.5 rounded p-1.5 backdrop-blur-md transition-all duration-300"
                                     style={{
-                                      fontFamily: theme.fonts.heading.family,
-                                      color: theme.cardBox?.titleColor || theme.colors.heading,
+                                      backgroundColor: theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
+                                      border: theme.cardBox?.borderColor ? `1px solid ${theme.cardBox.borderColor}` : "none",
+                                      boxShadow: theme.cardBox?.shadow || "0 1px 3px rgba(0, 0, 0, 0.1)",
+                                      maxWidth: "70%",
                                     }}
                                   >
-                                    Title
-                                  </div>
-                                  <div
-                                    className="text-[8px] font-medium leading-tight"
-                                    style={{
-                                      fontFamily: theme.fonts.body.family,
-                                      color: theme.cardBox?.bodyColor || theme.colors.text,
-                                    }}
-                                  >
-                                    Body &{" "}
-                                    <span
-                                      className="underline decoration-1"
+                                    <div
+                                      className="text-[11px] font-bold mb-0.5 leading-tight"
                                       style={{
-                                        color: theme.cardBox?.accentColor || theme.preview.accentColor,
-                                        textDecorationColor: theme.cardBox?.accentColor || theme.preview.accentColor,
+                                        fontFamily: theme.fonts.heading.family,
+                                        color: theme.cardBox?.titleColor || theme.colors.heading,
                                       }}
                                     >
-                                      link
-                                    </span>
+                                      Title
+                                    </div>
+                                    <div
+                                      className="text-[8px] font-medium leading-tight"
+                                      style={{
+                                        fontFamily: theme.fonts.body.family,
+                                        color: theme.cardBox?.bodyColor || theme.colors.text,
+                                      }}
+                                    >
+                                      Body &{" "}
+                                      <span
+                                        className="underline decoration-1"
+                                        style={{
+                                          color: theme.cardBox?.accentColor || theme.preview.accentColor,
+                                          textDecorationColor: theme.cardBox?.accentColor || theme.preview.accentColor,
+                                        }}
+                                      >
+                                        link
+                                      </span>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
-                            </div>
 
-                            {/* Theme Name Footer */}
-                            <div
-                              className={`px-2 py-1 border-t flex items-center justify-between text-[11px] ${isSelected ? "bg-[#06b6d4]/5" : "bg-white"
-                                }`}
-                              style={{ borderColor: isSelected ? "#06b6d4" : "#e2e8f0" }}
-                            >
-                              <div className="font-medium text-slate-700 truncate">
-                                {theme.name}
+                              {/* Theme Name Footer */}
+                              <div
+                                className={`px-2 py-1 border-t flex items-center justify-between text-[11px] ${isSelected ? "bg-[#06b6d4]/5" : "bg-white"
+                                  }`}
+                                style={{ borderColor: isSelected ? "#06b6d4" : "#e2e8f0" }}
+                              >
+                                <div className="font-medium text-slate-700 truncate">
+                                  {theme.name}
+                                </div>
+                                {isSelected && (
+                                  <Check size={12} className="text-[#06b6d4] flex-shrink-0 ml-1" />
+                                )}
                               </div>
-                              {isSelected && (
-                                <Check size={12} className="text-[#06b6d4] flex-shrink-0 ml-1" />
-                              )}
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Image Style Selection */}
-                  <div className="mb-4">
-                    <p className="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">
-                      Image Style
-                    </p>
-                    <select
-                      id="imageSource-outline"
-                      value={formData.imageSource}
-                      onChange={(e) => handleChange("imageSource", e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all"
-                    >
-                      <option value="no-images">No Images (Text-Only Slides)</option>
-                      <option value="placeholders">Image Placeholders (Edit Later)</option>
-                      <option value="ai-generated">AI-Generated Images</option>
-                      <option value="stock-photos">Stock Photos (Pexels)</option>
-                      <option value="illustrations">Illustrations (Pictographic Style)</option>
-                      <option value="web-images">Web Images (Public Search)</option>
-                    </select>
-                  </div>
-
-                  {/* Second selector: AI model (for AI images) or licensing (for external images) */}
-                  <div>
-                    {formData.imageSource === "ai-generated" ? (
-                      <div className="relative">
-                        <select
-                          id="imageModel-outline"
-                          value={formData.imageModel}
-                          onChange={(e) => handleChange("imageModel", e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all appearance-none"
-                        >
-                          <option value="gemini-2.5-flash-image">
-                            Nano Banana (Gemini 2.5 Flash Image)
-                          </option>
-                          <option value="gemini-3-pro-image-preview">
-                            Nano Banana Pro (Gemini 3 Pro Image Preview)
-                          </option>
-                          <option value="imagen-4.0-generate-001">
-                            Imagen 4
-                          </option>
-                          <option value="imagen-4.0-ultra-generate-001">
-                            Imagen 4 Ultra
-                          </option>
-                          <option value="imagen-4.0-fast-generate-001">
-                            Imagen 4 Fast
-                          </option>
-                        </select>
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                          <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </div>
+                            </button>
+                          );
+                        })}
                       </div>
-                    ) : (
-                      <>
+                    </div>
+
+                    {/* Image Style Selection */}
+                    <div className="mb-4">
+                      <p className="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">
+                        Image Style
+                      </p>
+                      <select
+                        id="imageSource-outline"
+                        value={formData.imageSource}
+                        onChange={(e) => handleChange("imageSource", e.target.value)}
+                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all"
+                      >
+                        <option value="no-images">No Images (Text-Only Slides)</option>
+                        <option value="placeholders">Image Placeholders (Edit Later)</option>
+                        <option value="ai-generated">AI-Generated Images</option>
+                        <option value="stock-photos">Stock Photos (Pexels)</option>
+                        <option value="illustrations">Illustrations (Pictographic Style)</option>
+                        <option value="web-images">Web Images (Public Search)</option>
+                      </select>
+                    </div>
+
+                    {/* Second selector: AI model (for AI images) or licensing (for external images) */}
+                    <div>
+                      {formData.imageSource === "ai-generated" ? (
                         <div className="relative">
                           <select
-                            id="imageLicensing-outline"
-                            value={formData.imageLicensing}
-                            onChange={(e) => handleChange("imageLicensing", e.target.value)}
-                            disabled={formData.imageSource === "no-images" || formData.imageSource === "placeholders"}
-                            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all disabled:opacity-50 disabled:cursor-not-allowed appearance-none"
+                            id="imageModel-outline"
+                            value={formData.imageModel}
+                            onChange={(e) => handleChange("imageModel", e.target.value)}
+                            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all appearance-none"
                           >
-                            <option value="all-images">All images</option>
-                            <option value="free-to-use">Free to use</option>
-                            <option value="free-commercial">Free to use commercially</option>
+                            <option value="gemini-2.5-flash-image">
+                              Nano Banana (Gemini 2.5 Flash Image)
+                            </option>
+                            <option value="gemini-3-pro-image-preview">
+                              Nano Banana Pro (Gemini 3 Pro Image Preview)
+                            </option>
+                            <option value="imagen-4.0-generate-001">
+                              Imagen 4
+                            </option>
+                            <option value="imagen-4.0-ultra-generate-001">
+                              Imagen 4 Ultra
+                            </option>
+                            <option value="imagen-4.0-fast-generate-001">
+                              Imagen 4 Fast
+                            </option>
                           </select>
                           <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
                             <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1336,87 +1344,110 @@ export default function CreatePresentationClient({
                             </svg>
                           </div>
                         </div>
-
-                        {/* Licensing Info Tooltip */}
-                        {formData.imageLicensing !== "all-images" && formData.imageSource !== "no-images" && formData.imageSource !== "placeholders" && (
-                          <div className="mt-2 p-2 rounded-lg bg-blue-50 border border-blue-100">
-                            <div className="flex items-start gap-2">
-                              <svg className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                      ) : (
+                        <>
+                          <div className="relative">
+                            <select
+                              id="imageLicensing-outline"
+                              value={formData.imageLicensing}
+                              onChange={(e) => handleChange("imageLicensing", e.target.value)}
+                              disabled={formData.imageSource === "no-images" || formData.imageSource === "placeholders"}
+                              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all disabled:opacity-50 disabled:cursor-not-allowed appearance-none"
+                            >
+                              <option value="all-images">All images</option>
+                              <option value="free-to-use">Free to use</option>
+                              <option value="free-commercial">Free to use commercially</option>
+                            </select>
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                              <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                               </svg>
-                              <div className="text-[10px] text-blue-700 leading-relaxed">
-                                {formData.imageLicensing === "free-to-use" && (
-                                  <span>
-                                    <strong>Free to use:</strong> Only use images licensed for personal use, like a school project.
-                                  </span>
-                                )}
-                                {formData.imageLicensing === "free-commercial" && (
-                                  <span>
-                                    <strong>Free to use commercially:</strong> Only use images licensed for commercial use, like a sales pitch.
-                                  </span>
-                                )}
-                              </div>
                             </div>
                           </div>
-                        )}
-                      </>
-                    )}
-                  </div>
 
-                  <p className="mt-3 text-xs text-slate-500 leading-relaxed">
-                    These settings will be applied when you create the final presentation.
-                  </p>
-                </div>
-              )}
+                          {/* Licensing Info Tooltip */}
+                          {formData.imageLicensing !== "all-images" && formData.imageSource !== "no-images" && formData.imageSource !== "placeholders" && (
+                            <div className="mt-2 p-2 rounded-lg bg-blue-50 border border-blue-100">
+                              <div className="flex items-start gap-2">
+                                <svg className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                </svg>
+                                <div className="text-[10px] text-blue-700 leading-relaxed">
+                                  {formData.imageLicensing === "free-to-use" && (
+                                    <span>
+                                      <strong>Free to use:</strong> Only use images licensed for personal use, like a school project.
+                                    </span>
+                                  )}
+                                  {formData.imageLicensing === "free-commercial" && (
+                                    <span>
+                                      <strong>Free to use commercially:</strong> Only use images licensed for commercial use, like a sales pitch.
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+
+                    <p className="mt-3 text-xs text-slate-500 leading-relaxed">
+                      These settings will be applied when you create the final presentation.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )
+        }
+      </div >
 
       {/* Bottom sticky stats & action bar (only when outline is ready and NOT streaming) */}
-      {isCompleted && !isStreaming && (
-        <div className="fixed inset-x-0 bottom-0 z-20">
-          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pb-4">
-            <div className="flex items-center justify-between rounded-xl bg-white px-4 py-3 shadow-lg border border-slate-200">
-              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
-                <span className="flex items-center gap-1">
-                  <span className="text-slate-500">Slides:</span>
-                  <strong className="text-[#1e3a8a]">{slides.length || streamState.totalSlides || 0}</strong>
-                </span>
-                <span className="hidden sm:inline text-slate-300">•</span>
-                <span className="hidden sm:flex items-center gap-1">
-                  <span className="text-slate-500">Characters:</span>
-                  <strong className="text-[#1e3a8a]">{totalCharacters.toLocaleString()}</strong>
-                </span>
-                <span className="text-slate-300">•</span>
-                <span className="flex items-center gap-1">
-                  <span className="text-slate-500">Credits:</span>
-                  <strong className="text-[#06b6d4]">{streamState.creditsRemaining ?? "—"}</strong>
-                </span>
+      {
+        isCompleted && !isStreaming && (
+          <div className="fixed inset-x-0 bottom-0 z-20">
+            <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pb-4">
+              <div className="flex items-center justify-between rounded-xl bg-white px-4 py-3 shadow-lg border border-slate-200">
+                <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
+                  <span className="flex items-center gap-1">
+                    <span className="text-slate-500">Slides:</span>
+                    <strong className="text-[#1e3a8a]">{slides.length || streamState.totalSlides || 0}</strong>
+                  </span>
+                  <span className="hidden sm:inline text-slate-300">•</span>
+                  <span className="hidden sm:flex items-center gap-1">
+                    <span className="text-slate-500">Characters:</span>
+                    <strong className="text-[#1e3a8a]">{totalCharacters.toLocaleString()}</strong>
+                  </span>
+                  <span className="text-slate-300">•</span>
+                  <span className="flex items-center gap-1">
+                    <span className="text-slate-500">Credits:</span>
+                    <strong className="text-[#06b6d4]">{streamState.creditsRemaining ?? "—"}</strong>
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCreatePresentation}
+                  disabled={!isCompleted || slides.length === 0 || isCreatingPresentation}
+                  className="px-5 py-2 rounded-lg bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white text-sm font-semibold shadow-md transition-all hover:opacity-90 hover:shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center gap-2"
+                >
+                  {isCreatingPresentation ? (
+                    <>
+                      <Loader2 size={15} className="animate-spin" />
+                      <span className="hidden sm:inline">{formData.imageSource === "stock-photos" ? "Fetching Images..." : "Creating..."}</span>
+                      <span className="sm:hidden">Creating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="hidden sm:inline">Create Presentation</span>
+                      <span className="sm:hidden">Create</span>
+                    </>
+                  )}
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={handleCreatePresentation}
-                disabled={!isCompleted || slides.length === 0 || isCreatingPresentation}
-                className="px-5 py-2 rounded-lg bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white text-sm font-semibold shadow-md transition-all hover:opacity-90 hover:shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center gap-2"
-              >
-                {isCreatingPresentation ? (
-                  <>
-                    <Loader2 size={15} className="animate-spin" />
-                    <span className="hidden sm:inline">{formData.imageSource === "stock-photos" ? "Fetching Images..." : "Creating..."}</span>
-                    <span className="sm:hidden">Creating...</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="hidden sm:inline">Create Presentation</span>
-                    <span className="sm:hidden">Create</span>
-                  </>
-                )}
-              </button>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Theme Selector Modal */}
       <ThemeSelector
@@ -1436,7 +1467,7 @@ export default function CreatePresentationClient({
           });
         }}
       />
-    </div>
+    </div >
   );
 }
 
