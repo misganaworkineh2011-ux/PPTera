@@ -144,7 +144,11 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
     return desc.split('\n').filter(line => line.trim().startsWith('•')).map(line => line.replace('•', '').trim());
   };
 
+  // Don't render anything on server or if not open
   if (!isOpen) return null;
+  
+  // Handle SSR - don't use portal on server
+  if (typeof window === 'undefined') return null;
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">

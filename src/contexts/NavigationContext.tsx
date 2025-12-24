@@ -132,9 +132,17 @@ function NavigationProviderInner({
 
 export function NavigationProvider({ children }: { children: ReactNode }) {
   const [isNavigating, setIsNavigating] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Mark as mounted after initial render to prevent showing loading on first page load
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Intercept all link clicks globally
   useEffect(() => {
+    if (!isMounted) return;
+
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       const anchor = target.closest("a");
@@ -174,7 +182,18 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     return () => {
       document.removeEventListener("click", handleClick, true);
     };
-  }, []);
+  }, [isMounted]);
+
+  // Safety timeout - if navigation takes too long, reset the state
+  useEffect(() => {
+    if (!isNavigating) return;
+    
+    const timeout = setTimeout(() => {
+      setIsNavigating(false);
+    }, 10000); // 10 second timeout
+    
+    return () => clearTimeout(timeout);
+  }, [isNavigating]);
 
   return (
     <Suspense fallback={children}>
