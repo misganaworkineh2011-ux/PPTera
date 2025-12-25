@@ -1,4 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
 // Define protected routes that require authentication
 const isProtectedRoute = createRouteMatcher([
@@ -10,7 +11,35 @@ const isProtectedRoute = createRouteMatcher([
   "/api/cron(.*)",
 ]);
 
+// Known search engine bot user agents
+const BOT_USER_AGENTS = [
+  'googlebot',
+  'bingbot',
+  'slurp',
+  'duckduckbot',
+  'baiduspider',
+  'yandexbot',
+  'facebookexternalhit',
+  'twitterbot',
+  'linkedinbot',
+  'whatsapp',
+  'telegrambot',
+];
+
+function isBot(userAgent: string | null): boolean {
+  if (!userAgent) return false;
+  const ua = userAgent.toLowerCase();
+  return BOT_USER_AGENTS.some(bot => ua.includes(bot));
+}
+
 export default clerkMiddleware(async (auth, request) => {
+  const userAgent = request.headers.get('user-agent');
+  
+  // Skip auth for bots on public pages - let them crawl freely
+  if (isBot(userAgent) && !isProtectedRoute(request)) {
+    return NextResponse.next();
+  }
+  
   // Only protect specific routes - everything else is public
   if (isProtectedRoute(request)) {
     await auth.protect();
