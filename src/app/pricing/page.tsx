@@ -149,6 +149,7 @@ export default function PricingPage() {
     "@type": "Product",
     "name": "PPTMaster AI Presentation Generator",
     "description": "AI-powered presentation generator that creates professional slides instantly",
+    "image": "https://www.pptmaster.app/og-image.jpeg",
     "brand": {
       "@type": "Brand",
       "name": "PPTMaster"
