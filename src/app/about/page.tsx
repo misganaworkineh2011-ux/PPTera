@@ -63,9 +63,11 @@ export default function AboutPage() {
 
             <div className="relative">
               <div className="aspect-square rounded-3xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] p-1 rotate-3 hover:rotate-0 transition-transform duration-500">
-                <div className="h-full w-full rounded-3xl bg-white flex items-center justify-center">
-                  <Sparkles className="h-32 w-32 text-[#06b6d4]" />
-                </div>
+                <img
+                  src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=800&fit=crop&q=80"
+                  alt="Team collaborating on presentations"
+                  className="h-full w-full rounded-3xl object-cover"
+                />
               </div>
             </div>
           </div>
