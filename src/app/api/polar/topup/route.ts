@@ -76,20 +76,9 @@ export async function POST(req: Request) {
       productId: option.productId,
     });
 
-    // Fetch product to get price ID
-    const product = await polarClient.products.get({ id: option.productId });
-    const price = product.prices?.find(p => p.type === "one_time" && !p.isArchived) || product.prices?.[0];
-
-    if (!price) {
-      return NextResponse.json(
-        { error: "No price found for top-up product" },
-        { status: 500 }
-      );
-    }
-
-    // Create Polar checkout
-    const checkout = await (polarClient.checkouts.create as any)({
-      productPriceId: price.id,
+    // Create Polar checkout using products array (simpler, more reliable)
+    const checkout = await polarClient.checkouts.create({
+      products: [option.productId],
       customerEmail: user.email,
       metadata: {
         userId: user.id,
@@ -97,7 +86,7 @@ export async function POST(req: Request) {
         credits: option.credits.toString(),
       },
       successUrl: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/dashboard/billing?topup=success&credits=${option.credits}`,
-    });
+    } as any);
 
     return NextResponse.json({
       checkoutUrl: checkout.url,
