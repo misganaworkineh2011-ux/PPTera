@@ -14,10 +14,10 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://www.pptmaster.app'),
   title: {
-    default: "PPTMaster | Best AI PowerPoint Generator & Presentation Maker",
+    default: "PPT Master | Best AI PowerPoint Generator & Presentation Maker",
     template: "%s | PPT Master"
   },
-  description: "PPTMaster is the best free AI-powered PowerPoint generator that helps you create stunning presentations and visuals effortlessly — no design or coding skills needed.",
+  description: "PPT Master is the best free AI-powered PowerPoint generator that helps you create stunning presentations and visuals effortlessly — no design or coding skills needed.",
   keywords: [
     "PPTMaster",
     "AI presentation generator",
