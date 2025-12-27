@@ -1,12 +1,14 @@
 "use client";
 
-import { ImageIcon, Plus } from "lucide-react";
+import { useState } from "react";
+import { ImageIcon, Plus, LayoutGrid } from "lucide-react";
 import { type Theme } from "~/lib/themes";
 import { type SlideData, type EditingState, type SlideChartData } from "./types";
+import type { BoxLayoutType, BoxContentItem } from "~/lib/layouts/content/boxes";
 import EditableText from "./EditableText";
-import ChartRenderer from "./ChartRenderer";
 import TransformedContentRenderer from "./TransformedContent";
-import IconRenderer from "./IconRenderer";
+import BoxLayoutRenderer from "./BoxLayoutRenderer";
+import ContentLayoutSelector from "./ContentLayoutSelector";
 
 interface SlideRendererProps {
   slide: SlideData;
@@ -24,6 +26,7 @@ interface SlideRendererProps {
   onFinishEditing: () => void;
   onAddBullet: (slideIndex: number) => void;
   onDeleteBullet: (slideIndex: number, bulletIndex: number) => void;
+  onChangeContentLayout?: (slideIndex: number, layoutId: BoxLayoutType) => void;
 }
 
 type LayoutVariant = "left-content" | "right-content" | "centered" | "split-diagonal" | "image-focus" | "minimal-left" | "cards-grid" | "quote-style" | "timeline" | "diagonal-cut" | "circle-focus" | "wave-layout" | "hexagon-frame" | "glass-cards" | "aurora-glow" | "diamond-frame" | "ember-cards" | "molten-split" | "arch-frame" | "botanical-cards" | "elegant-split" | "glitch-frame" | "neon-grid" | "holo-cards" | "scan-frame" | "bio-cards" | "transmission-split" | "clean-frame" | "pro-cards" | "executive-split" | "nebula-float" | "orbital-rings" | "starfield-cards" | "cosmic-portal" | "galaxy-split" | "celestial-frame" | "mono-brutalist" | "geometric-slice" | "contrast-blocks" | "angular-frame" | "stripe-accent" | "bold-stack" | "cloud-float" | "sakura-cards" | "dreamy-split" | "soft-bubble" | "twilight-frame" | "pastel-stack" | "terminal-window" | "matrix-cards" | "code-block" | "shell-prompt" | "cyber-grid" | "hack-split" | "grid-2-col" | "grid-3-col" | "grid-4-card" | "cards-2" | "cards-3" | "comparison" | "stats-grid" | "full-image" | "centered-image" | "feature-showcase";
@@ -200,7 +203,11 @@ function getSlideImages(slide: SlideData) {
 export default function SlideRenderer({
   slide, index, totalSlides, theme, isOwner, isFullscreen, isHovered, isEditing,
   editingText, showPageNumber = true, onStartEditing, onUpdateContent, onFinishEditing, onAddBullet, onDeleteBullet,
+  onChangeContentLayout,
 }: SlideRendererProps) {
+  const [showContentLayoutSelector, setShowContentLayoutSelector] = useState(false);
+  const [contentHovered, setContentHovered] = useState(false);
+  
   const allImages = getSlideImages(slide);
   const hasImage = allImages.length > 0;
   const hasMultipleImages = allImages.length > 1;
@@ -208,7 +215,38 @@ export default function SlideRenderer({
   const canEdit = isOwner && !isFullscreen;
   const themeType = getThemeType(theme);
   const layout = getLayoutVariant(index, themeType, slide.layout);
-  const hasChart = !!slide.chart;
+  
+  // Check if content supports box layouts (has sections or transformed content with labels)
+  const hasBoxContent = !!(
+    (slide.sections && slide.sections.length > 0) ||
+    (slide.transformedContent?.items && slide.transformedContent.items.some(item => item.label))
+  );
+  
+  // Convert slide content to BoxContentItem format
+  const getBoxContentItems = (): BoxContentItem[] => {
+    // Prefer sections if available
+    if (slide.sections && slide.sections.length > 0) {
+      return slide.sections.map((section, i) => ({
+        label: section.heading,
+        text: section.description,
+        icon: slide.icons?.[i]?.placeholder,
+      }));
+    }
+    // Fall back to transformed content
+    if (slide.transformedContent?.items) {
+      return slide.transformedContent.items
+        .filter(item => item.label)
+        .map((item, i) => ({
+          label: item.label,
+          text: item.text,
+          icon: slide.icons?.[i]?.placeholder,
+        }));
+    }
+    return [];
+  };
+  
+  const boxContentItems = getBoxContentItems();
+  const showBoxLayout = hasBoxContent && slide.contentLayout;
 
   // Theme-aware colors for all three themes
   const colorMap = {
@@ -701,88 +739,75 @@ export default function SlideRenderer({
     );
   };
 
-  // Enhanced content rendering with transformed content, charts, and icons
+  // Change Layout button that appears on hover
+  const ChangeLayoutButton = () => {
+    if (!canEdit || !hasBoxContent || !isHovered || !contentHovered) return null;
+    
+    return (
+      <button
+        onClick={() => setShowContentLayoutSelector(true)}
+        className="absolute top-2 right-2 z-10 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all opacity-90 hover:opacity-100 shadow-md"
+        style={{
+          backgroundColor: theme.colors.surface,
+          color: theme.colors.text,
+          border: `1px solid ${theme.colors.border}`,
+        }}
+      >
+        <LayoutGrid size={14} />
+        <span className="hidden sm:inline">Change Layout</span>
+      </button>
+    );
+  };
+
+  // Enhanced content rendering with transformed content
   const EnhancedContent = ({ compact = false }: { compact?: boolean }) => {
     const hasTransformedContent = slide.transformedContent && slide.transformedContent.items.length > 0;
-    const hasIcons = slide.icons && slide.icons.length > 0;
 
-    // Check for chart - cast to SlideChartData for proper type checking
-    // Be more lenient - if chart object exists with a type, try to render it
-    const slideChart = slide.chart as SlideChartData | null | undefined;
-    const hasChart = !!(slideChart && (slideChart.type || (slideChart.data && slideChart.data.length > 0)));
+    // Wrapper to handle hover for change layout button
+    const ContentWrapper = ({ children }: { children: React.ReactNode }) => (
+      <div
+        className="relative"
+        onMouseEnter={() => setContentHovered(true)}
+        onMouseLeave={() => setContentHovered(false)}
+      >
+        <ChangeLayoutButton />
+        {children}
+      </div>
+    );
 
-    // When chart is present, use a chart-optimized layout
-    if (hasChart && slideChart) {
-      // Ensure data array exists, even if empty (ChartRenderer will handle fallback)
-      const chartDataArray = slideChart.data && Array.isArray(slideChart.data) ? slideChart.data : [];
-      const chartData = {
-        type: slideChart.type || "bar",
-        title: slideChart.title,
-        data: chartDataArray,
-        labels: slideChart.labels || chartDataArray.map(d => d.label),
-        config: slideChart.config || {},
-        css: slideChart.css || "",
-      };
-
+    // Render with box layout if selected
+    if (showBoxLayout && boxContentItems.length > 0) {
       return (
-        <div className="space-y-3">
-          {/* Chart container - responsive sizing without fixed minHeight */}
-          <div
-            className={`${compact ? "p-2 sm:p-3" : "p-3 sm:p-4"} rounded-xl border backdrop-blur-sm overflow-hidden`}
-            style={{
-              backgroundColor: `${theme.colors.surface}40`,
-              borderColor: `${theme.colors.border}50`,
-            }}
-          >
-            <ChartRenderer chart={chartData} theme={theme} compact={compact} />
+        <ContentWrapper>
+          <div className={compact ? "space-y-3" : "space-y-4"}>
+            <BoxLayoutRenderer
+              layoutId={slide.contentLayout}
+              items={boxContentItems}
+              theme={theme}
+              compact={compact}
+              showIcons={true}
+            />
           </div>
-
-          {/* Icons row if available */}
-          {hasIcons && (
-            <div className="mt-2">
-              <IconRenderer icons={slide.icons!} theme={theme} size={compact ? "sm" : "md"} layout="inline" />
-            </div>
-          )}
-
-          {/* Bullet points below chart - more compact when chart is present */}
-          {bulletPoints.length > 0 && (
-            <div className="mt-2">
-              {hasTransformedContent ? (
-                <TransformedContentRenderer
-                  content={slide.transformedContent!}
-                  theme={theme}
-                  compact={true}
-                />
-              ) : (
-                <BulletPoints compact={true} />
-              )}
-            </div>
-          )}
-        </div>
+        </ContentWrapper>
       );
     }
 
-    // Standard layout without chart
+    // Standard layout
     return (
-      <div className={compact ? "space-y-3" : "space-y-4"}>
-        {/* Icons row if available - show even with transformed content, just above it */}
-        {hasIcons && (
-          <div className="mb-2">
-            <IconRenderer icons={slide.icons!} theme={theme} size={compact ? "sm" : "md"} layout="inline" />
-          </div>
-        )}
-
-        {/* Transformed content or fallback to bullet points */}
-        {hasTransformedContent ? (
-          <TransformedContentRenderer
-            content={slide.transformedContent!}
-            theme={theme}
-            compact={compact}
-          />
-        ) : (
-          <BulletPoints compact={compact} />
-        )}
-      </div>
+      <ContentWrapper>
+        <div className={compact ? "space-y-3" : "space-y-4"}>
+          {/* Transformed content or fallback to bullet points */}
+          {hasTransformedContent ? (
+            <TransformedContentRenderer
+              content={slide.transformedContent!}
+              theme={theme}
+              compact={compact}
+            />
+          ) : (
+            <BulletPoints compact={compact} />
+          )}
+        </div>
+      </ContentWrapper>
     );
   };
 
@@ -5212,8 +5237,23 @@ export default function SlideRenderer({
 
   // Fallback
   return (
-    <div className={`h-full relative overflow-hidden ${colors.bgSolid} flex items-center justify-center`}>
-      <p style={{ color: colors.textMuted }}>Slide {index + 1}</p>
-    </div>
+    <>
+      <div className={`h-full relative overflow-hidden ${colors.bgSolid} flex items-center justify-center`}>
+        <p style={{ color: colors.textMuted }}>Slide {index + 1}</p>
+      </div>
+      
+      {/* Content Layout Selector Modal */}
+      <ContentLayoutSelector
+        isOpen={showContentLayoutSelector}
+        currentLayout={slide.contentLayout}
+        contentItems={boxContentItems}
+        theme={theme}
+        onSelect={(layoutId) => {
+          onChangeContentLayout?.(index, layoutId);
+          setShowContentLayoutSelector(false);
+        }}
+        onClose={() => setShowContentLayoutSelector(false)}
+      />
+    </>
   );
 }

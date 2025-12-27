@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { getThemeById, getDefaultTheme, type Theme } from "~/lib/themes";
 import { isCustomThemeId, getCustomThemeDbId, convertCustomThemeToTheme } from "~/lib/custom-theme-utils";
 import { type LayoutType } from "~/lib/slide-layouts";
+import type { BoxLayoutType } from "~/lib/layouts/content/boxes";
 import {
   type SlideData,
   type PresentationData,
@@ -21,8 +22,6 @@ import LayoutModal from "~/components/presentation/LayoutModal";
 import ExportModal from "~/components/presentation/ExportModal";
 import ShareModal from "~/components/presentation/ShareModal";
 import FeedbackSection from "~/components/presentation/FeedbackSection";
-import ChartModal from "~/components/charts/ChartModal";
-import { type ChartData } from "~/lib/charts/types";
 import { RateUsModal, incrementPresentationCount, checkExistingReview } from "~/components/RateUsModal";
 import { ImageEditor, type ImageBlock } from "~/lib/blocks";
 
@@ -194,7 +193,6 @@ export default function PresentationViewer({
   const [editingImageIndex, setEditingImageIndex] = useState<number | null>(null);
   const [imageUrl, setImageUrl] = useState("");
   const [isLoadingImage, setIsLoadingImage] = useState(false);
-  const [showChartModal, setShowChartModal] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   // AI editing state - tracks which slide is being edited by AI
@@ -393,47 +391,16 @@ export default function PresentationViewer({
       });
     });
 
-    eventSource.addEventListener("chartReady", (e) => {
-      const data = JSON.parse(e.data);
-      setSlidesData(prev => {
-        const newSlides = [...prev];
-        if (newSlides[data.slideIndex]) {
-          newSlides[data.slideIndex] = {
-            ...newSlides[data.slideIndex]!,
-            chart: data.chart,
-          };
-        }
-        return newSlides;
-      });
-    });
-
-    eventSource.addEventListener("iconsReady", (e) => {
-      const data = JSON.parse(e.data);
-      console.log("[Streaming] ✓ Received ICONS_READY:", data.slideIndex);
-      setSlidesData(prev => {
-        const newSlides = [...prev];
-        if (newSlides[data.slideIndex]) {
-          newSlides[data.slideIndex] = {
-            ...newSlides[data.slideIndex]!,
-            icons: data.icons,
-          };
-        }
-        return newSlides;
-      });
-    });
-
     eventSource.addEventListener("slideComplete", (e) => {
       const data = JSON.parse(e.data);
       console.log("[Streaming] ✓ Received SLIDE_COMPLETE:", data.slideIndex, "title:", data.slide?.title);
       setSlidesData(prev => {
         const newSlides = [...prev];
         const existingSlide = newSlides[data.slideIndex];
-        // Preserve image, chart, and icons that may have been set by earlier events
+        // Preserve image that may have been set by earlier events
         newSlides[data.slideIndex] = {
           ...data.slide,
           image: data.slide.image?.url ? data.slide.image : existingSlide?.image,
-          chart: data.slide.chart || existingSlide?.chart,
-          icons: data.slide.icons || existingSlide?.icons,
         };
         console.log("[Streaming] Updated slidesData, new length:", newSlides.length);
         return newSlides;
@@ -546,22 +513,6 @@ export default function PresentationViewer({
   });
   const [isLoadingTheme, setIsLoadingTheme] = useState(false);
 
-  // Debug: Log slide data to check for icons/charts
-  useEffect(() => {
-    if (process.env.NODE_ENV === "development") {
-      const slidesWithCharts = slidesData.filter(s => s.chart);
-      const slidesWithIcons = slidesData.filter(s => s.icons && s.icons.length > 0);
-      if (slidesWithCharts.length > 0 || slidesWithIcons.length > 0) {
-        console.log("[PresentationViewer] Slides with enhanced content:", {
-          totalSlides: slidesData.length,
-          slidesWithCharts: slidesWithCharts.length,
-          slidesWithIcons: slidesWithIcons.length,
-          chartSlides: slidesWithCharts.map(s => ({ title: s.title, chartType: s.chart?.type })),
-          iconSlides: slidesWithIcons.map(s => ({ title: s.title, iconsCount: s.icons?.length })),
-        });
-      }
-    }
-  }, [slidesData]);
 
   // Load custom theme if needed - OPTIMIZATION: Skip if prefetched
   useEffect(() => {
@@ -881,6 +832,15 @@ export default function PresentationViewer({
     setShowLayoutModal(false);
   };
 
+  const changeContentLayout = (slideIndex: number, layoutId: BoxLayoutType) => {
+    const newSlides = [...slidesData];
+    const existingSlide = newSlides[slideIndex];
+    if (existingSlide) {
+      newSlides[slideIndex] = { ...existingSlide, contentLayout: layoutId };
+      updateSlidesWithSave(newSlides);
+    }
+  };
+
   const duplicateSlide = (index: number) => {
     const original = slidesData[index];
     if (original) {
@@ -947,39 +907,6 @@ export default function PresentationViewer({
     setEditingText({ slideIndex, field, bulletIndex });
   };
 
-  // Chart operations
-  const updateSlideChart = (slideIndex: number, chart: ChartData | null) => {
-    const slide = slidesData[slideIndex];
-    if (slide) {
-      const newSlides = [...slidesData];
-      // Convert new chart format to storage format
-      const chartData = chart ? {
-        type: chart.type,
-        title: chart.title,
-        data: chart.data.map(d => ({
-          label: d.label,
-          value: d.value,
-          color: d.color,
-        })),
-        labels: chart.data.map(d => d.label),
-        config: {
-          showLegend: chart.config.showLegend ?? true,
-          showLabels: chart.config.showLabels ?? true,
-          showValues: chart.config.showValues ?? true,
-          showGrid: chart.config.showGrid ?? true,
-          showAnimation: chart.config.showAnimation ?? true,
-          maxValue: chart.config.maxValue,
-          unit: chart.config.unit,
-          colorScheme: chart.config.colorScheme ?? "default",
-        },
-        css: "",
-      } : null;
-
-      newSlides[slideIndex] = { ...slide, chart: chartData };
-      updateSlidesWithSave(newSlides);
-    }
-    setShowChartModal(null);
-  };
 
   const getSlideImages = (slide: SlideData) => {
     const images = [...(slide.images || [])];
@@ -1212,6 +1139,7 @@ export default function PresentationViewer({
                 onFinishEditing={() => { }}
                 onAddBullet={() => { }}
                 onDeleteBullet={() => { }}
+                onChangeContentLayout={changeContentLayout}
               />
             )}
           </div>
@@ -1277,7 +1205,6 @@ export default function PresentationViewer({
             index={index}
             totalSlides={slides.length}
             imageCount={getSlideImages(slide).length}
-            hasChart={!!slide.chart}
             slideContent={{
               type: slide.type,
               title: slide.title,
@@ -1294,8 +1221,6 @@ export default function PresentationViewer({
             onDuplicate={() => duplicateSlide(index)}
             onAddSlide={() => addSlideAt(index)}
             onAddImage={() => { setShowImageModal(index); setEditingImageIndex(null); setImageUrl(""); }}
-            onAddChart={() => { setShowChartModal(index); }}
-            onRemoveChart={() => { updateSlideChart(index, null); }}
             onMoveUp={() => moveSlide(index, "up")}
             onMoveDown={() => moveSlide(index, "down")}
             onDelete={() => deleteSlide(index)}
@@ -1368,6 +1293,7 @@ export default function PresentationViewer({
             onFinishEditing={() => setEditingText(null)}
             onAddBullet={addBulletPoint}
             onDeleteBullet={deleteBulletPoint}
+            onChangeContentLayout={changeContentLayout}
           />
         )}
       </div>
@@ -1821,21 +1747,6 @@ export default function PresentationViewer({
             initialShareToken={presentation.shareToken}
             onClose={() => setShowShareModal(false)}
             theme={theme}
-          />
-        )}
-
-        {showChartModal !== null && canEdit && (
-          <ChartModal
-            isOpen={true}
-            onClose={() => setShowChartModal(null)}
-            onInsert={(chart) => updateSlideChart(showChartModal, chart)}
-            theme={theme}
-            existingChart={slidesData[showChartModal]?.chart ? {
-              type: slidesData[showChartModal]!.chart!.type as any,
-              title: slidesData[showChartModal]!.chart!.title,
-              data: slidesData[showChartModal]!.chart!.data,
-              config: slidesData[showChartModal]!.chart!.config,
-            } : null}
           />
         )}
 

@@ -9,8 +9,6 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "~/server/db";
 import { fetchImagesForSlides, type SlideWithVisualMetadata } from "~/lib/pexels";
 import {
-  generateChart,
-  generateIconsFromSlide,
   generateImagesForSlides as generateAIImages,
   getLayoutFromStrategy,
 } from "~/lib/presentation";
@@ -504,24 +502,6 @@ export async function GET(
           console.log(`[stream-content] Slide ${i} transformation complete: ${chunkCount} chunks, title: "${slideData.title}"`);
           
           if (isClosed.value) break; // Stop if client disconnected
-
-          // Generate chart if needed
-          if (slide.type === "content" && slide.assets?.chart) {
-            const chart = generateChart(slide as any);
-            if (chart) {
-              slideData.chart = chart;
-              sendEvent(controller, "chartReady", { slideIndex: i, chart }, isClosed);
-            }
-          }
-
-          // Generate icons if needed
-          if (slide.type === "content" && slide.assets?.icons) {
-            const icons = generateIconsFromSlide(slide.assets.icons);
-            if (icons) {
-              slideData.icons = icons;
-              sendEvent(controller, "iconsReady", { slideIndex: i, icons }, isClosed);
-            }
-          }
 
           finalSlides.push(slideData);
           sendEvent(controller, "slideComplete", { slideIndex: i, slide: slideData }, isClosed);

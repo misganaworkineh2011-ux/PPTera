@@ -5,13 +5,9 @@ import { fetchImagesForSlides, type SlideWithVisualMetadata } from "~/lib/pexels
 import { getThemeById } from "~/lib/themes";
 import {
   transformBullets,
-  generateChart,
-  generateIconsFromSlide,
   generateImagesForSlides as generateAIImages,
   getLayoutFromStrategy,
   type TransformedContent,
-  type ChartData,
-  type IconPlaceholder,
   type VisualStrategy,
   type SlideAssets,
   type SlideImage,
@@ -168,24 +164,6 @@ export async function POST(request: Request) {
         ? transformBullets(slide, textDensity)
         : undefined;
 
-      // Generate chart if slide has chart metadata
-      let chart: ChartData | null = null;
-      if (slide.type === "content" && slide.assets?.chart) {
-        chart = generateChart(slide);
-        if (chart) {
-          console.log(`[create-presentation] Generated chart for slide "${slide.title}":`, {
-            type: chart.type,
-            dataPoints: chart.data?.length || 0,
-            labels: chart.labels?.slice(0, 3),
-          });
-        }
-      }
-
-      // Generate icon placeholders if slide has icon metadata
-      const icons = slide.type === "content" && slide.assets?.icons
-        ? generateIconsFromSlide(slide.assets.icons)
-        : undefined;
-
       // Determine layout from visual strategy
       const layout = slide.type === "title"
         ? "title-centered"
@@ -197,8 +175,8 @@ export async function POST(request: Request) {
         subtitle: slide.subtitle,
         bulletPoints: slide.bulletPoints,
         transformedContent,
-        chart,
-        icons,
+        chart: null,
+        icons: undefined,
         image: null,
         layout,
         semanticIntent: slide.semanticIntent,

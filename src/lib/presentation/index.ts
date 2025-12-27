@@ -22,20 +22,6 @@ export {
   type TransformOptions,
 } from "./transform-outline-to-presentation";
 
-// Chart generation
-export { 
-  generateChart, 
-  generateChartFromSpec,
-  shouldHaveChart 
-} from "./generate-chart";
-
-// Icon generation
-export { 
-  generateIconPlaceholders, 
-  generateIconsFromSlide,
-  generateSingleIcon,
-  shouldHaveIcons 
-} from "./generate-icons";
 
 // AI image generation
 export { 

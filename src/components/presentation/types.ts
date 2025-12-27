@@ -5,6 +5,7 @@ import type {
   VisualStrategy
 } from "~/lib/presentation/types";
 import type { ContentBlock } from "~/lib/blocks/types";
+import type { BoxLayoutType } from "~/lib/layouts/content/boxes";
 
 export interface SlideImage {
   url: string;
@@ -42,6 +43,8 @@ export interface SlideData {
   image?: SlideImage | null;
   images?: SlideImage[];
   layout?: LayoutType;
+  // Content layout for box arrangements
+  contentLayout?: BoxLayoutType;
   // Enhanced content from visual metadata transformations
   transformedContent?: TransformedContent;
   // Chart data - use flexible type

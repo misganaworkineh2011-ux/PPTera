@@ -12,7 +12,6 @@ import {
   Trash2,
   PlusCircle,
   ImagePlus,
-  BarChart3,
   LayoutGrid,
   Link2,
   ChevronDown,
@@ -50,14 +49,11 @@ interface SlideMenuProps {
   index: number;
   totalSlides: number;
   imageCount: number;
-  hasChart?: boolean;
   slideContent?: SlideContent;
   onChangeLayout: () => void;
   onDuplicate: () => void;
   onAddSlide: () => void;
   onAddImage: () => void;
-  onAddChart: () => void;
-  onRemoveChart?: () => void;
   onMoveUp: () => void;
   onMoveDown: () => void;
   onDelete: () => void;
@@ -149,21 +145,15 @@ function MorePanel({
 
 interface StylingPanelProps {
   imageCount: number;
-  hasChart?: boolean;
   onChangeLayout: () => void;
   onAddImage: () => void;
-  onAddChart: () => void;
-  onRemoveChart?: () => void;
   onClose: () => void;
 }
 
 function StylingPanel({
   imageCount,
-  hasChart,
   onChangeLayout,
   onAddImage,
-  onAddChart,
-  onRemoveChart,
   onClose,
 }: StylingPanelProps) {
   const handleAction = (action: () => void) => () => {
@@ -187,22 +177,6 @@ function StylingPanel({
           action={imageCount > 0 ? "Manage" : "+ Add"}
           highlight={imageCount === 0}
         />
-        <OptionRow
-          icon={<BarChart3 size={16} />}
-          label={hasChart ? "Edit Chart" : "Add Chart"}
-          onClick={handleAction(onAddChart)}
-          action={hasChart ? "Edit" : "+ Add"}
-          highlight={!hasChart}
-        />
-        {hasChart && onRemoveChart && (
-          <OptionRow
-            icon={<BarChart3 size={16} className="opacity-50" />}
-            label="Remove Chart"
-            onClick={handleAction(onRemoveChart)}
-            action="Remove"
-            danger
-          />
-        )}
       </div>
     </div>
   );
@@ -526,11 +500,8 @@ export function SlideMenu({
           return (
             <StylingPanel
               imageCount={imageCount}
-              hasChart={hasChart}
               onChangeLayout={onChangeLayout}
               onAddImage={onAddImage}
-              onAddChart={onAddChart}
-              onRemoveChart={onRemoveChart}
               onClose={closePanel}
             />
           );

@@ -3,14 +3,10 @@ import { db } from "~/server/db";
 import { fetchImagesForSlides, type SlideWithVisualMetadata } from "~/lib/pexels";
 import { getThemeById } from "~/lib/themes";
 import {
-  generateChart,
-  generateIconsFromSlide,
   generateImagesForSlides as generateAIImages,
   getLayoutFromStrategy,
   transformOutlineToPresentationStream,
   type TransformedSlide,
-  type ChartData,
-  type IconPlaceholder,
   type VisualStrategy,
   type SlideAssets,
 } from "~/lib/presentation";
@@ -57,8 +53,8 @@ interface PresentationSlide {
   introText?: string;
   // New: tagline for title slides
   tagline?: string;
-  chart?: ChartData | null;
-  icons?: IconPlaceholder[];
+  chart?: null;
+  icons?: undefined;
   image?: {
     url: string;
     alt: string;
@@ -236,17 +232,6 @@ export async function POST(request: Request) {
         for await (const { slideIndex, slide: transformedSlide } of transformStream) {
           const originalSlide = slides[slideIndex]!;
 
-          // Generate chart if needed
-          let chart: ChartData | null = null;
-          if (originalSlide.type === "content" && originalSlide.assets?.chart) {
-            chart = generateChart(originalSlide);
-          }
-
-          // Generate icons if needed
-          const icons = originalSlide.type === "content" && originalSlide.assets?.icons
-            ? generateIconsFromSlide(originalSlide.assets.icons)
-            : undefined;
-
           // Determine layout based on transformed content
           let layout: string;
           if (transformedSlide.type === "title") {
@@ -268,8 +253,8 @@ export async function POST(request: Request) {
             introText: transformedSlide.introText,
             bulletPoints: transformedSlide.bulletPoints,
             sections: transformedSlide.sections,
-            chart,
-            icons,
+            chart: null,
+            icons: undefined,
             image: null,
             layout,
             semanticIntent: originalSlide.semanticIntent,
