@@ -524,6 +524,7 @@ export default function CreatePresentationClient({
         visualStrategy: slide.visualStrategy,
         assets: slide.assets,
         image: slide.image,
+        contentLayout: slide.contentLayout, // Include content layout for box layouts
       }));
 
       // Create presentation with streaming mode (Gamma-style)

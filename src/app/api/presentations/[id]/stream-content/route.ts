@@ -10,8 +10,8 @@ import { db } from "~/server/db";
 import { fetchImagesForSlides, type SlideWithVisualMetadata } from "~/lib/pexels";
 import {
   generateImagesForSlides as generateAIImages,
-  getLayoutFromStrategy,
 } from "~/lib/presentation";
+import type { BoxLayoutType } from "~/lib/layouts/content/boxes";
 import { env } from "~/env.js";
 
 // Helper to send SSE events safely (silently fails if controller is closed)
@@ -438,12 +438,47 @@ export async function GET(
           }
           console.log(`[stream-content] Sent slideStart for slide ${i}`);
 
+          // ==========================================
+          // SLIDE LAYOUT: Controls image positioning (left, right, centered)
+          // This determines WHERE the image appears on the slide
+          // Options: "left-content" (image left), "right-content" (image right), "centered" (no image)
+          // ==========================================
+          let slideLayout: string;
+          if (slide.type === "title") {
+            slideLayout = "title-centered";
+          } else {
+            // For content slides, determine image position based on outline's image requirements
+            const hasImage = slide.assets?.image?.required || slide.image?.required;
+            if (hasImage) {
+              // Randomly choose image position: left or right (most common and well-supported)
+              const imagePositions = ["left-content", "right-content"];
+              slideLayout = imagePositions[Math.floor(Math.random() * imagePositions.length)]!;
+            } else {
+              // No image - use centered layout
+              slideLayout = "centered";
+            }
+          }
+
+          // ==========================================
+          // CONTENT LAYOUT: Controls how bullet points are displayed (box-style-1, box-style-2, etc.)
+          // This determines HOW the content/bullet points are rendered (as cards/boxes)
+          // This is separate from slide layout and only affects content rendering
+          // ==========================================
+          let contentLayout: BoxLayoutType | undefined;
+          // For all content slides, apply a box layout (either from outline or randomly selected)
+          if (slide.type === "content") {
+            // Randomly select a box layout style for bullet points
+            const boxLayouts: BoxLayoutType[] = ["box-style-1", "box-style-2", "box-style-3", "box-style-4"];
+            contentLayout = boxLayouts[Math.floor(Math.random() * boxLayouts.length)]!;
+          }
+
           // Build slide data
           const slideData: Record<string, unknown> = {
             type: slide.type,
             title: "",
             bulletPoints: [],
-            layout: slide.type === "title" ? "title-centered" : getLayoutFromStrategy(slide.visualStrategy?.pattern),
+            layout: slideLayout, // Slide layout: image positioning
+            ...(contentLayout && { contentLayout }), // Content layout: box style for bullet points
           };
 
           // Stream transformed content

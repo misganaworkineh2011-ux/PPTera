@@ -78,6 +78,8 @@ export interface PresentationSlide {
   } | null;
   // Layout determined from visualStrategy
   layout?: string;
+  // Content layout for box/card arrangements
+  contentLayout?: string;
   // Original visual metadata (preserved for reference)
   semanticIntent?: string;
   visualStrategy?: VisualStrategy;

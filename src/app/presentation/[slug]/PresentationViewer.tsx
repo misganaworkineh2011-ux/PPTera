@@ -12,6 +12,7 @@ import { getThemeById, getDefaultTheme, type Theme } from "~/lib/themes";
 import { isCustomThemeId, getCustomThemeDbId, convertCustomThemeToTheme } from "~/lib/custom-theme-utils";
 import { type LayoutType } from "~/lib/slide-layouts";
 import type { BoxLayoutType } from "~/lib/layouts/content/boxes";
+import { type SlideLayoutType, type ImageSize } from "~/lib/layouts/slide";
 import {
   type SlideData,
   type PresentationData,
@@ -822,11 +823,28 @@ export default function PresentationViewer({
     updateSlidesWithSave(newSlides);
   };
 
-  const changeSlideLayout = (slideIndex: number, layoutId: LayoutType) => {
+  const changeSlideLayout = (slideIndex: number, slideLayoutId: SlideLayoutType, imageSize: ImageSize) => {
     const newSlides = [...slidesData];
     const existingSlide = newSlides[slideIndex];
     if (existingSlide) {
-      newSlides[slideIndex] = { ...existingSlide, layout: layoutId };
+      // Map new slide layout to SlideRenderer layout variants
+      // image-top and image-bottom are now directly supported
+      const layoutMap: Record<SlideLayoutType, string> = {
+        "image-left": "right-content",
+        "image-right": "left-content",
+        "image-top": "image-top",
+        "image-bottom": "image-bottom",
+        "image-background": "image-background",
+        "image-full": "full-image",
+        "no-image": "grid-3-col",
+      };
+      const mappedLayout = layoutMap[slideLayoutId] || "left-content";
+      newSlides[slideIndex] = { 
+        ...existingSlide, 
+        layout: mappedLayout as LayoutType,
+        slideLayout: slideLayoutId,
+        imageSize: imageSize,
+      };
       updateSlidesWithSave(newSlides);
     }
     setShowLayoutModal(false);
@@ -856,7 +874,10 @@ export default function PresentationViewer({
       type: "content",
       title: "New Slide",
       bulletPoints: ["Add your content here"],
-      layout: "content-left" as LayoutType,
+      layout: "left-content" as LayoutType,
+      slideLayout: "image-right",
+      imageSize: "medium",
+      contentLayout: "box-style-1",
     };
     const newSlides = [...slidesData];
     newSlides.splice(index + 1, 0, newSlide);
@@ -1110,7 +1131,8 @@ export default function PresentationViewer({
             </div>
           )}
           <div className="absolute inset-0 transform scale-[0.18] origin-top-left" style={{ width: "555%", height: "555%" }}>
-            {isTitle ? (
+            {isTitle && !slide.slideLayout ? (
+              // Default title slide layout (centered text, image as background)
               <div className={`h-full flex flex-col items-center justify-center p-12 text-center ${hasImage ? "" : ui.titleBg}`}>
                 {!hasImage && <div className={`absolute top-0 right-0 w-96 h-96 ${ui.orb1} rounded-full blur-3xl`} />}
                 <h1 className="text-5xl font-bold mb-4 relative" style={{ fontFamily: theme.fonts.heading.family, color: getTitleSlideColors(themeType, !!hasImage).title }}>
@@ -1123,6 +1145,7 @@ export default function PresentationViewer({
                 )}
               </div>
             ) : (
+              // Title slides with custom slideLayout OR content slides use SlideRenderer
               <SlideRenderer
                 slide={slide}
                 index={index}
@@ -1158,8 +1181,8 @@ export default function PresentationViewer({
         onMouseEnter={() => canEdit && !isFullscreen && !isPublicView && setActiveSlideIndex(index)}
         onMouseLeave={() => !isEditing && setActiveSlideIndex(null)}
       >
-        {/* Full cover background image for title slides */}
-        {isTitle && hasImage && slide.image?.url && (
+        {/* Full cover background image for title slides (only when no custom slideLayout) */}
+        {isTitle && !slide.slideLayout && hasImage && slide.image?.url && (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -1174,8 +1197,8 @@ export default function PresentationViewer({
             )}
           </>
         )}
-        {/* Image loading placeholder for title slides */}
-        {isTitle && isImageLoading && (
+        {/* Image loading placeholder for title slides (only when no custom slideLayout) */}
+        {isTitle && !slide.slideLayout && isImageLoading && (
           <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center">
             <div className="flex flex-col items-center gap-3">
               <div className="w-8 h-8 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
@@ -1259,7 +1282,8 @@ export default function PresentationViewer({
           />
         )}
 
-        {isTitle ? (
+        {isTitle && !slide.slideLayout ? (
+          // Default title slide layout (centered text, image as background)
           <TitleSlide
             slide={slide}
             index={index}
@@ -1277,6 +1301,7 @@ export default function PresentationViewer({
             onFinishEditing={() => setEditingText(null)}
           />
         ) : (
+          // Title slides with custom slideLayout OR content slides use SlideRenderer
           <SlideRenderer
             slide={slide}
             index={index}
@@ -1305,21 +1330,21 @@ export default function PresentationViewer({
     const isCurrentlyStreaming = streamingStatus === "streaming";
 
     return (
-      <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-8 md:space-y-12 pb-12 px-3 sm:px-4">
+      <div className="w-full mx-auto space-y-4 sm:space-y-8 md:space-y-12 pb-12 px-3 sm:px-4" style={{ maxWidth: "1109.33px" }}>
         {slides.map((slide, index) => {
           const isTitle = slide.type === "title";
           const isSlideStreaming = isCurrentlyStreaming && streamingSlideIndex === index;
           const isNewSlide = isCurrentlyStreaming && index === slides.length - 1;
 
-          if (isTitle) {
-            // On mobile, use min-height instead of aspect-ratio to allow content to expand
+          if (isTitle && !slide.slideLayout) {
+            // Default title slide layout - use simple min-height container
             return (
               <div
                 key={index}
                 id={`slide-${index}`}
                 className={`w-full rounded-md sm:rounded-lg shadow-xl sm:shadow-2xl overflow-hidden scroll-mt-20 ring-1 ${ui.ring} ${isNewSlide ? "animate-fade-in" : ""} ${isSlideStreaming ? "ring-2" : ""}`}
                 style={{
-                  ...(isMobile ? { minHeight: "280px", maxWidth: "100%" } : { aspectRatio: "16/9", maxWidth: "100%" }),
+                  ...(isMobile ? { minHeight: "280px", maxWidth: "100%" } : { width: "1109.33px", maxWidth: "100%", height: "auto", minHeight: "400px" }),
                   ...(isSlideStreaming ? { boxShadow: `0 0 20px ${theme.colors.primary}40` } : {}),
                 }}
               >
@@ -1332,9 +1357,11 @@ export default function PresentationViewer({
             <div
               key={index}
               id={`slide-${index}`}
-              className={`w-full rounded-md sm:rounded-lg shadow-xl sm:shadow-2xl overflow-hidden scroll-mt-20 ring-1 ${ui.ring} ${isNewSlide ? "animate-fade-in" : ""} ${isSlideStreaming ? "ring-2" : ""}`}
+              className={`rounded-md sm:rounded-lg shadow-xl sm:shadow-2xl overflow-hidden scroll-mt-20 ring-1 ${ui.ring} ${isNewSlide ? "animate-fade-in" : ""} ${isSlideStreaming ? "ring-2" : ""}`}
               style={{
+                width: isMobile ? "100%" : "1109.33px",
                 maxWidth: "100%",
+                height: "auto",
                 ...(isSlideStreaming ? { boxShadow: `0 0 20px ${theme.colors.primary}40` } : {}),
               }}
             >
@@ -1562,7 +1589,7 @@ export default function PresentationViewer({
 
         <div className={`${isFullscreen ? "" : "px-0 sm:px-2 md:px-4 py-4 sm:py-8"} max-w-full`}>
           {viewMode === "scroll" && !isFullscreen ? (
-            <div className="flex gap-6 max-w-7xl mx-auto">
+            <div className="flex gap-6 mx-auto" style={{ maxWidth: "1400px" }}>
               {showThumbnails && !isPublicView && !isMobile && (
                 <ThumbnailSidebar
                   slides={slides}
@@ -1577,7 +1604,7 @@ export default function PresentationViewer({
               <div className="flex-1 w-full min-w-0">{renderScrollableView()}</div>
             </div>
           ) : (
-            <div className={`flex gap-6 ${isFullscreen || isPublicView ? "h-screen w-screen" : "max-w-7xl mx-auto"} overflow-x-hidden`}>
+            <div className={`flex gap-6 ${isFullscreen || isPublicView ? "h-screen w-screen" : "mx-auto"} overflow-x-hidden`} style={!isFullscreen && !isPublicView ? { maxWidth: "1700px" } : {}}>
               {showThumbnails && !isFullscreen && !isPublicView && viewMode === "slides" && (
                 <div className={`hidden lg:block w-44 shrink-0 space-y-2 max-h-[calc(100vh-140px)] overflow-y-auto scrollbar-thin pr-2 sticky top-20 ${getUIColors(getThemeType(theme)).scrollbar}`}>
                   {slides.map((slide, index) => {
@@ -1704,7 +1731,20 @@ export default function PresentationViewer({
         {viewMode === "scroll" && !isFullscreen && !isPublicView && <FeedbackSection presentationId={presentation.id} theme={theme} />}
 
         {showLayoutModal && activeSlideIndex !== null && (
-          <LayoutModal currentLayout={slides[activeSlideIndex]?.layout} onSelect={(layoutId) => changeSlideLayout(activeSlideIndex, layoutId)} onClose={() => setShowLayoutModal(false)} />
+          <LayoutModal 
+            slideType={slides[activeSlideIndex]?.type || "content"}
+            currentSlideLayout={slides[activeSlideIndex]?.slideLayout || "image-right"}
+            currentContentLayout={slides[activeSlideIndex]?.contentLayout || "box-style-1"}
+            currentImageSize={slides[activeSlideIndex]?.imageSize || "medium"}
+            contentItems={slides[activeSlideIndex]?.bulletPoints?.map((bp, i) => ({
+              label: `Point ${i + 1}`,
+              text: typeof bp === "string" ? bp : (bp as { text?: string }).text || "",
+            })) || []}
+            theme={theme}
+            onSelectSlideLayout={(layoutId, imageSize) => changeSlideLayout(activeSlideIndex, layoutId, imageSize)}
+            onSelectContentLayout={(layoutId) => changeContentLayout(activeSlideIndex, layoutId)}
+            onClose={() => setShowLayoutModal(false)} 
+          />
         )}
 
         {showImageModal !== null && (
@@ -1825,6 +1865,11 @@ function ScrollSlideContent({ slide, index, theme, renderSlide, isMobile }: {
   const hasChart = !!slide.chart;
   const hasIcons = slide.icons && slide.icons.length > 0;
 
+  // Check if this is a full-image or image-background layout that needs fixed aspect ratio
+  const isFullImageLayout = slide.slideLayout === "image-full" || slide.layout === "full-image";
+  const isImageBackgroundLayout = slide.slideLayout === "image-background" || slide.layout === "image-background";
+  const needsFixedAspectRatio = isFullImageLayout || isImageBackgroundLayout;
+
   // Responsive height calculation - smaller base on mobile
   // Add extra height for charts and icons
   const baseHeight = isMobile ? 280 : 380;
@@ -1858,17 +1903,21 @@ function ScrollSlideContent({ slide, index, theme, renderSlide, isMobile }: {
   const bgClass = hasCustomPageBg ? "" : bgColors[themeType];
   const bgStyle = hasCustomPageBg ? { background: theme.pageBackground } : {};
 
-  // On mobile, use min-height to allow content to expand; on desktop use fixed height
-  if (isMobile) {
+  // For full-image layouts, use fixed aspect ratio so h-full works in children
+  // For other layouts, use min-height to allow content to expand flexibly
+  if (needsFixedAspectRatio) {
     return (
-      <div className={`w-full ${bgClass} relative`} style={{ minHeight: `${calculatedHeight}px`, ...bgStyle }}>
+      <div 
+        className={`w-full ${bgClass} relative`} 
+        style={{ aspectRatio: "16/9", ...bgStyle }}
+      >
         {renderSlide(slide, index, true)}
       </div>
     );
   }
 
   return (
-    <div className={`w-full ${bgClass} relative`} style={{ height: `min(${calculatedHeight}px, calc(100vh - 150px))`, ...bgStyle }}>
+    <div className={`w-full ${bgClass} relative`} style={{ minHeight: `${calculatedHeight}px`, height: "auto", ...bgStyle }}>
       {renderSlide(slide, index, true)}
     </div>
   );

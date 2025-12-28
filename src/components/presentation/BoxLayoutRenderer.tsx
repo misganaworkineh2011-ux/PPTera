@@ -59,16 +59,18 @@ export default function BoxLayoutRenderer({
               padding: compact ? "1.25rem" : "2rem",
             }}
           >
-            <h3
-              className="font-serif mb-3"
-              style={{
-                color: baseStyles.titleColor,
-                fontSize: compact ? "1.1rem" : "1.25rem",
-                textAlign: "center",
-              }}
-            >
-              {item.label}
-            </h3>
+            {item.label && (
+              <h3
+                className="font-serif mb-3"
+                style={{
+                  color: baseStyles.titleColor,
+                  fontSize: compact ? "1.1rem" : "1.25rem",
+                  textAlign: "center",
+                }}
+              >
+                {item.label}
+              </h3>
+            )}
             <p
               style={{
                 color: baseStyles.bodyColor,
@@ -95,16 +97,18 @@ export default function BoxLayoutRenderer({
               padding: compact ? "1.25rem" : "2rem",
             }}
           >
-            <h3
-              className="font-serif mb-3"
-              style={{
-                color: baseStyles.titleColor,
-                fontSize: compact ? "1.1rem" : "1.25rem",
-                textAlign: "center",
-              }}
-            >
-              {item.label}
-            </h3>
+            {item.label && (
+              <h3
+                className="font-serif mb-3"
+                style={{
+                  color: baseStyles.titleColor,
+                  fontSize: compact ? "1.1rem" : "1.25rem",
+                  textAlign: "center",
+                }}
+              >
+                {item.label}
+              </h3>
+            )}
             <p
               style={{
                 color: baseStyles.bodyColor,
@@ -148,16 +152,18 @@ export default function BoxLayoutRenderer({
                 </div>
               </div>
             )}
-            <h3
-              className="font-serif mb-3"
-              style={{
-                color: baseStyles.titleColor,
-                fontSize: compact ? "1.1rem" : "1.25rem",
-                textAlign: "center",
-              }}
-            >
-              {item.label}
-            </h3>
+            {item.label && (
+              <h3
+                className="font-serif mb-3"
+                style={{
+                  color: baseStyles.titleColor,
+                  fontSize: compact ? "1.1rem" : "1.25rem",
+                  textAlign: "center",
+                }}
+              >
+                {item.label}
+              </h3>
+            )}
             <p
               style={{
                 color: baseStyles.bodyColor,

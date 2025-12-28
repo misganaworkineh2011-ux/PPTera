@@ -240,34 +240,32 @@ Describe how the idea wants to be visually expressed.
 This is guidance, not a preset library.
 You may combine, invent, or adapt patterns freely as needed.
 Fields:
-- primary: the dominant visual form (free-form, e.g., diagram, icons, image, chart, mixed)
+- primary: the dominant visual form (free-form, e.g., diagram, image, mixed)
 - pattern: a descriptive layout metaphor (free-form text, e.g., stairs, split, cards, grid, pyramid, spotlight, flow)
 - emphasis: what the visual should highlight (free-form text, e.g., progression, contrast, relationship, scale, emotion, clarity)
 
-3. "assets":
+3. "contentLayout":
+Determine the content layout method for the slide.
+- For ALL content slides, set this to "box" (this indicates the slide should use box/card layout)
+- TITLE slides do not need this field
+- This field determines how the bullet points will be arranged visually
+
+4. "assets":
 Describe visual assets meaningfully. Invent freely if better suited.
-CRITICAL: Visual assets (icons, images, charts) MUST be generated AFTER bullet points are created, so you have the full picture of the slide content.
-- icons: The number of icons MUST match the number of bullet points generated (e.g., if 4 bullet points, provide 4 icon concepts). USE SPARINGLY - max 1-3 slides per 10 slides, only for emphasis. Each icon should represent one bullet point concept.
+CRITICAL: Visual assets (images) MUST be generated AFTER bullet points are created, so you have the full picture of the slide content.
 - image:
   - required: true | false (TITLE slide ALWAYS true, content slides: 5-7 out of 10 slides should have images)
   - style: free-form style descriptor (e.g., conceptual-illustration, realistic-photo, abstract, flat-illustration, mockup)
   - promptHint: short meaning-driven description (never decorative, think outside the box using both title AND bullet points)
-- chart (ONLY when data exists):
-  - type: SPECIFIC chart type (e.g., bar, line, pie, stacked, comparison, table, area, scatter, histogram, waterfall)
-  - purpose: what insight the chart communicates
 
 VISUAL BALANCING RULES:
 - TITLE slide ALWAYS requires an image
-- Balance images and charts: if a slide has a chart, avoid image to give space
 - Images: 5-7 out of 10 slides (think outside the box using title + bullet points for inspiration)
-- Icons: LEAST needed (max 1-3 slides per 10, only for strong emphasis)
-- Charts: When data exists, specify exact chart type (bar, line, pie, table, etc.)
 
 RULES:
 - One primary visual per slide
-- Images, charts, and icons must be meaning-driven
+- Images must be meaning-driven
 - NEVER add visuals arbitrarily
-- Charts only when real data exists
 
 The outline must be well-structured, engaging, written in ${languageDescription}, using a ${toneDescription} tone, and applicable to any field. Output format must be a valid JSON object with a "slides" array.`;
 
@@ -289,9 +287,10 @@ Each slide MUST include (IN THIS ORDER):
    - "title": A clear, narrative-advancing heading
    - "semanticIntent"
    - "visualStrategy"
+   - "contentLayout": "box" (REQUIRED - all content slides must use box layout)
    - "bulletPoints": 3–6 bullets that are:
      (Generate bullet points FIRST, then generate assets based on the full content)
-   - "assets": (Generate AFTER bullet points - icons count must match bullet points count)
+   - "assets": (Generate AFTER bullet points)
      * CRITICAL: Bullet points must be SUBSTANTIAL, DETAILED, and SELF-CONTAINED - they should fully explain the concept within themselves, not be brief statements that feel like they need expansion
      * Slide-bullet style (not prose): one idea per bullet; short, skimmable cues that can be spoken over; avoid paragraph-like sentences. Bullets should create quick visual hierarchy (primary vs. supporting), be readable in 3–5 seconds, and stay modular (can be revealed or rearranged). Good: "Urban HIV prevalence is higher than rural areas". Bad: "Urban areas tend to show significantly higher HIV prevalence due to migration, population density, and access to services."
      * Count variety: Use a mix of counts (3-6). Favor 4-6 bullets when advising, teaching, or giving frameworks; 3 is acceptable only when truly sufficient.
@@ -326,15 +325,16 @@ Each slide MUST include (IN THIS ORDER):
    - Expert-level, clear, and visually skimmable
    - Titles on every slide must be clear, precise, and catchy—address the main point directly with crisp wording (questions, bold claims, vivid phrases). Keep the outline expert-level yet easily skimmable.
 
-5. VISUAL BALANCING RULES (CRITICAL):
+5. CONTENT LAYOUT (CRITICAL):
+   - ALL content slides MUST include "contentLayout": "box"
+   - This field determines how the bullet points will be arranged visually
+   - TITLE slides do not need this field
+
+6. VISUAL BALANCING RULES (CRITICAL):
    - TITLE slide ALWAYS requires an image (required: true)
    - Content slides: 5-7 out of 10 slides should have images (required: true)
    - For image generation: Don't depend only on title - also examine bullet points and think outside the box for meaningful visual representation
-   - Balance images and charts: If a slide has a chart, avoid image to give space
-   - Icons: LEAST needed (max 1-3 slides per 10 slides total, only for strong emphasis when you want to highlight key concepts)
-   - Icons count MUST match bullet points count (e.g., 4 bullet points = 4 icons)
-   - Charts: When data exists, specify exact chart type (bar, line, pie, stacked, comparison, table, area, scatter, histogram, waterfall, etc.)
-   - IMPORTANT: Generate bullet points FIRST, then generate visual assets (icons, images, charts) based on the complete slide content
+   - IMPORTANT: Generate bullet points FIRST, then generate visual assets (images) based on the complete slide content
 
 REQUIRED OUTPUT FORMAT
 
@@ -357,10 +357,11 @@ Return ONLY a valid JSON object in this exact structure:
       "title": "Slide title",
       "semanticIntent": "core meaning of the slide (invented freely, non-restrictive)",
       "visualStrategy": {
-        "primary": "dominant visual form (free-form, e.g., diagram, icons, image, chart, mixed)",
+        "primary": "dominant visual form (free-form, e.g., diagram, image, mixed)",
         "pattern": "layout metaphor or pattern (free-form text)",
         "emphasis": "visual emphasis or focus (free-form text)"
       },
+      "contentLayout": "box",
       "bulletPoints": [
         "Bullet point 1",
         "Bullet point 2",
@@ -368,13 +369,11 @@ Return ONLY a valid JSON object in this exact structure:
         "Bullet point n"
       ],
       "assets": {
-        "icons": ["icon1", "icon2", "icon3"],
         "image": {
           "required": false,
           "style": null,
           "promptHint": null
-        },
-        "chart": null
+        }
       }
     }
   ],

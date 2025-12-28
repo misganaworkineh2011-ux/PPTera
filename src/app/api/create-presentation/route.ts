@@ -6,12 +6,12 @@ import { getThemeById } from "~/lib/themes";
 import {
   transformBullets,
   generateImagesForSlides as generateAIImages,
-  getLayoutFromStrategy,
   type TransformedContent,
   type VisualStrategy,
   type SlideAssets,
   type SlideImage,
 } from "~/lib/presentation";
+import type { BoxLayoutType } from "~/lib/layouts/content/boxes";
 import { generateSlug } from "~/lib/utils";
 
 interface SlideInput {
@@ -25,6 +25,8 @@ interface SlideInput {
   assets?: SlideAssets;
   // Title slide specific
   image?: SlideImage;
+  // Content layout method from outline (e.g., "box")
+  contentLayout?: string;
 }
 
 interface CreatePresentationRequest {
@@ -65,6 +67,8 @@ interface PresentationSlide {
   } | null;
   // Layout from visual strategy
   layout?: string;
+  // Content layout for box/card arrangements
+  contentLayout?: string;
   // Preserved visual metadata
   semanticIntent?: string;
   visualStrategy?: VisualStrategy;
@@ -164,10 +168,39 @@ export async function POST(request: Request) {
         ? transformBullets(slide, textDensity)
         : undefined;
 
-      // Determine layout from visual strategy
-      const layout = slide.type === "title"
-        ? "title-centered"
-        : getLayoutFromStrategy(slide.visualStrategy?.pattern);
+      // ==========================================
+      // SLIDE LAYOUT: Controls image positioning (left, right, centered)
+      // This determines WHERE the image appears on the slide
+      // Options: "left-content" (image left), "right-content" (image right), "centered" (no image)
+      // ==========================================
+      let slideLayout: string;
+      if (slide.type === "title") {
+        slideLayout = "title-centered";
+      } else {
+        // For content slides, determine image position based on outline's image requirements
+        const hasImage = slide.assets?.image?.required || slide.image?.required;
+        if (hasImage) {
+          // Randomly choose image position: left or right (most common and well-supported)
+          const imagePositions = ["left-content", "right-content"];
+          slideLayout = imagePositions[Math.floor(Math.random() * imagePositions.length)]!;
+        } else {
+          // No image - use centered layout
+          slideLayout = "centered";
+        }
+      }
+
+      // ==========================================
+      // CONTENT LAYOUT: Controls how bullet points are displayed (box-style-1, box-style-2, etc.)
+      // This determines HOW the content/bullet points are rendered (as cards/boxes)
+      // This is separate from slide layout and only affects content rendering
+      // ==========================================
+      let contentLayout: BoxLayoutType | undefined;
+      // For all content slides, apply a box layout (either from outline or randomly selected)
+      if (slide.type === "content") {
+        // Randomly select a box layout style for bullet points
+        const boxLayouts: BoxLayoutType[] = ["box-style-1", "box-style-2", "box-style-3", "box-style-4"];
+        contentLayout = boxLayouts[Math.floor(Math.random() * boxLayouts.length)]!;
+      }
 
       return {
         type: slide.type,
@@ -178,7 +211,8 @@ export async function POST(request: Request) {
         chart: null,
         icons: undefined,
         image: null,
-        layout,
+        layout: slideLayout, // Slide layout: image positioning
+        contentLayout, // Content layout: box style for bullet points
         semanticIntent: slide.semanticIntent,
         visualStrategy: slide.visualStrategy,
       };

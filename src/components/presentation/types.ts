@@ -6,6 +6,7 @@ import type {
 } from "~/lib/presentation/types";
 import type { ContentBlock } from "~/lib/blocks/types";
 import type { BoxLayoutType } from "~/lib/layouts/content/boxes";
+import type { SlideLayoutType, ImageSize } from "~/lib/layouts/slide";
 
 export interface SlideImage {
   url: string;
@@ -43,6 +44,10 @@ export interface SlideData {
   image?: SlideImage | null;
   images?: SlideImage[];
   layout?: LayoutType;
+  // New slide layout system (image position)
+  slideLayout?: SlideLayoutType;
+  // Image size for slide layout
+  imageSize?: ImageSize;
   // Content layout for box arrangements
   contentLayout?: BoxLayoutType;
   // Enhanced content from visual metadata transformations

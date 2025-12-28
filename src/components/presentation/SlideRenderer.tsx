@@ -29,7 +29,7 @@ interface SlideRendererProps {
   onChangeContentLayout?: (slideIndex: number, layoutId: BoxLayoutType) => void;
 }
 
-type LayoutVariant = "left-content" | "right-content" | "centered" | "split-diagonal" | "image-focus" | "minimal-left" | "cards-grid" | "quote-style" | "timeline" | "diagonal-cut" | "circle-focus" | "wave-layout" | "hexagon-frame" | "glass-cards" | "aurora-glow" | "diamond-frame" | "ember-cards" | "molten-split" | "arch-frame" | "botanical-cards" | "elegant-split" | "glitch-frame" | "neon-grid" | "holo-cards" | "scan-frame" | "bio-cards" | "transmission-split" | "clean-frame" | "pro-cards" | "executive-split" | "nebula-float" | "orbital-rings" | "starfield-cards" | "cosmic-portal" | "galaxy-split" | "celestial-frame" | "mono-brutalist" | "geometric-slice" | "contrast-blocks" | "angular-frame" | "stripe-accent" | "bold-stack" | "cloud-float" | "sakura-cards" | "dreamy-split" | "soft-bubble" | "twilight-frame" | "pastel-stack" | "terminal-window" | "matrix-cards" | "code-block" | "shell-prompt" | "cyber-grid" | "hack-split" | "grid-2-col" | "grid-3-col" | "grid-4-card" | "cards-2" | "cards-3" | "comparison" | "stats-grid" | "full-image" | "centered-image" | "feature-showcase";
+type LayoutVariant = "left-content" | "right-content" | "image-top" | "image-bottom" | "centered" | "split-diagonal" | "image-focus" | "minimal-left" | "cards-grid" | "quote-style" | "timeline" | "diagonal-cut" | "circle-focus" | "wave-layout" | "hexagon-frame" | "glass-cards" | "aurora-glow" | "diamond-frame" | "ember-cards" | "molten-split" | "arch-frame" | "botanical-cards" | "elegant-split" | "glitch-frame" | "neon-grid" | "holo-cards" | "scan-frame" | "bio-cards" | "transmission-split" | "clean-frame" | "pro-cards" | "executive-split" | "nebula-float" | "orbital-rings" | "starfield-cards" | "cosmic-portal" | "galaxy-split" | "celestial-frame" | "mono-brutalist" | "geometric-slice" | "contrast-blocks" | "angular-frame" | "stripe-accent" | "bold-stack" | "cloud-float" | "sakura-cards" | "dreamy-split" | "soft-bubble" | "twilight-frame" | "pastel-stack" | "terminal-window" | "matrix-cards" | "code-block" | "shell-prompt" | "cyber-grid" | "hack-split" | "grid-2-col" | "grid-3-col" | "grid-4-card" | "cards-2" | "cards-3" | "comparison" | "stats-grid" | "full-image" | "image-background" | "centered-image" | "feature-showcase";
 
 // Theme type detection
 type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber" | "alien" | "corporate" | "cosmic" | "architectural" | "anime" | "hacker" | "custom-dark" | "custom-light";
@@ -159,8 +159,12 @@ function getLayoutVariant(index: number, themeType: ThemeType, slideLayout?: str
       "stats-grid": "stats-grid",
       // Media layouts
       "full-image": "full-image",
+      "image-background": "image-background",
       "centered-image": "centered-image",
       "feature-showcase": "feature-showcase",
+      // New slide layouts with arc clip-path
+      "image-top": "image-top",
+      "image-bottom": "image-bottom",
     };
     const mappedLayout = layoutMap[slideLayout];
     if (mappedLayout) return mappedLayout;
@@ -217,9 +221,11 @@ export default function SlideRenderer({
   const layout = getLayoutVariant(index, themeType, slide.layout);
   
   // Check if content supports box layouts (has sections or transformed content with labels)
+  // Check if slide has content that can be displayed in box layout
   const hasBoxContent = !!(
     (slide.sections && slide.sections.length > 0) ||
-    (slide.transformedContent?.items && slide.transformedContent.items.some(item => item.label))
+    (slide.transformedContent?.items && slide.transformedContent.items.some(item => item.label)) ||
+    (slide.bulletPoints && slide.bulletPoints.length > 0)
   );
   
   // Convert slide content to BoxContentItem format
@@ -242,11 +248,50 @@ export default function SlideRenderer({
           icon: slide.icons?.[i]?.placeholder,
         }));
     }
+    // Fall back to regular bullet points - convert them to box items
+    if (slide.bulletPoints && slide.bulletPoints.length > 0) {
+      return slide.bulletPoints.map((bullet, i) => {
+        // Try to extract label and text from bullet point
+        // Format: "Label: Text" or just "Text"
+        const colonIndex = bullet.indexOf(":");
+        if (colonIndex > 0 && colonIndex < 50) {
+          // Only split if colon is reasonably early (likely a label:text format)
+          const label = bullet.substring(0, colonIndex).trim();
+          const text = bullet.substring(colonIndex + 1).trim();
+          if (label && text) {
+            return {
+              label,
+              text,
+              icon: slide.icons?.[i]?.placeholder,
+            };
+          }
+        }
+        // If no label format, use the bullet text as both label and text
+        // Take first few words as label, rest as text
+        const words = bullet.split(" ");
+        if (words.length > 5) {
+          const label = words.slice(0, 3).join(" ");
+          const text = bullet;
+          return {
+            label,
+            text,
+            icon: slide.icons?.[i]?.placeholder,
+          };
+        }
+        // Short bullet - use as both
+        return {
+          label: bullet,
+          text: bullet,
+          icon: slide.icons?.[i]?.placeholder,
+        };
+      });
+    }
     return [];
   };
   
   const boxContentItems = getBoxContentItems();
-  const showBoxLayout = hasBoxContent && slide.contentLayout;
+  // Always use contentLayout if it's set, regardless of content type
+  const showBoxLayout = !!slide.contentLayout && boxContentItems.length > 0;
 
   // Theme-aware colors for all three themes
   const colorMap = {
@@ -669,24 +714,46 @@ export default function SlideRenderer({
     );
   };
 
-  const Title = ({ className = "", align = "left" }: { className?: string; align?: "left" | "center" | "right" }) => (
-    <EditableText
-      value={slide.title}
-      isEditing={isEditing && editingText?.field === "title"}
-      onStartEdit={() => onStartEditing(index, "title")}
-      onChange={(val) => onUpdateContent(index, "title", val)}
-      onFinish={onFinishEditing}
-      className={`font-bold leading-tight ${className}`}
-      style={{
-        fontFamily: theme.fonts.heading.family,
-        color: colors.text,
-        letterSpacing: "-0.03em",
-        textAlign: align,
-        fontSize: "clamp(0.875rem, 2.5vw + 0.25rem, 2.5rem)"
-      }}
-      isOwner={canEdit}
-      isHovered={isHovered}
-    />
+  const isTitleSlide = slide.type === "title";
+
+  const Title = ({ className = "", align = "left", showSubtitle = false }: { className?: string; align?: "left" | "center" | "right"; showSubtitle?: boolean }) => (
+    <div className={showSubtitle ? "space-y-2" : ""}>
+      <EditableText
+        value={slide.title}
+        isEditing={isEditing && editingText?.field === "title"}
+        onStartEdit={() => onStartEditing(index, "title")}
+        onChange={(val) => onUpdateContent(index, "title", val)}
+        onFinish={onFinishEditing}
+        className={`font-bold leading-tight ${className}`}
+        style={{
+          fontFamily: theme.fonts.heading.family,
+          color: colors.text,
+          letterSpacing: "-0.03em",
+          textAlign: align,
+          fontSize: showSubtitle && isTitleSlide ? "clamp(1.5rem, 4vw + 0.5rem, 4rem)" : "clamp(0.875rem, 2.5vw + 0.25rem, 2.5rem)"
+        }}
+        isOwner={canEdit}
+        isHovered={isHovered}
+      />
+      {showSubtitle && slide.subtitle && (
+        <EditableText
+          value={slide.subtitle}
+          isEditing={isEditing && editingText?.field === "subtitle"}
+          onStartEdit={() => onStartEditing(index, "subtitle")}
+          onChange={(val) => onUpdateContent(index, "subtitle", val)}
+          onFinish={onFinishEditing}
+          className="opacity-80"
+          style={{
+            fontFamily: theme.fonts.body.family,
+            color: colors.textMuted,
+            textAlign: align,
+            fontSize: "clamp(0.875rem, 1.5vw + 0.25rem, 1.5rem)"
+          }}
+          isOwner={canEdit}
+          isHovered={isHovered}
+        />
+      )}
+    </div>
   );
 
   const BulletPoints = ({ compact = false }: { compact?: boolean }) => {
@@ -775,24 +842,33 @@ export default function SlideRenderer({
       </div>
     );
 
-    // Render with box layout if selected
-    if (showBoxLayout && boxContentItems.length > 0) {
+    // ==========================================
+    // CONTENT LAYOUT: ALWAYS use contentLayout if it's set (e.g., box layout)
+    // This is separate from slide layout (which controls image positioning)
+    // ==========================================
+    if (slide.contentLayout && boxContentItems.length > 0) {
+      // Determine if content area is narrow (image on left/right) or wide (image on top/bottom/none)
+      // This helps box layouts adapt their arrangement
+      const isNarrowSpace = layout === "left-content" || layout === "right-content";
+      // image-top and image-bottom are wide layouts (full width for content)
+      
       return (
         <ContentWrapper>
           <div className={compact ? "space-y-3" : "space-y-4"}>
             <BoxLayoutRenderer
-              layoutId={slide.contentLayout}
+              layoutId={slide.contentLayout as BoxLayoutType}
               items={boxContentItems}
               theme={theme}
               compact={compact}
               showIcons={true}
+              isNarrowSpace={isNarrowSpace}
             />
           </div>
         </ContentWrapper>
       );
     }
 
-    // Standard layout
+    // Standard layout (only if contentLayout is not set)
     return (
       <ContentWrapper>
         <div className={compact ? "space-y-3" : "space-y-4"}>
@@ -905,7 +981,12 @@ export default function SlideRenderer({
   );
 
   // LAYOUT 1: Left Content - Image Right (supports multiple images in stack layout)
+  // Uses arc clip-path for image edge effect
   if (layout === "left-content") {
+    const firstImage = allImages[0];
+    const arcIntensity = 50; // Arc curve intensity in pixels
+    const imageClipPath = `polygon(${arcIntensity}px 0, 100% 0, 100% 100%, ${arcIntensity}px 100%, 0 50%)`;
+    
     return (
       <div className="h-full relative overflow-hidden">
         <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
@@ -914,22 +995,29 @@ export default function SlideRenderer({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full flex flex-col sm:flex-row">
-          <div className={`flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 ${hasImage ? "w-full sm:w-[55%]" : "w-full"}`}>
-            <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-4 sm:mb-6 md:mb-8" />
-            <EnhancedContent />
+        <div className="relative h-full flex flex-col sm:flex-row items-stretch">
+          {/* Content Area */}
+          <div className={`flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 ${hasImage ? "w-full sm:w-[60%]" : "w-full"}`}>
+            <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-4 sm:mb-6 md:mb-8" showSubtitle={isTitleSlide} />
+            {!isTitleSlide && <EnhancedContent />}
           </div>
 
-          {hasImage && (
-            <div className="w-full sm:w-[45%] relative flex items-center justify-center p-4 sm:p-6 md:p-8 min-h-[150px] sm:min-h-0">
-              {hasMultipleImages ? (
-                <ImageGallery className="w-full h-full max-h-[200px] sm:max-h-full" layout="stack" />
-              ) : (
-                <ImageBlock className="w-full h-full max-h-[200px] sm:max-h-full" />
-              )}
+          {/* Image Area - Edge-to-edge with arc clip-path */}
+          {hasImage && firstImage && (
+            <div 
+              className="w-full sm:w-[40%] relative overflow-hidden flex-shrink-0 min-h-[200px] sm:min-h-0"
+              style={{ clipPath: imageClipPath }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img 
+                src={firstImage.url} 
+                alt={firstImage.alt || slide.title} 
+                className="w-full h-full object-cover"
+                style={{ display: "block", minHeight: "100%" }}
+              />
             </div>
           )}
-          {slide.image?.source === "placeholder" && <div className="w-full sm:w-[45%] p-4 sm:p-8"><Placeholder /></div>}
+          {slide.image?.source === "placeholder" && <div className="w-full sm:w-[40%] p-4 sm:p-8"><Placeholder /></div>}
         </div>
         <div className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${colors.borderLine} to-transparent`} />
       </div>
@@ -937,7 +1025,12 @@ export default function SlideRenderer({
   }
 
   // LAYOUT 2: Right Content - Image Left (supports multiple images in stack layout)
+  // Uses arc clip-path for image edge effect
   if (layout === "right-content") {
+    const firstImage = allImages[0];
+    const arcIntensity = 50; // Arc curve intensity in pixels
+    const imageClipPath = `polygon(0 0, calc(100% - ${arcIntensity}px) 0, 100% 50%, calc(100% - ${arcIntensity}px) 100%, 0 100%)`;
+    
     return (
       <div className="h-full relative overflow-hidden">
         <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-bl ${colors.bg}` : ''}`} style={customBgStyle} />
@@ -946,23 +1039,134 @@ export default function SlideRenderer({
 
         <SlideIndicator position="top-right" />
 
-        <div className="relative h-full flex flex-col-reverse sm:flex-row-reverse">
-          <div className={`flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-4 sm:pt-16 md:pt-20 ${hasImage ? "w-full sm:w-[55%]" : "w-full"}`}>
-            <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-4 sm:mb-6 md:mb-8" />
-            <EnhancedContent />
-          </div>
-
-          {hasImage && (
-            <div className="w-full sm:w-[45%] relative flex items-center justify-center p-4 sm:p-6 md:p-8 min-h-[150px] sm:min-h-0">
-              {hasMultipleImages ? (
-                <ImageGallery className="w-full h-full max-h-[200px] sm:max-h-full" layout="stack" />
-              ) : (
-                <ImageBlock className="w-full h-full max-h-[200px] sm:max-h-full" />
-              )}
+        <div className="relative h-full flex flex-col-reverse sm:flex-row items-stretch">
+          {/* Image Area - Edge-to-edge with arc clip-path */}
+          {hasImage && firstImage && (
+            <div 
+              className="w-full sm:w-[40%] relative overflow-hidden flex-shrink-0 min-h-[200px] sm:min-h-0"
+              style={{ clipPath: imageClipPath }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img 
+                src={firstImage.url} 
+                alt={firstImage.alt || slide.title} 
+                className="w-full h-full object-cover"
+                style={{ display: "block", minHeight: "100%" }}
+              />
             </div>
           )}
-          {slide.image?.source === "placeholder" && <div className="w-full sm:w-[45%] p-4 sm:p-8"><Placeholder /></div>}
+          {slide.image?.source === "placeholder" && <div className="w-full sm:w-[40%] p-4 sm:p-8"><Placeholder /></div>}
+
+          {/* Content Area */}
+          <div className={`flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-4 sm:pt-16 md:pt-20 ${hasImage ? "w-full sm:w-[60%]" : "w-full"}`}>
+            <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-4 sm:mb-6 md:mb-8" showSubtitle={isTitleSlide} />
+            {!isTitleSlide && <EnhancedContent />}
+          </div>
         </div>
+        <div className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${colors.borderLine} to-transparent`} />
+      </div>
+    );
+  }
+
+  // LAYOUT: Image Top - Image at top with arc clip-path, content below
+  // Uses arc clip-path for smooth edge effect like try/page.tsx
+  if (layout === "image-top") {
+    const firstImage = allImages[0];
+    const arcIntensity = 40; // Arc curve intensity in pixels
+    const imageClipPath = `polygon(0 0, 100% 0, 100% calc(100% - ${arcIntensity}px), 50% 100%, 0 calc(100% - ${arcIntensity}px))`;
+    const imageHeight = "300px"; // Fixed medium height for top/bottom images
+    
+    return (
+      <div className="h-full relative overflow-hidden flex flex-col">
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-b ${colors.bg}` : ''}`} style={customBgStyle} />
+
+        <SlideIndicator position="top-left" />
+
+        {/* Image Area - Top with arc clip-path */}
+        {hasImage && firstImage && (
+          <div 
+            className="w-full relative overflow-hidden flex-shrink-0 z-10"
+            style={{ 
+              height: imageHeight,
+              clipPath: imageClipPath,
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img 
+              src={firstImage.url} 
+              alt={firstImage.alt || slide.title} 
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+
+        {/* Content Area - Below image */}
+        <div className="flex-1 relative flex flex-col p-4 sm:p-8 md:p-12 pt-6 sm:pt-8">
+          {/* Title */}
+          <div className="mb-4 sm:mb-6 text-center">
+            <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl" align="center" showSubtitle={isTitleSlide} />
+          </div>
+
+          {/* Box Layout Content - Always use box layout for bullets (only for content slides) */}
+          {!isTitleSlide && (
+            <div className="flex-1 w-full max-w-5xl mx-auto">
+              <EnhancedContent />
+            </div>
+          )}
+        </div>
+        
+        <div className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${colors.borderLine} to-transparent`} />
+      </div>
+    );
+  }
+
+  // LAYOUT: Image Bottom - Image at bottom with arc clip-path, content above
+  // Uses arc clip-path for smooth edge effect like try/page.tsx
+  if (layout === "image-bottom") {
+    const firstImage = allImages[0];
+    const arcIntensity = 40; // Arc curve intensity in pixels
+    const imageClipPath = `polygon(0 ${arcIntensity}px, 50% 0, 100% ${arcIntensity}px, 100% 100%, 0 100%)`;
+    const imageHeight = "300px"; // Fixed medium height for top/bottom images
+    
+    return (
+      <div className="h-full relative overflow-hidden flex flex-col">
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-t ${colors.bg}` : ''}`} style={customBgStyle} />
+
+        <SlideIndicator position="top-left" />
+
+        {/* Content Area - Above image */}
+        <div className="flex-1 relative flex flex-col p-4 sm:p-8 md:p-12 pb-6 sm:pb-8">
+          {/* Title */}
+          <div className="mb-4 sm:mb-6 text-center">
+            <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl" align="center" showSubtitle={isTitleSlide} />
+          </div>
+
+          {/* Box Layout Content - Always use box layout for bullets (only for content slides) */}
+          {!isTitleSlide && (
+            <div className="flex-1 w-full max-w-5xl mx-auto">
+              <EnhancedContent />
+            </div>
+          )}
+        </div>
+
+        {/* Image Area - Bottom with arc clip-path */}
+        {hasImage && firstImage && (
+          <div 
+            className="w-full relative overflow-hidden flex-shrink-0 z-10"
+            style={{ 
+              height: imageHeight,
+              clipPath: imageClipPath,
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img 
+              src={firstImage.url} 
+              alt={firstImage.alt || slide.title} 
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+        
         <div className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${colors.borderLine} to-transparent`} />
       </div>
     );
@@ -1348,31 +1552,14 @@ export default function SlideRenderer({
         <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8 text-center" align="center" />
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
-            {bulletPoints.map((point, i) => (
-              <div key={i} className={`p-4 sm:p-5 md:p-6 rounded-lg sm:rounded-xl border backdrop-blur-sm text-center ${colors.cardBg}`}>
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full mx-auto mb-3 sm:mb-4 flex items-center justify-center" style={{ backgroundColor: `${colors.accent}20` }}>
-                  <span className="text-lg sm:text-xl font-bold" style={{ color: colors.accent }}>{i + 1}</span>
-                </div>
-                <EditableText
-                  value={point}
-                  isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
-                  onStartEdit={() => onStartEditing(index, "bullet", i)}
-                  onChange={(val) => onUpdateContent(index, "bullet", val, i)}
-                  onFinish={onFinishEditing}
-                  className="text-sm sm:text-base leading-relaxed"
-                  style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
-                  isOwner={canEdit}
-                  isHovered={isHovered}
-                  onDelete={() => onDeleteBullet(index, i)}
-                />
-              </div>
-            ))}
+          {/* Use EnhancedContent to respect contentLayout (box layout) */}
+          <div className="max-w-5xl mx-auto">
+            <EnhancedContent />
           </div>
 
           {canEdit && isHovered && (
             <button onClick={() => onAddBullet(index)} className={`mt-4 mx-auto flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
-              <Plus size={14} /> Add column
+              <Plus size={14} /> Add point
             </button>
           )}
         </div>
@@ -1640,11 +1827,45 @@ export default function SlideRenderer({
   }
 
   // LAYOUT 7h: Full Image - Full-bleed image with text overlay
+  // LAYOUT: Full Image - Only image visible, no content
   if (layout === "full-image") {
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        {/* Full background image */}
+        {/* Full background image - only image, no content */}
+        {hasImage && firstImage && (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={firstImage.url} alt={firstImage.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
+          </>
+        )}
+        {!hasImage && (
+          <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle}>
+            {/* Placeholder for no image */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-dashed flex items-center justify-center mb-4" style={{ borderColor: colors.textMuted }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: colors.textMuted }}>
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <circle cx="8.5" cy="8.5" r="1.5" />
+                  <path d="M21 15l-5-5L5 21" />
+                </svg>
+              </div>
+              <span className="text-sm opacity-60" style={{ color: colors.textMuted }}>No image selected</span>
+            </div>
+          </div>
+        )}
+
+        <SlideIndicator position="top-left" />
+      </div>
+    );
+  }
+
+  // LAYOUT: Image Background - Image as background with content nicely arranged in the middle
+  if (layout === "image-background") {
+    const firstImage = allImages[0];
+    return (
+      <div className="h-full relative overflow-hidden">
+        {/* Background image with overlay */}
         {hasImage && firstImage && (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1658,34 +1879,28 @@ export default function SlideRenderer({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full flex flex-col justify-end p-4 sm:p-8 md:p-12 pb-8 sm:pb-12 md:pb-16">
-          <Title className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-4 sm:mb-6" />
+        {/* Content centered in the middle with bigger sizes and equal distribution */}
+        <div className="relative h-full flex flex-col items-center justify-center p-6 sm:p-8 md:p-12">
+          {/* Title - bigger size, with subtitle for title slides */}
+          <Title 
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl mb-6 sm:mb-8 md:mb-10 text-center max-w-5xl" 
+            align="center"
+            showSubtitle={isTitleSlide}
+          />
 
-          {bulletPoints.length > 0 && (
-            <div className="max-w-2xl space-y-2 sm:space-y-3">
-              {bulletPoints.map((point, i) => (
-                <div key={i} className="flex items-start gap-2 sm:gap-3">
-                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full mt-2 shrink-0" style={{ backgroundColor: colors.accent }} />
-                  <EditableText
-                    value={point}
-                    isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
-                    onStartEdit={() => onStartEditing(index, "bullet", i)}
-                    onChange={(val) => onUpdateContent(index, "bullet", val, i)}
-                    onFinish={onFinishEditing}
-                    className="text-sm sm:text-base md:text-lg leading-relaxed"
-                    style={{ fontFamily: theme.fonts.body.family, color: hasImage ? "#fff" : colors.textMuted }}
-                    isOwner={canEdit}
-                    isHovered={isHovered}
-                    onDelete={() => onDeleteBullet(index, i)}
-                  />
-                </div>
-              ))}
+          {/* EnhancedContent - centered and bigger (compact=false for larger sizes) - only for content slides */}
+          {!isTitleSlide && (
+            <div className="w-full max-w-4xl mx-auto">
+              <EnhancedContent compact={false} />
             </div>
           )}
 
-          {canEdit && isHovered && (
-            <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-xs sm:text-sm ${hasImage ? "text-white/60 hover:text-white" : `${colors.indicatorMuted} ${colors.hoverAccent}`} transition-colors`}>
-              <Plus size={14} /> Add point
+          {canEdit && isHovered && !isTitleSlide && (
+            <button 
+              onClick={() => onAddBullet(index)} 
+              className={`mt-6 flex items-center gap-2 text-sm sm:text-base ${hasImage ? "text-white/80 hover:text-white" : `${colors.indicatorMuted} ${colors.hoverAccent}`} transition-colors`}
+            >
+              <Plus size={16} /> Add point
             </button>
           )}
         </div>

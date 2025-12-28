@@ -4,12 +4,12 @@ import { fetchImagesForSlides, type SlideWithVisualMetadata } from "~/lib/pexels
 import { getThemeById } from "~/lib/themes";
 import {
   generateImagesForSlides as generateAIImages,
-  getLayoutFromStrategy,
   transformOutlineToPresentationStream,
   type TransformedSlide,
   type VisualStrategy,
   type SlideAssets,
 } from "~/lib/presentation";
+import type { BoxLayoutType } from "~/lib/layouts/content/boxes";
 import type { SlideImage as OutlineSlideImage } from "~/lib/dashboard/hooks/useOutlineStream";
 import { generateSlug } from "~/lib/utils";
 
@@ -22,6 +22,7 @@ interface SlideInput {
   visualStrategy?: VisualStrategy;
   assets?: SlideAssets;
   image?: OutlineSlideImage;
+  contentLayout?: string; // Content layout method from outline (e.g., "box")
 }
 
 interface CreatePresentationRequest {
@@ -63,6 +64,7 @@ interface PresentationSlide {
     source: "pexels" | "ai" | "upload" | "placeholder" | "none";
   } | null;
   layout?: string;
+  contentLayout?: string; // Box layout type (e.g., "box-style-1", "box-style-2", etc.)
   semanticIntent?: string;
   visualStrategy?: VisualStrategy;
 }
@@ -220,6 +222,7 @@ export async function POST(request: Request) {
           title: s.title,
           subtitle: s.subtitle,
           bulletPoints: s.bulletPoints,
+          contentLayout: s.contentLayout, // Include content layout from outline
         }));
 
         const transformStream = transformOutlineToPresentationStream(outlineSlides, {
@@ -228,20 +231,47 @@ export async function POST(request: Request) {
           textDensity,
         });
 
+        // Helper function to randomly select a box layout
+        const getRandomBoxLayout = (): BoxLayoutType => {
+          const boxLayouts: BoxLayoutType[] = ["box-style-1", "box-style-2", "box-style-3", "box-style-4"];
+          return boxLayouts[Math.floor(Math.random() * boxLayouts.length)]!;
+        };
+
         // Process each transformed slide
         for await (const { slideIndex, slide: transformedSlide } of transformStream) {
           const originalSlide = slides[slideIndex]!;
 
-          // Determine layout based on transformed content
-          let layout: string;
+          // ==========================================
+          // SLIDE LAYOUT: Controls image positioning (left, right, centered)
+          // This determines WHERE the image appears on the slide
+          // Options: "left-content" (image left), "right-content" (image right), "centered" (no image)
+          // ==========================================
+          let slideLayout: string;
           if (transformedSlide.type === "title") {
-            layout = "title-centered";
-          } else if (transformedSlide.suggestedLayout === "sections" || transformedSlide.suggestedLayout === "three-cards") {
-            layout = "content-grid";
-          } else if (transformedSlide.suggestedLayout === "two-column") {
-            layout = "content-two-column";
+            slideLayout = "title-centered";
           } else {
-            layout = getLayoutFromStrategy(originalSlide.visualStrategy?.pattern);
+            // For content slides, determine image position based on outline's image requirements
+            const hasImage = originalSlide.assets?.image?.required || originalSlide.image?.required;
+            if (hasImage) {
+              // Randomly choose image position: left or right (most common and well-supported)
+              const imagePositions = ["left-content", "right-content"];
+              slideLayout = imagePositions[Math.floor(Math.random() * imagePositions.length)]!;
+            } else {
+              // No image - use centered layout
+              slideLayout = "centered";
+            }
+          }
+
+          // ==========================================
+          // CONTENT LAYOUT: Controls how bullet points are displayed (box-style-1, box-style-2, etc.)
+          // This determines HOW the content/bullet points are rendered (as cards/boxes)
+          // This is separate from slide layout and only affects content rendering
+          // ==========================================
+          let contentLayout: BoxLayoutType | undefined;
+          // For all content slides, apply a box layout (either from outline or randomly selected)
+          if (transformedSlide.type === "content") {
+            // Randomly select a box layout style for bullet points
+            contentLayout = getRandomBoxLayout();
           }
 
           // Create slide object with transformed content
@@ -256,7 +286,8 @@ export async function POST(request: Request) {
             chart: null,
             icons: undefined,
             image: null,
-            layout,
+            layout: slideLayout, // Slide layout: image positioning
+            contentLayout, // Content layout: box style for bullet points
             semanticIntent: originalSlide.semanticIntent,
             visualStrategy: originalSlide.visualStrategy,
           };

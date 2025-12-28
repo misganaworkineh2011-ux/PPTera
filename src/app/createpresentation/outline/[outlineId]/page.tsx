@@ -40,6 +40,8 @@ interface StoredSlide {
     style?: string | null;
     promptHint?: string | null;
   };
+  // Content layout method (e.g., "box" for box/card layouts)
+  contentLayout?: string;
 }
 
 export default async function OutlinePage({ params, searchParams }: OutlinePageProps) {
@@ -88,6 +90,8 @@ export default async function OutlinePage({ params, searchParams }: OutlinePageP
     visualStrategy: slide.visualStrategy,
     assets: slide.assets,
     image: slide.image,
+    // Include content layout for box layouts
+    contentLayout: slide.contentLayout,
   }));
 
   return (

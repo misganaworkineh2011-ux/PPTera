@@ -145,6 +145,7 @@ function MorePanel({
 
 interface StylingPanelProps {
   imageCount: number;
+  slideType?: "title" | "content";
   onChangeLayout: () => void;
   onAddImage: () => void;
   onClose: () => void;
@@ -152,6 +153,7 @@ interface StylingPanelProps {
 
 function StylingPanel({
   imageCount,
+  slideType,
   onChangeLayout,
   onAddImage,
   onClose,
@@ -161,15 +163,22 @@ function StylingPanel({
     onClose();
   };
 
+  // Show Change Layout for:
+  // - Title slides (always, so they can change image position)
+  // - Content slides with images
+  const showChangeLayout = slideType === "title" || imageCount > 0;
+
   return (
     <div className="bg-white rounded-xl shadow-xl border border-slate-200 p-3 min-w-[240px]">
       <div className="space-y-1">
-        <OptionRow
-          icon={<LayoutGrid size={16} />}
-          label="Change Layout"
-          onClick={handleAction(onChangeLayout)}
-          action="Select"
-        />
+        {showChangeLayout && (
+          <OptionRow
+            icon={<LayoutGrid size={16} />}
+            label="Change Layout"
+            onClick={handleAction(onChangeLayout)}
+            action="Select"
+          />
+        )}
         <OptionRow
           icon={<ImagePlus size={16} />}
           label={imageCount > 0 ? `Images (${imageCount})` : "Add Image"}
@@ -500,6 +509,7 @@ export function SlideMenu({
           return (
             <StylingPanel
               imageCount={imageCount}
+              slideType={slideContent?.type}
               onChangeLayout={onChangeLayout}
               onAddImage={onAddImage}
               onClose={closePanel}
