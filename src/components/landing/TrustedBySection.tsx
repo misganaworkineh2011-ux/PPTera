@@ -1,30 +1,48 @@
 "use client";
 
 const logos = [
-  { src: "/companyLogo/adobe.png", alt: "Adobe" },
-  { src: "/companyLogo/amazon.png", alt: "Amazon" },
-  { src: "/companyLogo/stanford.png", alt: "Stanford" },
-  { src: "/companyLogo/vercel.png", alt: "Vercel" },
-  { src: "/companyLogo/zoom.png", alt: "Zoom" },
-  { src: "/companyLogo/latimes.png", alt: "LA Times" },
+  { name: "duolingo", display: "duolingo" },
+  { name: "GitHub", display: "GitHub" },
+  { name: "Microsoft", display: "Microsoft" },
+  { name: "NETFLIX", display: "NETFLIX" },
+  { name: "The New York Times", display: "The New York Times" },
+  { name: "Pentagram", display: "Pentagram" },
+  { name: "slack", display: "slack" },
+  { name: "stripe", display: "stripe" },
+  { name: "zoom", display: "zoom" },
+  { name: "airbnb", display: "airbnb" },
+  { name: "ATLASSIAN", display: "ATLASSIAN" },
+  { name: "Dropbox", display: "Dropbox" },
 ];
 
 export function TrustedBySection() {
   return (
-    <section className="relative z-10 py-12 sm:py-16 md:py-20 bg-white">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <p className="text-center text-lg font-medium text-slate-700 mb-8 sm:mb-10">
-          Your next big idea is in good company
-        </p>
-        <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12 md:gap-16">
-          {logos.map((logo) => (
-            <img
-              key={logo.alt}
-              src={logo.src}
-              alt={logo.alt}
-              className="h-8 sm:h-10 object-contain brightness-0 opacity-50 hover:opacity-70 transition-opacity"
-            />
-          ))}
+    <section className="py-12 border-y border-zinc-100 overflow-hidden bg-white">
+      <div className="relative w-full overflow-hidden">
+        <div className="flex animate-marquee hover:[animation-play-state:paused]">
+          {/* First set */}
+          <div className="flex items-center gap-12 px-6 shrink-0">
+            {logos.map((logo, i) => (
+              <span
+                key={`a-${i}`}
+                className="text-zinc-400 font-semibold text-sm tracking-wide whitespace-nowrap"
+              >
+                {logo.display}
+              </span>
+            ))}
+          </div>
+
+          {/* Duplicate for seamless loop */}
+          <div className="flex items-center gap-12 px-6 shrink-0">
+            {logos.map((logo, i) => (
+              <span
+                key={`b-${i}`}
+                className="text-zinc-400 font-semibold text-sm tracking-wide whitespace-nowrap"
+              >
+                {logo.display}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </section>

@@ -1,10 +1,6 @@
 "use client";
 
-import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
-import { FileText, Wand2, Share2, Sparkles } from "lucide-react";
 import { LoadingLink } from "~/components/LoadingLink";
-import { StepCard } from "./StepCard";
-import { ProductDemo } from "./ProductDemo";
 
 interface HowItWorksSectionProps {
   t: any;
@@ -12,69 +8,79 @@ interface HowItWorksSectionProps {
 
 export function HowItWorksSection({ t }: HowItWorksSectionProps) {
   return (
-    <section id="demo" className="relative z-10 py-20 px-4 sm:py-28 sm:px-6 md:py-32 overflow-hidden">
-      <div className="absolute inset-0 z-0">
-        <img src="/bg2.webp" alt="" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-50/90 via-blue-100/80 to-white/90"></div>
-      </div>
-      <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none"></div>
+    <section className="py-24 px-6 lg:px-8 bg-lime-50">
+      <div className="mx-auto max-w-[1400px]">
+        <h2 className="text-[2.75rem] leading-[1.15] font-semibold tracking-tight text-zinc-900 max-w-xl lg:text-[3.25rem]">
+          Bring everyone together with systems that scale
+        </h2>
 
-      <div className="mx-auto max-w-6xl relative z-10">
-        <div className="text-center mb-16 sm:mb-20">
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
-            {t.fromIdeaToPresentation}
-          </h2>
-          <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
-            Three simple steps to create stunning presentations
-          </p>
-        </div>
-
-        {/* Steps */}
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
-          <StepCard
-            number="1"
-            icon={<FileText className="w-6 h-6" />}
-            title="Describe Your Idea"
-            description="Just type what your presentation is about. Our AI understands context and creates a perfect outline."
-            color="blue"
-          />
-          <StepCard
-            number="2"
-            icon={<Wand2 className="w-6 h-6" />}
-            title="AI Generates Slides"
-            description="Watch as beautiful slides are created in seconds with smart layouts, images, and professional design."
-            color="purple"
-          />
-          <StepCard
-            number="3"
-            icon={<Share2 className="w-6 h-6" />}
-            title="Edit & Share"
-            description="Fine-tune with our editor, export to PowerPoint or PDF, and share with your audience."
-            color="green"
-          />
-        </div>
-
-        {/* Interactive Demo */}
-        <ProductDemo />
-
-        <div className="mt-16 text-center">
-          <SignedOut>
-            <SignInButton mode="modal">
-              <button className="inline-flex items-center gap-2 h-12 rounded-full bg-black px-8 text-base font-bold text-white shadow-lg transition hover:scale-105 hover:bg-slate-800">
-                <Sparkles className="w-5 h-5" />
-                {t.tryItFree}
-              </button>
-            </SignInButton>
-          </SignedOut>
-          <SignedIn>
-            <LoadingLink
-              href="/dashboard"
-              className="inline-flex items-center gap-2 h-12 rounded-full bg-black px-8 text-base font-bold text-white shadow-lg transition hover:scale-105 hover:bg-slate-800"
-            >
-              <Sparkles className="w-5 h-5" />
-              {t.goToDashboard}
+        {/* Cards Showcase */}
+        <div className="mt-12 relative">
+          <div className="flex gap-4 overflow-x-auto pb-4 -mx-6 px-6 lg:mx-0 lg:px-0 scrollbar-hide">
+            {/* Card 1 */}
+            <LoadingLink href="/dashboard/themes" className="flex-shrink-0 w-64 bg-zinc-900 rounded-xl p-4 text-white hover:bg-zinc-800 transition">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex -space-x-2">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="w-6 h-6 rounded-full bg-zinc-700 border-2 border-zinc-900"></div>
+                  ))}
+                </div>
+              </div>
+              <div className="text-xs text-zinc-400 mb-2">Card/Travel</div>
+              <div className="space-y-2">
+                <div className="text-xs">
+                  <span className="text-zinc-500">Libraries</span>
+                </div>
+                <div className="text-xs">
+                  <span className="text-zinc-500">Color</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs">
+                  <div className="w-3 h-3 rounded bg-zinc-800"></div>
+                  <span className="text-zinc-400">background-dark</span>
+                </div>
+              </div>
             </LoadingLink>
-          </SignedIn>
+
+            {/* Card 2 */}
+            <LoadingLink href="/inspiration" className="flex-shrink-0 w-48 bg-emerald-800 rounded-xl overflow-hidden hover:opacity-90 transition">
+              <div className="aspect-[3/4] bg-gradient-to-b from-emerald-700 to-emerald-900 p-4">
+                <p className="text-white text-lg font-serif">Native diversity</p>
+              </div>
+            </LoadingLink>
+
+            {/* Card 3 */}
+            <LoadingLink href="/inspiration" className="flex-shrink-0 w-48 bg-amber-100 rounded-xl overflow-hidden hover:opacity-90 transition">
+              <div className="aspect-[3/4] p-4 flex flex-col justify-between">
+                <p className="text-amber-900 text-2xl font-bold">American Pika</p>
+                <div className="text-xs text-amber-700">Wildlife Series</div>
+              </div>
+            </LoadingLink>
+
+            {/* Card 4 */}
+            <LoadingLink href="/inspiration" className="flex-shrink-0 w-48 bg-white rounded-xl border border-zinc-200 overflow-hidden hover:border-zinc-300 transition">
+              <div className="aspect-[3/4] p-4 flex flex-col justify-between">
+                <div>
+                  <p className="text-4xl font-bold text-zinc-900">June</p>
+                  <p className="text-6xl font-bold text-zinc-900">26</p>
+                </div>
+                <div className="text-xs text-zinc-500">Summer Event</div>
+              </div>
+            </LoadingLink>
+
+            {/* Card 5 */}
+            <LoadingLink href="/inspiration" className="flex-shrink-0 w-48 bg-rose-100 rounded-xl overflow-hidden hover:opacity-90 transition">
+              <div className="aspect-[3/4] p-4">
+                <p className="text-rose-900 text-lg font-medium">Quarterly Report</p>
+              </div>
+            </LoadingLink>
+          </div>
+        </div>
+
+        {/* Link */}
+        <div className="mt-8">
+          <LoadingLink href="/inspiration" className="text-zinc-900 font-medium underline underline-offset-4 hover:text-zinc-600 transition">
+            Explore templates
+          </LoadingLink>
         </div>
       </div>
     </section>

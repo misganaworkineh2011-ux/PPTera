@@ -9,4 +9,5 @@ export { EditDemo } from "./EditDemo";
 export { ExportDemo } from "./ExportDemo";
 export { TestimonialsSection } from "./TestimonialsSection";
 export { CTASection } from "./CTASection";
+export { TemplatesSection } from "./TemplatesSection";
 export { StepCard } from "./StepCard";
