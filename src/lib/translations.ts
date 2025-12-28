@@ -25,7 +25,7 @@ export const translations = {
     
     // Hero
     heroTitle: "Design beautiful",
-    heroSubtitle: "PowerPoint presentations",
+    heroSubtitle: "presentations",
     heroSubtitle2: "with AI.",
     heroDescription: "The smartest way to create professional PowerPoint presentations. Just describe your idea, and PPT Master, the best AI PowerPoint generator, creates the story, design, and slides for you.",
     startForFree: "Start for free",
