@@ -4,16 +4,37 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
-import { ChevronDown, Menu, X } from "lucide-react";
+import { ChevronDown, Menu, X, Globe } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { LoadingLink } from "./LoadingLink";
+import { useLanguage } from "~/contexts/LanguageContext";
+import type { Language } from "~/lib/translations";
+
+const languages: { code: Language; name: string; flag: string }[] = [
+  { code: "en", name: "English", flag: "🇺🇸" },
+  { code: "es", name: "Español", flag: "🇪🇸" },
+  { code: "fr", name: "Français", flag: "🇫🇷" },
+  { code: "de", name: "Deutsch", flag: "🇩🇪" },
+  { code: "zh", name: "中文", flag: "🇨🇳" },
+  { code: "pt", name: "Português", flag: "🇧🇷" },
+  { code: "it", name: "Italiano", flag: "🇮🇹" },
+  { code: "ja", name: "日本語", flag: "🇯🇵" },
+  { code: "ko", name: "한국어", flag: "🇰🇷" },
+  { code: "ar", name: "العربية", flag: "🇸🇦" },
+  { code: "hi", name: "हिन्दी", flag: "🇮🇳" },
+  { code: "ru", name: "Русский", flag: "🇷🇺" },
+];
 
 export const LandingNavbar = () => {
+  const { language, setLanguage } = useLanguage();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
   const [communityOpen, setCommunityOpen] = useState(false);
   const [resourcesOpen, setResourcesOpen] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
+
+  const currentLang = languages.find(l => l.code === language) || languages[0];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -132,15 +153,45 @@ export const LandingNavbar = () => {
 
           {/* Right: Actions */}
           <div className="flex items-center gap-3">
+            {/* Language Selector */}
+            <div
+              className="relative hidden lg:block"
+              onMouseEnter={() => setLanguageOpen(true)}
+              onMouseLeave={() => setLanguageOpen(false)}
+            >
+              <button className="flex items-center gap-2 px-4 py-2.5 text-[15px] text-zinc-700 hover:text-zinc-900 transition">
+                <Globe className="h-4 w-4" />
+                <span>{currentLang?.flag}</span>
+                <ChevronDown className={cn("h-4 w-4 transition-transform", languageOpen && "rotate-180")} />
+              </button>
+              {languageOpen && (
+                <div className="absolute top-full right-0 pt-2 w-48">
+                  <div className="bg-white rounded-xl border border-zinc-200 shadow-xl py-2 max-h-80 overflow-y-auto">
+                    {languages.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => {
+                          setLanguage(lang.code);
+                          setLanguageOpen(false);
+                        }}
+                        className={cn(
+                          "w-full flex items-center gap-3 px-4 py-2.5 text-[15px] hover:bg-zinc-50 transition text-left",
+                          language === lang.code ? "text-zinc-900 bg-zinc-50" : "text-zinc-600"
+                        )}
+                      >
+                        <span>{lang.flag}</span>
+                        <span>{lang.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <SignedOut>
               <SignInButton mode="modal">
                 <button className="hidden lg:block px-4 py-2.5 text-[15px] text-zinc-700 hover:text-zinc-900 transition">
                   Log in
-                </button>
-              </SignInButton>
-              <SignInButton mode="modal">
-                <button className="hidden lg:flex items-center px-5 py-2.5 text-[15px] text-zinc-700 border border-zinc-300 rounded-lg hover:bg-zinc-50 transition">
-                  Contact sales
                 </button>
               </SignInButton>
               <SignInButton mode="modal">
@@ -187,6 +238,29 @@ export const LandingNavbar = () => {
             <LoadingLink href="/pricing" className="py-3 text-lg text-zinc-600" onClick={() => setMobileOpen(false)}>
               Pricing
             </LoadingLink>
+            
+            {/* Mobile Language Selector */}
+            <div className="py-3 border-t border-zinc-100 mt-2">
+              <p className="text-sm text-zinc-500 mb-2">Language</p>
+              <div className="grid grid-cols-3 gap-2">
+                {languages.map((lang) => (
+                  <button
+                    key={lang.code}
+                    onClick={() => setLanguage(lang.code)}
+                    className={cn(
+                      "flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition",
+                      language === lang.code 
+                        ? "bg-zinc-900 text-white" 
+                        : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+                    )}
+                  >
+                    <span>{lang.flag}</span>
+                    <span className="truncate">{lang.code.toUpperCase()}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="pt-6 border-t border-zinc-200 mt-4">
               <SignedOut>
                 <SignInButton mode="modal">

@@ -57,7 +57,7 @@ module.exports = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["Geist", "sans-serif"],
+        sans: ["var(--font-geist-sans)", "sans-serif"],
       },
       keyframes: {
         marquee: {
