@@ -264,8 +264,8 @@ export function HeroSection({ t }: HeroSectionProps) {
             </div>
           </div>
 
-          {/* Right Column - Full Height Card Scroller */}
-          <div className="relative flex items-center justify-center h-full">
+          {/* Right Column - Full Height Card Scroller (hidden on mobile) */}
+          <div className="relative hidden lg:flex items-center justify-center h-full">
             <div
               ref={containerRef}
               className="relative w-full max-w-lg overflow-hidden select-none"
