@@ -15,10 +15,16 @@ export function TestimonialsSection({ t }: TestimonialsSectionProps) {
           </svg>
         </div>
 
-        {/* Quote - Very Big */}
+        {/* Quote - Very Big with extra thick stroke */}
         <div className="grid lg:grid-cols-[3fr_1fr] gap-16 items-start">
-          <blockquote className="text-[2.5rem] leading-[1.2] font-medium text-zinc-900 lg:text-[3.5rem] xl:text-[4rem]">
-            Nearly Everything you need for PPT is found here in PPTMaster.
+          <blockquote 
+            className="text-[2.5rem] leading-[1.2] font-black text-zinc-900 lg:text-[3.5rem] xl:text-[4rem]"
+            style={{ 
+              WebkitTextStroke: '1.5px currentColor',
+              paintOrder: 'stroke fill'
+            }}
+          >
+            Nearly Everything you need for PPT is found in PPTMaster.
           </blockquote>
 
           <div className="flex items-center gap-4 lg:justify-end">
