@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import { ArrowRight, Sparkles, Command } from "lucide-react";
@@ -41,46 +41,56 @@ const slides = [
   },
 ];
 
-// Configuration for timing
-const SLIDE_DURATION = 8000; // 8 seconds per slide (Slower)
-const TYPING_SPEED = 100;    // 100ms per character (Slower typing)
-const TYPING_START_DELAY = 500; // Wait 0.5s before starting to type
+const SLIDE_DURATION = 8000; // 8 seconds per slide
+const TYPING_SPEED = 80;     // Speed of typing
 
 export function HeroSection({ t }: HeroSectionProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [typedText, setTypedText] = useState("");
   const [isTyping, setIsTyping] = useState(true);
 
-  // Typewriter Effect
-  useEffect(() => {
-    const currentPrompt = slides[activeIndex]?.prompt || "";
-    let charIndex = 0;
-    setTypedText("");
-    setIsTyping(true);
+  // Refs to track timers so we can clear them reliably
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-    const startTimeout = setTimeout(() => {
-      const typeInterval = setInterval(() => {
+  // 1. Handle Typing Logic
+  useEffect(() => {
+    // Cleanup previous timers immediately when activeIndex changes
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
+
+    const currentPrompt = slides[activeIndex]?.prompt || "";
+    setTypedText(""); // Reset text
+    setIsTyping(true);
+    let charIndex = 0;
+
+    // Start typing after a brief delay
+    typingTimeoutRef.current = setTimeout(() => {
+      typingIntervalRef.current = setInterval(() => {
         if (charIndex < currentPrompt.length) {
           setTypedText(currentPrompt.slice(0, charIndex + 1));
           charIndex++;
         } else {
           setIsTyping(false);
-          clearInterval(typeInterval);
+          if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
         }
-      }, TYPING_SPEED); 
-      return () => clearInterval(typeInterval);
-    }, TYPING_START_DELAY);
+      }, TYPING_SPEED);
+    }, 500);
 
-    return () => clearTimeout(startTimeout);
+    // Cleanup function when component unmounts or activeIndex changes
+    return () => {
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
+    };
   }, [activeIndex]);
 
-  // Auto-advance Slides
+  // 2. Handle Auto-Advance Logic
   useEffect(() => {
-    const timer = setInterval(() => {
+    const slideTimer = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % slides.length);
-    }, SLIDE_DURATION); 
-    
-    return () => clearInterval(timer);
+    }, SLIDE_DURATION);
+
+    return () => clearInterval(slideTimer);
   }, []);
 
   return (
@@ -164,18 +174,16 @@ export function HeroSection({ t }: HeroSectionProps) {
               </div>
             </div>
 
-            {/* Navigation Dots (Outside container) */}
+            {/* Indicators (Non-clickable) */}
             <div className="flex justify-center gap-2 mt-6">
               {slides.map((_, idx) => (
-                <button
+                <div
                   key={idx}
-                  onClick={() => setActiveIndex(idx)}
                   className={`h-1.5 rounded-full transition-all duration-500 ${
                     idx === activeIndex 
                       ? "w-8 bg-zinc-900" 
-                      : "w-2 bg-zinc-300 hover:bg-zinc-400"
+                      : "w-2 bg-zinc-300"
                   }`}
-                  aria-label={`Go to slide ${idx + 1}`}
                 />
               ))}
             </div>
