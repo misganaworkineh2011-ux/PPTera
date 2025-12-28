@@ -852,6 +852,43 @@ export default function SlideRenderer({
       const isNarrowSpace = layout === "left-content" || layout === "right-content";
       // image-top and image-bottom are wide layouts (full width for content)
       
+      // Handlers for editing box labels and text
+      // Boxes are stored as bullets in "Label: Text" format
+      const handleStartEditLabel = (boxIndex: number) => {
+        onStartEditing(index, `box-label-${boxIndex}`);
+      };
+      
+      const handleStartEditText = (boxIndex: number) => {
+        onStartEditing(index, `box-text-${boxIndex}`);
+      };
+      
+      const handleUpdateLabel = (boxIndex: number, newLabel: string) => {
+        const bullet = slide.bulletPoints?.[boxIndex] || "";
+        const colonIndex = bullet.indexOf(":");
+        let currentText = "";
+        if (colonIndex > 0 && colonIndex < 50) {
+          currentText = bullet.substring(colonIndex + 1).trim();
+        } else {
+          // No existing label format, use bullet as text
+          currentText = bullet;
+        }
+        // Reconstruct bullet as "NewLabel: Text"
+        const newBullet = `${newLabel}: ${currentText}`;
+        onUpdateContent(index, "bullet", newBullet, boxIndex);
+      };
+      
+      const handleUpdateText = (boxIndex: number, newText: string) => {
+        const bullet = slide.bulletPoints?.[boxIndex] || "";
+        const colonIndex = bullet.indexOf(":");
+        let currentLabel = "";
+        if (colonIndex > 0 && colonIndex < 50) {
+          currentLabel = bullet.substring(0, colonIndex).trim();
+        }
+        // Reconstruct bullet as "Label: NewText" or just "NewText" if no label
+        const newBullet = currentLabel ? `${currentLabel}: ${newText}` : newText;
+        onUpdateContent(index, "bullet", newBullet, boxIndex);
+      };
+      
       return (
         <ContentWrapper>
           <div className={compact ? "space-y-3" : "space-y-4"}>
@@ -862,6 +899,15 @@ export default function SlideRenderer({
               compact={compact}
               showIcons={true}
               isNarrowSpace={isNarrowSpace}
+              isEditing={isEditing}
+              editingText={editingText}
+              onStartEditLabel={canEdit ? handleStartEditLabel : undefined}
+              onStartEditText={canEdit ? handleStartEditText : undefined}
+              onUpdateLabel={canEdit ? handleUpdateLabel : undefined}
+              onUpdateText={canEdit ? handleUpdateText : undefined}
+              onFinishEditing={onFinishEditing}
+              isOwner={canEdit}
+              isHovered={isHovered}
             />
           </div>
         </ContentWrapper>
@@ -997,7 +1043,7 @@ export default function SlideRenderer({
 
         <div className="relative h-full flex flex-col sm:flex-row items-stretch">
           {/* Content Area */}
-          <div className={`flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 ${hasImage ? "w-full sm:w-[60%]" : "w-full"}`}>
+          <div className={`flex flex-col justify-center pt-12 sm:pt-16 md:pt-20 pb-4 sm:pb-8 md:pb-12 pl-4 sm:pl-8 md:pl-12 pr-4 sm:pr-6 md:pr-8 ${hasImage ? "w-full sm:w-[60%]" : "w-full"}`}>
             <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-4 sm:mb-6 md:mb-8" showSubtitle={isTitleSlide} />
             {!isTitleSlide && <EnhancedContent />}
           </div>
@@ -1058,7 +1104,7 @@ export default function SlideRenderer({
           {slide.image?.source === "placeholder" && <div className="w-full sm:w-[40%] p-4 sm:p-8"><Placeholder /></div>}
 
           {/* Content Area */}
-          <div className={`flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-4 sm:pt-16 md:pt-20 ${hasImage ? "w-full sm:w-[60%]" : "w-full"}`}>
+          <div className={`flex flex-col justify-center pt-4 sm:pt-16 md:pt-20 pb-4 sm:pb-8 md:pb-12 pl-4 sm:pl-6 md:pl-8 pr-4 sm:pr-8 md:pr-12 ${hasImage ? "w-full sm:w-[60%]" : "w-full"}`}>
             <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-4 sm:mb-6 md:mb-8" showSubtitle={isTitleSlide} />
             {!isTitleSlide && <EnhancedContent />}
           </div>

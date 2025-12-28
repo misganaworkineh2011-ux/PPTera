@@ -62,3 +62,15 @@ export const contentLayoutCategories: ContentLayoutCategoryDef[] = [
 
 // Export box layouts
 export * from "./boxes";
+
+// Export sequence layouts
+export * from "./sequence";
+
+// Export circle layouts
+export * from "./circles";
+
+// Export image layouts
+export * from "./images";
+
+// Export bullet layouts
+export * from "./bullets";

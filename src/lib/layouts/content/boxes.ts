@@ -160,7 +160,7 @@ export function getBoxLayoutGridTemplate(
     return {
       gridTemplateColumns: "1fr 1fr", // 2 columns for top row
       gridTemplateRows: "auto auto", // 2 rows
-      gap: "2rem",
+      gap: "1.25rem",
       specialLayout: "narrow-3",
     };
   }
@@ -168,7 +168,7 @@ export function getBoxLayoutGridTemplate(
   return {
     gridTemplateColumns: `repeat(${columns}, 1fr)`,
     gridTemplateRows: `repeat(${rows}, auto)`, // auto height for flexible content
-    gap: "2rem",
+    gap: "1.25rem",
   };
 }
 

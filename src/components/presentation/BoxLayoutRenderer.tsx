@@ -12,6 +12,7 @@ import {
   getBaseBoxStyles,
   getRecommendedBoxLayout,
 } from "~/lib/layouts/content/boxes";
+import EditableText from "./EditableText";
 
 interface BoxLayoutRendererProps {
   layoutId?: BoxLayoutType;
@@ -21,6 +22,16 @@ interface BoxLayoutRendererProps {
   showIcons?: boolean;
   className?: string;
   isNarrowSpace?: boolean; // true when image is left/right, false when top/bottom
+  // Editing props
+  isEditing?: boolean;
+  editingText?: { field: string; bulletIndex?: number } | null;
+  onStartEditLabel?: (index: number) => void;
+  onStartEditText?: (index: number) => void;
+  onUpdateLabel?: (index: number, value: string) => void;
+  onUpdateText?: (index: number, value: string) => void;
+  onFinishEditing?: () => void;
+  isOwner?: boolean;
+  isHovered?: boolean;
 }
 
 export default function BoxLayoutRenderer({
@@ -31,6 +42,15 @@ export default function BoxLayoutRenderer({
   showIcons = true,
   className = "",
   isNarrowSpace = false,
+  isEditing = false,
+  editingText = null,
+  onStartEditLabel,
+  onStartEditText,
+  onUpdateLabel,
+  onUpdateText,
+  onFinishEditing,
+  isOwner = false,
+  isHovered = false,
 }: BoxLayoutRendererProps) {
   const layout = layoutId
     ? getBoxLayoutById(layoutId) || getRecommendedBoxLayout(items.length)
@@ -56,31 +76,72 @@ export default function BoxLayoutRenderer({
               borderRadius: baseStyles.borderRadius,
               boxShadow: baseStyles.shadow,
               borderLeft: `6px solid ${baseStyles.accentColor}`,
-              padding: compact ? "1.25rem" : "2rem",
+              paddingTop: compact ? "1.25rem" : "2rem",
+              paddingBottom: compact ? "1.25rem" : "2rem",
+              paddingLeft: compact ? "0.875rem" : "1.25rem",
+              paddingRight: compact ? "0.875rem" : "1.25rem",
             }}
           >
             {item.label && (
-              <h3
-                className="font-serif mb-3"
+              onStartEditLabel ? (
+                <EditableText
+                  value={item.label}
+                  isEditing={isEditing && editingText?.field === `box-label-${index}`}
+                  onStartEdit={() => onStartEditLabel(index)}
+                  onChange={(val) => onUpdateLabel?.(index, val)}
+                  onFinish={onFinishEditing || (() => {})}
+                  className="font-serif mb-3"
+                  style={{
+                    color: baseStyles.titleColor,
+                    fontSize: compact ? "1.1rem" : "1.25rem",
+                    textAlign: "center",
+                    fontWeight: "600",
+                  }}
+                  isOwner={isOwner}
+                  isHovered={isHovered}
+                />
+              ) : (
+                <h3
+                  className="font-serif mb-3"
+                  style={{
+                    color: baseStyles.titleColor,
+                    fontSize: compact ? "1.1rem" : "1.25rem",
+                    textAlign: "center",
+                    fontWeight: "600",
+                  }}
+                >
+                  {item.label}
+                </h3>
+              )
+            )}
+            {onStartEditText ? (
+              <EditableText
+                value={item.text}
+                isEditing={isEditing && editingText?.field === `box-text-${index}`}
+                onStartEdit={() => onStartEditText(index)}
+                onChange={(val) => onUpdateText?.(index, val)}
+                onFinish={onFinishEditing || (() => {})}
                 style={{
-                  color: baseStyles.titleColor,
-                  fontSize: compact ? "1.1rem" : "1.25rem",
+                  color: baseStyles.bodyColor,
+                  fontSize: compact ? "0.8rem" : "0.9rem",
+                  lineHeight: 1.5,
+                  textAlign: "center",
+                }}
+                isOwner={isOwner}
+                isHovered={isHovered}
+              />
+            ) : (
+              <p
+                style={{
+                  color: baseStyles.bodyColor,
+                  fontSize: compact ? "0.8rem" : "0.9rem",
+                  lineHeight: 1.5,
                   textAlign: "center",
                 }}
               >
-                {item.label}
-              </h3>
+                {item.text}
+              </p>
             )}
-            <p
-              style={{
-                color: baseStyles.bodyColor,
-                fontSize: compact ? "0.8rem" : "0.9rem",
-                lineHeight: 1.5,
-                textAlign: "center",
-              }}
-            >
-              {item.text}
-            </p>
           </div>
         );
 
@@ -94,31 +155,72 @@ export default function BoxLayoutRenderer({
               borderRadius: baseStyles.borderRadius,
               boxShadow: baseStyles.shadow,
               border: `1px solid ${baseStyles.borderColor}`,
-              padding: compact ? "1.25rem" : "2rem",
+              paddingTop: compact ? "1.25rem" : "2rem",
+              paddingBottom: compact ? "1.25rem" : "2rem",
+              paddingLeft: compact ? "0.875rem" : "1.25rem",
+              paddingRight: compact ? "0.875rem" : "1.25rem",
             }}
           >
             {item.label && (
-              <h3
-                className="font-serif mb-3"
+              onStartEditLabel ? (
+                <EditableText
+                  value={item.label}
+                  isEditing={isEditing && editingText?.field === `box-label-${index}`}
+                  onStartEdit={() => onStartEditLabel(index)}
+                  onChange={(val) => onUpdateLabel?.(index, val)}
+                  onFinish={onFinishEditing || (() => {})}
+                  className="font-serif mb-3"
+                  style={{
+                    color: baseStyles.titleColor,
+                    fontSize: compact ? "1.1rem" : "1.25rem",
+                    textAlign: "center",
+                    fontWeight: "600",
+                  }}
+                  isOwner={isOwner}
+                  isHovered={isHovered}
+                />
+              ) : (
+                <h3
+                  className="font-serif mb-3"
+                  style={{
+                    color: baseStyles.titleColor,
+                    fontSize: compact ? "1.1rem" : "1.25rem",
+                    textAlign: "center",
+                    fontWeight: "600",
+                  }}
+                >
+                  {item.label}
+                </h3>
+              )
+            )}
+            {onStartEditText ? (
+              <EditableText
+                value={item.text}
+                isEditing={isEditing && editingText?.field === `box-text-${index}`}
+                onStartEdit={() => onStartEditText(index)}
+                onChange={(val) => onUpdateText?.(index, val)}
+                onFinish={onFinishEditing || (() => {})}
                 style={{
-                  color: baseStyles.titleColor,
-                  fontSize: compact ? "1.1rem" : "1.25rem",
+                  color: baseStyles.bodyColor,
+                  fontSize: compact ? "0.8rem" : "0.9rem",
+                  lineHeight: 1.5,
+                  textAlign: "center",
+                }}
+                isOwner={isOwner}
+                isHovered={isHovered}
+              />
+            ) : (
+              <p
+                style={{
+                  color: baseStyles.bodyColor,
+                  fontSize: compact ? "0.8rem" : "0.9rem",
+                  lineHeight: 1.5,
                   textAlign: "center",
                 }}
               >
-                {item.label}
-              </h3>
+                {item.text}
+              </p>
             )}
-            <p
-              style={{
-                color: baseStyles.bodyColor,
-                fontSize: compact ? "0.8rem" : "0.9rem",
-                lineHeight: 1.5,
-                textAlign: "center",
-              }}
-            >
-              {item.text}
-            </p>
           </div>
         );
 
@@ -132,7 +234,10 @@ export default function BoxLayoutRenderer({
               borderRadius: baseStyles.borderRadius,
               boxShadow: baseStyles.shadow,
               border: `1px solid ${baseStyles.borderColor}`,
-              padding: compact ? "1.25rem" : "2rem",
+              paddingTop: compact ? "1.25rem" : "2rem",
+              paddingBottom: compact ? "1.25rem" : "2rem",
+              paddingLeft: compact ? "0.875rem" : "1.25rem",
+              paddingRight: compact ? "0.875rem" : "1.25rem",
             }}
           >
             {/* Icon placeholder area - only shows if icon exists */}
@@ -153,27 +258,65 @@ export default function BoxLayoutRenderer({
               </div>
             )}
             {item.label && (
-              <h3
-                className="font-serif mb-3"
+              onStartEditLabel ? (
+                <EditableText
+                  value={item.label}
+                  isEditing={isEditing && editingText?.field === `box-label-${index}`}
+                  onStartEdit={() => onStartEditLabel(index)}
+                  onChange={(val) => onUpdateLabel?.(index, val)}
+                  onFinish={onFinishEditing || (() => {})}
+                  className="font-serif mb-3"
+                  style={{
+                    color: baseStyles.titleColor,
+                    fontSize: compact ? "1.1rem" : "1.25rem",
+                    textAlign: "center",
+                    fontWeight: "600",
+                  }}
+                  isOwner={isOwner}
+                  isHovered={isHovered}
+                />
+              ) : (
+                <h3
+                  className="font-serif mb-3"
+                  style={{
+                    color: baseStyles.titleColor,
+                    fontSize: compact ? "1.1rem" : "1.25rem",
+                    textAlign: "center",
+                    fontWeight: "600",
+                  }}
+                >
+                  {item.label}
+                </h3>
+              )
+            )}
+            {onStartEditText ? (
+              <EditableText
+                value={item.text}
+                isEditing={isEditing && editingText?.field === `box-text-${index}`}
+                onStartEdit={() => onStartEditText(index)}
+                onChange={(val) => onUpdateText?.(index, val)}
+                onFinish={onFinishEditing || (() => {})}
                 style={{
-                  color: baseStyles.titleColor,
-                  fontSize: compact ? "1.1rem" : "1.25rem",
+                  color: baseStyles.bodyColor,
+                  fontSize: compact ? "0.8rem" : "0.9rem",
+                  lineHeight: 1.5,
+                  textAlign: "center",
+                }}
+                isOwner={isOwner}
+                isHovered={isHovered}
+              />
+            ) : (
+              <p
+                style={{
+                  color: baseStyles.bodyColor,
+                  fontSize: compact ? "0.8rem" : "0.9rem",
+                  lineHeight: 1.5,
                   textAlign: "center",
                 }}
               >
-                {item.label}
-              </h3>
+                {item.text}
+              </p>
             )}
-            <p
-              style={{
-                color: baseStyles.bodyColor,
-                fontSize: compact ? "0.8rem" : "0.9rem",
-                lineHeight: 1.5,
-                textAlign: "center",
-              }}
-            >
-              {item.text}
-            </p>
           </div>
         );
 
@@ -222,27 +365,70 @@ export default function BoxLayoutRenderer({
               </div>
             )}
 
-            <div style={{ padding: compact ? "0 1.25rem 1.25rem" : "0 2rem 2rem" }}>
-              <h3
-                className="font-serif mb-3 mt-4"
-                style={{
-                  color: baseStyles.titleColor,
-                  fontSize: compact ? "1.1rem" : "1.25rem",
-                  textAlign: "center",
-                }}
-              >
-                {item.label}
-              </h3>
-              <p
-                style={{
-                  color: baseStyles.bodyColor,
-                  fontSize: compact ? "0.8rem" : "0.9rem",
-                  lineHeight: 1.5,
-                  textAlign: "center",
-                }}
-              >
-                {item.text}
-              </p>
+            <div style={{ 
+              paddingTop: 0,
+              paddingBottom: compact ? "1.25rem" : "2rem",
+              paddingLeft: compact ? "0.875rem" : "1.25rem",
+              paddingRight: compact ? "0.875rem" : "1.25rem",
+            }}>
+              {onStartEditLabel ? (
+                <EditableText
+                  value={item.label || ""}
+                  isEditing={isEditing && editingText?.field === `box-label-${index}`}
+                  onStartEdit={() => onStartEditLabel(index)}
+                  onChange={(val) => onUpdateLabel?.(index, val)}
+                  onFinish={onFinishEditing || (() => {})}
+                  className="font-serif mb-3 mt-4"
+                  style={{
+                    color: baseStyles.titleColor,
+                    fontSize: compact ? "1.1rem" : "1.25rem",
+                    textAlign: "center",
+                    fontWeight: "600",
+                  }}
+                  isOwner={isOwner}
+                  isHovered={isHovered}
+                />
+              ) : (
+                <h3
+                  className="font-serif mb-3 mt-4"
+                  style={{
+                    color: baseStyles.titleColor,
+                    fontSize: compact ? "1.1rem" : "1.25rem",
+                    textAlign: "center",
+                    fontWeight: "600",
+                  }}
+                >
+                  {item.label}
+                </h3>
+              )}
+              {onStartEditText ? (
+                <EditableText
+                  value={item.text}
+                  isEditing={isEditing && editingText?.field === `box-text-${index}`}
+                  onStartEdit={() => onStartEditText(index)}
+                  onChange={(val) => onUpdateText?.(index, val)}
+                  onFinish={onFinishEditing || (() => {})}
+                  style={{
+                    color: baseStyles.bodyColor,
+                    fontSize: compact ? "0.8rem" : "0.9rem",
+                    lineHeight: 1.5,
+                    textAlign: "center",
+                  }}
+                  isOwner={isOwner}
+                  isHovered={isHovered}
+                />
+              ) : (
+                <p
+                  style={{
+                    color: baseStyles.bodyColor,
+                    fontSize: compact ? "0.8rem" : "0.9rem",
+                    lineHeight: 1.5,
+                    textAlign: "center",
+                  }}
+                >
+                  {item.text}
+                </p>
+              )}
             </div>
           </div>
         );

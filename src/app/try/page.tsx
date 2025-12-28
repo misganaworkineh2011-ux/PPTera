@@ -5,7 +5,19 @@ import { LayoutGrid, Image } from "lucide-react";
 import { getDefaultTheme } from "~/lib/themes";
 import type { BoxLayoutType, BoxContentItem } from "~/lib/layouts/content/boxes";
 import { boxLayouts } from "~/lib/layouts/content/boxes";
+import type { SequenceLayoutType, SequenceContentItem } from "~/lib/layouts/content/sequence";
+import { sequenceLayouts } from "~/lib/layouts/content/sequence";
+import type { CircleLayoutType, CircleContentItem } from "~/lib/layouts/content/circles";
+import { circleLayouts } from "~/lib/layouts/content/circles";
+import type { ImageLayoutType, ImageContentItem } from "~/lib/layouts/content/images";
+import { imageLayouts } from "~/lib/layouts/content/images";
+import type { BulletLayoutType, BulletContentItem } from "~/lib/layouts/content/bullets";
+import { bulletLayouts } from "~/lib/layouts/content/bullets";
 import BoxLayoutRenderer from "~/components/presentation/BoxLayoutRenderer";
+import SequenceLayoutRenderer from "~/components/presentation/SequenceLayoutRenderer";
+import { CircleLayoutRenderer } from "~/components/layouts/CircleLayoutRenderer";
+import { ImageLayoutRenderer } from "~/components/layouts/ImageLayoutRenderer";
+import { BulletLayoutRenderer } from "~/components/layouts/BulletLayoutRenderer";
 import ContentLayoutSelector from "~/components/presentation/ContentLayoutSelector";
 
 // Define layouts inline to avoid any import issues
@@ -44,7 +56,7 @@ const slideContent = [
   { heading: "Challenge Norms", description: "Dare to break free from traditional content creation methods and forge new paths." },
 ];
 
-// Convert to BoxContentItem format
+// Convert to BoxContentItem/SequenceContentItem format
 // Icons are optional - only included if content has them
 const boxContentItems: BoxContentItem[] = slideContent.map((item, idx) => ({
   label: item.heading,
@@ -53,11 +65,45 @@ const boxContentItems: BoxContentItem[] = slideContent.map((item, idx) => ({
   // icon: ["💡", "🚀", "🛠️"][idx],
 }));
 
+const sequenceContentItems: SequenceContentItem[] = slideContent.map((item, idx) => ({
+  label: item.heading,
+  text: item.description,
+  // Icons are optional - uncomment to test with icons:
+  // icon: ["💡", "🚀", "🛠️"][idx],
+}));
+
+const circleContentItems: CircleContentItem[] = slideContent.map((item, idx) => ({
+  label: item.heading,
+  text: item.description,
+  // Icons are optional - uncomment to test with icons:
+  // icon: ["🧠", "⏱️", "👥"][idx],
+}));
+
+// Sample images for image layout demo
+// Images are NOT included by default - shows placeholders
+// Images will be substituted when content has actual images
+const imageContentItems: ImageContentItem[] = slideContent.map((item) => ({
+  label: item.heading,
+  text: item.description,
+  // No image - placeholder will show
+}));
+
+// Bullet content items
+const bulletContentItems: BulletContentItem[] = slideContent.map((item) => ({
+  label: item.heading,
+  text: item.description,
+}));
+
 export default function TryPage() {
   const [mode, setMode] = useState<"slide" | "box">("box");
   const [layoutId, setLayoutId] = useState<LayoutId>("image-right");
   const [size, setSize] = useState<ImageSize>("small"); // Default smaller to give room for boxes
+  const [contentLayoutType, setContentLayoutType] = useState<"box" | "sequence" | "circle" | "images" | "bullets">("box");
   const [boxLayoutId, setBoxLayoutId] = useState<BoxLayoutType>("box-style-1");
+  const [sequenceLayoutId, setSequenceLayoutId] = useState<SequenceLayoutType>("sequence-style-1");
+  const [circleLayoutId, setCircleLayoutId] = useState<CircleLayoutType>("circle-arc");
+  const [imageLayoutId, setImageLayoutId] = useState<ImageLayoutType>("image-style-1");
+  const [bulletLayoutId, setBulletLayoutId] = useState<BulletLayoutType>("bullet-style-1");
   const [showLayoutSelector, setShowLayoutSelector] = useState(false);
   
   const theme = getDefaultTheme();
@@ -137,17 +183,52 @@ export default function TryPage() {
               <h1 className="text-3xl font-serif font-bold text-slate-800">{slideTitle}</h1>
             </div>
 
-            {/* Box Layout Renderer */}
+            {/* Content Layout Renderer */}
             <div className="w-full">
-              <BoxLayoutRenderer
-                layoutId={boxLayoutId}
-                items={boxContentItems}
-                theme={activeTheme}
-                compact={size === "large" || size === "full"}
-                showIcons={true}
-                className="w-full"
-                isNarrowSpace={false}
-              />
+              {contentLayoutType === "box" ? (
+                <BoxLayoutRenderer
+                  layoutId={boxLayoutId}
+                  items={boxContentItems}
+                  theme={activeTheme}
+                  compact={size === "large" || size === "full"}
+                  showIcons={true}
+                  className="w-full"
+                  isNarrowSpace={false}
+                />
+              ) : contentLayoutType === "sequence" ? (
+                <SequenceLayoutRenderer
+                  layoutId={sequenceLayoutId}
+                  items={sequenceContentItems}
+                  theme={activeTheme}
+                  compact={size === "large" || size === "full"}
+                  showIcons={true}
+                  className="w-full"
+                  isNarrowSpace={false}
+                />
+              ) : contentLayoutType === "circle" ? (
+                <CircleLayoutRenderer
+                  layoutId={circleLayoutId}
+                  items={circleContentItems}
+                  accentColor={activeTheme.cardBox?.accentColor || "#047857"}
+                  className="w-full min-h-[400px]"
+                />
+              ) : contentLayoutType === "images" ? (
+                <ImageLayoutRenderer
+                  layoutId={imageLayoutId}
+                  items={imageContentItems}
+                  accentColor={activeTheme.cardBox?.accentColor || "#047857"}
+                  className="w-full"
+                  isNarrowSpace={false}
+                />
+              ) : (
+                <BulletLayoutRenderer
+                  layoutId={bulletLayoutId}
+                  items={bulletContentItems}
+                  accentColor={activeTheme.cardBox?.accentColor || "#047857"}
+                  className="w-full"
+                  isNarrowSpace={false}
+                />
+              )}
             </div>
           </div>
 
@@ -200,17 +281,52 @@ export default function TryPage() {
             <h1 className="text-3xl font-serif font-bold text-slate-800">{slideTitle}</h1>
           </div>
 
-          {/* Box Layout Renderer */}
+          {/* Content Layout Renderer */}
           <div className="w-full">
-            <BoxLayoutRenderer
-              layoutId={boxLayoutId}
-              items={boxContentItems}
-              theme={activeTheme}
-              compact={size === "large" || size === "full"}
-              showIcons={true}
-              className="w-full"
-              isNarrowSpace={true}
-            />
+            {contentLayoutType === "box" ? (
+              <BoxLayoutRenderer
+                layoutId={boxLayoutId}
+                items={boxContentItems}
+                theme={activeTheme}
+                compact={size === "large" || size === "full"}
+                showIcons={true}
+                className="w-full"
+                isNarrowSpace={true}
+              />
+            ) : contentLayoutType === "sequence" ? (
+              <SequenceLayoutRenderer
+                layoutId={sequenceLayoutId}
+                items={sequenceContentItems}
+                theme={activeTheme}
+                compact={size === "large" || size === "full"}
+                showIcons={true}
+                className="w-full"
+                isNarrowSpace={true}
+              />
+            ) : contentLayoutType === "circle" ? (
+              <CircleLayoutRenderer
+                layoutId={circleLayoutId}
+                items={circleContentItems}
+                accentColor={activeTheme.cardBox?.accentColor || "#047857"}
+                className="w-full min-h-[350px]"
+              />
+            ) : contentLayoutType === "images" ? (
+              <ImageLayoutRenderer
+                layoutId={imageLayoutId}
+                items={imageContentItems}
+                accentColor={activeTheme.cardBox?.accentColor || "#047857"}
+                className="w-full"
+                isNarrowSpace={true}
+              />
+            ) : (
+              <BulletLayoutRenderer
+                layoutId={bulletLayoutId}
+                items={bulletContentItems}
+                accentColor={activeTheme.cardBox?.accentColor || "#047857"}
+                className="w-full"
+                isNarrowSpace={true}
+              />
+            )}
           </div>
         </div>
 
@@ -308,28 +424,189 @@ export default function TryPage() {
               </div>
             </div>
 
-            {/* Box Layout Controls */}
+            {/* Content Layout Type Selector */}
             <div className="bg-white rounded-xl p-4 border border-slate-200">
               <h2 className="text-sm font-semibold text-slate-800 mb-3 flex items-center gap-2">
-                  <LayoutGrid size={16}/> Content Layout
+                  <LayoutGrid size={16}/> Content Layout Type
               </h2>
-              <div className="space-y-2">
-                {boxLayouts.map((layout) => (
-                  <button
-                    key={layout.id}
-                    onClick={() => setBoxLayoutId(layout.id)}
-                    className={`w-full text-left px-3 py-3 rounded-lg text-xs font-medium transition-all border ${
-                      boxLayoutId === layout.id
-                        ? "bg-teal-50 border-teal-500 ring-1 ring-teal-500"
-                        : "bg-slate-50 border-slate-200 hover:border-teal-300"
-                    }`}
-                  >
-                    <div className="font-semibold text-slate-800 mb-0.5">{layout.name}</div>
-                    <div className="text-slate-500 text-[10px]">{layout.description}</div>
-                  </button>
-                ))}
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                <button
+                  onClick={() => setContentLayoutType("box")}
+                  className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                    contentLayoutType === "box"
+                      ? "bg-teal-500 text-white shadow-md"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  }`}
+                >
+                  Box
+                </button>
+                <button
+                  onClick={() => setContentLayoutType("sequence")}
+                  className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                    contentLayoutType === "sequence"
+                      ? "bg-teal-500 text-white shadow-md"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  }`}
+                >
+                  Sequence
+                </button>
+                <button
+                  onClick={() => setContentLayoutType("circle")}
+                  className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                    contentLayoutType === "circle"
+                      ? "bg-teal-500 text-white shadow-md"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  }`}
+                >
+                  Circle
+                </button>
+                <button
+                  onClick={() => setContentLayoutType("images")}
+                  className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                    contentLayoutType === "images"
+                      ? "bg-teal-500 text-white shadow-md"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  }`}
+                >
+                  Images
+                </button>
+                <button
+                  onClick={() => setContentLayoutType("bullets")}
+                  className={`px-3 py-2 rounded-lg text-xs font-medium transition-all col-span-2 ${
+                    contentLayoutType === "bullets"
+                      ? "bg-teal-500 text-white shadow-md"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  }`}
+                >
+                  Bullets
+                </button>
               </div>
             </div>
+
+            {/* Box Layout Controls */}
+            {contentLayoutType === "box" && (
+              <div className="bg-white rounded-xl p-4 border border-slate-200">
+                <h2 className="text-sm font-semibold text-slate-800 mb-3 flex items-center gap-2">
+                    <LayoutGrid size={16}/> Box Layout
+                </h2>
+                <div className="space-y-2">
+                  {boxLayouts.map((layout) => (
+                    <button
+                      key={layout.id}
+                      onClick={() => setBoxLayoutId(layout.id)}
+                      className={`w-full text-left px-3 py-3 rounded-lg text-xs font-medium transition-all border ${
+                        boxLayoutId === layout.id
+                          ? "bg-teal-50 border-teal-500 ring-1 ring-teal-500"
+                          : "bg-slate-50 border-slate-200 hover:border-teal-300"
+                      }`}
+                    >
+                      <div className="font-semibold text-slate-800 mb-0.5">{layout.name}</div>
+                      <div className="text-slate-500 text-[10px]">{layout.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Sequence Layout Controls */}
+            {contentLayoutType === "sequence" && (
+              <div className="bg-white rounded-xl p-4 border border-slate-200">
+                <h2 className="text-sm font-semibold text-slate-800 mb-3 flex items-center gap-2">
+                    <LayoutGrid size={16}/> Sequence Layout
+                </h2>
+                <div className="space-y-2">
+                  {sequenceLayouts.map((layout) => (
+                    <button
+                      key={layout.id}
+                      onClick={() => setSequenceLayoutId(layout.id)}
+                      className={`w-full text-left px-3 py-3 rounded-lg text-xs font-medium transition-all border ${
+                        sequenceLayoutId === layout.id
+                          ? "bg-teal-50 border-teal-500 ring-1 ring-teal-500"
+                          : "bg-slate-50 border-slate-200 hover:border-teal-300"
+                      }`}
+                    >
+                      <div className="font-semibold text-slate-800 mb-0.5">{layout.name}</div>
+                      <div className="text-slate-500 text-[10px]">{layout.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Circle Layout Controls */}
+            {contentLayoutType === "circle" && (
+              <div className="bg-white rounded-xl p-4 border border-slate-200">
+                <h2 className="text-sm font-semibold text-slate-800 mb-3 flex items-center gap-2">
+                    <LayoutGrid size={16}/> Circle Layout
+                </h2>
+                <div className="space-y-2">
+                  {circleLayouts.map((layout) => (
+                    <button
+                      key={layout.id}
+                      onClick={() => setCircleLayoutId(layout.id)}
+                      className={`w-full text-left px-3 py-3 rounded-lg text-xs font-medium transition-all border ${
+                        circleLayoutId === layout.id
+                          ? "bg-teal-50 border-teal-500 ring-1 ring-teal-500"
+                          : "bg-slate-50 border-slate-200 hover:border-teal-300"
+                      }`}
+                    >
+                      <div className="font-semibold text-slate-800 mb-0.5">{layout.name}</div>
+                      <div className="text-slate-500 text-[10px]">{layout.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Image Layout Controls */}
+            {contentLayoutType === "images" && (
+              <div className="bg-white rounded-xl p-4 border border-slate-200">
+                <h2 className="text-sm font-semibold text-slate-800 mb-3 flex items-center gap-2">
+                    <Image size={16}/> Image Layout
+                </h2>
+                <div className="space-y-2">
+                  {imageLayouts.map((layout) => (
+                    <button
+                      key={layout.id}
+                      onClick={() => setImageLayoutId(layout.id)}
+                      className={`w-full text-left px-3 py-3 rounded-lg text-xs font-medium transition-all border ${
+                        imageLayoutId === layout.id
+                          ? "bg-teal-50 border-teal-500 ring-1 ring-teal-500"
+                          : "bg-slate-50 border-slate-200 hover:border-teal-300"
+                      }`}
+                    >
+                      <div className="font-semibold text-slate-800 mb-0.5">{layout.name}</div>
+                      <div className="text-slate-500 text-[10px]">{layout.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Bullet Layout Controls */}
+            {contentLayoutType === "bullets" && (
+              <div className="bg-white rounded-xl p-4 border border-slate-200">
+                <h2 className="text-sm font-semibold text-slate-800 mb-3 flex items-center gap-2">
+                    <LayoutGrid size={16}/> Bullet Layout
+                </h2>
+                <div className="space-y-2">
+                  {bulletLayouts.map((layout) => (
+                    <button
+                      key={layout.id}
+                      onClick={() => setBulletLayoutId(layout.id)}
+                      className={`w-full text-left px-3 py-3 rounded-lg text-xs font-medium transition-all border ${
+                        bulletLayoutId === layout.id
+                          ? "bg-teal-50 border-teal-500 ring-1 ring-teal-500"
+                          : "bg-slate-50 border-slate-200 hover:border-teal-300"
+                      }`}
+                    >
+                      <div className="font-semibold text-slate-800 mb-0.5">{layout.name}</div>
+                      <div className="text-slate-500 text-[10px]">{layout.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             
             {/* Theme Info */}
             <div className="bg-slate-800 rounded-xl p-4 text-white">

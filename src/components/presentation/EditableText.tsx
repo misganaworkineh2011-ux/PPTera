@@ -426,27 +426,102 @@ export default function EditableText({
   const [showToolbar, setShowToolbar] = useState(false);
   const [toolbarPosition, setToolbarPosition] = useState<ToolbarPosition>({ top: 0, left: 0 });
   const initializedRef = useRef(false);
+  const clickPositionRef = useRef<{ x: number; y: number } | null>(null);
+  const lastValueRef = useRef<string>(value);
+  const editingSessionRef = useRef<number>(0); // Track editing sessions to prevent re-initialization
+  const contentChangedRef = useRef(false); // Track if content changed during editing
+  const latestContentRef = useRef<string>(value); // Store the latest content as backup
 
   // Initialize editor content ONLY when editing starts (not on every render)
   useEffect(() => {
     if (isEditing && editorRef.current && !initializedRef.current) {
+      // Start a new editing session
+      editingSessionRef.current += 1;
+      const currentSession = editingSessionRef.current;
+      
+      // Reset content changed flag for new session
+      contentChangedRef.current = false;
+      
+      // Only set content once when editing starts
       editorRef.current.innerHTML = value;
-      editorRef.current.focus();
-      // Place cursor at end
-      const range = document.createRange();
-      const sel = window.getSelection();
-      range.selectNodeContents(editorRef.current);
-      range.collapse(false);
-      sel?.removeAllRanges();
-      sel?.addRange(range);
+      lastValueRef.current = value;
+      latestContentRef.current = value; // Initialize latest content ref
       initializedRef.current = true;
+      
+      // Position cursor at click position if available
+      const clickPos = clickPositionRef.current;
+      clickPositionRef.current = null;
+      
+      // Focus the editor first
+      editorRef.current.focus();
+      
+      if (clickPos) {
+        // Use setTimeout to ensure DOM is fully rendered and positioned
+        setTimeout(() => {
+          // Only proceed if we're still in the same editing session
+          if (editingSessionRef.current !== currentSession) return;
+          if (editorRef.current) {
+            try {
+              // Try to get caret position from click coordinates
+              const range = document.caretRangeFromPoint?.(clickPos.x, clickPos.y);
+              if (range && editorRef.current.contains(range.startContainer)) {
+                const sel = window.getSelection();
+                if (sel) {
+                  sel.removeAllRanges();
+                  sel.addRange(range);
+                }
+              } else {
+                // Fallback: put cursor at end of content
+                const sel = window.getSelection();
+                if (sel && editorRef.current) {
+                  const range = document.createRange();
+                  range.selectNodeContents(editorRef.current);
+                  range.collapse(false); // Collapse to end
+                  sel.removeAllRanges();
+                  sel.addRange(range);
+                }
+              }
+            } catch {
+              // If anything fails, cursor stays at start (from focus)
+            }
+          }
+        }, 10); // Small delay to ensure DOM is ready
+      }
     }
-    if (!isEditing) {
+    
+    // Only reset when truly leaving editing mode
+    if (!isEditing && initializedRef.current) {
       setShowToolbar(false);
       setIsHovered(false);
       initializedRef.current = false;
+      lastValueRef.current = value;
+      latestContentRef.current = value; // Update latest content ref with new value
     }
-  }, [isEditing, value]);
+  }, [isEditing]); // Only depend on isEditing - NOT value, to prevent cursor reset when typing
+
+  // Sync content and finish editing
+  const finishWithSync = useCallback(() => {
+    // Always sync content when finishing, before calling onFinish
+    // This ensures the parent state is updated before exiting edit mode
+    let currentContent: string;
+    
+    if (editorRef.current) {
+      // Get the current content from the editor (most accurate)
+      currentContent = editorRef.current.innerHTML;
+      // Update the backup ref
+      latestContentRef.current = currentContent;
+    } else {
+      // Fallback to stored content if editor ref is not available
+      currentContent = latestContentRef.current;
+    }
+    
+    // Call onChange synchronously to save the content BEFORE onFinish
+    onChange(currentContent);
+    contentChangedRef.current = false;
+    setShowToolbar(false);
+    // Call onFinish after onChange to exit edit mode
+    onFinish();
+  }, [onFinish, onChange]);
 
   // Handle clicks outside to finish editing
   useEffect(() => {
@@ -460,14 +535,14 @@ export default function EditableText({
         !containerRef.current.contains(target) &&
         !(target as Element).closest?.('[data-toolbar="true"]')
       ) {
-        onFinish();
+        finishWithSync();
       }
     };
 
     // Use mousedown to catch clicks before they trigger other elements
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isEditing, onFinish]);
+  }, [isEditing, finishWithSync]);
 
   // Calculate toolbar position
   const updateToolbarPosition = useCallback(() => {
@@ -524,15 +599,18 @@ export default function EditableText({
   }, [isEditing, handleSelectionChange]);
 
   const handleInput = useCallback(() => {
+    // Mark that content has changed, but DON'T call onChange during typing
+    // This prevents React re-renders that can reset cursor position
+    contentChangedRef.current = true;
+    // Store the latest content for backup
     if (editorRef.current) {
-      onChange(editorRef.current.innerHTML);
+      latestContentRef.current = editorRef.current.innerHTML;
     }
-  }, [onChange]);
+  }, []);
 
   const handleFinish = useCallback(() => {
-    setShowToolbar(false);
-    onFinish();
-  }, [onFinish]);
+    finishWithSync();
+  }, [finishWithSync]);
 
   const handleCommand = useCallback((cmd: string, cmdValue?: string) => {
     if (cmd === "createLink") {
@@ -618,15 +696,22 @@ export default function EditableText({
   if (!isEditing) {
     return (
       <div
+        key="static-container"
         ref={containerRef}
         className="relative"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
         <div
-          className={`${className} ${isOwner && isHovered ? "cursor-pointer ring-2 ring-white/30 ring-offset-2 ring-offset-transparent rounded" : ""}`}
+          key="static-content"
+          className={`${className} ${isOwner && isHovered ? "cursor-text ring-2 ring-white/30 ring-offset-2 ring-offset-transparent rounded" : ""}`}
           style={style}
-          onMouseDown={isOwner ? (e) => { e.preventDefault(); e.stopPropagation(); onStartEdit(); } : undefined}
+          onMouseDown={isOwner ? (e) => { 
+            e.stopPropagation();
+            // Capture click position for cursor placement
+            clickPositionRef.current = { x: e.clientX, y: e.clientY };
+            onStartEdit(); 
+          } : undefined}
           dangerouslySetInnerHTML={{ __html: value }}
         />
         {isOwner && isHovered && (
@@ -657,8 +742,9 @@ export default function EditableText({
 
   // Editing: show contentEditable
   return (
-    <div ref={containerRef} className="relative">
+    <div key="editor-container" ref={containerRef} className="relative">
       <div
+        key="editor-content"
         ref={editorRef}
         contentEditable
         suppressContentEditableWarning
