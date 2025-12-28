@@ -17,7 +17,7 @@ const logos = [
 
 export function TrustedBySection() {
   return (
-    <section className="py-12 border-y border-zinc-100 overflow-hidden bg-white">
+    <section className="py-2 border-y border-zinc-100 overflow-hidden bg-white">
       <div className="relative w-full overflow-hidden">
         <div className="flex animate-marquee hover:[animation-play-state:paused]">
           {/* First set */}
