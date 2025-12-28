@@ -1,99 +1,53 @@
 "use client";
 
-import { useState, useEffect } from "react";
-
 interface TestimonialsSectionProps {
   t: any;
 }
 
-const testimonials = [
-  {
-    name: "Sarah Chen",
-    role: "Product Manager at TechCorp",
-    content:
-      "PPTMaster saved me hours of work. I created a board presentation in 10 minutes that would have taken me a full day.",
-    avatar: "SC",
-  },
-  {
-    name: "Michael Rodriguez",
-    role: "Startup Founder",
-    content:
-      "The AI understands exactly what I need. My investor pitch deck looked like it was made by a professional designer.",
-    avatar: "MR",
-  },
-  {
-    name: "Emily Watson",
-    role: "Marketing Director",
-    content: "Our team uses PPTMaster for all client presentations now. The quality is consistently impressive.",
-    avatar: "EW",
-  },
-  {
-    name: "David Kim",
-    role: "Sales Executive",
-    content: "I close more deals because my presentations look incredible. This tool pays for itself every month.",
-    avatar: "DK",
-  },
-  {
-    name: "Lisa Thompson",
-    role: "University Professor",
-    content: "Creating lecture slides used to be tedious. Now I focus on content while PPTMaster handles the design.",
-    avatar: "LT",
-  },
-];
-
 export function TestimonialsSection({ t }: TestimonialsSectionProps) {
   return (
-    <section className="relative z-10 py-12 md:py-24 bg-white overflow-hidden">
-      <div className="mx-auto max-w-7xl px-6 mb-16 text-center">
-        <h2 className="text-4xl font-bold tracking-tight text-slate-900">{t.joinMillionUsers}</h2>
-      </div>
-      <TestimonialsCarousel />
-    </section>
-  );
-}
+    <section className="py-32 lg:py-40 px-6 lg:px-8">
+      <div className="mx-auto max-w-[1400px]">
+        {/* Quote Icon - Big */}
+        <div className="mb-12">
+          <svg width="80" height="60" viewBox="0 0 64 48" fill="none" className="text-cyan-400">
+            <path d="M0 48V28.8C0 20.8 1.6 14.4 4.8 9.6C8 4.8 13.6 1.6 21.6 0L24 8C19.2 9.6 16 12 14.4 15.2C12.8 18.4 12 22.4 12 27.2H24V48H0ZM40 48V28.8C40 20.8 41.6 14.4 44.8 9.6C48 4.8 53.6 1.6 61.6 0L64 8C59.2 9.6 56 12 54.4 15.2C52.8 18.4 52 22.4 52 27.2H64V48H40Z" fill="currentColor"/>
+          </svg>
+        </div>
 
-function TestimonialsCarousel() {
-  const [offset, setOffset] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setOffset((o) => o + 1);
-    }, 50);
-    return () => clearInterval(timer);
-  }, []);
-
-  return (
-    <div className="relative overflow-hidden py-4">
-      {/* Gradient Masks */}
-      <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
-      <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
-
-      {/* Scrolling Container */}
-      <div
-        className="flex gap-6"
-        style={{
-          transform: `translateX(-${offset % (testimonials.length * 350)}px)`,
-          width: `${testimonials.length * 2 * 350}px`,
-        }}
-      >
-        {[...testimonials, ...testimonials].map((testimonial, i) => (
-          <div
-            key={i}
-            className="flex-shrink-0 w-[320px] p-6 rounded-2xl bg-white border border-slate-200 shadow-lg hover:shadow-xl transition-shadow"
+        {/* Quote - Very Big with extra thick stroke */}
+        <div className="grid lg:grid-cols-[3fr_1fr] gap-16 items-start">
+          <blockquote 
+            className="text-[2.5rem] leading-[1.2] font-black text-zinc-900 lg:text-[3.5rem] xl:text-[4rem]"
+            style={{ 
+              WebkitTextStroke: '1.5px currentColor',
+              paintOrder: 'stroke fill'
+            }}
           >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-white text-sm font-bold">
-                {testimonial.avatar}
+            Nearly Everything you need for PPT is found in PPTMaster.
+          </blockquote>
+
+          <div className="flex items-center gap-4 lg:justify-end">
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="text-zinc-900">
+                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor"/>
+                </svg>
+                <span className="text-lg font-medium text-zinc-900">Canvelete</span>
               </div>
-              <div>
-                <p className="font-semibold text-slate-900">{testimonial.name}</p>
-                <p className="text-xs text-slate-500">{testimonial.role}</p>
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-zinc-200 to-zinc-300 flex items-center justify-center text-2xl font-bold text-zinc-600">
+                  AG
+                </div>
+                <div>
+                  <p className="text-xl font-semibold text-zinc-900">Amanuel Garomsa</p>
+                  <p className="text-lg text-zinc-500">CEO</p>
+                </div>
               </div>
             </div>
-            <p className="text-slate-600 text-sm leading-relaxed">&ldquo;{testimonial.content}&rdquo;</p>
           </div>
-        ))}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

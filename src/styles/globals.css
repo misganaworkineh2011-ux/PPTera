@@ -53,8 +53,41 @@
   * {
     @apply border-border;
   }
+  
+  /* Custom cursor - using SVG for better browser support */
+  html,
+  body {
+    cursor: url('/cursor.svg') 8 2, url('/cursoricon.png'), auto !important;
+  }
+  
   body {
     @apply bg-background text-foreground;
+  }
+  
+  /* Custom cursor for interactive elements */
+  a,
+  button,
+  [role="button"],
+  input[type="submit"],
+  input[type="button"],
+  select,
+  label,
+  .cursor-pointer,
+  [onclick] {
+    cursor: url('/cursor.svg') 8 2, url('/cursoricon.png'), pointer !important;
+  }
+  
+  /* Text selection cursor */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="number"],
+  textarea,
+  [contenteditable="true"] {
+    cursor: url('/cursor.svg') 8 2, url('/cursoricon.png'), text !important;
   }
 }
 

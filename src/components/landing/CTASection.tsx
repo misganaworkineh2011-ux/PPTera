@@ -1,6 +1,8 @@
 "use client";
 
-import { SignedOut, SignInButton } from "@clerk/nextjs";
+import Image from "next/image";
+import { SignedOut, SignedIn, SignInButton } from "@clerk/nextjs";
+import { LoadingLink } from "~/components/LoadingLink";
 
 interface CTASectionProps {
   t: any;
@@ -8,33 +10,43 @@ interface CTASectionProps {
 
 export function CTASection({ t }: CTASectionProps) {
   return (
-    <section className="relative w-full min-h-[35vh] sm:min-h-[45vh] md:min-h-[55vh] lg:min-h-[70vh] xl:min-h-[85vh] 2xl:min-h-screen bg-gradient-to-t from-[#ff9a9e] via-[#ffd1d5] to-white flex flex-col pt-6 sm:pt-8 md:pt-10 lg:pt-14 xl:pt-18 2xl:pt-18">
-      {/* Background Image - Full image shown at bottom */}
-      <div className="absolute inset-0 z-0">
-        <img
-          src="https://res.cloudinary.com/di76ibrro/image/upload/v1766157051/B3ackground-min_1_dyfstu.png"
-          alt="Background"
-          className="h-full w-full object-contain object-bottom "
-        />
-      </div>
-
-      {/* Text + Button - Starts at top, scales proportionally */}
-      <div className="relative z-10 mx-auto max-w-4xl text-center px-4 sm:px-6 flex-shrink-0">
-        <h2 className="mb-2 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl sm:mb-3 md:text-3xl md:mb-4 lg:text-4xl lg:mb-5 xl:text-5xl xl:mb-6 2xl:text-4xl 2xl:mb-8">
-          {t.footerCtaTitle}
-        </h2>
-
+    <section className="relative">
+      {/* Button at the very top - no padding, aligned with image top, responsive */}
+      <div className="absolute top-0 left-0 right-0 z-10 flex justify-center -translate-y-1/2 px-4">
         <SignedOut>
           <SignInButton mode="modal">
-            <button className="h-10 w-full min-w-[140px] rounded-full bg-white px-5 text-sm font-bold text-black shadow-xl shadow-slate-900/10 transition hover:scale-105 hover:bg-slate-100 hover:shadow-2xl sm:h-12 sm:min-w-[180px] sm:px-8 sm:text-base sm:w-auto">
-              {t.tryForFree}
+            <button className="group relative inline-flex items-center gap-2 sm:gap-4 px-6 sm:px-10 md:px-16 py-4 sm:py-6 md:py-8 text-base sm:text-xl md:text-2xl lg:text-3xl font-semibold text-white bg-zinc-900 rounded-xl sm:rounded-2xl md:rounded-3xl hover:rounded-none hover:scale-105 md:hover:scale-110 transition-all duration-300 shadow-xl sm:shadow-2xl cursor-pointer overflow-hidden">
+              {/* Arrow */}
+              <span className="absolute left-4 sm:left-6 md:left-8 opacity-0 -translate-x-6 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-emerald-400 text-2xl sm:text-3xl md:text-4xl">
+                ›
+              </span>
+              {/* Text */}
+              <span className="relative z-10">
+                Get started for free
+              </span>
             </button>
           </SignInButton>
         </SignedOut>
+        <SignedIn>
+          <LoadingLink 
+            href="/dashboard"
+            className="inline-flex items-center gap-2 sm:gap-4 px-6 sm:px-10 md:px-12 py-4 sm:py-5 md:py-6 text-base sm:text-xl md:text-2xl lg:text-3xl font-semibold text-white bg-zinc-900 rounded-xl sm:rounded-2xl hover:bg-zinc-800 transition shadow-xl sm:shadow-2xl"
+          >
+            <span className="text-emerald-400 text-xl sm:text-2xl md:text-3xl lg:text-4xl">›</span>
+            Go to Dashboard
+          </LoadingLink>
+        </SignedIn>
       </div>
 
-      {/* Spacer to push content to top */}
-      <div className="flex-grow"></div>
+      {/* Full Image - no padding */}
+      <Image
+        src="/background.png"
+        alt="Get started"
+        width={1920}
+        height={1080}
+        className="w-full h-auto block"
+        priority
+      />
     </section>
   );
 }
