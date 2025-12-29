@@ -1,13 +1,77 @@
 "use client";
 
+import { useState } from "react";
 import { Sparkles, Wand2, Share2 } from "lucide-react";
+import { SignInButton } from "@clerk/nextjs";
 import { LoadingLink } from "~/components/LoadingLink";
 
 interface FeaturesSectionProps {
   t: any;
 }
 
+// Presentation images for the inspiration cards
+const INSPIRATION_IMAGES = [
+  "https://res.cloudinary.com/di76ibrro/image/upload/v1766152567/Architectural_pptmaster_a18ccs.png",
+  "https://res.cloudinary.com/di76ibrro/image/upload/v1766152472/corporate_pptmaster_gcvo7p.png",
+  "https://res.cloudinary.com/di76ibrro/image/upload/v1766152111/alien_pptmaster_ldo5wm.png",
+];
+
+// Best 5 themes for preview
+const THEME_PREVIEWS = [
+  {
+    id: "corporate-clean",
+    name: "Corporate Clean",
+    bg: "#ffffff",
+    titleBg: "linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%)",
+    textColor: "#374151",
+    headingColor: "#111827",
+    accentColor: "#2563eb",
+    borderColor: "#e5e7eb",
+  },
+  {
+    id: "elegant-noir",
+    name: "Elegant Noir",
+    bg: "#0a0a0b",
+    titleBg: "linear-gradient(135deg, #1a1a1d 0%, #27272a 100%)",
+    textColor: "#e4e4e7",
+    headingColor: "#fafafa",
+    accentColor: "#f59e0b",
+    borderColor: "#27272a",
+  },
+  {
+    id: "cyber-neon",
+    name: "Cyber Neon",
+    bg: "#0a0a0f",
+    titleBg: "linear-gradient(135deg, #0f0f18 0%, #1a1a2e 100%)",
+    textColor: "#e0f0ff",
+    headingColor: "#ffffff",
+    accentColor: "#00ffff",
+    borderColor: "#1a1a2e",
+  },
+  {
+    id: "sunset-gradient",
+    name: "Sunset Gradient",
+    bg: "#1c1017",
+    titleBg: "linear-gradient(135deg, #2d1a24 0%, #4c1d3d 100%)",
+    textColor: "#fce7f3",
+    headingColor: "#ffffff",
+    accentColor: "#f472b6",
+    borderColor: "#4c1d3d",
+  },
+  {
+    id: "ocean-depths",
+    name: "Ocean Depths",
+    bg: "#0a1628",
+    titleBg: "linear-gradient(135deg, #0d1f35 0%, #1e3a5f 100%)",
+    textColor: "#e0f2fe",
+    headingColor: "#ffffff",
+    accentColor: "#14b8a6",
+    borderColor: "#1e3a5f",
+  },
+];
+
 export function FeaturesSection({ t }: FeaturesSectionProps) {
+  const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   return (
     <section className="py-24 px-6 lg:px-8">
       <div className="mx-auto max-w-[1400px]">
@@ -99,20 +163,19 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
           {/* Feature Tabs */}
           <div className="flex items-center justify-center gap-4 mt-8">
             {[
-              { label: "Prompt", href: "/" },
-              { label: "Design", href: "/" },
-              { label: "Edit", href: "/" },
-              { label: "Build", href: "/" },
-              { label: "Publish", href: "/" },
-              { label: "Present", href: "/" },
+              { label: "Prompt" },
+              { label: "Design" },
+              { label: "Edit" },
+              { label: "Build" },
+              { label: "Publish" },
+              { label: "Present" },
             ].map((tab, i) => (
-              <LoadingLink 
+              <span
                 key={tab.label}
-                href={tab.href}
-                className={`text-sm font-medium transition ${i === 0 ? "text-zinc-900 border-b-2 border-zinc-900 pb-1" : "text-zinc-400 hover:text-zinc-600"}`}
+                className={`text-sm font-medium transition cursor-default ${i === 0 ? "text-zinc-900 border-b-2 border-zinc-900 pb-1" : "text-zinc-400"}`}
               >
                 {tab.label}
-              </LoadingLink>
+              </span>
             ))}
           </div>
           
@@ -120,50 +183,176 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
             {t.createStunningPPT || "Create stunning PowerPoint presentations with just a prompt."}
           </p>
           <p className="text-center mt-2">
-            <LoadingLink href="/" className="text-zinc-900 font-medium underline underline-offset-4 hover:text-zinc-600 transition">
-              {t.tryPPTMasterAI || "Try PPT Master AI"}
-            </LoadingLink>
+            <SignInButton mode="modal">
+              <button className="text-zinc-900 font-medium underline underline-offset-4 hover:text-zinc-600 transition" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
+                {t.tryPPTMasterAI || "Try PPT Master AI"}
+              </button>
+            </SignInButton>
           </p>
         </div>
 
         {/* Two Column Features */}
         <div className="grid lg:grid-cols-2 gap-8 mb-32">
-          {/* Feature 1 */}
-          <LoadingLink href="/" className="group block">
-            <div className="rounded-2xl overflow-hidden border border-zinc-200 bg-zinc-50 aspect-[4/3] mb-6 relative group-hover:border-zinc-300 transition">
-              <div className="absolute inset-0 p-6">
-                <div className="grid grid-cols-2 gap-4 h-full">
-                  <div className="bg-white rounded-xl border border-zinc-200 p-4">
-                    <div className="h-2 w-20 bg-zinc-200 rounded mb-2"></div>
-                    <div className="h-1.5 w-16 bg-zinc-100 rounded"></div>
-                  </div>
-                  <div className="bg-white rounded-xl border border-zinc-200 p-4">
-                    <div className="h-2 w-16 bg-zinc-200 rounded mb-2"></div>
-                    <div className="h-1.5 w-20 bg-zinc-100 rounded"></div>
+          {/* Feature 1 - Templates */}
+          <SignInButton mode="modal">
+            <button className="group block text-left w-full" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
+              <div className="rounded-xl overflow-hidden border border-zinc-200 bg-zinc-100 aspect-[4/3] mb-6 relative group-hover:border-zinc-300 group-hover:shadow-lg transition-all duration-300">
+                <div className="absolute inset-0 p-3">
+                  {/* Theme Preview Grid - 2 large on left, 3 stacked on right */}
+                  <div className="grid grid-cols-5 gap-2 h-full">
+                    {/* Left column - 2 larger cards */}
+                    <div className="col-span-3 grid grid-rows-2 gap-2">
+                      {THEME_PREVIEWS.slice(0, 2).map((theme) => (
+                        <div
+                          key={theme.id}
+                          className="rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+                          style={{ background: theme.bg, border: `1px solid ${theme.borderColor}` }}
+                        >
+                          {/* Mini slide preview */}
+                          <div className="h-full p-3 flex flex-col">
+                            <div 
+                              className="rounded-md p-2 mb-2 flex-shrink-0"
+                              style={{ background: theme.titleBg }}
+                            >
+                              <div 
+                                className="text-[10px] font-semibold truncate"
+                                style={{ color: theme.headingColor }}
+                              >
+                                {theme.name}
+                              </div>
+                            </div>
+                            <div className="flex-1 flex flex-col justify-center gap-1.5">
+                              <div className="flex items-center gap-1.5">
+                                <div 
+                                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                                  style={{ background: theme.accentColor }}
+                                />
+                                <div 
+                                  className="h-1 rounded flex-1"
+                                  style={{ background: theme.textColor, opacity: 0.3 }}
+                                />
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <div 
+                                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                                  style={{ background: theme.accentColor }}
+                                />
+                                <div 
+                                  className="h-1 rounded w-3/4"
+                                  style={{ background: theme.textColor, opacity: 0.3 }}
+                                />
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <div 
+                                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                                  style={{ background: theme.accentColor }}
+                                />
+                                <div 
+                                  className="h-1 rounded w-5/6"
+                                  style={{ background: theme.textColor, opacity: 0.3 }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Right column - 3 smaller stacked cards */}
+                    <div className="col-span-2 grid grid-rows-3 gap-2">
+                      {THEME_PREVIEWS.slice(2, 5).map((theme) => (
+                        <div
+                          key={theme.id}
+                          className="rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+                          style={{ background: theme.bg, border: `1px solid ${theme.borderColor}` }}
+                        >
+                          <div className="h-full p-2 flex flex-col">
+                            <div 
+                              className="rounded p-1.5 mb-1"
+                              style={{ background: theme.titleBg }}
+                            >
+                              <div 
+                                className="text-[8px] font-semibold truncate"
+                                style={{ color: theme.headingColor }}
+                              >
+                                {theme.name}
+                              </div>
+                            </div>
+                            <div className="flex-1 flex items-center">
+                              <div className="flex gap-0.5 w-full">
+                                {[0.4, 0.6, 0.8, 1].map((h, i) => (
+                                  <div 
+                                    key={i}
+                                    className="flex-1 rounded-sm"
+                                    style={{ 
+                                      background: theme.accentColor, 
+                                      height: `${h * 100}%`,
+                                      opacity: 0.3 + (h * 0.5),
+                                      alignSelf: "flex-end"
+                                    }}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <h3 className="text-lg font-semibold text-zinc-900 mb-2">
-              {t.professionalTemplatesUseCase || "Professional templates for every use case."}
-            </h3>
-            <p className="text-zinc-600">
-              {t.templatesDescription || "Choose from hundreds of professionally designed PowerPoint templates. Customize colors, fonts, and layouts to match your brand."}
-            </p>
-            <span className="inline-block mt-4 text-zinc-900 font-medium underline underline-offset-4 group-hover:text-zinc-600 transition">
-              {t.exploreTemplates || "Explore templates"}
-            </span>
-          </LoadingLink>
+              <h3 className="text-lg font-semibold text-zinc-900 mb-2">
+                {t.professionalTemplatesUseCase || "Professional templates for every presentation."}
+              </h3>
+              <p className="text-zinc-600">
+                {t.templatesDescription || "Choose from beautifully designed themes. Customize colors, fonts, and layouts to match your brand."}
+              </p>
+              <span className="inline-block mt-4 text-zinc-900 font-medium underline underline-offset-4 group-hover:text-zinc-600 transition">
+                {t.exploreTemplates || "Explore templates"}
+              </span>
+            </button>
+          </SignInButton>
 
-          {/* Feature 2 */}
+          {/* Feature 2 - Get Inspired */}
           <LoadingLink href="/inspiration" className="group block">
-            <div className="rounded-2xl overflow-hidden border border-zinc-200 bg-lime-50 aspect-[4/3] mb-6 relative group-hover:border-zinc-300 transition">
-              <div className="absolute inset-0 p-6 flex items-center justify-center">
-                <div className="grid grid-cols-3 gap-3">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="w-24 h-32 bg-white rounded-lg border border-zinc-200 shadow-sm"></div>
-                  ))}
-                </div>
+            <div className="overflow-hidden border border-zinc-200 aspect-[4/3] mb-6 relative group-hover:border-zinc-300 transition">
+              {/* 3 Expandable Cards - Full height, no gap, sharp edges */}
+              <div className="absolute inset-0 flex">
+                {INSPIRATION_IMAGES.map((img, i) => {
+                  // Default: last card (right) is big (60%), others are small (20% each)
+                  // On hover: hovered card becomes big, others become small
+                  const isHovered = hoveredCard === i;
+                  const hasHover = hoveredCard !== null;
+                  
+                  let widthPercent = 20;
+                  if (!hasHover) {
+                    // Default state: last (right) is big
+                    widthPercent = i === 2 ? 60 : 20;
+                  } else {
+                    // Hover state: hovered is big
+                    widthPercent = isHovered ? 60 : 20;
+                  }
+                  
+                  return (
+                    <div
+                      key={i}
+                      className="h-full overflow-hidden transition-[width] duration-500 ease-out flex-shrink-0 relative"
+                      style={{ width: `${widthPercent}%` }}
+                      onMouseEnter={() => setHoveredCard(i)}
+                      onMouseLeave={() => setHoveredCard(null)}
+                    >
+                      {/* Fixed-size image container to prevent zoom */}
+                      <div 
+                        className="absolute inset-0"
+                        style={{
+                          backgroundImage: `url(${img})`,
+                          backgroundSize: "cover",
+                          backgroundPosition: "center",
+                        }}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             </div>
             <h3 className="text-lg font-semibold text-zinc-900 mb-2">
@@ -203,24 +392,28 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
               </LoadingLink>
 
               {/* Feature Item */}
-              <LoadingLink href="/" className="group block border-b border-zinc-200 pb-8">
-                <div className="flex items-start gap-3">
-                  <Wand2 className="w-5 h-5 text-zinc-900 mt-0.5" />
-                  <div>
-                    <h3 className="font-semibold text-zinc-900 mb-2 group-hover:text-zinc-600 transition">{t.shareWithLink || "Share with a link or embed anywhere"}</h3>
-                  </div>
-                </div>
-              </LoadingLink>
+              <div className="group block border-b border-zinc-200 pb-8">
+                <SignInButton mode="modal">
+                  <button className="flex items-start gap-3 text-left w-full" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
+                    <Wand2 className="w-5 h-5 text-zinc-900 mt-0.5" />
+                    <div>
+                      <h3 className="font-semibold text-zinc-900 mb-2 group-hover:text-zinc-600 transition">{t.shareWithLink || "Share with a link or embed anywhere"}</h3>
+                    </div>
+                  </button>
+                </SignInButton>
+              </div>
 
               {/* Feature Item */}
-              <LoadingLink href="/" className="group block">
-                <div className="flex items-start gap-3">
-                  <Share2 className="w-5 h-5 text-zinc-900 mt-0.5" />
-                  <div>
-                    <h3 className="font-semibold text-zinc-900 mb-2 group-hover:text-zinc-600 transition">{t.presentDirectly || "Present directly from PPT Master"}</h3>
-                  </div>
-                </div>
-              </LoadingLink>
+              <div className="group block">
+                <SignInButton mode="modal">
+                  <button className="flex items-start gap-3 text-left w-full" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
+                    <Share2 className="w-5 h-5 text-zinc-900 mt-0.5" />
+                    <div>
+                      <h3 className="font-semibold text-zinc-900 mb-2 group-hover:text-zinc-600 transition">{t.presentDirectly || "Present directly from PPT Master"}</h3>
+                    </div>
+                  </button>
+                </SignInButton>
+              </div>
             </div>
           </div>
 
@@ -262,8 +455,12 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
                 <p className="font-medium">{t.readyToShare || "Ready to Share"}</p>
                 <p className="text-xs text-purple-200">10 {t.slides || "slides"}</p>
                 <div className="flex gap-2 mt-3">
-                  <LoadingLink href="/" className="px-3 py-1 bg-white text-purple-600 text-xs rounded-md font-medium hover:bg-purple-50 transition">{t.export || "Export"}</LoadingLink>
-                  <LoadingLink href="/" className="px-3 py-1 border border-purple-400 text-xs rounded-md hover:bg-purple-500 transition">{t.share || "Share"}</LoadingLink>
+                  <SignInButton mode="modal">
+                    <button className="px-3 py-1 bg-white text-purple-600 text-xs rounded-md font-medium hover:bg-purple-50 transition" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>{t.export || "Export"}</button>
+                  </SignInButton>
+                  <SignInButton mode="modal">
+                    <button className="px-3 py-1 border border-purple-400 text-xs rounded-md hover:bg-purple-500 transition" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>{t.share || "Share"}</button>
+                  </SignInButton>
                 </div>
               </div>
             </div>

@@ -10,21 +10,29 @@ interface HeroSectionProps {
 }
 
 const CARD_HEIGHT = 420;
-const CARD_GAP = 14;
+const CARD_GAP = 8; // Reduced gap between cards
 const TOTAL_CARD_HEIGHT = CARD_HEIGHT + CARD_GAP;
 const TYPING_SPEED = 35;
 const VISIBLE_CARDS = 3;
+const AUTO_ADVANCE_DELAY = 7000; // 7 seconds per card
+
+// Vimeo video IDs with their hash parameters
+const VIMEO_VIDEOS = [
+  { id: "1103822384", hash: "d87e2634b3" },
+  { id: "1103822624", hash: "d2e608ba23" },
+  { id: "1103862294", hash: "802500bb17" },
+  { id: "1106141156", hash: "394f5f9721" },
+  { id: "1103822749", hash: "ad2a6b8283" },
+];
 
 export function HeroSection({ t }: HeroSectionProps) {
-  // Create cards with translations
+  // Create cards with video URLs
   const baseCards = useMemo(() => [
-    { id: 1, title: t.heroCard1Title || "Startup Pitch", prompt: t.heroCard1Prompt || "Create a 10-slide investor pitch deck for my AI startup with market analysis and financials...", gradient: "from-blue-500/20 to-cyan-500/20" },
-    { id: 2, title: t.heroCard2Title || "Sales Report", prompt: t.heroCard2Prompt || "Generate a quarterly sales report with charts showing revenue growth and KPIs...", gradient: "from-purple-500/20 to-pink-500/20" },
-    { id: 3, title: t.heroCard3Title || "Team Intro", prompt: t.heroCard3Prompt || "Design a professional team introduction with photos and role descriptions...", gradient: "from-amber-500/20 to-orange-500/20" },
-    { id: 4, title: t.heroCard4Title || "Business Plan", prompt: t.heroCard4Prompt || "Build a comprehensive business plan presentation with SWOT analysis...", gradient: "from-emerald-500/20 to-teal-500/20" },
-    { id: 5, title: t.heroCard5Title || "Product Demo", prompt: t.heroCard5Prompt || "Create an engaging product demo showcasing features and benefits...", gradient: "from-rose-500/20 to-red-500/20" },
-    { id: 6, title: t.heroCard6Title || "Marketing Strategy", prompt: t.heroCard6Prompt || "Design a marketing strategy deck with target audience and campaigns...", gradient: "from-indigo-500/20 to-violet-500/20" },
-    { id: 7, title: t.heroCard7Title || "Training Module", prompt: t.heroCard7Prompt || "Generate an employee training presentation with interactive elements...", gradient: "from-sky-500/20 to-blue-500/20" },
+    { id: 1, prompt: t.heroCard1Prompt || "Create a 10-slide investor pitch deck for my AI startup with market analysis and financials...", video: VIMEO_VIDEOS[0] },
+    { id: 2, prompt: t.heroCard2Prompt || "Generate a quarterly sales report with charts showing revenue growth and KPIs...", video: VIMEO_VIDEOS[1] },
+    { id: 3, prompt: t.heroCard3Prompt || "Design a professional team introduction with photos and role descriptions...", video: VIMEO_VIDEOS[2] },
+    { id: 4, prompt: t.heroCard4Prompt || "Build a comprehensive business plan presentation with SWOT analysis...", video: VIMEO_VIDEOS[3] },
+    { id: 5, prompt: t.heroCard5Prompt || "Create an engaging product demo showcasing features and benefits...", video: VIMEO_VIDEOS[4] },
   ], [t]);
 
   const [activeIndex, setActiveIndex] = useState(0);
@@ -50,15 +58,15 @@ export function HeroSection({ t }: HeroSectionProps) {
   // Get current card data
   const currentCard = baseCards[getWrappedIndex(activeIndex)];
 
-  // Auto-advance to next card when typing finishes
+  // Auto-advance to next card after 7 seconds
   const advanceToNextCard = useCallback(() => {
     if (autoAdvanceTimeoutRef.current) clearTimeout(autoAdvanceTimeoutRef.current);
     autoAdvanceTimeoutRef.current = setTimeout(() => {
       setActiveIndex((prev) => prev + 1);
-    }, 600);
+    }, AUTO_ADVANCE_DELAY);
   }, []);
 
-  // Typing animation - advances card when complete
+  // Typing animation - starts advance timer when complete
   useEffect(() => {
     if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
     if (autoAdvanceTimeoutRef.current) clearTimeout(autoAdvanceTimeoutRef.current);
@@ -151,7 +159,7 @@ export function HeroSection({ t }: HeroSectionProps) {
 
   // Generate visible cards (render extra cards for smooth infinite scroll)
   const getVisibleCards = () => {
-    const visibleRange = 3; // Cards above and below center
+    const visibleRange = 3;
     const result = [];
     for (let i = -visibleRange; i <= visibleRange; i++) {
       const virtualIndex = activeIndex + i;
@@ -172,7 +180,6 @@ export function HeroSection({ t }: HeroSectionProps) {
 
     const distanceFromCenter = Math.abs(y) / TOTAL_CARD_HEIGHT;
     const normalScale = 1 - distanceFromCenter * 0.15;
-    // When dragging, all cards equalize to ~0.92 scale (middle shrinks, sides grow)
     const dragScale = 0.92;
     const scale = isDragging ? dragScale : Math.max(0.82, Math.min(1, normalScale));
 
@@ -188,10 +195,17 @@ export function HeroSection({ t }: HeroSectionProps) {
     };
   };
 
+  // Check if a card is the center card (should play video)
+  const isCenterCard = (virtualIndex: number) => {
+    const baseOffset = -activeIndex * TOTAL_CARD_HEIGHT;
+    const currentOffset = baseOffset + dragOffset;
+    const y = virtualIndex * TOTAL_CARD_HEIGHT + currentOffset;
+    return Math.abs(y) < TOTAL_CARD_HEIGHT * 0.3;
+  };
+
   const handleIndicatorClick = (idx: number) => {
     if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
     if (autoAdvanceTimeoutRef.current) clearTimeout(autoAdvanceTimeoutRef.current);
-    // Calculate the closest path to the target
     const currentWrapped = getWrappedIndex(activeIndex);
     const diff = idx - currentWrapped;
     setActiveIndex(activeIndex + diff);
@@ -204,23 +218,21 @@ export function HeroSection({ t }: HeroSectionProps) {
   return (
     <section className="relative h-[95vh] min-h-[600px] flex items-center justify-center overflow-hidden">
       {/* Grid Background */}
-<div className="absolute inset-0 z-0 bg-white">
-  <div 
-    className="absolute inset-0 opacity-[0.55]"
-    style={{
-      backgroundImage: `
-        linear-gradient(to right, #d4d4d8 1.25px, transparent 1.25px),
-        linear-gradient(to bottom, #d4d4d8 1.25px, transparent 1.25px)
-      `,
-      backgroundSize: '40px 40px',
-      maskImage: 'linear-gradient(to right, transparent 0%, black 35%, black 65%, transparent 100%)',
-      WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 35%, black 65%, transparent 100%)'
-    }}
-  />
-  <div className="absolute inset-0 bg-gradient-to-b from-white via-transparent to-white" />
-</div>
-
-
+      <div className="absolute inset-0 z-0 bg-white">
+        <div 
+          className="absolute inset-0 opacity-[0.55]"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, #d4d4d8 1.25px, transparent 1.25px),
+              linear-gradient(to bottom, #d4d4d8 1.25px, transparent 1.25px)
+            `,
+            backgroundSize: '40px 40px',
+            maskImage: 'linear-gradient(to right, transparent 0%, black 35%, black 65%, transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 35%, black 65%, transparent 100%)'
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-white via-transparent to-white" />
+      </div>
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8 w-full py-20">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center min-h-[calc(100vh-160px)]">
@@ -286,9 +298,7 @@ export function HeroSection({ t }: HeroSectionProps) {
             <div
               ref={containerRef}
               className={`relative w-full max-w-lg overflow-hidden select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
-              style={{
-                height: containerHeight,
-              }}
+              style={{ height: containerHeight }}
               onMouseDown={onMouseDown}
               onTouchStart={onTouchStart}
               onTouchMove={onTouchMove}
@@ -297,30 +307,39 @@ export function HeroSection({ t }: HeroSectionProps) {
               {/* Cards Container */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="relative w-[320px] sm:w-[360px] md:w-[380px]" style={{ height: CARD_HEIGHT }}>
-                  {visibleCards.map((card) => (
-                    <div
-                      key={card.key}
-                      className="absolute left-0 right-0 mx-auto px-4"
-                      style={{
-                        ...getCardStyle(card.virtualIndex),
-                        height: CARD_HEIGHT,
-                        top: "50%",
-                        marginTop: -CARD_HEIGHT / 2,
-                      }}
-                    >
+                  {visibleCards.map((card) => {
+                    const isCenter = isCenterCard(card.virtualIndex);
+                    // Center card autoplays immediately, others stay paused but show first frame
+                    // autopause=0 prevents pausing when another video plays
+                    const videoUrl = `https://player.vimeo.com/video/${card.video?.id}?h=${card.video?.hash}&autoplay=${isCenter ? 1 : 0}&loop=1&muted=1&background=1&quality=720p&autopause=0&playsinline=1`;
+                    
+                    return (
                       <div
-                        className={`w-full h-full bg-gradient-to-br ${card.gradient} bg-white border border-zinc-200/50  backdrop-blur-sm p-6 flex flex-col justify-between`}
+                        key={card.key}
+                        className="absolute left-0 right-0 mx-auto px-4"
+                        style={{
+                          ...getCardStyle(card.virtualIndex),
+                          height: CARD_HEIGHT,
+                          top: "50%",
+                          marginTop: -CARD_HEIGHT / 2,
+                        }}
                       >
-                        <div>
-                          <div className="w-14 h-14 rounded-sm bg-white/80 shadow-sm flex items-center justify-center mb-4">
-                            <span className="text-2xl font-bold text-zinc-700">{card.id}</span>
-                          </div>
-                          <h3 className="text-2xl font-semibold text-zinc-800">{card.title}</h3>
+                        {/* Sharp square card with video only - no placeholder */}
+                        <div className="w-full h-full overflow-hidden border border-zinc-200/50 shadow-lg relative bg-zinc-900">
+                          <iframe
+                            src={videoUrl}
+                            className="absolute inset-0 w-full h-full pointer-events-none"
+                            style={{
+                              border: 'none',
+                              transform: 'scale(1.5)',
+                              transformOrigin: 'center center',
+                            }}
+                            allow="autoplay; fullscreen"
+                          />
                         </div>
-                        <p className="text-base text-zinc-600 line-clamp-2">{card.prompt}</p>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 

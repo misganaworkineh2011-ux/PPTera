@@ -77,12 +77,26 @@ export const LandingNavbar = () => {
                 {productsOpen && (
                   <div className="absolute top-full left-0 pt-2 w-72">
                     <div className="bg-white rounded-xl border border-zinc-200 shadow-xl py-2">
-                      <LoadingLink href="/" className="block px-5 py-3 text-[15px] text-zinc-700 hover:bg-zinc-50 transition">
-                        {t.navAIPresentations || "AI Presentations"}
-                      </LoadingLink>
-                      <LoadingLink href="/dashboard/themes" className="block px-5 py-3 text-[15px] text-zinc-700 hover:bg-zinc-50 transition">
-                        {t.navThemes || "Themes"}
-                      </LoadingLink>
+                      <SignedOut>
+                        <SignInButton mode="modal">
+                          <button className="block w-full text-left px-5 py-3 text-[15px] text-zinc-700 hover:bg-zinc-50 transition">
+                            {t.navAIPresentations || "AI Presentations"}
+                          </button>
+                        </SignInButton>
+                        <SignInButton mode="modal">
+                          <button className="block w-full text-left px-5 py-3 text-[15px] text-zinc-700 hover:bg-zinc-50 transition">
+                            {t.navThemes || "Themes"}
+                          </button>
+                        </SignInButton>
+                      </SignedOut>
+                      <SignedIn>
+                        <LoadingLink href="/" className="block px-5 py-3 text-[15px] text-zinc-700 hover:bg-zinc-50 transition">
+                          {t.navAIPresentations || "AI Presentations"}
+                        </LoadingLink>
+                        <LoadingLink href="/dashboard/themes" className="block px-5 py-3 text-[15px] text-zinc-700 hover:bg-zinc-50 transition">
+                          {t.navThemes || "Themes"}
+                        </LoadingLink>
+                      </SignedIn>
                       <LoadingLink href="/inspiration" className="block px-5 py-3 text-[15px] text-zinc-700 hover:bg-zinc-50 transition">
                         {t.navTemplates || "Templates"}
                       </LoadingLink>
@@ -222,9 +236,18 @@ export const LandingNavbar = () => {
       {mobileOpen && (
         <div className="lg:hidden bg-white border-t border-zinc-200 px-6 py-6">
           <div className="flex flex-col gap-2">
-            <LoadingLink href="/" className="py-3 text-lg text-zinc-900 font-medium" onClick={() => setMobileOpen(false)}>
-              {t.navAIPresentations || "AI Presentations"}
-            </LoadingLink>
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button className="py-3 text-lg text-zinc-900 font-medium text-left" onClick={() => setMobileOpen(false)}>
+                  {t.navAIPresentations || "AI Presentations"}
+                </button>
+              </SignInButton>
+            </SignedOut>
+            <SignedIn>
+              <LoadingLink href="/" className="py-3 text-lg text-zinc-900 font-medium" onClick={() => setMobileOpen(false)}>
+                {t.navAIPresentations || "AI Presentations"}
+              </LoadingLink>
+            </SignedIn>
             <LoadingLink href="/inspiration" className="py-3 text-lg text-zinc-600" onClick={() => setMobileOpen(false)}>
               {t.navTemplates || "Templates"}
             </LoadingLink>

@@ -18,7 +18,7 @@ export function CTASection({ t }: CTASectionProps) {
 
   // The animation layer that expands from top-left
   const hoverEffectLayer = (
-    <span className="absolute inset-0 w-full h-full bg-white origin-top scale-0 transition-transform duration-400 group-hover:scale-[2.5]" />
+    <span className="absolute inset-0 w-full h-full bg-white origin-top scale-0 transition-transform duration-500 group-hover:scale-[2.5]" />
   );
 
   return (
