@@ -392,7 +392,7 @@ export function HeroSection({ t }: HeroSectionProps) {
                   <div className="relative" style={{ width: MOBILE_CARD_WIDTH, height: MOBILE_CARD_HEIGHT }}>
                     {visibleCards.map((card) => {
                       const isCenter = isMobileCenterCard(card.virtualIndex);
-                      const videoUrl = `https://player.vimeo.com/video/${card.video?.id}?h=${card.video?.hash}&autoplay=${isCenter ? 1 : 0}&playsinline=1`;
+                      const videoUrl = `https://player.vimeo.com/video/${card.video?.id}?h=${card.video?.hash}&autoplay=${isCenter ? 1 : 0}&loop=1&muted=1&background=1&playsinline=1`;
                       
                       return (
                         <div
@@ -463,7 +463,7 @@ export function HeroSection({ t }: HeroSectionProps) {
                     const isCenter = isCenterCard(card.virtualIndex);
                     // Center card autoplays immediately, others stay paused but show first frame
                     // autopause=0 prevents pausing when another video plays
-                    const videoUrl = `https://player.vimeo.com/video/${card.video?.id}?h=${card.video?.hash}&autoplay=${isCenter ? 1 : 0}&playsinline=1`;
+                    const videoUrl = `https://player.vimeo.com/video/${card.video?.id}?h=${card.video?.hash}&autoplay=${isCenter ? 1 : 0}&loop=1&muted=1&background=1&playsinline=1`;
                     
                     return (
                       <div
