@@ -13,11 +13,17 @@ import type { ImageLayoutType, ImageContentItem } from "~/lib/layouts/content/im
 import { imageLayouts } from "~/lib/layouts/content/images";
 import type { BulletLayoutType, BulletContentItem } from "~/lib/layouts/content/bullets";
 import { bulletLayouts } from "~/lib/layouts/content/bullets";
+import type { StepsLayoutType, StepContentItem } from "~/lib/layouts/content/steps";
+import { stepsLayouts } from "~/lib/layouts/content/steps";
+import type { QuotesLayoutType, QuoteContentItem } from "~/lib/layouts/content/quotes";
+import { quotesLayouts } from "~/lib/layouts/content/quotes";
 import BoxLayoutRenderer from "~/components/presentation/BoxLayoutRenderer";
 import SequenceLayoutRenderer from "~/components/presentation/SequenceLayoutRenderer";
 import { CircleLayoutRenderer } from "~/components/layouts/CircleLayoutRenderer";
 import { ImageLayoutRenderer } from "~/components/layouts/ImageLayoutRenderer";
 import { BulletLayoutRenderer } from "~/components/layouts/BulletLayoutRenderer";
+import { StepsLayoutRenderer } from "~/components/layouts/StepsLayoutRenderer";
+import { QuotesLayoutRenderer } from "~/components/layouts/QuotesLayoutRenderer";
 import ContentLayoutSelector from "~/components/presentation/ContentLayoutSelector";
 
 // Define layouts inline to avoid any import issues
@@ -94,16 +100,30 @@ const bulletContentItems: BulletContentItem[] = slideContent.map((item) => ({
   text: item.description,
 }));
 
+// Steps content items
+const stepsContentItems: StepContentItem[] = slideContent.map((item) => ({
+  label: item.heading,
+  text: item.description,
+}));
+
+// Quotes content items
+const quotesContentItems: QuoteContentItem[] = slideContent.map((item) => ({
+  label: item.heading,
+  text: item.description,
+}));
+
 export default function TryPage() {
   const [mode, setMode] = useState<"slide" | "box">("box");
   const [layoutId, setLayoutId] = useState<LayoutId>("image-right");
   const [size, setSize] = useState<ImageSize>("small"); // Default smaller to give room for boxes
-  const [contentLayoutType, setContentLayoutType] = useState<"box" | "sequence" | "circle" | "images" | "bullets">("box");
+  const [contentLayoutType, setContentLayoutType] = useState<"box" | "sequence" | "circle" | "images" | "bullets" | "steps" | "quotes">("box");
   const [boxLayoutId, setBoxLayoutId] = useState<BoxLayoutType>("box-style-1");
   const [sequenceLayoutId, setSequenceLayoutId] = useState<SequenceLayoutType>("sequence-style-1");
   const [circleLayoutId, setCircleLayoutId] = useState<CircleLayoutType>("circle-arc");
   const [imageLayoutId, setImageLayoutId] = useState<ImageLayoutType>("image-style-1");
   const [bulletLayoutId, setBulletLayoutId] = useState<BulletLayoutType>("bullet-style-1");
+  const [stepsLayoutId, setStepsLayoutId] = useState<StepsLayoutType>("steps-pyramid");
+  const [quotesLayoutId, setQuotesLayoutId] = useState<QuotesLayoutType>("quote-bubble");
   const [showLayoutSelector, setShowLayoutSelector] = useState(false);
   
   const theme = getDefaultTheme();
@@ -220,10 +240,26 @@ export default function TryPage() {
                   className="w-full"
                   isNarrowSpace={false}
                 />
-              ) : (
+              ) : contentLayoutType === "bullets" ? (
                 <BulletLayoutRenderer
                   layoutId={bulletLayoutId}
                   items={bulletContentItems}
+                  accentColor={activeTheme.cardBox?.accentColor || "#047857"}
+                  className="w-full"
+                  isNarrowSpace={false}
+                />
+              ) : contentLayoutType === "steps" ? (
+                <StepsLayoutRenderer
+                  layoutId={stepsLayoutId}
+                  items={stepsContentItems}
+                  accentColor={activeTheme.cardBox?.accentColor || "#047857"}
+                  className="w-full"
+                  isNarrowSpace={false}
+                />
+              ) : (
+                <QuotesLayoutRenderer
+                  layoutId={quotesLayoutId}
+                  items={quotesContentItems}
                   accentColor={activeTheme.cardBox?.accentColor || "#047857"}
                   className="w-full"
                   isNarrowSpace={false}
@@ -318,10 +354,26 @@ export default function TryPage() {
                 className="w-full"
                 isNarrowSpace={true}
               />
-            ) : (
+            ) : contentLayoutType === "bullets" ? (
               <BulletLayoutRenderer
                 layoutId={bulletLayoutId}
                 items={bulletContentItems}
+                accentColor={activeTheme.cardBox?.accentColor || "#047857"}
+                className="w-full"
+                isNarrowSpace={true}
+              />
+            ) : contentLayoutType === "steps" ? (
+              <StepsLayoutRenderer
+                layoutId={stepsLayoutId}
+                items={stepsContentItems}
+                accentColor={activeTheme.cardBox?.accentColor || "#047857"}
+                className="w-full"
+                isNarrowSpace={true}
+              />
+            ) : (
+              <QuotesLayoutRenderer
+                layoutId={quotesLayoutId}
+                items={quotesContentItems}
                 accentColor={activeTheme.cardBox?.accentColor || "#047857"}
                 className="w-full"
                 isNarrowSpace={true}
@@ -472,13 +524,33 @@ export default function TryPage() {
                 </button>
                 <button
                   onClick={() => setContentLayoutType("bullets")}
-                  className={`px-3 py-2 rounded-lg text-xs font-medium transition-all col-span-2 ${
+                  className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
                     contentLayoutType === "bullets"
                       ? "bg-teal-500 text-white shadow-md"
                       : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                   }`}
                 >
                   Bullets
+                </button>
+                <button
+                  onClick={() => setContentLayoutType("steps")}
+                  className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                    contentLayoutType === "steps"
+                      ? "bg-teal-500 text-white shadow-md"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  }`}
+                >
+                  Steps
+                </button>
+                <button
+                  onClick={() => setContentLayoutType("quotes")}
+                  className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                    contentLayoutType === "quotes"
+                      ? "bg-teal-500 text-white shadow-md"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  }`}
+                >
+                  Quotes
                 </button>
               </div>
             </div>
@@ -596,6 +668,56 @@ export default function TryPage() {
                       onClick={() => setBulletLayoutId(layout.id)}
                       className={`w-full text-left px-3 py-3 rounded-lg text-xs font-medium transition-all border ${
                         bulletLayoutId === layout.id
+                          ? "bg-teal-50 border-teal-500 ring-1 ring-teal-500"
+                          : "bg-slate-50 border-slate-200 hover:border-teal-300"
+                      }`}
+                    >
+                      <div className="font-semibold text-slate-800 mb-0.5">{layout.name}</div>
+                      <div className="text-slate-500 text-[10px]">{layout.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Steps Layout Controls */}
+            {contentLayoutType === "steps" && (
+              <div className="bg-white rounded-xl p-4 border border-slate-200">
+                <h2 className="text-sm font-semibold text-slate-800 mb-3 flex items-center gap-2">
+                    <LayoutGrid size={16}/> Steps Layout
+                </h2>
+                <div className="space-y-2">
+                  {stepsLayouts.map((layout) => (
+                    <button
+                      key={layout.id}
+                      onClick={() => setStepsLayoutId(layout.id)}
+                      className={`w-full text-left px-3 py-3 rounded-lg text-xs font-medium transition-all border ${
+                        stepsLayoutId === layout.id
+                          ? "bg-teal-50 border-teal-500 ring-1 ring-teal-500"
+                          : "bg-slate-50 border-slate-200 hover:border-teal-300"
+                      }`}
+                    >
+                      <div className="font-semibold text-slate-800 mb-0.5">{layout.name}</div>
+                      <div className="text-slate-500 text-[10px]">{layout.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Quotes Layout Controls */}
+            {contentLayoutType === "quotes" && (
+              <div className="bg-white rounded-xl p-4 border border-slate-200">
+                <h2 className="text-sm font-semibold text-slate-800 mb-3 flex items-center gap-2">
+                    <LayoutGrid size={16}/> Quotes Layout
+                </h2>
+                <div className="space-y-2">
+                  {quotesLayouts.map((layout) => (
+                    <button
+                      key={layout.id}
+                      onClick={() => setQuotesLayoutId(layout.id)}
+                      className={`w-full text-left px-3 py-3 rounded-lg text-xs font-medium transition-all border ${
+                        quotesLayoutId === layout.id
                           ? "bg-teal-50 border-teal-500 ring-1 ring-teal-500"
                           : "bg-slate-50 border-slate-200 hover:border-teal-300"
                       }`}

@@ -74,3 +74,9 @@ export * from "./images";
 
 // Export bullet layouts
 export * from "./bullets";
+
+// Export steps layouts
+export * from "./steps";
+
+// Export quotes layouts
+export * from "./quotes";

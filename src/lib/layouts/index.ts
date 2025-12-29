@@ -61,4 +61,13 @@ export {
   getBaseBulletStyles,
 } from "./content/bullets";
 
+export type { StepsLayout, StepsLayoutType, StepContentItem } from "./content/steps";
+export {
+  stepsLayouts,
+  getStepsLayoutById,
+  getAllStepsLayouts,
+  getRecommendedStepsLayout,
+  getBaseStepsStyles,
+} from "./content/steps";
+
 export type { SlideLayoutType, ImageSize, SlideLayoutDefinition } from "./slide";
