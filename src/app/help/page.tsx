@@ -4,7 +4,7 @@ import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { HelpCircle, Video, Search, Zap, Settings } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 export default function HelpPage() {
   const { t } = useLanguage();
@@ -17,150 +17,150 @@ export default function HelpPage() {
     "mainEntity": [
       {
         "@type": "Question",
-        "name": "How many presentations can I create?",
+        "name": t.helpFaq1Question || "How many presentations can I create?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Free users can create up to 5 presentations per month. Pro users get unlimited presentations. All presentations are saved permanently in your account."
+          "text": t.helpFaq1Answer || "Free users can create up to 5 presentations per month. Pro users get unlimited presentations. All presentations are saved permanently in your account."
         }
       },
       {
         "@type": "Question",
-        "name": "Can I use PPTMaster offline?",
+        "name": t.helpFaq2Question || "Can I use PPTMaster offline?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "PPTMaster requires an internet connection for AI generation and real-time collaboration. However, you can download presentations and work on them offline using PowerPoint or other presentation software."
+          "text": t.helpFaq2Answer || "PPTMaster requires an internet connection for AI generation and real-time collaboration. However, you can download presentations and work on them offline using PowerPoint or other presentation software."
         }
       },
       {
         "@type": "Question",
-        "name": "Is my data secure?",
+        "name": t.helpFaq3Question || "Is my data secure?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Yes. We use enterprise-grade encryption for all data in transit and at rest. Your presentations are private by default and only accessible to people you explicitly share them with. We never use your content to train our AI models."
+          "text": t.helpFaq3Answer || "Yes. We use enterprise-grade encryption for all data in transit and at rest. Your presentations are private by default and only accessible to people you explicitly share them with. We never use your content to train our AI models."
         }
       },
       {
         "@type": "Question",
-        "name": "Can I cancel my subscription anytime?",
+        "name": t.helpFaq4Question || "Can I cancel my subscription anytime?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Absolutely. You can cancel your subscription at any time from your account settings. You'll retain access until the end of your billing period, and all your presentations remain accessible even after cancellation."
+          "text": t.helpFaq4Answer || "Absolutely. You can cancel your subscription at any time from your account settings. You'll retain access until the end of your billing period, and all your presentations remain accessible even after cancellation."
         }
       },
       {
         "@type": "Question",
-        "name": "Do you offer refunds?",
+        "name": t.helpFaq5Question || "Do you offer refunds?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "We offer a 30-day money-back guarantee for annual subscriptions. If you're not satisfied within the first 30 days, contact support for a full refund. Monthly subscriptions are non-refundable but can be cancelled anytime."
+          "text": t.helpFaq5Answer || "We offer a 30-day money-back guarantee for annual subscriptions. If you're not satisfied within the first 30 days, contact support for a full refund. Monthly subscriptions are non-refundable but can be cancelled anytime."
         }
       },
       {
         "@type": "Question",
-        "name": "How does the AI work?",
+        "name": t.helpFaq6Question || "How does the AI work?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Our AI uses advanced language models trained on millions of presentations to understand context, structure, and design principles. It analyzes your prompt, generates relevant content, and applies professional design templates automatically."
+          "text": t.helpFaq6Answer || "Our AI uses advanced language models trained on millions of presentations to understand context, structure, and design principles. It analyzes your prompt, generates relevant content, and applies professional design templates automatically."
         }
       }
     ]
   };
 
-  const gettingStartedArticles = [
+  const gettingStartedArticles = useMemo(() => [
     {
-      title: "Creating Your First Presentation",
-      content: "Start by clicking 'Create New' in your dashboard. Enter a prompt describing what you want to create, choose your preferred style, and let our AI generate your presentation in seconds. You can then customize colors, fonts, and layouts to match your brand."
+      title: t.helpArticle1Title || "Creating Your First Presentation",
+      content: t.helpArticle1Content || "Start by clicking 'Create New' in your dashboard. Enter a prompt describing what you want to create, choose your preferred style, and let our AI generate your presentation in seconds. You can then customize colors, fonts, and layouts to match your brand."
     },
     {
-      title: "Understanding the Dashboard",
-      content: "Your dashboard is your command center. Here you'll find all your presentations, usage statistics, and quick access to templates. The sidebar provides navigation to all features including settings, billing, and team management."
+      title: t.helpArticle2Title || "Understanding the Dashboard",
+      content: t.helpArticle2Content || "Your dashboard is your command center. Here you'll find all your presentations, usage statistics, and quick access to templates. The sidebar provides navigation to all features including settings, billing, and team management."
     },
     {
-      title: "Writing Effective Prompts",
-      content: "Be specific about your topic, target audience, and desired outcome. Include the number of slides you need and any key points to cover. For example: 'Create a 10-slide pitch deck for a SaaS startup targeting enterprise clients, covering problem, solution, market size, and business model.'"
+      title: t.helpArticle3Title || "Writing Effective Prompts",
+      content: t.helpArticle3Content || "Be specific about your topic, target audience, and desired outcome. Include the number of slides you need and any key points to cover. For example: 'Create a 10-slide pitch deck for a SaaS startup targeting enterprise clients, covering problem, solution, market size, and business model.'"
     },
     {
-      title: "Customizing Your Presentation",
-      content: "Click any element to edit text, change colors, or adjust layouts. Use the toolbar to add images, charts, or icons. Our smart layouts automatically adjust to maintain visual balance as you make changes."
+      title: t.helpArticle4Title || "Customizing Your Presentation",
+      content: t.helpArticle4Content || "Click any element to edit text, change colors, or adjust layouts. Use the toolbar to add images, charts, or icons. Our smart layouts automatically adjust to maintain visual balance as you make changes."
     }
-  ];
+  ], [t]);
 
-  const featuresArticles = [
+  const featuresArticles = useMemo(() => [
     {
-      title: "AI-Powered Generation",
-      content: "Our AI analyzes your prompt and creates a complete presentation with relevant content, professional design, and logical flow. It uses advanced language models to generate compelling copy and selects appropriate visual elements."
+      title: t.helpFeature1Title || "AI-Powered Generation",
+      content: t.helpFeature1Content || "Our AI analyzes your prompt and creates a complete presentation with relevant content, professional design, and logical flow. It uses advanced language models to generate compelling copy and selects appropriate visual elements."
     },
     {
-      title: "Smart Templates",
-      content: "Choose from 100+ professionally designed templates across various categories: business, education, marketing, and more. Each template is fully customizable and optimized for different presentation types."
+      title: t.helpFeature2Title || "Smart Templates",
+      content: t.helpFeature2Content || "Choose from 100+ professionally designed templates across various categories: business, education, marketing, and more. Each template is fully customizable and optimized for different presentation types."
     },
     {
-      title: "Real-time Collaboration",
-      content: "Invite team members to edit presentations together. See changes in real-time, leave comments, and track revision history. Perfect for teams working across different locations and time zones."
+      title: t.helpFeature3Title || "Real-time Collaboration",
+      content: t.helpFeature3Content || "Invite team members to edit presentations together. See changes in real-time, leave comments, and track revision history. Perfect for teams working across different locations and time zones."
     },
     {
-      title: "Export Options",
-      content: "Export your presentations as PowerPoint (PPTX), PDF, PNG images, or Google Slides. Each format maintains your design integrity and is optimized for the target platform."
+      title: t.helpFeature4Title || "Export Options",
+      content: t.helpFeature4Content || "Export your presentations as PowerPoint (PPTX), PDF, PNG images, or Google Slides. Each format maintains your design integrity and is optimized for the target platform."
     },
     {
-      title: "Brand Management",
-      content: "Upload your logo, define brand colors, and set default fonts. All new presentations will automatically use your brand guidelines, ensuring consistency across all your content."
+      title: t.helpFeature5Title || "Brand Management",
+      content: t.helpFeature5Content || "Upload your logo, define brand colors, and set default fonts. All new presentations will automatically use your brand guidelines, ensuring consistency across all your content."
     },
     {
-      title: "Analytics & Tracking",
-      content: "When you share presentations online, track views, engagement time, and slide-by-slide analytics. Understand which content resonates most with your audience."
+      title: t.helpFeature6Title || "Analytics & Tracking",
+      content: t.helpFeature6Content || "When you share presentations online, track views, engagement time, and slide-by-slide analytics. Understand which content resonates most with your audience."
     }
-  ];
+  ], [t]);
 
-  const troubleshootingArticles = [
+  const troubleshootingArticles = useMemo(() => [
     {
-      title: "Presentation Not Generating",
-      content: "If your presentation fails to generate, check your internet connection and try again. Ensure your prompt is clear and not too vague. If the issue persists, try breaking down your request into smaller, more specific prompts."
+      title: t.helpTrouble1Title || "Presentation Not Generating",
+      content: t.helpTrouble1Content || "If your presentation fails to generate, check your internet connection and try again. Ensure your prompt is clear and not too vague. If the issue persists, try breaking down your request into smaller, more specific prompts."
     },
     {
-      title: "Export Issues",
-      content: "For export problems, ensure you have sufficient storage space and a stable internet connection. Try exporting in a different format. If PowerPoint export fails, try PDF first, then convert to PPTX using PowerPoint's import feature."
+      title: t.helpTrouble2Title || "Export Issues",
+      content: t.helpTrouble2Content || "For export problems, ensure you have sufficient storage space and a stable internet connection. Try exporting in a different format. If PowerPoint export fails, try PDF first, then convert to PPTX using PowerPoint's import feature."
     },
     {
-      title: "Slow Performance",
-      content: "Clear your browser cache and cookies. Close unnecessary tabs and applications. For best performance, use the latest version of Chrome, Firefox, or Safari. Disable browser extensions that might interfere with the editor."
+      title: t.helpTrouble3Title || "Slow Performance",
+      content: t.helpTrouble3Content || "Clear your browser cache and cookies. Close unnecessary tabs and applications. For best performance, use the latest version of Chrome, Firefox, or Safari. Disable browser extensions that might interfere with the editor."
     },
     {
-      title: "Login Problems",
-      content: "Reset your password using the 'Forgot Password' link. Clear browser cookies and try again. If using SSO, contact your organization's IT administrator. Check if your account is active and not suspended."
+      title: t.helpTrouble4Title || "Login Problems",
+      content: t.helpTrouble4Content || "Reset your password using the 'Forgot Password' link. Clear browser cookies and try again. If using SSO, contact your organization's IT administrator. Check if your account is active and not suspended."
     },
     {
-      title: "Missing Presentations",
-      content: "Check the 'Archived' folder in your dashboard. Use the search function to find presentations by name or date. If you recently deleted a presentation, check the trash folder - items are kept for 30 days before permanent deletion."
+      title: t.helpTrouble5Title || "Missing Presentations",
+      content: t.helpTrouble5Content || "Check the 'Archived' folder in your dashboard. Use the search function to find presentations by name or date. If you recently deleted a presentation, check the trash folder - items are kept for 30 days before permanent deletion."
     }
-  ];
+  ], [t]);
 
-  const faqArticles = [
+  const faqArticles = useMemo(() => [
     {
-      question: "How many presentations can I create?",
-      answer: "Free users can create up to 5 presentations per month. Pro users get unlimited presentations. All presentations are saved permanently in your account."
+      question: t.helpFaq1Question || "How many presentations can I create?",
+      answer: t.helpFaq1Answer || "Free users can create up to 5 presentations per month. Pro users get unlimited presentations. All presentations are saved permanently in your account."
     },
     {
-      question: "Can I use PPTMaster offline?",
-      answer: "PPTMaster requires an internet connection for AI generation and real-time collaboration. However, you can download presentations and work on them offline using PowerPoint or other presentation software."
+      question: t.helpFaq2Question || "Can I use PPTMaster offline?",
+      answer: t.helpFaq2Answer || "PPTMaster requires an internet connection for AI generation and real-time collaboration. However, you can download presentations and work on them offline using PowerPoint or other presentation software."
     },
     {
-      question: "Is my data secure?",
-      answer: "Yes. We use enterprise-grade encryption for all data in transit and at rest. Your presentations are private by default and only accessible to people you explicitly share them with. We never use your content to train our AI models."
+      question: t.helpFaq3Question || "Is my data secure?",
+      answer: t.helpFaq3Answer || "Yes. We use enterprise-grade encryption for all data in transit and at rest. Your presentations are private by default and only accessible to people you explicitly share them with. We never use your content to train our AI models."
     },
     {
-      question: "Can I cancel my subscription anytime?",
-      answer: "Absolutely. You can cancel your subscription at any time from your account settings. You'll retain access until the end of your billing period, and all your presentations remain accessible even after cancellation."
+      question: t.helpFaq4Question || "Can I cancel my subscription anytime?",
+      answer: t.helpFaq4Answer || "Absolutely. You can cancel your subscription at any time from your account settings. You'll retain access until the end of your billing period, and all your presentations remain accessible even after cancellation."
     },
     {
-      question: "Do you offer refunds?",
-      answer: "We offer a 30-day money-back guarantee for annual subscriptions. If you're not satisfied within the first 30 days, contact support for a full refund. Monthly subscriptions are non-refundable but can be cancelled anytime."
+      question: t.helpFaq5Question || "Do you offer refunds?",
+      answer: t.helpFaq5Answer || "We offer a 30-day money-back guarantee for annual subscriptions. If you're not satisfied within the first 30 days, contact support for a full refund. Monthly subscriptions are non-refundable but can be cancelled anytime."
     },
     {
-      question: "How does the AI work?",
-      answer: "Our AI uses advanced language models trained on millions of presentations to understand context, structure, and design principles. It analyzes your prompt, generates relevant content, and applies professional design templates automatically."
+      question: t.helpFaq6Question || "How does the AI work?",
+      answer: t.helpFaq6Answer || "Our AI uses advanced language models trained on millions of presentations to understand context, structure, and design principles. It analyzes your prompt, generates relevant content, and applies professional design templates automatically."
     }
-  ];
+  ], [t]);
 
   return (
     <div className="landing-page min-h-screen bg-white">
@@ -249,7 +249,7 @@ export default function HelpPage() {
               <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center">
                 <Video className="h-6 w-6 text-white" />
               </div>
-              <h2 className="text-3xl font-bold text-slate-900">Features & Tutorials</h2>
+              <h2 className="text-3xl font-bold text-slate-900">{t.featuresTutorials || "Features & Tutorials"}</h2>
             </div>
             <div className="grid md:grid-cols-2 gap-6">
               {featuresArticles
@@ -353,15 +353,15 @@ export default function HelpPage() {
           <div className="mx-auto max-w-5xl text-center">
             <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-12">
               <Search className="h-16 w-16 text-slate-400 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">No results found</h3>
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">{t.noResultsFound || "No results found"}</h3>
               <p className="text-slate-600 mb-6">
-                We couldn't find any articles matching "{searchQuery}". Try different keywords or browse all articles above.
+                {t.noResultsDesc || `We couldn't find any articles matching "${searchQuery}". Try different keywords or browse all articles above.`}
               </p>
               <button
                 onClick={() => setSearchQuery("")}
                 className="px-6 py-3 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold hover:shadow-xl transition-all"
               >
-                Clear Search
+                {t.clearSearch || "Clear Search"}
               </button>
             </div>
           </div>

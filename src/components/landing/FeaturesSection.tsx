@@ -160,22 +160,27 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
             </div>
           </div>
           
-          {/* Feature Tabs */}
-          <div className="flex items-center justify-center gap-4 mt-8">
+          {/* Feature Tabs with Arrows */}
+          <div className="flex items-center justify-center gap-2 mt-8">
             {[
               { label: "Prompt" },
               { label: "Design" },
               { label: "Edit" },
-              { label: "Build" },
               { label: "Publish" },
               { label: "Present" },
-            ].map((tab, i) => (
-              <span
-                key={tab.label}
-                className={`text-sm font-medium transition cursor-default ${i === 0 ? "text-zinc-900 border-b-2 border-zinc-900 pb-1" : "text-zinc-400"}`}
-              >
-                {tab.label}
-              </span>
+            ].map((tab, i, arr) => (
+              <div key={tab.label} className="flex items-center gap-2">
+                <span
+                  className={`text-sm font-medium transition cursor-default ${i === 0 ? "text-zinc-900 border-b-2 border-zinc-900 pb-1" : "text-zinc-400"}`}
+                >
+                  {tab.label}
+                </span>
+                {i < arr.length - 1 && (
+                  <svg className="w-4 h-4 text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                )}
+              </div>
             ))}
           </div>
           

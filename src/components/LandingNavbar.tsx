@@ -148,9 +148,6 @@ export const LandingNavbar = () => {
                       <LoadingLink href="/insights" className="block px-5 py-3 text-[15px] text-zinc-700 hover:bg-zinc-50 transition">
                         {t.navBlog || "Blog"}
                       </LoadingLink>
-                      <LoadingLink href="/developer-docs" className="block px-5 py-3 text-[15px] text-zinc-700 hover:bg-zinc-50 transition">
-                        {t.navDeveloperDocs || "Developer Docs"}
-                      </LoadingLink>
                       <LoadingLink href="/help" className="block px-5 py-3 text-[15px] text-zinc-700 hover:bg-zinc-50 transition">
                         {t.navHelpCenter || "Help Center"}
                       </LoadingLink>

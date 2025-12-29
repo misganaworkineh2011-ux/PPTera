@@ -104,7 +104,6 @@ export const LandingFooter = () => {
             <ul className="space-y-3 text-sm text-zinc-400">
               <li><LoadingLink href="/help" className="hover:text-white transition">{t.helpCenter}</LoadingLink></li>
               <li><LoadingLink href="/community" className="hover:text-white transition">{t.community}</LoadingLink></li>
-              <li><LoadingLink href="/developer-docs" className="hover:text-white transition">{t.developerDocs}</LoadingLink></li>
               <li><LoadingLink href="/contact" className="hover:text-white transition">{t.contactUs}</LoadingLink></li>
             </ul>
           </div>

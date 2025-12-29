@@ -243,7 +243,6 @@ export default function PricingPage() {
               {products.map((product) => {
                 const priceData = isAnnual ? product.yearly : product.monthly;
                 const activePrice = priceData || product.monthly || product.yearly;
-                const isUltra = product.key === 'ultra';
 
                 if (!activePrice) return null;
 
@@ -259,14 +258,14 @@ export default function PricingPage() {
                         : "bg-white text-slate-900 border-slate-200 hover:border-[#06b6d4] hover:shadow-xl"
                     )}
                   >
-                    {isHighlighted && (
-                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg">
-                        MOST POPULAR
+                    {product.key === 'plus' && (
+                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg">
+                        {t.introductoryPrice || "INTRODUCTORY PRICE"}
                       </div>
                     )}
-                    {isUltra && (
-                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg">
-                        INTRODUCTORY PRICE
+                    {isHighlighted && (
+                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg">
+                        {t.mostPopular || "MOST POPULAR"}
                       </div>
                     )}
 
@@ -275,9 +274,25 @@ export default function PricingPage() {
                       {product.description?.split('\n')[0] || "Unlock your potential."}
                     </p>
 
-                    <div className="flex items-baseline gap-1 mb-8">
-                      <span className="text-4xl font-extrabold tracking-tight">{activePrice.displayPrice.split('/')[0]}</span>
-                      <span className={cn("text-sm", isHighlighted ? "text-white/70" : "text-slate-500")}>/{activePrice.recurringInterval}</span>
+                    <div className="mb-8">
+                      {isAnnual && activePrice.recurringInterval === 'year' ? (
+                        <>
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-4xl font-extrabold tracking-tight">
+                              ${Math.round(activePrice.priceAmount / 100 / 12)}
+                            </span>
+                            <span className={cn("text-sm", isHighlighted ? "text-white/70" : "text-slate-500")}>{t.perMonth || "/month"}</span>
+                          </div>
+                          <p className={cn("text-xs mt-1", isHighlighted ? "text-white/60" : "text-slate-400")}>
+                            {t.annualBilling || "Annual"} {activePrice.displayPrice}
+                          </p>
+                        </>
+                      ) : (
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-4xl font-extrabold tracking-tight">{activePrice.displayPrice.split('/')[0]}</span>
+                          <span className={cn("text-sm", isHighlighted ? "text-white/70" : "text-slate-500")}>/{activePrice.recurringInterval}</span>
+                        </div>
+                      )}
                     </div>
 
                     <button
