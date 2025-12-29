@@ -16,6 +16,12 @@ const TYPING_SPEED = 35;
 const VISIBLE_CARDS = 3;
 const AUTO_ADVANCE_DELAY = 7000; // 7 seconds per card
 
+// Mobile horizontal slider constants - maintain same aspect ratio as desktop (width:height ≈ 0.83)
+const MOBILE_CARD_WIDTH = 220;
+const MOBILE_CARD_HEIGHT = 265; // Same ratio as desktop (350/420)
+const MOBILE_CARD_GAP = 12;
+const TOTAL_MOBILE_CARD_WIDTH = MOBILE_CARD_WIDTH + MOBILE_CARD_GAP;
+
 // Vimeo video IDs with their hash parameters
 const VIMEO_VIDEOS = [
   { id: "1103822384", hash: "d87e2634b3" },
@@ -42,12 +48,18 @@ export function HeroSection({ t }: HeroSectionProps) {
   const [isTyping, setIsTyping] = useState(true);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const mobileContainerRef = useRef<HTMLDivElement>(null);
   const dragStartY = useRef(0);
+  const dragStartX = useRef(0);
   const lastY = useRef(0);
+  const lastX = useRef(0);
   const velocity = useRef(0);
+  const velocityX = useRef(0);
   const animationFrame = useRef<number>(undefined);
   const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const autoAdvanceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [mobileDragOffset, setMobileDragOffset] = useState(0);
+  const [isMobileDragging, setIsMobileDragging] = useState(false);
 
   // Get the actual card index with infinite loop wrapping
   const getWrappedIndex = (index: number) => {
@@ -101,6 +113,13 @@ export function HeroSection({ t }: HeroSectionProps) {
     const targetIndex = Math.round(-projectedOffset / TOTAL_CARD_HEIGHT);
     setActiveIndex(targetIndex);
     setDragOffset(0);
+  }, []);
+
+  const snapToNearestMobile = useCallback((currentOffset: number, vel: number) => {
+    const projectedOffset = currentOffset + vel * 0.3;
+    const targetIndex = Math.round(-projectedOffset / TOTAL_MOBILE_CARD_WIDTH);
+    setActiveIndex(targetIndex);
+    setMobileDragOffset(0);
   }, []);
 
   const handleDragStart = useCallback((clientY: number) => {
@@ -157,6 +176,42 @@ export function HeroSection({ t }: HeroSectionProps) {
   };
   const onTouchEnd = () => handleDragEnd();
 
+  // Mobile horizontal drag handlers
+  const handleMobileDragStart = useCallback((clientX: number) => {
+    if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
+    if (autoAdvanceTimeoutRef.current) clearTimeout(autoAdvanceTimeoutRef.current);
+    setIsMobileDragging(true);
+    dragStartX.current = clientX;
+    lastX.current = clientX;
+    velocityX.current = 0;
+    if (animationFrame.current) cancelAnimationFrame(animationFrame.current);
+  }, []);
+
+  const handleMobileDragMove = useCallback(
+    (clientX: number) => {
+      if (!isMobileDragging) return;
+      const delta = clientX - lastX.current;
+      velocityX.current = delta;
+      lastX.current = clientX;
+      setMobileDragOffset((prev) => prev + delta);
+    },
+    [isMobileDragging]
+  );
+
+  const handleMobileDragEnd = useCallback(() => {
+    if (!isMobileDragging) return;
+    setIsMobileDragging(false);
+    snapToNearestMobile(mobileDragOffset - activeIndex * TOTAL_MOBILE_CARD_WIDTH, velocityX.current);
+  }, [isMobileDragging, mobileDragOffset, activeIndex, snapToNearestMobile]);
+
+  const onMobileTouchStart = (e: React.TouchEvent) => {
+    handleMobileDragStart(e.touches[0]!.clientX);
+  };
+  const onMobileTouchMove = (e: React.TouchEvent) => {
+    handleMobileDragMove(e.touches[0]!.clientX);
+  };
+  const onMobileTouchEnd = () => handleMobileDragEnd();
+
   // Generate visible cards (render extra cards for smooth infinite scroll)
   const getVisibleCards = () => {
     const visibleRange = 3;
@@ -203,6 +258,36 @@ export function HeroSection({ t }: HeroSectionProps) {
     return Math.abs(y) < TOTAL_CARD_HEIGHT * 0.3;
   };
 
+  // Mobile horizontal card style
+  const getMobileCardStyle = (virtualIndex: number) => {
+    const baseOffset = -activeIndex * TOTAL_MOBILE_CARD_WIDTH;
+    const currentOffset = baseOffset + mobileDragOffset;
+    const x = virtualIndex * TOTAL_MOBILE_CARD_WIDTH + currentOffset;
+
+    const distanceFromCenter = Math.abs(x) / TOTAL_MOBILE_CARD_WIDTH;
+    const normalScale = 1 - distanceFromCenter * 0.1;
+    const dragScale = 0.95;
+    const scale = isMobileDragging ? dragScale : Math.max(0.85, Math.min(1, normalScale));
+
+    const opacity = Math.max(0.3, 1 - distanceFromCenter * 0.3);
+    const zIndex = 10 - Math.floor(distanceFromCenter);
+
+    return {
+      transform: `translateX(${x}px) scale(${scale})`,
+      opacity,
+      zIndex,
+      transition: isMobileDragging ? "none" : "all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
+    };
+  };
+
+  // Check if a card is center for mobile
+  const isMobileCenterCard = (virtualIndex: number) => {
+    const baseOffset = -activeIndex * TOTAL_MOBILE_CARD_WIDTH;
+    const currentOffset = baseOffset + mobileDragOffset;
+    const x = virtualIndex * TOTAL_MOBILE_CARD_WIDTH + currentOffset;
+    return Math.abs(x) < TOTAL_MOBILE_CARD_WIDTH * 0.3;
+  };
+
   const handleIndicatorClick = (idx: number) => {
     if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
     if (autoAdvanceTimeoutRef.current) clearTimeout(autoAdvanceTimeoutRef.current);
@@ -216,7 +301,7 @@ export function HeroSection({ t }: HeroSectionProps) {
   const containerHeight = VISIBLE_CARDS * TOTAL_CARD_HEIGHT;
 
   return (
-    <section className="relative h-[95vh] min-h-[600px] flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[600px] h-auto lg:h-[95vh] flex items-center justify-center overflow-hidden">
       {/* Grid Background */}
       <div className="absolute inset-0 z-0 bg-white">
         <div 
@@ -234,11 +319,11 @@ export function HeroSection({ t }: HeroSectionProps) {
         <div className="absolute inset-0 bg-gradient-to-b from-white via-transparent to-white" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8 w-full py-20">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center min-h-[calc(100vh-160px)]">
+      <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8 w-full pt-24 pb-12 lg:py-20">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center lg:min-h-[calc(100vh-160px)]">
           {/* Left Column */}
           <div className="flex flex-col justify-center max-w-xl">
-            <h1 className="text-5xl sm:text-6xl font-bold tracking-tight text-zinc-900 leading-[1.1] mb-6">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-zinc-900 leading-[1.1] mb-6">
               {t.heroTitle} <br />
               <span className="text-zinc-400">{t.heroSubtitle}</span>
             </h1>
@@ -290,6 +375,73 @@ export function HeroSection({ t }: HeroSectionProps) {
                 </div>
               </SignedIn>
               <span className="text-sm text-zinc-500 px-2">{t.noCreditCard}</span>
+            </div>
+
+            {/* Mobile Horizontal Slider - Below CTA buttons */}
+            <div className="lg:hidden mt-10 -mx-6 px-6">
+              <div
+                ref={mobileContainerRef}
+                className={`relative overflow-hidden select-none ${isMobileDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                style={{ height: MOBILE_CARD_HEIGHT + 20 }}
+                onTouchStart={onMobileTouchStart}
+                onTouchMove={onMobileTouchMove}
+                onTouchEnd={onMobileTouchEnd}
+              >
+                {/* Cards Container */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="relative" style={{ width: MOBILE_CARD_WIDTH, height: MOBILE_CARD_HEIGHT }}>
+                    {visibleCards.map((card) => {
+                      const isCenter = isMobileCenterCard(card.virtualIndex);
+                      const videoUrl = `https://player.vimeo.com/video/${card.video?.id}?h=${card.video?.hash}&autoplay=${isCenter ? 1 : 0}&loop=1&muted=1&background=1&quality=720p&autopause=0&playsinline=1`;
+                      
+                      return (
+                        <div
+                          key={`mobile-${card.key}`}
+                          className="absolute top-0"
+                          style={{
+                            ...getMobileCardStyle(card.virtualIndex),
+                            width: MOBILE_CARD_WIDTH,
+                            height: MOBILE_CARD_HEIGHT,
+                            left: "50%",
+                            marginLeft: -MOBILE_CARD_WIDTH / 2,
+                          }}
+                        >
+                          <div className="w-full h-full overflow-hidden border border-zinc-200/50 shadow-lg relative bg-zinc-900">
+                            <iframe
+                              src={videoUrl}
+                              className="absolute inset-0 w-full h-full pointer-events-none"
+                              style={{
+                                border: 'none',
+                                transform: 'scale(1.5)',
+                                transformOrigin: 'center center',
+                              }}
+                              allow="autoplay; fullscreen"
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Gradient Overlays - removed for mobile */}
+              </div>
+
+              {/* Mobile Indicators */}
+              <div className="flex justify-center gap-2 mt-4">
+                {baseCards.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleIndicatorClick(idx)}
+                    style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}
+                    className={`rounded-full transition-all duration-400 ${
+                      getWrappedIndex(activeIndex) === idx
+                        ? "w-6 h-2 bg-zinc-900"
+                        : "w-2 h-2 bg-zinc-300"
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
 
