@@ -17,7 +17,7 @@ export function LandingPageClient() {
   const { t } = useLanguage();
 
   return (
-    <div className="min-h-screen bg-white font-sans text-zinc-900 selection:bg-black selection:text-white overflow-x-hidden">
+    <div className="landing-page min-h-screen bg-white font-sans text-zinc-900 selection:bg-black selection:text-white overflow-x-hidden">
       <LandingNavbar />
       <main className="relative">
         <HeroSection t={t} />

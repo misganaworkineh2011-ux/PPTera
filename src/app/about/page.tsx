@@ -9,7 +9,7 @@ export default function AboutPage() {
   const { t } = useLanguage();
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="landing-page min-h-screen bg-white">
       <LandingNavbar />
 
       {/* Hero Section */}

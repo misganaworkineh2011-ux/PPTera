@@ -218,7 +218,7 @@ curl -X POST https://api.pptmaster.com/v1/presentations/pres_abc123/export \\
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="landing-page min-h-screen bg-white">
       <LandingNavbar />
 
       {/* Hero Section */}

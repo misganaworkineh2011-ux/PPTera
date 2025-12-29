@@ -270,7 +270,7 @@ export function HeroSection({ t }: HeroSectionProps) {
               <SignedIn>
                 <div style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
                   <LoadingLink
-                    href="/dashboard"
+                    href="/"
                     className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-zinc-900 rounded-lg hover:bg-zinc-800 transition-all shadow-lg hover:shadow-zinc-900/20"
                   >
                     {t.goToDashboard} <ArrowRight className="w-5 h-5" />
@@ -285,12 +285,9 @@ export function HeroSection({ t }: HeroSectionProps) {
           <div className="relative hidden lg:flex items-center justify-center h-full">
             <div
               ref={containerRef}
-              className="relative w-full max-w-lg overflow-hidden select-none"
+              className={`relative w-full max-w-lg overflow-hidden select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
               style={{
                 height: containerHeight,
-                cursor: isDragging
-                  ? "url('/closedhand.svg') 16 16, grabbing"
-                  : "url('/openhand.svg') 16 16, grab",
               }}
               onMouseDown={onMouseDown}
               onTouchStart={onTouchStart}

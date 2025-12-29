@@ -101,7 +101,7 @@ export function CTASection({ t }: CTASectionProps) {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
-            <LoadingLink href="/dashboard" className={buttonClasses}>
+            <LoadingLink href="/" className={buttonClasses}>
               {/* White Background Layer */}
               {hoverEffectLayer}
 

@@ -54,87 +54,99 @@
     @apply border-border;
   }
   
-  /* Custom cursor - using SVG for better browser support */
-  html,
-  body {
-    cursor: url('/cursor.svg') 8 2, url('/cursoricon.png'), auto !important;
-  }
-  
   body {
     @apply bg-background text-foreground;
   }
   
-  /* Custom cursor for interactive elements */
-  a,
-  button,
-  [role="button"],
-  input[type="submit"],
-  input[type="button"],
-  select,
-  label,
-  .cursor-pointer,
-  [onclick] {
+  /* Custom cursors - ONLY for landing/public pages (not dashboard) */
+  /* Applied via .landing-page class on the root container */
+  .landing-page,
+  .landing-page * {
+    cursor: url('/cursor.svg') 8 2, url('/cursoricon.png'), auto;
+  }
+  
+  /* Custom cursor for interactive elements on landing pages */
+  .landing-page a,
+  .landing-page button,
+  .landing-page [role="button"],
+  .landing-page input[type="submit"],
+  .landing-page input[type="button"],
+  .landing-page select,
+  .landing-page label,
+  .landing-page .cursor-pointer,
+  .landing-page [onclick] {
     cursor: url('/pointinghand.svg') 12 8, pointer !important;
   }
   
-  /* Text selection cursor for inputs */
-  input[type="text"],
-  input[type="email"],
-  input[type="password"],
-  input[type="search"],
-  input[type="tel"],
-  input[type="url"],
-  input[type="number"],
-  textarea,
-  [contenteditable="true"] {
+  /* Text selection cursor for inputs on landing pages */
+  .landing-page input[type="text"],
+  .landing-page input[type="email"],
+  .landing-page input[type="password"],
+  .landing-page input[type="search"],
+  .landing-page input[type="tel"],
+  .landing-page input[type="url"],
+  .landing-page input[type="number"],
+  .landing-page textarea,
+  .landing-page [contenteditable="true"] {
     cursor: url('/cursor-text.svg') 16 16, url('/cursoricon.png'), text !important;
   }
   
-  /* Text cursor for selectable text */
-  p,
-  span,
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6,
-  li,
-  td,
-  th,
-  blockquote,
-  pre,
-  code,
-  .text-selectable {
+  /* Text cursor for selectable text on landing pages */
+  .landing-page p,
+  .landing-page span,
+  .landing-page h1,
+  .landing-page h2,
+  .landing-page h3,
+  .landing-page h4,
+  .landing-page h5,
+  .landing-page h6,
+  .landing-page li,
+  .landing-page td,
+  .landing-page th,
+  .landing-page blockquote,
+  .landing-page pre,
+  .landing-page code,
+  .landing-page .text-selectable {
     cursor: url('/cursor-text.svg') 16 16, text !important;
   }
   
-  /* Override text cursor for interactive elements inside text */
-  p a,
-  span a,
-  h1 a,
-  h2 a,
-  h3 a,
-  h4 a,
-  h5 a,
-  h6 a,
-  li a,
-  p button,
-  span button {
+  /* Override text cursor for interactive elements inside text on landing pages */
+  .landing-page p a,
+  .landing-page span a,
+  .landing-page h1 a,
+  .landing-page h2 a,
+  .landing-page h3 a,
+  .landing-page h4 a,
+  .landing-page h5 a,
+  .landing-page h6 a,
+  .landing-page li a,
+  .landing-page p button,
+  .landing-page span button {
     cursor: url('/pointinghand.svg') 12 8, pointer !important;
   }
 
-  /* Ensure buttons and links always show pointer, even for text inside them */
-  a *,
-  button *,
-  [role="button"] *,
-  a span,
-  a p,
-  button span,
-  button p,
-  [role="button"] span,
-  [role="button"] p {
+  /* Ensure buttons and links always show pointer on landing pages */
+  .landing-page a *,
+  .landing-page button *,
+  .landing-page [role="button"] *,
+  .landing-page a span,
+  .landing-page a p,
+  .landing-page button span,
+  .landing-page button p,
+  .landing-page [role="button"] span,
+  .landing-page [role="button"] p {
     cursor: url('/pointinghand.svg') 12 8, pointer !important;
+  }
+  
+  /* Card scroller grab cursors - override text cursor for draggable areas */
+  .landing-page .cursor-grab,
+  .landing-page .cursor-grab * {
+    cursor: url('/openhand.svg') 16 16, grab !important;
+  }
+  
+  .landing-page .cursor-grabbing,
+  .landing-page .cursor-grabbing * {
+    cursor: url('/closedhand.svg') 16 16, grabbing !important;
   }
 }
 

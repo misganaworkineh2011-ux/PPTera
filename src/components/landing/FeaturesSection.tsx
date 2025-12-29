@@ -99,12 +99,12 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
           {/* Feature Tabs */}
           <div className="flex items-center justify-center gap-4 mt-8">
             {[
-              { label: "Prompt", href: "/dashboard" },
-              { label: "Design", href: "/dashboard" },
-              { label: "Edit", href: "/dashboard" },
-              { label: "Build", href: "/dashboard" },
-              { label: "Publish", href: "/dashboard" },
-              { label: "Present", href: "/dashboard" },
+              { label: "Prompt", href: "/" },
+              { label: "Design", href: "/" },
+              { label: "Edit", href: "/" },
+              { label: "Build", href: "/" },
+              { label: "Publish", href: "/" },
+              { label: "Present", href: "/" },
             ].map((tab, i) => (
               <LoadingLink 
                 key={tab.label}
@@ -120,7 +120,7 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
             {t.createStunningPPT || "Create stunning PowerPoint presentations with just a prompt."}
           </p>
           <p className="text-center mt-2">
-            <LoadingLink href="/dashboard" className="text-zinc-900 font-medium underline underline-offset-4 hover:text-zinc-600 transition">
+            <LoadingLink href="/" className="text-zinc-900 font-medium underline underline-offset-4 hover:text-zinc-600 transition">
               {t.tryPPTMasterAI || "Try PPT Master AI"}
             </LoadingLink>
           </p>
@@ -129,7 +129,7 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
         {/* Two Column Features */}
         <div className="grid lg:grid-cols-2 gap-8 mb-32">
           {/* Feature 1 */}
-          <LoadingLink href="/dashboard" className="group block">
+          <LoadingLink href="/" className="group block">
             <div className="rounded-2xl overflow-hidden border border-zinc-200 bg-zinc-50 aspect-[4/3] mb-6 relative group-hover:border-zinc-300 transition">
               <div className="absolute inset-0 p-6">
                 <div className="grid grid-cols-2 gap-4 h-full">
@@ -203,7 +203,7 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
               </LoadingLink>
 
               {/* Feature Item */}
-              <LoadingLink href="/dashboard" className="group block border-b border-zinc-200 pb-8">
+              <LoadingLink href="/" className="group block border-b border-zinc-200 pb-8">
                 <div className="flex items-start gap-3">
                   <Wand2 className="w-5 h-5 text-zinc-900 mt-0.5" />
                   <div>
@@ -213,7 +213,7 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
               </LoadingLink>
 
               {/* Feature Item */}
-              <LoadingLink href="/dashboard" className="group block">
+              <LoadingLink href="/" className="group block">
                 <div className="flex items-start gap-3">
                   <Share2 className="w-5 h-5 text-zinc-900 mt-0.5" />
                   <div>
@@ -262,8 +262,8 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
                 <p className="font-medium">{t.readyToShare || "Ready to Share"}</p>
                 <p className="text-xs text-purple-200">10 {t.slides || "slides"}</p>
                 <div className="flex gap-2 mt-3">
-                  <LoadingLink href="/dashboard" className="px-3 py-1 bg-white text-purple-600 text-xs rounded-md font-medium hover:bg-purple-50 transition">{t.export || "Export"}</LoadingLink>
-                  <LoadingLink href="/dashboard" className="px-3 py-1 border border-purple-400 text-xs rounded-md hover:bg-purple-500 transition">{t.share || "Share"}</LoadingLink>
+                  <LoadingLink href="/" className="px-3 py-1 bg-white text-purple-600 text-xs rounded-md font-medium hover:bg-purple-50 transition">{t.export || "Export"}</LoadingLink>
+                  <LoadingLink href="/" className="px-3 py-1 border border-purple-400 text-xs rounded-md hover:bg-purple-500 transition">{t.share || "Share"}</LoadingLink>
                 </div>
               </div>
             </div>

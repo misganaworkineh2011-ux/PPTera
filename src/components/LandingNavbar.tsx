@@ -77,7 +77,7 @@ export const LandingNavbar = () => {
                 {productsOpen && (
                   <div className="absolute top-full left-0 pt-2 w-72">
                     <div className="bg-white rounded-xl border border-zinc-200 shadow-xl py-2">
-                      <LoadingLink href="/dashboard" className="block px-5 py-3 text-[15px] text-zinc-700 hover:bg-zinc-50 transition">
+                      <LoadingLink href="/" className="block px-5 py-3 text-[15px] text-zinc-700 hover:bg-zinc-50 transition">
                         {t.navAIPresentations || "AI Presentations"}
                       </LoadingLink>
                       <LoadingLink href="/dashboard/themes" className="block px-5 py-3 text-[15px] text-zinc-700 hover:bg-zinc-50 transition">
@@ -201,7 +201,7 @@ export const LandingNavbar = () => {
             </SignedOut>
             <SignedIn>
               <LoadingLink 
-                href="/dashboard" 
+                href="/" 
                 className="px-5 py-2.5 text-[15px] font-medium text-white bg-zinc-900 rounded-lg hover:bg-zinc-800 transition"
               >
                 {t.navDashboard || "Dashboard"}
@@ -222,7 +222,7 @@ export const LandingNavbar = () => {
       {mobileOpen && (
         <div className="lg:hidden bg-white border-t border-zinc-200 px-6 py-6">
           <div className="flex flex-col gap-2">
-            <LoadingLink href="/dashboard" className="py-3 text-lg text-zinc-900 font-medium" onClick={() => setMobileOpen(false)}>
+            <LoadingLink href="/" className="py-3 text-lg text-zinc-900 font-medium" onClick={() => setMobileOpen(false)}>
               {t.navAIPresentations || "AI Presentations"}
             </LoadingLink>
             <LoadingLink href="/inspiration" className="py-3 text-lg text-zinc-600" onClick={() => setMobileOpen(false)}>
@@ -269,7 +269,7 @@ export const LandingNavbar = () => {
               </SignedOut>
               <SignedIn>
                 <LoadingLink 
-                  href="/dashboard" 
+                  href="/" 
                   className="block w-full py-4 text-base font-medium text-center text-white bg-zinc-900 rounded-lg"
                   onClick={() => setMobileOpen(false)}
                 >
