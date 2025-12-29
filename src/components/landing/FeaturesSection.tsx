@@ -84,17 +84,8 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
           {/* Feature Demo */}
           <div className="mt-12 relative">
             <div className="rounded-2xl overflow-hidden border border-zinc-200 bg-white shadow-xl">
-              {/* Browser Chrome */}
-              <div className="flex items-center gap-2 px-4 py-3 bg-zinc-50 border-b border-zinc-200">
-                <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-zinc-300"></div>
-                  <div className="w-3 h-3 rounded-full bg-zinc-300"></div>
-                  <div className="w-3 h-3 rounded-full bg-zinc-300"></div>
-                </div>
-              </div>
-              
               {/* App Interface */}
-              <div className="grid lg:grid-cols-[300px_1fr] min-h-[500px]">
+              <div className="grid lg:grid-cols-[300px_1fr]">
                 {/* Left Panel - AI Chat */}
                 <div className="border-r border-zinc-200 p-6 bg-white">
                   <div className="flex items-center gap-2 mb-6">
@@ -125,36 +116,15 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
                   </div>
                 </div>
                 
-                {/* Right Panel - Preview */}
-                <div className="bg-zinc-900 p-8 relative">
-                  <div className="absolute top-4 right-4 flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-emerald-500"></div>
-                    <div className="w-6 h-6 rounded-full bg-amber-500"></div>
-                    <div className="w-6 h-6 rounded-full bg-rose-500"></div>
-                  </div>
-                  
-                  {/* Slide Preview */}
-                  <div className="bg-gradient-to-br from-amber-600 to-orange-700 rounded-xl aspect-video flex items-center justify-center">
-                    <div className="text-center text-white">
-                      <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-white/20 backdrop-blur"></div>
-                      <h3 className="text-2xl font-bold">{t.startupPitch || "Startup Pitch"}</h3>
-                    </div>
-                  </div>
-                  
-                  {/* Slide List */}
-                  <div className="mt-6 space-y-2">
-                    {[
-                      t.slideTitleSlide || "TITLE SLIDE",
-                      t.slideProblem || "PROBLEM",
-                      t.slideSolution || "SOLUTION",
-                      t.slideMarketSize || "MARKET SIZE"
-                    ].map((name, i) => (
-                      <div key={i} className="flex items-center justify-between px-3 py-2 rounded-lg bg-zinc-800/50 text-zinc-400 text-sm">
-                        <span>{name}</span>
-                        <span className="text-xs">{t.slideLabel || "Slide"} {i + 1}</span>
-                      </div>
-                    ))}
-                  </div>
+                {/* Right Panel - Video */}
+                <div className="relative aspect-video overflow-hidden">
+                  <iframe
+                    src="https://player.vimeo.com/video/1150201596?autoplay=1&loop=1&muted=1&background=1"
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%]"
+                    style={{ border: 0 }}
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    allowFullScreen
+                  />
                 </div>
               </div>
             </div>
