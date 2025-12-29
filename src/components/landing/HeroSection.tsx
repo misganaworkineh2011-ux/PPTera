@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import Image from "next/image";
 import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import { ArrowRight, Command } from "lucide-react";
 import { LoadingLink } from "~/components/LoadingLink";
@@ -203,11 +202,24 @@ export function HeroSection({ t }: HeroSectionProps) {
 
   return (
     <section className="relative h-[95vh] min-h-[600px] flex items-center justify-center overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 z-0">
-        <Image src="/herobg.jpeg" alt="Hero background" fill className="object-cover" priority />
-        <div className="absolute inset-0 bg-white/85 backdrop-blur-[2px]" />
-      </div>
+      {/* Grid Background */}
+<div className="absolute inset-0 z-0 bg-white">
+  <div 
+    className="absolute inset-0 opacity-[0.55]"
+    style={{
+      backgroundImage: `
+        linear-gradient(to right, #d4d4d8 1.25px, transparent 1.25px),
+        linear-gradient(to bottom, #d4d4d8 1.25px, transparent 1.25px)
+      `,
+      backgroundSize: '40px 40px',
+      maskImage: 'linear-gradient(to right, transparent 0%, black 35%, black 65%, transparent 100%)',
+      WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 35%, black 65%, transparent 100%)'
+    }}
+  />
+  <div className="absolute inset-0 bg-gradient-to-b from-white via-transparent to-white" />
+</div>
+
+
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8 w-full py-20">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center min-h-[calc(100vh-160px)]">
@@ -269,9 +281,11 @@ export function HeroSection({ t }: HeroSectionProps) {
             <div
               ref={containerRef}
               className="relative w-full max-w-lg overflow-hidden select-none"
-              style={{ 
+              style={{
                 height: containerHeight,
-                cursor: isDragging ? "grabbing" : "grab" 
+                cursor: isDragging
+                  ? "url('/closedhand.svg') 16 16, grabbing"
+                  : "url('/openhand.svg') 16 16, grab",
               }}
               onMouseDown={onMouseDown}
               onTouchStart={onTouchStart}
