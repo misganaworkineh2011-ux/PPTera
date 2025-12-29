@@ -74,7 +74,7 @@
   label,
   .cursor-pointer,
   [onclick] {
-    cursor: url('/cursor.svg') 8 2, url('/cursoricon.png'), pointer !important;
+    cursor: url('/pointinghand.svg') 12 8, pointer !important;
   }
   
   /* Text selection cursor for inputs */
@@ -121,7 +121,20 @@
   li a,
   p button,
   span button {
-    cursor: url('/cursor.svg') 8 2, url('/cursoricon.png'), pointer !important;
+    cursor: url('/pointinghand.svg') 12 8, pointer !important;
+  }
+
+  /* Ensure buttons and links always show pointer, even for text inside them */
+  a *,
+  button *,
+  [role="button"] *,
+  a span,
+  a p,
+  button span,
+  button p,
+  [role="button"] span,
+  [role="button"] p {
+    cursor: url('/pointinghand.svg') 12 8, pointer !important;
   }
 }
 

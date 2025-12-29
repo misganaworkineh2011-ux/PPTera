@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import { ArrowRight, Command } from "lucide-react";
 import { LoadingLink } from "~/components/LoadingLink";
@@ -9,16 +9,6 @@ interface HeroSectionProps {
   t: any;
 }
 
-const baseCards = [
-  { id: 1, title: "Pitch Deck", prompt: "Create a modern pitch deck for a sustainable energy startup...", gradient: "from-blue-500/20 to-cyan-500/20" },
-  { id: 2, title: "Financial Report", prompt: "Generate a financial dashboard showing Q4 growth metrics...", gradient: "from-purple-500/20 to-pink-500/20" },
-  { id: 3, title: "Team Introduction", prompt: "Design a team introduction slide with professional photos...", gradient: "from-amber-500/20 to-orange-500/20" },
-  { id: 4, title: "Mission Statement", prompt: "Add a minimalist mission statement slide with impact...", gradient: "from-emerald-500/20 to-teal-500/20" },
-  { id: 5, title: "Product Launch", prompt: "Create an exciting product launch announcement slide...", gradient: "from-rose-500/20 to-red-500/20" },
-  { id: 6, title: "Market Analysis", prompt: "Build a comprehensive market analysis with charts...", gradient: "from-indigo-500/20 to-violet-500/20" },
-  { id: 7, title: "Contact Slide", prompt: "Create a closing summary with contact details...", gradient: "from-sky-500/20 to-blue-500/20" },
-];
-
 const CARD_HEIGHT = 420;
 const CARD_GAP = 14;
 const TOTAL_CARD_HEIGHT = CARD_HEIGHT + CARD_GAP;
@@ -26,6 +16,17 @@ const TYPING_SPEED = 35;
 const VISIBLE_CARDS = 3;
 
 export function HeroSection({ t }: HeroSectionProps) {
+  // Create cards with translations
+  const baseCards = useMemo(() => [
+    { id: 1, title: t.heroCard1Title || "Startup Pitch", prompt: t.heroCard1Prompt || "Create a 10-slide investor pitch deck for my AI startup with market analysis and financials...", gradient: "from-blue-500/20 to-cyan-500/20" },
+    { id: 2, title: t.heroCard2Title || "Sales Report", prompt: t.heroCard2Prompt || "Generate a quarterly sales report with charts showing revenue growth and KPIs...", gradient: "from-purple-500/20 to-pink-500/20" },
+    { id: 3, title: t.heroCard3Title || "Team Intro", prompt: t.heroCard3Prompt || "Design a professional team introduction with photos and role descriptions...", gradient: "from-amber-500/20 to-orange-500/20" },
+    { id: 4, title: t.heroCard4Title || "Business Plan", prompt: t.heroCard4Prompt || "Build a comprehensive business plan presentation with SWOT analysis...", gradient: "from-emerald-500/20 to-teal-500/20" },
+    { id: 5, title: t.heroCard5Title || "Product Demo", prompt: t.heroCard5Prompt || "Create an engaging product demo showcasing features and benefits...", gradient: "from-rose-500/20 to-red-500/20" },
+    { id: 6, title: t.heroCard6Title || "Marketing Strategy", prompt: t.heroCard6Prompt || "Design a marketing strategy deck with target audience and campaigns...", gradient: "from-indigo-500/20 to-violet-500/20" },
+    { id: 7, title: t.heroCard7Title || "Training Module", prompt: t.heroCard7Prompt || "Generate an employee training presentation with interactive elements...", gradient: "from-sky-500/20 to-blue-500/20" },
+  ], [t]);
+
   const [activeIndex, setActiveIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
@@ -231,8 +232,7 @@ export function HeroSection({ t }: HeroSectionProps) {
             </h1>
 
             <p className="text-lg text-zinc-600 mb-8 leading-relaxed">
-              Transform your ideas into stunning presentations in seconds. Just type what you need,
-              and our AI handles the design, layout, and formatting.
+              {t.heroDescription}
             </p>
 
             {/* Prompt Box synced with cards */}
@@ -240,7 +240,7 @@ export function HeroSection({ t }: HeroSectionProps) {
               <div className="flex items-center gap-2 mb-3 border-b border-zinc-50 pb-3">
                 <Command className="w-4 h-4 text-zinc-300" />
                 <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                  AI Prompt
+                  {t.aiPrompt}
                 </span>
                 <span className="ml-auto text-xs text-zinc-300">
                   {getWrappedIndex(activeIndex) + 1}/{baseCards.length}
@@ -259,20 +259,25 @@ export function HeroSection({ t }: HeroSectionProps) {
             <div className="flex flex-wrap items-center gap-4">
               <SignedOut>
                 <SignInButton mode="modal">
-                  <button className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-zinc-900 rounded-lg hover:bg-zinc-800 transition-all shadow-lg hover:shadow-zinc-900/20">
+                  <button
+                    style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}
+                    className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-zinc-900 rounded-lg hover:bg-zinc-800 transition-all shadow-lg hover:shadow-zinc-900/20"
+                  >
                     {t.getStarted} <ArrowRight className="w-5 h-5" />
                   </button>
                 </SignInButton>
               </SignedOut>
               <SignedIn>
-                <LoadingLink
-                  href="/dashboard"
-                  className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-zinc-900 rounded-lg hover:bg-zinc-800 transition-all shadow-lg hover:shadow-zinc-900/20"
-                >
-                  {t.goToDashboard} <ArrowRight className="w-5 h-5" />
-                </LoadingLink>
+                <div style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
+                  <LoadingLink
+                    href="/dashboard"
+                    className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-zinc-900 rounded-lg hover:bg-zinc-800 transition-all shadow-lg hover:shadow-zinc-900/20"
+                  >
+                    {t.goToDashboard} <ArrowRight className="w-5 h-5" />
+                  </LoadingLink>
+                </div>
               </SignedIn>
-              <span className="text-sm text-zinc-500 px-2">No credit card required</span>
+              <span className="text-sm text-zinc-500 px-2">{t.noCreditCard}</span>
             </div>
           </div>
 
@@ -333,6 +338,7 @@ export function HeroSection({ t }: HeroSectionProps) {
                 <button
                   key={idx}
                   onClick={() => handleIndicatorClick(idx)}
+                  style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}
                   className={`w-2 rounded-full transition-all duration-400 ${
                     getWrappedIndex(activeIndex) === idx
                       ? "h-8 bg-zinc-900"

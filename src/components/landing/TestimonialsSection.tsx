@@ -24,7 +24,7 @@ export function TestimonialsSection({ t }: TestimonialsSectionProps) {
               paintOrder: 'stroke fill'
             }}
           >
-            Nearly Everything you need for PPT is found in PPTMaster.
+            {t.testimonialQuote || "Nearly Everything you need for PPT is found in PPTMaster."}
           </blockquote>
 
           <div className="flex items-center gap-4 lg:justify-end">

@@ -26,7 +26,7 @@ export function LandingPageClient() {
         <HowItWorksSection t={t} />
         <TestimonialsSection t={t} />
         <CTASection t={t} />
-        <TemplatesSection />
+        <TemplatesSection t={t} />
       </main>
       <LandingFooter />
     </div>

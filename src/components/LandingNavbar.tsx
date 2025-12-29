@@ -26,7 +26,7 @@ const languages: { code: Language; name: string; flag: string }[] = [
 ];
 
 export const LandingNavbar = () => {
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
@@ -71,20 +71,20 @@ export const LandingNavbar = () => {
                 onMouseLeave={() => setProductsOpen(false)}
               >
                 <button className="flex items-center gap-1.5 px-4 py-2.5 text-[15px] text-zinc-700 hover:text-zinc-900 transition">
-                  Products
+                  {t.navProducts || "Products"}
                   <ChevronDown className={cn("h-4 w-4 transition-transform", productsOpen && "rotate-180")} />
                 </button>
                 {productsOpen && (
                   <div className="absolute top-full left-0 pt-2 w-72">
                     <div className="bg-white rounded-xl border border-zinc-200 shadow-xl py-2">
                       <LoadingLink href="/dashboard" className="block px-5 py-3 text-[15px] text-zinc-700 hover:bg-zinc-50 transition">
-                        AI Presentations
+                        {t.navAIPresentations || "AI Presentations"}
                       </LoadingLink>
                       <LoadingLink href="/dashboard/themes" className="block px-5 py-3 text-[15px] text-zinc-700 hover:bg-zinc-50 transition">
-                        Themes
+                        {t.navThemes || "Themes"}
                       </LoadingLink>
                       <LoadingLink href="/inspiration" className="block px-5 py-3 text-[15px] text-zinc-700 hover:bg-zinc-50 transition">
-                        Templates
+                        {t.navTemplates || "Templates"}
                       </LoadingLink>
                     </div>
                   </div>
@@ -98,17 +98,17 @@ export const LandingNavbar = () => {
                 onMouseLeave={() => setCommunityOpen(false)}
               >
                 <button className="flex items-center gap-1.5 px-4 py-2.5 text-[15px] text-zinc-700 hover:text-zinc-900 transition">
-                  Solutions
+                  {t.navSolutions || "Solutions"}
                   <ChevronDown className={cn("h-4 w-4 transition-transform", communityOpen && "rotate-180")} />
                 </button>
                 {communityOpen && (
                   <div className="absolute top-full left-0 pt-2 w-72">
                     <div className="bg-white rounded-xl border border-zinc-200 shadow-xl py-2">
                       <LoadingLink href="/education" className="block px-5 py-3 text-[15px] text-zinc-700 hover:bg-zinc-50 transition">
-                        For Education
+                        {t.navForEducation || "For Education"}
                       </LoadingLink>
                       <LoadingLink href="/community" className="block px-5 py-3 text-[15px] text-zinc-700 hover:bg-zinc-50 transition">
-                        Community
+                        {t.navCommunity || "Community"}
                       </LoadingLink>
                     </div>
                   </div>
@@ -122,23 +122,23 @@ export const LandingNavbar = () => {
                 onMouseLeave={() => setResourcesOpen(false)}
               >
                 <button className="flex items-center gap-1.5 px-4 py-2.5 text-[15px] text-zinc-700 hover:text-zinc-900 transition">
-                  Resources
+                  {t.navResources || "Resources"}
                   <ChevronDown className={cn("h-4 w-4 transition-transform", resourcesOpen && "rotate-180")} />
                 </button>
                 {resourcesOpen && (
                   <div className="absolute top-full left-0 pt-2 w-72">
                     <div className="bg-white rounded-xl border border-zinc-200 shadow-xl py-2">
                       <LoadingLink href="/prompt-guide" className="block px-5 py-3 text-[15px] text-zinc-700 hover:bg-zinc-50 transition">
-                        Prompt Guide
+                        {t.navPromptGuide || "Prompt Guide"}
                       </LoadingLink>
                       <LoadingLink href="/insights" className="block px-5 py-3 text-[15px] text-zinc-700 hover:bg-zinc-50 transition">
-                        Blog
+                        {t.navBlog || "Blog"}
                       </LoadingLink>
                       <LoadingLink href="/developer-docs" className="block px-5 py-3 text-[15px] text-zinc-700 hover:bg-zinc-50 transition">
-                        Developer Docs
+                        {t.navDeveloperDocs || "Developer Docs"}
                       </LoadingLink>
                       <LoadingLink href="/help" className="block px-5 py-3 text-[15px] text-zinc-700 hover:bg-zinc-50 transition">
-                        Help Center
+                        {t.navHelpCenter || "Help Center"}
                       </LoadingLink>
                     </div>
                   </div>
@@ -146,7 +146,7 @@ export const LandingNavbar = () => {
               </div>
 
               <LoadingLink href="/pricing" className="px-4 py-2.5 text-[15px] text-zinc-700 hover:text-zinc-900 transition">
-                Pricing
+                {t.navPricing || "Pricing"}
               </LoadingLink>
             </div>
           </div>
@@ -161,7 +161,7 @@ export const LandingNavbar = () => {
             >
               <button className="flex items-center gap-2 px-4 py-2.5 text-[15px] text-zinc-700 hover:text-zinc-900 transition">
                 <Globe className="h-4 w-4" />
-                <span>{currentLang?.flag}</span>
+                <span className="font-medium">{currentLang?.code.toUpperCase()}</span>
                 <ChevronDown className={cn("h-4 w-4 transition-transform", languageOpen && "rotate-180")} />
               </button>
               {languageOpen && (
@@ -179,7 +179,6 @@ export const LandingNavbar = () => {
                           language === lang.code ? "text-zinc-900 bg-zinc-50" : "text-zinc-600"
                         )}
                       >
-                        <span>{lang.flag}</span>
                         <span>{lang.name}</span>
                       </button>
                     ))}
@@ -191,12 +190,12 @@ export const LandingNavbar = () => {
             <SignedOut>
               <SignInButton mode="modal">
                 <button className="hidden lg:block px-4 py-2.5 text-[15px] text-zinc-700 hover:text-zinc-900 transition">
-                  Log in
+                  {t.navLogin || "Log in"}
                 </button>
               </SignInButton>
               <SignInButton mode="modal">
                 <button className="px-5 py-2.5 text-[15px] font-medium text-white bg-zinc-900 rounded-lg hover:bg-zinc-800 transition">
-                  Get started for free
+                  {t.navGetStarted || "Get started for free"}
                 </button>
               </SignInButton>
             </SignedOut>
@@ -205,7 +204,7 @@ export const LandingNavbar = () => {
                 href="/dashboard" 
                 className="px-5 py-2.5 text-[15px] font-medium text-white bg-zinc-900 rounded-lg hover:bg-zinc-800 transition"
               >
-                Dashboard
+                {t.navDashboard || "Dashboard"}
               </LoadingLink>
             </SignedIn>
 
@@ -224,38 +223,37 @@ export const LandingNavbar = () => {
         <div className="lg:hidden bg-white border-t border-zinc-200 px-6 py-6">
           <div className="flex flex-col gap-2">
             <LoadingLink href="/dashboard" className="py-3 text-lg text-zinc-900 font-medium" onClick={() => setMobileOpen(false)}>
-              AI Presentations
+              {t.navAIPresentations || "AI Presentations"}
             </LoadingLink>
             <LoadingLink href="/inspiration" className="py-3 text-lg text-zinc-600" onClick={() => setMobileOpen(false)}>
-              Templates
+              {t.navTemplates || "Templates"}
             </LoadingLink>
             <LoadingLink href="/education" className="py-3 text-lg text-zinc-600" onClick={() => setMobileOpen(false)}>
-              For Education
+              {t.navForEducation || "For Education"}
             </LoadingLink>
             <LoadingLink href="/community" className="py-3 text-lg text-zinc-600" onClick={() => setMobileOpen(false)}>
-              Community
+              {t.navCommunity || "Community"}
             </LoadingLink>
             <LoadingLink href="/pricing" className="py-3 text-lg text-zinc-600" onClick={() => setMobileOpen(false)}>
-              Pricing
+              {t.navPricing || "Pricing"}
             </LoadingLink>
             
             {/* Mobile Language Selector */}
             <div className="py-3 border-t border-zinc-100 mt-2">
-              <p className="text-sm text-zinc-500 mb-2">Language</p>
+              <p className="text-sm text-zinc-500 mb-2">{t.navLanguage || "Language"}</p>
               <div className="grid grid-cols-3 gap-2">
                 {languages.map((lang) => (
                   <button
                     key={lang.code}
                     onClick={() => setLanguage(lang.code)}
                     className={cn(
-                      "flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition",
+                      "flex items-center justify-center px-3 py-2 text-sm rounded-lg transition",
                       language === lang.code 
                         ? "bg-zinc-900 text-white" 
                         : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
                     )}
                   >
-                    <span>{lang.flag}</span>
-                    <span className="truncate">{lang.code.toUpperCase()}</span>
+                    <span className="truncate">{lang.name}</span>
                   </button>
                 ))}
               </div>
@@ -265,7 +263,7 @@ export const LandingNavbar = () => {
               <SignedOut>
                 <SignInButton mode="modal">
                   <button className="w-full py-4 text-base font-medium text-white bg-zinc-900 rounded-lg">
-                    Get started for free
+                    {t.navGetStarted || "Get started for free"}
                   </button>
                 </SignInButton>
               </SignedOut>
@@ -275,7 +273,7 @@ export const LandingNavbar = () => {
                   className="block w-full py-4 text-base font-medium text-center text-white bg-zinc-900 rounded-lg"
                   onClick={() => setMobileOpen(false)}
                 >
-                  Dashboard
+                  {t.navDashboard || "Dashboard"}
                 </LoadingLink>
               </SignedIn>
             </div>
