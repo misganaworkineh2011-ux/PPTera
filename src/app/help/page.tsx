@@ -49,14 +49,6 @@ export default function HelpPage() {
       },
       {
         "@type": "Question",
-        "name": t.helpFaq5Question || "Do you offer refunds?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": t.helpFaq5Answer || "We offer a 30-day money-back guarantee for annual subscriptions. If you're not satisfied within the first 30 days, contact support for a full refund. Monthly subscriptions are non-refundable but can be cancelled anytime."
-        }
-      },
-      {
-        "@type": "Question",
         "name": t.helpFaq6Question || "How does the AI work?",
         "acceptedAnswer": {
           "@type": "Answer",
@@ -129,10 +121,6 @@ export default function HelpPage() {
       title: t.helpTrouble4Title || "Login Problems",
       content: t.helpTrouble4Content || "Reset your password using the 'Forgot Password' link. Clear browser cookies and try again. If using SSO, contact your organization's IT administrator. Check if your account is active and not suspended."
     },
-    {
-      title: t.helpTrouble5Title || "Missing Presentations",
-      content: t.helpTrouble5Content || "Check the 'Archived' folder in your dashboard. Use the search function to find presentations by name or date. If you recently deleted a presentation, check the trash folder - items are kept for 30 days before permanent deletion."
-    }
   ], [t]);
 
   const faqArticles = useMemo(() => [
@@ -151,10 +139,6 @@ export default function HelpPage() {
     {
       question: t.helpFaq4Question || "Can I cancel my subscription anytime?",
       answer: t.helpFaq4Answer || "Absolutely. You can cancel your subscription at any time from your account settings. You'll retain access until the end of your billing period, and all your presentations remain accessible even after cancellation."
-    },
-    {
-      question: t.helpFaq5Question || "Do you offer refunds?",
-      answer: t.helpFaq5Answer || "We offer a 30-day money-back guarantee for annual subscriptions. If you're not satisfied within the first 30 days, contact support for a full refund. Monthly subscriptions are non-refundable but can be cancelled anytime."
     },
     {
       question: t.helpFaq6Question || "How does the AI work?",

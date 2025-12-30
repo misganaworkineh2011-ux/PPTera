@@ -36,7 +36,7 @@ export async function getAuthUser() {
             emailVerified:
               clerkUser.emailAddresses[0]?.verification?.status === "verified",
             image: clerkUser.imageUrl,
-            credits: 3,
+            credits: 200,
             subscriptionPlan: "Free",
           },
         });
@@ -86,7 +86,7 @@ export async function requireAuth() {
             name: name,
             emailVerified: clerkUser.emailAddresses[0]?.verification?.status === "verified",
             image: clerkUser.imageUrl,
-            credits: 3, // Free credits for new users
+            credits: 200, // Free credits for new users
             subscriptionPlan: "Free", // Default to free plan
           },
         });

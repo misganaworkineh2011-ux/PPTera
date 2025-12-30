@@ -359,9 +359,6 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
                     <p className="text-zinc-600 text-sm">
                       {t.exportToPPTDesc || "Download your presentations in any format. Perfect compatibility with Microsoft PowerPoint and Google Slides."}
                     </p>
-                    <span className="inline-block mt-3 text-zinc-900 text-sm font-medium underline underline-offset-4 group-hover:text-zinc-600 transition">
-                      {t.learnMore || "Learn more"}
-                    </span>
                   </div>
                 </div>
               </LoadingLink>

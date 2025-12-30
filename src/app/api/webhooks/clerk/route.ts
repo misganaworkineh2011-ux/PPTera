@@ -71,7 +71,7 @@ export async function POST(req: Request) {
             name: `${first_name || ""} ${last_name || ""}`.trim() || username || "User",
             emailVerified: email_addresses[0]?.verification?.status === "verified",
             image: image_url,
-            credits: 3, // Free credits for new users
+            credits: 200, // Free credits for new users
             subscriptionPlan: "Free", // Default to free plan
           },
         });

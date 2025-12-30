@@ -36,7 +36,7 @@ export const translations = {
     backToHome: "Back to Home",
     contactUs: "Contact Us",
     learnMore: "Learn More",
-    startCreating: "Start creating PowerPoint presentations for free",
+    startCreating: "Start creating presentations",
     watchDemo: "Watch demo",
     
     // Landing Page Sections
@@ -80,7 +80,7 @@ export const translations = {
     createStunningPPT: "Create stunning PowerPoint presentations with just a prompt.",
     tryPPTMasterAI: "Try PPT Master AI",
     professionalTemplatesUseCase: "Professional templates for every use case.",
-    templatesDescription: "Choose from hundreds of professionally designed PowerPoint templates. Customize colors, fonts, and layouts to match your brand.",
+    templatesDescription: "Choose from multiple professionally designed PowerPoint templates. Customize colors, fonts, and layouts to match your brand.",
     exploreTemplates: "Explore templates",
     getInspiredTitle: "Get inspired by amazing presentations.",
     getInspiredDesc: "Browse our gallery of AI-generated presentations. Find inspiration and see what's possible with PPT Master.",
@@ -152,7 +152,7 @@ export const translations = {
     
     // Hero Card Titles & Prompts
     heroCard1Title: "Startup Pitch",
-    heroCard1Prompt: "Create a 10-slide investor pitch deck for my AI startup with market analysis and financials...",
+    heroCard1Prompt: "Create an investor pitch deck for my AI startup with market analysis and financials...",
     heroCard2Title: "Sales Report",
     heroCard2Prompt: "Generate a quarterly sales report with charts showing revenue growth and KPIs...",
     heroCard3Title: "Team Intro",
@@ -167,7 +167,7 @@ export const translations = {
     heroCard7Prompt: "Generate an employee training presentation with interactive elements...",
     
     // Features Section Demo Prompt
-    featuresDemoPrompt: "Create a 10-slide pitch deck for my SaaS startup with modern design.",
+    featuresDemoPrompt: "Create a pitch deck for my SaaS startup with modern design.",
     
     // Features Section Slide Names
     slideTitleSlide: "TITLE SLIDE",
@@ -258,7 +258,7 @@ export const translations = {
     promptGuideSubtitle: "Learn how to write effective prompts to get the best results from PPT Master, the best AI PowerPoint generator.",
     beSpecific: "Be Specific",
     beSpecificDesc: "The more specific your prompt, the better the results. Instead of \"Create a presentation about marketing,\" try:",
-    beSpecificExample: "Create a 10-slide presentation about digital marketing strategies for small businesses, including social media, email marketing, and SEO best practices",
+    beSpecificExample: "Create a presentation about digital marketing strategies for small businesses, including social media, email marketing, and SEO best practices",
     defineAudience: "Define Your Audience",
     defineAudienceDesc: "Specify who the presentation is for to get more targeted content:",
     defineAudienceExample: "Create a sales pitch for enterprise clients explaining our SaaS product's ROI and security features",
@@ -338,11 +338,11 @@ export const translations = {
     viewOpenPositions: "View Open Positions",
     
     // Pricing Page
-    pricingTitle: "Simple pricing for PPT Master's AI PowerPoint generator.",
+    pricingTitle: "Simple pricing for PPT Master.",
     pricingSubtitle: "Start creating PowerPoint presentations for free, upgrade when you love it.",
     monthly: "Monthly",
     yearly: "Yearly",
-    savePercent: "(Save ~20%)",
+    savePercent: "(Save up to 28%)",
     signUpFree: "Sign up for free",
     getStartedBtn: "Get started",
     mostPopular: "Most Popular",
@@ -350,12 +350,28 @@ export const translations = {
     perMonth: "/month",
     annualBilling: "Annual",
     faqTitle: "Frequently asked questions",
-    faqCancel: "Can I cancel anytime?",
-    faqCancelAnswer: "Yes, you can cancel your subscription at any time. You'll keep access until the end of your billing period.",
-    faqStudentDiscount: "Do you offer discounts for students?",
-    faqStudentAnswer: "Absolutely! We offer free Pro accounts for students and educators with a valid .edu email address.",
-    faqDowngrade: "What happens to my decks if I downgrade?",
-    faqDowngradeAnswer: "Your decks remain safe. You'll switch to the Free plan limits, but you won't lose your existing content.",
+    faqAIModels: "What AI models does PPT Master use?",
+    faqAIModelsAnswer: "PPT Master uses advanced AI models includingClaude (Anthropic) ChatGPT + DALL-E (OpenAI), Gemini + Imagen (Google) to generate high-quality presentations. We continuously evaluate and integrate the best AI technologies to ensure optimal results.",
+    faqAICredits: "What are AI credits?",
+    faqAICreditsAnswer: "AI credits are used to generate slides and AI images. Each slide costs upto 4 credits, standard AI images require different credit amount based on the model. Credits refresh monthly with your subscription.",
+    faqMoreCredits: "How can I get more AI credits?",
+    faqMoreCreditsAnswer: "You can purchase additional credit top-ups anytime from the pricing page. Top-ups never expire and stack with your monthly subscription credits.",
+    faqCard: "What is a card?",
+    faqCardAnswer: "A card is a presentation in PPT Master. Each card can contain multiple slides and can be exported, shared, or presented directly from the platform.",
+    faqPowerPoint: "Can I use PPT Master with PowerPoint?",
+    faqPowerPointAnswer: "Yes! You can export any presentation as a PowerPoint (.pptx) file and continue editing in Microsoft PowerPoint. All formatting and layouts are preserved.",
+    faqAnnualDiscount: "Is there a discount on annual billing?",
+    faqAnnualDiscountAnswer: "Yes, annual plans save you approximately 20% compared to monthly billing. You'll see the savings when you toggle to yearly pricing.",
+    faqChangePlan: "Can I change my plan or cancel at any time?",
+    faqChangePlanAnswer: "Absolutely. You can upgrade, downgrade, or cancel your subscription anytime from your account settings. Changes take effect at the end of your current billing period.",
+    faqPaymentMethods: "What payment methods are accepted?",
+    faqPaymentMethodsAnswer: "We accept all major credit cards (Visa, Mastercard, American Express) and debit cards through our secure payment processor Polar.",
+    faqWorkspaceCharging: "How do I get charged when adding a member to my workspace?",
+    faqWorkspaceChargingAnswer: "When you add a member to your workspace, you'll be charged a prorated amount for the remainder of your billing cycle. The full seat price applies on your next renewal.",
+    faqDowngradeContent: "What happens to my content if I downgrade or cancel my subscription?",
+    faqDowngradeContentAnswer: "Your presentations remain safe and accessible. If you downgrade, you'll switch to the new plan's limits. If you cancel, you keep access until your billing period ends, and all content remains viewable.",
+    faqCustomTheme: "Can I create my own company-branded theme in PPT Master?",
+    faqCustomThemeAnswer: "Yes! Pro and Ultra plans include custom theme creation. Upload your logo, define brand colors, and set default fonts to maintain consistent branding across all presentations.",
     
     // Help Page
     helpTitle: "Help Center",
@@ -383,22 +399,23 @@ export const translations = {
     helpArticle2Title: "Understanding the Dashboard",
     helpArticle2Content: "Your dashboard is your command center. Here you'll find all your presentations, usage statistics, and quick access to templates. The sidebar provides navigation to all features including settings, billing, and team management.",
     helpArticle3Title: "Writing Effective Prompts",
-    helpArticle3Content: "Be specific about your topic, target audience, and desired outcome. Include the number of slides you need and any key points to cover. For example: 'Create a 10-slide pitch deck for a SaaS startup targeting enterprise clients, covering problem, solution, market size, and business model.'",
+    helpArticle3Content: "Be specific about your topic, target audience, and desired outcome. Include the number of slides you need and any key points to cover. For example: 'Create a pitch deck for a SaaS startup targeting enterprise clients, covering problem, solution, market size, and business model.'",
     helpArticle4Title: "Customizing Your Presentation",
     helpArticle4Content: "Click any element to edit text, change colors, or adjust layouts. Use the toolbar to add images, charts, or icons. Our smart layouts automatically adjust to maintain visual balance as you make changes.",
     // Help Page - Features Articles
     helpFeature1Title: "AI-Powered Generation",
     helpFeature1Content: "Our AI analyzes your prompt and creates a complete presentation with relevant content, professional design, and logical flow. It uses advanced language models to generate compelling copy and selects appropriate visual elements.",
     helpFeature2Title: "Smart Templates",
-    helpFeature2Content: "Choose from 100+ professionally designed templates across various categories: business, education, marketing, and more. Each template is fully customizable and optimized for different presentation types.",
+    helpFeature2Content: "Choose from multiple professionally designed templates across various categories: business, education, marketing, and more. Each template is fully customizable and optimized for different presentation types.",
     helpFeature3Title: "Real-time Collaboration",
     helpFeature3Content: "Invite team members to edit presentations together. See changes in real-time, leave comments, and track revision history. Perfect for teams working across different locations and time zones.",
     helpFeature4Title: "Export Options",
     helpFeature4Content: "Export your presentations as PowerPoint (PPTX), PDF, PNG images, or Google Slides. Each format maintains your design integrity and is optimized for the target platform.",
     helpFeature5Title: "Brand Management",
     helpFeature5Content: "Upload your logo, define brand colors, and set default fonts. All new presentations will automatically use your brand guidelines, ensuring consistency across all your content.",
-    helpFeature6Title: "Analytics & Tracking",
-    helpFeature6Content: "When you share presentations online, track views, engagement time, and slide-by-slide analytics. Understand which content resonates most with your audience.",
+    helpFeature6Title: "Performance Insights",
+    helpFeature6Content: "View comprehensive analytics about your presentation workflow. Track creation trends, monitor your productivity with daily activity charts, and identify your top-performing presentations.",
+
     // Help Page - Troubleshooting Articles
     helpTrouble1Title: "Presentation Not Generating",
     helpTrouble1Content: "If your presentation fails to generate, check your internet connection and try again. Ensure your prompt is clear and not too vague. If the issue persists, try breaking down your request into smaller, more specific prompts.",
@@ -408,11 +425,10 @@ export const translations = {
     helpTrouble3Content: "Clear your browser cache and cookies. Close unnecessary tabs and applications. For best performance, use the latest version of Chrome, Firefox, or Safari. Disable browser extensions that might interfere with the editor.",
     helpTrouble4Title: "Login Problems",
     helpTrouble4Content: "Reset your password using the 'Forgot Password' link. Clear browser cookies and try again. If using SSO, contact your organization's IT administrator. Check if your account is active and not suspended.",
-    helpTrouble5Title: "Missing Presentations",
-    helpTrouble5Content: "Check the 'Archived' folder in your dashboard. Use the search function to find presentations by name or date. If you recently deleted a presentation, check the trash folder - items are kept for 30 days before permanent deletion.",
+   
     // Help Page - FAQ Articles
     helpFaq1Question: "How many presentations can I create?",
-    helpFaq1Answer: "Free users can create up to 5 presentations per month. Pro users get unlimited presentations. All presentations are saved permanently in your account.",
+    helpFaq1Answer: "Free users get 200 credits to start. Paid plans include monthly credits: Plus (1,000), Pro (4,000), Ultra (20,000). Each slide costs upto 4 credits, so you can create as many presentations as your credits allow. Credits reset monthly for paid subscribers.",
     helpFaq2Question: "Can I use PPTMaster offline?",
     helpFaq2Answer: "PPTMaster requires an internet connection for AI generation and real-time collaboration. However, you can download presentations and work on them offline using PowerPoint or other presentation software.",
     helpFaq3Question: "Is my data secure?",
@@ -470,26 +486,6 @@ export const translations = {
     careersSubtitle: "Help us build the best AI PowerPoint generator. We're looking for talented individuals who are passionate about AI and PowerPoint design.",
     applyNow: "Apply Now",
     
-    // Privacy Page
-    privacyTitle: "Privacy Policy",
-    lastUpdated: "Last updated: January 2025",
-    introduction: "Introduction",
-    introductionText: "At PPT Master, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our AI PowerPoint generator service.",
-    infoWeCollect: "Information We Collect",
-    infoWeCollectText: "We collect information that you provide directly to us, including when you create an account, use our services, or communicate with us.",
-    howWeUse: "How We Use Your Information",
-    howWeUseText: "We use the information we collect to provide, maintain, and improve our services, process your transactions, and communicate with you.",
-    contactUsPrivacy: "If you have any questions about this Privacy Policy, please contact us at privacy@pptmaster.com",
-    
-    // Terms Page
-    termsTitle: "Terms of Service",
-    agreementToTerms: "Agreement to Terms",
-    agreementToTermsText: "By accessing or using PPT Master's AI PowerPoint generator, you agree to be bound by these Terms of Service and all applicable laws and regulations.",
-    useLicense: "Use License",
-    useLicenseText: "Permission is granted to temporarily use PPT Master's AI PowerPoint generator for personal or commercial purposes. This is the grant of a license, not a transfer of title.",
-    userResponsibilities: "User Responsibilities",
-    userResponsibilitiesText: "You are responsible for maintaining the confidentiality of your account and for all activities that occur under your account.",
-    
     // Cookies Page
     cookiesTitle: "Cookie Policy",
     whatAreCookies: "What Are Cookies",
@@ -511,7 +507,7 @@ export const translations = {
     aboutHeroDesc: "PPT Master is on a mission to empower everyone to create beautiful, professional PowerPoint presentations with the best AI PowerPoint generator. No design skills required.",
     missionTitle: "Making design accessible to everyone",
     missionDesc1: "We believe that great ideas shouldn't be held back by design limitations. That's why PPT Master is building the best AI PowerPoint generator that helps anyone create stunning PowerPoint presentations in minutes.",
-    missionDesc2: "From students to Fortune 500 companies, over 50 million people trust PPT Master's AI PowerPoint generator to bring their ideas to life.",
+    missionDesc2: "From students to Fortune 500 companies, over 100K+ people trust PPT Master's AI PowerPoint generator to bring their ideas to life.",
     ourValues: "Our Values",
     valuesDesc: "The principles that guide everything we do",
     valueUserFirst: "User First",
@@ -535,7 +531,7 @@ export const translations = {
     // Careers Page
     careersHeroTitle: "Build the future with",
     careersHeroHighlight: "us",
-    careersHeroDesc: "Join a team of passionate innovators building AI-powered tools that empower millions of people worldwide.",
+    careersHeroDesc: "Join a team of passionate innovators building AI-powered tools that empower hundreds of thousands of people worldwide.",
     whyJoinUs: "Why Join Us",
     whyJoinUsDesc: "We're building something special, and we want you to be part of it",
     benefitHealthcare: "Healthcare",
@@ -592,7 +588,7 @@ export const translations = {
     // Inspiration Page
     inspirationHeroTitle: "Get inspired by",
     inspirationHeroHighlight: "amazing designs",
-    inspirationHeroDesc: "Browse through hundreds of professionally designed presentations to spark your creativity.",
+    inspirationHeroDesc: "Browse through multiple professionally designed presentations to spark your creativity.",
     viewTemplate: "View Template",
     loadMore: "Load More",
     
@@ -647,37 +643,6 @@ export const translations = {
     sending: "Sending...",
     visitUs: "Visit our office",
     headquarters: "Headquarters",
-    
-    // Privacy Page - Additional Keys
-    informationWeCollect: "Information We Collect",
-    informationWeCollectText: "We collect information you provide directly to us, such as when you create an account, use our services, or contact us for support. This includes your name, email address, and any content you create.",
-    howWeUseInfo: "How We Use Your Information",
-    howWeUseInfoText: "We use the information we collect to provide, maintain, and improve our services, to communicate with you, and to protect our users and services.",
-    dataSecurity: "Data Security",
-    dataSecurityText: "We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.",
-    yourRights: "Your Rights",
-    yourRightsText: "You have the right to access, update, or delete your personal information at any time. You can also opt out of marketing communications.",
-    dataRetention: "Data Retention",
-    dataRetentionText: "We retain your personal information for as long as necessary to provide our services and comply with legal obligations.",
-    lastUpdatedDate: "January 2025",
-    privacyIntro: "Your privacy is important to us. This policy explains how we collect, use, and protect your personal information.",
-    contactPrivacy: "Questions about privacy?",
-    contactPrivacyText: "If you have any questions about this Privacy Policy, please contact us at privacy@pptmaster.com",
-    
-    // Terms Page - Additional Keys
-    acceptanceOfTerms: "Acceptance of Terms",
-    acceptanceOfTermsText: "By accessing and using PPT Master, the best AI PowerPoint generator, you accept and agree to be bound by the terms and provision of this agreement.",
-    useOfService: "Use of Service",
-    useOfServiceText: "You agree to use the service only for lawful purposes and in accordance with these Terms. You are responsible for all activity under your account.",
-    intellectualProperty: "Intellectual Property",
-    intellectualPropertyText: "The PPT Master AI PowerPoint generator service and its original content, features, and functionality are owned by PPT Master and are protected by international copyright, trademark, and other intellectual property laws.",
-    termination: "Termination",
-    terminationText: "We may terminate or suspend your account and access to the service immediately, without prior notice, for any reason, including breach of these Terms.",
-    limitationOfLiability: "Limitation of Liability",
-    limitationOfLiabilityText: "PPT Master shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of our AI PowerPoint generator service.",
-    termsIntro: "Please read these terms carefully before using our service.",
-    changestoTerms: "Changes to Terms",
-    changesToTermsText: "We reserve the right to modify these terms at any time. We will notify users of any material changes via email or through the service.",
     
     // Cookies Page - Additional Keys
     essentialCookies: "Essential Cookies",
