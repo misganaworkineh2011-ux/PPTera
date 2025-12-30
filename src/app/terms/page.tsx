@@ -1,8 +1,18 @@
-"use client";
-
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
 import { Scale } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Terms of Use - PPT Master",
+  description: "Read PPT Master's Terms of Use Agreement to understand the rules and guidelines for using our AI-powered presentation platform.",
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
+
+export const revalidate = 86400; // Revalidate once per day
 
 export default function TermsPage() {
   const lastUpdated = "January 1, 2026";

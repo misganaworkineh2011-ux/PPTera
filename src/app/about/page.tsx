@@ -1,12 +1,23 @@
-"use client";
-
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
-import { useLanguage } from "~/contexts/LanguageContext";
+import { translations } from "~/lib/translations";
 import { Sparkles, Users, Target, Zap, Heart } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "About Us - PPT Master | AI PowerPoint Generator",
+  description: "Learn about PPT Master's mission to democratize design and make professional presentations accessible to everyone through AI-powered technology.",
+  openGraph: {
+    title: "About Us - PPT Master",
+    description: "Building the future of presentations with AI",
+    type: "website",
+  },
+};
+
+export const revalidate = 3600; // Revalidate every hour
 
 export default function AboutPage() {
-  const { t } = useLanguage();
+  const t = translations.en;
 
   return (
     <div className="landing-page min-h-screen bg-white">

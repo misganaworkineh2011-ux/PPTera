@@ -6,6 +6,7 @@ import { useLanguage } from "~/contexts/LanguageContext";
 import { BookOpen, TrendingUp, Users, Zap, Clock, ArrowRight } from "lucide-react";
 import { useState, useEffect } from "react";
 
+// Insights page fetches dynamic data, cannot use ISR
 interface InsightPost {
   id: string;
   title: string;

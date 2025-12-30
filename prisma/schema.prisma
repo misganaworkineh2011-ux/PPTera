@@ -59,6 +59,9 @@ model Presentation {
   pinnedBy       PinnedProject[]
   user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([userId, isPinned])
+  @@index([shareToken])
   @@map("presentation")
 }
 
@@ -72,6 +75,9 @@ model Image {
   createdAt      DateTime      @default(now())
   presentation   Presentation? @relation(fields: [presentationId], references: [id])
   user           User          @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([presentationId])
 }
 
 model Chart {
@@ -109,6 +115,8 @@ model Theme {
   userId         String?
   createdAt      DateTime @default(now())
   user           User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId, isDefault])
 }
 
 model Resource {
@@ -133,6 +141,8 @@ model Activity {
   createdAt      DateTime      @default(now())
   presentation   Presentation? @relation(fields: [presentationId], references: [id])
   user           User          @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt(sort: Desc)])
 }
 
 model Collaboration {
@@ -280,6 +290,8 @@ model InsightPost {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
+  @@index([isPublished, publishedAt(sort: Desc)])
+  @@index([isFeatured])
   @@map("insight_post")
 }
 

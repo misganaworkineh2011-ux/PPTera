@@ -1,14 +1,24 @@
-"use client";
-
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
-import { useLanguage } from "~/contexts/LanguageContext";
-import { HelpCircle, Video, Search, Zap, Settings } from "lucide-react";
-import { useState, useMemo } from "react";
+import { translations } from "~/lib/translations";
+import { HelpCircle } from "lucide-react";
+import { HelpPageClient } from "./HelpPageClient";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Help Center - PPT Master | Support & Tutorials",
+  description: "Find answers to common questions, tutorials, and troubleshooting guides for PPT Master's AI PowerPoint generator.",
+  openGraph: {
+    title: "Help Center - PPT Master",
+    description: "Get help with PPT Master",
+    type: "website",
+  },
+};
+
+export const revalidate = 3600; // Revalidate every hour
 
 export default function HelpPage() {
-  const { t } = useLanguage();
-  const [searchQuery, setSearchQuery] = useState("");
+  const t = translations.en;
 
   // FAQ Schema for SEO
   const faqSchema = {
@@ -58,7 +68,7 @@ export default function HelpPage() {
     ]
   };
 
-  const gettingStartedArticles = useMemo(() => [
+  const gettingStartedArticles = [
     {
       title: t.helpArticle1Title || "Creating Your First Presentation",
       content: t.helpArticle1Content || "Start by clicking 'Create New' in your dashboard. Enter a prompt describing what you want to create, choose your preferred style, and let our AI generate your presentation in seconds. You can then customize colors, fonts, and layouts to match your brand."
@@ -75,9 +85,9 @@ export default function HelpPage() {
       title: t.helpArticle4Title || "Customizing Your Presentation",
       content: t.helpArticle4Content || "Click any element to edit text, change colors, or adjust layouts. Use the toolbar to add images, charts, or icons. Our smart layouts automatically adjust to maintain visual balance as you make changes."
     }
-  ], [t]);
+  ];
 
-  const featuresArticles = useMemo(() => [
+  const featuresArticles = [
     {
       title: t.helpFeature1Title || "AI-Powered Generation",
       content: t.helpFeature1Content || "Our AI analyzes your prompt and creates a complete presentation with relevant content, professional design, and logical flow. It uses advanced language models to generate compelling copy and selects appropriate visual elements."
@@ -102,9 +112,9 @@ export default function HelpPage() {
       title: t.helpFeature6Title || "Analytics & Tracking",
       content: t.helpFeature6Content || "When you share presentations online, track views, engagement time, and slide-by-slide analytics. Understand which content resonates most with your audience."
     }
-  ], [t]);
+  ];
 
-  const troubleshootingArticles = useMemo(() => [
+  const troubleshootingArticles = [
     {
       title: t.helpTrouble1Title || "Presentation Not Generating",
       content: t.helpTrouble1Content || "If your presentation fails to generate, check your internet connection and try again. Ensure your prompt is clear and not too vague. If the issue persists, try breaking down your request into smaller, more specific prompts."
@@ -121,9 +131,9 @@ export default function HelpPage() {
       title: t.helpTrouble4Title || "Login Problems",
       content: t.helpTrouble4Content || "Reset your password using the 'Forgot Password' link. Clear browser cookies and try again. If using SSO, contact your organization's IT administrator. Check if your account is active and not suspended."
     },
-  ], [t]);
+  ];
 
-  const faqArticles = useMemo(() => [
+  const faqArticles = [
     {
       question: t.helpFaq1Question || "How many presentations can I create?",
       answer: t.helpFaq1Answer || "Free users can create up to 5 presentations per month. Pro users get unlimited presentations. All presentations are saved permanently in your account."
@@ -144,7 +154,7 @@ export default function HelpPage() {
       question: t.helpFaq6Question || "How does the AI work?",
       answer: t.helpFaq6Answer || "Our AI uses advanced language models trained on millions of presentations to understand context, structure, and design principles. It analyzes your prompt, generates relevant content, and applies professional design templates automatically."
     }
-  ], [t]);
+  ];
 
   return (
     <div className="landing-page min-h-screen bg-white">
@@ -174,183 +184,25 @@ export default function HelpPage() {
           <p className="text-xl text-slate-600 mb-12 animate-fade-in-up [animation-delay:200ms]">
             {t.helpCenterDesc || "Everything you need to know about PPTMaster"}
           </p>
-
-          {/* Search Bar */}
-          <div className="max-w-2xl mx-auto animate-fade-in-up [animation-delay:300ms]">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-              <input
-                type="text"
-                placeholder={t.searchHelp || "Search for help..."}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 rounded-full border-2 border-slate-200 focus:border-[#06b6d4] focus:outline-none text-slate-900 placeholder:text-slate-400"
-              />
-            </div>
-          </div>
         </div>
       </section>
 
-      {/* Getting Started */}
-      {(!searchQuery || gettingStartedArticles.some(article => 
-        article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        article.content.toLowerCase().includes(searchQuery.toLowerCase())
-      )) && (
-        <section className="relative px-6 pb-16">
-          <div className="mx-auto max-w-5xl">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center">
-                <Zap className="h-6 w-6 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold text-slate-900">{t.gettingStarted || "Getting Started"}</h2>
-            </div>
-            <div className="space-y-6">
-              {gettingStartedArticles
-                .filter(article => 
-                  !searchQuery || 
-                  article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                  article.content.toLowerCase().includes(searchQuery.toLowerCase())
-                )
-                .map((article, index) => (
-                  <div key={index} className="rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-lg transition-all">
-                    <h3 className="text-xl font-bold text-slate-900 mb-3">{article.title}</h3>
-                    <p className="text-slate-600 leading-relaxed">{article.content}</p>
-                  </div>
-                ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Features & Tutorials */}
-      {(!searchQuery || featuresArticles.some(article => 
-        article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        article.content.toLowerCase().includes(searchQuery.toLowerCase())
-      )) && (
-        <section className="relative px-6 pb-16 bg-gradient-to-br from-slate-50 to-white">
-          <div className="mx-auto max-w-5xl">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center">
-                <Video className="h-6 w-6 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold text-slate-900">{t.featuresTutorials || "Features & Tutorials"}</h2>
-            </div>
-            <div className="grid md:grid-cols-2 gap-6">
-              {featuresArticles
-                .filter(article => 
-                  !searchQuery || 
-                  article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                  article.content.toLowerCase().includes(searchQuery.toLowerCase())
-                )
-                .map((article, index) => (
-                  <div key={index} className="rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-lg transition-all">
-                    <h3 className="text-lg font-bold text-slate-900 mb-3">{article.title}</h3>
-                    <p className="text-slate-600 leading-relaxed text-sm">{article.content}</p>
-                  </div>
-                ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Troubleshooting */}
-      {(!searchQuery || troubleshootingArticles.some(article => 
-        article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        article.content.toLowerCase().includes(searchQuery.toLowerCase())
-      )) && (
-        <section className="relative px-6 pb-16">
-          <div className="mx-auto max-w-5xl">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center">
-                <Settings className="h-6 w-6 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold text-slate-900">{t.troubleshooting || "Troubleshooting"}</h2>
-            </div>
-            <div className="space-y-6">
-              {troubleshootingArticles
-                .filter(article => 
-                  !searchQuery || 
-                  article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                  article.content.toLowerCase().includes(searchQuery.toLowerCase())
-                )
-                .map((article, index) => (
-                  <div key={index} className="rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-lg transition-all">
-                    <h3 className="text-xl font-bold text-slate-900 mb-3">{article.title}</h3>
-                    <p className="text-slate-600 leading-relaxed">{article.content}</p>
-                  </div>
-                ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* FAQ */}
-      {(!searchQuery || faqArticles.some(article => 
-        article.question.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        article.answer.toLowerCase().includes(searchQuery.toLowerCase())
-      )) && (
-        <section className="relative px-6 pb-24 bg-gradient-to-br from-slate-50 to-white">
-          <div className="mx-auto max-w-5xl">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center">
-                <HelpCircle className="h-6 w-6 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold text-slate-900">{t.faqTitle || "Frequently Asked Questions"}</h2>
-            </div>
-            <div className="space-y-4">
-              {faqArticles
-                .filter(article => 
-                  !searchQuery || 
-                  article.question.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                  article.answer.toLowerCase().includes(searchQuery.toLowerCase())
-                )
-                .map((article, index) => (
-                  <div key={index} className="rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-lg transition-all">
-                    <h3 className="text-lg font-bold text-slate-900 mb-2">{article.question}</h3>
-                    <p className="text-slate-600 leading-relaxed">{article.answer}</p>
-                  </div>
-                ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* No Results Message */}
-      {searchQuery && 
-       !gettingStartedArticles.some(article => 
-         article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-         article.content.toLowerCase().includes(searchQuery.toLowerCase())
-       ) &&
-       !featuresArticles.some(article => 
-         article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-         article.content.toLowerCase().includes(searchQuery.toLowerCase())
-       ) &&
-       !troubleshootingArticles.some(article => 
-         article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-         article.content.toLowerCase().includes(searchQuery.toLowerCase())
-       ) &&
-       !faqArticles.some(article => 
-         article.question.toLowerCase().includes(searchQuery.toLowerCase()) || 
-         article.answer.toLowerCase().includes(searchQuery.toLowerCase())
-       ) && (
-        <section className="relative px-6 pb-24">
-          <div className="mx-auto max-w-5xl text-center">
-            <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-12">
-              <Search className="h-16 w-16 text-slate-400 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">{t.noResultsFound || "No results found"}</h3>
-              <p className="text-slate-600 mb-6">
-                {t.noResultsDesc || `We couldn't find any articles matching "${searchQuery}". Try different keywords or browse all articles above.`}
-              </p>
-              <button
-                onClick={() => setSearchQuery("")}
-                className="px-6 py-3 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold hover:shadow-xl transition-all"
-              >
-                {t.clearSearch || "Clear Search"}
-              </button>
-            </div>
-          </div>
-        </section>
-      )}
+      <HelpPageClient
+        gettingStartedArticles={gettingStartedArticles}
+        featuresArticles={featuresArticles}
+        troubleshootingArticles={troubleshootingArticles}
+        faqArticles={faqArticles}
+        translations={{
+          searchHelp: t.searchHelp,
+          gettingStarted: t.gettingStarted,
+          featuresTutorials: t.featuresTutorials,
+          troubleshooting: t.troubleshooting,
+          faqTitle: t.faqTitle,
+          noResultsFound: t.noResultsFound,
+          noResultsDesc: t.noResultsDesc,
+          clearSearch: t.clearSearch,
+        }}
+      />
 
       <LandingFooter />
     </div>

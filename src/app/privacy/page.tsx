@@ -1,8 +1,18 @@
-"use client";
-
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
 import { Shield } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy - PPT Master",
+  description: "Read PPT Master's Privacy Policy to understand how we collect, use, and protect your personal information.",
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
+
+export const revalidate = 86400; // Revalidate once per day
 
 export default function PrivacyPage() {
   const lastUpdated = "January 1, 2026";

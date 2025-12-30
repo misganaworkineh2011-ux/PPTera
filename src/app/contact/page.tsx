@@ -8,6 +8,7 @@ import { useState } from "react";
 import { LoadingButton } from "~/components/LoadingButton";
 import { toast } from "sonner";
 
+// Contact form needs client-side state, cannot be static
 export default function ContactPage() {
   const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);

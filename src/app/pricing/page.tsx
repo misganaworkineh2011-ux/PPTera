@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { useLanguage } from "~/contexts/LanguageContext";
 
+// Pricing page has dynamic checkout, cannot use ISR
 type PolarProduct = {
   key: string;
   name: string;

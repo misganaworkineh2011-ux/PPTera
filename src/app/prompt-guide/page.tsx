@@ -1,13 +1,24 @@
-"use client";
-
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
-import { useLanguage } from "~/contexts/LanguageContext";
+import { translations } from "~/lib/translations";
 import { Lightbulb, Target, Layers, Zap, CheckCircle2 } from "lucide-react";
-import { SignInButton } from "@clerk/nextjs";
+import { CTAButton } from "./PromptGuideClient";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Prompt Guide - PPT Master | Master AI Prompts for Better Presentations",
+  description: "Learn how to write effective AI prompts to create stunning PowerPoint presentations with PPT Master. Tips, examples, and best practices.",
+  openGraph: {
+    title: "Prompt Guide - PPT Master",
+    description: "Master the art of AI prompts for better presentations",
+    type: "website",
+  },
+};
+
+export const revalidate = 3600; // Revalidate every hour
 
 export default function PromptGuidePage() {
-  const { t } = useLanguage();
+  const t = translations.en;
 
   const tips = [
     {
@@ -240,12 +251,7 @@ export default function PromptGuidePage() {
             <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
               {t.readyToCreateDesc || "Put these tips into practice and create your first AI-powered presentation."}
             </p>
-            <SignInButton mode="modal">
-              <button className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 md:px-8 md:py-4 text-sm md:text-lg font-bold text-[#1e3a8a] shadow-xl hover:shadow-2xl transition-all hover:scale-105" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
-                {t.startCreating || "Start Creating"}
-                <Zap className="h-4 w-4 md:h-5 md:w-5" />
-              </button>
-            </SignInButton>
+            <CTAButton />
           </div>
         </div>
       </section>
