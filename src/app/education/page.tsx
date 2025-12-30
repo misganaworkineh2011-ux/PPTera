@@ -1,13 +1,17 @@
 "use client";
 
 import { GraduationCap, BookOpen, Users, CheckCircle2, Sparkles } from "lucide-react";
-import { useLanguage } from "~/contexts/LanguageContext";
+import { getTranslations, type Language } from "~/lib/i18n";
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
 import Link from "next/link";
 
-export default function EducationPage() {
-  const { t } = useLanguage();
+interface EducationPageProps {
+  currentLang?: Language;
+}
+
+export default function EducationPage({ currentLang = "en" }: EducationPageProps) {
+  const t = getTranslations(currentLang);
 
   const studentTeacherFeatures = [
     "Access to all premium templates",
@@ -29,7 +33,7 @@ export default function EducationPage() {
 
   return (
     <div className="landing-page min-h-screen bg-white">
-      <LandingNavbar />
+      <LandingNavbar currentLang={currentLang} />
 
       {/* Hero Section */}
       <section className="relative pt-40 pb-24 px-6 overflow-hidden">
@@ -175,7 +179,7 @@ export default function EducationPage() {
         </div>
       </section>
 
-      <LandingFooter />
+      <LandingFooter currentLang={currentLang} />
     </div>
   );
 }

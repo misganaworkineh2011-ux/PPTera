@@ -56,7 +56,7 @@ async function DashboardContent({ userId }: { userId: string }) {
   if (!user) {
     // User exists in Clerk but not in DB yet - show landing page
     // The webhook or next request will create the user
-    return <LandingPageClient />;
+    return <LandingPageClient currentLang="en" />;
   }
 
   const initialUser = {
@@ -95,6 +95,7 @@ export default async function HomePage() {
     return <DashboardContent userId={userId} />;
   }
 
-  // If not logged in, show landing page
-  return <LandingPageClient />;
+  // If not logged in, show landing page with default language (en)
+  const { LandingPageClient } = await import("./LandingPageClient");
+  return <LandingPageClient currentLang="en" />;
 }

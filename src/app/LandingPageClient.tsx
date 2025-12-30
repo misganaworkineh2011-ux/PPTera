@@ -2,7 +2,7 @@
 
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
-import { useLanguage } from "~/contexts/LanguageContext";
+import { getTranslations, type Language } from "~/lib/i18n";
 import {
   HeroSection,
   HowItWorksSection,
@@ -13,12 +13,16 @@ import {
   TemplatesSection,
 } from "~/components/landing";
 
-export function LandingPageClient() {
-  const { t } = useLanguage();
+interface LandingPageClientProps {
+  currentLang: Language;
+}
+
+export function LandingPageClient({ currentLang }: LandingPageClientProps) {
+  const t = getTranslations(currentLang);
 
   return (
     <div className="landing-page min-h-screen bg-white font-sans text-zinc-900 selection:bg-black selection:text-white overflow-x-hidden">
-      <LandingNavbar />
+      <LandingNavbar currentLang={currentLang} />
       <main className="relative">
         <HeroSection t={t} />
         <TrustedBySection />
@@ -28,7 +32,7 @@ export function LandingPageClient() {
         <CTASection t={t} />
         <TemplatesSection t={t} />
       </main>
-      <LandingFooter />
+      <LandingFooter currentLang={currentLang} />
     </div>
   );
 }

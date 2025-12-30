@@ -2,7 +2,7 @@
 
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
-import { useLanguage } from "~/contexts/LanguageContext";
+import { getTranslations, type Language } from "~/lib/i18n";
 import { BookOpen, TrendingUp, Users, Zap, Clock, ArrowRight } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -23,8 +23,12 @@ interface InsightPost {
   isFeatured: boolean;
 }
 
-export default function InsightsPage() {
-  const { t } = useLanguage();
+interface InsightsPageProps {
+  currentLang?: Language;
+}
+
+export default function InsightsPage({ currentLang = "en" }: InsightsPageProps) {
+  const t = getTranslations(currentLang);
   const [posts, setPosts] = useState<InsightPost[]>([]);
   const [featuredPost, setFeaturedPost] = useState<InsightPost | null>(null);
   const [loading, setLoading] = useState(true);
@@ -157,7 +161,7 @@ export default function InsightsPage() {
           }),
         }}
       />
-      <LandingNavbar />
+      <LandingNavbar currentLang={currentLang} />
 
       {/* Hero Section */}
       <section className="relative pt-40 pb-20 px-6 overflow-hidden">
@@ -382,7 +386,7 @@ export default function InsightsPage() {
         </div>
       </section>
 
-      <LandingFooter />
+      <LandingFooter currentLang={currentLang} />
     </div>
   );
 }

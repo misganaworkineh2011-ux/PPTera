@@ -1,15 +1,30 @@
 "use client";
 
 import Image from "next/image";
-import { useLanguage } from "~/contexts/LanguageContext";
+import { getTranslations, type Language } from "~/lib/i18n";
 import { LoadingLink } from "./LoadingLink";
 import { useState } from "react";
 import { toast } from "sonner";
 
-export const LandingFooter = () => {
-  const { t } = useLanguage();
+interface LandingFooterProps {
+  currentLang: Language;
+}
+
+// Helper to get localized path - English uses root, others use /[lang]/
+function getLocalizedPath(path: string, lang: Language): string {
+  if (lang === "en") {
+    return path; // English uses root path
+  }
+  return `/${lang}${path}`;
+}
+
+export const LandingFooter = ({ currentLang }: LandingFooterProps) => {
+  const t = getTranslations(currentLang);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  
+  // Helper for this component
+  const localPath = (path: string) => getLocalizedPath(path, currentLang);
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,10 +97,10 @@ export const LandingFooter = () => {
           <div>
             <h4 className="font-medium text-white mb-4">{t.productFooter}</h4>
             <ul className="space-y-3 text-sm text-zinc-400">
-              <li><LoadingLink href="/pricing" className="hover:text-white transition">{t.pricing}</LoadingLink></li>
-              <li><LoadingLink href="/inspiration" className="hover:text-white transition">{t.inspiration}</LoadingLink></li>
-              <li><LoadingLink href="/prompt-guide" className="hover:text-white transition">{t.promptGuide}</LoadingLink></li>
-              <li><LoadingLink href="/insights" className="hover:text-white transition">{t.insights}</LoadingLink></li>
+              <li><LoadingLink href={localPath("/pricing")} className="hover:text-white transition">{t.pricing}</LoadingLink></li>
+              <li><LoadingLink href={localPath("/inspiration")} className="hover:text-white transition">{t.inspiration}</LoadingLink></li>
+              <li><LoadingLink href={localPath("/prompt-guide")} className="hover:text-white transition">{t.promptGuide}</LoadingLink></li>
+              <li><LoadingLink href={localPath("/insights")} className="hover:text-white transition">{t.insights}</LoadingLink></li>
             </ul>
           </div>
 
@@ -93,8 +108,8 @@ export const LandingFooter = () => {
           <div>
             <h4 className="font-medium text-white mb-4">{t.company}</h4>
             <ul className="space-y-3 text-sm text-zinc-400">
-              <li><LoadingLink href="/about" className="hover:text-white transition">{t.about}</LoadingLink></li>
-              <li><LoadingLink href="/careers" className="hover:text-white transition">{t.careers}</LoadingLink></li>
+              <li><LoadingLink href={localPath("/about")} className="hover:text-white transition">{t.about}</LoadingLink></li>
+              <li><LoadingLink href={localPath("/careers")} className="hover:text-white transition">{t.careers}</LoadingLink></li>
             </ul>
           </div>
 
@@ -102,9 +117,9 @@ export const LandingFooter = () => {
           <div>
             <h4 className="font-medium text-white mb-4">{t.help}</h4>
             <ul className="space-y-3 text-sm text-zinc-400">
-              <li><LoadingLink href="/help" className="hover:text-white transition">{t.helpCenter}</LoadingLink></li>
-              <li><LoadingLink href="/community" className="hover:text-white transition">{t.community}</LoadingLink></li>
-              <li><LoadingLink href="/contact" className="hover:text-white transition">{t.contactUs}</LoadingLink></li>
+              <li><LoadingLink href={localPath("/help")} className="hover:text-white transition">{t.helpCenter}</LoadingLink></li>
+              <li><LoadingLink href={localPath("/community")} className="hover:text-white transition">{t.community}</LoadingLink></li>
+              <li><LoadingLink href={localPath("/contact")} className="hover:text-white transition">{t.contactUs}</LoadingLink></li>
             </ul>
           </div>
 
@@ -112,9 +127,9 @@ export const LandingFooter = () => {
           <div>
             <h4 className="font-medium text-white mb-4">{t.legal}</h4>
             <ul className="space-y-3 text-sm text-zinc-400">
-              <li><LoadingLink href="/privacy" className="hover:text-white transition">{t.privacyPolicy}</LoadingLink></li>
-              <li><LoadingLink href="/terms" className="hover:text-white transition">{t.termsOfService}</LoadingLink></li>
-              <li><LoadingLink href="/cookies" className="hover:text-white transition">{t.cookieNotice}</LoadingLink></li>
+              <li><LoadingLink href={localPath("/privacy")} className="hover:text-white transition">{t.privacyPolicy}</LoadingLink></li>
+              <li><LoadingLink href={localPath("/terms")} className="hover:text-white transition">{t.termsOfService}</LoadingLink></li>
+              <li><LoadingLink href={localPath("/cookies")} className="hover:text-white transition">{t.cookieNotice}</LoadingLink></li>
             </ul>
           </div>
         </div>
@@ -125,9 +140,9 @@ export const LandingFooter = () => {
         <div className="mx-auto max-w-[1400px] px-6 lg:px-8 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-zinc-500">© 2025 PPTMaster Tech, Inc.</p>
           <div className="flex gap-6 text-sm text-zinc-500">
-            <LoadingLink href="/privacy" className="hover:text-white transition">{t.privacyPolicy}</LoadingLink>
-            <LoadingLink href="/terms" className="hover:text-white transition">{t.termsOfService}</LoadingLink>
-            <LoadingLink href="/cookies" className="hover:text-white transition">{t.cookieNotice}</LoadingLink>
+            <LoadingLink href={localPath("/privacy")} className="hover:text-white transition">{t.privacyPolicy}</LoadingLink>
+            <LoadingLink href={localPath("/terms")} className="hover:text-white transition">{t.termsOfService}</LoadingLink>
+            <LoadingLink href={localPath("/cookies")} className="hover:text-white transition">{t.cookieNotice}</LoadingLink>
           </div>
         </div>
       </div>

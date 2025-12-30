@@ -2,7 +2,7 @@
 
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
-import { useLanguage } from "~/contexts/LanguageContext";
+import { getTranslations, type Language } from "~/lib/i18n";
 import { Sparkles, Heart, Eye, ArrowLeft, Share2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -21,8 +21,12 @@ interface InspirationItem {
   updatedAt: string;
 }
 
-export default function InspirationItemPage() {
-  const { t } = useLanguage();
+interface InspirationItemPageProps {
+  currentLang?: Language;
+}
+
+export default function InspirationItemPage({ currentLang = "en" }: InspirationItemPageProps) {
+  const t = getTranslations(currentLang);
   const params = useParams();
   const router = useRouter();
   const [item, setItem] = useState<InspirationItem | null>(null);
@@ -138,14 +142,14 @@ export default function InspirationItemPage() {
   if (loading) {
     return (
       <div className="landing-page min-h-screen bg-white">
-        <LandingNavbar />
+        <LandingNavbar currentLang={currentLang} />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-[#06b6d4] border-r-transparent"></div>
             <p className="mt-4 text-slate-600">Loading...</p>
           </div>
         </div>
-        <LandingFooter />
+        <LandingFooter currentLang={currentLang} />
       </div>
     );
   }
@@ -197,7 +201,7 @@ export default function InspirationItemPage() {
           }),
         }}
       />
-      <LandingNavbar />
+      <LandingNavbar currentLang={currentLang} />
 
       {/* Back Button */}
       <div className="pt-32 pb-8 px-6">
@@ -386,7 +390,7 @@ export default function InspirationItemPage() {
         </section>
       )}
 
-      <LandingFooter />
+      <LandingFooter currentLang={currentLang} />
     </div>
   );
 }

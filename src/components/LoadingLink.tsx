@@ -44,6 +44,7 @@ export function LoadingLink({
       href={href} 
       className={cn("relative inline-flex items-center gap-2", className)}
       onClick={handleClick}
+      prefetch={false}
     >
       {isLoading && showSpinner && (
         <Loader2 className="h-4 w-4 animate-spin" />

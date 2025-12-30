@@ -2,7 +2,7 @@
 
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
-import { useLanguage } from "~/contexts/LanguageContext";
+import { getTranslations, type Language } from "~/lib/i18n";
 import { BookOpen, Heart, Eye, ArrowLeft, Share2, Clock, User } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -28,8 +28,12 @@ interface InsightPost {
   updatedAt: string;
 }
 
-export default function InsightPostPage() {
-  const { t } = useLanguage();
+interface InsightPostPageProps {
+  currentLang?: Language;
+}
+
+export default function InsightPostPage({ currentLang = "en" }: InsightPostPageProps) {
+  const t = getTranslations(currentLang);
   const params = useParams();
   const router = useRouter();
   const [post, setPost] = useState<InsightPost | null>(null);
@@ -121,14 +125,14 @@ export default function InsightPostPage() {
   if (loading) {
     return (
       <div className="landing-page min-h-screen bg-white">
-        <LandingNavbar />
+        <LandingNavbar currentLang={currentLang} />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-[#06b6d4] border-r-transparent"></div>
             <p className="mt-4 text-slate-600">Loading...</p>
           </div>
         </div>
-        <LandingFooter />
+        <LandingFooter currentLang={currentLang} />
       </div>
     );
   }
@@ -183,7 +187,7 @@ export default function InsightPostPage() {
           }),
         }}
       />
-      <LandingNavbar />
+      <LandingNavbar currentLang={currentLang} />
 
       {/* Back Button */}
       <div className="pt-32 pb-8 px-6">
@@ -422,7 +426,7 @@ export default function InsightPostPage() {
         </section>
       )}
 
-      <LandingFooter />
+      <LandingFooter currentLang={currentLang} />
     </div>
   );
 }
