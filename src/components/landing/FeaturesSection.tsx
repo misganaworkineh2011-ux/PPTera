@@ -1,215 +1,343 @@
 "use client";
 
+import { useState } from "react";
 import { Sparkles, Wand2, Share2 } from "lucide-react";
+import { SignInButton } from "@clerk/nextjs";
 import { LoadingLink } from "~/components/LoadingLink";
 
 interface FeaturesSectionProps {
   t: any;
 }
 
+// Presentation images for the inspiration cards
+const INSPIRATION_IMAGES = [
+  "https://res.cloudinary.com/di76ibrro/image/upload/v1766152567/Architectural_pptmaster_a18ccs.png",
+  "https://res.cloudinary.com/di76ibrro/image/upload/v1766152472/corporate_pptmaster_gcvo7p.png",
+  "https://res.cloudinary.com/di76ibrro/image/upload/v1766152111/alien_pptmaster_ldo5wm.png",
+];
+
+// Best 5 themes for preview
+const THEME_PREVIEWS = [
+  {
+    id: "corporate-clean",
+    name: "Corporate Clean",
+    bg: "#ffffff",
+    titleBg: "linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%)",
+    textColor: "#374151",
+    headingColor: "#111827",
+    accentColor: "#2563eb",
+    borderColor: "#e5e7eb",
+  },
+  {
+    id: "elegant-noir",
+    name: "Elegant Noir",
+    bg: "#0a0a0b",
+    titleBg: "linear-gradient(135deg, #1a1a1d 0%, #27272a 100%)",
+    textColor: "#e4e4e7",
+    headingColor: "#fafafa",
+    accentColor: "#f59e0b",
+    borderColor: "#27272a",
+  },
+  {
+    id: "cyber-neon",
+    name: "Cyber Neon",
+    bg: "#0a0a0f",
+    titleBg: "linear-gradient(135deg, #0f0f18 0%, #1a1a2e 100%)",
+    textColor: "#e0f0ff",
+    headingColor: "#ffffff",
+    accentColor: "#00ffff",
+    borderColor: "#1a1a2e",
+  },
+  {
+    id: "sunset-gradient",
+    name: "Sunset Gradient",
+    bg: "#1c1017",
+    titleBg: "linear-gradient(135deg, #2d1a24 0%, #4c1d3d 100%)",
+    textColor: "#fce7f3",
+    headingColor: "#ffffff",
+    accentColor: "#f472b6",
+    borderColor: "#4c1d3d",
+  },
+  {
+    id: "ocean-depths",
+    name: "Ocean Depths",
+    bg: "#0a1628",
+    titleBg: "linear-gradient(135deg, #0d1f35 0%, #1e3a5f 100%)",
+    textColor: "#e0f2fe",
+    headingColor: "#ffffff",
+    accentColor: "#14b8a6",
+    borderColor: "#1e3a5f",
+  },
+];
+
 export function FeaturesSection({ t }: FeaturesSectionProps) {
+  const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   return (
     <section className="py-24 px-6 lg:px-8">
       <div className="mx-auto max-w-[1400px]">
         {/* Main Feature - Full Width */}
         <div className="mb-32">
           <h2 className="text-[2.75rem] leading-[1.15] font-semibold tracking-tight text-zinc-900 max-w-2xl lg:text-[3.25rem]">
-            Prompt, create, and design from first idea to final presentation
+            {t.fromIdeaToPPT || "From idea to PowerPoint in minutes with AI"}
           </h2>
           
           {/* Feature Demo */}
           <div className="mt-12 relative">
             <div className="rounded-2xl overflow-hidden border border-zinc-200 bg-white shadow-xl">
-              {/* Browser Chrome */}
-              <div className="flex items-center gap-2 px-4 py-3 bg-zinc-50 border-b border-zinc-200">
-                <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-zinc-300"></div>
-                  <div className="w-3 h-3 rounded-full bg-zinc-300"></div>
-                  <div className="w-3 h-3 rounded-full bg-zinc-300"></div>
-                </div>
-              </div>
-              
               {/* App Interface */}
-              <div className="grid lg:grid-cols-[300px_1fr] min-h-[500px]">
+              <div className="grid lg:grid-cols-[300px_1fr]">
                 {/* Left Panel - AI Chat */}
                 <div className="border-r border-zinc-200 p-6 bg-white">
                   <div className="flex items-center gap-2 mb-6">
                     <div className="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center">
                       <Sparkles className="w-4 h-4 text-white" />
                     </div>
-                    <span className="font-medium text-zinc-900">AI Assistant</span>
+                    <span className="font-medium text-zinc-900">{t.aiAssistant || "AI Assistant"}</span>
                   </div>
                   
                   <div className="space-y-4">
                     <div className="p-3 bg-zinc-50 rounded-lg">
-                      <p className="text-sm text-zinc-600">Turn this design into a working presentation with smooth transitions.</p>
+                      <p className="text-sm text-zinc-600">{t.featuresDemoPrompt || "Create a 10-slide pitch deck for my SaaS startup with modern design."}</p>
                     </div>
                     
                     <div className="space-y-2">
-                      <p className="text-xs text-zinc-400 font-medium">Reasoning</p>
-                      <p className="text-xs text-zinc-500">I'll transform this design into a functional presentation with opening slide animations...</p>
+                      <p className="text-xs text-zinc-400 font-medium">{t.generating || "Generating"}</p>
+                      <p className="text-xs text-zinc-500">{t.creatingSlides || "Creating professional slides with consistent branding and smart layouts..."}</p>
                     </div>
                     
                     <div className="space-y-2">
-                      <p className="text-xs text-zinc-400 font-medium">Next steps you could consider:</p>
+                      <p className="text-xs text-zinc-400 font-medium">{t.slidesIncluded || "Slides included:"}</p>
                       <ul className="text-xs text-zinc-500 space-y-1">
-                        <li>• Add audio integration with actual sound playback</li>
-                        <li>• Implement progress bars and seek functionality</li>
-                        <li>• Add volume controls and additional features</li>
+                        <li>• {t.titleSlideWithBranding || "Title slide with company branding"}</li>
+                        <li>• {t.problemSolutionOverview || "Problem & solution overview"}</li>
+                        <li>• {t.marketAnalysisCharts || "Market analysis with charts"}</li>
                       </ul>
                     </div>
                   </div>
                 </div>
                 
-                {/* Right Panel - Preview */}
-                <div className="bg-zinc-900 p-8 relative">
-                  <div className="absolute top-4 right-4 flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-emerald-500"></div>
-                    <div className="w-6 h-6 rounded-full bg-amber-500"></div>
-                    <div className="w-6 h-6 rounded-full bg-rose-500"></div>
-                  </div>
-                  
-                  {/* Slide Preview */}
-                  <div className="bg-gradient-to-br from-amber-600 to-orange-700 rounded-xl aspect-video flex items-center justify-center">
-                    <div className="text-center text-white">
-                      <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-white/20 backdrop-blur"></div>
-                      <h3 className="text-2xl font-bold">Dreamy Haze</h3>
-                    </div>
-                  </div>
-                  
-                  {/* Slide List */}
-                  <div className="mt-6 space-y-2">
-                    {["DREAMY HAZE", "WHISPER SOFT", "GOLDEN HOUR", "VELVET DUSK"].map((name, i) => (
-                      <div key={i} className="flex items-center justify-between px-3 py-2 rounded-lg bg-zinc-800/50 text-zinc-400 text-sm">
-                        <span>{name}</span>
-                        <span className="text-xs">00:30</span>
-                      </div>
-                    ))}
-                  </div>
+                {/* Right Panel - Video */}
+                <div className="relative aspect-video overflow-hidden">
+                  <iframe
+                    src="https://player.vimeo.com/video/1150201596?autoplay=1&loop=1&muted=1&background=1"
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%]"
+                    style={{ border: 0 }}
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    allowFullScreen
+                  />
                 </div>
               </div>
             </div>
           </div>
           
-          {/* Feature Tabs */}
-          <div className="flex items-center justify-center gap-8 mt-8">
+          {/* Feature Tabs with Arrows */}
+          <div className="flex items-center justify-center gap-2 mt-8">
             {[
-              { label: "Prompt", href: "/dashboard" },
-              { label: "Design", href: "/dashboard" },
-              { label: "Edit", href: "/dashboard" },
-              { label: "Build", href: "/dashboard" },
-              { label: "Publish", href: "/dashboard" },
-              { label: "Present", href: "/dashboard" },
-            ].map((tab, i) => (
-              <LoadingLink 
-                key={tab.label}
-                href={tab.href}
-                className={`text-sm font-medium transition ${i === 0 ? "text-zinc-900 border-b-2 border-zinc-900 pb-1" : "text-zinc-400 hover:text-zinc-600"}`}
-              >
-                {tab.label}
-              </LoadingLink>
+              { label: "Prompt" },
+              { label: "Design" },
+              { label: "Edit" },
+              { label: "Publish" },
+              { label: "Present" },
+            ].map((tab, i, arr) => (
+              <div key={tab.label} className="flex items-center gap-2">
+                <span
+                  className={`text-sm font-medium transition cursor-default ${i === 0 ? "text-zinc-900 border-b-2 border-zinc-900 pb-1" : "text-zinc-400"}`}
+                >
+                  {tab.label}
+                </span>
+                {i < arr.length - 1 && (
+                  <svg className="w-4 h-4 text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                )}
+              </div>
             ))}
           </div>
           
           <p className="text-center text-zinc-600 mt-6">
-            Prompt to create anything you can imagine with AI.
+            {t.createStunningPPT || "Create stunning PowerPoint presentations with just a prompt."}
           </p>
           <p className="text-center mt-2">
-            <LoadingLink href="/dashboard" className="text-zinc-900 font-medium underline underline-offset-4 hover:text-zinc-600 transition">
-              Explore PPTMaster AI
-            </LoadingLink>
+            <SignInButton mode="modal">
+              <button className="text-zinc-900 font-medium underline underline-offset-4 hover:text-zinc-600 transition" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
+                {t.tryPPTMasterAI || "Try PPT Master AI"}
+              </button>
+            </SignInButton>
           </p>
         </div>
 
         {/* Two Column Features */}
         <div className="grid lg:grid-cols-2 gap-8 mb-32">
-          {/* Feature 1 */}
-          <LoadingLink href="/dashboard" className="group block">
-            <div className="rounded-2xl overflow-hidden border border-zinc-200 bg-zinc-50 aspect-[4/3] mb-6 relative group-hover:border-zinc-300 transition">
-              <div className="absolute inset-0 p-6">
-                <div className="grid grid-cols-2 gap-4 h-full">
-                  <div className="bg-white rounded-xl border border-zinc-200 p-4">
-                    <div className="h-2 w-20 bg-zinc-200 rounded mb-2"></div>
-                    <div className="h-1.5 w-16 bg-zinc-100 rounded"></div>
-                  </div>
-                  <div className="bg-white rounded-xl border border-zinc-200 p-4">
-                    <div className="h-2 w-16 bg-zinc-200 rounded mb-2"></div>
-                    <div className="h-1.5 w-20 bg-zinc-100 rounded"></div>
+          {/* Feature 1 - Templates */}
+          <SignInButton mode="modal">
+            <button className="group block text-left w-full" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
+              <div className="rounded-xl overflow-hidden border border-zinc-200 bg-zinc-100 aspect-[4/3] mb-6 relative group-hover:border-zinc-300 group-hover:shadow-lg transition-all duration-300">
+                <div className="absolute inset-0 p-3">
+                  {/* Theme Preview Grid - 2 large on left, 3 stacked on right */}
+                  <div className="grid grid-cols-5 gap-2 h-full">
+                    {/* Left column - 2 larger cards */}
+                    <div className="col-span-3 grid grid-rows-2 gap-2">
+                      {THEME_PREVIEWS.slice(0, 2).map((theme) => (
+                        <div
+                          key={theme.id}
+                          className="rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+                          style={{ background: theme.bg, border: `1px solid ${theme.borderColor}` }}
+                        >
+                          {/* Mini slide preview */}
+                          <div className="h-full p-3 flex flex-col">
+                            <div 
+                              className="rounded-md p-2 mb-2 flex-shrink-0"
+                              style={{ background: theme.titleBg }}
+                            >
+                              <div 
+                                className="text-[10px] font-semibold truncate"
+                                style={{ color: theme.headingColor }}
+                              >
+                                {theme.name}
+                              </div>
+                            </div>
+                            <div className="flex-1 flex flex-col justify-center gap-1.5">
+                              <div className="flex items-center gap-1.5">
+                                <div 
+                                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                                  style={{ background: theme.accentColor }}
+                                />
+                                <div 
+                                  className="h-1 rounded flex-1"
+                                  style={{ background: theme.textColor, opacity: 0.3 }}
+                                />
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <div 
+                                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                                  style={{ background: theme.accentColor }}
+                                />
+                                <div 
+                                  className="h-1 rounded w-3/4"
+                                  style={{ background: theme.textColor, opacity: 0.3 }}
+                                />
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <div 
+                                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                                  style={{ background: theme.accentColor }}
+                                />
+                                <div 
+                                  className="h-1 rounded w-5/6"
+                                  style={{ background: theme.textColor, opacity: 0.3 }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Right column - 3 smaller stacked cards */}
+                    <div className="col-span-2 grid grid-rows-3 gap-2">
+                      {THEME_PREVIEWS.slice(2, 5).map((theme) => (
+                        <div
+                          key={theme.id}
+                          className="rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+                          style={{ background: theme.bg, border: `1px solid ${theme.borderColor}` }}
+                        >
+                          <div className="h-full p-2 flex flex-col">
+                            <div 
+                              className="rounded p-1.5 mb-1"
+                              style={{ background: theme.titleBg }}
+                            >
+                              <div 
+                                className="text-[8px] font-semibold truncate"
+                                style={{ color: theme.headingColor }}
+                              >
+                                {theme.name}
+                              </div>
+                            </div>
+                            <div className="flex-1 flex items-center">
+                              <div className="flex gap-0.5 w-full">
+                                {[0.4, 0.6, 0.8, 1].map((h, i) => (
+                                  <div 
+                                    key={i}
+                                    className="flex-1 rounded-sm"
+                                    style={{ 
+                                      background: theme.accentColor, 
+                                      height: `${h * 100}%`,
+                                      opacity: 0.3 + (h * 0.5),
+                                      alignSelf: "flex-end"
+                                    }}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <h3 className="text-lg font-semibold text-zinc-900 mb-2">
-              Share templates across teams.
-            </h3>
-            <p className="text-zinc-600">
-              Create reusable templates, themes, and brand assets to keep your entire organization building with the same visual language.
-            </p>
-            <span className="inline-block mt-4 text-zinc-900 font-medium underline underline-offset-4 group-hover:text-zinc-600 transition">
-              Explore templates
-            </span>
-          </LoadingLink>
+              <h3 className="text-lg font-semibold text-zinc-900 mb-2">
+                {t.professionalTemplatesUseCase || "Professional templates for every presentation."}
+              </h3>
+              <p className="text-zinc-600">
+                {t.templatesDescription || "Choose from beautifully designed themes. Customize colors, fonts, and layouts to match your brand."}
+              </p>
+              <span className="inline-block mt-4 text-zinc-900 font-medium underline underline-offset-4 group-hover:text-zinc-600 transition">
+                {t.exploreTemplates || "Explore templates"}
+              </span>
+            </button>
+          </SignInButton>
 
-          {/* Feature 2 */}
+          {/* Feature 2 - Get Inspired */}
           <LoadingLink href="/inspiration" className="group block">
-            <div className="rounded-2xl overflow-hidden border border-zinc-200 bg-lime-50 aspect-[4/3] mb-6 relative group-hover:border-zinc-300 transition">
-              <div className="absolute inset-0 p-6 flex items-center justify-center">
-                <div className="grid grid-cols-3 gap-3">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="w-24 h-32 bg-white rounded-lg border border-zinc-200 shadow-sm"></div>
-                  ))}
-                </div>
+            <div className="overflow-hidden border border-zinc-200 aspect-[4/3] mb-6 relative group-hover:border-zinc-300 transition">
+              {/* 3 Expandable Cards - Full height, no gap, sharp edges */}
+              <div className="absolute inset-0 flex">
+                {INSPIRATION_IMAGES.map((img, i) => {
+                  // Default: last card (right) is big (60%), others are small (20% each)
+                  // On hover: hovered card becomes big, others become small
+                  const isHovered = hoveredCard === i;
+                  const hasHover = hoveredCard !== null;
+                  
+                  let widthPercent = 20;
+                  if (!hasHover) {
+                    // Default state: last (right) is big
+                    widthPercent = i === 2 ? 60 : 20;
+                  } else {
+                    // Hover state: hovered is big
+                    widthPercent = isHovered ? 60 : 20;
+                  }
+                  
+                  return (
+                    <div
+                      key={i}
+                      className="h-full overflow-hidden transition-[width] duration-500 ease-out flex-shrink-0 relative"
+                      style={{ width: `${widthPercent}%` }}
+                      onMouseEnter={() => setHoveredCard(i)}
+                      onMouseLeave={() => setHoveredCard(null)}
+                    >
+                      {/* Fixed-size image container to prevent zoom */}
+                      <div 
+                        className="absolute inset-0"
+                        style={{
+                          backgroundImage: `url(${img})`,
+                          backgroundSize: "cover",
+                          backgroundPosition: "center",
+                        }}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             </div>
             <h3 className="text-lg font-semibold text-zinc-900 mb-2">
-              Unlock your team with on-brand templates.
+              {t.getInspiredTitle || "Get inspired by amazing presentations."}
             </h3>
             <p className="text-zinc-600">
-              Share templates with your organization so anyone can quickly create presentations, reports, and more.
+              {t.getInspiredDesc || "Browse our gallery of AI-generated presentations. Find inspiration and see what's possible with PPT Master."}
             </p>
             <span className="inline-block mt-4 text-zinc-900 font-medium underline underline-offset-4 group-hover:text-zinc-600 transition">
-              Explore inspiration
-            </span>
-          </LoadingLink>
-        </div>
-
-        {/* Full Width Feature */}
-        <div className="mb-32">
-          <LoadingLink href="/developer-docs" className="group block">
-            <div className="rounded-2xl overflow-hidden border border-zinc-200 bg-zinc-50 aspect-[2/1] mb-6 relative group-hover:border-zinc-300 transition">
-              <div className="absolute inset-0 p-8 flex items-center">
-                <div className="grid grid-cols-2 gap-8 w-full">
-                  <div className="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm">
-                    <div className="text-sm text-zinc-500 mb-4">On View</div>
-                    <p className="text-zinc-900">A snapshot of our dynamic, genre-defying collection that pushes boundaries and sparks new conversations.</p>
-                  </div>
-                  <div className="bg-zinc-900 rounded-xl p-6 text-white">
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-sm text-zinc-400">Specs</span>
-                      <span className="text-xs bg-emerald-500 px-2 py-0.5 rounded">Active</span>
-                    </div>
-                    <div className="space-y-2 text-sm text-zinc-400">
-                      <div className="flex justify-between">
-                        <span>Height</span>
-                        <span>184px</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Width</span>
-                        <span>217px</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <h3 className="text-lg font-semibold text-zinc-900 mb-2">
-              Create one source of truth for devs and designers.
-            </h3>
-            <p className="text-zinc-600 max-w-2xl">
-              Get specs, annotations, and code snippets in one dedicated space with Dev Mode.
-            </p>
-            <span className="inline-block mt-4 text-zinc-900 font-medium underline underline-offset-4 group-hover:text-zinc-600 transition">
-              Explore Dev Mode
+              {t.exploreInspiration || "Explore inspiration"}
             </span>
           </LoadingLink>
         </div>
@@ -218,7 +346,7 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
             <h2 className="text-[2.75rem] leading-[1.15] font-semibold tracking-tight text-zinc-900 lg:text-[3.25rem]">
-              Ship presentations, any way you want
+              {t.exportShareTitle || "Export and share your way"}
             </h2>
             
             <div className="mt-12 space-y-8">
@@ -227,36 +355,37 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
                 <div className="flex items-start gap-3">
                   <Sparkles className="w-5 h-5 text-zinc-900 mt-0.5" />
                   <div>
-                    <h3 className="font-semibold text-zinc-900 mb-2">Turn prompts into presentations</h3>
+                    <h3 className="font-semibold text-zinc-900 mb-2">{t.exportToPPT || "Export to PowerPoint, PDF, or Google Slides"}</h3>
                     <p className="text-zinc-600 text-sm">
-                      Our AI lets you bring your ideas directly into your agentic workflow.
+                      {t.exportToPPTDesc || "Download your presentations in any format. Perfect compatibility with Microsoft PowerPoint and Google Slides."}
                     </p>
-                    <span className="inline-block mt-3 text-zinc-900 text-sm font-medium underline underline-offset-4 group-hover:text-zinc-600 transition">
-                      Explore Prompt Guide
-                    </span>
                   </div>
                 </div>
               </LoadingLink>
 
               {/* Feature Item */}
-              <LoadingLink href="/dashboard" className="group block border-b border-zinc-200 pb-8">
-                <div className="flex items-start gap-3">
-                  <Wand2 className="w-5 h-5 text-zinc-900 mt-0.5" />
-                  <div>
-                    <h3 className="font-semibold text-zinc-900 mb-2 group-hover:text-zinc-600 transition">Publish custom presentations—with or without code</h3>
-                  </div>
-                </div>
-              </LoadingLink>
+              <div className="group block border-b border-zinc-200 pb-8">
+                <SignInButton mode="modal">
+                  <button className="flex items-start gap-3 text-left w-full" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
+                    <Wand2 className="w-5 h-5 text-zinc-900 mt-0.5" />
+                    <div>
+                      <h3 className="font-semibold text-zinc-900 mb-2 group-hover:text-zinc-600 transition">{t.shareWithLink || "Share with a link or embed anywhere"}</h3>
+                    </div>
+                  </button>
+                </SignInButton>
+              </div>
 
               {/* Feature Item */}
-              <LoadingLink href="/dashboard" className="group block">
-                <div className="flex items-start gap-3">
-                  <Share2 className="w-5 h-5 text-zinc-900 mt-0.5" />
-                  <div>
-                    <h3 className="font-semibold text-zinc-900 mb-2 group-hover:text-zinc-600 transition">Ship presentations faster with AI</h3>
-                  </div>
-                </div>
-              </LoadingLink>
+              <div className="group block">
+                <SignInButton mode="modal">
+                  <button className="flex items-start gap-3 text-left w-full" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
+                    <Share2 className="w-5 h-5 text-zinc-900 mt-0.5" />
+                    <div>
+                      <h3 className="font-semibold text-zinc-900 mb-2 group-hover:text-zinc-600 transition">{t.presentDirectly || "Present directly from PPT Master"}</h3>
+                    </div>
+                  </button>
+                </SignInButton>
+              </div>
             </div>
           </div>
 
@@ -266,10 +395,15 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
               {/* Chat Interface */}
               <div className="p-6 border-b border-zinc-200">
                 <p className="text-sm text-zinc-600">
-                  I'll update the current design system for your application to match your brand file.
+                  {t.generatingPresentation || "Generating your presentation with professional design and smart layouts..."}
                 </p>
                 <div className="mt-4 space-y-2">
-                  {["Called get_code_for_selection", "Called get_variable_defs", "Called get_code_connect_map", "Called get_metadata"].map((item, i) => (
+                  {[
+                    t.progressCreatingTitle || "Creating title slide",
+                    t.progressAddingContent || "Adding content slides",
+                    t.progressApplyingTheme || "Applying theme",
+                    t.progressGeneratingCharts || "Generating charts"
+                  ].map((item, i) => (
                     <div key={i} className="flex items-center gap-2 text-sm">
                       <span className="text-zinc-400">›</span>
                       <span className="text-zinc-600">{item}</span>
@@ -278,21 +412,27 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
                   ))}
                 </div>
                 <div className="mt-6 p-4 bg-zinc-50 rounded-lg">
-                  <p className="text-sm text-zinc-600">Add this profile page based on my selected designs.</p>
+                  <p className="text-sm text-zinc-600">{t.presentationReady || "Your presentation is ready! Export to PPTX or share with a link."}</p>
                 </div>
               </div>
             </div>
 
             {/* Floating Profile Card */}
             <div className="absolute -right-4 top-8 bg-purple-600 rounded-xl p-4 w-48 text-white shadow-xl">
-              <div className="text-xs text-purple-200 mb-3">CoLab / Profile</div>
+              <div className="text-xs text-purple-200 mb-3">PPT Master / {t.export || "Export"}</div>
               <div className="flex flex-col items-center">
-                <div className="w-14 h-14 rounded-full bg-purple-400 mb-2"></div>
-                <p className="font-medium">Julia Simmons</p>
-                <p className="text-xs text-purple-200">New York, NY</p>
+                <div className="w-14 h-14 rounded-full bg-purple-400 mb-2 flex items-center justify-center">
+                  <Share2 className="w-6 h-6 text-white" />
+                </div>
+                <p className="font-medium">{t.readyToShare || "Ready to Share"}</p>
+                <p className="text-xs text-purple-200">10 {t.slides || "slides"}</p>
                 <div className="flex gap-2 mt-3">
-                  <LoadingLink href="/dashboard" className="px-3 py-1 bg-white text-purple-600 text-xs rounded-md font-medium hover:bg-purple-50 transition">Follow</LoadingLink>
-                  <LoadingLink href="/contact" className="px-3 py-1 border border-purple-400 text-xs rounded-md hover:bg-purple-500 transition">Message</LoadingLink>
+                  <SignInButton mode="modal">
+                    <button className="px-3 py-1 bg-white text-purple-600 text-xs rounded-md font-medium hover:bg-purple-50 transition" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>{t.export || "Export"}</button>
+                  </SignInButton>
+                  <SignInButton mode="modal">
+                    <button className="px-3 py-1 border border-purple-400 text-xs rounded-md hover:bg-purple-500 transition" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>{t.share || "Share"}</button>
+                  </SignInButton>
                 </div>
               </div>
             </div>

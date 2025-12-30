@@ -127,7 +127,7 @@ export default function CommunityPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="landing-page min-h-screen bg-white">
       <LandingNavbar />
 
       {/* Hero Section */}

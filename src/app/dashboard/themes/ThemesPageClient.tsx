@@ -1,9 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import ThemesStickyHeader from "./ThemesStickyHeader";
 import ThemesContent from "./ThemesContent";
 import CustomThemeCreator from "./CustomThemeCreator";
+import PricingModal from "~/components/dashboard/PricingModal";
+import { useUpgradeModal } from "~/hooks/useUpgradeModal";
+import { useDashboard } from "~/contexts/DashboardContext";
 
 interface ThemeData {
   id: string;
@@ -20,7 +24,30 @@ interface ThemesPageClientProps {
 
 export default function ThemesPageClient({ initialThemes }: ThemesPageClientProps) {
   const [showCreator, setShowCreator] = useState(false);
+  const [showPricing, setShowPricing] = useState(false);
   const [themes, setThemes] = useState(initialThemes);
+  const { user } = useDashboard();
+  const router = useRouter();
+  const { showUpgradeModal, UpgradeModal } = useUpgradeModal();
+
+  const handleCreateClick = () => {
+    const userPlan = user?.subscriptionPlan?.toLowerCase();
+    
+    // Check if user has Pro or Ultra plan
+    if (!userPlan || !['pro', 'ultra'].includes(userPlan)) {
+      // Show upgrade modal
+      showUpgradeModal({
+        feature: "Custom Themes & Branding",
+        requiredPlan: "pro",
+        currentPlan: user?.subscriptionPlan,
+        description: "Create custom themes with your own colors, fonts, and branding. Available for Pro and Ultra plans.",
+        onOpenPricing: () => setShowPricing(true),
+      });
+      return;
+    }
+    
+    setShowCreator(true);
+  };
 
   const handleSaveTheme = async (themeData: any) => {
     try {
@@ -31,7 +58,8 @@ export default function ThemesPageClient({ initialThemes }: ThemesPageClientProp
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create theme");
+        const error = await response.json();
+        throw new Error(error.error || "Failed to create theme");
       }
 
       const data = await response.json();
@@ -39,6 +67,7 @@ export default function ThemesPageClient({ initialThemes }: ThemesPageClientProp
       setShowCreator(false);
     } catch (error) {
       console.error("Error saving theme:", error);
+      alert(error instanceof Error ? error.message : "Failed to create theme");
       throw error;
     }
   };
@@ -46,7 +75,7 @@ export default function ThemesPageClient({ initialThemes }: ThemesPageClientProp
   return (
     <div className="space-y-4 sm:space-y-6 lg:space-y-8 h-full">
       {/* Sticky Header Section */}
-      <ThemesStickyHeader onCreateClick={() => setShowCreator(true)} />
+      <ThemesStickyHeader onCreateClick={handleCreateClick} />
 
       {/* Themes Content */}
       <ThemesContent initialThemes={themes} />
@@ -57,6 +86,16 @@ export default function ThemesPageClient({ initialThemes }: ThemesPageClientProp
         onClose={() => setShowCreator(false)}
         onSave={handleSaveTheme}
       />
+
+      {/* Pricing Modal */}
+      <PricingModal
+        isOpen={showPricing}
+        onClose={() => setShowPricing(false)}
+        currentPlan={user?.subscriptionPlan}
+      />
+
+      {/* Upgrade Modal */}
+      <UpgradeModal />
     </div>
   );
 }

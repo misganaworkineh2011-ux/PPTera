@@ -4,6 +4,7 @@ import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { Lightbulb, Target, Layers, Zap, CheckCircle2 } from "lucide-react";
+import { SignInButton } from "@clerk/nextjs";
 
 export default function PromptGuidePage() {
   const { t } = useLanguage();
@@ -42,11 +43,11 @@ export default function PromptGuidePage() {
   const examples = [
     {
       category: "Business",
-      prompt: "Create a 15-slide quarterly business review presentation for Q4 2024, including revenue metrics, key achievements, challenges faced, and goals for Q1 2025. Target audience: executive team.",
+      prompt: "Create a quarterly business review presentation for Q4 2024, including revenue metrics, key achievements, challenges faced, and goals for Q1 2025. Target audience: executive team.",
     },
     {
       category: "Education",
-      prompt: "Design a 20-slide educational presentation about climate change for high school students, covering causes, effects, and solutions. Use engaging visuals and simple language.",
+      prompt: "Design an educational presentation about climate change for high school students, covering causes, effects, and solutions. Use engaging visuals and simple language.",
     },
     {
       category: "Marketing",
@@ -58,72 +59,72 @@ export default function PromptGuidePage() {
     },
     {
       category: "Startup",
-      prompt: "Create a 12-slide investor pitch deck for a fintech startup seeking seed funding. Include problem, solution, market size, business model, traction, team, and financial projections. Make it compelling and data-driven.",
+      prompt: "Create an investor pitch deck for a fintech startup seeking seed funding. Include problem, solution, market size, business model, traction, team, and financial projections. Make it compelling and data-driven.",
     },
     {
       category: "HR",
-      prompt: "Design a 10-slide employee onboarding presentation covering company culture, values, benefits, team structure, tools and resources, and first-week expectations. Friendly and welcoming tone.",
+      prompt: "Design employee onboarding presentation covering company culture, values, benefits, team structure, tools and resources, and first-week expectations. Friendly and welcoming tone.",
     },
     {
       category: "Product",
-      prompt: "Build a 15-slide product roadmap presentation for Q1-Q4 2025, showing planned features, timelines, resource allocation, and success metrics. Target audience: product team and stakeholders.",
+      prompt: "Build a product roadmap presentation for Q1-Q4 2025, showing planned features, timelines, resource allocation, and success metrics. Target audience: product team and stakeholders.",
     },
     {
       category: "Finance",
-      prompt: "Create an 8-slide financial report presentation showing revenue trends, expense breakdown, profit margins, cash flow analysis, and budget forecasts. Professional and data-heavy.",
+      prompt: "Create a financial report presentation showing revenue trends, expense breakdown, profit margins, cash flow analysis, and budget forecasts. Professional and data-heavy.",
     },
     {
       category: "Training",
-      prompt: "Design a 25-slide training presentation on cybersecurity best practices for employees, covering password management, phishing detection, data protection, and incident reporting. Interactive and practical.",
+      prompt: "Design a training presentation on cybersecurity best practices for employees, covering password management, phishing detection, data protection, and incident reporting. Interactive and practical.",
     },
     {
       category: "Research",
-      prompt: "Create a 20-slide research presentation on AI trends in healthcare, including current applications, case studies, challenges, future opportunities, and recommendations. Academic tone with citations.",
+      prompt: "Create a research presentation on AI trends in healthcare, including current applications, case studies, challenges, future opportunities, and recommendations. Academic tone with citations.",
     },
     {
       category: "Nonprofit",
-      prompt: "Build a 12-slide fundraising presentation for a nonprofit organization, highlighting mission, impact stories, programs, financial transparency, and donation opportunities. Emotional and inspiring.",
+      prompt: "Build a fundraising presentation for a nonprofit organization, highlighting mission, impact stories, programs, financial transparency, and donation opportunities. Emotional and inspiring.",
     },
     {
       category: "Real Estate",
-      prompt: "Create a 10-slide property listing presentation for a luxury home, featuring location highlights, property features, floor plans, neighborhood amenities, and investment potential. Elegant and sophisticated.",
+      prompt: "Create a property listing presentation for a luxury home, featuring location highlights, property features, floor plans, neighborhood amenities, and investment potential. Elegant and sophisticated.",
     },
     {
       category: "Consulting",
-      prompt: "Design a 15-slide consulting proposal for digital transformation, including current state analysis, recommended solutions, implementation roadmap, timeline, team, and pricing. Professional and strategic.",
+      prompt: "Design a consulting proposal for digital transformation, including current state analysis, recommended solutions, implementation roadmap, timeline, team, and pricing. Professional and strategic.",
     },
     {
       category: "Event",
-      prompt: "Build an 8-slide event proposal presentation for a tech conference, covering event concept, target audience, agenda, speakers, venue, budget, and sponsorship opportunities. Exciting and professional.",
+      prompt: "Build an event proposal presentation for a tech conference, covering event concept, target audience, agenda, speakers, venue, budget, and sponsorship opportunities. Exciting and professional.",
     },
     {
       category: "Portfolio",
-      prompt: "Create a 12-slide creative portfolio presentation showcasing design projects, including project briefs, design process, final deliverables, and client testimonials. Modern and visually stunning.",
+      prompt: "Create a creative portfolio presentation showcasing design projects, including project briefs, design process, final deliverables, and client testimonials. Modern and visually stunning.",
     },
     {
       category: "Strategy",
-      prompt: "Design a 20-slide strategic planning presentation for 2025, covering market analysis, competitive landscape, SWOT analysis, strategic objectives, initiatives, KPIs, and resource requirements.",
+      prompt: "Design a strategic planning presentation for 2025, covering market analysis, competitive landscape, SWOT analysis, strategic objectives, initiatives, KPIs, and resource requirements.",
     },
     {
       category: "Customer Success",
-      prompt: "Build a 10-slide customer success story presentation highlighting the client's challenge, our solution, implementation process, results achieved, and ROI. Include metrics and testimonials.",
+      prompt: "Build a customer success story presentation highlighting the client's challenge, our solution, implementation process, results achieved, and ROI. Include metrics and testimonials.",
     },
     {
       category: "Technology",
-      prompt: "Create a 15-slide technical architecture presentation explaining our cloud infrastructure, security measures, scalability approach, disaster recovery, and performance optimization. Technical but accessible.",
+      prompt: "Create a technical architecture presentation explaining our cloud infrastructure, security measures, scalability approach, disaster recovery, and performance optimization. Technical but accessible.",
     },
     {
       category: "Healthcare",
-      prompt: "Design a 12-slide patient education presentation about diabetes management, covering symptoms, diagnosis, treatment options, lifestyle changes, monitoring, and support resources. Clear and compassionate.",
+      prompt: "Design a patient education presentation about diabetes management, covering symptoms, diagnosis, treatment options, lifestyle changes, monitoring, and support resources. Clear and compassionate.",
     },
     {
       category: "Legal",
-      prompt: "Build an 8-slide legal compliance presentation on GDPR requirements for the marketing team, covering key regulations, data handling procedures, consent management, and penalties. Clear and actionable.",
+      prompt: "Build a legal compliance presentation on GDPR requirements for the marketing team, covering key regulations, data handling procedures, consent management, and penalties. Clear and actionable.",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="landing-page min-h-screen bg-white">
       <LandingNavbar />
 
       {/* Hero Section */}
@@ -239,10 +240,12 @@ export default function PromptGuidePage() {
             <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
               {t.readyToCreateDesc || "Put these tips into practice and create your first AI-powered presentation."}
             </p>
-            <button className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 md:px-8 md:py-4 text-sm md:text-lg font-bold text-[#1e3a8a] shadow-xl hover:shadow-2xl transition-all hover:scale-105">
-              {t.startCreating || "Start Creating"}
-              <Zap className="h-4 w-4 md:h-5 md:w-5" />
-            </button>
+            <SignInButton mode="modal">
+              <button className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 md:px-8 md:py-4 text-sm md:text-lg font-bold text-[#1e3a8a] shadow-xl hover:shadow-2xl transition-all hover:scale-105" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
+                {t.startCreating || "Start Creating"}
+                <Zap className="h-4 w-4 md:h-5 md:w-5" />
+              </button>
+            </SignInButton>
           </div>
         </div>
       </section>

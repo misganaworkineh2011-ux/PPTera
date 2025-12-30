@@ -120,7 +120,7 @@ export default function InsightPostPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="landing-page min-h-screen bg-white">
         <LandingNavbar />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
@@ -138,7 +138,7 @@ export default function InsightPostPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="landing-page min-h-screen bg-white">
       {/* JSON-LD Structured Data for SEO */}
       <script
         type="application/ld+json"

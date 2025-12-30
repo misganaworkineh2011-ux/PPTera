@@ -87,6 +87,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Check if user has Pro or Ultra plan for custom themes
+    const userPlan = user.subscriptionPlan?.toLowerCase();
+    if (!userPlan || !['pro', 'ultra'].includes(userPlan)) {
+      return NextResponse.json(
+        { error: "Custom themes are only available for Pro and Ultra plans. Please upgrade to create custom themes." },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const {
       themeName,

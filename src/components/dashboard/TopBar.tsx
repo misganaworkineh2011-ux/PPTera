@@ -45,7 +45,7 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
     }
     
     const pageMap: Record<string, { title: string; icon: React.ReactNode }> = {
-      "/dashboard": { title: t.presentations || "Presentations", icon: <FileText size={14} /> },
+      "/": { title: t.presentations || "Presentations", icon: <FileText size={14} /> },
       "/dashboard/images": { title: t.images || "Images", icon: <ImageIcon size={14} /> },
       "/dashboard/charts": { title: t.charts || "Charts", icon: <BarChart size={14} /> },
       "/dashboard/themes": { title: t.themes || "Themes", icon: <Palette size={14} /> },

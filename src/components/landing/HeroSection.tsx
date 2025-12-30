@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
-import Image from "next/image";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import { ArrowRight, Command } from "lucide-react";
 import { LoadingLink } from "~/components/LoadingLink";
@@ -10,23 +9,38 @@ interface HeroSectionProps {
   t: any;
 }
 
-const baseCards = [
-  { id: 1, title: "Pitch Deck", prompt: "Create a modern pitch deck for a sustainable energy startup...", gradient: "from-blue-500/20 to-cyan-500/20" },
-  { id: 2, title: "Financial Report", prompt: "Generate a financial dashboard showing Q4 growth metrics...", gradient: "from-purple-500/20 to-pink-500/20" },
-  { id: 3, title: "Team Introduction", prompt: "Design a team introduction slide with professional photos...", gradient: "from-amber-500/20 to-orange-500/20" },
-  { id: 4, title: "Mission Statement", prompt: "Add a minimalist mission statement slide with impact...", gradient: "from-emerald-500/20 to-teal-500/20" },
-  { id: 5, title: "Product Launch", prompt: "Create an exciting product launch announcement slide...", gradient: "from-rose-500/20 to-red-500/20" },
-  { id: 6, title: "Market Analysis", prompt: "Build a comprehensive market analysis with charts...", gradient: "from-indigo-500/20 to-violet-500/20" },
-  { id: 7, title: "Contact Slide", prompt: "Create a closing summary with contact details...", gradient: "from-sky-500/20 to-blue-500/20" },
-];
-
 const CARD_HEIGHT = 420;
-const CARD_GAP = 14;
+const CARD_GAP = 8; // Reduced gap between cards
 const TOTAL_CARD_HEIGHT = CARD_HEIGHT + CARD_GAP;
 const TYPING_SPEED = 35;
 const VISIBLE_CARDS = 3;
+const AUTO_ADVANCE_DELAY = 7000; // 7 seconds per card
+
+// Mobile horizontal slider constants - maintain same aspect ratio as desktop (width:height ≈ 0.83)
+const MOBILE_CARD_WIDTH = 220;
+const MOBILE_CARD_HEIGHT = 265; // Same ratio as desktop (350/420)
+const MOBILE_CARD_GAP = 12;
+const TOTAL_MOBILE_CARD_WIDTH = MOBILE_CARD_WIDTH + MOBILE_CARD_GAP;
+
+// Vimeo video IDs with their hash parameters
+const VIMEO_VIDEOS = [
+  { id: "1103822384", hash: "d87e2634b3" },
+  { id: "1103822624", hash: "d2e608ba23" },
+  { id: "1103862294", hash: "802500bb17" },
+  { id: "1106141156", hash: "394f5f9721" },
+  { id: "1103822749", hash: "ad2a6b8283" },
+];
 
 export function HeroSection({ t }: HeroSectionProps) {
+  // Create cards with video URLs
+  const baseCards = useMemo(() => [
+    { id: 1, prompt: t.heroCard1Prompt || "Create a 10-slide investor pitch deck for my AI startup with market analysis and financials...", video: VIMEO_VIDEOS[0] },
+    { id: 2, prompt: t.heroCard2Prompt || "Generate a quarterly sales report with charts showing revenue growth and KPIs...", video: VIMEO_VIDEOS[1] },
+    { id: 3, prompt: t.heroCard3Prompt || "Design a professional team introduction with photos and role descriptions...", video: VIMEO_VIDEOS[2] },
+    { id: 4, prompt: t.heroCard4Prompt || "Build a comprehensive business plan presentation with SWOT analysis...", video: VIMEO_VIDEOS[3] },
+    { id: 5, prompt: t.heroCard5Prompt || "Create an engaging product demo showcasing features and benefits...", video: VIMEO_VIDEOS[4] },
+  ], [t]);
+
   const [activeIndex, setActiveIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
@@ -34,12 +48,18 @@ export function HeroSection({ t }: HeroSectionProps) {
   const [isTyping, setIsTyping] = useState(true);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const mobileContainerRef = useRef<HTMLDivElement>(null);
   const dragStartY = useRef(0);
+  const dragStartX = useRef(0);
   const lastY = useRef(0);
+  const lastX = useRef(0);
   const velocity = useRef(0);
+  const velocityX = useRef(0);
   const animationFrame = useRef<number>(undefined);
   const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const autoAdvanceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [mobileDragOffset, setMobileDragOffset] = useState(0);
+  const [isMobileDragging, setIsMobileDragging] = useState(false);
 
   // Get the actual card index with infinite loop wrapping
   const getWrappedIndex = (index: number) => {
@@ -50,15 +70,15 @@ export function HeroSection({ t }: HeroSectionProps) {
   // Get current card data
   const currentCard = baseCards[getWrappedIndex(activeIndex)];
 
-  // Auto-advance to next card when typing finishes
+  // Auto-advance to next card after 7 seconds
   const advanceToNextCard = useCallback(() => {
     if (autoAdvanceTimeoutRef.current) clearTimeout(autoAdvanceTimeoutRef.current);
     autoAdvanceTimeoutRef.current = setTimeout(() => {
       setActiveIndex((prev) => prev + 1);
-    }, 600);
+    }, AUTO_ADVANCE_DELAY);
   }, []);
 
-  // Typing animation - advances card when complete
+  // Typing animation - starts advance timer when complete
   useEffect(() => {
     if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
     if (autoAdvanceTimeoutRef.current) clearTimeout(autoAdvanceTimeoutRef.current);
@@ -93,6 +113,13 @@ export function HeroSection({ t }: HeroSectionProps) {
     const targetIndex = Math.round(-projectedOffset / TOTAL_CARD_HEIGHT);
     setActiveIndex(targetIndex);
     setDragOffset(0);
+  }, []);
+
+  const snapToNearestMobile = useCallback((currentOffset: number, vel: number) => {
+    const projectedOffset = currentOffset + vel * 0.3;
+    const targetIndex = Math.round(-projectedOffset / TOTAL_MOBILE_CARD_WIDTH);
+    setActiveIndex(targetIndex);
+    setMobileDragOffset(0);
   }, []);
 
   const handleDragStart = useCallback((clientY: number) => {
@@ -149,9 +176,45 @@ export function HeroSection({ t }: HeroSectionProps) {
   };
   const onTouchEnd = () => handleDragEnd();
 
+  // Mobile horizontal drag handlers
+  const handleMobileDragStart = useCallback((clientX: number) => {
+    if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
+    if (autoAdvanceTimeoutRef.current) clearTimeout(autoAdvanceTimeoutRef.current);
+    setIsMobileDragging(true);
+    dragStartX.current = clientX;
+    lastX.current = clientX;
+    velocityX.current = 0;
+    if (animationFrame.current) cancelAnimationFrame(animationFrame.current);
+  }, []);
+
+  const handleMobileDragMove = useCallback(
+    (clientX: number) => {
+      if (!isMobileDragging) return;
+      const delta = clientX - lastX.current;
+      velocityX.current = delta;
+      lastX.current = clientX;
+      setMobileDragOffset((prev) => prev + delta);
+    },
+    [isMobileDragging]
+  );
+
+  const handleMobileDragEnd = useCallback(() => {
+    if (!isMobileDragging) return;
+    setIsMobileDragging(false);
+    snapToNearestMobile(mobileDragOffset - activeIndex * TOTAL_MOBILE_CARD_WIDTH, velocityX.current);
+  }, [isMobileDragging, mobileDragOffset, activeIndex, snapToNearestMobile]);
+
+  const onMobileTouchStart = (e: React.TouchEvent) => {
+    handleMobileDragStart(e.touches[0]!.clientX);
+  };
+  const onMobileTouchMove = (e: React.TouchEvent) => {
+    handleMobileDragMove(e.touches[0]!.clientX);
+  };
+  const onMobileTouchEnd = () => handleMobileDragEnd();
+
   // Generate visible cards (render extra cards for smooth infinite scroll)
   const getVisibleCards = () => {
-    const visibleRange = 3; // Cards above and below center
+    const visibleRange = 3;
     const result = [];
     for (let i = -visibleRange; i <= visibleRange; i++) {
       const virtualIndex = activeIndex + i;
@@ -172,7 +235,6 @@ export function HeroSection({ t }: HeroSectionProps) {
 
     const distanceFromCenter = Math.abs(y) / TOTAL_CARD_HEIGHT;
     const normalScale = 1 - distanceFromCenter * 0.15;
-    // When dragging, all cards equalize to ~0.92 scale (middle shrinks, sides grow)
     const dragScale = 0.92;
     const scale = isDragging ? dragScale : Math.max(0.82, Math.min(1, normalScale));
 
@@ -188,10 +250,47 @@ export function HeroSection({ t }: HeroSectionProps) {
     };
   };
 
+  // Check if a card is the center card (should play video)
+  const isCenterCard = (virtualIndex: number) => {
+    const baseOffset = -activeIndex * TOTAL_CARD_HEIGHT;
+    const currentOffset = baseOffset + dragOffset;
+    const y = virtualIndex * TOTAL_CARD_HEIGHT + currentOffset;
+    return Math.abs(y) < TOTAL_CARD_HEIGHT * 0.3;
+  };
+
+  // Mobile horizontal card style
+  const getMobileCardStyle = (virtualIndex: number) => {
+    const baseOffset = -activeIndex * TOTAL_MOBILE_CARD_WIDTH;
+    const currentOffset = baseOffset + mobileDragOffset;
+    const x = virtualIndex * TOTAL_MOBILE_CARD_WIDTH + currentOffset;
+
+    const distanceFromCenter = Math.abs(x) / TOTAL_MOBILE_CARD_WIDTH;
+    const normalScale = 1 - distanceFromCenter * 0.1;
+    const dragScale = 0.95;
+    const scale = isMobileDragging ? dragScale : Math.max(0.85, Math.min(1, normalScale));
+
+    const opacity = Math.max(0.3, 1 - distanceFromCenter * 0.3);
+    const zIndex = 10 - Math.floor(distanceFromCenter);
+
+    return {
+      transform: `translateX(${x}px) scale(${scale})`,
+      opacity,
+      zIndex,
+      transition: isMobileDragging ? "none" : "all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
+    };
+  };
+
+  // Check if a card is center for mobile
+  const isMobileCenterCard = (virtualIndex: number) => {
+    const baseOffset = -activeIndex * TOTAL_MOBILE_CARD_WIDTH;
+    const currentOffset = baseOffset + mobileDragOffset;
+    const x = virtualIndex * TOTAL_MOBILE_CARD_WIDTH + currentOffset;
+    return Math.abs(x) < TOTAL_MOBILE_CARD_WIDTH * 0.3;
+  };
+
   const handleIndicatorClick = (idx: number) => {
     if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
     if (autoAdvanceTimeoutRef.current) clearTimeout(autoAdvanceTimeoutRef.current);
-    // Calculate the closest path to the target
     const currentWrapped = getWrappedIndex(activeIndex);
     const diff = idx - currentWrapped;
     setActiveIndex(activeIndex + diff);
@@ -202,25 +301,35 @@ export function HeroSection({ t }: HeroSectionProps) {
   const containerHeight = VISIBLE_CARDS * TOTAL_CARD_HEIGHT;
 
   return (
-    <section className="relative h-[95vh] min-h-[600px] flex items-center justify-center overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 z-0">
-        <Image src="/herobg.jpeg" alt="Hero background" fill className="object-cover" priority />
-        <div className="absolute inset-0 bg-white/85 backdrop-blur-[2px]" />
+    <section className="relative min-h-[600px] h-auto lg:h-[95vh] flex items-center justify-center overflow-hidden">
+      {/* Grid Background */}
+      <div className="absolute inset-0 z-0 bg-white">
+        <div 
+          className="absolute inset-0 opacity-[0.55]"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, #d4d4d8 1.25px, transparent 1.25px),
+              linear-gradient(to bottom, #d4d4d8 1.25px, transparent 1.25px)
+            `,
+            backgroundSize: '40px 40px',
+            maskImage: 'linear-gradient(to right, transparent 0%, black 35%, black 65%, transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 35%, black 65%, transparent 100%)'
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-white via-transparent to-white" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8 w-full py-20">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center min-h-[calc(100vh-160px)]">
+      <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8 w-full pt-24 pb-12 lg:py-20">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center lg:min-h-[calc(100vh-160px)]">
           {/* Left Column */}
           <div className="flex flex-col justify-center max-w-xl">
-            <h1 className="text-5xl sm:text-6xl font-bold tracking-tight text-zinc-900 leading-[1.1] mb-6">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-zinc-900 leading-[1.1] mb-6">
               {t.heroTitle} <br />
               <span className="text-zinc-400">{t.heroSubtitle}</span>
             </h1>
 
             <p className="text-lg text-zinc-600 mb-8 leading-relaxed">
-              Transform your ideas into stunning presentations in seconds. Just type what you need,
-              and our AI handles the design, layout, and formatting.
+              {t.heroDescription}
             </p>
 
             {/* Prompt Box synced with cards */}
@@ -228,7 +337,7 @@ export function HeroSection({ t }: HeroSectionProps) {
               <div className="flex items-center gap-2 mb-3 border-b border-zinc-50 pb-3">
                 <Command className="w-4 h-4 text-zinc-300" />
                 <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                  AI Prompt
+                  {t.aiPrompt}
                 </span>
                 <span className="ml-auto text-xs text-zinc-300">
                   {getWrappedIndex(activeIndex) + 1}/{baseCards.length}
@@ -247,20 +356,92 @@ export function HeroSection({ t }: HeroSectionProps) {
             <div className="flex flex-wrap items-center gap-4">
               <SignedOut>
                 <SignInButton mode="modal">
-                  <button className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-zinc-900 rounded-lg hover:bg-zinc-800 transition-all shadow-lg hover:shadow-zinc-900/20">
+                  <button
+                    style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}
+                    className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-zinc-900 rounded-lg hover:bg-zinc-800 transition-all shadow-lg hover:shadow-zinc-900/20"
+                  >
                     {t.getStarted} <ArrowRight className="w-5 h-5" />
                   </button>
                 </SignInButton>
               </SignedOut>
               <SignedIn>
-                <LoadingLink
-                  href="/dashboard"
-                  className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-zinc-900 rounded-lg hover:bg-zinc-800 transition-all shadow-lg hover:shadow-zinc-900/20"
-                >
-                  {t.goToDashboard} <ArrowRight className="w-5 h-5" />
-                </LoadingLink>
+                <div style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
+                  <LoadingLink
+                    href="/"
+                    className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-zinc-900 rounded-lg hover:bg-zinc-800 transition-all shadow-lg hover:shadow-zinc-900/20"
+                  >
+                    {t.goToDashboard} <ArrowRight className="w-5 h-5" />
+                  </LoadingLink>
+                </div>
               </SignedIn>
-              <span className="text-sm text-zinc-500 px-2">No credit card required</span>
+              <span className="text-sm text-zinc-500 px-2">{t.noCreditCard}</span>
+            </div>
+
+            {/* Mobile Horizontal Slider - Below CTA buttons */}
+            <div className="lg:hidden mt-10 -mx-6 px-6">
+              <div
+                ref={mobileContainerRef}
+                className={`relative overflow-hidden select-none ${isMobileDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                style={{ height: MOBILE_CARD_HEIGHT + 20 }}
+                onTouchStart={onMobileTouchStart}
+                onTouchMove={onMobileTouchMove}
+                onTouchEnd={onMobileTouchEnd}
+              >
+                {/* Cards Container */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="relative" style={{ width: MOBILE_CARD_WIDTH, height: MOBILE_CARD_HEIGHT }}>
+                    {visibleCards.map((card) => {
+                      const isCenter = isMobileCenterCard(card.virtualIndex);
+                      const videoUrl = `https://player.vimeo.com/video/${card.video?.id}?h=${card.video?.hash}&autoplay=${isCenter ? 1 : 0}&loop=1&muted=1&background=1&playsinline=1`;
+                      
+                      return (
+                        <div
+                          key={`mobile-${card.key}`}
+                          className="absolute top-0"
+                          style={{
+                            ...getMobileCardStyle(card.virtualIndex),
+                            width: MOBILE_CARD_WIDTH,
+                            height: MOBILE_CARD_HEIGHT,
+                            left: "50%",
+                            marginLeft: -MOBILE_CARD_WIDTH / 2,
+                          }}
+                        >
+                          <div className="w-full h-full overflow-hidden border border-zinc-200/50 shadow-lg relative bg-zinc-900">
+                            <iframe
+                              src={videoUrl}
+                              className="absolute inset-0 w-full h-full pointer-events-none"
+                              style={{
+                                border: 'none',
+                                transform: 'scale(1.5)',
+                                transformOrigin: 'center center',
+                              }}
+                              allow="autoplay; fullscreen"
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Gradient Overlays - removed for mobile */}
+              </div>
+
+              {/* Mobile Indicators */}
+              <div className="flex justify-center gap-2 mt-4">
+                {baseCards.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleIndicatorClick(idx)}
+                    style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}
+                    className={`rounded-full transition-all duration-400 ${
+                      getWrappedIndex(activeIndex) === idx
+                        ? "w-6 h-2 bg-zinc-900"
+                        : "w-2 h-2 bg-zinc-300"
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
 
@@ -268,11 +449,8 @@ export function HeroSection({ t }: HeroSectionProps) {
           <div className="relative hidden lg:flex items-center justify-center h-full">
             <div
               ref={containerRef}
-              className="relative w-full max-w-lg overflow-hidden select-none"
-              style={{ 
-                height: containerHeight,
-                cursor: isDragging ? "grabbing" : "grab" 
-              }}
+              className={`relative w-full max-w-lg overflow-hidden select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+              style={{ height: containerHeight }}
               onMouseDown={onMouseDown}
               onTouchStart={onTouchStart}
               onTouchMove={onTouchMove}
@@ -281,30 +459,39 @@ export function HeroSection({ t }: HeroSectionProps) {
               {/* Cards Container */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="relative w-[320px] sm:w-[360px] md:w-[380px]" style={{ height: CARD_HEIGHT }}>
-                  {visibleCards.map((card) => (
-                    <div
-                      key={card.key}
-                      className="absolute left-0 right-0 mx-auto px-4"
-                      style={{
-                        ...getCardStyle(card.virtualIndex),
-                        height: CARD_HEIGHT,
-                        top: "50%",
-                        marginTop: -CARD_HEIGHT / 2,
-                      }}
-                    >
+                  {visibleCards.map((card) => {
+                    const isCenter = isCenterCard(card.virtualIndex);
+                    // Center card autoplays immediately, others stay paused but show first frame
+                    // autopause=0 prevents pausing when another video plays
+                    const videoUrl = `https://player.vimeo.com/video/${card.video?.id}?h=${card.video?.hash}&autoplay=${isCenter ? 1 : 0}&loop=1&muted=1&background=1&playsinline=1`;
+                    
+                    return (
                       <div
-                        className={`w-full h-full bg-gradient-to-br ${card.gradient} bg-white border border-zinc-200/50  backdrop-blur-sm p-6 flex flex-col justify-between`}
+                        key={card.key}
+                        className="absolute left-0 right-0 mx-auto px-4"
+                        style={{
+                          ...getCardStyle(card.virtualIndex),
+                          height: CARD_HEIGHT,
+                          top: "50%",
+                          marginTop: -CARD_HEIGHT / 2,
+                        }}
                       >
-                        <div>
-                          <div className="w-14 h-14 rounded-sm bg-white/80 shadow-sm flex items-center justify-center mb-4">
-                            <span className="text-2xl font-bold text-zinc-700">{card.id}</span>
-                          </div>
-                          <h3 className="text-2xl font-semibold text-zinc-800">{card.title}</h3>
+                        {/* Sharp square card with video only - no placeholder */}
+                        <div className="w-full h-full overflow-hidden border border-zinc-200/50 shadow-lg relative bg-zinc-900">
+                          <iframe
+                            src={videoUrl}
+                            className="absolute inset-0 w-full h-full pointer-events-none"
+                            style={{
+                              border: 'none',
+                              transform: 'scale(1.5)',
+                              transformOrigin: 'center center',
+                            }}
+                            allow="autoplay; fullscreen"
+                          />
                         </div>
-                        <p className="text-base text-zinc-600 line-clamp-2">{card.prompt}</p>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
@@ -319,6 +506,7 @@ export function HeroSection({ t }: HeroSectionProps) {
                 <button
                   key={idx}
                   onClick={() => handleIndicatorClick(idx)}
+                  style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}
                   className={`w-2 rounded-full transition-all duration-400 ${
                     getWrappedIndex(activeIndex) === idx
                       ? "h-8 bg-zinc-900"

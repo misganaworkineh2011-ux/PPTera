@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CheckCircle2, Loader2, AlertCircle, Plus, Zap } from "lucide-react";
+import { CheckCircle2, Loader2, AlertCircle, Plus, Zap, ChevronDown } from "lucide-react";
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
 import { cn } from "~/lib/utils";
@@ -35,6 +35,7 @@ export default function PricingPage() {
   const [error, setError] = useState<string | null>(null);
   const [checkoutLoadingId, setCheckoutLoadingId] = useState<string | null>(null);
   const [hasSubscription, setHasSubscription] = useState(false);
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   const { isSignedIn, user } = useUser();
   const router = useRouter();
@@ -191,7 +192,7 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white font-sans text-slate-900 overflow-x-hidden">
+    <div className="landing-page min-h-screen bg-white font-sans text-slate-900 overflow-x-hidden">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
@@ -239,74 +240,142 @@ export default function PricingPage() {
               </div>
             </div>
           ) : (
-            <div className="grid gap-8 md:grid-cols-3 items-start">
-              {products.map((product) => {
-                const priceData = isAnnual ? product.yearly : product.monthly;
-                const activePrice = priceData || product.monthly || product.yearly;
-                const isUltra = product.key === 'ultra';
-
-                if (!activePrice) return null;
-
-                const isHighlighted = product.key === 'pro';
-
-                return (
-                  <div
-                    key={product.key}
-                    className={cn(
-                      "relative rounded-3xl p-8 text-left border transition-all duration-300 flex flex-col h-full",
-                      isHighlighted
-                        ? "bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-2xl scale-105 border-transparent"
-                        : "bg-white text-slate-900 border-slate-200 hover:border-[#06b6d4] hover:shadow-xl"
-                    )}
-                  >
-                    {isHighlighted && (
-                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg">
-                        MOST POPULAR
-                      </div>
-                    )}
-                    {isUltra && (
-                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg">
-                        INTRODUCTORY PRICE
-                      </div>
-                    )}
-
-                    <h3 className="text-xl font-bold mb-2">{product.name}</h3>
-                    <p className={cn("text-sm mb-6 min-h-[40px]", isHighlighted ? "text-white/80" : "text-slate-500")}>
-                      {product.description?.split('\n')[0] || "Unlock your potential."}
-                    </p>
-
-                    <div className="flex items-baseline gap-1 mb-8">
-                      <span className="text-4xl font-extrabold tracking-tight">{activePrice.displayPrice.split('/')[0]}</span>
-                      <span className={cn("text-sm", isHighlighted ? "text-white/70" : "text-slate-500")}>/{activePrice.recurringInterval}</span>
+            <div className="grid gap-4 md:grid-cols-4 max-w-7xl mx-auto">
+              {/* Free Plan Card */}
+              <div className="relative rounded-md border border-slate-200 bg-white hover:border-[#06b6d4] transition-all flex flex-col h-full">
+                <div className="absolute top-3 right-3 bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-1 rounded">
+                  NO CREDIT CARD
+                </div>
+                <div className="p-5">
+                  <h3 className="text-lg font-bold mb-1">Free</h3>
+                  <p className="text-xs text-slate-500 mb-4">Get started with PPT Master</p>
+                  <div className="mb-4">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-2xl font-extrabold">$0</span>
+                      <span className="text-xs text-slate-500">/forever</span>
                     </div>
-
-                    <button
-                      onClick={() => handleSubscribe(product.key)}
-                      disabled={!!checkoutLoadingId}
-                      className={cn(
-                        "w-full rounded-full py-3 px-6 font-bold text-sm mb-8 transition-all hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed shadow-lg",
-                        isHighlighted
-                          ? "bg-white text-[#1e3a8a] hover:bg-slate-100"
-                          : "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:shadow-xl"
-                      )}>
-                      {checkoutLoadingId === product.key ? (
-                        <Loader2 className="h-4 w-4 animate-spin mx-auto" />
-                      ) : (
-                        activePrice.priceAmount === 0 ? t.signUpFree : t.getStartedBtn
-                      )}
-                    </button>
-
-                    <ul className="space-y-4 flex-1">
-                      {getFeatures(product.uiDescription).map((feature, idx) => (
-                        <li key={idx} className="flex items-start gap-3 text-sm">
-                          <CheckCircle2 className={cn("h-5 w-5 shrink-0", isHighlighted ? "text-white" : "text-[#06b6d4]")} />
-                          <span className={cn(isHighlighted ? "text-white/90" : "text-slate-600")}>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
                   </div>
-                );
-              })}
+                  <button onClick={() => router.push(isSignedIn ? "/" : "/sign-up")} className="w-full rounded py-2 px-4 font-semibold text-xs mb-4 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90">
+                    {isSignedIn ? t.goToDashboard : t.signUpFree}
+                  </button>
+                  <ul className="space-y-2.5 text-xs">
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">Create up to 10 cards per prompt</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">200 credits at signup</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">Simple presentations and images</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">Import from PDF & PPTX</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">Export to PDF, PPTX, PNG & Google Slides</span></li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Plus Plan */}
+              <div className="relative rounded-md border border-slate-200 bg-white hover:border-[#06b6d4] transition-all flex flex-col h-full">
+                <div className="p-5">
+                  <h3 className="text-lg font-bold mb-1">Plus</h3>
+                  <p className="text-xs text-slate-500 mb-4">For extra AI power and removing Gamma branding</p>
+                  <div className="mb-4">
+                    {isAnnual ? (
+                      <>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-2xl font-extrabold">$8</span>
+                          <span className="text-xs text-slate-500">/ seat / month</span>
+                        </div>
+                        <p className="text-[10px] text-slate-400 mt-0.5">$96 per seat, billed annually</p>
+                      </>
+                    ) : (
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-2xl font-extrabold">$10</span>
+                        <span className="text-xs text-slate-500">/ seat / month</span>
+                      </div>
+                    )}
+                  </div>
+                  <button onClick={() => handleSubscribe('plus')} disabled={!!checkoutLoadingId} className="w-full rounded py-2 px-4 font-semibold text-xs mb-4 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90 disabled:opacity-50">
+                    {checkoutLoadingId === 'plus' ? <Loader2 className="h-3.5 w-3.5 animate-spin mx-auto" /> : t.getStartedBtn}
+                  </button>
+                  <p className="text-[12px] text-slate-500 mb-2 font-semibold">Everything in Free, and:</p>
+                  <ul className="space-y-2.5 text-xs">
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">Create up to 20 cards per prompt</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">1,000 monthly credits</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">Remove Gamma branding</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">Advanced AI image models</span></li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Pro Plan - Most Popular */}
+              <div className="relative rounded-md border-2 border-[#06b6d4] bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-lg scale-105 flex flex-col h-full">
+                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap">MOST POPULAR</div>
+                <div className="p-5 pt-6">
+                  <h3 className="text-lg font-bold mb-1">Pro</h3>
+                  <p className="text-xs text-white/80 mb-4">For premium AI models, API, and more customization</p>
+                  <div className="mb-4">
+                    {isAnnual ? (
+                      <>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-2xl font-extrabold">$18</span>
+                          <span className="text-xs text-white/70">/ seat / month</span>
+                        </div>
+                        <p className="text-[10px] text-white/60 mt-0.5">$216 per seat, billed annually</p>
+                      </>
+                    ) : (
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-2xl font-extrabold">$25</span>
+                        <span className="text-xs text-white/70">/ seat / month</span>
+                      </div>
+                    )}
+                  </div>
+                  <button onClick={() => handleSubscribe('pro')} disabled={!!checkoutLoadingId} className="w-full rounded py-2 px-4 font-semibold text-xs mb-4 bg-white text-[#1e3a8a] hover:bg-slate-100 disabled:opacity-50">
+                    {checkoutLoadingId === 'pro' ? <Loader2 className="h-3.5 w-3.5 animate-spin mx-auto" /> : t.getStartedBtn}
+                  </button>
+                  <p className="text-[12px] text-white/80 mb-2 font-semibold">Everything in Plus, and:</p>
+                  <ul className="space-y-2.5 text-xs">
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-white mt-0.5" /><span className="text-white/90">Create up to 60 cards per prompt</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-white mt-0.5" /><span className="text-white/90">4,000 monthly credits</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-white mt-0.5" /><span className="text-white/90">Premium AI image models</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-white mt-0.5" /><span className="text-white/90">Custom branding & fonts</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-white mt-0.5" /><span className="text-white/90">Detailed analytics & advanced sharing</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-white mt-0.5" /><span className="text-white/90">Publish up to 10 custom domains</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-white mt-0.5" /><span className="text-white/90">API access</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-white mt-0.5" /><span className="text-white/90">Workspace templates <span className="text-[10px] bg-white/20 px-1 rounded">Beta</span></span></li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Ultra Plan - Introductory Price */}
+              <div className="relative rounded-md border border-slate-200 bg-white hover:border-[#06b6d4] transition-all flex flex-col h-full">
+                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap">INTRODUCTORY PRICE</div>
+                <div className="p-5 pt-6">
+                  <h3 className="text-lg font-bold mb-1">Ultra</h3>
+                  <p className="text-xs text-slate-500 mb-4">For 20× more AI usage and unlocking access to the most advanced models</p>
+                  <div className="mb-4">
+                    {isAnnual ? (
+                      <>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-2xl font-extrabold">$90</span>
+                          <span className="text-xs text-slate-500">/ seat / month</span>
+                        </div>
+                        <p className="text-[10px] text-slate-400 mt-0.5">$1,080 per seat, billed annually</p>
+                      </>
+                    ) : (
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-2xl font-extrabold">$100</span>
+                        <span className="text-xs text-slate-500">/ seat / month</span>
+                      </div>
+                    )}
+                  </div>
+                  <button onClick={() => handleSubscribe('ultra')} disabled={!!checkoutLoadingId} className="w-full rounded py-2 px-4 font-semibold text-xs mb-4 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90 disabled:opacity-50">
+                    {checkoutLoadingId === 'ultra' ? <Loader2 className="h-3.5 w-3.5 animate-spin mx-auto" /> : t.getStartedBtn}
+                  </button>
+                  <p className="text-[12px] text-slate-500 mb-2 font-semibold">Everything in Pro, and:</p>
+                  <ul className="space-y-2.5 text-xs">
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">Create up to 75 cards per prompt</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">20,000 monthly credits</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">Access to the most advanced AI models (text, image, video)</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">Publish up to 100 custom domains</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">Early access to new features</span></li>
+                  </ul>
+                </div>
+              </div>
             </div>
           )}
 
@@ -380,19 +449,46 @@ export default function PricingPage() {
           {/* FAQ Section */}
           <div className="mt-32 max-w-3xl mx-auto text-left">
             <h2 className="text-3xl font-bold text-slate-900 mb-12 text-center">{t.faqTitle}</h2>
-            <div className="space-y-8">
-              <div className="p-6 rounded-2xl border border-slate-200 hover:border-[#06b6d4] transition-colors">
-                <h4 className="font-bold text-slate-900 mb-2">{t.faqCancel}</h4>
-                <p className="text-slate-600">{t.faqCancelAnswer}</p>
-              </div>
-              <div className="p-6 rounded-2xl border border-slate-200 hover:border-[#06b6d4] transition-colors">
-                <h4 className="font-bold text-slate-900 mb-2">{t.faqStudentDiscount}</h4>
-                <p className="text-slate-600">{t.faqStudentAnswer}</p>
-              </div>
-              <div className="p-6 rounded-2xl border border-slate-200 hover:border-[#06b6d4] transition-colors">
-                <h4 className="font-bold text-slate-900 mb-2">{t.faqDowngrade}</h4>
-                <p className="text-slate-600">{t.faqDowngradeAnswer}</p>
-              </div>
+            <div className="space-y-3">
+              {[
+                { question: t.faqAIModels, answer: t.faqAIModelsAnswer },
+                { question: t.faqAICredits, answer: t.faqAICreditsAnswer },
+                { question: t.faqMoreCredits, answer: t.faqMoreCreditsAnswer },
+                { question: t.faqCard, answer: t.faqCardAnswer },
+                { question: t.faqPowerPoint, answer: t.faqPowerPointAnswer },
+                { question: t.faqAnnualDiscount, answer: t.faqAnnualDiscountAnswer },
+                { question: t.faqChangePlan, answer: t.faqChangePlanAnswer },
+                { question: t.faqPaymentMethods, answer: t.faqPaymentMethodsAnswer },
+                { question: t.faqWorkspaceCharging, answer: t.faqWorkspaceChargingAnswer },
+                { question: t.faqDowngradeContent, answer: t.faqDowngradeContentAnswer },
+                { question: t.faqCustomTheme, answer: t.faqCustomThemeAnswer },
+              ].map((faq, index) => (
+                <div
+                  key={index}
+                  className="rounded-2xl border border-slate-200 hover:border-[#06b6d4] transition-all overflow-hidden"
+                >
+                  <button
+                    onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
+                    className="w-full p-6 text-left flex items-center justify-between gap-4 hover:bg-slate-50 transition-colors"
+                  >
+                    <h4 className="font-bold text-slate-900 text-lg">{faq.question}</h4>
+                    <ChevronDown
+                      className={cn(
+                        "h-5 w-5 text-slate-500 flex-shrink-0 transition-transform duration-200",
+                        openFaqIndex === index && "rotate-180"
+                      )}
+                    />
+                  </button>
+                  <div
+                    className={cn(
+                      "overflow-hidden transition-all duration-200",
+                      openFaqIndex === index ? "max-h-96" : "max-h-0"
+                    )}
+                  >
+                    <p className="px-6 pb-6 text-slate-600 leading-relaxed">{faq.answer}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 

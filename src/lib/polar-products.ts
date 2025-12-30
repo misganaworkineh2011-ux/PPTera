@@ -54,6 +54,7 @@ const UI_DESCRIPTIONS: Record<string, string> = {
 • Export to PowerPoint (PPTX)
 • Premium AI image models (HD: 15 credits)
 • Premium templates
+• Custom themes & branding
 • 30-day version history
 • Priority support
 

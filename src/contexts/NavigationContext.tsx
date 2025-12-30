@@ -172,6 +172,11 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
         return;
       }
       
+      // Skip sign-in/sign-up routes to avoid conflicts with Clerk
+      if (href.startsWith("/sign-in") || href.startsWith("/sign-up")) {
+        return;
+      }
+      
       // Show loading immediately for internal navigation
       setIsNavigating(true);
     };
@@ -194,6 +199,15 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     
     return () => clearTimeout(timeout);
   }, [isNavigating]);
+
+  // Don't use Suspense during initial mount to avoid hydration issues
+  if (!isMounted) {
+    return (
+      <NavigationContext.Provider value={{ isNavigating: false }}>
+        {children}
+      </NavigationContext.Provider>
+    );
+  }
 
   return (
     <Suspense fallback={children}>

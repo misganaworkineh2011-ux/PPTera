@@ -122,7 +122,7 @@ export default function InsightsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="landing-page min-h-screen bg-white">
       {/* JSON-LD Structured Data for SEO */}
       <script
         type="application/ld+json"

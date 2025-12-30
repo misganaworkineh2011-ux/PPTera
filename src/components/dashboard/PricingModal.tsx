@@ -44,6 +44,9 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
   const { isSignedIn } = useUser();
   const router = useRouter();
 
+  // Check if user is a paid subscriber
+  const isPaidUser = currentPlan && currentPlan.toLowerCase() !== 'free';
+
   // Fetch products when modal opens
   useEffect(() => {
     if (isOpen && products.length === 0) {
@@ -194,7 +197,7 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
           >
             Subscription Plans
           </button>
-          {currentPlan && (
+          {isPaidUser && (
             <button
               onClick={() => setActiveTab("topup")}
               className={cn(
@@ -224,7 +227,7 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
                   <div className={cn("h-6 w-6 rounded-full bg-white shadow-md transition-transform", isAnnual ? "translate-x-6" : "translate-x-0")} />
                 </button>
                 <span className={cn("text-sm font-semibold", isAnnual ? "text-slate-900 dark:text-white" : "text-slate-500 dark:text-neutral-500")}>
-                  Yearly <span className="text-green-600 font-bold ml-1">Save 20%</span>
+                  Yearly <span className="text-green-600 font-bold ml-1">Save up to 28%</span>
                 </span>
               </div>
 
@@ -247,20 +250,55 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
                   </button>
                 </div>
               ) : (
-                <div className="grid gap-6 md:grid-cols-3">
+                <div className="grid gap-4 md:grid-cols-3">
                   {products.map((product) => {
                     const priceData = isAnnual ? product.yearly : product.monthly;
                     const activePrice = priceData || product.monthly || product.yearly;
                     const isCurrentPlan = currentPlan?.toLowerCase() === product.key.toLowerCase();
                     const isHighlighted = product.key === 'pro';
+                    const isUltra = product.key === 'ultra';
 
                     if (!activePrice) return null;
+
+                    // Get plan-specific features based on pricing page
+                    const getPlanFeatures = (key: string) => {
+                      if (key === 'plus') {
+                        return [
+                          'Create up to 20 cards per prompt',
+                          '1,000 monthly credits',
+                          'Remove Gamma branding',
+                          'Advanced AI image models',
+                        ];
+                      } else if (key === 'pro') {
+                        return [
+                          'Create up to 60 cards per prompt',
+                          '4,000 monthly credits',
+                          'Premium AI image models',
+                          'Custom branding & fonts',
+                          'Detailed analytics & advanced sharing',
+                          'Publish up to 10 custom domains',
+                          'API access',
+                          'Workspace templates',
+                        ];
+                      } else if (key === 'ultra') {
+                        return [
+                          'Create up to 75 cards per prompt',
+                          '20,000 monthly credits',
+                          'Access to the most advanced AI models (text, image, video)',
+                          'Publish up to 100 custom domains',
+                          'Early access to new features',
+                        ];
+                      }
+                      return [];
+                    };
+
+                    const features = getPlanFeatures(product.key);
 
                     return (
                       <div
                         key={product.key}
                         className={cn(
-                          "relative rounded-2xl p-6 border transition-all duration-300 flex flex-col",
+                          "relative rounded-md p-5 border transition-all duration-300 flex flex-col h-full",
                           isHighlighted
                             ? "bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white border-transparent shadow-xl scale-[1.02]"
                             : "bg-white dark:bg-neutral-800 text-slate-900 dark:text-white border-slate-200 dark:border-neutral-700 hover:border-[#06b6d4]",
@@ -268,54 +306,96 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
                         )}
                       >
                         {isHighlighted && (
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                          <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap">
                             MOST POPULAR
                           </div>
                         )}
+                        {isUltra && !isCurrentPlan && (
+                          <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap">
+                            INTRODUCTORY PRICE
+                          </div>
+                        )}
                         {isCurrentPlan && (
-                          <div className="absolute -top-3 right-4 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                          <div className="absolute -top-2.5 right-4 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg">
                             CURRENT
                           </div>
                         )}
 
-                        <h3 className="text-lg font-bold mb-1">{product.name}</h3>
-                        <p className={cn("text-sm mb-4 line-clamp-2", isHighlighted ? "text-white/80" : "text-slate-500 dark:text-neutral-400")}>
-                          {product.description?.split('\n')[0] || "Unlock your potential."}
-                        </p>
+                        <div className={cn(isHighlighted || (isUltra && !isCurrentPlan) ? "pt-1" : "")}>
+                          <h3 className="text-lg font-bold mb-1">{product.name}</h3>
+                          <p className={cn("text-xs mb-4 line-clamp-2", isHighlighted ? "text-white/80" : "text-slate-500 dark:text-neutral-400")}>
+                            {product.key === 'plus' ? 'For extra AI power and removing Gamma branding' :
+                             product.key === 'pro' ? 'For premium AI models, API, and more customization' :
+                             product.key === 'ultra' ? 'For 20× more AI usage and unlocking access to the most advanced models' :
+                             product.description?.split('\n')[0] || "Unlock your potential."}
+                          </p>
 
-                        <div className="flex items-baseline gap-1 mb-6">
-                          <span className="text-3xl font-extrabold">{activePrice.displayPrice.split('/')[0]}</span>
-                          <span className={cn("text-sm", isHighlighted ? "text-white/70" : "text-slate-500 dark:text-neutral-500")}>/{activePrice.recurringInterval}</span>
+                          <div className="mb-4">
+                            {isAnnual ? (
+                              <>
+                                <div className="flex items-baseline gap-1">
+                                  <span className="text-2xl font-extrabold">
+                                    {product.key === 'plus' ? '$8' : product.key === 'pro' ? '$18' : product.key === 'ultra' ? '$90' : activePrice.displayPrice.split('/')[0]}
+                                  </span>
+                                  <span className={cn("text-xs", isHighlighted ? "text-white/70" : "text-slate-500 dark:text-neutral-500")}>/ seat / month</span>
+                                </div>
+                                <p className={cn("text-[10px] mt-0.5", isHighlighted ? "text-white/60" : "text-slate-400 dark:text-neutral-500")}>
+                                  {product.key === 'plus' ? '$96 per seat, billed annually' :
+                                   product.key === 'pro' ? '$216 per seat, billed annually' :
+                                   product.key === 'ultra' ? '$1,080 per seat, billed annually' :
+                                   `Billed annually`}
+                                </p>
+                              </>
+                            ) : (
+                              <div className="flex items-baseline gap-1">
+                                <span className="text-2xl font-extrabold">
+                                  {product.key === 'plus' ? '$10' : product.key === 'pro' ? '$25' : product.key === 'ultra' ? '$100' : activePrice.displayPrice.split('/')[0]}
+                                </span>
+                                <span className={cn("text-xs", isHighlighted ? "text-white/70" : "text-slate-500 dark:text-neutral-500")}>/ seat / month</span>
+                              </div>
+                            )}
+                          </div>
+
+                          <button
+                            onClick={() => handleSubscribe(product.key)}
+                            disabled={!!checkoutLoadingId || isCurrentPlan}
+                            className={cn(
+                              "w-full rounded py-2 px-4 font-semibold text-xs mb-4 transition-all disabled:opacity-70 disabled:cursor-not-allowed",
+                              isHighlighted
+                                ? "bg-white text-[#1e3a8a] hover:bg-slate-100"
+                                : "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90",
+                              isCurrentPlan && "!bg-green-500 !text-white"
+                            )}
+                          >
+                            {checkoutLoadingId === product.key ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin mx-auto" />
+                            ) : isCurrentPlan ? (
+                              "Current Plan"
+                            ) : (
+                              "Get Started"
+                            )}
+                          </button>
+
+                          {product.key !== 'plus' && (
+                            <p className={cn("text-[10px] mb-2 font-semibold", isHighlighted ? "text-white/80" : "text-slate-500 dark:text-neutral-400")}>
+                              Everything in {product.key === 'pro' ? 'Plus' : 'Pro'}, and:
+                            </p>
+                          )}
+
+                          <ul className="space-y-2.5 flex-1 text-xs">
+                            {features.map((feature, idx) => (
+                              <li key={idx} className="flex items-start gap-1.5">
+                                <CheckCircle2 className={cn("h-3.5 w-3.5 shrink-0 mt-0.5", isHighlighted ? "text-white" : "text-[#06b6d4]")} />
+                                <span className={cn(isHighlighted ? "text-white/90" : "text-slate-600 dark:text-neutral-300")}>
+                                  {feature}
+                                  {feature.includes('Workspace templates') && (
+                                    <span className={cn("text-[10px] ml-1 px-1 rounded", isHighlighted ? "bg-white/20" : "bg-slate-200 dark:bg-neutral-700")}>Beta</span>
+                                  )}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
-
-                        <button
-                          onClick={() => handleSubscribe(product.key)}
-                          disabled={!!checkoutLoadingId || isCurrentPlan}
-                          className={cn(
-                            "w-full rounded-xl py-2.5 px-4 font-bold text-sm mb-6 transition-all disabled:opacity-70 disabled:cursor-not-allowed",
-                            isHighlighted
-                              ? "bg-white text-[#1e3a8a] hover:bg-slate-100"
-                              : "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:shadow-lg",
-                            isCurrentPlan && "!bg-green-500 !text-white"
-                          )}
-                        >
-                          {checkoutLoadingId === product.key ? (
-                            <Loader2 className="h-4 w-4 animate-spin mx-auto" />
-                          ) : isCurrentPlan ? (
-                            "Current Plan"
-                          ) : (
-                            "Get Started"
-                          )}
-                        </button>
-
-                        <ul className="space-y-2.5 flex-1 text-sm">
-                          {getFeatures(product.uiDescription).slice(0, 6).map((feature, idx) => (
-                            <li key={idx} className="flex items-start gap-2">
-                              <CheckCircle2 className={cn("h-4 w-4 shrink-0 mt-0.5", isHighlighted ? "text-white" : "text-[#06b6d4]")} />
-                              <span className={cn(isHighlighted ? "text-white/90" : "text-slate-600 dark:text-neutral-300")}>{feature}</span>
-                            </li>
-                          ))}
-                        </ul>
                       </div>
                     );
                   })}
