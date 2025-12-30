@@ -196,10 +196,26 @@ Fields:
 - emphasis: what the visual should highlight (free-form text, e.g., progression, contrast, relationship, scale, emotion, clarity)
 
 3. "contentLayout":
-Determine the content layout method for the slide.
-- For ALL content slides, set this to "box" (this indicates the slide should use box/card layout)
+INTELLIGENTLY determine the BEST content layout category for each slide based on the slide's semantic intent, content type, and bullet point structure.
+
+ANALYZE the slide's content and choose ONE of these categories:
+- "boxes": Use for slides with distinct concepts, features, benefits, categories, or items that deserve equal visual weight. Best for: lists of items, multiple concepts, feature comparisons, benefit lists, category breakdowns. Example: "Key Features of AI", "Benefits of Exercise", "Types of Marketing Strategies"
+- "bullets": Use for traditional bullet point lists, supporting details, sub-points, or when content is hierarchical. Best for: detailed explanations, supporting information, sub-categories, simple lists. Example: "Common Mistakes to Avoid", "Supporting Evidence", "Additional Resources"
+- "sequence": Use for sequential processes, timelines, chronological flows, or step-by-step procedures where order matters. Best for: processes, workflows, timelines, chronological events, numbered sequences. Example: "Product Development Process", "Customer Journey", "Historical Timeline"
+- "steps": Use for step-by-step guides, tutorials, how-to content, or procedural instructions with clear numbered steps. Best for: tutorials, guides, procedures, numbered instructions, sequential actions. Example: "How to Start a Business", "5 Steps to Success", "Installation Guide"
+- "quotes": Use for testimonials, quotes, statements, opinions, or when presenting someone's words. Best for: testimonials, quotes, statements, opinions, expert insights. Example: "Customer Testimonials", "Expert Opinions", "Famous Quotes"
+- "images": Use when the slide content is primarily visual or image-focused, or when each bullet point has a corresponding image. Best for: image galleries, visual showcases, portfolio items, product displays. Example: "Our Products", "Team Members", "Project Showcase"
+- "circles": Use for interconnected concepts, relationships, cycles, or when content forms a circular/cyclical pattern. Best for: interconnected systems, cycles, relationships, circular processes. Example: "The Water Cycle", "Ecosystem Relationships", "Circular Economy"
+- "numbers": Use for statistics, metrics, data points, or when numbers are the primary focus. Best for: statistics, metrics, KPIs, data highlights, numerical achievements. Example: "Key Statistics", "Performance Metrics", "Market Data"
+
+SELECTION PROCESS:
+1. FIRST: Analyze the slide's title, semanticIntent, and bullet points
+2. THEN: Determine what the content represents (concepts, steps, quotes, etc.)
+3. FINALLY: Choose the category that BEST matches the content's nature
+4. DEFAULT: If uncertain, use "boxes" as it's the most versatile
+
+CRITICAL: Each slide should use the layout that best serves its content. Vary layouts across slides to create visual interest and match content types.
 - TITLE slides do not need this field
-- This field determines how the bullet points will be arranged visually
 
 4. "assets":
 Describe visual assets meaningfully. Invent freely if better suited.
@@ -239,7 +255,7 @@ Each slide MUST include (IN THIS ORDER):
    - "title": A clear, narrative-advancing heading
    - "semanticIntent"
    - "visualStrategy"
-   - "contentLayout": "box" (REQUIRED - all content slides must use box layout)
+   - "contentLayout": Choose intelligently from: "boxes", "bullets", "sequence", "steps", "quotes", "images", "circles", or "numbers" based on content analysis (see guidance above)
    - "bulletPoints": 3–6 bullets that are:
      (Generate bullet points FIRST, then generate assets based on the full content)
    - "assets": (Generate AFTER bullet points)

@@ -39,12 +39,14 @@ export interface PexelsSearchResponse {
  * @param query - Search query (e.g., "business meeting", "technology")
  * @param perPage - Number of results per page (max 80)
  * @param page - Page number
+ * @param orientation - Image orientation: "landscape", "portrait", or "square"
  * @returns Array of photo results
  */
 export async function searchPexelsPhotos(
   query: string,
   perPage: number = 5,
-  page: number = 1
+  page: number = 1,
+  orientation: "landscape" | "portrait" | "square" = "landscape"
 ): Promise<PexelsPhoto[]> {
   const apiKey = env.PEXELS_API_KEY;
   
@@ -58,7 +60,7 @@ export async function searchPexelsPhotos(
     url.searchParams.set("query", query);
     url.searchParams.set("per_page", String(Math.min(perPage, 80)));
     url.searchParams.set("page", String(page));
-    url.searchParams.set("orientation", "landscape"); // Best for slides
+    url.searchParams.set("orientation", orientation);
 
     const response = await fetch(url.toString(), {
       headers: {
@@ -189,14 +191,14 @@ export interface SlideWithVisualMetadata {
   assets?: {
     image?: {
       required: boolean;
-      style?: string | null;
+      orientation?: "landscape" | "portrait" | null;
       promptHint?: string | null;
     };
   };
   // Title slide specific image metadata
   image?: {
     required: boolean;
-    style?: string | null;
+    orientation?: "landscape" | "portrait" | null;
     promptHint?: string | null;
   };
 }
@@ -233,9 +235,19 @@ function slideRequiresImage(slide: SlideWithVisualMetadata): boolean {
 }
 
 /**
+ * Get orientation from slide metadata
+ */
+function getSlideOrientation(slide: SlideWithVisualMetadata): "landscape" | "portrait" {
+  if (slide.type === "title") {
+    return slide.image?.orientation || "landscape";
+  }
+  return slide.assets?.image?.orientation || "landscape";
+}
+
+/**
  * Fetch images for multiple slides
  * 
- * Enhanced version that uses promptHint from visual metadata when available.
+ * Enhanced version that uses promptHint and orientation from visual metadata when available.
  */
 export async function fetchImagesForSlides(
   slides: SlideWithVisualMetadata[]
@@ -259,8 +271,11 @@ export async function fetchImagesForSlides(
       // Get search query (prioritizes promptHint)
       const searchQuery = getSearchQuery(slide);
       
-      // Search for photos
-      const photos = await searchPexelsPhotos(searchQuery || "professional business", 5);
+      // Get orientation from metadata
+      const orientation = getSlideOrientation(slide);
+      
+      // Search for photos with orientation
+      const photos = await searchPexelsPhotos(searchQuery || "professional business", 5, 1, orientation);
       
       // Pick a random photo from the results for variety
       const photo = photos.length > 0 
@@ -321,8 +336,11 @@ export async function fetchImagesWithPromptHints(
         return { index: slideIndex, photo: null };
       }
       
-      // Search using promptHint
-      const photos = await searchPexelsPhotos(promptHint, 5);
+      // Get orientation from metadata
+      const orientation = getSlideOrientation(slide);
+      
+      // Search using promptHint with orientation
+      const photos = await searchPexelsPhotos(promptHint, 5, 1, orientation);
       const photo = photos.length > 0 
         ? photos[Math.floor(Math.random() * photos.length)]!
         : null;

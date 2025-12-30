@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.34.4",
+    "@google/generative-ai": "^0.24.1",
     "@polar-sh/sdk": "^0.34.16",
     "@prisma/client": "^6.5.0",
     "@radix-ui/react-dialog": "^1.1.15",
