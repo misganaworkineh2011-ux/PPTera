@@ -19,19 +19,19 @@ export const SUPPORTED_LANGUAGES: Language[] = [
 
 export const DEFAULT_LANGUAGE: Language = "en";
 
-export const LANGUAGE_NAMES: Record<Language, { name: string; flag: string }> = {
-  en: { name: "English", flag: "🇺🇸" },
-  es: { name: "Español", flag: "🇪🇸" },
-  fr: { name: "Français", flag: "🇫🇷" },
-  de: { name: "Deutsch", flag: "🇩🇪" },
-  zh: { name: "中文", flag: "🇨🇳" },
-  pt: { name: "Português", flag: "🇧🇷" },
-  it: { name: "Italiano", flag: "🇮🇹" },
-  ja: { name: "日本語", flag: "🇯🇵" },
-  ko: { name: "한국어", flag: "🇰🇷" },
-  ar: { name: "العربية", flag: "🇸🇦" },
-  hi: { name: "हिन्दी", flag: "🇮🇳" },
-  ru: { name: "Русский", flag: "🇷🇺" },
+export const LANGUAGE_NAMES: Record<Language, { name: string; flag: string; short: string }> = {
+  en: { name: "English", flag: "🇺🇸", short: "EN" },
+  es: { name: "Español", flag: "🇪🇸", short: "ES" },
+  fr: { name: "Français", flag: "🇫🇷", short: "FR" },
+  de: { name: "Deutsch", flag: "🇩🇪", short: "DE" },
+  zh: { name: "中文", flag: "🇨🇳", short: "中文" },
+  pt: { name: "Português", flag: "🇧🇷", short: "PT" },
+  it: { name: "Italiano", flag: "🇮🇹", short: "IT" },
+  ja: { name: "日本語", flag: "🇯🇵", short: "日本" },
+  ko: { name: "한국어", flag: "🇰🇷", short: "한국" },
+  ar: { name: "العربية", flag: "🇸🇦", short: "عربي" },
+  hi: { name: "हिन्दी", flag: "🇮🇳", short: "हिंदी" },
+  ru: { name: "Русский", flag: "🇷🇺", short: "RU" },
 };
 
 /**

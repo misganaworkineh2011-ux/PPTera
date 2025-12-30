@@ -8,43 +8,29 @@ interface LoadingSpinnerProps {
 
 export function LoadingSpinner({ size = "md", className, text }: LoadingSpinnerProps) {
   const sizeClasses = {
-    sm: "w-8 h-8",
-    md: "w-16 h-16",
-    lg: "w-24 h-24",
-    xl: "w-32 h-32"
+    sm: "w-4 h-4",
+    md: "w-8 h-8",
+    lg: "w-12 h-12",
+    xl: "w-16 h-16"
   };
 
-  const dotSizes = {
-    sm: "h-1 w-1",
-    md: "h-2 w-2",
-    lg: "h-3 w-3",
-    xl: "h-4 w-4"
+  const borderSizes = {
+    sm: "border-2",
+    md: "border-3",
+    lg: "border-4",
+    xl: "border-4"
   };
 
   return (
-    <div className={cn("flex flex-col items-center justify-center gap-4", className)}>
-      {/* Spinner Animation */}
+    <div className={cn("flex flex-col items-center justify-center gap-3", className)}>
+      {/* Simple Spinner */}
       <div className={cn("relative", sizeClasses[size])}>
-        {/* Outer Ring */}
-        <div className="absolute inset-0 border-4 border-slate-200 rounded-full"></div>
-        
-        {/* Spinning Gradient Ring */}
-        <div className="absolute inset-0 border-4 border-transparent border-t-[#1e3a8a] border-r-[#06b6d4] rounded-full animate-spin"></div>
-        
-        {/* Inner Pulsing Circle */}
-        <div className="absolute inset-3 bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] rounded-full animate-pulse"></div>
+        <div className={cn("absolute inset-0 border-slate-200 rounded-full", borderSizes[size])}></div>
+        <div className={cn("absolute inset-0 border-transparent border-t-[#1e3a8a] border-r-[#06b6d4] rounded-full animate-spin", borderSizes[size])}></div>
       </div>
 
-      {/* Loading Text */}
       {text && (
-        <div className="space-y-2 text-center">
-          <p className="text-lg font-semibold text-slate-900">{text}</p>
-          <div className="flex gap-1 justify-center">
-            <div className={cn(dotSizes[size], "bg-[#1e3a8a] rounded-full animate-bounce")}></div>
-            <div className={cn(dotSizes[size], "bg-[#06b6d4] rounded-full animate-bounce [animation-delay:100ms]")}></div>
-            <div className={cn(dotSizes[size], "bg-[#1e3a8a] rounded-full animate-bounce [animation-delay:200ms]")}></div>
-          </div>
-        </div>
+        <p className="text-sm text-slate-500">{text}</p>
       )}
     </div>
   );

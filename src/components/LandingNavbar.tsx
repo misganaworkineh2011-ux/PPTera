@@ -54,9 +54,9 @@ export const LandingNavbar = ({ currentLang }: LandingNavbarProps) => {
               <Image
                 src="/logo.png"
                 alt="PPTMaster"
-                width={140}
-                height={40}
-                className="h-9 w-auto"
+                width={180}
+                height={52}
+                className="h-12 w-auto"
               />
             </Link>
 
@@ -197,52 +197,123 @@ export const LandingNavbar = ({ currentLang }: LandingNavbarProps) => {
         </div>
       </nav>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu - Full screen overlay */}
       {mobileOpen && (
-        <div className="lg:hidden bg-white border-t border-zinc-200 px-6 py-6">
-          <div className="flex flex-col gap-2">
-            <SignedOut>
-              <SignInButton mode="modal">
-                <button className="py-3 text-lg text-zinc-900 font-medium text-left" onClick={() => setMobileOpen(false)}>
-                  {t.navAIPresentations || "AI Presentations"}
-                </button>
-              </SignInButton>
-            </SignedOut>
-            <SignedIn>
-              <LoadingLink href="/" className="py-3 text-lg text-zinc-900 font-medium" onClick={() => setMobileOpen(false)}>
-                {t.navAIPresentations || "AI Presentations"}
-              </LoadingLink>
-            </SignedIn>
-            <LoadingLink href={localPath("/inspiration")} className="py-3 text-lg text-zinc-600" onClick={() => setMobileOpen(false)}>
-              {t.navTemplates || "Templates"}
-            </LoadingLink>
-            <LoadingLink href={localPath("/education")} className="py-3 text-lg text-zinc-600" onClick={() => setMobileOpen(false)}>
-              {t.navForEducation || "For Education"}
-            </LoadingLink>
-            <LoadingLink href={localPath("/community")} className="py-3 text-lg text-zinc-600" onClick={() => setMobileOpen(false)}>
-              {t.navCommunity || "Community"}
-            </LoadingLink>
-            <LoadingLink href={localPath("/pricing")} className="py-3 text-lg text-zinc-600" onClick={() => setMobileOpen(false)}>
-              {t.navPricing || "Pricing"}
-            </LoadingLink>
-            
-            {/* Mobile Language Selector */}
-            <div className="py-3 border-t border-zinc-100 mt-2">
-              <LanguageSwitcher currentLang={currentLang} />
+        <div className="lg:hidden fixed inset-0 top-16 bg-white z-40 overflow-y-auto">
+          <div className="px-6 py-4">
+            {/* Products Section */}
+            <div className="border-b border-zinc-100 pb-3">
+              <button
+                onClick={() => setProductsOpen(!productsOpen)}
+                className="w-full flex items-center justify-between py-3 text-base font-medium text-zinc-900"
+              >
+                {t.navProducts || "Products"}
+                <ChevronDown className={cn("h-5 w-5 text-zinc-400 transition-transform", productsOpen && "rotate-180")} />
+              </button>
+              {productsOpen && (
+                <div className="pl-4 space-y-1 pb-2">
+                  <SignedOut>
+                    <SignInButton mode="modal">
+                      <button className="block w-full text-left py-2 text-sm text-zinc-600" onClick={() => setMobileOpen(false)}>
+                        {t.navAIPresentations || "AI Presentations"}
+                      </button>
+                    </SignInButton>
+                    <SignInButton mode="modal">
+                      <button className="block w-full text-left py-2 text-sm text-zinc-600" onClick={() => setMobileOpen(false)}>
+                        {t.navThemes || "Themes"}
+                      </button>
+                    </SignInButton>
+                  </SignedOut>
+                  <SignedIn>
+                    <LoadingLink href="/" className="block py-2 text-sm text-zinc-600" onClick={() => setMobileOpen(false)}>
+                      {t.navAIPresentations || "AI Presentations"}
+                    </LoadingLink>
+                    <LoadingLink href="/dashboard/themes" className="block py-2 text-sm text-zinc-600" onClick={() => setMobileOpen(false)}>
+                      {t.navThemes || "Themes"}
+                    </LoadingLink>
+                  </SignedIn>
+                  <LoadingLink href={localPath("/inspiration")} className="block py-2 text-sm text-zinc-600" onClick={() => setMobileOpen(false)}>
+                    {t.navTemplates || "Templates"}
+                  </LoadingLink>
+                </div>
+              )}
             </div>
 
-            <div className="pt-6 border-t border-zinc-200 mt-4">
+            {/* Solutions Section */}
+            <div className="border-b border-zinc-100 pb-3">
+              <button
+                onClick={() => setCommunityOpen(!communityOpen)}
+                className="w-full flex items-center justify-between py-3 text-base font-medium text-zinc-900"
+              >
+                {t.navSolutions || "Solutions"}
+                <ChevronDown className={cn("h-5 w-5 text-zinc-400 transition-transform", communityOpen && "rotate-180")} />
+              </button>
+              {communityOpen && (
+                <div className="pl-4 space-y-1 pb-2">
+                  <LoadingLink href={localPath("/education")} className="block py-2 text-sm text-zinc-600" onClick={() => setMobileOpen(false)}>
+                    {t.navForEducation || "For Education"}
+                  </LoadingLink>
+                  <LoadingLink href={localPath("/community")} className="block py-2 text-sm text-zinc-600" onClick={() => setMobileOpen(false)}>
+                    {t.navCommunity || "Community"}
+                  </LoadingLink>
+                </div>
+              )}
+            </div>
+
+            {/* Resources Section */}
+            <div className="border-b border-zinc-100 pb-3">
+              <button
+                onClick={() => setResourcesOpen(!resourcesOpen)}
+                className="w-full flex items-center justify-between py-3 text-base font-medium text-zinc-900"
+              >
+                {t.navResources || "Resources"}
+                <ChevronDown className={cn("h-5 w-5 text-zinc-400 transition-transform", resourcesOpen && "rotate-180")} />
+              </button>
+              {resourcesOpen && (
+                <div className="pl-4 space-y-1 pb-2">
+                  <LoadingLink href={localPath("/prompt-guide")} className="block py-2 text-sm text-zinc-600" onClick={() => setMobileOpen(false)}>
+                    {t.navPromptGuide || "Prompt Guide"}
+                  </LoadingLink>
+                  <LoadingLink href={localPath("/insights")} className="block py-2 text-sm text-zinc-600" onClick={() => setMobileOpen(false)}>
+                    {t.navBlog || "Blog"}
+                  </LoadingLink>
+                  <LoadingLink href={localPath("/help")} className="block py-2 text-sm text-zinc-600" onClick={() => setMobileOpen(false)}>
+                    {t.navHelpCenter || "Help Center"}
+                  </LoadingLink>
+                </div>
+              )}
+            </div>
+
+            {/* Pricing - Direct Link */}
+            <LoadingLink 
+              href={localPath("/pricing")} 
+              className="block py-3 text-base font-medium text-zinc-900 border-b border-zinc-100" 
+              onClick={() => setMobileOpen(false)}
+            >
+              {t.navPricing || "Pricing"}
+            </LoadingLink>
+
+            {/* Language Selector */}
+            <div className="mt-4 pt-4">
+              <LanguageSwitcher currentLang={currentLang} variant="grid" />
+            </div>
+
+            {/* CTA Button */}
+            <div className="mt-6">
               <SignedOut>
                 <SignInButton mode="modal">
-                  <button className="w-full py-4 text-base font-medium text-white bg-zinc-900 rounded-lg">
-                    {t.navGetStarted || "Get started for free"}
+                  <button 
+                    className="w-full py-3 text-base font-medium text-white bg-zinc-900 rounded-lg"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {t.navGetStarted || "Get started free"}
                   </button>
                 </SignInButton>
               </SignedOut>
               <SignedIn>
                 <LoadingLink 
                   href="/" 
-                  className="block w-full py-4 text-base font-medium text-center text-white bg-zinc-900 rounded-lg"
+                  className="block w-full py-3 text-base font-medium text-center text-white bg-zinc-900 rounded-lg"
                   onClick={() => setMobileOpen(false)}
                 >
                   {t.navDashboard || "Dashboard"}

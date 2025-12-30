@@ -1,5 +1,6 @@
 "use client";
 
+import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import { LoadingLink } from "~/components/LoadingLink";
 
 interface HowItWorksSectionProps {
@@ -17,29 +18,57 @@ export function HowItWorksSection({ t }: HowItWorksSectionProps) {
         {/* Cards Showcase */}
         <div className="mt-12 relative">
           <div className="flex gap-4 overflow-x-auto pb-4 -mx-6 px-6 lg:mx-0 lg:px-0 scrollbar-hide">
-            {/* Card 1 */}
-            <LoadingLink href="/dashboard/themes" className="flex-shrink-0 w-64 bg-zinc-900 rounded-xl p-4 text-white hover:bg-zinc-800 transition">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="flex -space-x-2">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="w-6 h-6 rounded-full bg-zinc-700 border-2 border-zinc-900"></div>
-                  ))}
+            {/* Card 1 - Themes */}
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button className="flex-shrink-0 w-64 bg-zinc-900 rounded-xl p-4 text-white hover:bg-zinc-800 transition text-left">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="flex -space-x-2">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="w-6 h-6 rounded-full bg-zinc-700 border-2 border-zinc-900"></div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="text-xs text-zinc-400 mb-2">{t.themeCorporate || "Theme/Corporate"}</div>
+                  <div className="space-y-2">
+                    <div className="text-xs">
+                      <span className="text-zinc-500">{t.layouts || "Layouts"}</span>
+                    </div>
+                    <div className="text-xs">
+                      <span className="text-zinc-500">{t.colors || "Colors"}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <div className="w-3 h-3 rounded bg-zinc-800"></div>
+                      <span className="text-zinc-400">elegant-noir</span>
+                    </div>
+                  </div>
+                </button>
+              </SignInButton>
+            </SignedOut>
+            <SignedIn>
+              <LoadingLink href="/dashboard/themes" className="flex-shrink-0 w-64 bg-zinc-900 rounded-xl p-4 text-white hover:bg-zinc-800 transition">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="flex -space-x-2">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="w-6 h-6 rounded-full bg-zinc-700 border-2 border-zinc-900"></div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <div className="text-xs text-zinc-400 mb-2">{t.themeCorporate || "Theme/Corporate"}</div>
-              <div className="space-y-2">
-                <div className="text-xs">
-                  <span className="text-zinc-500">{t.layouts || "Layouts"}</span>
+                <div className="text-xs text-zinc-400 mb-2">{t.themeCorporate || "Theme/Corporate"}</div>
+                <div className="space-y-2">
+                  <div className="text-xs">
+                    <span className="text-zinc-500">{t.layouts || "Layouts"}</span>
+                  </div>
+                  <div className="text-xs">
+                    <span className="text-zinc-500">{t.colors || "Colors"}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <div className="w-3 h-3 rounded bg-zinc-800"></div>
+                    <span className="text-zinc-400">elegant-noir</span>
+                  </div>
                 </div>
-                <div className="text-xs">
-                  <span className="text-zinc-500">{t.colors || "Colors"}</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs">
-                  <div className="w-3 h-3 rounded bg-zinc-800"></div>
-                  <span className="text-zinc-400">elegant-noir</span>
-                </div>
-              </div>
-            </LoadingLink>
+              </LoadingLink>
+            </SignedIn>
 
             {/* Card 2 */}
             <LoadingLink href="/inspiration" className="flex-shrink-0 w-48 bg-emerald-800 rounded-xl overflow-hidden hover:opacity-90 transition">
@@ -78,9 +107,18 @@ export function HowItWorksSection({ t }: HowItWorksSectionProps) {
 
         {/* Link */}
         <div className="mt-8">
-          <LoadingLink href="/inspiration" className="text-zinc-900 font-medium underline underline-offset-4 hover:text-zinc-600 transition">
-            {t.exploreAllTemplates || "Explore all templates"}
-          </LoadingLink>
+          <SignedOut>
+            <SignInButton mode="modal">
+              <button className="text-zinc-900 font-medium underline underline-offset-4 hover:text-zinc-600 transition">
+                {t.exploreAllTemplates || "Explore all templates"}
+              </button>
+            </SignInButton>
+          </SignedOut>
+          <SignedIn>
+            <LoadingLink href="/" className="text-zinc-900 font-medium underline underline-offset-4 hover:text-zinc-600 transition">
+              {t.exploreAllTemplates || "Explore all themes"}
+            </LoadingLink>
+          </SignedIn>
         </div>
       </div>
     </section>

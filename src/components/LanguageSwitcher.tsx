@@ -2,14 +2,23 @@
 
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Globe, Check } from "lucide-react";
-import { SUPPORTED_LANGUAGES, LANGUAGE_NAMES, DEFAULT_LANGUAGE, type Language } from "~/lib/i18n";
+import { Globe, Check, ChevronDown } from "lucide-react";
+import {
+  SUPPORTED_LANGUAGES,
+  LANGUAGE_NAMES,
+  DEFAULT_LANGUAGE,
+  type Language,
+} from "~/lib/i18n";
 
 interface LanguageSwitcherProps {
   currentLang: Language;
+  variant?: "dropdown" | "grid"; // grid for mobile menu
 }
 
-export function LanguageSwitcher({ currentLang }: LanguageSwitcherProps) {
+export function LanguageSwitcher({
+  currentLang,
+  variant = "dropdown",
+}: LanguageSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
@@ -24,35 +33,58 @@ export function LanguageSwitcher({ currentLang }: LanguageSwitcherProps) {
   }, [isOpen]);
 
   const switchLanguage = (newLang: Language) => {
-    // Get path without any language prefix
     let pathWithoutLang = pathname;
-    
-    // Check if current path has a language prefix (for non-English)
+
     const langMatch = pathname.match(/^\/([a-z]{2})(\/|$)/);
-    if (langMatch && SUPPORTED_LANGUAGES.includes(langMatch[1] as Language) && langMatch[1] !== "en") {
+    if (
+      langMatch &&
+      SUPPORTED_LANGUAGES.includes(langMatch[1] as Language) &&
+      langMatch[1] !== "en"
+    ) {
       pathWithoutLang = pathname.replace(`/${langMatch[1]}`, "") || "/";
     }
-    
-    // Build new path:
-    // - For English: use root path (no /en/ prefix)
-    // - For other languages: use /[lang]/ prefix
+
     let newPath: string;
     if (newLang === DEFAULT_LANGUAGE) {
-      // English uses root path
       newPath = pathWithoutLang || "/";
     } else {
-      // Other languages use /[lang]/ prefix
       newPath = `/${newLang}${pathWithoutLang === "/" ? "" : pathWithoutLang}`;
     }
-    
-    // Set cookie for persistence
-    document.cookie = `NEXT_LOCALE=${newLang}; path=/; max-age=31536000`; // 1 year
-    
-    // Navigate to new language
+
+    document.cookie = `NEXT_LOCALE=${newLang}; path=/; max-age=31536000`;
     router.push(newPath);
     setIsOpen(false);
   };
 
+  // Grid variant for mobile menu - shows all languages in a scrollable grid
+  if (variant === "grid") {
+    return (
+      <div className="w-full">
+        <div className="flex items-center gap-2 mb-3 text-sm text-slate-500">
+          <Globe className="h-4 w-4" />
+          <span>Language</span>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {SUPPORTED_LANGUAGES.map((lang) => (
+            <button
+              key={lang}
+              onClick={() => switchLanguage(lang)}
+              className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm transition-colors ${
+                lang === currentLang
+                  ? "bg-cyan-50 text-cyan-700 border border-cyan-200"
+                  : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-transparent"
+              }`}
+            >
+              <span>{LANGUAGE_NAMES[lang].flag}</span>
+              <span className="truncate">{LANGUAGE_NAMES[lang].short || lang.toUpperCase()}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Default dropdown variant
   return (
     <div className="relative">
       <button
@@ -64,12 +96,12 @@ export function LanguageSwitcher({ currentLang }: LanguageSwitcherProps) {
         aria-label="Change language"
       >
         <Globe className="h-4 w-4" />
-        <span className="hidden sm:inline">{LANGUAGE_NAMES[currentLang].name}</span>
-        <span className="sm:hidden">{LANGUAGE_NAMES[currentLang].flag}</span>
+        <span>{LANGUAGE_NAMES[currentLang].name}</span>
+        <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 rounded-lg border border-slate-200 bg-white shadow-lg z-50">
+        <div className="absolute right-0 top-full mt-2 w-48 rounded-lg border border-slate-200 bg-white shadow-lg z-50 overflow-hidden max-h-80 overflow-y-auto">
           <div className="py-1">
             {SUPPORTED_LANGUAGES.map((lang) => (
               <button

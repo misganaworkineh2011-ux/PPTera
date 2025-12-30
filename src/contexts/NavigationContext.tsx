@@ -11,7 +11,7 @@ const NavigationContext = createContext<NavigationContextType>({
   isNavigating: false,
 });
 
-// Loading overlay component - uses portal-like positioning
+// Loading overlay component - minimal spinner
 function LoadingOverlay() {
   return (
     <div 
@@ -31,69 +31,29 @@ function LoadingOverlay() {
       }}
     >
       <div style={{ textAlign: 'center' }}>
-        <div style={{ position: 'relative', width: 96, height: 96, margin: '0 auto 32px' }}>
+        <div style={{ position: 'relative', width: 40, height: 40, margin: '0 auto 12px' }}>
           <div style={{ 
             position: 'absolute', 
             inset: 0, 
-            border: '4px solid #e2e8f0', 
+            border: '3px solid #e2e8f0', 
             borderRadius: '50%' 
           }}></div>
           <div style={{ 
             position: 'absolute', 
             inset: 0, 
-            border: '4px solid transparent',
+            border: '3px solid transparent',
             borderTopColor: '#1e3a8a',
             borderRightColor: '#06b6d4',
             borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-          }}></div>
-          <div style={{ 
-            position: 'absolute', 
-            inset: 12, 
-            background: 'linear-gradient(to bottom right, #1e3a8a, #06b6d4)',
-            borderRadius: '50%',
-            animation: 'pulse 2s ease-in-out infinite',
+            animation: 'spin 0.8s linear infinite',
           }}></div>
         </div>
-        <div>
-          <h2 style={{ fontSize: 20, fontWeight: 700, color: '#0f172a', marginBottom: 8 }}>Loading...</h2>
-          <div style={{ display: 'flex', gap: 4, justifyContent: 'center' }}>
-            <div style={{ 
-              height: 8, 
-              width: 8, 
-              backgroundColor: '#1e3a8a', 
-              borderRadius: '50%',
-              animation: 'bounce 1s infinite',
-            }}></div>
-            <div style={{ 
-              height: 8, 
-              width: 8, 
-              backgroundColor: '#06b6d4', 
-              borderRadius: '50%',
-              animation: 'bounce 1s infinite 0.1s',
-            }}></div>
-            <div style={{ 
-              height: 8, 
-              width: 8, 
-              backgroundColor: '#1e3a8a', 
-              borderRadius: '50%',
-              animation: 'bounce 1s infinite 0.2s',
-            }}></div>
-          </div>
-        </div>
+        <p style={{ fontSize: 14, color: '#64748b' }}>Loading...</p>
       </div>
       <style>{`
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-        @keyframes bounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-8px); }
         }
       `}</style>
     </div>

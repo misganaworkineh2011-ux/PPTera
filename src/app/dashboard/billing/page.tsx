@@ -10,16 +10,10 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
-  Crown,
-  Sparkles,
-  BarChart3,
   Clock,
-  ArrowUpRight,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
-import { useLanguage } from "~/contexts/LanguageContext";
-import { dashboardTranslations } from "~/lib/dashboard-translations";
-import { cn } from "~/lib/utils";
 
 interface BillingData {
   subscription: {
@@ -63,8 +57,6 @@ export default function BillingPage() {
   const [activities, setActivities] = useState<UsageActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { language } = useLanguage();
-  const t = dashboardTranslations[language] || dashboardTranslations.en;
 
   useEffect(() => {
     async function fetchBillingData() {
@@ -97,7 +89,7 @@ export default function BillingPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-[#06b6d4]" />
+        <Loader2 className="h-6 w-6 animate-spin text-cyan-500" />
       </div>
     );
   }
@@ -105,311 +97,211 @@ export default function BillingPage() {
   if (error || !billing) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
-        <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
-        <p className="text-slate-600">{error || "Something went wrong"}</p>
+        <AlertCircle className="h-10 w-10 text-zinc-400 mb-4" />
+        <p className="text-zinc-500">{error || "Something went wrong"}</p>
       </div>
     );
   }
 
-  const getPlanIcon = (plan: string | null) => {
-    switch (plan) {
-      case "ultra":
-        return <Crown className="h-5 w-5 text-purple-500" />;
-      case "pro":
-        return <Sparkles className="h-5 w-5 text-blue-500" />;
-      case "plus":
-        return <Zap className="h-5 w-5 text-amber-500" />;
-      default:
-        return <CreditCard className="h-5 w-5 text-slate-400" />;
-    }
-  };
-
-  const getPlanColor = (plan: string | null) => {
-    switch (plan) {
-      case "ultra":
-        return "from-purple-500 to-pink-500";
-      case "pro":
-        return "from-blue-500 to-cyan-500";
-      case "plus":
-        return "from-amber-500 to-orange-500";
-      default:
-        return "from-slate-400 to-slate-500";
-    }
-  };
-
   return (
-    <div className="max-w-6xl mx-auto space-y-8 p-4 sm:p-6 lg:p-8">
+    <div className="max-w-4xl mx-auto space-y-6 py-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
-          Billing & Subscription
-        </h1>
-        <p className="text-slate-500 dark:text-neutral-400 mt-1">
-          Manage your subscription and view credit usage
+        <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">Billing</h1>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+          Manage your subscription and credits
         </p>
       </div>
 
-      {/* Current Plan Card */}
-      <div className={cn(
-        "relative overflow-hidden rounded-2xl p-6 sm:p-8 text-white",
-        `bg-gradient-to-br ${getPlanColor(billing.subscription.plan)}`
-      )}>
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
-        
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-white/20 rounded-lg">
-              {getPlanIcon(billing.subscription.plan)}
+      {/* Current Plan */}
+      <div className="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-cyan-500/10 to-blue-900/10 dark:from-cyan-500/20 dark:to-blue-900/20 rounded-lg">
+              <CreditCard className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
             </div>
             <div>
-              <p className="text-white/80 text-sm">Current Plan</p>
-              <h2 className="text-2xl font-bold capitalize">
-                {billing.subscription.plan || "Free"} Plan
-              </h2>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
-            <div className="bg-white/10 rounded-xl p-4">
-              <p className="text-white/70 text-xs mb-1">Credits Available</p>
-              <p className="text-2xl font-bold">{billing.credits.current.toLocaleString()}</p>
-            </div>
-            <div className="bg-white/10 rounded-xl p-4">
-              <p className="text-white/70 text-xs mb-1">Monthly Limit</p>
-              <p className="text-2xl font-bold">{billing.credits.max.toLocaleString()}</p>
-            </div>
-            <div className="bg-white/10 rounded-xl p-4">
-              <p className="text-white/70 text-xs mb-1">Billing Cycle</p>
-              <p className="text-2xl font-bold capitalize">{billing.subscription.type || "N/A"}</p>
-            </div>
-            <div className="bg-white/10 rounded-xl p-4">
-              <p className="text-white/70 text-xs mb-1">Next Reset</p>
-              <p className="text-lg font-bold">
-                {billing.subscription.nextResetDate
-                  ? new Date(billing.subscription.nextResetDate).toLocaleDateString()
-                  : "N/A"}
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">Current Plan</p>
+              <p className="font-semibold text-zinc-900 dark:text-white capitalize">
+                {billing.subscription.plan || "Free"}
               </p>
             </div>
           </div>
-
           {!billing.subscription.isActive && (
             <Link
               href="/pricing"
-              className="inline-flex items-center gap-2 mt-6 px-6 py-3 bg-white text-slate-900 rounded-full font-semibold hover:bg-slate-100 transition"
+              className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-sm font-medium rounded-lg hover:opacity-90 transition shadow-sm"
             >
-              Upgrade Now
-              <ArrowUpRight className="h-4 w-4" />
+              <Sparkles className="h-4 w-4" />
+              Upgrade
             </Link>
           )}
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="bg-zinc-50 dark:bg-zinc-700/50 rounded-lg p-4">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Credits</p>
+            <p className="text-xl font-semibold text-zinc-900 dark:text-white">
+              {billing.credits.current.toLocaleString()}
+            </p>
+          </div>
+          <div className="bg-zinc-50 dark:bg-zinc-700/50 rounded-lg p-4">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Monthly Limit</p>
+            <p className="text-xl font-semibold text-zinc-900 dark:text-white">
+              {billing.credits.max.toLocaleString()}
+            </p>
+          </div>
+          <div className="bg-zinc-50 dark:bg-zinc-700/50 rounded-lg p-4">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Billing</p>
+            <p className="text-xl font-semibold text-zinc-900 dark:text-white capitalize">
+              {billing.subscription.type || "—"}
+            </p>
+          </div>
+          <div className="bg-zinc-50 dark:bg-zinc-700/50 rounded-lg p-4">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Resets</p>
+            <p className="text-lg font-semibold text-zinc-900 dark:text-white">
+              {billing.subscription.nextResetDate
+                ? new Date(billing.subscription.nextResetDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+                : "—"}
+            </p>
+          </div>
         </div>
       </div>
 
       {/* Credit Usage */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Usage Progress */}
-        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-slate-200 dark:border-neutral-800 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-[#06b6d4]" />
-              Credit Usage
-            </h3>
-            <span className="text-sm text-slate-500">
-              {billing.credits.usagePercentage}% used
-            </span>
-          </div>
-
-          <div className="relative h-4 bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden mb-4">
-            <div
-              className={cn(
-                "absolute inset-y-0 left-0 rounded-full transition-all",
-                billing.credits.usagePercentage > 90
-                  ? "bg-red-500"
-                  : billing.credits.usagePercentage > 70
-                  ? "bg-amber-500"
-                  : "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4]"
-              )}
-              style={{ width: `${billing.credits.usagePercentage}%` }}
-            />
-          </div>
-
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-600 dark:text-neutral-400">
-              {billing.credits.used.toLocaleString()} used
-            </span>
-            <span className="text-slate-600 dark:text-neutral-400">
-              {billing.credits.current.toLocaleString()} remaining
-            </span>
-          </div>
-
-          <div className="mt-6 pt-6 border-t border-slate-100 dark:border-neutral-800">
-            <p className="text-sm text-slate-500 mb-3">With your remaining credits:</p>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-3">
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {billing.usage.estimatedSlides}
-                </p>
-                <p className="text-xs text-slate-500">slides (4 credits each)</p>
-              </div>
-              <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-3">
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {billing.usage.estimatedImages}
-                </p>
-                <p className="text-xs text-slate-500">AI images (10 credits each)</p>
-              </div>
-            </div>
-          </div>
+      <div className="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-medium text-zinc-900 dark:text-white">Credit Usage</h2>
+          <span className="text-sm text-zinc-500 dark:text-zinc-400">
+            {billing.credits.usagePercentage}% used
+          </span>
         </div>
 
-        {/* Plan Features */}
-        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-slate-200 dark:border-neutral-800 p-6">
-          <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
-            <CheckCircle2 className="h-5 w-5 text-green-500" />
-            Plan Features
-          </h3>
+        <div className="h-2 bg-zinc-100 dark:bg-zinc-700 rounded-full overflow-hidden mb-4">
+          <div
+            className="h-full bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full transition-all"
+            style={{ width: `${Math.min(billing.credits.usagePercentage, 100)}%` }}
+          />
+        </div>
 
-          {billing.planDetails ? (
-            <ul className="space-y-3">
-              {billing.planDetails.features.map((feature, idx) => (
-                <li key={idx} className="flex items-start gap-3 text-sm">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-slate-600 dark:text-neutral-300">{feature}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-slate-500 mb-4">You're on the free plan</p>
-              <Link
-                href="/pricing"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white rounded-full text-sm font-semibold hover:opacity-90 transition"
-              >
-                View Plans
-                <ChevronRight className="h-4 w-4" />
-              </Link>
+        <div className="flex justify-between text-sm text-zinc-500 dark:text-zinc-400">
+          <span>{billing.credits.used.toLocaleString()} used</span>
+          <span>{billing.credits.current.toLocaleString()} remaining</span>
+        </div>
+
+        <div className="mt-6 pt-6 border-t border-zinc-100 dark:border-zinc-700">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-3">Estimated remaining:</p>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-2xl font-semibold text-zinc-900 dark:text-white">
+                {billing.usage.estimatedSlides}
+              </p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">slides</p>
             </div>
-          )}
+            <div>
+              <p className="text-2xl font-semibold text-zinc-900 dark:text-white">
+                {billing.usage.estimatedImages}
+              </p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">AI images</p>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-3">
         <Link
           href="/pricing"
-          className="flex items-center gap-4 p-4 bg-white dark:bg-neutral-900 rounded-xl border border-slate-200 dark:border-neutral-800 hover:border-[#06b6d4] transition group"
+          className="flex items-center gap-3 p-4 bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:border-cyan-300 dark:hover:border-cyan-700 transition group"
         >
-          <div className="p-3 bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] rounded-lg text-white">
-            <TrendingUp className="h-5 w-5" />
-          </div>
+          <TrendingUp className="h-5 w-5 text-cyan-500 group-hover:text-cyan-600" />
           <div className="flex-1">
-            <p className="font-semibold text-slate-900 dark:text-white">Upgrade Plan</p>
-            <p className="text-sm text-slate-500">Get more credits & features</p>
+            <p className="text-sm font-medium text-zinc-900 dark:text-white">Upgrade</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">More credits</p>
           </div>
-          <ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-[#06b6d4] transition" />
+          <ChevronRight className="h-4 w-4 text-zinc-400 group-hover:text-cyan-500" />
         </Link>
 
         <Link
           href="/pricing#topup"
-          className="flex items-center gap-4 p-4 bg-white dark:bg-neutral-900 rounded-xl border border-slate-200 dark:border-neutral-800 hover:border-[#06b6d4] transition group"
+          className="flex items-center gap-3 p-4 bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:border-blue-300 dark:hover:border-blue-700 transition group"
         >
-          <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg text-white">
-            <Zap className="h-5 w-5" />
-          </div>
+          <Zap className="h-5 w-5 text-blue-500 group-hover:text-blue-600" />
           <div className="flex-1">
-            <p className="font-semibold text-slate-900 dark:text-white">Buy Credits</p>
-            <p className="text-sm text-slate-500">One-time credit purchase</p>
+            <p className="text-sm font-medium text-zinc-900 dark:text-white">Buy Credits</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">One-time</p>
           </div>
-          <ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-[#06b6d4] transition" />
+          <ChevronRight className="h-4 w-4 text-zinc-400 group-hover:text-blue-500" />
         </Link>
 
         <Link
           href="/dashboard/activity"
-          className="flex items-center gap-4 p-4 bg-white dark:bg-neutral-900 rounded-xl border border-slate-200 dark:border-neutral-800 hover:border-[#06b6d4] transition group"
+          className="flex items-center gap-3 p-4 bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500 transition group"
         >
-          <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg text-white">
-            <Clock className="h-5 w-5" />
-          </div>
+          <Clock className="h-5 w-5 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300" />
           <div className="flex-1">
-            <p className="font-semibold text-slate-900 dark:text-white">View History</p>
-            <p className="text-sm text-slate-500">See all activity</p>
+            <p className="text-sm font-medium text-zinc-900 dark:text-white">History</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">All activity</p>
           </div>
-          <ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-[#06b6d4] transition" />
+          <ChevronRight className="h-4 w-4 text-zinc-400" />
         </Link>
       </div>
 
-      {/* Recent Activity */}
-      <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-slate-200 dark:border-neutral-800 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-            <Clock className="h-5 w-5 text-[#06b6d4]" />
-            Recent Credit Usage
-          </h3>
-          <Link
-            href="/dashboard/activity"
-            className="text-sm text-[#06b6d4] hover:underline"
-          >
-            View all
-          </Link>
+      {/* Plan Features */}
+      {billing.planDetails && (
+        <div className="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 p-6">
+          <h2 className="font-medium text-zinc-900 dark:text-white mb-4">Plan Features</h2>
+          <ul className="space-y-2">
+            {billing.planDetails.features.map((feature, idx) => (
+              <li key={idx} className="flex items-start gap-2 text-sm">
+                <CheckCircle2 className="h-4 w-4 text-cyan-500 mt-0.5 flex-shrink-0" />
+                <span className="text-zinc-600 dark:text-zinc-300">{feature}</span>
+              </li>
+            ))}
+          </ul>
         </div>
+      )}
 
-        {activities.length > 0 ? (
+      {/* Recent Activity */}
+      {activities.length > 0 && (
+        <div className="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-medium text-zinc-900 dark:text-white">Recent Activity</h2>
+            <Link href="/dashboard/activity" className="text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300">
+              View all
+            </Link>
+          </div>
+
           <div className="space-y-3">
             {activities.slice(0, 5).map((activity) => (
               <div
                 key={activity.id}
-                className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-neutral-800 last:border-0"
+                className="flex items-center justify-between py-2 border-b border-zinc-100 dark:border-zinc-700 last:border-0"
               >
-                <div className="flex items-center gap-3">
-                  <div className={cn(
-                    "p-2 rounded-lg",
-                    activity.type === "create"
-                      ? "bg-blue-100 text-blue-600"
-                      : activity.type === "image_generate"
-                      ? "bg-purple-100 text-purple-600"
-                      : "bg-slate-100 text-slate-600"
-                  )}>
-                    {activity.type === "image_generate" ? (
-                      <Sparkles className="h-4 w-4" />
-                    ) : (
-                      <BarChart3 className="h-4 w-4" />
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-900 dark:text-white">
-                      {activity.description}
-                    </p>
-                    {activity.presentation && (
-                      <p className="text-xs text-slate-500">
-                        {activity.presentation.title}
-                      </p>
-                    )}
-                  </div>
+                <div>
+                  <p className="text-sm text-zinc-900 dark:text-white">{activity.description}</p>
+                  {activity.presentation && (
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">{activity.presentation.title}</p>
+                  )}
                 </div>
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-zinc-400">
                   {new Date(activity.createdAt).toLocaleDateString()}
                 </span>
               </div>
             ))}
           </div>
-        ) : (
-          <p className="text-center text-slate-500 py-8">No recent activity</p>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* Account Info */}
-      <div className="bg-slate-50 dark:bg-neutral-900/50 rounded-xl p-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Calendar className="h-5 w-5 text-slate-400" />
-          <span className="text-sm text-slate-600 dark:text-neutral-400">
-            Member since {new Date(billing.memberSince).toLocaleDateString("en-US", {
-              month: "long",
-              year: "numeric",
-            })}
+      {/* Member Info */}
+      <div className="flex items-center justify-between text-sm text-zinc-500 dark:text-zinc-400 px-1">
+        <div className="flex items-center gap-2">
+          <Calendar className="h-4 w-4" />
+          <span>
+            Member since {new Date(billing.memberSince).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
           </span>
         </div>
-        <span className="text-sm text-slate-500">
-          {billing.usage.presentations} presentations created
-        </span>
+        <span>{billing.usage.presentations} presentations</span>
       </div>
     </div>
   );

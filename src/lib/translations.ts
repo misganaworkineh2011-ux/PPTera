@@ -105,13 +105,13 @@ export const translations = {
     exploreAPIDocs: "Explore API Docs",
     
     // Landing Page - How It Works Section
-    professionalTemplatesTitle: "Professional templates for every presentation",
+    professionalTemplatesTitle: "Professional themes for every presentation",
     themeCorporate: "Theme/Corporate",
     layouts: "Layouts",
     colors: "Colors",
     startupPitch: "Startup Pitch",
     businessSeries: "Business Series",
-    exploreAllTemplates: "Explore all templates",
+    exploreAllTemplates: "Explore all themes",
     
     // Landing Page - CTA Section
     startNow: "Start Now",
@@ -763,13 +763,13 @@ export const translations = {
     exploreAPIDocs: "Explorar doc. de API",
     
     // Página de aterrizaje - Sección Cómo funciona
-    professionalTemplatesTitle: "Plantillas profesionales para cada presentación",
+    professionalTemplatesTitle: "Temas profesionales para cada presentación",
     themeCorporate: "Tema/Corporativo",
     layouts: "Diseños",
     colors: "Colores",
     startupPitch: "Pitch de Startup",
     businessSeries: "Serie de Negocios",
-    exploreAllTemplates: "Explorar todas las plantillas",
+    exploreAllTemplates: "Explorar todos los temas",
     
     // Página de aterrizaje - Sección CTA
     startNow: "Empezar ahora",
@@ -1422,13 +1422,13 @@ export const translations = {
     exploreAPIDocs: "Explorer la doc API",
     
     // Landing Page - How It Works Section
-    professionalTemplatesTitle: "Des modèles professionnels pour chaque présentation",
+    professionalTemplatesTitle: "Des thèmes professionnels pour chaque présentation",
     themeCorporate: "Thème/Entreprise",
     layouts: "Mises en page",
     colors: "Couleurs",
     startupPitch: "Pitch de Startup",
     businessSeries: "Série Business",
-    exploreAllTemplates: "Explorer tous les modèles",
+    exploreAllTemplates: "Explorer tous les thèmes",
     
     // Landing Page - CTA Section
     startNow: "Commencer maintenant",
@@ -2080,13 +2080,13 @@ export const translations = {
     exploreAPIDocs: "API-Dokumentation ansehen",
     
     // Landing Page - How It Works Section
-    professionalTemplatesTitle: "Professionelle Vorlagen für jede Präsentation",
+    professionalTemplatesTitle: "Professionelle Themes für jede Präsentation",
     themeCorporate: "Theme/Corporate",
     layouts: "Layouts",
     colors: "Farben",
     startupPitch: "Startup-Pitch",
     businessSeries: "Business-Serie",
-    exploreAllTemplates: "Alle Vorlagen erkunden",
+    exploreAllTemplates: "Alle Themes erkunden",
     
     // Landing Page - CTA Section
     startNow: "Jetzt starten",
@@ -2738,13 +2738,13 @@ export const translations = {
     exploreAPIDocs: "探索 API 文档",
     
     // Landing Page - How It Works Section (落地页 - 工作原理部分)
-    professionalTemplatesTitle: "适用于每个演示文稿的专业模板",
+    professionalTemplatesTitle: "适用于每个演示文稿的专业主题",
     themeCorporate: "主题/企业",
     layouts: "布局",
     colors: "颜色",
     startupPitch: "创业路演",
     businessSeries: "商务系列",
-    exploreAllTemplates: "浏览所有模板",
+    exploreAllTemplates: "浏览所有主题",
     
     // Landing Page - CTA Section (落地页 - 号召性用语部分)
     startNow: "立即开始",
@@ -3396,13 +3396,13 @@ export const translations = {
     exploreAPIDocs: "Explorar Docs da API",
     
     // Landing Page - How It Works Section
-    professionalTemplatesTitle: "Modelos profissionais para cada apresentação",
+    professionalTemplatesTitle: "Temas profissionais para cada apresentação",
     themeCorporate: "Tema/Corporativo",
     layouts: "Layouts",
     colors: "Cores",
     startupPitch: "Pitch de Startup",
     businessSeries: "Série de Negócios",
-    exploreAllTemplates: "Explorar todos os modelos",
+    exploreAllTemplates: "Explorar todos os temas",
     
     // Landing Page - CTA Section
     startNow: "Começar Agora",
@@ -4054,13 +4054,13 @@ export const translations = {
     exploreAPIDocs: "Esplora Documentazione API",
     
     // Landing Page - How It Works Section
-    professionalTemplatesTitle: "Modelli professionali per ogni presentazione",
+    professionalTemplatesTitle: "Temi professionali per ogni presentazione",
     themeCorporate: "Tema/Aziendale",
     layouts: "Layout",
     colors: "Colori",
     startupPitch: "Pitch per Startup",
     businessSeries: "Serie Business",
-    exploreAllTemplates: "Esplora tutti i modelli",
+    exploreAllTemplates: "Esplora tutti i temi",
     
     // Landing Page - CTA Section
     startNow: "Inizia Ora",
@@ -4713,13 +4713,13 @@ export const translations = {
     exploreAPIDocs: "APIドキュメントを見る",
     
     // Landing Page - How It Works Section
-    professionalTemplatesTitle: "あらゆるプレゼンテーションに対応するプロフェッショナルなテンプレート",
+    professionalTemplatesTitle: "あらゆるプレゼンテーションに対応するプロフェッショナルなテーマ",
     themeCorporate: "テーマ/企業",
     layouts: "レイアウト",
     colors: "カラー",
     startupPitch: "スタートアップピッチ",
     businessSeries: "ビジネスシリーズ",
-    exploreAllTemplates: "すべてのテンプレートを見る",
+    exploreAllTemplates: "すべてのテーマを見る",
     
     // Landing Page - CTA Section
     startNow: "今すぐ始める",
@@ -5372,13 +5372,13 @@ export const translations = {
     exploreAPIDocs: "API 문서 탐색",
     
     // Landing Page - How It Works Section
-    professionalTemplatesTitle: "모든 프레젠테이션을 위한 전문 템플릿",
+    professionalTemplatesTitle: "모든 프레젠테이션을 위한 전문 테마",
     themeCorporate: "테마/기업",
     layouts: "레이아웃",
     colors: "색상",
     startupPitch: "스타트업 피치",
     businessSeries: "비즈니스 시리즈",
-    exploreAllTemplates: "모든 템플릿 탐색",
+    exploreAllTemplates: "모든 테마 탐색",
     
     // Landing Page - CTA Section
     startNow: "지금 시작하기",
@@ -6031,13 +6031,13 @@ export const translations = {
     exploreAPIDocs: "استكشف وثائق API",
     
     // Landing Page - How It Works Section
-    professionalTemplatesTitle: "قوالب احترافية لكل عرض تقديمي",
+    professionalTemplatesTitle: "ثيمات احترافية لكل عرض تقديمي",
     themeCorporate: "ثيم/شركات",
     layouts: "التخطيطات",
     colors: "الألوان",
     startupPitch: "عرض شركة ناشئة",
     businessSeries: "سلسلة الأعمال",
-    exploreAllTemplates: "استكشف كل القوالب",
+    exploreAllTemplates: "استكشف كل الثيمات",
     
     // Landing Page - CTA Section
     startNow: "ابدأ الآن",
@@ -6690,13 +6690,13 @@ export const translations = {
     exploreAPIDocs: "API डॉक्स देखें",
     
     // Landing Page - How It Works Section
-    professionalTemplatesTitle: "हर प्रेजेंटेशन के लिए पेशेवर टेम्पलेट्स",
+    professionalTemplatesTitle: "हर प्रेजेंटेशन के लिए पेशेवर थीम्स",
     themeCorporate: "थीम/कॉर्पोरेट",
     layouts: "लेआउट",
     colors: "रंग",
     startupPitch: "स्टार्टअप पिच",
     businessSeries: "बिजनेस सीरीज़",
-    exploreAllTemplates: "सभी टेम्पलेट्स देखें",
+    exploreAllTemplates: "सभी थीम्स देखें",
     
     // Landing Page - CTA Section
     startNow: "अभी शुरू करें",
@@ -7349,13 +7349,13 @@ export const translations = {
     exploreAPIDocs: "Документация API",
     
     // Landing Page - How It Works Section
-    professionalTemplatesTitle: "Профессиональные шаблоны для каждой презентации",
+    professionalTemplatesTitle: "Профессиональные темы для каждой презентации",
     themeCorporate: "Тема/Корпоративная",
     layouts: "Макеты",
     colors: "Цвета",
     startupPitch: "Питч стартапа",
     businessSeries: "Бизнес-серия",
-    exploreAllTemplates: "Смотреть все шаблоны",
+    exploreAllTemplates: "Смотреть все темы",
     
     // Landing Page - CTA Section
     startNow: "Начать сейчас",

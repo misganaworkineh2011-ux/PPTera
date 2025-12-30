@@ -39,7 +39,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
     {
       title: t.dashboard,
       items: [
-        { name: t.presentations, href: "/dashboard", icon: LayoutDashboard },
+        { name: t.presentations, href: "/", icon: LayoutDashboard },
       ],
     },
     {
@@ -70,7 +70,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
   return (
     <aside
       className={cn(
-        "relative flex h-screen flex-col border-r border-slate-200/60 bg-white dark:bg-black dark:border-neutral-800 transition-all duration-300",
+        "relative flex h-screen flex-col border-r border-slate-200/60 bg-white dark:bg-zinc-900 dark:border-zinc-800 transition-all duration-300",
         // On mobile, always show full width; on desktop, respect collapsed state
         "w-72 lg:w-72",
         isCollapsed && "lg:w-20"
@@ -101,14 +101,14 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
             <div key={group.title}>
               {/* Show group titles on mobile always, on desktop only when not collapsed */}
               <h3 className={cn(
-                "mb-2 px-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-neutral-500",
+                "mb-2 px-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-500",
                 isCollapsed && "lg:hidden"
               )}>
                 {group.title}
               </h3>
               <div className="space-y-1">
                 {group.items.map((item) => {
-                  const isActive = pathname === item.href;
+                  const isActive = pathname === item.href || (item.href === "/" && pathname === "/dashboard");
                   return (
                     <Link
                       key={item.href}
@@ -117,8 +117,8 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
                       className={cn(
                         "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-semibold transition-all",
                         isActive
-                          ? "bg-[#e0f2fe] text-[#06b6d4] shadow-sm dark:bg-neutral-900 dark:text-white"
-                          : "text-slate-700 hover:bg-slate-50 hover:text-[#1e3a8a] dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-white",
+                          ? "bg-[#e0f2fe] text-[#06b6d4] shadow-sm dark:bg-zinc-800 dark:text-white"
+                          : "text-slate-700 hover:bg-slate-50 hover:text-[#1e3a8a] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white",
                         isCollapsed && "lg:justify-center lg:px-2"
                       )}
                     >
@@ -126,7 +126,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
                         size={17}
                         className={cn(
                           "transition-colors flex-shrink-0",
-                          isActive ? "text-[#06b6d4] dark:text-white" : "text-slate-600 group-hover:text-[#1e3a8a] dark:text-neutral-500 dark:group-hover:text-white"
+                          isActive ? "text-[#06b6d4] dark:text-white" : "text-slate-600 group-hover:text-[#1e3a8a] dark:text-zinc-500 dark:group-hover:text-white"
                         )}
                       />
                       {/* Show text on mobile always, on desktop only when not collapsed */}
@@ -152,13 +152,13 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
       </div>
 
       {/* Account Info at Bottom */}
-      <div className="border-t border-slate-100 dark:border-neutral-800 relative">
+      <div className="border-t border-slate-100 dark:border-zinc-800 relative">
         {/* Show account info on mobile always, on desktop only when not collapsed */}
         <div className={cn(
           "p-3 lg:p-4",
           isCollapsed && "lg:hidden"
         )}>
-          <button className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white dark:bg-neutral-900 dark:border-neutral-800 p-2.5 lg:p-3 shadow-sm transition hover:border-[#06b6d4] hover:shadow-md">
+          <button className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white dark:bg-zinc-800 dark:border-zinc-700 p-2.5 lg:p-3 shadow-sm transition hover:border-[#06b6d4] hover:shadow-md">
             <div className="flex items-center gap-2 lg:gap-3 flex-1 min-w-0">
               <UserButton afterSignOutUrl="/" />
               <div className="flex flex-col items-start overflow-hidden flex-1 min-w-0">
@@ -166,7 +166,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
                   <span className="truncate text-sm font-bold text-[#1e3a8a] dark:text-white">
                     {user?.fullName || "User"}
                   </span>
-                  <span className="truncate text-xs text-slate-500 dark:text-neutral-500 shrink-0 hidden sm:block">
+                  <span className="truncate text-xs text-slate-500 dark:text-zinc-500 shrink-0 hidden sm:block">
                     Workspace
                   </span>
                 </div>
@@ -175,7 +175,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
                 </span>
               </div>
             </div>
-            <MoreVertical size={16} className="text-slate-400 dark:text-neutral-500 flex-shrink-0" />
+            <MoreVertical size={16} className="text-slate-400 dark:text-zinc-500 flex-shrink-0" />
           </button>
         </div>
         
@@ -183,7 +183,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
         <div className="absolute bottom-0 right-0 p-2 hidden lg:block">
           <button
             onClick={toggleCollapse}
-            className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-neutral-500 dark:hover:bg-neutral-900 dark:hover:text-white transition"
+            className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-white transition"
           >
             {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
           </button>
