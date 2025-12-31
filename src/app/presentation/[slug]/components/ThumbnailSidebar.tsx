@@ -32,9 +32,9 @@ export function ThumbnailSidebar({
   const ui = getUIColors(getThemeType(theme));
 
   return (
-    <aside className="w-44 shrink-0 self-start sticky top-20">
+    <aside className="w-44 shrink-0 self-start sticky top-4">
       <div
-        className={`space-y-2 max-h-[calc(100vh-100px)] overflow-y-auto pr-2 scrollbar-thin ${ui.scrollbar}`}
+        className={`space-y-2 max-h-[calc(100vh-80px)] overflow-y-auto pr-2 scrollbar-thin ${ui.scrollbar}`}
       >
         <div className="flex items-center justify-between mb-3 px-1">
           <span

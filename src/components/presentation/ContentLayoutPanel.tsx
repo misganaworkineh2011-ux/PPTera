@@ -9,11 +9,23 @@ import { bulletLayouts } from "~/lib/layouts/content/bullets";
 import { quotesLayouts } from "~/lib/layouts/content/quotes";
 import { imageLayouts } from "~/lib/layouts/content/images";
 import { circleLayouts } from "~/lib/layouts/content/circles";
-import { BoxLayoutPreview } from "./BoxLayoutRenderer";
 import type { ContentLayoutType } from "./types";
 
+// Import actual layout renderers
+import BoxLayoutRenderer from "./BoxLayoutRenderer";
+import { BulletLayoutRenderer } from "~/components/layouts/BulletLayoutRenderer";
+import { StepsLayoutRenderer } from "~/components/layouts/StepsLayoutRenderer";
+import { QuotesLayoutRenderer } from "~/components/layouts/QuotesLayoutRenderer";
+import { CircleLayoutRenderer } from "~/components/layouts/CircleLayoutRenderer";
+
+import type { BoxLayoutType, BoxContentItem } from "~/lib/layouts/content/boxes";
+import type { BulletLayoutType, BulletContentItem } from "~/lib/layouts/content/bullets";
+import type { StepsLayoutType, StepContentItem } from "~/lib/layouts/content/steps";
+import type { QuotesLayoutType, QuoteContentItem } from "~/lib/layouts/content/quotes";
+import type { CircleLayoutType, CircleContentItem } from "~/lib/layouts/content/circles";
+
 // Panel width constant - used for both panel and main content offset
-export const CONTENT_LAYOUT_PANEL_WIDTH = 380;
+export const CONTENT_LAYOUT_PANEL_WIDTH = 420;
 // Header height - panel starts below the header
 const HEADER_HEIGHT = 53;
 
@@ -46,7 +58,7 @@ function getCategoryFromLayoutId(layoutId: string): LayoutCategory {
   if (layoutId.startsWith("quote-")) return "quotes";
   if (layoutId.startsWith("image-")) return "images";
   if (layoutId.startsWith("circle-")) return "circles";
-  return "boxes"; // default
+  return "boxes";
 }
 
 // All layout categories with their layouts
@@ -96,6 +108,156 @@ interface ContentLayoutPanelProps {
   theme: Theme;
   onSelectContentLayout: (layoutId: ContentLayoutId) => void;
   onClose: () => void;
+}
+
+// Scaled preview component that renders actual layouts
+function ScaledLayoutPreview({
+  category,
+  layoutId,
+  contentItems,
+  theme,
+}: {
+  category: LayoutCategory;
+  layoutId: string;
+  contentItems: Array<{ label?: string; text: string }>;
+  theme: Theme;
+}) {
+  const accentColor = theme.colors.accent || "#06b6d4";
+  
+  // Use actual content or fallback to sample content
+  const items = contentItems.length > 0 
+    ? contentItems 
+    : [
+        { label: "First Point", text: "Description of the first key point" },
+        { label: "Second Point", text: "Description of the second key point" },
+        { label: "Third Point", text: "Description of the third key point" },
+      ];
+
+  // Scale factor for the preview (renders at full size then scales down)
+  // Card width is roughly 180px, so scale = 180/800 ≈ 0.225
+  const scale = 0.22;
+  const previewWidth = 800; // Virtual width for rendering
+  const previewHeight = 450; // Virtual height for rendering
+
+  const renderLayout = () => {
+    switch (category) {
+      case "boxes":
+        return (
+          <BoxLayoutRenderer
+            layoutId={layoutId as BoxLayoutType}
+            items={items as BoxContentItem[]}
+            theme={theme}
+            compact={false}
+          />
+        );
+      
+      case "bullets":
+        return (
+          <BulletLayoutRenderer
+            layoutId={layoutId as BulletLayoutType}
+            items={items as BulletContentItem[]}
+            accentColor={accentColor}
+          />
+        );
+      
+      case "steps":
+        return (
+          <StepsLayoutRenderer
+            layoutId={layoutId as StepsLayoutType}
+            items={items as StepContentItem[]}
+            accentColor={accentColor}
+          />
+        );
+      
+      case "quotes":
+        return (
+          <QuotesLayoutRenderer
+            layoutId={layoutId as QuotesLayoutType}
+            items={items as QuoteContentItem[]}
+            accentColor={accentColor}
+          />
+        );
+      
+      case "circles":
+        return (
+          <CircleLayoutRenderer
+            layoutId={layoutId as CircleLayoutType}
+            items={items as CircleContentItem[]}
+            accentColor={accentColor}
+          />
+        );
+      
+      case "images":
+        // Images layout - show placeholder since we don't have actual images
+        return (
+          <div className="flex gap-4 p-4">
+            {items.slice(0, 3).map((item, i) => (
+              <div key={i} className="flex-1 flex flex-col">
+                <div 
+                  className="aspect-video rounded-lg mb-2 flex items-center justify-center"
+                  style={{ backgroundColor: `${accentColor}15` }}
+                >
+                  <svg className="w-12 h-12 text-slate-300" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                {item.label && (
+                  <h3 className="text-base font-semibold text-slate-800 mb-1">{item.label}</h3>
+                )}
+                <p className="text-sm text-slate-600">{item.text}</p>
+              </div>
+            ))}
+          </div>
+        );
+      
+      default:
+        return (
+          <div className="flex items-center justify-center h-full">
+            <LayoutGrid size={32} className="text-slate-300" />
+          </div>
+        );
+    }
+  };
+
+  // Calculate the scaled dimensions to center properly
+  const scaledWidth = previewWidth * scale;
+  const scaledHeight = previewHeight * scale;
+
+  return (
+    <div 
+      className="w-full h-full overflow-hidden rounded flex items-center justify-center"
+      style={{ 
+        backgroundColor: theme.colors.backgroundAlt || "#f8fafc",
+      }}
+    >
+      <div
+        className="pointer-events-none"
+        style={{
+          width: `${scaledWidth}px`,
+          height: `${scaledHeight}px`,
+          position: "relative",
+          flexShrink: 0,
+        }}
+      >
+        <div
+          style={{
+            width: `${previewWidth}px`,
+            height: `${previewHeight}px`,
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+            padding: "16px",
+            position: "absolute",
+            top: 0,
+            left: 0,
+          }}
+        >
+          <div className="[&_*]:!transition-none [&_*]:hover:!transform-none [&_*]:hover:!shadow-none">
+            {renderLayout()}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function ContentLayoutPanel({
@@ -173,231 +335,106 @@ export default function ContentLayoutPanel({
         >
           <div>
             <div className="p-3">
-              <p className="text-xs text-slate-500 mb-3">
+              <p className="text-xs text-slate-500 mb-1">
                 Choose a layout style. Changes apply instantly.
               </p>
-            </div>
-
-          {/* Categories - All expanded by default */}
-          {sortedCategories.map((category) => {
-            const isCurrentCategory = category.id === currentCategory;
-            
-            return (
-              <div key={category.id} className="border-b border-slate-100 last:border-b-0">
-                {/* Category Header */}
-                <div
-                  className={`px-4 py-2 ${
-                    isCurrentCategory 
-                      ? "bg-[#06b6d4]/5" 
-                      : "bg-slate-50/50"
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <h4 className={`text-sm font-medium ${isCurrentCategory ? "text-[#06b6d4]" : "text-slate-700"}`}>
-                      {category.name}
-                    </h4>
-                    {isCurrentCategory && (
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#06b6d4] text-white">
-                        Current
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Category Layouts - Always visible */}
-                <div className="px-3 pb-3 pt-2 grid grid-cols-2 gap-2">
-                  {category.layouts.map((layout) => {
-                    const isSelected = currentContentLayout === layout.id;
-                    const isSuitable =
-                      contentItems.length === 0 ||
-                      (contentItems.length >= layout.minItems && contentItems.length <= layout.maxItems);
-
-                    return (
-                      <button
-                        key={layout.id}
-                        onClick={() => onSelectContentLayout(layout.id as ContentLayoutId)}
-                        disabled={!isSuitable && contentItems.length > 0}
-                        className={`relative p-2 rounded-lg border-2 text-left transition-all ${
-                          !isSuitable && contentItems.length > 0
-                            ? "opacity-50 cursor-not-allowed border-slate-200 bg-slate-50"
-                            : isSelected
-                              ? "border-[#06b6d4] bg-[#06b6d4]/5 ring-2 ring-[#06b6d4]/20 shadow-md"
-                              : "border-slate-200 hover:border-[#06b6d4]/50 hover:shadow-md"
-                        }`}
-                      >
-                        {/* Layout Preview */}
-                        <div
-                          className="aspect-[4/3] rounded mb-1.5 overflow-hidden flex items-center justify-center"
-                          style={{ backgroundColor: theme.colors.backgroundAlt || "#f8fafc" }}
-                        >
-                          {category.id === "boxes" ? (
-                            <BoxLayoutPreview
-                              layout={boxLayouts.find(l => l.id === layout.id)!}
-                              itemCount={layout.idealItems}
-                              theme={theme}
-                            />
-                          ) : (
-                            <LayoutPreviewPlaceholder 
-                              category={category.id} 
-                              layoutId={layout.id}
-                              theme={theme}
-                            />
-                          )}
-                        </div>
-
-                        <h4 className="font-medium text-slate-900 text-[11px] leading-tight">{layout.name}</h4>
-                        
-                        {/* Item count badge */}
-                        <div className="mt-1 flex items-center gap-1">
-                          <span
-                            className="text-[8px] px-1 py-0.5 rounded"
-                            style={{
-                              backgroundColor: `${theme.colors.accent}15`,
-                              color: theme.colors.accent,
-                            }}
-                          >
-                            {layout.minItems}-{layout.maxItems}
-                          </span>
-                        </div>
-
-                        {isSelected && (
-                          <div className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-[#06b6d4] flex items-center justify-center">
-                            <CheckCircle2 size={8} className="text-white" />
-                          </div>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
-
-          {/* Current selection info */}
-          <div className="p-3">
-            <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-              <div className="text-xs text-slate-600">
-                <span className="font-medium">Current:</span>{" "}
-                <span className="text-slate-900">{currentLayoutName}</span>
-              </div>
               {contentItems.length > 0 && (
-                <div className="text-[10px] text-slate-400 mt-1">
-                  {contentItems.length} content item{contentItems.length !== 1 ? "s" : ""}
-                </div>
+                <p className="text-[10px] text-slate-400">
+                  Previews show your actual content ({contentItems.length} item{contentItems.length !== 1 ? "s" : ""})
+                </p>
               )}
             </div>
-          </div>
+
+            {/* Categories - All expanded by default */}
+            {sortedCategories.map((category) => {
+              const isCurrentCategory = category.id === currentCategory;
+              
+              return (
+                <div key={category.id} className="border-b border-slate-100 last:border-b-0">
+                  {/* Category Header */}
+                  <div
+                    className={`px-4 py-2 ${
+                      isCurrentCategory 
+                        ? "bg-[#06b6d4]/5" 
+                        : "bg-slate-50/50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <h4 className={`text-sm font-medium ${isCurrentCategory ? "text-[#06b6d4]" : "text-slate-700"}`}>
+                        {category.name}
+                      </h4>
+                      {isCurrentCategory && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#06b6d4] text-white">
+                          Current
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Category Layouts - Always visible */}
+                  <div className="px-3 pb-3 pt-2 grid grid-cols-2 gap-2">
+                    {category.layouts.map((layout) => {
+                      const isSelected = currentContentLayout === layout.id;
+                      const isSuitable =
+                        contentItems.length === 0 ||
+                        (contentItems.length >= layout.minItems && contentItems.length <= layout.maxItems);
+
+                      return (
+                        <button
+                          key={layout.id}
+                          onClick={() => onSelectContentLayout(layout.id as ContentLayoutId)}
+                          disabled={!isSuitable && contentItems.length > 0}
+                          className={`relative p-1.5 rounded-lg border-2 transition-all ${
+                            !isSuitable && contentItems.length > 0
+                              ? "opacity-50 cursor-not-allowed border-slate-200 bg-slate-50"
+                              : isSelected
+                                ? "border-[#06b6d4] bg-[#06b6d4]/5 ring-2 ring-[#06b6d4]/20 shadow-md"
+                                : "border-slate-200 hover:border-[#06b6d4]/50 hover:shadow-md"
+                          }`}
+                        >
+                          {/* Layout Preview with actual content */}
+                          <div
+                            className="aspect-[4/3] rounded overflow-hidden flex items-center justify-center"
+                            style={{ backgroundColor: theme.colors.backgroundAlt || "#f8fafc" }}
+                          >
+                            <ScaledLayoutPreview
+                              category={category.id}
+                              layoutId={layout.id}
+                              contentItems={contentItems}
+                              theme={theme}
+                            />
+                          </div>
+
+                          {isSelected && (
+                            <div className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-[#06b6d4] flex items-center justify-center">
+                              <CheckCircle2 size={8} className="text-white" />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Current selection info */}
+            <div className="p-3">
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <div className="text-xs text-slate-600">
+                  <span className="font-medium">Current:</span>{" "}
+                  <span className="text-slate-900">{currentLayoutName}</span>
+                </div>
+                {contentItems.length > 0 && (
+                  <div className="text-[10px] text-slate-400 mt-1">
+                    {contentItems.length} content item{contentItems.length !== 1 ? "s" : ""}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </>
   );
-}
-
-// Simple preview placeholder for non-box layouts
-function LayoutPreviewPlaceholder({ 
-  category, 
-  layoutId,
-  theme 
-}: { 
-  category: LayoutCategory; 
-  layoutId: string;
-  theme: Theme;
-}) {
-  const accentColor = theme.colors.accent || "#06b6d4";
-  const bgColor = theme.colors.surface || "#f8fafc";
-  
-  switch (category) {
-    case "steps":
-      if (layoutId === "steps-pyramid") {
-        return (
-          <div className="w-full h-full p-2 flex flex-col justify-center gap-1">
-            <div className="h-2 w-1/3 mx-auto rounded" style={{ backgroundColor: accentColor }} />
-            <div className="h-2 w-1/2 mx-auto rounded" style={{ backgroundColor: accentColor, opacity: 0.7 }} />
-            <div className="h-2 w-2/3 mx-auto rounded" style={{ backgroundColor: accentColor, opacity: 0.5 }} />
-          </div>
-        );
-      }
-      if (layoutId === "steps-arrows") {
-        return (
-          <div className="w-full h-full p-2 flex flex-col justify-center items-center gap-0.5">
-            <div className="h-2 w-3/4 rounded" style={{ backgroundColor: bgColor, border: `1px solid ${accentColor}` }} />
-            <div className="text-[8px]" style={{ color: accentColor }}>↓</div>
-            <div className="h-2 w-3/4 rounded" style={{ backgroundColor: bgColor, border: `1px solid ${accentColor}` }} />
-            <div className="text-[8px]" style={{ color: accentColor }}>↓</div>
-            <div className="h-2 w-3/4 rounded" style={{ backgroundColor: bgColor, border: `1px solid ${accentColor}` }} />
-          </div>
-        );
-      }
-      return (
-        <div className="w-full h-full p-2 flex gap-1 items-center justify-center">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="flex-1 h-3/4 rounded" style={{ backgroundColor: bgColor, borderLeft: `2px solid ${accentColor}` }} />
-          ))}
-        </div>
-      );
-
-    case "bullets":
-      return (
-        <div className="w-full h-full p-2 flex flex-col justify-center gap-1">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="flex items-center gap-1">
-              <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accentColor }} />
-              <div className="h-1.5 flex-1 rounded bg-slate-300" />
-            </div>
-          ))}
-        </div>
-      );
-
-    case "quotes":
-      return (
-        <div className="w-full h-full p-2 flex items-center justify-center">
-          <div className="w-3/4 h-3/4 rounded p-1 relative" style={{ backgroundColor: bgColor, border: `1px solid ${accentColor}20` }}>
-            <span className="absolute top-0 left-1 text-lg leading-none" style={{ color: accentColor }}>"</span>
-            <div className="mt-2 space-y-0.5">
-              <div className="h-1 w-full bg-slate-300 rounded" />
-              <div className="h-1 w-2/3 bg-slate-300 rounded" />
-            </div>
-          </div>
-        </div>
-      );
-
-    case "images":
-      return (
-        <div className="w-full h-full p-2 flex gap-1 items-center justify-center">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="flex-1 h-3/4 rounded bg-slate-300 flex items-center justify-center">
-              <svg className="w-3 h-3 text-slate-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-              </svg>
-            </div>
-          ))}
-        </div>
-      );
-
-    case "circles":
-      if (layoutId === "circle-arc") {
-        return (
-          <div className="w-full h-full flex items-end justify-center pb-1">
-            <svg viewBox="0 0 60 30" className="w-4/5 h-auto">
-              <path d="M5,30 A25,25 0 0,1 55,30" fill="none" stroke={accentColor} strokeWidth="8" strokeLinecap="round" />
-            </svg>
-          </div>
-        );
-      }
-      return (
-        <div className="w-full h-full flex items-center justify-center">
-          <svg viewBox="0 0 40 40" className="w-3/5 h-auto">
-            <circle cx="20" cy="20" r="15" fill="none" stroke={accentColor} strokeWidth="6" strokeDasharray="20 8" />
-          </svg>
-        </div>
-      );
-
-    default:
-      return (
-        <div className="w-full h-full flex items-center justify-center">
-          <LayoutGrid size={16} className="text-slate-300" />
-        </div>
-      );
-  }
 }
