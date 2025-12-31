@@ -1,358 +1,199 @@
-"use client";
-
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
-import { useLanguage } from "~/contexts/LanguageContext";
-import { HelpCircle, Video, Search, Zap, Settings } from "lucide-react";
-import { useState, useMemo } from "react";
+import { HelpPageClient } from "./HelpPageClient";
+import { getTranslations } from "~/lib/i18n";
+import type { Metadata } from "next";
 
-export default function HelpPage() {
-  const { t } = useLanguage();
-  const [searchQuery, setSearchQuery] = useState("");
+export const metadata: Metadata = {
+  title: "Help Center - PPT Master",
+  description:
+    "Get help with PPT Master. Find answers to common questions and learn how to use our AI presentation generator.",
+};
 
-  // FAQ Schema for SEO
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": t.helpFaq1Question || "How many presentations can I create?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": t.helpFaq1Answer || "Free users can create up to 5 presentations per month. Pro users get unlimited presentations. All presentations are saved permanently in your account."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": t.helpFaq2Question || "Can I use PPTMaster offline?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": t.helpFaq2Answer || "PPTMaster requires an internet connection for AI generation and real-time collaboration. However, you can download presentations and work on them offline using PowerPoint or other presentation software."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": t.helpFaq3Question || "Is my data secure?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": t.helpFaq3Answer || "Yes. We use enterprise-grade encryption for all data in transit and at rest. Your presentations are private by default and only accessible to people you explicitly share them with. We never use your content to train our AI models."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": t.helpFaq4Question || "Can I cancel my subscription anytime?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": t.helpFaq4Answer || "Absolutely. You can cancel your subscription at any time from your account settings. You'll retain access until the end of your billing period, and all your presentations remain accessible even after cancellation."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": t.helpFaq6Question || "How does the AI work?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": t.helpFaq6Answer || "Our AI uses advanced language models trained on millions of presentations to understand context, structure, and design principles. It analyzes your prompt, generates relevant content, and applies professional design templates automatically."
-        }
-      }
-    ]
-  };
+export const revalidate = 3600;
 
-  const gettingStartedArticles = useMemo(() => [
+// Helper function to get translated help content
+function getHelpContent(t: ReturnType<typeof getTranslations>) {
+  const gettingStartedArticles = [
     {
       title: t.helpArticle1Title || "Creating Your First Presentation",
-      content: t.helpArticle1Content || "Start by clicking 'Create New' in your dashboard. Enter a prompt describing what you want to create, choose your preferred style, and let our AI generate your presentation in seconds. You can then customize colors, fonts, and layouts to match your brand."
+      content:
+        t.helpArticle1Content ||
+        "Start by clicking 'Create New' in your dashboard. Enter a prompt describing what you want to create, choose your preferred style, and let our AI generate your presentation in seconds.",
     },
     {
       title: t.helpArticle2Title || "Understanding the Dashboard",
-      content: t.helpArticle2Content || "Your dashboard is your command center. Here you'll find all your presentations, usage statistics, and quick access to templates. The sidebar provides navigation to all features including settings, billing, and team management."
+      content:
+        t.helpArticle2Content ||
+        "Your dashboard is your command center. Here you'll find all your presentations, usage statistics, and quick access to templates.",
     },
     {
       title: t.helpArticle3Title || "Writing Effective Prompts",
-      content: t.helpArticle3Content || "Be specific about your topic, target audience, and desired outcome. Include the number of slides you need and any key points to cover. For example: 'Create a 10-slide pitch deck for a SaaS startup targeting enterprise clients, covering problem, solution, market size, and business model.'"
+      content:
+        t.helpArticle3Content ||
+        "Be specific about your topic, target audience, and desired outcome. Include the number of slides you need and any key points to cover.",
     },
     {
       title: t.helpArticle4Title || "Customizing Your Presentation",
-      content: t.helpArticle4Content || "Click any element to edit text, change colors, or adjust layouts. Use the toolbar to add images, charts, or icons. Our smart layouts automatically adjust to maintain visual balance as you make changes."
-    }
-  ], [t]);
+      content:
+        t.helpArticle4Content ||
+        "Click any element to edit text, change colors, or adjust layouts. Use the toolbar to add images, charts, or icons.",
+    },
+  ];
 
-  const featuresArticles = useMemo(() => [
+  const featuresArticles = [
     {
       title: t.helpFeature1Title || "AI-Powered Generation",
-      content: t.helpFeature1Content || "Our AI analyzes your prompt and creates a complete presentation with relevant content, professional design, and logical flow. It uses advanced language models to generate compelling copy and selects appropriate visual elements."
+      content:
+        t.helpFeature1Content ||
+        "Our AI analyzes your prompt and creates a complete presentation with relevant content, professional design, and logical flow.",
     },
     {
       title: t.helpFeature2Title || "Smart Templates",
-      content: t.helpFeature2Content || "Choose from 100+ professionally designed templates across various categories: business, education, marketing, and more. Each template is fully customizable and optimized for different presentation types."
+      content:
+        t.helpFeature2Content ||
+        "Choose from multiple professionally designed templates across various categories: business, education, marketing, and more.",
     },
     {
       title: t.helpFeature3Title || "Real-time Collaboration",
-      content: t.helpFeature3Content || "Invite team members to edit presentations together. See changes in real-time, leave comments, and track revision history. Perfect for teams working across different locations and time zones."
+      content:
+        t.helpFeature3Content ||
+        "Invite team members to edit presentations together. See changes in real-time, leave comments, and track revision history.",
     },
     {
       title: t.helpFeature4Title || "Export Options",
-      content: t.helpFeature4Content || "Export your presentations as PowerPoint (PPTX), PDF, PNG images, or Google Slides. Each format maintains your design integrity and is optimized for the target platform."
+      content:
+        t.helpFeature4Content ||
+        "Export your presentations as PowerPoint (PPTX), PDF, PNG images, or Google Slides.",
     },
     {
       title: t.helpFeature5Title || "Brand Management",
-      content: t.helpFeature5Content || "Upload your logo, define brand colors, and set default fonts. All new presentations will automatically use your brand guidelines, ensuring consistency across all your content."
+      content:
+        t.helpFeature5Content ||
+        "Upload your logo, define brand colors, and set default fonts. All new presentations will automatically use your brand guidelines.",
     },
     {
-      title: t.helpFeature6Title || "Analytics & Tracking",
-      content: t.helpFeature6Content || "When you share presentations online, track views, engagement time, and slide-by-slide analytics. Understand which content resonates most with your audience."
-    }
-  ], [t]);
+      title: t.helpFeature6Title || "Performance Insights",
+      content:
+        t.helpFeature6Content ||
+        "View comprehensive analytics about your presentation workflow. Track creation trends and monitor your productivity.",
+    },
+  ];
 
-  const troubleshootingArticles = useMemo(() => [
+  const troubleshootingArticles = [
     {
       title: t.helpTrouble1Title || "Presentation Not Generating",
-      content: t.helpTrouble1Content || "If your presentation fails to generate, check your internet connection and try again. Ensure your prompt is clear and not too vague. If the issue persists, try breaking down your request into smaller, more specific prompts."
+      content:
+        t.helpTrouble1Content ||
+        "If your presentation fails to generate, check your internet connection and try again. Ensure your prompt is clear and not too vague.",
     },
     {
       title: t.helpTrouble2Title || "Export Issues",
-      content: t.helpTrouble2Content || "For export problems, ensure you have sufficient storage space and a stable internet connection. Try exporting in a different format. If PowerPoint export fails, try PDF first, then convert to PPTX using PowerPoint's import feature."
+      content:
+        t.helpTrouble2Content ||
+        "For export problems, ensure you have sufficient storage space and a stable internet connection. Try exporting in a different format.",
     },
     {
       title: t.helpTrouble3Title || "Slow Performance",
-      content: t.helpTrouble3Content || "Clear your browser cache and cookies. Close unnecessary tabs and applications. For best performance, use the latest version of Chrome, Firefox, or Safari. Disable browser extensions that might interfere with the editor."
+      content:
+        t.helpTrouble3Content ||
+        "Clear your browser cache and cookies. Close unnecessary tabs and applications. For best performance, use the latest version of Chrome, Firefox, or Safari.",
     },
     {
       title: t.helpTrouble4Title || "Login Problems",
-      content: t.helpTrouble4Content || "Reset your password using the 'Forgot Password' link. Clear browser cookies and try again. If using SSO, contact your organization's IT administrator. Check if your account is active and not suspended."
+      content:
+        t.helpTrouble4Content ||
+        "Reset your password using the 'Forgot Password' link. Clear browser cookies and try again.",
     },
-  ], [t]);
+  ];
 
-  const faqArticles = useMemo(() => [
+  const faqArticles = [
     {
       question: t.helpFaq1Question || "How many presentations can I create?",
-      answer: t.helpFaq1Answer || "Free users can create up to 5 presentations per month. Pro users get unlimited presentations. All presentations are saved permanently in your account."
+      answer:
+        t.helpFaq1Answer ||
+        "Free users get 200 credits to start. Paid plans include monthly credits: Plus (1,000), Pro (4,000), Ultra (20,000).",
     },
     {
       question: t.helpFaq2Question || "Can I use PPTMaster offline?",
-      answer: t.helpFaq2Answer || "PPTMaster requires an internet connection for AI generation and real-time collaboration. However, you can download presentations and work on them offline using PowerPoint or other presentation software."
+      answer:
+        t.helpFaq2Answer ||
+        "PPTMaster requires an internet connection for AI generation and real-time collaboration. However, you can download presentations and work on them offline.",
     },
     {
       question: t.helpFaq3Question || "Is my data secure?",
-      answer: t.helpFaq3Answer || "Yes. We use enterprise-grade encryption for all data in transit and at rest. Your presentations are private by default and only accessible to people you explicitly share them with. We never use your content to train our AI models."
+      answer:
+        t.helpFaq3Answer ||
+        "Yes. We use enterprise-grade encryption for all data in transit and at rest. Your presentations are private by default.",
     },
     {
       question: t.helpFaq4Question || "Can I cancel my subscription anytime?",
-      answer: t.helpFaq4Answer || "Absolutely. You can cancel your subscription at any time from your account settings. You'll retain access until the end of your billing period, and all your presentations remain accessible even after cancellation."
+      answer:
+        t.helpFaq4Answer ||
+        "Absolutely. You can cancel your subscription at any time from your account settings.",
+    },
+    {
+      question: t.helpFaq5Question || "Do you offer refunds?",
+      answer:
+        t.helpFaq5Answer ||
+        "We offer a 30-day money-back guarantee for annual subscriptions.",
     },
     {
       question: t.helpFaq6Question || "How does the AI work?",
-      answer: t.helpFaq6Answer || "Our AI uses advanced language models trained on millions of presentations to understand context, structure, and design principles. It analyzes your prompt, generates relevant content, and applies professional design templates automatically."
-    }
-  ], [t]);
+      answer:
+        t.helpFaq6Answer ||
+        "Our AI uses advanced language models trained on millions of presentations to understand context, structure, and design principles.",
+    },
+  ];
+
+  return {
+    gettingStartedArticles,
+    featuresArticles,
+    troubleshootingArticles,
+    faqArticles,
+  };
+}
+
+export default async function HelpPage() {
+  const t = getTranslations("en");
+  const { gettingStartedArticles, featuresArticles, troubleshootingArticles, faqArticles } =
+    getHelpContent(t);
 
   return (
     <div className="landing-page min-h-screen bg-white">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
-      <LandingNavbar />
+      <LandingNavbar currentLang="en" />
 
       {/* Hero Section */}
-      <section className="relative pt-40 pb-20 px-6 overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_-100px,#1e1e1e0a,transparent)]"></div>
-
-        <div className="relative z-10 mx-auto max-w-4xl text-center">
-          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-4 py-2 backdrop-blur-sm animate-fade-in">
-            <HelpCircle className="h-4 w-4 text-[#06b6d4]" />
-            <span className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
-              {t.helpCenter || "Help Center"}
-            </span>
-          </div>
-
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 mb-6 animate-fade-in-up [animation-delay:100ms]">
-            {t.howCanWeHelp || "How can we help you?"}
+      <section className="relative px-6 pt-32 pb-16 bg-gradient-to-br from-slate-50 to-white">
+        <div className="mx-auto max-w-5xl text-center">
+          <h1 className="text-5xl font-bold text-slate-900 mb-6 animate-fade-in-up">
+            {t.helpTitle || "Help Center"}
           </h1>
-
-          <p className="text-xl text-slate-600 mb-12 animate-fade-in-up [animation-delay:200ms]">
-            {t.helpCenterDesc || "Everything you need to know about PPTMaster"}
+          <p className="text-xl text-slate-600 max-w-2xl mx-auto animate-fade-in-up [animation-delay:150ms]">
+            {t.helpSubtitle ||
+              "Find answers to common questions and learn how to get the most out of PPT Master."}
           </p>
-
-          {/* Search Bar */}
-          <div className="max-w-2xl mx-auto animate-fade-in-up [animation-delay:300ms]">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-              <input
-                type="text"
-                placeholder={t.searchHelp || "Search for help..."}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 rounded-full border-2 border-slate-200 focus:border-[#06b6d4] focus:outline-none text-slate-900 placeholder:text-slate-400"
-              />
-            </div>
-          </div>
         </div>
       </section>
 
-      {/* Getting Started */}
-      {(!searchQuery || gettingStartedArticles.some(article => 
-        article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        article.content.toLowerCase().includes(searchQuery.toLowerCase())
-      )) && (
-        <section className="relative px-6 pb-16">
-          <div className="mx-auto max-w-5xl">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center">
-                <Zap className="h-6 w-6 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold text-slate-900">{t.gettingStarted || "Getting Started"}</h2>
-            </div>
-            <div className="space-y-6">
-              {gettingStartedArticles
-                .filter(article => 
-                  !searchQuery || 
-                  article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                  article.content.toLowerCase().includes(searchQuery.toLowerCase())
-                )
-                .map((article, index) => (
-                  <div key={index} className="rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-lg transition-all">
-                    <h3 className="text-xl font-bold text-slate-900 mb-3">{article.title}</h3>
-                    <p className="text-slate-600 leading-relaxed">{article.content}</p>
-                  </div>
-                ))}
-            </div>
-          </div>
-        </section>
-      )}
+      <HelpPageClient
+        gettingStartedArticles={gettingStartedArticles}
+        featuresArticles={featuresArticles}
+        troubleshootingArticles={troubleshootingArticles}
+        faqArticles={faqArticles}
+        translations={{
+          searchHelp: t.searchHelp,
+          gettingStarted: t.gettingStarted,
+          featuresTutorials: t.featuresTutorials,
+          troubleshooting: t.troubleshooting,
+          faqTitle: t.faqTitle,
+          noResultsFound: t.noResultsFound,
+          noResultsDesc: t.noResultsDesc,
+          clearSearch: t.clearSearch,
+        }}
+      />
 
-      {/* Features & Tutorials */}
-      {(!searchQuery || featuresArticles.some(article => 
-        article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        article.content.toLowerCase().includes(searchQuery.toLowerCase())
-      )) && (
-        <section className="relative px-6 pb-16 bg-gradient-to-br from-slate-50 to-white">
-          <div className="mx-auto max-w-5xl">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center">
-                <Video className="h-6 w-6 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold text-slate-900">{t.featuresTutorials || "Features & Tutorials"}</h2>
-            </div>
-            <div className="grid md:grid-cols-2 gap-6">
-              {featuresArticles
-                .filter(article => 
-                  !searchQuery || 
-                  article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                  article.content.toLowerCase().includes(searchQuery.toLowerCase())
-                )
-                .map((article, index) => (
-                  <div key={index} className="rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-lg transition-all">
-                    <h3 className="text-lg font-bold text-slate-900 mb-3">{article.title}</h3>
-                    <p className="text-slate-600 leading-relaxed text-sm">{article.content}</p>
-                  </div>
-                ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Troubleshooting */}
-      {(!searchQuery || troubleshootingArticles.some(article => 
-        article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        article.content.toLowerCase().includes(searchQuery.toLowerCase())
-      )) && (
-        <section className="relative px-6 pb-16">
-          <div className="mx-auto max-w-5xl">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center">
-                <Settings className="h-6 w-6 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold text-slate-900">{t.troubleshooting || "Troubleshooting"}</h2>
-            </div>
-            <div className="space-y-6">
-              {troubleshootingArticles
-                .filter(article => 
-                  !searchQuery || 
-                  article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                  article.content.toLowerCase().includes(searchQuery.toLowerCase())
-                )
-                .map((article, index) => (
-                  <div key={index} className="rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-lg transition-all">
-                    <h3 className="text-xl font-bold text-slate-900 mb-3">{article.title}</h3>
-                    <p className="text-slate-600 leading-relaxed">{article.content}</p>
-                  </div>
-                ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* FAQ */}
-      {(!searchQuery || faqArticles.some(article => 
-        article.question.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        article.answer.toLowerCase().includes(searchQuery.toLowerCase())
-      )) && (
-        <section className="relative px-6 pb-24 bg-gradient-to-br from-slate-50 to-white">
-          <div className="mx-auto max-w-5xl">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center">
-                <HelpCircle className="h-6 w-6 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold text-slate-900">{t.faqTitle || "Frequently Asked Questions"}</h2>
-            </div>
-            <div className="space-y-4">
-              {faqArticles
-                .filter(article => 
-                  !searchQuery || 
-                  article.question.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                  article.answer.toLowerCase().includes(searchQuery.toLowerCase())
-                )
-                .map((article, index) => (
-                  <div key={index} className="rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-lg transition-all">
-                    <h3 className="text-lg font-bold text-slate-900 mb-2">{article.question}</h3>
-                    <p className="text-slate-600 leading-relaxed">{article.answer}</p>
-                  </div>
-                ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* No Results Message */}
-      {searchQuery && 
-       !gettingStartedArticles.some(article => 
-         article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-         article.content.toLowerCase().includes(searchQuery.toLowerCase())
-       ) &&
-       !featuresArticles.some(article => 
-         article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-         article.content.toLowerCase().includes(searchQuery.toLowerCase())
-       ) &&
-       !troubleshootingArticles.some(article => 
-         article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-         article.content.toLowerCase().includes(searchQuery.toLowerCase())
-       ) &&
-       !faqArticles.some(article => 
-         article.question.toLowerCase().includes(searchQuery.toLowerCase()) || 
-         article.answer.toLowerCase().includes(searchQuery.toLowerCase())
-       ) && (
-        <section className="relative px-6 pb-24">
-          <div className="mx-auto max-w-5xl text-center">
-            <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-12">
-              <Search className="h-16 w-16 text-slate-400 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">{t.noResultsFound || "No results found"}</h3>
-              <p className="text-slate-600 mb-6">
-                {t.noResultsDesc || `We couldn't find any articles matching "${searchQuery}". Try different keywords or browse all articles above.`}
-              </p>
-              <button
-                onClick={() => setSearchQuery("")}
-                className="px-6 py-3 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold hover:shadow-xl transition-all"
-              >
-                {t.clearSearch || "Clear Search"}
-              </button>
-            </div>
-          </div>
-        </section>
-      )}
-
-      <LandingFooter />
+      <LandingFooter currentLang="en" />
     </div>
   );
 }

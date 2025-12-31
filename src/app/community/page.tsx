@@ -2,7 +2,7 @@
 
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
-import { useLanguage } from "~/contexts/LanguageContext";
+import { getTranslations, type Language } from "~/lib/i18n";
 import { Users, MessageSquare, Plus, ThumbsUp, Eye } from "lucide-react";
 import { useState, useEffect } from "react";
 import { LoadingButton } from "~/components/LoadingButton";
@@ -24,8 +24,12 @@ interface CommunityPost {
   }>;
 }
 
-export default function CommunityPage() {
-  const { t } = useLanguage();
+interface CommunityPageProps {
+  currentLang?: Language;
+}
+
+export default function CommunityPage({ currentLang = "en" }: CommunityPageProps) {
+  const t = getTranslations(currentLang);
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -128,7 +132,7 @@ export default function CommunityPage() {
 
   return (
     <div className="landing-page min-h-screen bg-white">
-      <LandingNavbar />
+      <LandingNavbar currentLang={currentLang} />
 
       {/* Hero Section */}
       <section className="relative pt-40 pb-20 px-6 overflow-hidden">
@@ -353,7 +357,7 @@ export default function CommunityPage() {
         </div>
       </section>
 
-      <LandingFooter />
+      <LandingFooter currentLang={currentLang} />
     </div>
   );
 }

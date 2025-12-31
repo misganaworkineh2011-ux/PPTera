@@ -2,7 +2,7 @@
 
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
-import { useLanguage } from "~/contexts/LanguageContext";
+import { getTranslations, type Language } from "~/lib/i18n";
 import { Rocket, Heart, Zap, Globe, Users, TrendingUp, Coffee, Briefcase } from "lucide-react";
 import { LoadingLink } from "~/components/LoadingLink";
 import { useState, useEffect } from "react";
@@ -19,8 +19,12 @@ interface JobPosting {
   benefits: string | null;
 }
 
-export default function CareersPage() {
-  const { t } = useLanguage();
+interface CareersPageProps {
+  currentLang?: Language;
+}
+
+export default function CareersPage({ currentLang = "en" }: CareersPageProps) {
+  const t = getTranslations(currentLang);
   const [jobs, setJobs] = useState<JobPosting[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDepartment, setSelectedDepartment] = useState("all");
@@ -100,7 +104,7 @@ export default function CareersPage() {
 
   return (
     <div className="landing-page min-h-screen bg-white">
-      <LandingNavbar />
+      <LandingNavbar currentLang={currentLang} />
 
       {/* Hero Section */}
       <section className="relative pt-40 pb-32 px-6 overflow-hidden">
@@ -292,7 +296,7 @@ export default function CareersPage() {
         </div>
       </section>
 
-      <LandingFooter />
+      <LandingFooter currentLang={currentLang} />
 
       {/* Job Application Modal */}
       {selectedJob && (

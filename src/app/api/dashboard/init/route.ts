@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "~/lib/clerk-server";
-import { db } from "~/server/db";
+import { 
+  getCachedUser, 
+  getCachedPresentations, 
+  getCachedThemes, 
+  getCachedActivity,
+  getCachedPresentationCount 
+} from "~/lib/db-cache";
 
 /**
- * Combined dashboard initialization endpoint
+ * Combined dashboard initialization endpoint with caching
  * Reduces multiple API calls to a single request for initial dashboard load
  * Returns: user data, presentations, recent activity, and custom themes
  * Supports pagination for presentations
@@ -26,85 +32,26 @@ export async function GET(request: Request) {
       50
     );
 
-    // Parallel fetch all data needed for dashboard
+    // Parallel fetch all data needed for dashboard with caching
     const [user, presentations, presentationCount, themes, recentActivity] = await Promise.all([
-      // User data (without presentations for pagination)
-      db.user.findUnique({
-        where: { id: authUser.id },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          credits: true,
-          subscriptionPlan: true,
-          image: true,
-          createdAt: true,
-          _count: {
-            select: {
-              presentations: true,
-              themes: true,
-            },
-          },
-        },
+      // User data (cached)
+      getCachedUser(authUser.id),
+
+      // Presentations with pagination (cached)
+      getCachedPresentations(authUser.id, {
+        limit: presentationLimit,
+        offset: presentationOffset,
+        includeSlides: false,
       }),
 
-      // Presentations with pagination
-      db.presentation.findMany({
-        where: { userId: authUser.id },
-        orderBy: { createdAt: "desc" },
-        take: presentationLimit,
-        skip: presentationOffset,
-        select: {
-          id: true,
-          title: true,
-          isPublic: true,
-          isPinned: true,
-          createdAt: true,
-          updatedAt: true,
-          slides: true,
-          shareToken: true,
-        },
-      }),
+      // Total presentation count for pagination (cached)
+      getCachedPresentationCount(authUser.id),
 
-      // Total presentation count for pagination
-      db.presentation.count({
-        where: { userId: authUser.id },
-      }),
+      // Custom themes (if requested, cached)
+      includeThemes ? getCachedThemes(authUser.id) : Promise.resolve([]),
 
-      // Custom themes (if requested)
-      includeThemes
-        ? db.theme.findMany({
-            where: { userId: authUser.id },
-            orderBy: { createdAt: "desc" },
-            take: 20,
-            select: {
-              id: true,
-              name: true,
-              colors: true,
-              fonts: true,
-              designElements: true,
-              isDefault: true,
-            },
-          })
-        : Promise.resolve([]),
-
-      // Recent activity (if requested)
-      includeActivity
-        ? db.activity.findMany({
-            where: { userId: authUser.id },
-            orderBy: { createdAt: "desc" },
-            take: activityLimit,
-            select: {
-              id: true,
-              type: true,
-              description: true,
-              createdAt: true,
-              presentation: {
-                select: { id: true, title: true },
-              },
-            },
-          })
-        : Promise.resolve([]),
+      // Recent activity (if requested, cached)
+      includeActivity ? getCachedActivity(authUser.id, activityLimit) : Promise.resolve([]),
     ]);
 
     if (!user) {
@@ -123,7 +70,6 @@ export async function GET(request: Request) {
           subscriptionPlan: user.subscriptionPlan,
           image: user.image,
           createdAt: user.createdAt,
-          counts: user._count,
         },
         presentations,
         themes,
@@ -137,7 +83,7 @@ export async function GET(request: Request) {
         meta: {
           timestamp: new Date().toISOString(),
           presentationCount,
-          themeCount: user._count.themes,
+          themeCount: themes.length,
         },
       },
       {

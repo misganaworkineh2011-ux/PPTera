@@ -1,108 +1,46 @@
 import type { MetadataRoute } from "next";
 import { db } from "~/server/db";
+import { SUPPORTED_LANGUAGES } from "~/lib/i18n";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://www.pptmaster.app";
 
-  // Static pages
-  const staticPages: MetadataRoute.Sitemap = [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 1.0,
-    },
-    {
-      url: `${baseUrl}/pricing`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/about`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/careers`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/contact`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/help`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/insights`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/inspiration`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/education`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/community`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/templates`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/prompt-guide`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/developer-docs`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/privacy`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/terms`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/cookies`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.4,
-    },
+  // Pages that should have language versions
+  const i18nPages = [
+    { path: "", priority: 1.0, changeFrequency: "daily" as const },
+    { path: "/about", priority: 0.8, changeFrequency: "monthly" as const },
+    { path: "/help", priority: 0.8, changeFrequency: "weekly" as const },
+    { path: "/prompt-guide", priority: 0.7, changeFrequency: "weekly" as const },
+    { path: "/pricing", priority: 0.9, changeFrequency: "weekly" as const },
+    { path: "/contact", priority: 0.8, changeFrequency: "monthly" as const },
+    { path: "/privacy", priority: 0.5, changeFrequency: "monthly" as const },
+    { path: "/terms", priority: 0.5, changeFrequency: "monthly" as const },
+    { path: "/cookies", priority: 0.4, changeFrequency: "monthly" as const },
+    { path: "/careers", priority: 0.7, changeFrequency: "weekly" as const },
+    { path: "/community", priority: 0.7, changeFrequency: "daily" as const },
+    { path: "/education", priority: 0.7, changeFrequency: "weekly" as const },
+    { path: "/inspiration", priority: 0.7, changeFrequency: "daily" as const },
+    { path: "/insights", priority: 0.7, changeFrequency: "daily" as const },
   ];
+
+  // Generate URLs for all languages
+  // For English (en), use root path without /en/ prefix
+  const i18nUrls: MetadataRoute.Sitemap = [];
+  for (const lang of SUPPORTED_LANGUAGES) {
+    for (const page of i18nPages) {
+      // English uses root path, other languages use /[lang]/ prefix
+      const langPrefix = lang === "en" ? "" : `/${lang}`;
+      i18nUrls.push({
+        url: `${baseUrl}${langPrefix}${page.path}`,
+        lastModified: new Date(),
+        changeFrequency: page.changeFrequency,
+        priority: page.priority,
+      });
+    }
+  }
+
+  // Dynamic pages without language versions (redirects to /en/ versions)
+  const staticPages: MetadataRoute.Sitemap = [];
 
   // Fetch inspiration items for dynamic URLs
   let inspirationPages: MetadataRoute.Sitemap = [];
@@ -148,5 +86,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error("Error fetching insight posts for sitemap:", error);
   }
 
-  return [...staticPages, ...inspirationPages, ...insightPages];
+  return [...i18nUrls, ...staticPages, ...inspirationPages, ...insightPages];
 }

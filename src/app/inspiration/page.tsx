@@ -2,7 +2,7 @@
 
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
-import { useLanguage } from "~/contexts/LanguageContext";
+import { getTranslations, type Language } from "~/lib/i18n";
 import { Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -17,8 +17,12 @@ interface InspirationItem {
   authorName: string | null;
 }
 
-export default function InspirationPage() {
-  const { t } = useLanguage();
+interface InspirationPageProps {
+  currentLang?: Language;
+}
+
+export default function InspirationPage({ currentLang = "en" }: InspirationPageProps) {
+  const t = getTranslations(currentLang);
   const [items, setItems] = useState<InspirationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -80,7 +84,7 @@ export default function InspirationPage() {
 
   return (
     <div className="landing-page min-h-screen bg-white">
-      <LandingNavbar />
+      <LandingNavbar currentLang={currentLang} />
 
       {/* Hero Section */}
       <section className="relative pt-40 pb-20 px-6 overflow-hidden">
@@ -214,7 +218,7 @@ export default function InspirationPage() {
         </div>
       </section>
 
-      <LandingFooter />
+      <LandingFooter currentLang={currentLang} />
     </div>
   );
 }
