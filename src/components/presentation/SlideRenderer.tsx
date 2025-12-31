@@ -195,7 +195,6 @@ function getLayoutVariant(index: number, themeType: ThemeType, slideLayout?: str
       "image-left": "left-content",
       "image-right": "right-content",
       "no-image": "centered",
-      "image-background": "image-background",
       "image-full": "full-image",
       // Title slide variants
       "title-centered": "centered",
@@ -547,28 +546,28 @@ export default function SlideRenderer({
       topOverlay: "bg-gradient-to-b from-[#0a0f0a]/60 to-transparent",
     },
     corporate: {
-      bg: "from-white via-gray-50 to-gray-100",
+      bg: "from-white via-[#fafbfc] to-[#f7fafc]",
       bgSolid: "bg-white",
-      orb1: "bg-blue-500/5",
-      orb2: "bg-sky-500/4",
-      orb1Strong: "bg-blue-500/8",
-      orb2Strong: "bg-sky-500/6",
+      orb1: "bg-blue-500/[0.04]",
+      orb2: "bg-indigo-500/[0.03]",
+      orb1Strong: "bg-blue-500/[0.06]",
+      orb2Strong: "bg-indigo-500/[0.05]",
       accentMuted: "bg-blue-500/80",
       accentLine: "from-blue-500",
-      accentBorder: "from-blue-500/15 via-transparent to-sky-500/10",
-      accentGlow: "from-blue-500/20 to-sky-500/15",
-      border: "border-gray-200",
-      borderLine: "via-gray-200",
-      surface: "bg-gray-50",
+      accentBorder: "from-blue-500/12 via-transparent to-indigo-500/8",
+      accentGlow: "from-blue-500/15 to-indigo-500/10",
+      border: "border-slate-200",
+      borderLine: "via-slate-200",
+      surface: "bg-[#fafbfc]",
       surfaceAlt: "bg-white",
-      overlay: "from-white/50",
-      cardBg: "bg-white border-gray-200 shadow-sm",
-      indicatorMuted: "text-gray-400",
+      overlay: "from-white/60",
+      cardBg: "bg-white border-slate-200/60 shadow-sm",
+      indicatorMuted: "text-slate-400",
       hoverAccent: "hover:text-blue-600",
-      imgOverlay: "bg-gradient-to-r from-white via-white/90 to-transparent",
-      fullOverlay: "bg-gradient-to-t from-white via-white/80 to-white/50",
-      sideOverlay: "bg-gradient-to-r from-white/95 via-transparent to-transparent",
-      topOverlay: "bg-gradient-to-b from-white/60 to-transparent",
+      imgOverlay: "bg-gradient-to-r from-white via-white/92 to-transparent",
+      fullOverlay: "bg-gradient-to-t from-white via-white/85 to-white/55",
+      sideOverlay: "bg-gradient-to-r from-white/98 via-transparent to-transparent",
+      topOverlay: "bg-gradient-to-b from-white/65 to-transparent",
     },
     cosmic: {
       bg: "from-[#0a0612] via-[#120a1f] to-[#1a0a2e]",
@@ -794,44 +793,88 @@ export default function SlideRenderer({
   const BulletPoints = ({ compact = false }: { compact?: boolean }) => {
     // For custom themes, use theme colors for bullet styling
     const bulletDotStyle = isCustomTheme ? { backgroundColor: theme.colors.primary } : {};
-    const bulletLineStyle = isCustomTheme ? { backgroundColor: theme.colors.border } : {};
+
+    // Parse bullet points to extract label/text if present
+    const parsedBullets = bulletPoints.map((bullet) => {
+      const colonIndex = bullet.indexOf(":");
+      if (colonIndex > 0 && colonIndex < 50) {
+        const label = bullet.substring(0, colonIndex).trim();
+        const text = bullet.substring(colonIndex + 1).trim();
+        if (label && text) {
+          return { label, text, full: bullet };
+        }
+      }
+      return { label: null, text: bullet, full: bullet };
+    });
 
     return (
-      <div className={compact ? "space-y-1 sm:space-y-2" : "space-y-2 sm:space-y-3"}>
-        {bulletPoints.map((point, i) => (
-          <div key={i} className="flex items-start gap-2 sm:gap-4 group/bullet">
-            <div className={`${compact ? "mt-1" : "mt-1.5"} flex items-center gap-1 sm:gap-2 shrink-0`}>
+      <div className={compact ? "space-y-2 sm:space-y-3" : "space-y-3 sm:space-y-4"}>
+        {parsedBullets.map((item, i) => (
+          <div key={i} className="flex items-start gap-2 sm:gap-3 group/bullet">
+            <div className={`${compact ? "mt-1.5" : "mt-2"} flex items-center gap-1 sm:gap-2 shrink-0`}>
               <div
-                className={`${compact ? "w-1 h-1 sm:w-1.5 sm:h-1.5" : "w-1.5 h-1.5 sm:w-2 sm:h-2"} rounded-full ${!isCustomTheme ? colors.accentMuted : ''}`}
+                className={`${compact ? "w-1.5 h-1.5 sm:w-2 sm:h-2" : "w-2 h-2 sm:w-2.5 sm:h-2.5"} rounded-full ${!isCustomTheme ? colors.accentMuted : ''}`}
                 style={bulletDotStyle}
               />
-              <div
-                className={`${compact ? "w-2 sm:w-4" : "w-4 sm:w-8"} h-px ${!isCustomTheme ? (themeType === "dark" ? "bg-zinc-700" : themeType === "sunset" ? "bg-pink-900/50" : "bg-slate-300") : ''}`}
-                style={bulletLineStyle}
-              />
             </div>
-            <EditableText
-              value={point}
-              isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
-              onStartEdit={() => onStartEditing(index, "bullet", i)}
-              onChange={(val) => onUpdateContent(index, "bullet", val, i)}
-              onFinish={onFinishEditing}
-              className={`flex-1 leading-relaxed`}
-              style={{
-                fontFamily: theme.fonts.body.family,
-                color: colors.textMuted,
-                fontSize: compact ? "clamp(0.625rem, 1.2vw + 0.15rem, 1rem)" : "clamp(0.75rem, 1.5vw + 0.2rem, 1.125rem)"
-              }}
-              isOwner={canEdit}
-              isHovered={isHovered}
-              onDelete={() => onDeleteBullet(index, i)}
-            />
+            <div className="flex-1">
+              {item.label ? (
+                // Render with label/text format - both label and text are editable
+                <div>
+                  <EditableText
+                    value={item.label}
+                    isEditing={isEditing && editingText?.field === `bullet-label-${i}`}
+                    onStartEdit={() => onStartEditing(index, `bullet-label-${i}`)}
+                    onChange={(val) => onUpdateContent(index, "bullet", `${val}: ${item.text}`, i)}
+                    onFinish={onFinishEditing}
+                    className={`font-semibold ${compact ? "text-sm mb-0.5" : "text-base mb-1"}`}
+                    style={{ color: colors.text, fontFamily: theme.fonts.heading.family }}
+                    isOwner={canEdit}
+                    isHovered={isHovered}
+                  />
+                  <EditableText
+                    value={item.text}
+                    isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                    onStartEdit={() => onStartEditing(index, "bullet", i)}
+                    onChange={(val) => onUpdateContent(index, "bullet", `${item.label}: ${val}`, i)}
+                    onFinish={onFinishEditing}
+                    className="leading-relaxed"
+                    style={{
+                      fontFamily: theme.fonts.body.family,
+                      color: colors.textMuted,
+                      fontSize: compact ? "clamp(0.75rem, 1.2vw + 0.15rem, 0.9rem)" : "clamp(0.875rem, 1.4vw + 0.15rem, 1rem)"
+                    }}
+                    isOwner={canEdit}
+                    isHovered={isHovered}
+                    onDelete={() => onDeleteBullet(index, i)}
+                  />
+                </div>
+              ) : (
+                // Standard bullet without label
+                <EditableText
+                  value={item.text}
+                  isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                  onStartEdit={() => onStartEditing(index, "bullet", i)}
+                  onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                  onFinish={onFinishEditing}
+                  className="leading-relaxed"
+                  style={{
+                    fontFamily: theme.fonts.body.family,
+                    color: colors.textMuted,
+                    fontSize: compact ? "clamp(0.75rem, 1.2vw + 0.15rem, 1rem)" : "clamp(0.875rem, 1.5vw + 0.2rem, 1.125rem)"
+                  }}
+                  isOwner={canEdit}
+                  isHovered={isHovered}
+                  onDelete={() => onDeleteBullet(index, i)}
+                />
+              )}
+            </div>
           </div>
         ))}
         {canEdit && isHovered && (
           <button
             onClick={() => onAddBullet(index)}
-            className={`flex items-center gap-1 sm:gap-2 ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors ml-6 sm:ml-10`}
+            className={`flex items-center gap-1 sm:gap-2 ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors ml-4 sm:ml-5`}
             style={{ fontSize: "clamp(0.625rem, 1.2vw + 0.15rem, 0.875rem)" }}
           >
             <Plus size={12} className="sm:w-[14px] sm:h-[14px]" /> <span className="hidden sm:inline">Add point</span><span className="sm:hidden">Add</span>
@@ -939,14 +982,8 @@ export default function SlideRenderer({
             );
           
           case "bullets":
-            return (
-              <BulletLayoutRenderer
-                layoutId={slide.contentLayout as BulletLayoutType}
-                items={boxContentItems}
-                accentColor={accentColor}
-                isNarrowSpace={isNarrowSpace}
-              />
-            );
+            // Bullet layouts don't support editing yet, fall back to editable BulletPoints
+            return <BulletPoints compact={compact} />;
           
           case "steps":
             return (
@@ -1022,19 +1059,11 @@ export default function SlideRenderer({
     }
 
     // Standard layout (only if contentLayout is not set)
+    // Always use BulletPoints for editing support
     return (
       <ContentWrapper>
         <div className={compact ? "space-y-3" : "space-y-4"}>
-          {/* Transformed content or fallback to bullet points */}
-          {hasTransformedContent ? (
-            <TransformedContentRenderer
-              content={slide.transformedContent!}
-              theme={theme}
-              compact={compact}
-            />
-          ) : (
-            <BulletPoints compact={compact} />
-          )}
+          <BulletPoints compact={compact} />
         </div>
       </ContentWrapper>
     );
@@ -3719,211 +3748,147 @@ export default function SlideRenderer({
     );
   }
 
-  // LAYOUT 28: Clean Frame - Professional minimalist image frame (Corporate Clean signature)
+  // LAYOUT 28: Clean Frame - Premium professional image frame (Corporate Clean signature)
   if (layout === "clean-frame") {
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''} pointer-events-none`} style={customBgStyle} />
 
-        {/* Subtle geometric accents */}
-        <div className="absolute top-0 left-0 w-1 h-24 bg-gradient-to-b from-blue-500 to-transparent" />
-        <div className="absolute top-0 left-0 w-24 h-1 bg-gradient-to-r from-blue-500 to-transparent" />
-        <div className="absolute bottom-0 right-0 w-1 h-20 bg-gradient-to-t from-gray-300 to-transparent" />
-        <div className="absolute bottom-0 right-0 w-20 h-1 bg-gradient-to-l from-gray-300 to-transparent" />
+        {/* Premium corner accents */}
+        <div className="absolute top-0 left-0 w-1.5 h-28 bg-gradient-to-b from-blue-500 via-blue-400 to-transparent pointer-events-none" />
+        <div className="absolute top-0 left-0 w-28 h-1.5 bg-gradient-to-r from-blue-500 via-blue-400 to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-1 h-24 bg-gradient-to-t from-slate-300 to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-24 h-1 bg-gradient-to-l from-slate-300 to-transparent pointer-events-none" />
 
-        {/* Subtle orbs */}
-        <div className={`absolute top-1/4 right-1/4 w-96 h-96 ${colors.orb1} rounded-full blur-3xl`} />
-        <div className={`absolute bottom-1/4 left-1/3 w-80 h-80 ${colors.orb2} rounded-full blur-3xl`} />
+        {/* Elegant gradient orbs */}
+        <div className={`absolute top-1/4 right-1/4 w-[500px] h-[500px] ${colors.orb1} rounded-full blur-3xl pointer-events-none`} />
+        <div className={`absolute bottom-1/4 left-1/3 w-[400px] h-[400px] ${colors.orb2} rounded-full blur-3xl pointer-events-none`} />
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full flex">
+        <div className="relative h-full flex items-center p-4 sm:p-5 md:p-6 z-10">
           {/* Content side */}
-          <div className="w-[55%] flex flex-col justify-center p-12">
-            <Title className="text-4xl md:text-5xl mb-8" />
-
-            {bulletPoints.length > 0 && (
-              <div className="space-y-4">
-                {bulletPoints.map((point, i) => (
-                  <div key={i} className="flex items-start gap-4 group">
-                    <div className="w-2 h-2 mt-2.5 rounded-full bg-blue-500" />
-                    <EditableText
-                      value={point}
-                      isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
-                      onStartEdit={() => onStartEditing(index, "bullet", i)}
-                      onChange={(val) => onUpdateContent(index, "bullet", val, i)}
-                      onFinish={onFinishEditing}
-                      className="flex-1 text-lg leading-relaxed"
-                      style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
-                      isOwner={canEdit}
-                      isHovered={isHovered}
-                      onDelete={() => onDeleteBullet(index, i)}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {canEdit && isHovered && (
-              <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+          <div className={`${hasImage ? "w-[55%]" : "w-full"} flex flex-col justify-center p-2 sm:p-3 md:p-4`}>
+            <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-2 sm:mb-3 md:mb-4" />
+            <EnhancedContent compact={false} />
+            {canEdit && isHovered && !slide.contentLayout && (
+              <button onClick={() => onAddBullet(index)} className={`mt-2 flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`} style={{ fontFamily: "'DM Sans', sans-serif" }}>
                 <Plus size={14} /> Add point
               </button>
             )}
           </div>
 
-          {/* Clean professional image frame */}
+          {/* Premium image frame */}
           {hasImage && firstImage && (
-            <div className="w-[45%] relative flex items-center justify-center p-8">
-              <div className="relative w-full h-[80%]">
-                <div className="relative w-full h-full rounded-lg overflow-hidden border border-gray-200 shadow-lg">
+            <div className="w-[45%] flex items-center justify-center p-2 sm:p-3 md:p-4">
+              <div className="relative w-full aspect-[4/3]">
+                <div className="relative w-full h-full rounded-xl overflow-hidden border border-slate-200/60 shadow-xl shadow-slate-900/10">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={firstImage.url} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
-                  <div className={`absolute inset-0 ${colors.fullOverlay}`} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent pointer-events-none" />
                 </div>
-                {/* Corner accent */}
-                <div className="absolute -bottom-2 -right-2 w-8 h-8 border-b-2 border-r-2 border-blue-500" />
+                {/* Premium corner accent */}
+                <div className="absolute -bottom-2 -right-2 w-10 h-10 border-b-2 border-r-2 border-blue-500 rounded-br-lg pointer-events-none" />
               </div>
             </div>
           )}
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-slate-300 to-transparent pointer-events-none" />
       </div>
     );
   }
 
-  // LAYOUT 29: Pro Cards - Professional card grid layout (Corporate Clean)
+  // LAYOUT 29: Pro Cards - Premium professional card grid layout (Corporate Clean)
   if (layout === "pro-cards") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''} pointer-events-none`} style={customBgStyle} />
 
-        {/* Subtle background elements */}
-        <div className={`absolute top-0 right-0 w-[500px] h-[500px] ${colors.orb1} rounded-full blur-3xl`} />
-        <div className={`absolute bottom-0 left-0 w-[400px] h-[400px] ${colors.orb2} rounded-full blur-3xl`} />
+        {/* Elegant background elements */}
+        <div className={`absolute top-0 right-0 w-[550px] h-[550px] ${colors.orb1} rounded-full blur-3xl pointer-events-none`} />
+        <div className={`absolute bottom-0 left-0 w-[450px] h-[450px] ${colors.orb2} rounded-full blur-3xl pointer-events-none`} />
+        
+        {/* Subtle dot pattern */}
+        <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: "radial-gradient(circle, #3182ce 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full flex flex-col justify-center p-12">
-          <Title className="text-4xl md:text-5xl mb-10 text-center" align="center" />
+        <div className="relative h-full flex flex-col p-4 sm:p-5 md:p-6 lg:p-8 z-10">
+          <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-3 sm:mb-4 text-center shrink-0" align="center" />
 
-          {/* Professional cards grid */}
-          {bulletPoints.length > 0 && (
-            <div className="grid grid-cols-2 gap-5 max-w-4xl mx-auto">
-              {bulletPoints.map((point, i) => (
-                <div key={i} className="group">
-                  <div className={`p-5 rounded-lg ${colors.cardBg} hover:shadow-md transition-shadow`}>
-                    <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
-                        <span className="text-blue-600 font-semibold text-sm">{String(i + 1).padStart(2, "0")}</span>
-                      </div>
-                      <EditableText
-                        value={point}
-                        isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
-                        onStartEdit={() => onStartEditing(index, "bullet", i)}
-                        onChange={(val) => onUpdateContent(index, "bullet", val, i)}
-                        onFinish={onFinishEditing}
-                        className="flex-1 text-base leading-relaxed"
-                        style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
-                        isOwner={canEdit}
-                        isHovered={isHovered}
-                        onDelete={() => onDeleteBullet(index, i)}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
+          {/* Content area - fills remaining space */}
+          <div className="flex-1 flex items-center justify-center">
+            <div className="w-full max-w-5xl">
+              <EnhancedContent compact={false} />
             </div>
-          )}
+          </div>
 
-          {canEdit && isHovered && (
-            <button onClick={() => onAddBullet(index)} className={`mt-6 mx-auto flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+          {canEdit && isHovered && !slide.contentLayout && (
+            <button onClick={() => onAddBullet(index)} className={`mt-2 mx-auto flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors shrink-0`} style={{ fontFamily: "'DM Sans', sans-serif" }}>
               <Plus size={14} /> Add card
             </button>
           )}
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-slate-300 to-transparent pointer-events-none" />
       </div>
     );
   }
 
-  // LAYOUT 30: Executive Split - Professional executive-style split layout (Corporate Clean)
+  // LAYOUT 30: Executive Split - Premium executive-style split layout (Corporate Clean)
   if (layout === "executive-split") {
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''} pointer-events-none`} style={customBgStyle} />
 
-        {/* Subtle geometric grid */}
-        <div className="absolute inset-0 opacity-[0.015]" style={{ backgroundImage: "linear-gradient(to right, #000 1px, transparent 1px), linear-gradient(to bottom, #000 1px, transparent 1px)", backgroundSize: "50px 50px" }} />
+        {/* Subtle dot pattern */}
+        <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: "radial-gradient(circle, #3182ce 1px, transparent 1px)", backgroundSize: "36px 36px" }} />
 
-        {/* Orbs */}
-        <div className={`absolute top-1/3 left-1/4 w-80 h-80 ${colors.orb1Strong} rounded-full blur-3xl`} />
-        <div className={`absolute bottom-1/3 right-1/4 w-72 h-72 ${colors.orb2Strong} rounded-full blur-3xl`} />
+        {/* Elegant orbs */}
+        <div className={`absolute top-1/3 left-1/4 w-[400px] h-[400px] ${colors.orb1Strong} rounded-full blur-3xl pointer-events-none`} />
+        <div className={`absolute bottom-1/3 right-1/4 w-[350px] h-[350px] ${colors.orb2Strong} rounded-full blur-3xl pointer-events-none`} />
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full flex">
-          {/* Left: Image */}
+        <div className="relative h-full flex items-center p-4 sm:p-5 md:p-6 z-10">
+          {/* Left: Premium Image */}
           {hasImage && firstImage && (
-            <div className="w-[45%] relative flex items-center justify-center p-8">
-              <div className="relative w-full h-[85%]">
-                <div className="relative w-full h-full rounded-lg overflow-hidden shadow-xl border border-gray-200">
+            <div className="w-[42%] flex items-center justify-center p-2 sm:p-3 md:p-4">
+              <div className="relative w-full aspect-[4/3]">
+                <div className="relative w-full h-full rounded-xl overflow-hidden shadow-2xl shadow-slate-900/15 border border-slate-200/50">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={firstImage.url} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
-                  <div className={`absolute inset-0 ${colors.fullOverlay}`} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-white/15 to-transparent pointer-events-none" />
                 </div>
-                {/* Accent line */}
-                <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-24 bg-gradient-to-b from-transparent via-blue-500 to-transparent" />
+                {/* Premium accent line */}
+                <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-1.5 h-28 bg-gradient-to-b from-transparent via-blue-500 to-transparent rounded-full pointer-events-none" />
               </div>
             </div>
           )}
 
           {/* Right: Content */}
-          <div className={`${hasImage ? "w-[55%]" : "w-full"} flex flex-col justify-center p-12`}>
-            <div className="mb-3 flex items-center gap-3">
-              <div className="w-8 h-px bg-blue-500" />
-              <span className="text-blue-600 text-xs font-medium uppercase tracking-widest">Overview</span>
+          <div className={`${hasImage ? "w-[58%]" : "w-full"} flex flex-col justify-center p-3 sm:p-4 md:p-6`}>
+            <div className="mb-2 sm:mb-3 flex items-center gap-3 shrink-0">
+              <div className="w-10 h-0.5 bg-gradient-to-r from-blue-500 to-blue-400 rounded-full" />
+              <span className="text-blue-600 text-xs font-semibold uppercase tracking-widest" style={{ fontFamily: "'DM Sans', sans-serif" }}>Overview</span>
             </div>
 
-            <Title className="text-4xl md:text-5xl mb-8" />
+            <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-3 sm:mb-4 shrink-0" />
 
-            {bulletPoints.length > 0 && (
-              <div className="space-y-4">
-                {bulletPoints.map((point, i) => (
-                  <div key={i} className="flex items-start gap-4 group">
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                      <div className="w-4 h-px bg-gray-300" />
-                    </div>
-                    <EditableText
-                      value={point}
-                      isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
-                      onStartEdit={() => onStartEditing(index, "bullet", i)}
-                      onChange={(val) => onUpdateContent(index, "bullet", val, i)}
-                      onFinish={onFinishEditing}
-                      className="flex-1 text-lg leading-relaxed"
-                      style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
-                      isOwner={canEdit}
-                      isHovered={isHovered}
-                      onDelete={() => onDeleteBullet(index, i)}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
+            <EnhancedContent compact={false} />
 
-            {canEdit && isHovered && (
-              <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+            {canEdit && isHovered && !slide.contentLayout && (
+              <button onClick={() => onAddBullet(index)} className={`mt-2 sm:mt-3 flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors shrink-0`} style={{ fontFamily: "'DM Sans', sans-serif" }}>
                 <Plus size={14} /> Add point
               </button>
             )}
           </div>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-blue-500/30 via-gray-300 to-blue-500/30" />
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500/30 via-slate-300 to-blue-500/30 pointer-events-none" />
       </div>
     );
   }
