@@ -544,65 +544,65 @@ function AlienTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, 
 }
 
 
-// CORPORATE CLEAN - Professional minimalist white with clean geometric elements
+// CORPORATE CLEAN - Premium professional theme with elegant DM Sans typography
 function CorporateTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   return (
     <div className="h-full relative overflow-hidden">
       {!hasImage && (
-        <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50 to-gray-100">
-          {/* Subtle geometric shapes */}
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-500/[0.03] rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-sky-500/[0.03] rounded-full blur-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-white via-[#fafbfc] to-[#f7fafc]">
+          {/* Elegant gradient orbs */}
+          <div className="absolute top-0 right-0 w-[700px] h-[700px] bg-gradient-to-br from-blue-500/[0.04] to-cyan-500/[0.02] rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-to-tr from-indigo-500/[0.03] to-blue-500/[0.02] rounded-full blur-3xl" />
           
-          {/* Clean line accents */}
-          <div className="absolute top-0 left-0 w-1 h-32 bg-gradient-to-b from-blue-500 to-transparent" />
-          <div className="absolute top-0 left-0 w-32 h-1 bg-gradient-to-r from-blue-500 to-transparent" />
-          <div className="absolute bottom-0 right-0 w-1 h-24 bg-gradient-to-t from-gray-300 to-transparent" />
-          <div className="absolute bottom-0 right-0 w-24 h-1 bg-gradient-to-l from-gray-300 to-transparent" />
+          {/* Premium corner accents */}
+          <div className="absolute top-0 left-0 w-1.5 h-40 bg-gradient-to-b from-blue-500 via-blue-400 to-transparent" />
+          <div className="absolute top-0 left-0 w-40 h-1.5 bg-gradient-to-r from-blue-500 via-blue-400 to-transparent" />
+          <div className="absolute bottom-0 right-0 w-1 h-32 bg-gradient-to-t from-slate-300 to-transparent" />
+          <div className="absolute bottom-0 right-0 w-32 h-1 bg-gradient-to-l from-slate-300 to-transparent" />
           
-          {/* Subtle grid pattern */}
-          <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: "linear-gradient(to right, #000 1px, transparent 1px), linear-gradient(to bottom, #000 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+          {/* Subtle dot pattern */}
+          <div className="absolute inset-0 opacity-[0.025]" style={{ backgroundImage: "radial-gradient(circle, #3182ce 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
         </div>
       )}
-      {hasImage && <div className="absolute inset-0 bg-gradient-to-t from-white/95 via-white/70 to-white/40" />}
+      {hasImage && <div className="absolute inset-0 bg-gradient-to-t from-white/98 via-white/75 to-white/45" />}
       
-      <div className="relative h-full flex flex-col items-center justify-center p-12 text-center">
-        {/* Professional slide indicator */}
+      <div className="relative h-full flex flex-col items-center justify-center p-8 sm:p-12 text-center">
+        {/* Premium slide indicator */}
         {showPageNumber && (
-          <div className="absolute top-8 left-8 flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-md bg-blue-500 flex items-center justify-center shadow-sm">
-                <span className="font-mono text-sm font-bold text-white">{index + 1}</span>
+          <div className="absolute top-6 left-6 sm:top-8 sm:left-8 flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-md shadow-blue-500/20">
+                <span className="font-semibold text-sm text-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>{index + 1}</span>
               </div>
-              <div className="w-12 h-px bg-gradient-to-r from-blue-500 to-transparent" />
+              <div className="w-14 h-0.5 bg-gradient-to-r from-blue-500/60 to-transparent rounded-full" />
             </div>
-            <span className="text-xs font-medium text-gray-400 tracking-wide">of {totalSlides}</span>
+            <span className="text-xs font-medium text-slate-400 tracking-wide" style={{ fontFamily: "'DM Sans', sans-serif" }}>of {totalSlides}</span>
           </div>
         )}
 
         {/* Top accent bar */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent rounded-full" />
         
-        {/* Decorative frame */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[75%] h-[55%] border border-gray-200/60 rounded-lg pointer-events-none" />
+        {/* Elegant decorative frame */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[60%] border border-slate-200/50 rounded-xl pointer-events-none" />
         
-        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-semibold mb-8 max-w-5xl leading-tight relative" style={{ fontFamily: theme.fonts.heading.family, color: "#111827", letterSpacing: "-0.02em" }} isOwner={canEdit} isHovered={isHovered} />
+        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 sm:mb-8 max-w-5xl leading-[1.1] relative" style={{ fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif", color: "#1a202c", letterSpacing: "-0.025em", fontWeight: 700 }} isOwner={canEdit} isHovered={isHovered} />
         {slide.subtitle && (
-          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#6b7280" }} isOwner={canEdit} isHovered={isHovered} />
+          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-lg sm:text-xl md:text-2xl max-w-3xl leading-relaxed" style={{ fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif", color: "#4a5568", fontWeight: 400 }} isOwner={canEdit} isHovered={isHovered} />
         )}
         
-        {/* Bottom decorative element */}
-        <div className="flex items-center gap-4 mt-12">
-          <div className="w-2 h-2 rounded-full bg-blue-500" />
-          <div className="w-20 h-px bg-gradient-to-r from-blue-500/60 via-gray-300 to-blue-500/60" />
-          <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-          <div className="w-20 h-px bg-gradient-to-r from-blue-500/60 via-gray-300 to-blue-500/60" />
-          <div className="w-2 h-2 rounded-full bg-blue-500" />
+        {/* Premium bottom decorative element */}
+        <div className="flex items-center gap-3 mt-10 sm:mt-14">
+          <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm shadow-blue-500/30" />
+          <div className="w-24 h-0.5 bg-gradient-to-r from-blue-500/50 via-slate-300 to-blue-500/50 rounded-full" />
+          <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+          <div className="w-24 h-0.5 bg-gradient-to-r from-blue-500/50 via-slate-300 to-blue-500/50 rounded-full" />
+          <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm shadow-blue-500/30" />
         </div>
       </div>
       
       {/* Bottom accent line */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-slate-300 to-transparent" />
     </div>
   );
 }

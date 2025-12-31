@@ -123,7 +123,7 @@ export default function PresentationViewer({
   const [isMobile, setIsMobile] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState(presentation.title);
-  const [showPageNumbers, setShowPageNumbers] = useState(true);
+  const [showPageNumbers, setShowPageNumbers] = useState(false);
   const [currentThemeId, setCurrentThemeId] = useState(presentation.content.theme || "elegant-noir");
 
   // Sync title when presentation prop changes (e.g., after rename in dashboard)
@@ -1897,7 +1897,7 @@ export default function PresentationViewer({
 }
 
 // Component for scroll view slides with dynamic height
-function ScrollSlideContent({ slide, index, theme, renderSlide, isMobile }: {
+function ScrollSlideContent({ slide, index, theme, renderSlide }: {
   slide: SlideData;
   index: number;
   theme: Theme;
@@ -1905,22 +1905,6 @@ function ScrollSlideContent({ slide, index, theme, renderSlide, isMobile }: {
   isMobile?: boolean;
 }) {
   const themeType = getThemeType(theme);
-  const bulletCount = slide.bulletPoints?.length || 0;
-  const hasChart = !!slide.chart;
-  const hasIcons = slide.icons && slide.icons.length > 0;
-
-  // Check if this is a full-image or image-background layout that needs fixed aspect ratio
-  const isFullImageLayout = slide.slideLayout === "image-full" || slide.layout === "full-image";
-  const isImageBackgroundLayout = slide.slideLayout === "image-background" || slide.layout === "image-background";
-  const needsFixedAspectRatio = isFullImageLayout || isImageBackgroundLayout;
-
-  // Responsive height calculation - smaller base on mobile
-  // Add extra height for charts and icons
-  const baseHeight = isMobile ? 280 : 380;
-  const bulletHeight = isMobile ? 50 : 65;
-  const chartHeight = hasChart ? (isMobile ? 280 : 350) : 0;
-  const iconsHeight = hasIcons ? (isMobile ? 60 : 80) : 0;
-  const calculatedHeight = Math.max(baseHeight, baseHeight + bulletCount * bulletHeight + chartHeight + iconsHeight);
 
   const bgColors: Record<ThemeType, string> = {
     dark: "bg-gradient-to-br from-zinc-900 via-zinc-950 to-black",
@@ -1932,7 +1916,7 @@ function ScrollSlideContent({ slide, index, theme, renderSlide, isMobile }: {
     midnight: "bg-gradient-to-br from-[#0c0a1d] via-[#1a1735] to-[#12102a]",
     cyber: "bg-gradient-to-br from-[#0a0a0f] via-[#0f0f18] to-[#151520]",
     alien: "bg-gradient-to-br from-[#0a0f0a] via-[#0d140d] to-[#121a12]",
-    corporate: "bg-gradient-to-br from-white via-gray-50 to-white",
+    corporate: "bg-gradient-to-br from-white via-slate-50 to-white",
     cosmic: "bg-gradient-to-br from-[#0a0612] via-[#120a1f] to-[#1a0a2e]",
     architectural: "bg-gradient-to-br from-[#0a0a0a] via-[#141414] to-[#0a0a0a]",
     anime: "bg-gradient-to-br from-[#1a1625] via-[#251f35] to-[#1a1625]",
@@ -1947,21 +1931,13 @@ function ScrollSlideContent({ slide, index, theme, renderSlide, isMobile }: {
   const bgClass = hasCustomPageBg ? "" : bgColors[themeType];
   const bgStyle = hasCustomPageBg ? { background: theme.pageBackground } : {};
 
-  // For full-image layouts, use fixed aspect ratio so h-full works in children
-  // For other layouts, use min-height to allow content to expand flexibly
-  if (needsFixedAspectRatio) {
-    return (
-      <div 
-        className={`w-full ${bgClass} relative`} 
-        style={{ aspectRatio: "16/9", ...bgStyle }}
-      >
-        {renderSlide(slide, index, true)}
-      </div>
-    );
-  }
-
+  // Always use fixed 16:9 aspect ratio for consistent slide sizing
+  // This ensures h-full works correctly in child components
   return (
-    <div className={`w-full ${bgClass} relative`} style={{ minHeight: `${calculatedHeight}px`, height: "auto", ...bgStyle }}>
+    <div 
+      className={`w-full ${bgClass} relative`} 
+      style={{ aspectRatio: "16/9", ...bgStyle }}
+    >
       {renderSlide(slide, index, true)}
     </div>
   );
