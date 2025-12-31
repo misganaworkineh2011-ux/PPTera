@@ -51,6 +51,7 @@ interface SlideMenuProps {
   imageCount: number;
   slideContent?: SlideContent;
   onChangeLayout: () => void;
+  onChangeContentLayout?: () => void;
   onDuplicate: () => void;
   onAddSlide: () => void;
   onAddImage: () => void;
@@ -147,6 +148,7 @@ interface StylingPanelProps {
   imageCount: number;
   slideType?: "title" | "content";
   onChangeLayout: () => void;
+  onChangeContentLayout?: () => void;
   onAddImage: () => void;
   onClose: () => void;
 }
@@ -155,6 +157,7 @@ function StylingPanel({
   imageCount,
   slideType,
   onChangeLayout,
+  onChangeContentLayout,
   onAddImage,
   onClose,
 }: StylingPanelProps) {
@@ -167,6 +170,8 @@ function StylingPanel({
   // - Title slides (always, so they can change image position)
   // - Content slides with images
   const showChangeLayout = slideType === "title" || imageCount > 0;
+  // Show Content Layout only for content slides (not title slides)
+  const showContentLayout = slideType !== "title" && onChangeContentLayout;
 
   return (
     <div className="bg-white rounded-xl shadow-xl border border-slate-200 p-3 min-w-[240px]">
@@ -174,9 +179,17 @@ function StylingPanel({
         {showChangeLayout && (
           <OptionRow
             icon={<LayoutGrid size={16} />}
-            label="Change Layout"
+            label="Slide Layout"
             onClick={handleAction(onChangeLayout)}
             action="Select"
+          />
+        )}
+        {showContentLayout && (
+          <OptionRow
+            icon={<LayoutGrid size={16} />}
+            label="Content Layout"
+            onClick={handleAction(onChangeContentLayout)}
+            action="Live Edit"
           />
         )}
         <OptionRow
@@ -425,6 +438,7 @@ export function SlideMenu({
   hasChart,
   slideContent,
   onChangeLayout,
+  onChangeContentLayout,
   onDuplicate,
   onAddSlide,
   onAddImage,
@@ -511,6 +525,7 @@ export function SlideMenu({
               imageCount={imageCount}
               slideType={slideContent?.type}
               onChangeLayout={onChangeLayout}
+              onChangeContentLayout={onChangeContentLayout}
               onAddImage={onAddImage}
               onClose={closePanel}
             />

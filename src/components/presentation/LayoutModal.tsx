@@ -4,18 +4,18 @@ import { useState } from "react";
 import { X, ImageIcon, LayoutGrid, CheckCircle2 } from "lucide-react";
 import type { Theme } from "~/lib/themes";
 import { slideLayouts, type SlideLayoutType, type ImageSize } from "~/lib/layouts/slide";
-import { boxLayouts, type BoxLayoutType, type BoxContentItem } from "~/lib/layouts/content/boxes";
-import { BoxLayoutPreview } from "./BoxLayoutRenderer";
+import type { BoxContentItem } from "~/lib/layouts/content/boxes";
+import type { ContentLayoutType } from "./types";
 
 interface LayoutModalProps {
   slideType?: "title" | "content";
   currentSlideLayout?: SlideLayoutType;
-  currentContentLayout?: BoxLayoutType;
+  currentContentLayout?: ContentLayoutType;
   currentImageSize?: ImageSize;
   contentItems?: BoxContentItem[];
   theme: Theme;
   onSelectSlideLayout: (layoutId: SlideLayoutType, imageSize: ImageSize) => void;
-  onSelectContentLayout: (layoutId: BoxLayoutType) => void;
+  onOpenContentLayoutPanel: () => void;
   onClose: () => void;
 }
 
@@ -143,18 +143,12 @@ export default function LayoutModal({
   contentItems = [],
   theme,
   onSelectSlideLayout,
-  onSelectContentLayout,
+  onOpenContentLayoutPanel,
   onClose,
 }: LayoutModalProps) {
   const isTitleSlide = slideType === "title";
-  const [activeTab, setActiveTab] = useState<"slide" | "content">("slide");
   const [selectedSlideLayout, setSelectedSlideLayout] = useState<SlideLayoutType>(currentSlideLayout);
   const [selectedImageSize, setSelectedImageSize] = useState<ImageSize>(currentImageSize);
-
-  const tabs = [
-    { id: "slide" as const, label: "Slide Layout", icon: ImageIcon, description: "Image position" },
-    { id: "content" as const, label: "Content Layout", icon: LayoutGrid, description: "Box style" },
-  ];
 
   const imageSizes: { id: ImageSize; label: string }[] = [
     { id: "small", label: "S" },
@@ -191,70 +185,65 @@ export default function LayoutModal({
         {/* Tabs - Hide content layout tab for title slides */}
         {!isTitleSlide && (
           <div className="flex gap-2 p-4 border-b border-slate-200 bg-slate-50">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                    activeTab === tab.id
-                      ? "bg-[#06b6d4] text-white shadow-md"
-                      : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
-                  }`}
-                >
-                  <Icon size={18} />
-                  <span>{tab.label}</span>
-                  <span className={`text-xs ${activeTab === tab.id ? "text-white/70" : "text-slate-400"}`}>
-                    ({tab.description})
-                  </span>
-                </button>
-              );
-            })}
+            <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-[#06b6d4] text-white shadow-md">
+              <ImageIcon size={18} />
+              <span>Slide Layout</span>
+              <span className="text-xs text-white/70">(Image position)</span>
+            </div>
+            <button
+              onClick={() => {
+                onClose();
+                onOpenContentLayoutPanel();
+              }}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 transition-colors"
+            >
+              <LayoutGrid size={18} />
+              <span>Content Layout</span>
+              <span className="text-xs text-slate-400">(Box style)</span>
+            </button>
           </div>
         )}
 
         {/* Content */}
         <div className="p-6 overflow-y-auto max-h-[55vh]">
-          {(activeTab === "slide" || isTitleSlide) && (
-            <div className="space-y-6">
-              {/* Image Position Layouts */}
-              <div>
-                <h3 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
-                  <ImageIcon size={16} />
-                  Image Position
-                </h3>
-                <div className="grid grid-cols-4 gap-4">
-                  {slideLayoutsWithImage.map((layout) => {
-                    const isSelected = selectedSlideLayout === layout.id;
-                    return (
-                      <button
-                        key={layout.id}
-                        onClick={() => {
-                          setSelectedSlideLayout(layout.id);
-                          onSelectSlideLayout(layout.id, selectedImageSize);
-                        }}
-                        className={`relative p-3 rounded-xl border-2 text-left transition-all hover:shadow-lg ${
-                          isSelected
-                            ? "border-[#06b6d4] bg-[#06b6d4]/5 ring-2 ring-[#06b6d4]/20"
-                            : "border-slate-200 hover:border-[#06b6d4]/50"
-                        }`}
-                      >
-                        <div className="aspect-video bg-slate-100 rounded-lg mb-2 overflow-hidden">
-                          <SlideLayoutPreview layoutId={layout.id} imageSize={selectedImageSize} />
+          <div className="space-y-6">
+            {/* Image Position Layouts */}
+            <div>
+              <h3 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                <ImageIcon size={16} />
+                Image Position
+              </h3>
+              <div className="grid grid-cols-4 gap-4">
+                {slideLayoutsWithImage.map((layout) => {
+                  const isSelected = selectedSlideLayout === layout.id;
+                  return (
+                    <button
+                      key={layout.id}
+                      onClick={() => {
+                        setSelectedSlideLayout(layout.id);
+                        onSelectSlideLayout(layout.id, selectedImageSize);
+                      }}
+                      className={`relative p-3 rounded-xl border-2 text-left transition-all hover:shadow-lg ${
+                        isSelected
+                          ? "border-[#06b6d4] bg-[#06b6d4]/5 ring-2 ring-[#06b6d4]/20"
+                          : "border-slate-200 hover:border-[#06b6d4]/50"
+                      }`}
+                    >
+                      <div className="aspect-video bg-slate-100 rounded-lg mb-2 overflow-hidden">
+                        <SlideLayoutPreview layoutId={layout.id} imageSize={selectedImageSize} />
+                      </div>
+                      <h4 className="font-semibold text-slate-900 text-sm">{layout.name}</h4>
+                      <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{layout.description}</p>
+                      {isSelected && (
+                        <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#06b6d4] flex items-center justify-center">
+                          <CheckCircle2 size={12} className="text-white" />
                         </div>
-                        <h4 className="font-semibold text-slate-900 text-sm">{layout.name}</h4>
-                        <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{layout.description}</p>
-                        {isSelected && (
-                          <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#06b6d4] flex items-center justify-center">
-                            <CheckCircle2 size={12} className="text-white" />
-                          </div>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
+            </div>
 
               {/* Image Size Selector */}
               {selectedSlideLayout !== "no-image" && selectedSlideLayout !== "image-full" && selectedSlideLayout !== "image-background" && (
@@ -322,88 +311,6 @@ export default function LayoutModal({
                 </div>
               </div>
             </div>
-          )}
-
-          {activeTab === "content" && (
-            <div>
-              <h3 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
-                <LayoutGrid size={16} />
-                Box Styles
-              </h3>
-              <div className="grid grid-cols-4 gap-4">
-                {boxLayouts.map((layout) => {
-                  const isSelected = currentContentLayout === layout.id;
-                  const isSuitable =
-                    contentItems.length === 0 ||
-                    (contentItems.length >= layout.minItems && contentItems.length <= layout.maxItems);
-
-                  return (
-                    <button
-                      key={layout.id}
-                      onClick={() => onSelectContentLayout(layout.id)}
-                      disabled={!isSuitable && contentItems.length > 0}
-                      className={`relative p-3 rounded-xl border-2 text-left transition-all ${
-                        !isSuitable && contentItems.length > 0
-                          ? "opacity-50 cursor-not-allowed border-slate-200 bg-slate-50"
-                          : isSelected
-                            ? "border-[#06b6d4] bg-[#06b6d4]/5 ring-2 ring-[#06b6d4]/20 shadow-md"
-                            : "border-slate-200 hover:border-[#06b6d4]/50 hover:shadow-lg"
-                      }`}
-                    >
-                      {/* Layout Preview */}
-                      <div
-                        className="aspect-[4/3] rounded-lg mb-2 overflow-hidden"
-                        style={{ backgroundColor: theme.colors.backgroundAlt || "#f8fafc" }}
-                      >
-                        <BoxLayoutPreview
-                          layout={layout}
-                          itemCount={layout.idealItems}
-                          theme={theme}
-                        />
-                      </div>
-
-                      <h4 className="font-semibold text-slate-900 text-sm">{layout.name}</h4>
-                      <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{layout.description}</p>
-
-                      {/* Item count badge */}
-                      <div className="mt-2 flex items-center gap-1">
-                        <span
-                          className="text-[10px] px-1.5 py-0.5 rounded"
-                          style={{
-                            backgroundColor: `${theme.colors.accent}15`,
-                            color: theme.colors.accent,
-                          }}
-                        >
-                          {layout.minItems}-{layout.maxItems} items
-                        </span>
-                        {layout.supportsIcons && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">
-                            Icons
-                          </span>
-                        )}
-                      </div>
-
-                      {isSelected && (
-                        <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#06b6d4] flex items-center justify-center">
-                          <CheckCircle2 size={12} className="text-white" />
-                        </div>
-                      )}
-
-                      {!isSuitable && contentItems.length > 0 && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-white/60 rounded-xl">
-                          <span className="text-xs text-slate-500 bg-white px-2 py-1 rounded shadow-sm">
-                            {contentItems.length < layout.minItems
-                              ? `Needs ${layout.minItems}+ items`
-                              : `Max ${layout.maxItems} items`}
-                          </span>
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Footer */}
@@ -415,14 +322,6 @@ export default function LayoutModal({
             </span>
             {selectedSlideLayout !== "no-image" && selectedSlideLayout !== "image-full" && selectedSlideLayout !== "image-background" && (
               <span className="text-slate-500"> ({selectedImageSize})</span>
-            )}
-            {!isTitleSlide && (
-              <>
-                <span className="mx-2 text-slate-300">•</span>
-                <span className="text-slate-900">
-                  {boxLayouts.find((l) => l.id === currentContentLayout)?.name || "Side Accent"}
-                </span>
-              </>
             )}
           </div>
           <button

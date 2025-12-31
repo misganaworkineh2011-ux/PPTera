@@ -11,7 +11,6 @@ import { toast } from "sonner";
 import { getThemeById, getDefaultTheme, type Theme } from "~/lib/themes";
 import { isCustomThemeId, getCustomThemeDbId, convertCustomThemeToTheme } from "~/lib/custom-theme-utils";
 import { type LayoutType } from "~/lib/slide-layouts";
-import type { BoxLayoutType } from "~/lib/layouts/content/boxes";
 import { type SlideLayoutType, type ImageSize } from "~/lib/layouts/slide";
 import {
   type SlideData,
@@ -20,6 +19,7 @@ import {
 } from "~/components/presentation/types";
 import SlideRenderer from "~/components/presentation/SlideRenderer";
 import LayoutModal from "~/components/presentation/LayoutModal";
+import ContentLayoutPanel, { CONTENT_LAYOUT_PANEL_WIDTH, type ContentLayoutId } from "~/components/presentation/ContentLayoutPanel";
 import ExportModal from "~/components/presentation/ExportModal";
 import ShareModal from "~/components/presentation/ShareModal";
 import FeedbackSection from "~/components/presentation/FeedbackSection";
@@ -189,6 +189,7 @@ export default function PresentationViewer({
   const [slidesData, setSlidesData] = useState<SlideData[]>(presentation.slides);
   const [activeSlideIndex, setActiveSlideIndex] = useState<number | null>(null);
   const [showLayoutModal, setShowLayoutModal] = useState(false);
+  const [showContentLayoutPanel, setShowContentLayoutPanel] = useState(false);
   const [editingText, setEditingText] = useState<EditingState | null>(null);
   const [showImageModal, setShowImageModal] = useState<number | null>(null);
   const [editingImageIndex, setEditingImageIndex] = useState<number | null>(null);
@@ -214,6 +215,18 @@ export default function PresentationViewer({
   const streamingTextRef = useRef<Record<number, Record<string, string>>>({});
   // Track EventSource to prevent duplicates - use window to persist across re-renders
   const eventSourceRef = useRef<EventSource | null>(null);
+
+  // Hide body scrollbar when content layout panel is open
+  useEffect(() => {
+    if (showContentLayoutPanel) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showContentLayoutPanel]);
 
   // Connect to streaming endpoint when in streaming mode
   useEffect(() => {
@@ -850,7 +863,7 @@ export default function PresentationViewer({
     setShowLayoutModal(false);
   };
 
-  const changeContentLayout = (slideIndex: number, layoutId: BoxLayoutType) => {
+  const changeContentLayout = (slideIndex: number, layoutId: ContentLayoutId) => {
     const newSlides = [...slidesData];
     const existingSlide = newSlides[slideIndex];
     if (existingSlide) {
@@ -1179,7 +1192,7 @@ export default function PresentationViewer({
         className="w-full h-full relative overflow-hidden transition-all duration-500 group slide-content-container"
         style={!hasImage ? backgroundStyle : undefined}
         onMouseEnter={() => canEdit && !isFullscreen && !isPublicView && setActiveSlideIndex(index)}
-        onMouseLeave={() => !isEditing && setActiveSlideIndex(null)}
+        onMouseLeave={() => !isEditing && !showContentLayoutPanel && setActiveSlideIndex(null)}
       >
         {/* Full cover background image for title slides (only when no custom slideLayout) */}
         {isTitle && !slide.slideLayout && hasImage && slide.image?.url && (
@@ -1241,6 +1254,7 @@ export default function PresentationViewer({
               images: slide.images,
             }}
             onChangeLayout={() => { setActiveSlideIndex(index); setShowLayoutModal(true); }}
+            onChangeContentLayout={() => { setActiveSlideIndex(index); setShowContentLayoutPanel(true); }}
             onDuplicate={() => duplicateSlide(index)}
             onAddSlide={() => addSlideAt(index)}
             onAddImage={() => { setShowImageModal(index); setEditingImageIndex(null); setImageUrl(""); }}
@@ -1587,7 +1601,18 @@ export default function PresentationViewer({
           />
         )}
 
-        <div className={`${isFullscreen ? "" : "px-0 sm:px-2 md:px-4 py-4 sm:py-8"} max-w-full`}>
+        {/* Main content area - scrollable container that shrinks when panel is open */}
+        <div 
+          className={`transition-all duration-300 ${showContentLayoutPanel ? 'fixed left-0 overflow-y-scroll' : ''}`}
+          style={showContentLayoutPanel ? {
+            top: '53px',
+            right: `${CONTENT_LAYOUT_PANEL_WIDTH}px`,
+            bottom: '0',
+            left: '0',
+            height: 'calc(100vh - 53px)',
+          } : {}}
+        >
+        <div className={`${isFullscreen ? "" : "px-0 sm:px-2 md:px-4 py-4 sm:py-8"} max-w-full ${showContentLayoutPanel ? 'pb-20' : ''}`}>
           {viewMode === "scroll" && !isFullscreen ? (
             <div className="flex gap-6 mx-auto" style={{ maxWidth: "1400px" }}>
               {showThumbnails && !isPublicView && !isMobile && (
@@ -1729,6 +1754,8 @@ export default function PresentationViewer({
         )}
 
         {viewMode === "scroll" && !isFullscreen && !isPublicView && <FeedbackSection presentationId={presentation.id} theme={theme} />}
+        </div>
+        {/* End of content area that shifts */}
 
         {showLayoutModal && activeSlideIndex !== null && (
           <LayoutModal 
@@ -1742,7 +1769,7 @@ export default function PresentationViewer({
             })) || []}
             theme={theme}
             onSelectSlideLayout={(layoutId, imageSize) => changeSlideLayout(activeSlideIndex, layoutId, imageSize)}
-            onSelectContentLayout={(layoutId) => changeContentLayout(activeSlideIndex, layoutId)}
+            onOpenContentLayoutPanel={() => setShowContentLayoutPanel(true)}
             onClose={() => setShowLayoutModal(false)} 
           />
         )}
@@ -1848,6 +1875,23 @@ export default function PresentationViewer({
         />
 
       </div>
+
+      {/* Content Layout Panel - slides in from right (outside main wrapper so it doesn't shift) */}
+      <ContentLayoutPanel
+        isOpen={showContentLayoutPanel && activeSlideIndex !== null}
+        currentContentLayout={activeSlideIndex !== null ? (slides[activeSlideIndex]?.contentLayout || "box-style-1") : "box-style-1"}
+        contentItems={activeSlideIndex !== null ? (slides[activeSlideIndex]?.bulletPoints?.map((bp, i) => ({
+          label: `Point ${i + 1}`,
+          text: typeof bp === "string" ? bp : (bp as { text?: string }).text || "",
+        })) || []) : []}
+        theme={theme}
+        onSelectContentLayout={(layoutId) => {
+          if (activeSlideIndex !== null) {
+            changeContentLayout(activeSlideIndex, layoutId);
+          }
+        }}
+        onClose={() => setShowContentLayoutPanel(false)}
+      />
     </>
   );
 }
