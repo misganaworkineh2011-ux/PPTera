@@ -1,5 +1,5 @@
 // Circle Layout Definitions
-// 2 specific circular arrangement styles
+// 2 specific circular arrangement styles - FULLY DYNAMIC for any item count
 
 import type { Theme } from "~/lib/themes";
 
@@ -12,8 +12,8 @@ export interface CircleContentItem {
 
 // Circle layout type identifier
 export type CircleLayoutType =
-  | "circle-arc" // Arc/semi-circle with 3 segments, content around edges
-  | "circle-ring"; // Full ring with 3 segments, content on sides
+  | "circle-arc" // Arc/semi-circle with dynamic segments, content around edges
+  | "circle-ring"; // Full ring with dynamic segments, content distributed around
 
 // Circle layout definition interface
 export interface CircleLayout {
@@ -33,17 +33,16 @@ export interface CircleLayout {
   };
 }
 
-// 2 Specific Circle Layout Definitions
+// 2 Specific Circle Layout Definitions - Now fully dynamic
 export const circleLayouts: CircleLayout[] = [
-  // Style 1: Arc Layout (from image 1)
-  // 3 curved segments forming an arc, content positioned around (left, top, right)
+  // Style 1: Arc Layout - Dynamic segments
   {
     id: "circle-arc",
     name: "Arc Flow",
-    description: "Three curved segments in an arc with content positioned around the edges",
+    description: "Dynamic curved segments in an arc with content positioned around the edges",
     category: "circles",
-    minItems: 2,
-    maxItems: 4,
+    minItems: 1,
+    maxItems: 8, // Now supports up to 8 items
     idealItems: 3,
     adaptive: true,
     supportsIcons: true,
@@ -53,15 +52,14 @@ export const circleLayouts: CircleLayout[] = [
     },
   },
 
-  // Style 2: Ring Layout (from image 2)
-  // 3 segments forming a complete ring, content on left and right sides
+  // Style 2: Ring Layout - Dynamic segments
   {
     id: "circle-ring",
     name: "Ring Cycle",
-    description: "Three segments forming a ring with content on the sides",
+    description: "Dynamic segments forming a ring with content distributed around",
     category: "circles",
-    minItems: 2,
-    maxItems: 4,
+    minItems: 1,
+    maxItems: 8, // Now supports up to 8 items
     idealItems: 3,
     adaptive: true,
     supportsIcons: true,
@@ -246,40 +244,74 @@ export function getRingIconPosition(
 }
 
 // Get content position for arc layout (where to place text content)
+// Now fully dynamic for any number of segments
 export function getArcContentPosition(
   index: number,
   totalSegments: number = 3
-): { position: "left" | "top" | "right"; alignment: "left" | "center" | "right" } {
-  // For 3 segments: left, top, right
-  if (totalSegments === 3) {
-    if (index === 0) return { position: "left", alignment: "right" };
-    if (index === 1) return { position: "top", alignment: "center" };
+): { position: "left" | "top" | "right" | "top-left" | "top-right"; alignment: "left" | "center" | "right" } {
+  // Calculate position based on segment angle
+  const totalArcAngle = 180;
+  const segmentAngle = totalArcAngle / totalSegments;
+  const midAngle = -180 + index * segmentAngle + segmentAngle / 2;
+  
+  // Determine position based on angle
+  // -180 to -135: left
+  // -135 to -45: top (with variations)
+  // -45 to 0: right
+  if (midAngle <= -135) {
+    return { position: "left", alignment: "right" };
+  } else if (midAngle >= -45) {
     return { position: "right", alignment: "left" };
+  } else if (midAngle <= -112.5) {
+    return { position: "top-left", alignment: "right" };
+  } else if (midAngle >= -67.5) {
+    return { position: "top-right", alignment: "left" };
+  } else {
+    return { position: "top", alignment: "center" };
   }
-  // For 2 segments: left, right
-  if (totalSegments === 2) {
-    return index === 0 
-      ? { position: "left", alignment: "right" }
-      : { position: "right", alignment: "left" };
-  }
-  // For 4 segments: left, top-left, top-right, right
-  if (index === 0) return { position: "left", alignment: "right" };
-  if (index === 3) return { position: "right", alignment: "left" };
-  return { position: "top", alignment: "center" };
 }
 
-// Get content position for ring layout
+// Get content position for ring layout - now returns angle-based position
 export function getRingContentPosition(
   index: number,
   totalSegments: number = 3
-): { position: "left" | "right"; items: number[] } {
-  // For 3 segments: 1 on left (index 0), 2 on right (index 1, 2)
-  if (totalSegments === 3) {
-    if (index === 0) return { position: "left", items: [0] };
-    return { position: "right", items: [1, 2] };
+): { angle: number; position: "left" | "right" | "top" | "bottom" } {
+  const totalAngle = 360;
+  const segmentAngle = totalAngle / totalSegments;
+  // Start from top (-90 degrees) and go clockwise
+  const midAngle = -90 + index * segmentAngle + segmentAngle / 2;
+  
+  // Normalize angle to 0-360
+  const normalizedAngle = ((midAngle % 360) + 360) % 360;
+  
+  // Determine quadrant
+  let position: "left" | "right" | "top" | "bottom";
+  if (normalizedAngle >= 315 || normalizedAngle < 45) {
+    position = "top";
+  } else if (normalizedAngle >= 45 && normalizedAngle < 135) {
+    position = "right";
+  } else if (normalizedAngle >= 135 && normalizedAngle < 225) {
+    position = "bottom";
+  } else {
+    position = "left";
   }
-  // For 2 segments: 1 on each side
-  return index === 0 
-    ? { position: "left", items: [0] }
-    : { position: "right", items: [1] };
+  
+  return { angle: midAngle, position };
+}
+
+// Calculate grid layout for content items around the circle
+export function calculateCircleContentGrid(itemCount: number): {
+  columns: number;
+  rows: number;
+  layout: "around" | "sides" | "grid";
+} {
+  if (itemCount <= 3) {
+    return { columns: 3, rows: 1, layout: "around" };
+  } else if (itemCount <= 4) {
+    return { columns: 2, rows: 2, layout: "sides" };
+  } else if (itemCount <= 6) {
+    return { columns: 3, rows: 2, layout: "grid" };
+  } else {
+    return { columns: 4, rows: Math.ceil(itemCount / 4), layout: "grid" };
+  }
 }

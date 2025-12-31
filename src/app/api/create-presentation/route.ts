@@ -25,8 +25,8 @@ interface SlideInput {
   assets?: SlideAssets;
   // Title slide specific
   image?: SlideImage;
-  // Content layout method from outline (e.g., "box")
-  contentLayout?: string;
+  // Content layout hint from outline (e.g., "boxes", "bullets", "sequence")
+  contentLayoutHint?: string;
 }
 
 interface CreatePresentationRequest {
@@ -53,6 +53,8 @@ interface PresentationSlide {
   subtitle?: string;
   // Original bullets preserved
   bulletPoints?: string[];
+  // Speaker notes - detailed explanations for the presenter
+  speakerNotes?: string[];
   // Transformed content
   transformedContent?: TransformedContent;
   // Visual assets
@@ -137,14 +139,13 @@ export async function POST(request: Request) {
             textDensity,
             metadata,
             createdFrom: "outline",
-            outlineId,
+            outlineId, // Store outlineId in content JSON
             // Store slides for streaming processing
             pendingSlides: slides,
             streamingComplete: false,
           },
           slides: [], // Empty - will be populated by streaming
           userId: user.id,
-          outlineId: outlineId || null,
         },
       });
 
@@ -339,11 +340,10 @@ export async function POST(request: Request) {
           textDensity: textDensity,
           metadata: metadata,
           createdFrom: "outline",
-          outlineId: outlineId,
+          outlineId: outlineId, // Store outlineId in content JSON
         },
         slides: presentationSlides,
         userId: user.id,
-        outlineId: outlineId || null,
       },
     });
 

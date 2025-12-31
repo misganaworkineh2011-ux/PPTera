@@ -206,33 +206,35 @@ Each slide MUST encode visual meaning—not just text.
 
 For every CONTENT slide, determine and include:
 
-1. "contentLayout":
-INTELLIGENTLY determine the BEST content layout category for each slide based on the slide's content type and bullet point structure.
+1. "semanticIntent":
+A short, descriptive label that captures the core meaning of the slide in natural language.
+This is NOT a fixed category system - invent labels freely when they better express the idea.
+Examples (non-exhaustive): process, concept, comparison, hierarchy, timeline, framework, data insight, causal chain, transformation, trade-off.
 
-CRITICAL: You MUST vary layouts across slides - DO NOT use "boxes" for every slide!
+2. "visualStrategy":
+Describe how the idea wants to be visually expressed.
+Fields:
+- primary: the dominant visual form (e.g., diagram, image, mixed, text-focused)
+- pattern: a descriptive layout metaphor (e.g., cards, grid, flow, split, spotlight, pyramid)
+- emphasis: what the visual should highlight (e.g., progression, contrast, relationship, scale)
 
-ANALYZE the slide's content and choose ONE of these categories:
-- "boxes": Use for slides with distinct concepts, features, benefits, categories, or items that deserve equal visual weight. Best for: lists of items, multiple concepts, feature comparisons, benefit lists, category breakdowns. Example: "Key Features of AI", "Benefits of Exercise", "Types of Marketing Strategies"
-- "bullets": Use for traditional bullet point lists, supporting details, sub-points, or when content is hierarchical. Best for: detailed explanations, supporting information, sub-categories, simple lists. Example: "Common Mistakes to Avoid", "Supporting Evidence", "Additional Resources"
-- "sequence": Use for sequential processes, timelines, chronological flows, or step-by-step procedures where order matters. Best for: processes, workflows, timelines, chronological events, numbered sequences. Example: "Product Development Process", "Customer Journey", "Historical Timeline"
-- "steps": Use for step-by-step guides, tutorials, how-to content, or procedural instructions with clear numbered steps. Best for: tutorials, guides, procedures, numbered instructions, sequential actions. Example: "How to Start a Business", "5 Steps to Success", "Installation Guide"
-- "quotes": Use for testimonials, quotes, statements, opinions, or when presenting someone's words. Best for: testimonials, quotes, statements, opinions, expert insights. Example: "Customer Testimonials", "Expert Opinions", "Famous Quotes"
-- "images": Use when the slide content is primarily visual or image-focused, or when each bullet point has a corresponding image. Best for: image galleries, visual showcases, portfolio items, product displays. Example: "Our Products", "Team Members", "Project Showcase"
-- "circles": Use for interconnected concepts, relationships, cycles, or when content forms a circular/cyclical pattern. Best for: interconnected systems, cycles, relationships, circular processes. Example: "The Water Cycle", "Ecosystem Relationships", "Circular Economy"
-- "numbers": Use for statistics, metrics, data points, or when numbers are the primary focus. Best for: statistics, metrics, KPIs, data highlights, numerical achievements. Example: "Key Statistics", "Performance Metrics", "Market Data"
+3. "contentLayoutHint":
+Suggest a content layout CATEGORY based on the slide's semantic meaning.
+IMPORTANT: This is just a hint - the presentation generator will make the final decision based on content density and image placement.
 
-SELECTION PROCESS:
-1. FIRST: Analyze the slide's bullet points
-2. THEN: Determine what the content represents (concepts, steps, quotes, etc.)
-3. FINALLY: Choose the category that BEST matches the content's nature
+Choose ONE category that best matches the content's nature:
+- "boxes": Distinct concepts, features, benefits, categories that deserve equal visual weight
+- "bullets": Traditional lists, supporting details, hierarchical content
+- "sequence": Sequential processes, timelines, chronological flows where order matters
+- "steps": Step-by-step guides, tutorials, procedural instructions with numbered steps
+- "quotes": Testimonials, quotes, statements, expert opinions
+- "circles": Interconnected concepts, cycles, circular relationships
+- "numbers": Statistics, metrics, data points, numerical highlights
 
-LAYOUT DISTRIBUTION RULE (CRITICAL):
-- For a 10-slide presentation, aim for at least 3-4 DIFFERENT layout types
-- NEVER use the same layout for more than 3 consecutive slides
-- Match layout to content
-- TITLE slides do not need this field
+LAYOUT DISTRIBUTION: Aim for variety - use at least 3-4 different categories across a 10-slide deck.
+TITLE slides do not need this field.
 
-2. "assets":
+4. "assets":
 Describe visual assets meaningfully.
 CRITICAL: Visual assets (images) MUST be generated AFTER bullet points are created, so you have the full picture of the slide content.
 - image:
@@ -260,8 +262,10 @@ CRITICAL REQUIREMENTS:
 2. CONTENT slides (${contentSlides} slides):
 Each slide MUST include (IN THIS ORDER):
    - "type": "content"
-   - "title": catchy, attention-grabbing headline (max 5-7 words) use questions, bold claims, metaphors, or vivid phrases that spark curiosity and represent the slide's core message     
-   - "contentLayout": Choose intelligently from: "boxes", "bullets", "sequence", "steps", "quotes", "images", "circles", or "numbers" based on content analysis (see guidance above)
+   - "title": catchy, attention-grabbing headline (max 5-7 words) use questions, bold claims, metaphors, or vivid phrases that spark curiosity and represent the slide's core message
+   - "semanticIntent": core meaning label (free-form, e.g., "process", "comparison", "framework")
+   - "visualStrategy": { primary, pattern, emphasis } describing visual expression
+   - "contentLayoutHint": Category suggestion from: "boxes", "bullets", "sequence", "steps", "quotes", "circles", or "numbers" based on content analysis
    - "bulletPoints": 2–6 bullets:
      * FORBIDDEN FORMAT — NEVER USE: "Label: explanation" pattern (colon after a short label)
        ✗ WRONG: "Combatting Tilt: Utilize brief timeouts..."
@@ -321,7 +325,13 @@ Return ONLY a valid JSON object in this exact structure:
     {
       "type": "content",
       "title": "catchy headline (max 5-7 words) — questions, bold claims, metaphors, vivid phrases",
-      "contentLayout": "boxes | bullets | sequence | steps | quotes | images | circles | numbers (choose based on content type)",
+      "semanticIntent": "core meaning label (free-form)",
+      "visualStrategy": {
+        "primary": "dominant visual form",
+        "pattern": "layout metaphor",
+        "emphasis": "visual focus"
+      },
+      "contentLayoutHint": "boxes | bullets | sequence | steps | quotes | circles | numbers",
       "bulletPoints": [
         "Bullet point 1",
         "Bullet point 2",

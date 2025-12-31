@@ -195,27 +195,21 @@ Fields:
 - pattern: a descriptive layout metaphor (free-form text, e.g., stairs, split, cards, grid, pyramid, spotlight, flow)
 - emphasis: what the visual should highlight (free-form text, e.g., progression, contrast, relationship, scale, emotion, clarity)
 
-3. "contentLayout":
-INTELLIGENTLY determine the BEST content layout category for each slide based on the slide's semantic intent, content type, and bullet point structure.
+3. "contentLayoutHint":
+Suggest a content layout CATEGORY based on the slide's semantic meaning. The planner will decide the final layout.
+IMPORTANT: This is just a hint - the presentation generator will make the final decision based on content density and image placement.
 
-ANALYZE the slide's content and choose ONE of these categories:
-- "boxes": Use for slides with distinct concepts, features, benefits, categories, or items that deserve equal visual weight. Best for: lists of items, multiple concepts, feature comparisons, benefit lists, category breakdowns. Example: "Key Features of AI", "Benefits of Exercise", "Types of Marketing Strategies"
-- "bullets": Use for traditional bullet point lists, supporting details, sub-points, or when content is hierarchical. Best for: detailed explanations, supporting information, sub-categories, simple lists. Example: "Common Mistakes to Avoid", "Supporting Evidence", "Additional Resources"
-- "sequence": Use for sequential processes, timelines, chronological flows, or step-by-step procedures where order matters. Best for: processes, workflows, timelines, chronological events, numbered sequences. Example: "Product Development Process", "Customer Journey", "Historical Timeline"
-- "steps": Use for step-by-step guides, tutorials, how-to content, or procedural instructions with clear numbered steps. Best for: tutorials, guides, procedures, numbered instructions, sequential actions. Example: "How to Start a Business", "5 Steps to Success", "Installation Guide"
-- "quotes": Use for testimonials, quotes, statements, opinions, or when presenting someone's words. Best for: testimonials, quotes, statements, opinions, expert insights. Example: "Customer Testimonials", "Expert Opinions", "Famous Quotes"
-- "images": Use when the slide content is primarily visual or image-focused, or when each bullet point has a corresponding image. Best for: image galleries, visual showcases, portfolio items, product displays. Example: "Our Products", "Team Members", "Project Showcase"
-- "circles": Use for interconnected concepts, relationships, cycles, or when content forms a circular/cyclical pattern. Best for: interconnected systems, cycles, relationships, circular processes. Example: "The Water Cycle", "Ecosystem Relationships", "Circular Economy"
-- "numbers": Use for statistics, metrics, data points, or when numbers are the primary focus. Best for: statistics, metrics, KPIs, data highlights, numerical achievements. Example: "Key Statistics", "Performance Metrics", "Market Data"
+Choose ONE category that best matches the content's nature:
+- "boxes": Distinct concepts, features, benefits, categories that deserve equal visual weight
+- "bullets": Traditional lists, supporting details, hierarchical content
+- "sequence": Sequential processes, timelines, chronological flows where order matters
+- "steps": Step-by-step guides, tutorials, procedural instructions with numbered steps
+- "quotes": Testimonials, quotes, statements, expert opinions
+- "circles": Interconnected concepts, cycles, circular relationships
+- "numbers": Statistics, metrics, data points, numerical highlights
 
-SELECTION PROCESS:
-1. FIRST: Analyze the slide's title, semanticIntent, and bullet points
-2. THEN: Determine what the content represents (concepts, steps, quotes, etc.)
-3. FINALLY: Choose the category that BEST matches the content's nature
-4. DEFAULT: If uncertain, use "boxes" as it's the most versatile
-
-CRITICAL: Each slide should use the layout that best serves its content. Vary layouts across slides to create visual interest and match content types.
-- TITLE slides do not need this field
+LAYOUT DISTRIBUTION: Aim for variety - use at least 3-4 different categories across a 10-slide deck.
+TITLE slides do not need this field.
 
 4. "assets":
 Describe visual assets meaningfully. Invent freely if better suited.
@@ -255,7 +249,7 @@ Each slide MUST include (IN THIS ORDER):
    - "title": A clear, narrative-advancing heading
    - "semanticIntent"
    - "visualStrategy"
-   - "contentLayout": Choose intelligently from: "boxes", "bullets", "sequence", "steps", "quotes", "images", "circles", or "numbers" based on content analysis (see guidance above)
+   - "contentLayoutHint": Category suggestion from: "boxes", "bullets", "sequence", "steps", "quotes", "circles", or "numbers"
    - "bulletPoints": 3–6 bullets that are:
      (Generate bullet points FIRST, then generate assets based on the full content)
    - "assets": (Generate AFTER bullet points)
@@ -300,9 +294,10 @@ Each slide MUST include (IN THIS ORDER):
    - Titles on every slide must be clear, precise, and catchy—address the main point directly with crisp wording (questions, bold claims, vivid phrases). Keep the outline expert-level yet easily skimmable.
    - Write as a master/expert in the specific topic area - demonstrate professional expertise while keeping content clear and accessible, like a well-crafted PowerPoint presentation
 
-5. CONTENT LAYOUT (CRITICAL):
-   - ALL content slides MUST include "contentLayout": "box"
-   - This field determines how the bullet points will be arranged visually
+5. CONTENT LAYOUT HINT:
+   - ALL content slides should include "contentLayoutHint" with a category suggestion
+   - Choose from: "boxes", "bullets", "sequence", "steps", "quotes", "circles", "numbers"
+   - Match the category to the content's semantic nature
    - TITLE slides do not need this field
 
 6. VISUAL BALANCING RULES (CRITICAL):
@@ -336,7 +331,7 @@ Return ONLY a valid JSON object in this exact structure:
         "pattern": "layout metaphor or pattern (free-form text)",
         "emphasis": "visual emphasis or focus (free-form text)"
       },
-      "contentLayout": "box",
+      "contentLayoutHint": "boxes | bullets | sequence | steps | quotes | circles | numbers",
       "bulletPoints": [
         "Bullet point 1",
         "Bullet point 2",

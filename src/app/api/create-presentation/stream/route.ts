@@ -5,11 +5,15 @@ import { getThemeById } from "~/lib/themes";
 import {
   generateImagesForSlides as generateAIImages,
   transformOutlineToPresentationStream,
+  planSlideLayout,
+  extractPlannerInput,
   type TransformedSlide,
   type VisualStrategy,
   type SlideAssets,
+  type ContentLayoutStyle,
 } from "~/lib/presentation";
-import type { BoxLayoutType } from "~/lib/layouts/content/boxes";
+import type { ContentLayoutCategory } from "~/lib/layouts/content";
+import type { SlideLayoutType, ImageSize } from "~/lib/layouts/slide";
 import type { SlideImage as OutlineSlideImage } from "~/lib/dashboard/hooks/useOutlineStream";
 import { generateSlug } from "~/lib/utils";
 
@@ -22,7 +26,7 @@ interface SlideInput {
   visualStrategy?: VisualStrategy;
   assets?: SlideAssets;
   image?: OutlineSlideImage;
-  contentLayout?: string; // Content layout method from outline (e.g., "box")
+  contentLayoutHint?: string; // Content layout hint from outline (e.g., "boxes", "sequence", "steps")
 }
 
 interface CreatePresentationRequest {
@@ -45,6 +49,8 @@ interface PresentationSlide {
   title: string;
   subtitle?: string;
   bulletPoints?: string[];
+  // Speaker notes - detailed explanations for the presenter (one per bullet)
+  speakerNotes?: string[];
   // New: sections for card-style layouts (from LLM transformation)
   sections?: Array<{
     heading: string;
@@ -63,8 +69,14 @@ interface PresentationSlide {
     photographerUrl?: string;
     source: "pexels" | "ai" | "upload" | "placeholder" | "none";
   } | null;
+  // New slide layout system (image position) - canonical field
+  slideLayout?: SlideLayoutType;
+  // Image size for slide layout
+  imageSize?: ImageSize;
+  // Legacy layout for renderer compatibility
   layout?: string;
-  contentLayout?: string; // Box layout type (e.g., "box-style-1", "box-style-2", etc.)
+  contentLayout?: string; // Specific layout style (e.g., "box-style-1", "sequence-style-2", "steps-pyramid")
+  contentLayoutCategory?: ContentLayoutCategory; // Layout category (e.g., "boxes", "sequence", "steps")
   semanticIntent?: string;
   visualStrategy?: VisualStrategy;
 }
@@ -179,29 +191,24 @@ export async function POST(request: Request) {
 
         // Create presentation in DB first (without images)
         // Note: outlineId field requires Prisma client regeneration after schema update
-        const createData: Parameters<typeof db.presentation.create>[0]["data"] = {
-          title: presentationTitle,
-          description: metadata.topic,
-          thumbnailUrl: null,
-          content: JSON.parse(JSON.stringify({
-            theme,
-            themeConfig: themeConfig || null,
-            imageSource,
-            textDensity,
-            metadata,
-            createdFrom: "outline",
-            outlineId,
-          })),
-          slides: JSON.parse(JSON.stringify([])),
-          userId: user.id,
-        };
-        
-        // Add outlineId if the field exists in Prisma schema (after regeneration)
-        if (outlineId) {
-          (createData as Record<string, unknown>).outlineId = outlineId;
-        }
-
-        const presentation = await db.presentation.create({ data: createData });
+        const presentation = await db.presentation.create({
+          data: {
+            title: presentationTitle,
+            description: metadata.topic,
+            thumbnailUrl: null,
+            content: JSON.parse(JSON.stringify({
+              theme,
+              themeConfig: themeConfig || null,
+              imageSource,
+              textDensity,
+              metadata,
+              createdFrom: "outline",
+              outlineId, // Store outlineId in content JSON
+            })),
+            slides: JSON.parse(JSON.stringify([])),
+            userId: user.id,
+          },
+        });
 
         const redirectUrl = `/presentation/${slug}-${presentation.id}?mode=ai`;
 
@@ -222,7 +229,7 @@ export async function POST(request: Request) {
           title: s.title,
           subtitle: s.subtitle,
           bulletPoints: s.bulletPoints,
-          contentLayout: s.contentLayout, // Include content layout from outline
+          contentLayoutHint: s.contentLayoutHint, // Include content layout hint from outline
         }));
 
         const transformStream = transformOutlineToPresentationStream(outlineSlides, {
@@ -231,50 +238,39 @@ export async function POST(request: Request) {
           textDensity,
         });
 
-        // Helper function to randomly select a box layout
-        const getRandomBoxLayout = (): BoxLayoutType => {
-          const boxLayouts: BoxLayoutType[] = ["box-style-1", "box-style-2", "box-style-3", "box-style-4"];
-          return boxLayouts[Math.floor(Math.random() * boxLayouts.length)]!;
-        };
-
         // Process each transformed slide
         for await (const { slideIndex, slide: transformedSlide } of transformStream) {
           const originalSlide = slides[slideIndex]!;
 
           // ==========================================
-          // SLIDE LAYOUT: Controls image positioning (left, right, centered)
-          // This determines WHERE the image appears on the slide
-          // Options: "left-content" (image left), "right-content" (image right), "centered" (no image)
+          // SMART LAYOUT PLANNING
+          // Uses the layout planner to jointly select:
+          // - slideLayout (image position): left/right/top/bottom/no-image
+          // - imageSize: small/medium/large
+          // - contentLayout: specific style (e.g., "box-style-1", "sequence-style-2")
+          // - contentLayoutCategory: category (e.g., "boxes", "sequence")
+          // The planner considers content density and applies fallback rules
           // ==========================================
-          let slideLayout: string;
-          if (transformedSlide.type === "title") {
-            slideLayout = "title-centered";
-          } else {
-            // For content slides, determine image position based on outline's image requirements
-            const hasImage = originalSlide.assets?.image?.required || originalSlide.image?.required;
-            if (hasImage) {
-              // Randomly choose image position: left or right (most common and well-supported)
-              const imagePositions = ["left-content", "right-content"];
-              slideLayout = imagePositions[Math.floor(Math.random() * imagePositions.length)]!;
-            } else {
-              // No image - use centered layout
-              slideLayout = "centered";
-            }
-          }
+          
+          // Extract planner input from the transformed slide (uses transformed bullets for density)
+          const plannerInput = extractPlannerInput(
+            {
+              type: transformedSlide.type,
+              bulletPoints: transformedSlide.bulletPoints,
+              semanticIntent: originalSlide.semanticIntent,
+              visualStrategy: originalSlide.visualStrategy,
+              assets: originalSlide.assets,
+              image: originalSlide.image,
+              contentLayoutHint: originalSlide.contentLayoutHint,
+            },
+            slideIndex,
+            slides.length
+          );
+          
+          // Get the planned layout
+          const layoutPlan = planSlideLayout(plannerInput);
 
-          // ==========================================
-          // CONTENT LAYOUT: Controls how bullet points are displayed (box-style-1, box-style-2, etc.)
-          // This determines HOW the content/bullet points are rendered (as cards/boxes)
-          // This is separate from slide layout and only affects content rendering
-          // ==========================================
-          let contentLayout: BoxLayoutType | undefined;
-          // For all content slides, apply a box layout (either from outline or randomly selected)
-          if (transformedSlide.type === "content") {
-            // Randomly select a box layout style for bullet points
-            contentLayout = getRandomBoxLayout();
-          }
-
-          // Create slide object with transformed content
+          // Create slide object with planned layout
           const presentationSlide: PresentationSlide = {
             type: transformedSlide.type,
             title: transformedSlide.title,
@@ -282,12 +278,19 @@ export async function POST(request: Request) {
             tagline: transformedSlide.tagline,
             introText: transformedSlide.introText,
             bulletPoints: transformedSlide.bulletPoints,
+            speakerNotes: transformedSlide.speakerNotes, // Detailed notes for presenter
             sections: transformedSlide.sections,
             chart: null,
             icons: undefined,
             image: null,
-            layout: slideLayout, // Slide layout: image positioning
-            contentLayout, // Content layout: box style for bullet points
+            // New canonical slide layout system
+            slideLayout: layoutPlan.slideLayout,
+            imageSize: layoutPlan.imageSize,
+            // Legacy layout for renderer compatibility
+            layout: layoutPlan.legacyLayout,
+            // Content layout from planner
+            contentLayout: layoutPlan.contentLayout,
+            contentLayoutCategory: layoutPlan.contentLayoutCategory,
             semanticIntent: originalSlide.semanticIntent,
             visualStrategy: originalSlide.visualStrategy,
           };

@@ -10,9 +10,36 @@ import { db } from "~/server/db";
 import { fetchImagesForSlides, type SlideWithVisualMetadata } from "~/lib/pexels";
 import {
   generateImagesForSlides as generateAIImages,
+  planSlideLayout,
+  extractPlannerInput,
 } from "~/lib/presentation";
-import type { BoxLayoutType } from "~/lib/layouts/content/boxes";
 import { env } from "~/env.js";
+
+function parseTitledBullet(bullet: string): { label?: string; text: string } {
+  const trimmed = bullet.trim();
+  // Prefer the new format: "Title — description"
+  const emDashSep = " — ";
+  const emIdx = trimmed.indexOf(emDashSep);
+  if (emIdx > 0) {
+    const label = trimmed.slice(0, emIdx).trim();
+    const text = trimmed.slice(emIdx + emDashSep.length).trim();
+    return { label: label || undefined, text: text || trimmed };
+  }
+  // Fallback: "Title - description"
+  const dashSep = " - ";
+  const dashIdx = trimmed.indexOf(dashSep);
+  if (dashIdx > 0) {
+    const label = trimmed.slice(0, dashIdx).trim();
+    const text = trimmed.slice(dashIdx + dashSep.length).trim();
+    return { label: label || undefined, text: text || trimmed };
+  }
+  // Final fallback: infer a short label from first 2-4 words
+  const words = trimmed.split(/\s+/).filter(Boolean);
+  const labelWords = words.slice(0, Math.min(4, Math.max(2, Math.ceil(words.length / 4))));
+  const label = labelWords.join(" ");
+  const text = words.slice(labelWords.length).join(" ") || trimmed;
+  return { label: label || undefined, text };
+}
 
 // Helper to send SSE events safely (silently fails if controller is closed)
 function sendEvent(
@@ -85,7 +112,7 @@ async function* streamSlideTransformation(
     extensive: "Provide comprehensive content with examples"
   };
 
-  const prompt = `Transform this outline slide into presentation-ready content. Stream your response naturally.
+  const prompt = `Transform this outline slide into SLIDE-READY content. Stream your response naturally.
 
 SLIDE ${slideIndex + 1} of ${totalSlides}:
 Type: ${slide.type}
@@ -102,9 +129,17 @@ CRITICAL: DO NOT change the slide title. Keep it EXACTLY as provided: "${slide.t
 
 OUTPUT FORMAT (respond with these exact markers):
 ${slide.type === "title" ? "[SUBTITLE]Enhanced subtitle that expands on the title[/SUBTITLE]\n[TAGLINE]Short impactful phrase[/TAGLINE]" : ""}
-${slide.type === "content" ? "[INTRO]Optional intro sentence to set context[/INTRO]\n[BULLET]Enhanced bullet 1 - expand and enrich[/BULLET]\n[BULLET]Enhanced bullet 2 - expand and enrich[/BULLET]\n(continue for all bullets)" : ""}
+${slide.type === "content" ? "[INTRO]Optional intro sentence to set context[/INTRO]\n[BULLET]ShortTitle — 1-2 line description[/BULLET]\n[BULLET]ShortTitle — 1-2 line description[/BULLET]\n(continue for all bullets)" : ""}
 
-Transform the bullet points into richer, more engaging presentation content. Add context, expand terse phrases into full sentences, make it presentation-ready.
+CONTENT SLIDE BULLET RULES (IMPORTANT):
+- Each outline bullet must become ONE slide item with TWO parts:
+  - ShortTitle: 2–5 words, noun phrase (no colon), suitable as a card title
+  - Description: 1–2 lines, ~12–20 words, clear and concrete
+- Use this exact separator between title and description: " — " (space, em dash, space)
+- Keep descriptions within a slide roughly similar length so cards look balanced
+- Avoid the forbidden pattern "Title: description" (no colons)
+
+Transform each outline bullet into a clean, balanced slide item with a title + description (card-ready).
 DO NOT output any [TITLE] tag - the title is fixed and will not change.`;
 
   try {
@@ -261,6 +296,10 @@ export async function GET(
     assets?: { image?: { required?: boolean }; icons?: string[]; chart?: unknown };
     image?: { required?: boolean };
     visualStrategy?: { pattern?: string };
+    semanticIntent?: string;
+    contentLayoutHint?: string;
+    // Back-compat: older outlines may have used `contentLayout`
+    contentLayout?: string;
   }> | undefined;
   const metadata = content?.metadata as { tone?: string; language?: string } | undefined;
   const imageSource = content?.imageSource as string | undefined;
@@ -438,47 +477,11 @@ export async function GET(
           }
           console.log(`[stream-content] Sent slideStart for slide ${i}`);
 
-          // ==========================================
-          // SLIDE LAYOUT: Controls image positioning (left, right, centered)
-          // This determines WHERE the image appears on the slide
-          // Options: "left-content" (image left), "right-content" (image right), "centered" (no image)
-          // ==========================================
-          let slideLayout: string;
-          if (slide.type === "title") {
-            slideLayout = "title-centered";
-          } else {
-            // For content slides, determine image position based on outline's image requirements
-            const hasImage = slide.assets?.image?.required || slide.image?.required;
-            if (hasImage) {
-              // Randomly choose image position: left or right (most common and well-supported)
-              const imagePositions = ["left-content", "right-content"];
-              slideLayout = imagePositions[Math.floor(Math.random() * imagePositions.length)]!;
-            } else {
-              // No image - use centered layout
-              slideLayout = "centered";
-            }
-          }
-
-          // ==========================================
-          // CONTENT LAYOUT: Controls how bullet points are displayed (box-style-1, box-style-2, etc.)
-          // This determines HOW the content/bullet points are rendered (as cards/boxes)
-          // This is separate from slide layout and only affects content rendering
-          // ==========================================
-          let contentLayout: BoxLayoutType | undefined;
-          // For all content slides, apply a box layout (either from outline or randomly selected)
-          if (slide.type === "content") {
-            // Randomly select a box layout style for bullet points
-            const boxLayouts: BoxLayoutType[] = ["box-style-1", "box-style-2", "box-style-3", "box-style-4"];
-            contentLayout = boxLayouts[Math.floor(Math.random() * boxLayouts.length)]!;
-          }
-
           // Build slide data
           const slideData: Record<string, unknown> = {
             type: slide.type,
             title: "",
             bulletPoints: [],
-            layout: slideLayout, // Slide layout: image positioning
-            ...(contentLayout && { contentLayout }), // Content layout: box style for bullet points
           };
 
           // Stream transformed content
@@ -537,6 +540,62 @@ export async function GET(
           console.log(`[stream-content] Slide ${i} transformation complete: ${chunkCount} chunks, title: "${slideData.title}"`);
           
           if (isClosed.value) break; // Stop if client disconnected
+
+          // Build transformedContent items (label + text) from the titled bullet format.
+          // This is what most of your content layouts render nicely (boxes, bullets, steps, etc.).
+          if (slide.type === "content") {
+            const bullets = (slideData.bulletPoints as string[] | undefined) || [];
+            slideData.transformedContent = {
+              intro: (slideData.introText as string | undefined) || undefined,
+              items: bullets.map(parseTitledBullet),
+            };
+          }
+
+          // ==========================================
+          // SMART LAYOUT PLANNING (applied after bullets are known)
+          // This is the key fix: previously this endpoint always forced box layouts.
+          // Now we compute slideLayout + contentLayout using the planner, using:
+          // - transformed bullets (for density)
+          // - outline hints (contentLayoutHint, semanticIntent, visualStrategy)
+          // - image requirements (assets.image.required / title image.required)
+          // ==========================================
+          try {
+            const plannerInput = extractPlannerInput(
+              {
+                type: slide.type === "title" ? "title" : "content",
+                bulletPoints: slideData.bulletPoints as string[] | undefined,
+                semanticIntent: (slide as { semanticIntent?: string }).semanticIntent,
+                visualStrategy: (slide as { visualStrategy?: { pattern?: string } }).visualStrategy,
+                assets: slide.assets,
+                image: slide.image,
+                contentLayoutHint:
+                  (slide as { contentLayoutHint?: string }).contentLayoutHint ||
+                  (slide as { contentLayout?: string }).contentLayout,
+              },
+              i,
+              pendingSlides.length
+            );
+
+            const plan = planSlideLayout(plannerInput);
+
+            // Canonical image placement fields
+            slideData.slideLayout = plan.slideLayout;
+            slideData.imageSize = plan.imageSize;
+
+            // Legacy layout string (SlideRenderer understands this too)
+            slideData.layout = plan.legacyLayout;
+
+            // Content layout choice (this is what prevents “boxes only”)
+            slideData.contentLayout = plan.contentLayout;
+            slideData.contentLayoutCategory = plan.contentLayoutCategory;
+          } catch (e) {
+            console.warn("[stream-content] Layout planner failed, falling back to defaults:", e);
+            // If planner fails, keep legacy behavior: centered if no image, else left/right.
+            const hasImage = slide.type === "title" ? (slide.image?.required ?? true) : (slide.assets?.image?.required ?? false);
+            slideData.layout = hasImage ? (i % 2 === 0 ? "right-content" : "left-content") : "centered";
+            slideData.contentLayout = "box-style-1";
+            slideData.contentLayoutCategory = "boxes";
+          }
 
           finalSlides.push(slideData);
           sendEvent(controller, "slideComplete", { slideIndex: i, slide: slideData }, isClosed);

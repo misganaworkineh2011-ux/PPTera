@@ -5,10 +5,36 @@ import { ImageIcon, Plus, LayoutGrid } from "lucide-react";
 import { type Theme } from "~/lib/themes";
 import { type SlideData, type EditingState, type SlideChartData } from "./types";
 import type { BoxLayoutType, BoxContentItem } from "~/lib/layouts/content/boxes";
+import type { SequenceLayoutType } from "~/lib/layouts/content/sequence";
+import type { BulletLayoutType } from "~/lib/layouts/content/bullets";
+import type { StepsLayoutType } from "~/lib/layouts/content/steps";
+import type { QuotesLayoutType } from "~/lib/layouts/content/quotes";
+import type { CircleLayoutType } from "~/lib/layouts/content/circles";
+import type { ImageLayoutType } from "~/lib/layouts/content/images";
+import type { ContentLayoutCategory } from "~/lib/layouts/content";
 import EditableText from "./EditableText";
 import TransformedContentRenderer from "./TransformedContent";
 import BoxLayoutRenderer from "./BoxLayoutRenderer";
+import SequenceLayoutRenderer from "./SequenceLayoutRenderer";
+import { BulletLayoutRenderer } from "~/components/layouts/BulletLayoutRenderer";
+import { StepsLayoutRenderer } from "~/components/layouts/StepsLayoutRenderer";
+import { QuotesLayoutRenderer } from "~/components/layouts/QuotesLayoutRenderer";
+import { CircleLayoutRenderer } from "~/components/layouts/CircleLayoutRenderer";
+import { ImageLayoutRenderer } from "~/components/layouts/ImageLayoutRenderer";
 import ContentLayoutSelector from "./ContentLayoutSelector";
+
+// Helper to determine layout category from layout style ID
+function getLayoutCategory(layoutId: string): ContentLayoutCategory {
+  if (layoutId.startsWith("box-")) return "boxes";
+  if (layoutId.startsWith("sequence-")) return "sequence";
+  if (layoutId.startsWith("bullet-")) return "bullets";
+  if (layoutId.startsWith("steps-")) return "steps";
+  if (layoutId.startsWith("quote-")) return "quotes";
+  if (layoutId.startsWith("circle-")) return "circles";
+  if (layoutId.startsWith("image-style-")) return "images";
+  // Default to boxes
+  return "boxes";
+}
 
 interface SlideRendererProps {
   slide: SlideData;
@@ -165,6 +191,14 @@ function getLayoutVariant(index: number, themeType: ThemeType, slideLayout?: str
       // New slide layouts with arc clip-path
       "image-top": "image-top",
       "image-bottom": "image-bottom",
+      // SlideLayoutType mappings (canonical image position system)
+      "image-left": "left-content",
+      "image-right": "right-content",
+      "no-image": "centered",
+      "image-background": "image-background",
+      "image-full": "full-image",
+      // Title slide variants
+      "title-centered": "centered",
     };
     const mappedLayout = layoutMap[slideLayout];
     if (mappedLayout) return mappedLayout;
@@ -218,7 +252,8 @@ export default function SlideRenderer({
   const bulletPoints = slide.bulletPoints || [];
   const canEdit = isOwner && !isFullscreen;
   const themeType = getThemeType(theme);
-  const layout = getLayoutVariant(index, themeType, slide.layout);
+  // Use slideLayout (canonical) first, then fall back to layout (legacy)
+  const layout = getLayoutVariant(index, themeType, slide.slideLayout || slide.layout);
   
   // Check if content supports box layouts (has sections or transformed content with labels)
   // Check if slide has content that can be displayed in box layout
@@ -843,17 +878,17 @@ export default function SlideRenderer({
     );
 
     // ==========================================
-    // CONTENT LAYOUT: ALWAYS use contentLayout if it's set (e.g., box layout)
+    // CONTENT LAYOUT: Use the appropriate renderer based on layout category
     // This is separate from slide layout (which controls image positioning)
     // ==========================================
     if (slide.contentLayout && boxContentItems.length > 0) {
       // Determine if content area is narrow (image on left/right) or wide (image on top/bottom/none)
-      // This helps box layouts adapt their arrangement
       const isNarrowSpace = layout === "left-content" || layout === "right-content";
-      // image-top and image-bottom are wide layouts (full width for content)
+      
+      // Determine the layout category from the layout ID
+      const layoutCategory = getLayoutCategory(slide.contentLayout);
       
       // Handlers for editing box labels and text
-      // Boxes are stored as bullets in "Label: Text" format
       const handleStartEditLabel = (boxIndex: number) => {
         onStartEditing(index, `box-label-${boxIndex}`);
       };
@@ -869,10 +904,8 @@ export default function SlideRenderer({
         if (colonIndex > 0 && colonIndex < 50) {
           currentText = bullet.substring(colonIndex + 1).trim();
         } else {
-          // No existing label format, use bullet as text
           currentText = bullet;
         }
-        // Reconstruct bullet as "NewLabel: Text"
         const newBullet = `${newLabel}: ${currentText}`;
         onUpdateContent(index, "bullet", newBullet, boxIndex);
       };
@@ -884,31 +917,105 @@ export default function SlideRenderer({
         if (colonIndex > 0 && colonIndex < 50) {
           currentLabel = bullet.substring(0, colonIndex).trim();
         }
-        // Reconstruct bullet as "Label: NewText" or just "NewText" if no label
         const newBullet = currentLabel ? `${currentLabel}: ${newText}` : newText;
         onUpdateContent(index, "bullet", newBullet, boxIndex);
+      };
+
+      // Render the appropriate layout based on category
+      const renderContentLayout = () => {
+        // Get accent color from theme for renderers that need it
+        const accentColor = theme.colors.accent;
+        
+        switch (layoutCategory) {
+          case "sequence":
+            return (
+              <SequenceLayoutRenderer
+                layoutId={slide.contentLayout as SequenceLayoutType}
+                items={boxContentItems}
+                theme={theme}
+                compact={compact}
+                isNarrowSpace={isNarrowSpace}
+              />
+            );
+          
+          case "bullets":
+            return (
+              <BulletLayoutRenderer
+                layoutId={slide.contentLayout as BulletLayoutType}
+                items={boxContentItems}
+                accentColor={accentColor}
+                isNarrowSpace={isNarrowSpace}
+              />
+            );
+          
+          case "steps":
+            return (
+              <StepsLayoutRenderer
+                layoutId={slide.contentLayout as StepsLayoutType}
+                items={boxContentItems}
+                accentColor={accentColor}
+                isNarrowSpace={isNarrowSpace}
+              />
+            );
+          
+          case "quotes":
+            return (
+              <QuotesLayoutRenderer
+                layoutId={slide.contentLayout as QuotesLayoutType}
+                items={boxContentItems}
+                accentColor={accentColor}
+                isNarrowSpace={isNarrowSpace}
+              />
+            );
+          
+          case "circles":
+            return (
+              <CircleLayoutRenderer
+                layoutId={slide.contentLayout as CircleLayoutType}
+                items={boxContentItems}
+                accentColor={accentColor}
+                className="w-full min-h-[300px]"
+              />
+            );
+          
+          case "images":
+            return (
+              <ImageLayoutRenderer
+                layoutId={slide.contentLayout as ImageLayoutType}
+                items={boxContentItems}
+                accentColor={accentColor}
+                isNarrowSpace={isNarrowSpace}
+              />
+            );
+          
+          case "boxes":
+          default:
+            return (
+              <BoxLayoutRenderer
+                layoutId={slide.contentLayout as BoxLayoutType}
+                items={boxContentItems}
+                theme={theme}
+                compact={compact}
+                showIcons={true}
+                isNarrowSpace={isNarrowSpace}
+                isEditing={isEditing}
+                editingText={editingText}
+                onStartEditLabel={canEdit ? handleStartEditLabel : undefined}
+                onStartEditText={canEdit ? handleStartEditText : undefined}
+                onUpdateLabel={canEdit ? handleUpdateLabel : undefined}
+                onUpdateText={canEdit ? handleUpdateText : undefined}
+                onFinishEditing={onFinishEditing}
+                isOwner={canEdit}
+                isHovered={isHovered}
+              />
+            );
+        }
       };
       
       return (
         <ContentWrapper>
           <div className={compact ? "space-y-3" : "space-y-4"}>
-            <BoxLayoutRenderer
-              layoutId={slide.contentLayout as BoxLayoutType}
-              items={boxContentItems}
-              theme={theme}
-              compact={compact}
-              showIcons={true}
-              isNarrowSpace={isNarrowSpace}
-              isEditing={isEditing}
-              editingText={editingText}
-              onStartEditLabel={canEdit ? handleStartEditLabel : undefined}
-              onStartEditText={canEdit ? handleStartEditText : undefined}
-              onUpdateLabel={canEdit ? handleUpdateLabel : undefined}
-              onUpdateText={canEdit ? handleUpdateText : undefined}
-              onFinishEditing={onFinishEditing}
-              isOwner={canEdit}
-              isHovered={isHovered}
-            />
+            {renderContentLayout()}
           </div>
         </ContentWrapper>
       );

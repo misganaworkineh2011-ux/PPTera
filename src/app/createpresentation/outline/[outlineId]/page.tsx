@@ -40,8 +40,8 @@ interface StoredSlide {
     style?: string | null;
     promptHint?: string | null;
   };
-  // Content layout method (e.g., "box" for box/card layouts)
-  contentLayout?: string;
+  // Content layout hint (e.g., "boxes", "bullets", "sequence")
+  contentLayoutHint?: string;
 }
 
 export default async function OutlinePage({ params, searchParams }: OutlinePageProps) {
@@ -90,8 +90,9 @@ export default async function OutlinePage({ params, searchParams }: OutlinePageP
     visualStrategy: slide.visualStrategy,
     assets: slide.assets,
     image: slide.image,
-    // Include content layout for box layouts
-    contentLayout: slide.contentLayout,
+    // Include content layout hint for box layouts
+    // Support both new field (contentLayoutHint) and legacy field (contentLayout)
+    contentLayoutHint: slide.contentLayoutHint || (slide as any).contentLayout,
   }));
 
   return (

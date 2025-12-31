@@ -59,6 +59,7 @@ interface DashboardContextType {
   
   // Pagination
   pagination: PaginationInfo | null;
+  setPagination: React.Dispatch<React.SetStateAction<PaginationInfo | null>>;
   loadMorePresentations: () => Promise<void>;
   isLoadingMore: boolean;
   
@@ -105,14 +106,20 @@ export function DashboardProvider({ children, initialUser, initialPresentations 
     
     setIsLoadingMore(true);
     try {
-      const newOffset = pagination.offset + pagination.limit;
-      const response = await fetch(`/api/dashboard/init?presentationOffset=${newOffset}&themes=false&activity=false`);
+      // Use current presentations length as offset since SSR might have loaded more than the API limit
+      const currentOffset = presentations.length;
+      const response = await fetch(`/api/dashboard/init?presentationOffset=${currentOffset}&presentationLimit=12&themes=false&activity=false`);
       
       if (response.ok) {
         const data = await response.json();
         if (mountedRef.current) {
+          // Append new presentations
           setPresentations(prev => [...prev, ...data.presentations]);
-          setPagination(data.pagination);
+          // Update pagination with new offset
+          setPagination({
+            ...data.pagination,
+            offset: currentOffset + data.presentations.length,
+          });
         }
       }
     } catch (error) {
@@ -122,17 +129,18 @@ export function DashboardProvider({ children, initialUser, initialPresentations 
         setIsLoadingMore(false);
       }
     }
-  }, [pagination, isLoadingMore]);
+  }, [pagination, isLoadingMore, presentations.length]);
 
   // Combined dashboard initialization - single API call
   const refreshDashboard = useCallback(async () => {
-    // Check cache first
+    // Check cache first (but with a shorter TTL check for navigation scenarios)
     const cached = clientCache.get<DashboardInitData>(CACHE_KEYS.DASHBOARD_INIT);
-    if (cached) {
+    if (cached && !userLoading) {
       setUser(cached.user);
       setCredits(cached.user.credits);
       setPresentations(cached.presentations);
       setPresentationCount(cached.meta.presentationCount);
+      setPagination(cached.pagination);
       setThemes(cached.themes);
       setRecentActivity(cached.recentActivity);
       setUserLoading(false);
@@ -169,7 +177,7 @@ export function DashboardProvider({ children, initialUser, initialPresentations 
         setIsInitialized(true);
       }
     }
-  }, []);
+  }, [userLoading]);
 
   // Lightweight user refresh (for credit updates, etc.)
   const refreshUser = useCallback(async () => {
@@ -236,20 +244,21 @@ export function DashboardProvider({ children, initialUser, initialPresentations 
   }, []);
 
   // Initial fetch if no initial data provided via SSR
+  // NOTE: We don't auto-fetch presentations here because the page component
+  // will provide SSR data through the wrapper. This prevents overwriting
+  // 50 SSR presentations with 12 API presentations.
   useEffect(() => {
     mountedRef.current = true;
     
-    if (!initialUser && !initialPresentations) {
-      refreshDashboard();
-    } else if (initialUser && !initialPresentations) {
-      // Have user but need presentations
-      refreshDashboard();
+    // Only fetch user data if not provided
+    if (!initialUser) {
+      refreshUser();
     }
 
     return () => {
       mountedRef.current = false;
     };
-  }, [initialUser, initialPresentations, refreshDashboard]);
+  }, [initialUser, refreshUser]);
 
   return (
     <DashboardContext.Provider
@@ -264,6 +273,7 @@ export function DashboardProvider({ children, initialUser, initialPresentations 
         presentationCount,
         updatePresentationCount,
         pagination,
+        setPagination,
         loadMorePresentations,
         isLoadingMore,
         themes,

@@ -5,25 +5,34 @@ import StickyHeader from "./StickyHeader";
 import DashboardContentWrapper from "./DashboardContentWrapper";
 import PresentationsGridSkeleton from "./PresentationsGridSkeleton";
 
+// Force dynamic rendering to always get fresh data
+export const dynamic = "force-dynamic";
+
 // Separate async component for presentations data
 async function PresentationsGrid({ userId, userName }: { userId: string; userName: string }) {
-  const presentations = await db.presentation.findMany({
-    where: { userId },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-    select: {
-      id: true,
-      title: true,
-      isPublic: true,
-      isPinned: true,
-      createdAt: true,
-      updatedAt: true,
-      thumbnailUrl: true,
-      shareToken: true,
-    },
-  });
+  // Fetch presentations and total count in parallel
+  const [presentations, totalCount] = await Promise.all([
+    db.presentation.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      select: {
+        id: true,
+        title: true,
+        isPublic: true,
+        isPinned: true,
+        createdAt: true,
+        updatedAt: true,
+        thumbnailUrl: true,
+        shareToken: true,
+      },
+    }),
+    db.presentation.count({
+      where: { userId },
+    }),
+  ]);
 
-  return <DashboardContentWrapper presentations={presentations} userName={userName} />;
+  return <DashboardContentWrapper presentations={presentations} userName={userName} totalCount={totalCount} />;
 }
 
 export default async function DashboardPage() {

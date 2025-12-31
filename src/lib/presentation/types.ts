@@ -64,6 +64,8 @@ export interface PresentationSlide {
   subtitle?: string;
   // Original bullet points (preserved)
   bulletPoints?: string[];
+  // Speaker notes - detailed explanations for the presenter (one per bullet)
+  speakerNotes?: string[];
   // Transformed content
   transformedContent?: TransformedContent;
   // Visual assets

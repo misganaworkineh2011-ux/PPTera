@@ -37,8 +37,8 @@ export interface Slide {
   assets?: SlideAssets;
   // Title slide specific
   image?: SlideImage;
-  // Content layout method (e.g., "box" for box/card layouts)
-  contentLayout?: string;
+  // Content layout hint from outline (e.g., "boxes", "bullets", "sequence")
+  contentLayoutHint?: string;
 }
 
 export interface OutlineMetadata {

@@ -60,6 +60,8 @@ const slideContent = [
   { heading: "Explore Untapped Potential", description: "Unlock the hidden depths of your creative mind and harness its full power." },
   { heading: "Transform Engagement", description: "Discover how innovative content can revolutionize audience interaction and connection." },
   { heading: "Challenge Norms", description: "Dare to break free from traditional content creation methods and forge new paths." },
+  { heading: "Build Momentum", description: "Create sustainable creative habits that compound over time into remarkable results." },
+  { heading: "Inspire Others", description: "Share your creative journey and motivate those around you to unlock their potential." },
 ];
 
 // Convert to BoxContentItem/SequenceContentItem format

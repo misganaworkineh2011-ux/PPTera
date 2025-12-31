@@ -31,6 +31,8 @@ export interface SlideData {
   title: string;
   subtitle?: string;
   bulletPoints?: string[];
+  // Speaker notes - detailed explanations for the presenter (one per bullet)
+  speakerNotes?: string[];
   // New: sections for card-style layouts (from LLM transformation)
   sections?: Array<{
     heading: string;

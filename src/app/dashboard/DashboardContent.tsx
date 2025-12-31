@@ -29,6 +29,10 @@ function InfiniteScrollTrigger({
     const trigger = triggerRef.current;
     if (!trigger) return;
 
+    // Reset initialization on mount
+    isInitialized.current = false;
+    hasTriggered.current = false;
+
     // Delay observer setup to prevent immediate trigger on page load
     const initTimeout = setTimeout(() => {
       isInitialized.current = true;
@@ -37,8 +41,8 @@ function InfiniteScrollTrigger({
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
-        // Only trigger if initialized (after delay), visible, not loading, and not already triggered
-        if (entry?.isIntersecting && !isLoading && !hasTriggered.current && isInitialized.current) {
+        // Only trigger if initialized (after delay), visible, not loading, has remaining items, and not already triggered
+        if (entry?.isIntersecting && !isLoading && !hasTriggered.current && isInitialized.current && remainingCount > 0) {
           hasTriggered.current = true;
           onLoadMore();
         }
@@ -54,14 +58,23 @@ function InfiniteScrollTrigger({
       clearTimeout(initTimeout);
       observer.disconnect();
     };
-  }, [onLoadMore, isLoading]);
+  }, [onLoadMore, isLoading, remainingCount]);
 
   // Reset trigger flag when loading completes
   useEffect(() => {
     if (!isLoading) {
-      hasTriggered.current = false;
+      // Small delay before allowing next trigger to prevent rapid re-triggers
+      const resetTimeout = setTimeout(() => {
+        hasTriggered.current = false;
+      }, 100);
+      return () => clearTimeout(resetTimeout);
     }
   }, [isLoading]);
+
+  // Don't render anything if no remaining items
+  if (remainingCount <= 0 && !isLoading) {
+    return null;
+  }
 
   return (
     <div ref={triggerRef} className="py-6">
@@ -741,11 +754,11 @@ export default function DashboardContent({ presentations: initialPresentations, 
       </div>
 
       {/* Infinite Scroll Trigger & Loading */}
-      {pagination?.hasMore && (
+      {onLoadMore && (pagination?.hasMore || isLoadingMore) && (
         <InfiniteScrollTrigger 
-          onLoadMore={onLoadMore!} 
+          onLoadMore={onLoadMore} 
           isLoading={isLoadingMore || false}
-          remainingCount={pagination.total - presentations.length}
+          remainingCount={pagination ? pagination.total - presentations.length : 0}
         />
       )}
 
