@@ -12,6 +12,15 @@ export const metadata: Metadata = {
     title: "PPT Master Prompt Guide - Master AI PowerPoint Generation",
     description: "Learn how to write effective prompts for PPT Master AI PowerPoint generation.",
     url: "/prompt-guide",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "PPT Master Prompt Guide",
+      },
+    ],
   },
 };
 

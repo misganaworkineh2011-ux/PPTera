@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Privacy Policy - PPT Master",
-  description: "Read PPT Master's privacy policy to understand how we collect, use, and protect your data. Learn about our commitment to data security, your privacy rights, and how we handle your information when using our AI presentation generator.",
+  description: "Read PPT Master's privacy policy. Learn how we collect, use, and protect your data when using our AI presentation tools.",
   alternates: {
     canonical: "https://www.pptmaster.app/privacy",
   },

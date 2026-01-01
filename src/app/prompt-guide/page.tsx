@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Prompt Guide - PPT Master",
-  description: "Learn how to write effective AI prompts to create stunning presentations with PPT Master. Master the art of prompt engineering with tips, examples, and best practices for generating professional slides that captivate your audience.",
+  description: "Master AI prompt writing for stunning presentations. Get tips, examples, and best practices for PPT Master slides.",
   alternates: {
     canonical: "https://www.pptmaster.app/prompt-guide",
   },

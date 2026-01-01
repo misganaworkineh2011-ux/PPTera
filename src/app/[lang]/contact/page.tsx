@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { generateLanguageParams, isValidLanguage, type Language } from "~/lib/i18n";
+import { generateLanguageParams, getTranslations, isValidLanguage, type Language } from "~/lib/i18n";
 import { ContactPageClient } from "../../contact/ContactPageClient";
 import type { Metadata } from "next";
 
@@ -8,9 +8,17 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const { lang } = await params;
+  const t = getTranslations(lang);
+  
   return {
-    title: "Contact Us - PPT Master",
-    description: "Get in touch with the PPT Master team. We're here to help with any questions or feedback.",
+    title: `${t.contactTitle || "Contact Us"} - PPT Master`,
+    description: t.contactSubtitle || "Get in touch with the PPT Master team for questions, feedback, or support. We respond within 24 hours to help you succeed.",
+    openGraph: {
+      title: `${t.contactTitle || "Contact Us"} - PPT Master`,
+      description: t.contactSubtitle || "Get in touch with the PPT Master team for questions, feedback, or support.",
+      type: "website",
+    },
   };
 }
 

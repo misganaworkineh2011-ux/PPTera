@@ -5,3 +5,4 @@ export { FeaturesSection } from "./FeaturesSection";
 export { TestimonialsSection } from "./TestimonialsSection";
 export { CTASection } from "./CTASection";
 export { TemplatesSection } from "./TemplatesSection";
+export { LazyVideo } from "./LazyVideo";

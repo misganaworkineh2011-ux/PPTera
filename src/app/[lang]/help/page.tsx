@@ -24,9 +24,12 @@ export async function generateMetadata({
 
   return {
     title: `${t.helpTitle || "Help Center"} - PPT Master`,
-    description:
-      t.helpSubtitle ||
-      "Get help with PPT Master. Find answers to common questions and learn how to use our AI presentation generator.",
+    description: t.helpSubtitle || "Get help with PPT Master. Find answers to common questions and learn how to use our AI presentation generator effectively.",
+    openGraph: {
+      title: `${t.helpTitle || "Help Center"} - PPT Master`,
+      description: t.helpSubtitle || "Get help with PPT Master. Find answers to common questions.",
+      type: "website",
+    },
   };
 }
 
@@ -151,12 +154,6 @@ function getHelpContent(t: ReturnType<typeof getTranslations>) {
       answer:
         t.helpFaq4Answer ||
         "Absolutely. You can cancel your subscription at any time from your account settings.",
-    },
-    {
-      question: t.helpFaq5Question || "Do you offer refunds?",
-      answer:
-        t.helpFaq5Answer ||
-        "We offer a 30-day money-back guarantee for annual subscriptions.",
     },
     {
       question: t.helpFaq6Question || "How does the AI work?",

@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   
   return {
     title: `${t.aboutUs || "About Us"} - PPT Master`,
-    description: t.aboutHeroDesc || "Learn about PPT Master's mission to make professional presentations accessible to everyone.",
+    description: t.aboutHeroDesc || "Learn about PPT Master's mission to make professional AI presentations accessible to everyone. Meet our team and story.",
   };
 }
 

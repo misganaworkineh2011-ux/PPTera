@@ -30,6 +30,10 @@ interface InsightsPageClientProps {
     insightsHeroDesc?: string;
     readMore?: string;
     loadMore?: string;
+    featured?: string;
+    minRead?: string;
+    read?: string;
+    loading?: string;
   };
 }
 
@@ -158,7 +162,7 @@ export function InsightsPageClient({
                   <div className="absolute inset-0 bg-black/10"></div>
                   <div className="absolute top-6 left-6">
                     <span className="px-4 py-2 rounded-full bg-white/90 backdrop-blur-sm text-sm font-semibold text-slate-900">
-                      Featured
+                      {t.featured || "Featured"}
                     </span>
                   </div>
                 </div>
@@ -180,7 +184,7 @@ export function InsightsPageClient({
                     <span>•</span>
                     <span className="flex items-center gap-1">
                       <Clock className="h-4 w-4" />
-                      {featuredPost.readTime} min read
+                      {featuredPost.readTime} {t.minRead || "min read"}
                     </span>
                   </div>
                   <a 
@@ -273,7 +277,7 @@ export function InsightsPageClient({
                           {post.readTime} min read
                         </span>
                         <span className="text-[#06b6d4] font-semibold text-sm inline-flex items-center gap-1">
-                          Read
+                          {t.read || "Read"}
                           <ArrowRight className="h-4 w-4" />
                         </span>
                       </div>
@@ -292,7 +296,7 @@ export function InsightsPageClient({
                 disabled={loading}
                 className="px-8 py-3 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-bold hover:shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? "Loading..." : t.loadMore || "Load More Articles"}
+                {loading ? (t.loading || "Loading...") : (t.loadMore || "Load More Articles")}
               </button>
             </div>
           )}

@@ -7,9 +7,23 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Help Center - PPT Master",
   description:
-    "Get help with PPT Master. Find answers to common questions, troubleshooting guides, and learn how to use our AI presentation generator. Explore tutorials on creating slides, exporting presentations, and maximizing your productivity.",
+    "Get help with PPT Master. Find answers to common questions and learn how to use our AI presentation generator effectively.",
   alternates: {
     canonical: "https://www.pptmaster.app/help",
+  },
+  openGraph: {
+    title: "Help Center - PPT Master",
+    description: "Get help with PPT Master. Find answers to common questions and learn how to use our AI presentation generator.",
+    url: "/help",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "PPT Master Help Center",
+      },
+    ],
   },
 };
 
@@ -134,12 +148,6 @@ function getHelpContent(t: ReturnType<typeof getTranslations>) {
       answer:
         t.helpFaq4Answer ||
         "Absolutely. You can cancel your subscription at any time from your account settings.",
-    },
-    {
-      question: t.helpFaq5Question || "Do you offer refunds?",
-      answer:
-        t.helpFaq5Answer ||
-        "We offer a 30-day money-back guarantee for annual subscriptions.",
     },
     {
       question: t.helpFaq6Question || "How does the AI work?",

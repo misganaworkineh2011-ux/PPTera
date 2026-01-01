@@ -5,9 +5,23 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Cookie Notice - PPT Master",
-  description: "Learn about how PPT Master uses cookies and similar technologies to enhance your experience. Understand what data we collect, how we use it, and your choices for managing cookie preferences on our AI presentation platform.",
+  description: "Learn how PPT Master uses cookies to enhance your experience. Understand our data practices and your privacy choices.",
   alternates: {
     canonical: "https://www.pptmaster.app/cookies",
+  },
+  openGraph: {
+    title: "Cookie Notice - PPT Master",
+    description: "Learn how PPT Master uses cookies to enhance your experience and understand your privacy choices.",
+    url: "/cookies",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "PPT Master Cookie Notice",
+      },
+    ],
   },
 };
 

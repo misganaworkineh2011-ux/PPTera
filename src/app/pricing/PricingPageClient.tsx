@@ -189,25 +189,25 @@ export function PricingPageClient({ currentLang }: PricingPageClientProps) {
               {/* Free Plan Card */}
               <div className="relative rounded-md border border-slate-200 bg-white hover:border-[#06b6d4] transition-all flex flex-col h-full">
                 <div className="absolute top-3 right-3 bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-1 rounded">
-                  NO CREDIT CARD
+                  {t.noCreditCard || "NO CREDIT CARD"}
                 </div>
                 <div className="p-5">
-                  <h3 className="text-lg font-bold mb-1">Free</h3>
-                  <p className="text-xs text-slate-500 mb-4">Get started with PPT Master</p>
+                  <h3 className="text-lg font-bold mb-1">{t.free || "Free"}</h3>
+                  <p className="text-xs text-slate-500 mb-4">{t.getStartedWithPPT || "Get started with PPT Master"}</p>
                   <div className="mb-4">
                     <div className="flex items-baseline gap-1">
                       <span className="text-2xl font-extrabold">$0</span>
-                      <span className="text-xs text-slate-500">/forever</span>
+                      <span className="text-xs text-slate-500">{t.freeForever || "/forever"}</span>
                     </div>
                   </div>
                   <button onClick={() => router.push(isSignedIn ? "/" : "/sign-up")} className="w-full rounded py-2 px-4 font-semibold text-xs mb-4 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90">
                     {isSignedIn ? t.goToDashboard : t.signUpFree}
                   </button>
                   <ul className="space-y-2.5 text-xs">
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">Create up to 10 cards per prompt</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">200 credits at signup</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">Simple presentations and images</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">Export to PDF, PPTX, PNG & Google Slides</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.createUpTo10Cards || "Create up to 10 cards per prompt"}</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.creditsAtSignup || "200 credits at signup"}</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.simplePresentations || "Simple presentations and images"}</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.exportFormatsAll || "Export to PDF, PPTX, PNG & Google Slides"}</span></li>
                   </ul>
                 </div>
               </div>
@@ -216,100 +216,100 @@ export function PricingPageClient({ currentLang }: PricingPageClientProps) {
               <div className="relative rounded-md border border-slate-200 bg-white hover:border-[#06b6d4] transition-all flex flex-col h-full">
                 <div className="p-5">
                   <h3 className="text-lg font-bold mb-1">Plus</h3>
-                  <p className="text-xs text-slate-500 mb-4">For extra AI power</p>
+                  <p className="text-xs text-slate-500 mb-4">{t.forExtraAIPower || "For extra AI power"}</p>
                   <div className="mb-4">
                     {isAnnual ? (
                       <>
                         <div className="flex items-baseline gap-1">
                           <span className="text-2xl font-extrabold">$8</span>
-                          <span className="text-xs text-slate-500">/ month</span>
+                          <span className="text-xs text-slate-500">/ {t.monthly?.toLowerCase() || "month"}</span>
                         </div>
-                        <p className="text-[10px] text-slate-400 mt-0.5">$96 billed annually</p>
+                        <p className="text-[10px] text-slate-400 mt-0.5">$96 {t.annualBilling || "billed annually"}</p>
                       </>
                     ) : (
                       <div className="flex items-baseline gap-1">
                         <span className="text-2xl font-extrabold">$10</span>
-                        <span className="text-xs text-slate-500">/ month</span>
+                        <span className="text-xs text-slate-500">/ {t.monthly?.toLowerCase() || "month"}</span>
                       </div>
                     )}
                   </div>
                   <button onClick={() => handleSubscribe('plus')} disabled={!!checkoutLoadingId} className="w-full rounded py-2 px-4 font-semibold text-xs mb-4 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90 disabled:opacity-50">
                     {checkoutLoadingId === 'plus' ? <Loader2 className="h-3.5 w-3.5 animate-spin mx-auto" /> : t.getStartedBtn}
                   </button>
-                  <p className="text-[12px] text-slate-500 mb-2 font-semibold">Everything in Free, and:</p>
+                  <p className="text-[12px] text-slate-500 mb-2 font-semibold">{t.everythingInFree || "Everything in Free, and:"}</p>
                   <ul className="space-y-2.5 text-xs">
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">1,000 monthly credits</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">Remove branding</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">Advanced AI image models</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.monthlyCredits1000 || "1,000 monthly credits"}</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.removeBranding || "Remove branding"}</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.advancedAIImageModels || "Advanced AI image models"}</span></li>
                   </ul>
                 </div>
               </div>
 
               {/* Pro Plan - Most Popular */}
               <div className="relative rounded-md border-2 border-[#06b6d4] bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-lg scale-105 flex flex-col h-full">
-                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap">MOST POPULAR</div>
+                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap">{t.mostPopular?.toUpperCase() || "MOST POPULAR"}</div>
                 <div className="p-5 pt-6">
                   <h3 className="text-lg font-bold mb-1">Pro</h3>
-                  <p className="text-xs text-white/80 mb-4">For premium AI and customization</p>
+                  <p className="text-xs text-white/80 mb-4">{t.forPremiumAI || "For premium AI and customization"}</p>
                   <div className="mb-4">
                     {isAnnual ? (
                       <>
                         <div className="flex items-baseline gap-1">
                           <span className="text-2xl font-extrabold">$18</span>
-                          <span className="text-xs text-white/70">/ month</span>
+                          <span className="text-xs text-white/70">/ {t.monthly?.toLowerCase() || "month"}</span>
                         </div>
-                        <p className="text-[10px] text-white/60 mt-0.5">$216 billed annually</p>
+                        <p className="text-[10px] text-white/60 mt-0.5">$216 {t.annualBilling || "billed annually"}</p>
                       </>
                     ) : (
                       <div className="flex items-baseline gap-1">
                         <span className="text-2xl font-extrabold">$25</span>
-                        <span className="text-xs text-white/70">/ month</span>
+                        <span className="text-xs text-white/70">/ {t.monthly?.toLowerCase() || "month"}</span>
                       </div>
                     )}
                   </div>
                   <button onClick={() => handleSubscribe('pro')} disabled={!!checkoutLoadingId} className="w-full rounded py-2 px-4 font-semibold text-xs mb-4 bg-white text-[#1e3a8a] hover:bg-slate-100 disabled:opacity-50">
                     {checkoutLoadingId === 'pro' ? <Loader2 className="h-3.5 w-3.5 animate-spin mx-auto" /> : t.getStartedBtn}
                   </button>
-                  <p className="text-[12px] text-white/80 mb-2 font-semibold">Everything in Plus, and:</p>
+                  <p className="text-[12px] text-white/80 mb-2 font-semibold">{t.everythingInPlus || "Everything in Plus, and:"}</p>
                   <ul className="space-y-2.5 text-xs">
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-white mt-0.5" /><span className="text-white/90">4,000 monthly credits</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-white mt-0.5" /><span className="text-white/90">Premium AI image models</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-white mt-0.5" /><span className="text-white/90">Custom branding & fonts</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-white mt-0.5" /><span className="text-white/90">API access</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-white mt-0.5" /><span className="text-white/90">{t.monthlyCredits4000 || "4,000 monthly credits"}</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-white mt-0.5" /><span className="text-white/90">{t.premiumAIImageModels || "Premium AI image models"}</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-white mt-0.5" /><span className="text-white/90">{t.customBrandingFonts || "Custom branding & fonts"}</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-white mt-0.5" /><span className="text-white/90">{t.apiAccess || "API access"}</span></li>
                   </ul>
                 </div>
               </div>
 
               {/* Ultra Plan */}
               <div className="relative rounded-md border border-slate-200 bg-white hover:border-[#06b6d4] transition-all flex flex-col h-full">
-                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap">INTRODUCTORY PRICE</div>
+                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap">{t.introductoryPrice?.toUpperCase() || "INTRODUCTORY PRICE"}</div>
                 <div className="p-5 pt-6">
                   <h3 className="text-lg font-bold mb-1">Ultra</h3>
-                  <p className="text-xs text-slate-500 mb-4">For 20× more AI usage</p>
+                  <p className="text-xs text-slate-500 mb-4">{t.for20xMoreAI || "For 20× more AI usage"}</p>
                   <div className="mb-4">
                     {isAnnual ? (
                       <>
                         <div className="flex items-baseline gap-1">
                           <span className="text-2xl font-extrabold">$90</span>
-                          <span className="text-xs text-slate-500">/ month</span>
+                          <span className="text-xs text-slate-500">/ {t.monthly?.toLowerCase() || "month"}</span>
                         </div>
-                        <p className="text-[10px] text-slate-400 mt-0.5">$1,080 billed annually</p>
+                        <p className="text-[10px] text-slate-400 mt-0.5">$1,080 {t.annualBilling || "billed annually"}</p>
                       </>
                     ) : (
                       <div className="flex items-baseline gap-1">
                         <span className="text-2xl font-extrabold">$100</span>
-                        <span className="text-xs text-slate-500">/ month</span>
+                        <span className="text-xs text-slate-500">/ {t.monthly?.toLowerCase() || "month"}</span>
                       </div>
                     )}
                   </div>
                   <button onClick={() => handleSubscribe('ultra')} disabled={!!checkoutLoadingId} className="w-full rounded py-2 px-4 font-semibold text-xs mb-4 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90 disabled:opacity-50">
                     {checkoutLoadingId === 'ultra' ? <Loader2 className="h-3.5 w-3.5 animate-spin mx-auto" /> : t.getStartedBtn}
                   </button>
-                  <p className="text-[12px] text-slate-500 mb-2 font-semibold">Everything in Pro, and:</p>
+                  <p className="text-[12px] text-slate-500 mb-2 font-semibold">{t.everythingInPro || "Everything in Pro, and:"}</p>
                   <ul className="space-y-2.5 text-xs">
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">20,000 monthly credits</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">Most advanced AI models</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">Early access to new features</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.monthlyCredits20000 || "20,000 monthly credits"}</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.mostAdvancedAIModels || "Most advanced AI models"}</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.earlyAccessFeatures || "Early access to new features"}</span></li>
                   </ul>
                 </div>
               </div>
@@ -322,10 +322,10 @@ export function PricingPageClient({ currentLang }: PricingPageClientProps) {
               <div className="text-center mb-12">
                 <div className="inline-flex items-center gap-2 rounded-full border border-[#06b6d4] bg-cyan-50 px-4 py-2 mb-4">
                   <Zap className="h-4 w-4 text-[#06b6d4]" />
-                  <span className="text-sm font-semibold text-[#1e3a8a] uppercase tracking-wide">Credit Top-ups</span>
+                  <span className="text-sm font-semibold text-[#1e3a8a] uppercase tracking-wide">{t.creditTopups || "Credit Top-ups"}</span>
                 </div>
-                <h2 className="text-3xl font-bold text-slate-900 mb-3">Need More Credits?</h2>
-                <p className="text-lg text-slate-500">Purchase additional credits anytime</p>
+                <h2 className="text-3xl font-bold text-slate-900 mb-3">{t.needMoreCredits || "Need More Credits?"}</h2>
+                <p className="text-lg text-slate-500">{t.purchaseAdditionalCredits || "Purchase additional credits anytime"}</p>
               </div>
 
               <div className="grid gap-6 md:grid-cols-3 max-w-4xl mx-auto">
@@ -341,7 +341,7 @@ export function PricingPageClient({ currentLang }: PricingPageClientProps) {
                   >
                     {option.popular && (
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#06b6d4] text-white text-xs font-bold px-3 py-1 rounded-full">
-                        BEST VALUE
+                        {t.bestValue || "BEST VALUE"}
                       </div>
                     )}
 
@@ -350,7 +350,7 @@ export function PricingPageClient({ currentLang }: PricingPageClientProps) {
                         <Plus className="w-8 h-8" />
                       </div>
                       <div className="text-3xl font-bold text-slate-900 mb-1">{option.credits.toLocaleString()}</div>
-                      <div className="text-sm text-slate-500 mb-2">Credits</div>
+                      <div className="text-sm text-slate-500 mb-2">{t.credits || "Credits"}</div>
                       <div className="text-2xl font-bold text-[#1e3a8a] mb-6">{option.price}</div>
                       <button
                         onClick={() => handleTopup(option.credits, i)}
@@ -365,7 +365,7 @@ export function PricingPageClient({ currentLang }: PricingPageClientProps) {
                         {topupLoadingId === i ? (
                           <Loader2 className="h-4 w-4 animate-spin mx-auto" />
                         ) : (
-                          "Purchase"
+                          t.purchase || "Purchase"
                         )}
                       </button>
                     </div>
@@ -379,7 +379,7 @@ export function PricingPageClient({ currentLang }: PricingPageClientProps) {
           <div className="mt-32 max-w-3xl mx-auto text-left">
             <h2 className="text-3xl font-bold text-slate-900 mb-4 text-center">{t.faqTitle}</h2>
             <p className="text-lg text-slate-600 mb-12 text-center max-w-2xl mx-auto">
-              Find answers to common questions about PPT Master pricing, credits, and features. Can't find what you're looking for? Contact our support team.
+              {t.faqIntro || "Find answers to common questions about PPT Master pricing, credits, and features. Can't find what you're looking for? Contact our support team."}
             </p>
             <div className="space-y-3">
               {[
@@ -421,22 +421,18 @@ export function PricingPageClient({ currentLang }: PricingPageClientProps) {
 
           {/* Trust Section */}
           <div className="mt-24 text-center">
-            <h3 className="text-2xl font-bold text-slate-900 mb-6">Trusted by Professionals Worldwide</h3>
+            <h3 className="text-2xl font-bold text-slate-900 mb-6">{t.trustedByProfessionals || "Trusted by Professionals Worldwide"}</h3>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto mb-8">
-              Join over 100,000 users who trust PPT Master to create professional presentations. Our AI-powered platform has generated over 1 million presentations across 150+ countries.
+              {t.trustedByProfessionalsDesc || "Join over 100,000 users who trust PPT Master to create professional presentations. Our AI-powered platform has generated over 1 million presentations across 150+ countries."}
             </p>
             <div className="flex flex-wrap justify-center gap-8 text-slate-400">
               <div className="text-center">
                 <div className="text-3xl font-bold text-[#06b6d4]">4.8/5</div>
-                <div className="text-sm">User Rating</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-[#06b6d4]">30-Day</div>
-                <div className="text-sm">Money Back Guarantee</div>
+                <div className="text-sm">{t.userRating || "User Rating"}</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-[#06b6d4]">24/7</div>
-                <div className="text-sm">Customer Support</div>
+                <div className="text-sm">{t.customerSupport || "Customer Support"}</div>
               </div>
             </div>
           </div>

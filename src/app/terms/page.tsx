@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Terms of Service - PPT Master",
-  description: "Read PPT Master's terms of service to understand the rules and guidelines for using our AI presentation platform. Learn about user responsibilities, content policies, subscription terms, and intellectual property rights.",
+  description: "Read PPT Master's terms of service. Understand the rules, user responsibilities, and policies for our AI platform.",
   alternates: {
     canonical: "https://www.pptmaster.app/terms",
   },

@@ -156,32 +156,8 @@ export default function CommunityPageClient({ currentLang = "en" }: CommunityPag
           </p>
 
           <p className="text-lg text-slate-500 max-w-2xl mx-auto mt-4 leading-relaxed animate-fade-in-up [animation-delay:250ms]">
-            Our community brings together designers, marketers, educators, and business professionals who share a passion for creating impactful presentations. Exchange ideas, get feedback, and grow together.
+            {t.communityExtendedDesc || "Our community brings together designers, marketers, educators, and business professionals who share a passion for creating impactful presentations. Exchange ideas, get feedback, and grow together."}
           </p>
-        </div>
-      </section>
-
-      {/* Community Stats Section */}
-      <section className="relative px-6 py-12 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4]">
-        <div className="mx-auto max-w-5xl">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center text-white">
-            <div>
-              <div className="text-4xl font-bold mb-2">10K+</div>
-              <div className="text-white/80">Community Members</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold mb-2">5K+</div>
-              <div className="text-white/80">Discussions</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold mb-2">1K+</div>
-              <div className="text-white/80">Shared Templates</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold mb-2">50+</div>
-              <div className="text-white/80">Countries</div>
-            </div>
-          </div>
         </div>
       </section>
 

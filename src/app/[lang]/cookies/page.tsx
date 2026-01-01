@@ -10,9 +10,17 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const { lang } = await params;
+  const t = getTranslations(lang);
+  
   return {
-    title: "Cookie Notice - PPT Master",
-    description: "Learn about how PPT Master uses cookies and similar technologies.",
+    title: `${t.cookieNotice || "Cookie Notice"} - PPT Master`,
+    description: t.cookieNoticeDesc || "Learn how PPT Master uses cookies and similar technologies to improve your experience. Manage your cookie preferences easily.",
+    openGraph: {
+      title: `${t.cookieNotice || "Cookie Notice"} - PPT Master`,
+      description: t.cookieNoticeDesc || "Learn how PPT Master uses cookies and similar technologies.",
+      type: "website",
+    },
   };
 }
 

@@ -3,9 +3,23 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Contact Us - PPT Master",
-  description: "Get in touch with the PPT Master team. We're here to help with any questions, feedback, or support requests. Reach out for partnership inquiries, technical assistance, or to share your presentation success stories.",
+  description: "Get in touch with the PPT Master team. We're here to help with questions, feedback, or partnership inquiries.",
   alternates: {
     canonical: "https://www.pptmaster.app/contact",
+  },
+  openGraph: {
+    title: "Contact Us - PPT Master",
+    description: "Get in touch with the PPT Master team. We're here to help with questions, feedback, or partnership inquiries.",
+    url: "/contact",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "Contact PPT Master",
+      },
+    ],
   },
 };
 

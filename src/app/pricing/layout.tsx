@@ -12,6 +12,15 @@ export const metadata: Metadata = {
     title: "PPT Master Pricing - Affordable AI PowerPoint Plans",
     description: "Choose the perfect plan for your PowerPoint needs with PPT Master. Free tier available.",
     url: "/pricing",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "PPT Master Pricing - AI PowerPoint Plans",
+      },
+    ],
   },
 };
 

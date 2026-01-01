@@ -15,13 +15,11 @@ export async function generateMetadata({
   const t = getTranslations(lang);
 
   return {
-    title: `PPT Master - ${t.heroTitle || "AI PowerPoint Generator"}`,
-    description:
-      t.heroDescription ||
-      "Create stunning presentations with AI. The best AI PowerPoint generator for professionals.",
+    title: `PPT Master - ${t.heroTitle} ${t.heroSubtitle} ${t.heroSubtitle2}`,
+    description: t.heroDescription,
     openGraph: {
-      title: "PPT Master - AI PowerPoint Generator",
-      description: "Create stunning presentations with AI",
+      title: `PPT Master - ${t.heroTitle} ${t.heroSubtitle} ${t.heroSubtitle2}`,
+      description: t.heroDescription,
       type: "website",
     },
   };

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { generateLanguageParams, isValidLanguage, type Language } from "~/lib/i18n";
+import { generateLanguageParams, getTranslations, isValidLanguage, type Language } from "~/lib/i18n";
 import { PricingPageClient } from "../../pricing/PricingPageClient";
 import type { Metadata } from "next";
 
@@ -7,10 +7,22 @@ export async function generateStaticParams() {
   return generateLanguageParams();
 }
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang } = await params;
+  const t = getTranslations(lang);
+
   return {
-    title: "Pricing - PPT Master",
-    description: "Choose the perfect plan for your presentation needs. Free, Plus, Pro, and Ultra plans available.",
+    title: `${t.pricing} - PPT Master | ${t.pricingTitle}`,
+    description: t.pricingSubtitle,
+    openGraph: {
+      title: `${t.pricing} - PPT Master`,
+      description: t.pricingSubtitle,
+      type: "website",
+    },
   };
 }
 

@@ -1,16 +1,26 @@
 import { redirect } from "next/navigation";
-import { generateLanguageParams, isValidLanguage, type Language } from "~/lib/i18n";
-import CommunityPage from "../../community/page";
+import { generateLanguageParams, getTranslations, isValidLanguage, type Language } from "~/lib/i18n";
+import CommunityPageClient from "../../community/CommunityPageClient";
 import type { Metadata } from "next";
 
 export async function generateStaticParams() {
   return generateLanguageParams();
 }
 
-export const metadata: Metadata = {
-  title: "Community - PPT Master",
-  description: "Join the PPT Master community. Connect with creators, share your work, and learn from experts.",
-};
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const { lang } = await params;
+  const t = getTranslations(lang);
+  
+  return {
+    title: `${t.community || "Community"} - PPT Master | ${t.communityHeroTitle}`,
+    description: t.communityHeroDesc || "Join the PPT Master community to connect with creators, share your presentations, and learn from experts. Get inspired and grow together.",
+    openGraph: {
+      title: `${t.community || "Community"} - PPT Master`,
+      description: t.communityHeroDesc,
+      type: "website",
+    },
+  };
+}
 
 export const revalidate = 3600;
 
@@ -22,5 +32,5 @@ export default async function CommunityLangPage({ params }: { params: Promise<{ 
     redirect("/community");
   }
 
-  return <CommunityPage currentLang={lang as Language} />;
+  return <CommunityPageClient currentLang={lang as Language} />;
 }

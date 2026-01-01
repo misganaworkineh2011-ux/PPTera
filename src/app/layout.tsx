@@ -9,7 +9,7 @@ import { type Metadata, type Viewport } from "next";
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 5,
+  themeColor: '#ffffff',
 };
 
 export const metadata: Metadata = {
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     default: "PPT Master | Best AI PowerPoint Generator & Presentation Maker",
     template: "%s | PPT Master"
   },
-  description: "PPT Master is the best free AI-powered PowerPoint generator that helps you create stunning presentations and visuals effortlessly — no design or coding skills needed.",
+  description: "Create stunning AI presentations in seconds. PPT Master is the best free PowerPoint generator for professionals and teams.",
   keywords: [
     "PPTMaster",
     "AI presentation generator",
@@ -67,7 +67,7 @@ export const metadata: Metadata = {
     url: "/",
     siteName: "PPT Master",
     title: "PPT Master: AI PowerPoint Generator | Best Free PowerPoint Maker",
-    description: "Create stunning PowerPoint presentations with AI in seconds. Transform your ideas into professional slides instantly with PPT Master, the best AI PowerPoint generator.",
+    description: "Create stunning AI presentations in seconds. Transform your ideas into professional slides with PPT Master.",
     images: [
       {
         url: "/og-image.jpeg",
@@ -80,7 +80,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "PPT Master: AI PowerPoint Generator | Best Free PowerPoint Maker",
-    description: "Create professional PowerPoint presentations with AI. Transform ideas into stunning slides instantly with PPT Master, the best AI PowerPoint generator.",
+    description: "Create professional AI presentations in seconds. Transform ideas into stunning slides with PPT Master.",
     images: ["/og-image.jpeg"],
     site: "@pptmaster",
     creator: "@pptmaster",
@@ -139,7 +139,7 @@ export default function RootLayout({
     "aggregateRating": {
       "@type": "AggregateRating",
       "ratingValue": "4.8",
-      "ratingCount": "1250"
+      "ratingCount": "1342"
     }
   };
 
@@ -147,7 +147,11 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en" className={GeistSans.variable}>
         <head>
-          <meta name="theme-color" content="#ffffff" />
+          {/* Preconnect to critical third-party origins for faster loading */}
+          <link rel="preconnect" href="https://clerk.pptmaster.app" />
+          <link rel="dns-prefetch" href="https://clerk.pptmaster.app" />
+          <link rel="preconnect" href="https://res.cloudinary.com" />
+          <link rel="dns-prefetch" href="https://res.cloudinary.com" />
         </head>
         <body className="font-sans bg-white">
           <noscript>

@@ -111,7 +111,7 @@ export default function InspirationPageClient({ currentLang = "en" }: Inspiratio
           </p>
 
           <p className="text-lg text-slate-500 max-w-2xl mx-auto mt-4 leading-relaxed animate-fade-in-up [animation-delay:300ms]">
-            Each design showcases the power of PPT Master's AI presentation generator. Use these examples as starting points for your own professional presentations, or let them inspire your next creative project.
+            {t.inspirationExtendedDesc || "Each design showcases the power of PPT Master's AI presentation generator. Use these examples as starting points for your own professional presentations, or let them inspire your next creative project."}
           </p>
         </div>
       </section>
@@ -144,11 +144,11 @@ export default function InspirationPageClient({ currentLang = "en" }: Inspiratio
           {loading && items.length === 0 ? (
             <div className="text-center py-12">
               <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#06b6d4] border-r-transparent"></div>
-              <p className="mt-4 text-slate-600">Loading inspiration...</p>
+              <p className="mt-4 text-slate-600">{t.loadingInspiration || "Loading inspiration..."}</p>
             </div>
           ) : items.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-slate-600">No inspiration items found. Check back soon!</p>
+              <p className="text-slate-600">{t.noInspirationItems || "No inspiration items found. Check back soon!"}</p>
             </div>
           ) : (
             <>
@@ -220,10 +220,10 @@ export default function InspirationPageClient({ currentLang = "en" }: Inspiratio
         <div className="mx-auto max-w-5xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-              Design Tips from Our Gallery
+              {t.designTipsTitle || "Design Tips from Our Gallery"}
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Learn from the best presentations in our collection and apply these principles to your own work.
+              {t.designTipsDesc || "Learn from the best presentations in our collection and apply these principles to your own work."}
             </p>
           </div>
 
@@ -232,9 +232,9 @@ export default function InspirationPageClient({ currentLang = "en" }: Inspiratio
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center mb-4">
                 <Sparkles className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Keep It Simple</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">{t.tipSimpleTitle || "Keep It Simple"}</h3>
               <p className="text-slate-600 leading-relaxed">
-                The most effective presentations use clean layouts with plenty of white space. Avoid cluttering slides with too much text or too many visual elements. Let your key message breathe.
+                {t.tipSimpleDesc || "The most effective presentations use clean layouts with plenty of white space. Avoid cluttering slides with too much text or too many visual elements. Let your key message breathe."}
               </p>
             </div>
 
@@ -242,9 +242,9 @@ export default function InspirationPageClient({ currentLang = "en" }: Inspiratio
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center mb-4">
                 <Sparkles className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Use Visual Hierarchy</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">{t.tipHierarchyTitle || "Use Visual Hierarchy"}</h3>
               <p className="text-slate-600 leading-relaxed">
-                Guide your audience's attention with clear visual hierarchy. Use size, color, and positioning to emphasize important information and create a natural reading flow through your slides.
+                {t.tipHierarchyDesc || "Guide your audience's attention with clear visual hierarchy. Use size, color, and positioning to emphasize important information and create a natural reading flow through your slides."}
               </p>
             </div>
 
@@ -252,23 +252,23 @@ export default function InspirationPageClient({ currentLang = "en" }: Inspiratio
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center mb-4">
                 <Sparkles className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Consistent Branding</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">{t.tipBrandingTitle || "Consistent Branding"}</h3>
               <p className="text-slate-600 leading-relaxed">
-                Maintain consistent colors, fonts, and styling throughout your presentation. This creates a professional, cohesive look that reinforces your brand identity and message.
+                {t.tipBrandingDesc || "Maintain consistent colors, fonts, and styling throughout your presentation. This creates a professional, cohesive look that reinforces your brand identity and message."}
               </p>
             </div>
           </div>
 
           <div className="mt-12 text-center">
             <p className="text-slate-600 mb-6">
-              Ready to create your own stunning presentation? PPT Master's AI will help you apply these design principles automatically.
+              {t.readyToCreateOwn || "Ready to create your own stunning presentation? PPT Master's AI will help you apply these design principles automatically."}
             </p>
             <a
               href="/sign-up"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-bold hover:shadow-xl transition-all hover:scale-105"
             >
               <Sparkles className="h-5 w-5" />
-              Start Creating Free
+              {t.startCreatingFree || "Start Creating Free"}
             </a>
           </div>
         </div>

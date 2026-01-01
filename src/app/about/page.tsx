@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "About Us - PPT Master",
-  description: "Learn about PPT Master's mission to make professional presentations accessible to everyone. Discover how our AI-powered platform helps millions create stunning slides in seconds, transforming ideas into impactful visual stories.",
+  description: "Learn about PPT Master's mission to make professional presentations accessible to everyone with AI-powered tools.",
   alternates: {
     canonical: "https://www.pptmaster.app/about",
   },

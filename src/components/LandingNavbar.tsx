@@ -55,8 +55,9 @@ export const LandingNavbar = ({ currentLang }: LandingNavbarProps) => {
                 src="/logo.png"
                 alt="PPTMaster"
                 width={180}
-                height={52}
+                height={48}
                 className="h-12 w-auto"
+                priority
               />
             </Link>
 

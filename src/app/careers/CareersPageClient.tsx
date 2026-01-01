@@ -131,7 +131,7 @@ export default function CareersPageClient({ currentLang = "en" }: CareersPageCli
           </p>
 
           <p className="text-lg text-slate-500 max-w-2xl mx-auto mt-4 leading-relaxed animate-fade-in-up [animation-delay:250ms]">
-            We're a remote-first company with team members across the globe, united by our mission to democratize professional design through artificial intelligence.
+            {t.careersRemoteFirstDesc || "We're a remote-first company with team members across the globe, united by our mission to democratize professional design through artificial intelligence."}
           </p>
 
           <div className="mt-10 animate-fade-in-up [animation-delay:300ms]">
@@ -211,11 +211,11 @@ export default function CareersPageClient({ currentLang = "en" }: CareersPageCli
           {loading ? (
             <div className="text-center py-12">
               <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#06b6d4] border-r-transparent"></div>
-              <p className="mt-4 text-slate-600">Loading positions...</p>
+              <p className="mt-4 text-slate-600">{t.loadingPositions || "Loading positions..."}</p>
             </div>
           ) : jobs.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-slate-600">No open positions at the moment. Check back soon!</p>
+              <p className="text-slate-600">{t.noPositionsAvailable || "No open positions at the moment. Check back soon!"}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -303,39 +303,39 @@ export default function CareersPageClient({ currentLang = "en" }: CareersPageCli
         <div className="mx-auto max-w-5xl">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
-              Our Culture
+              {t.ourCulture || "Our Culture"}
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              What it's like to work at PPT Master
+              {t.ourCultureDesc || "What it's like to work at PPT Master"}
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
             <div className="p-8 rounded-2xl bg-gradient-to-br from-slate-50 to-white border border-slate-200">
-              <h3 className="text-2xl font-bold text-slate-900 mb-4">Remote-First Philosophy</h3>
+              <h3 className="text-2xl font-bold text-slate-900 mb-4">{t.cultureRemoteTitle || "Remote-First Philosophy"}</h3>
               <p className="text-slate-600 leading-relaxed">
-                We believe great work can happen anywhere. Our team spans multiple time zones, and we've built our processes around asynchronous communication and flexible schedules. Whether you're an early bird or a night owl, you'll find a rhythm that works for you.
+                {t.cultureRemoteDesc || "We believe great work can happen anywhere. Our team spans multiple time zones, and we've built our processes around asynchronous communication and flexible schedules. Whether you're an early bird or a night owl, you'll find a rhythm that works for you."}
               </p>
             </div>
 
             <div className="p-8 rounded-2xl bg-gradient-to-br from-slate-50 to-white border border-slate-200">
-              <h3 className="text-2xl font-bold text-slate-900 mb-4">Continuous Learning</h3>
+              <h3 className="text-2xl font-bold text-slate-900 mb-4">{t.cultureLearningTitle || "Continuous Learning"}</h3>
               <p className="text-slate-600 leading-relaxed">
-                The AI landscape evolves rapidly, and so do we. We provide learning budgets, conference attendance, and dedicated time for skill development. Our team regularly shares knowledge through internal tech talks and workshops.
+                {t.cultureLearningDesc || "The AI landscape evolves rapidly, and so do we. We provide learning budgets, conference attendance, and dedicated time for skill development. Our team regularly shares knowledge through internal tech talks and workshops."}
               </p>
             </div>
 
             <div className="p-8 rounded-2xl bg-gradient-to-br from-slate-50 to-white border border-slate-200">
-              <h3 className="text-2xl font-bold text-slate-900 mb-4">Impact-Driven Work</h3>
+              <h3 className="text-2xl font-bold text-slate-900 mb-4">{t.cultureImpactTitle || "Impact-Driven Work"}</h3>
               <p className="text-slate-600 leading-relaxed">
-                Every feature you build reaches millions of users. We measure success by the impact we create, not hours logged. You'll have the autonomy to make decisions and see your work directly improve how people communicate their ideas.
+                {t.cultureImpactDesc || "Every feature you build reaches millions of users. We measure success by the impact we create, not hours logged. You'll have the autonomy to make decisions and see your work directly improve how people communicate their ideas."}
               </p>
             </div>
 
             <div className="p-8 rounded-2xl bg-gradient-to-br from-slate-50 to-white border border-slate-200">
-              <h3 className="text-2xl font-bold text-slate-900 mb-4">Inclusive Environment</h3>
+              <h3 className="text-2xl font-bold text-slate-900 mb-4">{t.cultureInclusiveTitle || "Inclusive Environment"}</h3>
               <p className="text-slate-600 leading-relaxed">
-                We're committed to building a diverse team where everyone feels welcome. Different perspectives lead to better products, and we actively work to create an environment where all voices are heard and valued.
+                {t.cultureInclusiveDesc || "We're committed to building a diverse team where everyone feels welcome. Different perspectives lead to better products, and we actively work to create an environment where all voices are heard and valued."}
               </p>
             </div>
           </div>

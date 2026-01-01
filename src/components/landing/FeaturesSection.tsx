@@ -4,16 +4,20 @@ import { useState } from "react";
 import { Sparkles, Wand2, Share2 } from "lucide-react";
 import { SignInButton } from "@clerk/nextjs";
 import { LoadingLink } from "~/components/LoadingLink";
+import { LazyVideo } from "./LazyVideo";
 
 interface FeaturesSectionProps {
   t: any;
 }
 
-// Presentation images for the inspiration cards
+// Cloudinary demo video URL - replace with your own when ready
+const FEATURE_DEMO_VIDEO = "https://res.cloudinary.com/demo/video/upload/f_auto,q_auto/docs/walking_talking";
+
+// Presentation images for the inspiration cards - optimized with auto format and quality
 const INSPIRATION_IMAGES = [
-  "https://res.cloudinary.com/di76ibrro/image/upload/v1766152567/Architectural_pptmaster_a18ccs.png",
-  "https://res.cloudinary.com/di76ibrro/image/upload/v1766152472/corporate_pptmaster_gcvo7p.png",
-  "https://res.cloudinary.com/di76ibrro/image/upload/v1766152111/alien_pptmaster_ldo5wm.png",
+  "https://res.cloudinary.com/di76ibrro/image/upload/f_auto,q_auto,w_800/v1766152567/Architectural_pptmaster_a18ccs.png",
+  "https://res.cloudinary.com/di76ibrro/image/upload/f_auto,q_auto,w_800/v1766152472/corporate_pptmaster_gcvo7p.png",
+  "https://res.cloudinary.com/di76ibrro/image/upload/f_auto,q_auto,w_800/v1766152111/alien_pptmaster_ldo5wm.png",
 ];
 
 // Best 5 themes for preview
@@ -72,6 +76,7 @@ const THEME_PREVIEWS = [
 
 export function FeaturesSection({ t }: FeaturesSectionProps) {
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
+
   return (
     <section className="py-24 px-6 lg:px-8">
       <div className="mx-auto max-w-[1400px]">
@@ -116,14 +121,12 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
                   </div>
                 </div>
                 
-                {/* Right Panel - Video */}
-                <div className="relative aspect-video overflow-hidden">
-                  <iframe
-                    src="https://player.vimeo.com/video/1150201596?autoplay=1&loop=1&muted=1&background=1"
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%]"
-                    style={{ border: 0 }}
-                    allow="autoplay; fullscreen; picture-in-picture"
-                    allowFullScreen
+                {/* Right Panel - Video (lazy loaded Cloudinary) */}
+                <div className="relative aspect-video overflow-hidden bg-zinc-900">
+                  <LazyVideo
+                    src={FEATURE_DEMO_VIDEO}
+                    className="absolute inset-0 w-full h-full"
+                    title="PPT Master AI presentation demo"
                   />
                 </div>
               </div>

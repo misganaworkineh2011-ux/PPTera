@@ -15,7 +15,12 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   
   return {
     title: `${t.promptGuide || "Prompt Guide"} - PPT Master`,
-    description: t.promptGuideSubtitle || "Learn how to write effective AI prompts to create stunning presentations.",
+    description: t.promptGuideSubtitle || "Learn how to write effective AI prompts to create stunning presentations. Tips, examples, and best practices included.",
+    openGraph: {
+      title: `${t.promptGuide || "Prompt Guide"} - PPT Master`,
+      description: t.promptGuideSubtitle || "Learn how to write effective AI prompts to create stunning presentations.",
+      type: "website",
+    },
   };
 }
 

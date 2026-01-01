@@ -3,9 +3,23 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Careers - Join PPT Master Team",
-  description: "Join the PPT Master team and help build the future of AI-powered presentations. Explore exciting career opportunities in engineering, design, marketing, and more. We offer remote work, competitive benefits, and a passionate team culture.",
+  description: "Join the PPT Master team and help build the future of AI presentations. Explore open positions and apply today.",
   alternates: {
     canonical: "https://www.pptmaster.app/careers",
+  },
+  openGraph: {
+    title: "Careers - Join PPT Master Team",
+    description: "Join the PPT Master team and help build the future of AI presentations. Explore open positions.",
+    url: "/careers",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "PPT Master Careers",
+      },
+    ],
   },
 };
 
