@@ -44,12 +44,21 @@ export const metadata: Metadata = {
   authors: [{ name: "PPTMaster" }],
   creator: "PPTMaster",
   publisher: "PPTMaster",
+  applicationName: "PPT Master",
+  appleWebApp: {
+    title: "PPT Master",
+    statusBarStyle: "default",
+    capable: true,
+  },
   alternates: {
     canonical: "/",
   },
   robots: {
     index: true,
     follow: true,
+    "max-image-preview": "large",
+    "max-snippet": -1,
+    "max-video-preview": -1,
     googleBot: {
       index: true,
       follow: true,
@@ -59,7 +68,13 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.ico", type: "image/x-icon" },
+    ],
+    shortcut: [{ url: "/favicon.ico", type: "image/x-icon" }],
+    apple: [
+      { url: "/logo.png", sizes: "180x180", type: "image/png" },
+    ],
   },
   openGraph: {
     type: "website",
@@ -73,7 +88,8 @@ export const metadata: Metadata = {
         url: "/og-image.jpeg",
         width: 1200,
         height: 630,
-        alt: "PPTMaster - AI PowerPoint Generator | Best Free PowerPoint Maker"
+        alt: "PPTMaster - AI PowerPoint Generator | Best Free PowerPoint Maker",
+        type: "image/jpeg",
       }
     ]
   },
@@ -81,7 +97,14 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "PPT Master: AI PowerPoint Generator | Best Free PowerPoint Maker",
     description: "Create professional AI presentations in seconds. Transform ideas into stunning slides with PPT Master.",
-    images: ["/og-image.jpeg"],
+    images: [
+      {
+        url: "/og-image.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "PPT Master - AI PowerPoint Generator",
+      }
+    ],
     site: "@pptmaster",
     creator: "@pptmaster",
   },

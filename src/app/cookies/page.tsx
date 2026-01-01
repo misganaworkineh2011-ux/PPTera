@@ -23,6 +23,12 @@ export const metadata: Metadata = {
       },
     ],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Cookie Notice - PPT Master",
+    description: "Learn how PPT Master uses cookies to enhance your experience.",
+    images: ["/og-image.jpeg"],
+  },
 };
 
 export const revalidate = 86400;

@@ -9,6 +9,26 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://www.pptmaster.app/about",
   },
+  openGraph: {
+    title: "About Us - PPT Master",
+    description: "Learn about PPT Master's mission to make professional presentations accessible to everyone with AI-powered tools.",
+    url: "/about",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "About PPT Master",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "About Us - PPT Master",
+    description: "Learn about PPT Master's mission to make professional presentations accessible to everyone.",
+    images: ["/og-image.jpeg"],
+  },
 };
 
 export const revalidate = 3600;

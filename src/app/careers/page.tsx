@@ -21,6 +21,12 @@ export const metadata: Metadata = {
       },
     ],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Careers - Join PPT Master Team",
+    description: "Join the PPT Master team and help build the future of AI presentations.",
+    images: ["/og-image.jpeg"],
+  },
 };
 
 export default function CareersPage() {

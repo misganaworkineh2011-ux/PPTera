@@ -25,6 +25,12 @@ export const metadata: Metadata = {
       },
     ],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Help Center - PPT Master",
+    description: "Get help with PPT Master. Find answers to common questions about our AI presentation generator.",
+    images: ["/og-image.jpeg"],
+  },
 };
 
 export const revalidate = 3600;

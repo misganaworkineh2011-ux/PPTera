@@ -21,6 +21,12 @@ export const metadata: Metadata = {
       },
     ],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Inspiration - PPT Master PowerPoint Examples",
+    description: "Browse hundreds of professionally designed presentation examples. Get inspired by stunning AI-generated slides.",
+    images: ["/og-image.jpeg"],
+  },
 };
 
 export default function InspirationPage() {

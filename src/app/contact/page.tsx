@@ -21,6 +21,12 @@ export const metadata: Metadata = {
       },
     ],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Contact Us - PPT Master",
+    description: "Get in touch with the PPT Master team. We're here to help with questions or feedback.",
+    images: ["/og-image.jpeg"],
+  },
 };
 
 export const revalidate = 3600;
