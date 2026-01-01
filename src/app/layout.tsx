@@ -166,9 +166,9 @@ export default function RootLayout({
               textAlign: 'center'
             }}>
               <div>
-                <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1rem', color: '#0f172a' }}>
+                <p style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1rem', color: '#0f172a' }}>
                   JavaScript Required
-                </h1>
+                </p>
                 <p style={{ fontSize: '1.125rem', color: '#64748b', marginBottom: '1.5rem' }}>
                   PPT Master requires JavaScript to run. Please enable JavaScript in your browser settings.
                 </p>

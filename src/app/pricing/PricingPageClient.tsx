@@ -377,7 +377,10 @@ export function PricingPageClient({ currentLang }: PricingPageClientProps) {
 
           {/* FAQ Section */}
           <div className="mt-32 max-w-3xl mx-auto text-left">
-            <h2 className="text-3xl font-bold text-slate-900 mb-12 text-center">{t.faqTitle}</h2>
+            <h2 className="text-3xl font-bold text-slate-900 mb-4 text-center">{t.faqTitle}</h2>
+            <p className="text-lg text-slate-600 mb-12 text-center max-w-2xl mx-auto">
+              Find answers to common questions about PPT Master pricing, credits, and features. Can't find what you're looking for? Contact our support team.
+            </p>
             <div className="space-y-3">
               {[
                 { question: t.faqAIModels, answer: t.faqAIModelsAnswer },
@@ -413,6 +416,28 @@ export function PricingPageClient({ currentLang }: PricingPageClientProps) {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Trust Section */}
+          <div className="mt-24 text-center">
+            <h3 className="text-2xl font-bold text-slate-900 mb-6">Trusted by Professionals Worldwide</h3>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto mb-8">
+              Join over 100,000 users who trust PPT Master to create professional presentations. Our AI-powered platform has generated over 1 million presentations across 150+ countries.
+            </p>
+            <div className="flex flex-wrap justify-center gap-8 text-slate-400">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-[#06b6d4]">4.8/5</div>
+                <div className="text-sm">User Rating</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-[#06b6d4]">30-Day</div>
+                <div className="text-sm">Money Back Guarantee</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-[#06b6d4]">24/7</div>
+                <div className="text-sm">Customer Support</div>
+              </div>
             </div>
           </div>
 

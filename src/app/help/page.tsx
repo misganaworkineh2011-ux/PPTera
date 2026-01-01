@@ -7,7 +7,10 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Help Center - PPT Master",
   description:
-    "Get help with PPT Master. Find answers to common questions and learn how to use our AI presentation generator.",
+    "Get help with PPT Master. Find answers to common questions, troubleshooting guides, and learn how to use our AI presentation generator. Explore tutorials on creating slides, exporting presentations, and maximizing your productivity.",
+  alternates: {
+    canonical: "https://www.pptmaster.app/help",
+  },
 };
 
 export const revalidate = 3600;

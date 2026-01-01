@@ -5,6 +5,7 @@ import type {
   QuotesLayoutType,
   QuoteContentItem,
 } from "~/lib/layouts/content/quotes";
+import EditableText from "~/components/presentation/EditableText";
 
 interface QuotesLayoutRendererProps {
   layoutId: QuotesLayoutType;
@@ -12,6 +13,16 @@ interface QuotesLayoutRendererProps {
   accentColor?: string;
   className?: string;
   isNarrowSpace?: boolean;
+  // Editing props
+  isEditing?: boolean;
+  editingText?: { field: string; bulletIndex?: number } | null;
+  onStartEditLabel?: (index: number) => void;
+  onStartEditText?: (index: number) => void;
+  onUpdateLabel?: (index: number, value: string) => void;
+  onUpdateText?: (index: number, value: string) => void;
+  onFinishEditing?: () => void;
+  isOwner?: boolean;
+  isHovered?: boolean;
 }
 
 export function QuotesLayoutRenderer({
@@ -20,6 +31,15 @@ export function QuotesLayoutRenderer({
   accentColor = "#047857",
   className = "",
   isNarrowSpace = false,
+  isEditing = false,
+  editingText = null,
+  onStartEditLabel,
+  onStartEditText,
+  onUpdateLabel,
+  onUpdateText,
+  onFinishEditing,
+  isOwner = false,
+  isHovered = false,
 }: QuotesLayoutRendererProps) {
   const displayItems = items.slice(0, 6);
 
@@ -29,6 +49,15 @@ export function QuotesLayoutRenderer({
         items={displayItems}
         accentColor={accentColor}
         className={className}
+        isEditing={isEditing}
+        editingText={editingText}
+        onStartEditLabel={onStartEditLabel}
+        onStartEditText={onStartEditText}
+        onUpdateLabel={onUpdateLabel}
+        onUpdateText={onUpdateText}
+        onFinishEditing={onFinishEditing}
+        isOwner={isOwner}
+        isHovered={isHovered}
       />
     );
   }
@@ -38,6 +67,15 @@ export function QuotesLayoutRenderer({
       items={displayItems}
       accentColor={accentColor}
       className={className}
+      isEditing={isEditing}
+      editingText={editingText}
+      onStartEditLabel={onStartEditLabel}
+      onStartEditText={onStartEditText}
+      onUpdateLabel={onUpdateLabel}
+      onUpdateText={onUpdateText}
+      onFinishEditing={onFinishEditing}
+      isOwner={isOwner}
+      isHovered={isHovered}
     />
   );
 }
@@ -61,10 +99,28 @@ function BubbleQuotes({
   items,
   accentColor,
   className,
+  isEditing = false,
+  editingText = null,
+  onStartEditLabel,
+  onStartEditText,
+  onUpdateLabel,
+  onUpdateText,
+  onFinishEditing,
+  isOwner = false,
+  isHovered = false,
 }: {
   items: QuoteContentItem[];
   accentColor: string;
   className: string;
+  isEditing?: boolean;
+  editingText?: { field: string; bulletIndex?: number } | null;
+  onStartEditLabel?: (index: number) => void;
+  onStartEditText?: (index: number) => void;
+  onUpdateLabel?: (index: number, value: string) => void;
+  onUpdateText?: (index: number, value: string) => void;
+  onFinishEditing?: () => void;
+  isOwner?: boolean;
+  isHovered?: boolean;
 }) {
   return (
     <div className={`flex flex-wrap gap-8 justify-center items-start ${className}`}>
@@ -90,14 +146,40 @@ function BubbleQuotes({
               {/* Content */}
               <div className="flex flex-col gap-3 relative z-10 px-4 text-center">
                 {item.label && (
-                   <h3 className="text-lg font-bold mb-1 text-white opacity-90">
-                     {item.label}
-                   </h3>
+                  onStartEditLabel ? (
+                    <EditableText
+                      value={item.label}
+                      isEditing={isEditing && editingText?.field === `content-label-${index}`}
+                      onStartEdit={() => onStartEditLabel(index)}
+                      onChange={(val) => onUpdateLabel?.(index, val)}
+                      onFinish={onFinishEditing || (() => {})}
+                      className="text-lg font-bold mb-1 text-white opacity-90"
+                      isOwner={isOwner}
+                      isHovered={isHovered}
+                    />
+                  ) : (
+                    <h3 className="text-lg font-bold mb-1 text-white opacity-90">
+                      {item.label}
+                    </h3>
+                  )
                 )}
                 
-                <p className="text-base leading-relaxed font-medium">
-                  {item.text}
-                </p>
+                {onStartEditText ? (
+                  <EditableText
+                    value={item.text}
+                    isEditing={isEditing && editingText?.field === `content-text-${index}`}
+                    onStartEdit={() => onStartEditText(index)}
+                    onChange={(val) => onUpdateText?.(index, val)}
+                    onFinish={onFinishEditing || (() => {})}
+                    className="text-base leading-relaxed font-medium"
+                    isOwner={isOwner}
+                    isHovered={isHovered}
+                  />
+                ) : (
+                  <p className="text-base leading-relaxed font-medium">
+                    {item.text}
+                  </p>
+                )}
                 
                 {item.author && (
                   <div className="mt-2 border-t border-white/20 pt-2 inline-block mx-auto">
@@ -137,10 +219,28 @@ function MarksQuotes({
   items,
   accentColor,
   className,
+  isEditing = false,
+  editingText = null,
+  onStartEditLabel,
+  onStartEditText,
+  onUpdateLabel,
+  onUpdateText,
+  onFinishEditing,
+  isOwner = false,
+  isHovered = false,
 }: {
   items: QuoteContentItem[];
   accentColor: string;
   className: string;
+  isEditing?: boolean;
+  editingText?: { field: string; bulletIndex?: number } | null;
+  onStartEditLabel?: (index: number) => void;
+  onStartEditText?: (index: number) => void;
+  onUpdateLabel?: (index: number, value: string) => void;
+  onUpdateText?: (index: number, value: string) => void;
+  onFinishEditing?: () => void;
+  isOwner?: boolean;
+  isHovered?: boolean;
 }) {
   return (
     <div className={`flex flex-wrap gap-8 justify-center ${className}`}>
@@ -165,17 +265,44 @@ function MarksQuotes({
 
             <div className="flex flex-col h-full">
               {item.label && (
-                 <h3 
-                   className="text-lg font-bold mb-3"
-                   style={{ color: '#1e293b' }}
-                 >
-                   {item.label}
-                 </h3>
+                onStartEditLabel ? (
+                  <EditableText
+                    value={item.label}
+                    isEditing={isEditing && editingText?.field === `content-label-${index}`}
+                    onStartEdit={() => onStartEditLabel(index)}
+                    onChange={(val) => onUpdateLabel?.(index, val)}
+                    onFinish={onFinishEditing || (() => {})}
+                    className="text-lg font-bold mb-3"
+                    style={{ color: '#1e293b' }}
+                    isOwner={isOwner}
+                    isHovered={isHovered}
+                  />
+                ) : (
+                  <h3 
+                    className="text-lg font-bold mb-3"
+                    style={{ color: '#1e293b' }}
+                  >
+                    {item.label}
+                  </h3>
+                )
               )}
               
-              <p className="text-base text-slate-700 leading-relaxed italic flex-1">
-                {item.text}
-              </p>
+              {onStartEditText ? (
+                <EditableText
+                  value={item.text}
+                  isEditing={isEditing && editingText?.field === `content-text-${index}`}
+                  onStartEdit={() => onStartEditText(index)}
+                  onChange={(val) => onUpdateText?.(index, val)}
+                  onFinish={onFinishEditing || (() => {})}
+                  className="text-base text-slate-700 leading-relaxed italic flex-1"
+                  isOwner={isOwner}
+                  isHovered={isHovered}
+                />
+              ) : (
+                <p className="text-base text-slate-700 leading-relaxed italic flex-1">
+                  {item.text}
+                </p>
+              )}
 
               {item.author && (
                 <div className="mt-6 flex items-center justify-end gap-3">

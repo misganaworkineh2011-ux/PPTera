@@ -2,6 +2,7 @@
 
 import React from "react";
 import type { StepsLayoutType, StepContentItem } from "~/lib/layouts/content/steps";
+import EditableText from "~/components/presentation/EditableText";
 
 interface StepsLayoutRendererProps {
   layoutId: StepsLayoutType;
@@ -9,6 +10,16 @@ interface StepsLayoutRendererProps {
   accentColor?: string;
   className?: string;
   isNarrowSpace?: boolean;
+  // Editing props
+  isEditing?: boolean;
+  editingText?: { field: string; bulletIndex?: number } | null;
+  onStartEditLabel?: (index: number) => void;
+  onStartEditText?: (index: number) => void;
+  onUpdateLabel?: (index: number, value: string) => void;
+  onUpdateText?: (index: number, value: string) => void;
+  onFinishEditing?: () => void;
+  isOwner?: boolean;
+  isHovered?: boolean;
 }
 
 export function StepsLayoutRenderer({
@@ -17,6 +28,15 @@ export function StepsLayoutRenderer({
   accentColor = "#047857",
   className = "",
   isNarrowSpace = false,
+  isEditing = false,
+  editingText = null,
+  onStartEditLabel,
+  onStartEditText,
+  onUpdateLabel,
+  onUpdateText,
+  onFinishEditing,
+  isOwner = false,
+  isHovered = false,
 }: StepsLayoutRendererProps) {
   const displayItems = items.slice(0, 6);
 
@@ -26,6 +46,15 @@ export function StepsLayoutRenderer({
         items={displayItems}
         accentColor={accentColor}
         className={className}
+        isEditing={isEditing}
+        editingText={editingText}
+        onStartEditLabel={onStartEditLabel}
+        onStartEditText={onStartEditText}
+        onUpdateLabel={onUpdateLabel}
+        onUpdateText={onUpdateText}
+        onFinishEditing={onFinishEditing}
+        isOwner={isOwner}
+        isHovered={isHovered}
       />
     );
   }
@@ -36,6 +65,15 @@ export function StepsLayoutRenderer({
         items={displayItems}
         accentColor={accentColor}
         className={className}
+        isEditing={isEditing}
+        editingText={editingText}
+        onStartEditLabel={onStartEditLabel}
+        onStartEditText={onStartEditText}
+        onUpdateLabel={onUpdateLabel}
+        onUpdateText={onUpdateText}
+        onFinishEditing={onFinishEditing}
+        isOwner={isOwner}
+        isHovered={isHovered}
       />
     );
   }
@@ -47,6 +85,15 @@ export function StepsLayoutRenderer({
         accentColor={accentColor}
         className={className}
         isNarrowSpace={isNarrowSpace}
+        isEditing={isEditing}
+        editingText={editingText}
+        onStartEditLabel={onStartEditLabel}
+        onStartEditText={onStartEditText}
+        onUpdateLabel={onUpdateLabel}
+        onUpdateText={onUpdateText}
+        onFinishEditing={onFinishEditing}
+        isOwner={isOwner}
+        isHovered={isHovered}
       />
     );
   }
@@ -56,6 +103,15 @@ export function StepsLayoutRenderer({
       items={displayItems}
       accentColor={accentColor}
       className={className}
+      isEditing={isEditing}
+      editingText={editingText}
+      onStartEditLabel={onStartEditLabel}
+      onStartEditText={onStartEditText}
+      onUpdateLabel={onUpdateLabel}
+      onUpdateText={onUpdateText}
+      onFinishEditing={onFinishEditing}
+      isOwner={isOwner}
+      isHovered={isHovered}
     />
   );
 }
@@ -65,10 +121,28 @@ function PyramidSteps({
   items,
   accentColor,
   className,
+  isEditing = false,
+  editingText = null,
+  onStartEditLabel,
+  onStartEditText,
+  onUpdateLabel,
+  onUpdateText,
+  onFinishEditing,
+  isOwner = false,
+  isHovered = false,
 }: {
   items: StepContentItem[];
   accentColor: string;
   className: string;
+  isEditing?: boolean;
+  editingText?: { field: string; bulletIndex?: number } | null;
+  onStartEditLabel?: (index: number) => void;
+  onStartEditText?: (index: number) => void;
+  onUpdateLabel?: (index: number, value: string) => void;
+  onUpdateText?: (index: number, value: string) => void;
+  onFinishEditing?: () => void;
+  isOwner?: boolean;
+  isHovered?: boolean;
 }) {
   const itemCount = items.length;
   const pyramidWidth = 280;
@@ -173,13 +247,39 @@ function PyramidSteps({
               }}
             >
               {item.label && (
-                <h3 className="text-lg font-semibold text-slate-800 mb-1">
-                  {item.label}
-                </h3>
+                onStartEditLabel ? (
+                  <EditableText
+                    value={item.label}
+                    isEditing={isEditing && editingText?.field === `content-label-${index}`}
+                    onStartEdit={() => onStartEditLabel(index)}
+                    onChange={(val) => onUpdateLabel?.(index, val)}
+                    onFinish={onFinishEditing || (() => {})}
+                    className="text-lg font-semibold text-slate-800 mb-1"
+                    isOwner={isOwner}
+                    isHovered={isHovered}
+                  />
+                ) : (
+                  <h3 className="text-lg font-semibold text-slate-800 mb-1">
+                    {item.label}
+                  </h3>
+                )
               )}
-              <p className="text-sm text-slate-600 leading-relaxed">
-                {item.text}
-              </p>
+              {onStartEditText ? (
+                <EditableText
+                  value={item.text}
+                  isEditing={isEditing && editingText?.field === `content-text-${index}`}
+                  onStartEdit={() => onStartEditText(index)}
+                  onChange={(val) => onUpdateText?.(index, val)}
+                  onFinish={onFinishEditing || (() => {})}
+                  className="text-sm text-slate-600 leading-relaxed"
+                  isOwner={isOwner}
+                  isHovered={isHovered}
+                />
+              ) : (
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  {item.text}
+                </p>
+              )}
             </div>
           );
         })}
@@ -193,10 +293,28 @@ function ArrowSteps({
   items,
   accentColor,
   className,
+  isEditing = false,
+  editingText = null,
+  onStartEditLabel,
+  onStartEditText,
+  onUpdateLabel,
+  onUpdateText,
+  onFinishEditing,
+  isOwner = false,
+  isHovered = false,
 }: {
   items: StepContentItem[];
   accentColor: string;
   className: string;
+  isEditing?: boolean;
+  editingText?: { field: string; bulletIndex?: number } | null;
+  onStartEditLabel?: (index: number) => void;
+  onStartEditText?: (index: number) => void;
+  onUpdateLabel?: (index: number, value: string) => void;
+  onUpdateText?: (index: number, value: string) => void;
+  onFinishEditing?: () => void;
+  isOwner?: boolean;
+  isHovered?: boolean;
 }) {
   // Each arrow is offset more to the right (staggered effect)
   const getLeftPadding = (index: number) => {
@@ -239,13 +357,39 @@ function ArrowSteps({
           {/* Content */}
           <div className="flex-1 pt-2">
             {item.label && (
-              <h3 className="text-lg font-semibold text-slate-800 mb-1">
-                {item.label}
-              </h3>
+              onStartEditLabel ? (
+                <EditableText
+                  value={item.label}
+                  isEditing={isEditing && editingText?.field === `content-label-${index}`}
+                  onStartEdit={() => onStartEditLabel(index)}
+                  onChange={(val) => onUpdateLabel?.(index, val)}
+                  onFinish={onFinishEditing || (() => {})}
+                  className="text-lg font-semibold text-slate-800 mb-1"
+                  isOwner={isOwner}
+                  isHovered={isHovered}
+                />
+              ) : (
+                <h3 className="text-lg font-semibold text-slate-800 mb-1">
+                  {item.label}
+                </h3>
+              )
             )}
-            <p className="text-sm text-slate-600 leading-relaxed">
-              {item.text}
-            </p>
+            {onStartEditText ? (
+              <EditableText
+                value={item.text}
+                isEditing={isEditing && editingText?.field === `content-text-${index}`}
+                onStartEdit={() => onStartEditText(index)}
+                onChange={(val) => onUpdateText?.(index, val)}
+                onFinish={onFinishEditing || (() => {})}
+                className="text-sm text-slate-600 leading-relaxed"
+                isOwner={isOwner}
+                isHovered={isHovered}
+              />
+            ) : (
+              <p className="text-sm text-slate-600 leading-relaxed">
+                {item.text}
+              </p>
+            )}
           </div>
         </div>
       ))}
@@ -259,11 +403,29 @@ function CardSteps({
   accentColor,
   className,
   isNarrowSpace,
+  isEditing = false,
+  editingText = null,
+  onStartEditLabel,
+  onStartEditText,
+  onUpdateLabel,
+  onUpdateText,
+  onFinishEditing,
+  isOwner = false,
+  isHovered = false,
 }: {
   items: StepContentItem[];
   accentColor: string;
   className: string;
   isNarrowSpace: boolean;
+  isEditing?: boolean;
+  editingText?: { field: string; bulletIndex?: number } | null;
+  onStartEditLabel?: (index: number) => void;
+  onStartEditText?: (index: number) => void;
+  onUpdateLabel?: (index: number, value: string) => void;
+  onUpdateText?: (index: number, value: string) => void;
+  onFinishEditing?: () => void;
+  isOwner?: boolean;
+  isHovered?: boolean;
 }) {
   const itemCount = items.length;
   
@@ -291,13 +453,39 @@ function CardSteps({
             }}
           >
             {item.label && (
-              <h3 className="text-base font-semibold text-slate-800 mb-2">
-                {item.label}
-              </h3>
+              onStartEditLabel ? (
+                <EditableText
+                  value={item.label}
+                  isEditing={isEditing && editingText?.field === `content-label-${index}`}
+                  onStartEdit={() => onStartEditLabel(index)}
+                  onChange={(val) => onUpdateLabel?.(index, val)}
+                  onFinish={onFinishEditing || (() => {})}
+                  className="text-base font-semibold text-slate-800 mb-2"
+                  isOwner={isOwner}
+                  isHovered={isHovered}
+                />
+              ) : (
+                <h3 className="text-base font-semibold text-slate-800 mb-2">
+                  {item.label}
+                </h3>
+              )
             )}
-            <p className="text-sm text-slate-600 leading-relaxed">
-              {item.text}
-            </p>
+            {onStartEditText ? (
+              <EditableText
+                value={item.text}
+                isEditing={isEditing && editingText?.field === `content-text-${index}`}
+                onStartEdit={() => onStartEditText(index)}
+                onChange={(val) => onUpdateText?.(index, val)}
+                onFinish={onFinishEditing || (() => {})}
+                className="text-sm text-slate-600 leading-relaxed"
+                isOwner={isOwner}
+                isHovered={isHovered}
+              />
+            ) : (
+              <p className="text-sm text-slate-600 leading-relaxed">
+                {item.text}
+              </p>
+            )}
           </div>
         ))}
       </div>
@@ -319,13 +507,39 @@ function CardSteps({
           }}
         >
           {item.label && (
-            <h3 className="text-base font-semibold text-slate-800 mb-2">
-              {item.label}
-            </h3>
+            onStartEditLabel ? (
+              <EditableText
+                value={item.label}
+                isEditing={isEditing && editingText?.field === `content-label-${index}`}
+                onStartEdit={() => onStartEditLabel(index)}
+                onChange={(val) => onUpdateLabel?.(index, val)}
+                onFinish={onFinishEditing || (() => {})}
+                className="text-base font-semibold text-slate-800 mb-2"
+                isOwner={isOwner}
+                isHovered={isHovered}
+              />
+            ) : (
+              <h3 className="text-base font-semibold text-slate-800 mb-2">
+                {item.label}
+              </h3>
+            )
           )}
-          <p className="text-sm text-slate-600 leading-relaxed">
-            {item.text}
-          </p>
+          {onStartEditText ? (
+            <EditableText
+              value={item.text}
+              isEditing={isEditing && editingText?.field === `content-text-${index}`}
+              onStartEdit={() => onStartEditText(index)}
+              onChange={(val) => onUpdateText?.(index, val)}
+              onFinish={onFinishEditing || (() => {})}
+              className="text-sm text-slate-600 leading-relaxed"
+              isOwner={isOwner}
+              isHovered={isHovered}
+            />
+          ) : (
+            <p className="text-sm text-slate-600 leading-relaxed">
+              {item.text}
+            </p>
+          )}
         </div>
       ))}
     </div>
@@ -337,10 +551,28 @@ function BarSteps({
   items,
   accentColor,
   className,
+  isEditing = false,
+  editingText = null,
+  onStartEditLabel,
+  onStartEditText,
+  onUpdateLabel,
+  onUpdateText,
+  onFinishEditing,
+  isOwner = false,
+  isHovered = false,
 }: {
   items: StepContentItem[];
   accentColor: string;
   className: string;
+  isEditing?: boolean;
+  editingText?: { field: string; bulletIndex?: number } | null;
+  onStartEditLabel?: (index: number) => void;
+  onStartEditText?: (index: number) => void;
+  onUpdateLabel?: (index: number, value: string) => void;
+  onUpdateText?: (index: number, value: string) => void;
+  onFinishEditing?: () => void;
+  isOwner?: boolean;
+  isHovered?: boolean;
 }) {
   const itemCount = items.length;
   
@@ -377,16 +609,43 @@ function BarSteps({
           {/* Content section - OUTSIDE the bar */}
           <div className="flex-1">
             {item.label && (
-              <h3
-                className="text-base font-semibold mb-1"
-                style={{ color: accentColor }}
-              >
-                {item.label}
-              </h3>
+              onStartEditLabel ? (
+                <EditableText
+                  value={item.label}
+                  isEditing={isEditing && editingText?.field === `content-label-${index}`}
+                  onStartEdit={() => onStartEditLabel(index)}
+                  onChange={(val) => onUpdateLabel?.(index, val)}
+                  onFinish={onFinishEditing || (() => {})}
+                  className="text-base font-semibold mb-1"
+                  style={{ color: accentColor }}
+                  isOwner={isOwner}
+                  isHovered={isHovered}
+                />
+              ) : (
+                <h3
+                  className="text-base font-semibold mb-1"
+                  style={{ color: accentColor }}
+                >
+                  {item.label}
+                </h3>
+              )
             )}
-            <p className="text-sm text-slate-600 leading-relaxed">
-              {item.text}
-            </p>
+            {onStartEditText ? (
+              <EditableText
+                value={item.text}
+                isEditing={isEditing && editingText?.field === `content-text-${index}`}
+                onStartEdit={() => onStartEditText(index)}
+                onChange={(val) => onUpdateText?.(index, val)}
+                onFinish={onFinishEditing || (() => {})}
+                className="text-sm text-slate-600 leading-relaxed"
+                isOwner={isOwner}
+                isHovered={isHovered}
+              />
+            ) : (
+              <p className="text-sm text-slate-600 leading-relaxed">
+                {item.text}
+              </p>
+            )}
           </div>
         </div>
       ))}

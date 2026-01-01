@@ -933,11 +933,12 @@ export default function SlideRenderer({
       
       // Handlers for editing box labels and text
       const handleStartEditLabel = (boxIndex: number) => {
-        onStartEditing(index, `box-label-${boxIndex}`);
+        // Use layout-agnostic field names
+        onStartEditing(index, `content-label-${boxIndex}`);
       };
       
       const handleStartEditText = (boxIndex: number) => {
-        onStartEditing(index, `box-text-${boxIndex}`);
+        onStartEditing(index, `content-text-${boxIndex}`);
       };
       
       const handleUpdateLabel = (boxIndex: number, newLabel: string) => {
@@ -969,6 +970,19 @@ export default function SlideRenderer({
         // Get accent color from theme for renderers that need it
         const accentColor = theme.colors.accent;
         
+        // Common editing props for all layout renderers
+        const editingProps = {
+          isEditing,
+          editingText,
+          onStartEditLabel: canEdit ? handleStartEditLabel : undefined,
+          onStartEditText: canEdit ? handleStartEditText : undefined,
+          onUpdateLabel: canEdit ? handleUpdateLabel : undefined,
+          onUpdateText: canEdit ? handleUpdateText : undefined,
+          onFinishEditing,
+          isOwner: canEdit,
+          isHovered,
+        };
+        
         switch (layoutCategory) {
           case "sequence":
             return (
@@ -978,12 +992,20 @@ export default function SlideRenderer({
                 theme={theme}
                 compact={compact}
                 isNarrowSpace={isNarrowSpace}
+                {...editingProps}
               />
             );
           
           case "bullets":
-            // Bullet layouts don't support editing yet, fall back to editable BulletPoints
-            return <BulletPoints compact={compact} />;
+            return (
+              <BulletLayoutRenderer
+                layoutId={slide.contentLayout as BulletLayoutType}
+                items={boxContentItems}
+                accentColor={accentColor}
+                isNarrowSpace={isNarrowSpace}
+                {...editingProps}
+              />
+            );
           
           case "steps":
             return (
@@ -992,6 +1014,7 @@ export default function SlideRenderer({
                 items={boxContentItems}
                 accentColor={accentColor}
                 isNarrowSpace={isNarrowSpace}
+                {...editingProps}
               />
             );
           
@@ -1002,6 +1025,7 @@ export default function SlideRenderer({
                 items={boxContentItems}
                 accentColor={accentColor}
                 isNarrowSpace={isNarrowSpace}
+                {...editingProps}
               />
             );
           
@@ -1012,6 +1036,7 @@ export default function SlideRenderer({
                 items={boxContentItems}
                 accentColor={accentColor}
                 className="w-full min-h-[300px]"
+                {...editingProps}
               />
             );
           
@@ -1035,15 +1060,7 @@ export default function SlideRenderer({
                 compact={compact}
                 showIcons={true}
                 isNarrowSpace={isNarrowSpace}
-                isEditing={isEditing}
-                editingText={editingText}
-                onStartEditLabel={canEdit ? handleStartEditLabel : undefined}
-                onStartEditText={canEdit ? handleStartEditText : undefined}
-                onUpdateLabel={canEdit ? handleUpdateLabel : undefined}
-                onUpdateText={canEdit ? handleUpdateText : undefined}
-                onFinishEditing={onFinishEditing}
-                isOwner={canEdit}
-                isHovered={isHovered}
+                {...editingProps}
               />
             );
         }

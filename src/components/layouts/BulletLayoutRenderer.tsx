@@ -4,6 +4,7 @@ import React from "react";
 import { Check, ChevronRight } from "lucide-react";
 import type { BulletLayoutType, BulletContentItem } from "~/lib/layouts/content/bullets";
 import { calculateBulletGridDimensions } from "~/lib/layouts/content/bullets";
+import EditableText from "~/components/presentation/EditableText";
 
 interface BulletLayoutRendererProps {
   layoutId: BulletLayoutType;
@@ -11,6 +12,16 @@ interface BulletLayoutRendererProps {
   accentColor?: string;
   className?: string;
   isNarrowSpace?: boolean;
+  // Editing props
+  isEditing?: boolean;
+  editingText?: { field: string; bulletIndex?: number } | null;
+  onStartEditLabel?: (index: number) => void;
+  onStartEditText?: (index: number) => void;
+  onUpdateLabel?: (index: number, value: string) => void;
+  onUpdateText?: (index: number, value: string) => void;
+  onFinishEditing?: () => void;
+  isOwner?: boolean;
+  isHovered?: boolean;
 }
 
 export function BulletLayoutRenderer({
@@ -19,6 +30,15 @@ export function BulletLayoutRenderer({
   accentColor = "#047857",
   className = "",
   isNarrowSpace = false,
+  isEditing = false,
+  editingText = null,
+  onStartEditLabel,
+  onStartEditText,
+  onUpdateLabel,
+  onUpdateText,
+  onFinishEditing,
+  isOwner = false,
+  isHovered = false,
 }: BulletLayoutRendererProps) {
   const displayItems = items.slice(0, 8);
 
@@ -31,6 +51,15 @@ export function BulletLayoutRenderer({
         bulletType="circle"
         className={className}
         isNarrowSpace={isNarrowSpace}
+        isEditing={isEditing}
+        editingText={editingText}
+        onStartEditLabel={onStartEditLabel}
+        onStartEditText={onStartEditText}
+        onUpdateLabel={onUpdateLabel}
+        onUpdateText={onUpdateText}
+        onFinishEditing={onFinishEditing}
+        isOwner={isOwner}
+        isHovered={isHovered}
       />
     );
   }
@@ -44,6 +73,15 @@ export function BulletLayoutRenderer({
         bulletType="circle"
         className={className}
         isNarrowSpace={isNarrowSpace}
+        isEditing={isEditing}
+        editingText={editingText}
+        onStartEditLabel={onStartEditLabel}
+        onStartEditText={onStartEditText}
+        onUpdateLabel={onUpdateLabel}
+        onUpdateText={onUpdateText}
+        onFinishEditing={onFinishEditing}
+        isOwner={isOwner}
+        isHovered={isHovered}
       />
     );
   }
@@ -57,6 +95,15 @@ export function BulletLayoutRenderer({
         bulletType="checkmark"
         className={className}
         isNarrowSpace={isNarrowSpace}
+        isEditing={isEditing}
+        editingText={editingText}
+        onStartEditLabel={onStartEditLabel}
+        onStartEditText={onStartEditText}
+        onUpdateLabel={onUpdateLabel}
+        onUpdateText={onUpdateText}
+        onFinishEditing={onFinishEditing}
+        isOwner={isOwner}
+        isHovered={isHovered}
       />
     );
   }
@@ -68,6 +115,15 @@ export function BulletLayoutRenderer({
       accentColor={accentColor}
       className={className}
       isNarrowSpace={isNarrowSpace}
+      isEditing={isEditing}
+      editingText={editingText}
+      onStartEditLabel={onStartEditLabel}
+      onStartEditText={onStartEditText}
+      onUpdateLabel={onUpdateLabel}
+      onUpdateText={onUpdateText}
+      onFinishEditing={onFinishEditing}
+      isOwner={isOwner}
+      isHovered={isHovered}
     />
   );
 }
@@ -79,12 +135,30 @@ function CardBullets({
   bulletType,
   className,
   isNarrowSpace,
+  isEditing = false,
+  editingText = null,
+  onStartEditLabel,
+  onStartEditText,
+  onUpdateLabel,
+  onUpdateText,
+  onFinishEditing,
+  isOwner = false,
+  isHovered = false,
 }: {
   items: BulletContentItem[];
   accentColor: string;
   bulletType: "circle" | "checkmark";
   className: string;
   isNarrowSpace: boolean;
+  isEditing?: boolean;
+  editingText?: { field: string; bulletIndex?: number } | null;
+  onStartEditLabel?: (index: number) => void;
+  onStartEditText?: (index: number) => void;
+  onUpdateLabel?: (index: number, value: string) => void;
+  onUpdateText?: (index: number, value: string) => void;
+  onFinishEditing?: () => void;
+  isOwner?: boolean;
+  isHovered?: boolean;
 }) {
   const { columns, specialLayout } = calculateBulletGridDimensions(items.length, isNarrowSpace);
 
@@ -95,12 +169,41 @@ function CardBullets({
         {/* Top row - 2 items */}
         <div className="grid grid-cols-2 gap-4">
           {items.slice(0, 2).map((item, idx) => (
-            <BulletCard key={idx} item={item} accentColor={accentColor} bulletType={bulletType} />
+            <BulletCard
+              key={idx}
+              item={item}
+              index={idx}
+              accentColor={accentColor}
+              bulletType={bulletType}
+              isEditing={isEditing}
+              editingText={editingText}
+              onStartEditLabel={onStartEditLabel}
+              onStartEditText={onStartEditText}
+              onUpdateLabel={onUpdateLabel}
+              onUpdateText={onUpdateText}
+              onFinishEditing={onFinishEditing}
+              isOwner={isOwner}
+              isHovered={isHovered}
+            />
           ))}
         </div>
         {/* Bottom row - 1 full-width item */}
         <div>
-          <BulletCard item={items[2]!} accentColor={accentColor} bulletType={bulletType} />
+          <BulletCard
+            item={items[2]!}
+            index={2}
+            accentColor={accentColor}
+            bulletType={bulletType}
+            isEditing={isEditing}
+            editingText={editingText}
+            onStartEditLabel={onStartEditLabel}
+            onStartEditText={onStartEditText}
+            onUpdateLabel={onUpdateLabel}
+            onUpdateText={onUpdateText}
+            onFinishEditing={onFinishEditing}
+            isOwner={isOwner}
+            isHovered={isHovered}
+          />
         </div>
       </div>
     );
@@ -114,7 +217,22 @@ function CardBullets({
       }}
     >
       {items.map((item, idx) => (
-        <BulletCard key={idx} item={item} accentColor={accentColor} bulletType={bulletType} />
+        <BulletCard
+          key={idx}
+          item={item}
+          index={idx}
+          accentColor={accentColor}
+          bulletType={bulletType}
+          isEditing={isEditing}
+          editingText={editingText}
+          onStartEditLabel={onStartEditLabel}
+          onStartEditText={onStartEditText}
+          onUpdateLabel={onUpdateLabel}
+          onUpdateText={onUpdateText}
+          onFinishEditing={onFinishEditing}
+          isOwner={isOwner}
+          isHovered={isHovered}
+        />
       ))}
     </div>
   );
@@ -123,12 +241,32 @@ function CardBullets({
 // Single Bullet Card
 function BulletCard({
   item,
+  index,
   accentColor,
   bulletType,
+  isEditing = false,
+  editingText = null,
+  onStartEditLabel,
+  onStartEditText,
+  onUpdateLabel,
+  onUpdateText,
+  onFinishEditing,
+  isOwner = false,
+  isHovered = false,
 }: {
   item: BulletContentItem;
+  index: number;
   accentColor: string;
   bulletType: "circle" | "checkmark";
+  isEditing?: boolean;
+  editingText?: { field: string; bulletIndex?: number } | null;
+  onStartEditLabel?: (index: number) => void;
+  onStartEditText?: (index: number) => void;
+  onUpdateLabel?: (index: number, value: string) => void;
+  onUpdateText?: (index: number, value: string) => void;
+  onFinishEditing?: () => void;
+  isOwner?: boolean;
+  isHovered?: boolean;
 }) {
   return (
     <div
@@ -157,13 +295,39 @@ function BulletCard({
         {/* Content */}
         <div className="flex-1">
           {item.label && (
-            <h3 className="text-lg font-semibold text-slate-800 mb-2">
-              {item.label}
-            </h3>
+            onStartEditLabel ? (
+              <EditableText
+                value={item.label}
+                isEditing={isEditing && editingText?.field === `content-label-${index}`}
+                onStartEdit={() => onStartEditLabel(index)}
+                onChange={(val) => onUpdateLabel?.(index, val)}
+                onFinish={onFinishEditing || (() => {})}
+                className="text-lg font-semibold text-slate-800 mb-2"
+                isOwner={isOwner}
+                isHovered={isHovered}
+              />
+            ) : (
+              <h3 className="text-lg font-semibold text-slate-800 mb-2">
+                {item.label}
+              </h3>
+            )
           )}
-          <p className="text-sm text-slate-600 leading-relaxed">
-            {item.text}
-          </p>
+          {onStartEditText ? (
+            <EditableText
+              value={item.text}
+              isEditing={isEditing && editingText?.field === `content-text-${index}`}
+              onStartEdit={() => onStartEditText(index)}
+              onChange={(val) => onUpdateText?.(index, val)}
+              onFinish={onFinishEditing || (() => {})}
+              className="text-sm text-slate-600 leading-relaxed"
+              isOwner={isOwner}
+              isHovered={isHovered}
+            />
+          ) : (
+            <p className="text-sm text-slate-600 leading-relaxed">
+              {item.text}
+            </p>
+          )}
         </div>
       </div>
     </div>
@@ -177,12 +341,30 @@ function SimpleBullets({
   bulletType,
   className,
   isNarrowSpace,
+  isEditing = false,
+  editingText = null,
+  onStartEditLabel,
+  onStartEditText,
+  onUpdateLabel,
+  onUpdateText,
+  onFinishEditing,
+  isOwner = false,
+  isHovered = false,
 }: {
   items: BulletContentItem[];
   accentColor: string;
   bulletType: "circle";
   className: string;
   isNarrowSpace: boolean;
+  isEditing?: boolean;
+  editingText?: { field: string; bulletIndex?: number } | null;
+  onStartEditLabel?: (index: number) => void;
+  onStartEditText?: (index: number) => void;
+  onUpdateLabel?: (index: number, value: string) => void;
+  onUpdateText?: (index: number, value: string) => void;
+  onFinishEditing?: () => void;
+  isOwner?: boolean;
+  isHovered?: boolean;
 }) {
   // For 3 items: 2 columns on top row, 1 on bottom
   if (items.length === 3 && !isNarrowSpace) {
@@ -191,12 +373,39 @@ function SimpleBullets({
         {/* Top row - 2 items */}
         <div className="grid grid-cols-2 gap-8">
           {items.slice(0, 2).map((item, idx) => (
-            <SimpleBulletItem key={idx} item={item} accentColor={accentColor} />
+            <SimpleBulletItem
+              key={idx}
+              item={item}
+              index={idx}
+              accentColor={accentColor}
+              isEditing={isEditing}
+              editingText={editingText}
+              onStartEditLabel={onStartEditLabel}
+              onStartEditText={onStartEditText}
+              onUpdateLabel={onUpdateLabel}
+              onUpdateText={onUpdateText}
+              onFinishEditing={onFinishEditing}
+              isOwner={isOwner}
+              isHovered={isHovered}
+            />
           ))}
         </div>
         {/* Bottom row - 1 item */}
         <div>
-          <SimpleBulletItem item={items[2]!} accentColor={accentColor} />
+          <SimpleBulletItem
+            item={items[2]!}
+            index={2}
+            accentColor={accentColor}
+            isEditing={isEditing}
+            editingText={editingText}
+            onStartEditLabel={onStartEditLabel}
+            onStartEditText={onStartEditText}
+            onUpdateLabel={onUpdateLabel}
+            onUpdateText={onUpdateText}
+            onFinishEditing={onFinishEditing}
+            isOwner={isOwner}
+            isHovered={isHovered}
+          />
         </div>
       </div>
     );
@@ -213,7 +422,21 @@ function SimpleBullets({
       }}
     >
       {items.map((item, idx) => (
-        <SimpleBulletItem key={idx} item={item} accentColor={accentColor} />
+        <SimpleBulletItem
+          key={idx}
+          item={item}
+          index={idx}
+          accentColor={accentColor}
+          isEditing={isEditing}
+          editingText={editingText}
+          onStartEditLabel={onStartEditLabel}
+          onStartEditText={onStartEditText}
+          onUpdateLabel={onUpdateLabel}
+          onUpdateText={onUpdateText}
+          onFinishEditing={onFinishEditing}
+          isOwner={isOwner}
+          isHovered={isHovered}
+        />
       ))}
     </div>
   );
@@ -222,10 +445,30 @@ function SimpleBullets({
 // Single Simple Bullet Item
 function SimpleBulletItem({
   item,
+  index,
   accentColor,
+  isEditing = false,
+  editingText = null,
+  onStartEditLabel,
+  onStartEditText,
+  onUpdateLabel,
+  onUpdateText,
+  onFinishEditing,
+  isOwner = false,
+  isHovered = false,
 }: {
   item: BulletContentItem;
+  index: number;
   accentColor: string;
+  isEditing?: boolean;
+  editingText?: { field: string; bulletIndex?: number } | null;
+  onStartEditLabel?: (index: number) => void;
+  onStartEditText?: (index: number) => void;
+  onUpdateLabel?: (index: number, value: string) => void;
+  onUpdateText?: (index: number, value: string) => void;
+  onFinishEditing?: () => void;
+  isOwner?: boolean;
+  isHovered?: boolean;
 }) {
   return (
     <div className="flex items-start gap-3">
@@ -239,13 +482,39 @@ function SimpleBulletItem({
       {/* Content */}
       <div className="flex-1">
         {item.label && (
-          <h3 className="text-lg font-semibold text-slate-800 mb-1">
-            {item.label}
-          </h3>
+          onStartEditLabel ? (
+            <EditableText
+              value={item.label}
+              isEditing={isEditing && editingText?.field === `content-label-${index}`}
+              onStartEdit={() => onStartEditLabel(index)}
+              onChange={(val) => onUpdateLabel?.(index, val)}
+              onFinish={onFinishEditing || (() => {})}
+              className="text-lg font-semibold text-slate-800 mb-1"
+              isOwner={isOwner}
+              isHovered={isHovered}
+            />
+          ) : (
+            <h3 className="text-lg font-semibold text-slate-800 mb-1">
+              {item.label}
+            </h3>
+          )
         )}
-        <p className="text-sm text-slate-600 leading-relaxed">
-          {item.text}
-        </p>
+        {onStartEditText ? (
+          <EditableText
+            value={item.text}
+            isEditing={isEditing && editingText?.field === `content-text-${index}`}
+            onStartEdit={() => onStartEditText(index)}
+            onChange={(val) => onUpdateText?.(index, val)}
+            onFinish={onFinishEditing || (() => {})}
+            className="text-sm text-slate-600 leading-relaxed"
+            isOwner={isOwner}
+            isHovered={isHovered}
+          />
+        ) : (
+          <p className="text-sm text-slate-600 leading-relaxed">
+            {item.text}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -257,11 +526,29 @@ function ArrowBullets({
   accentColor,
   className,
   isNarrowSpace,
+  isEditing = false,
+  editingText = null,
+  onStartEditLabel,
+  onStartEditText,
+  onUpdateLabel,
+  onUpdateText,
+  onFinishEditing,
+  isOwner = false,
+  isHovered = false,
 }: {
   items: BulletContentItem[];
   accentColor: string;
   className: string;
   isNarrowSpace: boolean;
+  isEditing?: boolean;
+  editingText?: { field: string; bulletIndex?: number } | null;
+  onStartEditLabel?: (index: number) => void;
+  onStartEditText?: (index: number) => void;
+  onUpdateLabel?: (index: number, value: string) => void;
+  onUpdateText?: (index: number, value: string) => void;
+  onFinishEditing?: () => void;
+  isOwner?: boolean;
+  isHovered?: boolean;
 }) {
   // Vertical list layout
   const columns = isNarrowSpace ? 1 : items.length <= 4 ? 1 : 2;
@@ -282,13 +569,39 @@ function ArrowBullets({
           {/* Content */}
           <div className="flex-1">
             {item.label && (
-              <h3 className="text-base font-semibold text-slate-800 mb-1">
-                {item.label}
-              </h3>
+              onStartEditLabel ? (
+                <EditableText
+                  value={item.label}
+                  isEditing={isEditing && editingText?.field === `content-label-${idx}`}
+                  onStartEdit={() => onStartEditLabel(idx)}
+                  onChange={(val) => onUpdateLabel?.(idx, val)}
+                  onFinish={onFinishEditing || (() => {})}
+                  className="text-base font-semibold text-slate-800 mb-1"
+                  isOwner={isOwner}
+                  isHovered={isHovered}
+                />
+              ) : (
+                <h3 className="text-base font-semibold text-slate-800 mb-1">
+                  {item.label}
+                </h3>
+              )
             )}
-            <p className="text-sm text-slate-600 leading-relaxed">
-              {item.text}
-            </p>
+            {onStartEditText ? (
+              <EditableText
+                value={item.text}
+                isEditing={isEditing && editingText?.field === `content-text-${idx}`}
+                onStartEdit={() => onStartEditText(idx)}
+                onChange={(val) => onUpdateText?.(idx, val)}
+                onFinish={onFinishEditing || (() => {})}
+                className="text-sm text-slate-600 leading-relaxed"
+                isOwner={isOwner}
+                isHovered={isHovered}
+              />
+            ) : (
+              <p className="text-sm text-slate-600 leading-relaxed">
+                {item.text}
+              </p>
+            )}
           </div>
         </div>
       ))}

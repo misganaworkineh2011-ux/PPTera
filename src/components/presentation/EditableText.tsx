@@ -452,8 +452,8 @@ export default function EditableText({
       const clickPos = clickPositionRef.current;
       clickPositionRef.current = null;
       
-      // Focus the editor first
-      editorRef.current.focus();
+      // Focus the editor without scrolling
+      editorRef.current.focus({ preventScroll: true });
       
       if (clickPos) {
         // Use setTimeout to ensure DOM is fully rendered and positioned
@@ -591,10 +591,10 @@ export default function EditableText({
   useEffect(() => {
     if (!isEditing) return;
     document.addEventListener("selectionchange", handleSelectionChange);
-    window.addEventListener("scroll", handleSelectionChange, true);
+    // Don't listen to scroll events - this causes the snap-back issue
+    // The toolbar position is updated on selection change which is sufficient
     return () => {
       document.removeEventListener("selectionchange", handleSelectionChange);
-      window.removeEventListener("scroll", handleSelectionChange, true);
     };
   }, [isEditing, handleSelectionChange]);
 
@@ -630,7 +630,7 @@ export default function EditableText({
     } else {
       document.execCommand(cmd, false, cmdValue);
     }
-    editorRef.current?.focus();
+    editorRef.current?.focus({ preventScroll: true });
     handleInput();
   }, [handleInput]);
 

@@ -1880,10 +1880,52 @@ export default function PresentationViewer({
       <ContentLayoutPanel
         isOpen={showContentLayoutPanel && activeSlideIndex !== null}
         currentContentLayout={activeSlideIndex !== null ? (slides[activeSlideIndex]?.contentLayout || "box-style-1") : "box-style-1"}
-        contentItems={activeSlideIndex !== null ? (slides[activeSlideIndex]?.bulletPoints?.map((bp, i) => ({
-          label: `Point ${i + 1}`,
-          text: typeof bp === "string" ? bp : (bp as { text?: string }).text || "",
-        })) || []) : []}
+        contentItems={(() => {
+          if (activeSlideIndex === null) return [];
+          const slide = slides[activeSlideIndex];
+          if (!slide) return [];
+          
+          // Use same logic as SlideRenderer.getBoxContentItems for accurate preview
+          // 1. Prefer sections if available
+          if (slide.sections && slide.sections.length > 0) {
+            return slide.sections.map((section) => ({
+              label: section.heading,
+              text: section.description,
+            }));
+          }
+          // 2. Fall back to transformed content
+          if (slide.transformedContent?.items) {
+            return slide.transformedContent.items
+              .filter(item => item.label)
+              .map((item) => ({
+                label: item.label,
+                text: item.text,
+              }));
+          }
+          // 3. Fall back to bullet points with smart label extraction
+          if (slide.bulletPoints && slide.bulletPoints.length > 0) {
+            return slide.bulletPoints.map((bullet) => {
+              const bp = typeof bullet === "string" ? bullet : (bullet as { text?: string }).text || "";
+              // Try to extract label and text from "Label: Text" format
+              const colonIndex = bp.indexOf(":");
+              if (colonIndex > 0 && colonIndex < 50) {
+                const label = bp.substring(0, colonIndex).trim();
+                const text = bp.substring(colonIndex + 1).trim();
+                if (label && text) {
+                  return { label, text };
+                }
+              }
+              // If no label format, use first few words as label
+              const words = bp.split(" ");
+              if (words.length > 5) {
+                return { label: words.slice(0, 3).join(" "), text: bp };
+              }
+              // Short bullet - use as both
+              return { label: bp, text: bp };
+            });
+          }
+          return [];
+        })()}
         theme={theme}
         onSelectContentLayout={(layoutId) => {
           if (activeSlideIndex !== null) {

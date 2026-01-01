@@ -25,6 +25,24 @@ const config: NextConfig = {
   // Compression for responses
   compress: true,
   
+  // Permanent redirects for SEO (301 instead of 307)
+  async redirects() {
+    return [
+      // Redirect non-www to www (permanent 301)
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'pptmaster.app',
+          },
+        ],
+        destination: 'https://www.pptmaster.app/:path*',
+        permanent: true,
+      },
+    ];
+  },
+  
   // Optimize images
   images: {
     domains: ["images.unsplash.com", "images.pexels.com", "img.clerk.com", "res.cloudinary.com"],
