@@ -3752,7 +3752,7 @@ export default function SlideRenderer({
   if (layout === "clean-frame") {
     const firstImage = allImages[0];
     return (
-      <div className="h-full relative overflow-hidden">
+      <div className="relative overflow-hidden py-8 sm:py-10 md:py-12">
         <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''} pointer-events-none`} style={customBgStyle} />
 
         {/* Premium corner accents */}
@@ -3767,13 +3767,13 @@ export default function SlideRenderer({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full flex items-center p-4 sm:p-5 md:p-6 z-10">
+        <div className="relative flex items-start p-4 sm:p-6 md:p-8 lg:p-10 z-10">
           {/* Content side */}
-          <div className={`${hasImage ? "w-[55%]" : "w-full"} flex flex-col justify-center p-2 sm:p-3 md:p-4`}>
-            <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-2 sm:mb-3 md:mb-4" />
+          <div className={`${hasImage ? "w-[55%]" : "w-full"} flex flex-col py-4 sm:py-6`}>
+            <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-3 sm:mb-4 md:mb-5" />
             <EnhancedContent compact={false} />
             {canEdit && isHovered && !slide.contentLayout && (
-              <button onClick={() => onAddBullet(index)} className={`mt-2 flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`} style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              <button onClick={() => onAddBullet(index)} className={`mt-3 flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`} style={{ fontFamily: "'DM Sans', sans-serif" }}>
                 <Plus size={14} /> Add point
               </button>
             )}
@@ -3781,7 +3781,7 @@ export default function SlideRenderer({
 
           {/* Premium image frame */}
           {hasImage && firstImage && (
-            <div className="w-[45%] flex items-center justify-center p-2 sm:p-3 md:p-4">
+            <div className="w-[45%] flex items-center justify-center p-2 sm:p-4 md:p-6">
               <div className="relative w-full aspect-[4/3]">
                 <div className="relative w-full h-full rounded-xl overflow-hidden border border-slate-200/60 shadow-xl shadow-slate-900/10">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -3803,7 +3803,7 @@ export default function SlideRenderer({
   // LAYOUT 29: Pro Cards - Premium professional card grid layout (Corporate Clean)
   if (layout === "pro-cards") {
     return (
-      <div className="h-full relative overflow-hidden">
+      <div className="relative overflow-hidden py-8 sm:py-10 md:py-12">
         <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''} pointer-events-none`} style={customBgStyle} />
 
         {/* Elegant background elements */}
@@ -3815,18 +3815,16 @@ export default function SlideRenderer({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full flex flex-col p-4 sm:p-5 md:p-6 lg:p-8 z-10">
-          <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-3 sm:mb-4 text-center shrink-0" align="center" />
+        <div className="relative flex flex-col p-4 sm:p-6 md:p-8 lg:p-10 z-10">
+          <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-5 text-center shrink-0" align="center" />
 
-          {/* Content area - fills remaining space */}
-          <div className="flex-1 flex items-center justify-center">
-            <div className="w-full max-w-5xl">
-              <EnhancedContent compact={false} />
-            </div>
+          {/* Content area */}
+          <div className="w-full max-w-5xl mx-auto">
+            <EnhancedContent compact={false} />
           </div>
 
           {canEdit && isHovered && !slide.contentLayout && (
-            <button onClick={() => onAddBullet(index)} className={`mt-2 mx-auto flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors shrink-0`} style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            <button onClick={() => onAddBullet(index)} className={`mt-4 mx-auto flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors shrink-0`} style={{ fontFamily: "'DM Sans', sans-serif" }}>
               <Plus size={14} /> Add card
             </button>
           )}
@@ -3841,7 +3839,7 @@ export default function SlideRenderer({
   if (layout === "executive-split") {
     const firstImage = allImages[0];
     return (
-      <div className="h-full relative overflow-hidden">
+      <div className="relative overflow-hidden py-8 sm:py-10 md:py-12">
         <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''} pointer-events-none`} style={customBgStyle} />
 
         {/* Subtle dot pattern */}
@@ -3853,10 +3851,10 @@ export default function SlideRenderer({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full flex items-center p-4 sm:p-5 md:p-6 z-10">
+        <div className="relative flex items-start p-4 sm:p-6 md:p-8 lg:p-10 z-10">
           {/* Left: Premium Image */}
           {hasImage && firstImage && (
-            <div className="w-[42%] flex items-center justify-center p-2 sm:p-3 md:p-4">
+            <div className="w-[42%] flex items-center justify-center p-2 sm:p-4 md:p-6">
               <div className="relative w-full aspect-[4/3]">
                 <div className="relative w-full h-full rounded-xl overflow-hidden shadow-2xl shadow-slate-900/15 border border-slate-200/50">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -3870,7 +3868,7 @@ export default function SlideRenderer({
           )}
 
           {/* Right: Content */}
-          <div className={`${hasImage ? "w-[58%]" : "w-full"} flex flex-col justify-center p-3 sm:p-4 md:p-6`}>
+          <div className={`${hasImage ? "w-[58%]" : "w-full"} flex flex-col py-4 sm:py-6 px-2 sm:px-4`}>
             <div className="mb-2 sm:mb-3 flex items-center gap-3 shrink-0">
               <div className="w-10 h-0.5 bg-gradient-to-r from-blue-500 to-blue-400 rounded-full" />
               <span className="text-blue-600 text-xs font-semibold uppercase tracking-widest" style={{ fontFamily: "'DM Sans', sans-serif" }}>Overview</span>
@@ -5578,7 +5576,7 @@ export default function SlideRenderer({
       {/* Content Layout Selector Modal */}
       <ContentLayoutSelector
         isOpen={showContentLayoutSelector}
-        currentLayout={slide.contentLayout}
+        currentLayout={slide.contentLayout as BoxLayoutType | undefined}
         contentItems={boxContentItems}
         theme={theme}
         onSelect={(layoutId) => {

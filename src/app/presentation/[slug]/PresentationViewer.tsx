@@ -1897,7 +1897,7 @@ export default function PresentationViewer({
 }
 
 // Component for scroll view slides with dynamic height
-function ScrollSlideContent({ slide, index, theme, renderSlide }: {
+function ScrollSlideContent({ slide, index, theme, renderSlide, isMobile }: {
   slide: SlideData;
   index: number;
   theme: Theme;
@@ -1905,6 +1905,13 @@ function ScrollSlideContent({ slide, index, theme, renderSlide }: {
   isMobile?: boolean;
 }) {
   const themeType = getThemeType(theme);
+
+  // Check if this is a full-image or image-background layout that needs fixed aspect ratio
+  const slideLayout = slide.slideLayout;
+  const layout = slide.layout;
+  const isFullImageLayout = slideLayout === "image-full" || layout === "full-image";
+  const isImageBackgroundLayout = slideLayout === "image-background" || layout === "image-background";
+  const needsFixedAspectRatio = isFullImageLayout || isImageBackgroundLayout;
 
   const bgColors: Record<ThemeType, string> = {
     dark: "bg-gradient-to-br from-zinc-900 via-zinc-950 to-black",
@@ -1931,12 +1938,24 @@ function ScrollSlideContent({ slide, index, theme, renderSlide }: {
   const bgClass = hasCustomPageBg ? "" : bgColors[themeType];
   const bgStyle = hasCustomPageBg ? { background: theme.pageBackground } : {};
 
-  // Always use fixed 16:9 aspect ratio for consistent slide sizing
-  // This ensures h-full works correctly in child components
+  // For full-image layouts, use fixed aspect ratio
+  if (needsFixedAspectRatio) {
+    return (
+      <div 
+        className={`w-full ${bgClass} relative`} 
+        style={{ aspectRatio: "16/9", ...bgStyle }}
+      >
+        {renderSlide(slide, index, true)}
+      </div>
+    );
+  }
+
+  // Auto height - content determines the height naturally
+  // No minHeight - let content size the slide naturally
   return (
     <div 
       className={`w-full ${bgClass} relative`} 
-      style={{ aspectRatio: "16/9", ...bgStyle }}
+      style={{ ...bgStyle }}
     >
       {renderSlide(slide, index, true)}
     </div>
