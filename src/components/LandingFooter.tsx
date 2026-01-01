@@ -59,7 +59,7 @@ export const LandingFooter = ({ currentLang }: LandingFooterProps) => {
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 lg:gap-12">
           {/* Logo & Description */}
           <div className="col-span-2">
-            <LoadingLink href="/" className="inline-block mb-6">
+            <LoadingLink href={localPath("/")} className="inline-block mb-6">
               <Image
                 src="/logo.png"
                 alt="PPTMaster"

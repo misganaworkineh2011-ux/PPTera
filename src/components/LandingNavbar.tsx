@@ -50,7 +50,7 @@ export const LandingNavbar = ({ currentLang }: LandingNavbarProps) => {
         <div className="flex h-16 items-center justify-between">
           {/* Left: Logo & Nav */}
           <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center">
+            <Link href={localPath("/")} className="flex items-center">
               <Image
                 src="/logo.png"
                 alt="PPTMaster"

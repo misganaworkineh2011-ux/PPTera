@@ -24,13 +24,13 @@ export function LandingPageClient({ currentLang }: LandingPageClientProps) {
     <div className="landing-page min-h-screen bg-white font-sans text-zinc-900 selection:bg-black selection:text-white overflow-x-hidden">
       <LandingNavbar currentLang={currentLang} />
       <main className="relative">
-        <HeroSection t={t} />
+        <HeroSection t={t} currentLang={currentLang} />
         <TrustedBySection />
-        <FeaturesSection t={t} />
-        <HowItWorksSection t={t} />
+        <FeaturesSection t={t} currentLang={currentLang} />
+        <HowItWorksSection t={t} currentLang={currentLang} />
         <TestimonialsSection t={t} />
-        <CTASection t={t} />
-        <TemplatesSection t={t} />
+        <CTASection t={t} currentLang={currentLang} />
+        <TemplatesSection t={t} currentLang={currentLang} />
       </main>
       <LandingFooter currentLang={currentLang} />
     </div>

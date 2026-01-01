@@ -5,9 +5,17 @@ import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import { ArrowRight, Command } from "lucide-react";
 import { LoadingLink } from "~/components/LoadingLink";
 import { LazyVideo } from "./LazyVideo";
+import { type Language } from "~/lib/i18n";
 
 interface HeroSectionProps {
   t: any;
+  currentLang: Language;
+}
+
+// Helper to get localized path
+function getLocalizedPath(path: string, lang: Language): string {
+  if (lang === "en") return path;
+  return `/${lang}${path}`;
 }
 
 const CARD_HEIGHT = 420;
@@ -33,7 +41,9 @@ const CLOUDINARY_VIDEOS = [
   "https://res.cloudinary.com/demo/video/upload/f_auto,q_auto/samples/cld-sample-video",
 ];
 
-export function HeroSection({ t }: HeroSectionProps) {
+export function HeroSection({ t, currentLang }: HeroSectionProps) {
+  const localPath = (path: string) => getLocalizedPath(path, currentLang);
+  
   // Create cards with video URLs
   const baseCards = useMemo(() => [
     { id: 1, prompt: t.heroCard1Prompt || "Create a 10-slide investor pitch deck for my AI startup with market analysis and financials...", video: CLOUDINARY_VIDEOS[0] },
@@ -369,7 +379,7 @@ export function HeroSection({ t }: HeroSectionProps) {
               <SignedIn>
                 <div style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
                   <LoadingLink
-                    href="/"
+                    href={localPath("/")}
                     className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-zinc-900 rounded-lg hover:bg-zinc-800 transition-all shadow-lg hover:shadow-zinc-900/20"
                   >
                     {t.goToDashboard} <ArrowRight className="w-5 h-5" />

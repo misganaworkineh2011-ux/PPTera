@@ -4,13 +4,22 @@ import { useState } from "react";
 import Image from "next/image";
 import { SignedOut, SignedIn, SignInButton } from "@clerk/nextjs";
 import { LoadingLink } from "~/components/LoadingLink";
+import { type Language } from "~/lib/i18n";
 
 interface CTASectionProps {
   t: any;
+  currentLang: Language;
 }
 
-export function CTASection({ t }: CTASectionProps) {
+// Helper to get localized path
+function getLocalizedPath(path: string, lang: Language): string {
+  if (lang === "en") return path;
+  return `/${lang}${path}`;
+}
+
+export function CTASection({ t, currentLang }: CTASectionProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const localPath = (path: string) => getLocalizedPath(path, currentLang);
 
   // Shared classes for consistent styling - responsive text size
   const buttonClasses =
@@ -101,7 +110,7 @@ export function CTASection({ t }: CTASectionProps) {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
-            <LoadingLink href="/" className={buttonClasses}>
+            <LoadingLink href={localPath("/")} className={buttonClasses}>
               {/* White Background Layer */}
               {hoverEffectLayer}
 

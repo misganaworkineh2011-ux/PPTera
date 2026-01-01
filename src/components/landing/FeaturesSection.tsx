@@ -5,9 +5,17 @@ import { Sparkles, Wand2, Share2 } from "lucide-react";
 import { SignInButton } from "@clerk/nextjs";
 import { LoadingLink } from "~/components/LoadingLink";
 import { LazyVideo } from "./LazyVideo";
+import { type Language } from "~/lib/i18n";
 
 interface FeaturesSectionProps {
   t: any;
+  currentLang: Language;
+}
+
+// Helper to get localized path
+function getLocalizedPath(path: string, lang: Language): string {
+  if (lang === "en") return path;
+  return `/${lang}${path}`;
 }
 
 // Cloudinary demo video URL - replace with your own when ready
@@ -74,8 +82,9 @@ const THEME_PREVIEWS = [
   },
 ];
 
-export function FeaturesSection({ t }: FeaturesSectionProps) {
+export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
+  const localPath = (path: string) => getLocalizedPath(path, currentLang);
 
   return (
     <section className="py-24 px-6 lg:px-8">
@@ -292,7 +301,7 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
           </SignInButton>
 
           {/* Feature 2 - Get Inspired */}
-          <LoadingLink href="/inspiration" className="group block">
+          <LoadingLink href={localPath("/inspiration")} className="group block">
             <div className="overflow-hidden border border-zinc-200 aspect-[4/3] mb-6 relative group-hover:border-zinc-300 transition">
               {/* 3 Expandable Cards - Full height, no gap, sharp edges */}
               <div className="absolute inset-0 flex">
@@ -354,7 +363,7 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
             
             <div className="mt-12 space-y-8">
               {/* Feature Item */}
-              <LoadingLink href="/prompt-guide" className="group block border-b border-zinc-200 pb-8">
+              <LoadingLink href={localPath("/prompt-guide")} className="group block border-b border-zinc-200 pb-8">
                 <div className="flex items-start gap-3">
                   <Sparkles className="w-5 h-5 text-zinc-900 mt-0.5" />
                   <div>

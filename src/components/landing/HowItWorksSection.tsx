@@ -2,12 +2,22 @@
 
 import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import { LoadingLink } from "~/components/LoadingLink";
+import { type Language } from "~/lib/i18n";
 
 interface HowItWorksSectionProps {
   t: any;
+  currentLang: Language;
 }
 
-export function HowItWorksSection({ t }: HowItWorksSectionProps) {
+// Helper to get localized path
+function getLocalizedPath(path: string, lang: Language): string {
+  if (lang === "en") return path;
+  return `/${lang}${path}`;
+}
+
+export function HowItWorksSection({ t, currentLang }: HowItWorksSectionProps) {
+  const localPath = (path: string) => getLocalizedPath(path, currentLang);
+  
   return (
     <section className="py-24 px-6 lg:px-8 bg-lime-50">
       <div className="mx-auto max-w-[1400px]">
@@ -71,14 +81,14 @@ export function HowItWorksSection({ t }: HowItWorksSectionProps) {
             </SignedIn>
 
             {/* Card 2 */}
-            <LoadingLink href="/inspiration" className="flex-shrink-0 w-48 bg-emerald-800 rounded-xl overflow-hidden hover:opacity-90 transition">
+            <LoadingLink href={localPath("/inspiration")} className="flex-shrink-0 w-48 bg-emerald-800 rounded-xl overflow-hidden hover:opacity-90 transition">
               <div className="aspect-[3/4] bg-gradient-to-b from-emerald-700 to-emerald-900 p-4">
                 <p className="text-white text-lg font-serif">{t.startupPitch || "Startup Pitch"}</p>
               </div>
             </LoadingLink>
 
             {/* Card 3 */}
-            <LoadingLink href="/inspiration" className="flex-shrink-0 w-48 bg-amber-100 rounded-xl overflow-hidden hover:opacity-90 transition">
+            <LoadingLink href={localPath("/inspiration")} className="flex-shrink-0 w-48 bg-amber-100 rounded-xl overflow-hidden hover:opacity-90 transition">
               <div className="aspect-[3/4] p-4 flex flex-col justify-between">
                 <p className="text-amber-900 text-2xl font-bold">{t.salesReport || "Sales Report"}</p>
                 <div className="text-xs text-amber-700">{t.businessSeries || "Business Series"}</div>
@@ -86,7 +96,7 @@ export function HowItWorksSection({ t }: HowItWorksSectionProps) {
             </LoadingLink>
 
             {/* Card 4 */}
-            <LoadingLink href="/inspiration" className="flex-shrink-0 w-48 bg-white rounded-xl border border-zinc-200 overflow-hidden hover:border-zinc-300 transition">
+            <LoadingLink href={localPath("/inspiration")} className="flex-shrink-0 w-48 bg-white rounded-xl border border-zinc-200 overflow-hidden hover:border-zinc-300 transition">
               <div className="aspect-[3/4] p-4 flex flex-col justify-between">
                 <div>
                   <p className="text-4xl font-bold text-zinc-900">Q4</p>
@@ -97,7 +107,7 @@ export function HowItWorksSection({ t }: HowItWorksSectionProps) {
             </LoadingLink>
 
             {/* Card 5 */}
-            <LoadingLink href="/inspiration" className="flex-shrink-0 w-48 bg-rose-100 rounded-xl overflow-hidden hover:opacity-90 transition">
+            <LoadingLink href={localPath("/inspiration")} className="flex-shrink-0 w-48 bg-rose-100 rounded-xl overflow-hidden hover:opacity-90 transition">
               <div className="aspect-[3/4] p-4">
                 <p className="text-rose-900 text-lg font-medium">{t.marketingPlan || "Marketing Plan"}</p>
               </div>
@@ -115,7 +125,7 @@ export function HowItWorksSection({ t }: HowItWorksSectionProps) {
             </SignInButton>
           </SignedOut>
           <SignedIn>
-            <LoadingLink href="/" className="text-zinc-900 font-medium underline underline-offset-4 hover:text-zinc-600 transition">
+            <LoadingLink href={localPath("/")} className="text-zinc-900 font-medium underline underline-offset-4 hover:text-zinc-600 transition">
               {t.exploreAllTemplates || "Explore all themes"}
             </LoadingLink>
           </SignedIn>

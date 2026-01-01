@@ -1,7 +1,10 @@
 "use client";
 
+import { type Language } from "~/lib/i18n";
+
 interface TemplatesSectionProps {
   t?: any;
+  currentLang?: Language;
 }
 
 export function TemplatesSection({ t }: TemplatesSectionProps) {

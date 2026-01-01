@@ -8,6 +8,12 @@ import { LoadingLink } from "~/components/LoadingLink";
 import { useState, useEffect } from "react";
 import { JobApplicationModal } from "~/components/JobApplicationModal";
 
+// Helper to get localized path
+function getLocalizedPath(path: string, lang: Language): string {
+  if (lang === "en") return path;
+  return `/${lang}${path}`;
+}
+
 interface JobPosting {
   id: string;
   title: string;
@@ -25,6 +31,7 @@ interface CareersPageClientProps {
 
 export default function CareersPageClient({ currentLang = "en" }: CareersPageClientProps) {
   const t = getTranslations(currentLang);
+  const localPath = (path: string) => getLocalizedPath(path, currentLang);
   const [jobs, setJobs] = useState<JobPosting[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDepartment, setSelectedDepartment] = useState("all");
@@ -270,7 +277,7 @@ export default function CareersPageClient({ currentLang = "en" }: CareersPageCli
               {t.dontSeeRole || "Don't see a role that fits?"}
             </p>
             <LoadingLink
-              href="/contact"
+              href={localPath("/contact")}
               className="inline-flex items-center gap-2 text-[#06b6d4] font-semibold hover:underline"
             >
               {t.getInTouch || "Get in touch"}
