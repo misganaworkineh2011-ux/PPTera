@@ -389,8 +389,8 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
               <span className="text-sm text-zinc-500 px-2">{t.noCreditCard}</span>
             </div>
 
-            {/* Mobile Horizontal Slider - Below CTA buttons */}
-            <div className="lg:hidden mt-10 -mx-6 px-6">
+            {/* Mobile Horizontal Slider - Below CTA buttons - Fixed height to prevent CLS */}
+            <div className="lg:hidden mt-10 -mx-6 px-6" style={{ minHeight: MOBILE_CARD_HEIGHT + 60 }}>
               <div
                 ref={mobileContainerRef}
                 className={`relative overflow-hidden select-none ${isMobileDragging ? 'cursor-grabbing' : 'cursor-grab'}`}

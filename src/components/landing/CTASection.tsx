@@ -126,12 +126,14 @@ export function CTASection({ t, currentLang }: CTASectionProps) {
         </SignedIn>
       </div>
 
-      {/* Full Image */}
+      {/* Full Image - Responsive sizes for better performance */}
       <Image
         src="/background.png"
-        alt="Get started"
+        alt="Get started with PPT Master"
         width={1920}
         height={1080}
+        sizes="100vw"
+        quality={75}
         className="w-full h-auto block relative z-[1]"
         priority
       />

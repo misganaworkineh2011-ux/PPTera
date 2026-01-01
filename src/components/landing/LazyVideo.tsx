@@ -87,8 +87,12 @@ export function LazyVideo({
           playsInline
           preload="metadata"
           title={title}
+          aria-label={title}
           onLoadedData={() => setIsLoaded(true)}
-        />
+        >
+          {/* Empty captions track for accessibility - decorative video */}
+          <track kind="captions" src="" label="No captions available" default />
+        </video>
       )}
     </div>
   );
