@@ -9,6 +9,7 @@ import { bulletLayouts } from "~/lib/layouts/content/bullets";
 import { quotesLayouts } from "~/lib/layouts/content/quotes";
 import { imageLayouts } from "~/lib/layouts/content/images";
 import { circleLayouts } from "~/lib/layouts/content/circles";
+import { sequenceLayouts } from "~/lib/layouts/content/sequence";
 import type { ContentLayoutType } from "./types";
 
 // Import actual layout renderers
@@ -17,12 +18,14 @@ import { BulletLayoutRenderer } from "~/components/layouts/BulletLayoutRenderer"
 import { StepsLayoutRenderer } from "~/components/layouts/StepsLayoutRenderer";
 import { QuotesLayoutRenderer } from "~/components/layouts/QuotesLayoutRenderer";
 import { CircleLayoutRenderer } from "~/components/layouts/CircleLayoutRenderer";
+import SequenceLayoutRenderer from "./SequenceLayoutRenderer";
 
 import type { BoxLayoutType, BoxContentItem } from "~/lib/layouts/content/boxes";
 import type { BulletLayoutType, BulletContentItem } from "~/lib/layouts/content/bullets";
 import type { StepsLayoutType, StepContentItem } from "~/lib/layouts/content/steps";
 import type { QuotesLayoutType, QuoteContentItem } from "~/lib/layouts/content/quotes";
 import type { CircleLayoutType, CircleContentItem } from "~/lib/layouts/content/circles";
+import type { SequenceLayoutType, SequenceContentItem } from "~/lib/layouts/content/sequence";
 
 // Panel width constant - used for both panel and main content offset
 export const CONTENT_LAYOUT_PANEL_WIDTH = 420;
@@ -33,7 +36,7 @@ const HEADER_HEIGHT = 53;
 export type ContentLayoutId = ContentLayoutType;
 
 // Layout category definition
-type LayoutCategory = "boxes" | "steps" | "bullets" | "quotes" | "images" | "circles";
+type LayoutCategory = "boxes" | "steps" | "bullets" | "quotes" | "images" | "circles" | "sequence";
 
 interface LayoutCategoryConfig {
   id: LayoutCategory;
@@ -58,6 +61,7 @@ function getCategoryFromLayoutId(layoutId: string): LayoutCategory {
   if (layoutId.startsWith("quote-")) return "quotes";
   if (layoutId.startsWith("image-")) return "images";
   if (layoutId.startsWith("circle-")) return "circles";
+  if (layoutId.startsWith("sequence-")) return "sequence";
   return "boxes";
 }
 
@@ -98,6 +102,12 @@ const allCategories: LayoutCategoryConfig[] = [
     name: "Circular Layouts",
     description: "Circular and arc arrangements",
     layouts: circleLayouts.map(l => ({ ...l, id: l.id, supportsIcons: true })),
+  },
+  {
+    id: "sequence",
+    name: "Sequence & Timeline",
+    description: "Sequential process and timeline flows",
+    layouts: sequenceLayouts.map(l => ({ ...l, id: l.id, supportsIcons: true })),
   },
 ];
 
@@ -184,6 +194,15 @@ function ScaledLayoutPreview({
             layoutId={layoutId as CircleLayoutType}
             items={items as CircleContentItem[]}
             accentColor={accentColor}
+          />
+        );
+      
+      case "sequence":
+        return (
+          <SequenceLayoutRenderer
+            layoutId={layoutId as SequenceLayoutType}
+            items={items as SequenceContentItem[]}
+            theme={theme}
           />
         );
       
