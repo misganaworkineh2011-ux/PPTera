@@ -95,7 +95,7 @@ export const LandingFooter = ({ currentLang }: LandingFooterProps) => {
 
           {/* Product */}
           <div>
-            <h4 className="font-medium text-white mb-4">{t.productFooter}</h4>
+            <h3 className="font-medium text-white mb-4 text-base">{t.productFooter}</h3>
             <ul className="space-y-3 text-sm text-zinc-400">
               <li><LoadingLink href={localPath("/pricing")} className="hover:text-white transition">{t.pricing}</LoadingLink></li>
               <li><LoadingLink href={localPath("/inspiration")} className="hover:text-white transition">{t.inspiration}</LoadingLink></li>
@@ -106,7 +106,7 @@ export const LandingFooter = ({ currentLang }: LandingFooterProps) => {
 
           {/* Company */}
           <div>
-            <h4 className="font-medium text-white mb-4">{t.company}</h4>
+            <h3 className="font-medium text-white mb-4 text-base">{t.company}</h3>
             <ul className="space-y-3 text-sm text-zinc-400">
               <li><LoadingLink href={localPath("/about")} className="hover:text-white transition">{t.about}</LoadingLink></li>
               <li><LoadingLink href={localPath("/careers")} className="hover:text-white transition">{t.careers}</LoadingLink></li>
@@ -115,7 +115,7 @@ export const LandingFooter = ({ currentLang }: LandingFooterProps) => {
 
           {/* Help */}
           <div>
-            <h4 className="font-medium text-white mb-4">{t.help}</h4>
+            <h3 className="font-medium text-white mb-4 text-base">{t.help}</h3>
             <ul className="space-y-3 text-sm text-zinc-400">
               <li><LoadingLink href={localPath("/help")} className="hover:text-white transition">{t.helpCenter}</LoadingLink></li>
               <li><LoadingLink href={localPath("/community")} className="hover:text-white transition">{t.community}</LoadingLink></li>
@@ -125,7 +125,7 @@ export const LandingFooter = ({ currentLang }: LandingFooterProps) => {
 
           {/* Legal */}
           <div>
-            <h4 className="font-medium text-white mb-4">{t.legal}</h4>
+            <h3 className="font-medium text-white mb-4 text-base">{t.legal}</h3>
             <ul className="space-y-3 text-sm text-zinc-400">
               <li><LoadingLink href={localPath("/privacy")} className="hover:text-white transition">{t.privacyPolicy}</LoadingLink></li>
               <li><LoadingLink href={localPath("/terms")} className="hover:text-white transition">{t.termsOfService}</LoadingLink></li>

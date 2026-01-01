@@ -143,6 +143,13 @@ export default function RootLayout({
     "url": process.env.NEXT_PUBLIC_APP_URL || "https://www.pptmaster.app",
     "logo": `${process.env.NEXT_PUBLIC_APP_URL || "https://www.pptmaster.app"}/logo.png`,
     "description": "PPT Master is the best AI-powered PowerPoint generator for creating professional presentations, documents, and social media content.",
+    "foundingDate": "2024",
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "customer support",
+      "url": `${process.env.NEXT_PUBLIC_APP_URL || "https://www.pptmaster.app"}/contact`,
+      "availableLanguage": ["English", "Spanish", "French", "German", "Italian", "Portuguese", "Japanese", "Korean", "Chinese", "Arabic", "Hindi", "Russian"]
+    },
     "sameAs": []
   };
 

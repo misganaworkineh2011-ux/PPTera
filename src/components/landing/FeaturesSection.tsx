@@ -115,13 +115,13 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
                     </div>
                     
                     <div className="space-y-2">
-                      <p className="text-xs text-zinc-400 font-medium">{t.generating || "Generating"}</p>
-                      <p className="text-xs text-zinc-500">{t.creatingSlides || "Creating professional slides with consistent branding and smart layouts..."}</p>
+                      <p className="text-xs text-zinc-600 font-medium">{t.generating || "Generating"}</p>
+                      <p className="text-xs text-zinc-600">{t.creatingSlides || "Creating professional slides with consistent branding and smart layouts..."}</p>
                     </div>
                     
                     <div className="space-y-2">
-                      <p className="text-xs text-zinc-400 font-medium">{t.slidesIncluded || "Slides included:"}</p>
-                      <ul className="text-xs text-zinc-500 space-y-1">
+                      <p className="text-xs text-zinc-600 font-medium">{t.slidesIncluded || "Slides included:"}</p>
+                      <ul className="text-xs text-zinc-600 space-y-1">
                         <li>• {t.titleSlideWithBranding || "Title slide with company branding"}</li>
                         <li>• {t.problemSolutionOverview || "Problem & solution overview"}</li>
                         <li>• {t.marketAnalysisCharts || "Market analysis with charts"}</li>
@@ -153,12 +153,12 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
             ].map((tab, i, arr) => (
               <div key={tab.label} className="flex items-center gap-2">
                 <span
-                  className={`text-sm font-medium transition cursor-default ${i === 0 ? "text-zinc-900 border-b-2 border-zinc-900 pb-1" : "text-zinc-400"}`}
+                  className={`text-sm font-medium transition cursor-default ${i === 0 ? "text-zinc-900 border-b-2 border-zinc-900 pb-1" : "text-zinc-600"}`}
                 >
                   {tab.label}
                 </span>
                 {i < arr.length - 1 && (
-                  <svg className="w-4 h-4 text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-4 h-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 )}
@@ -431,19 +431,19 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
 
             {/* Floating Profile Card */}
             <div className="absolute -right-4 top-8 bg-purple-600 rounded-xl p-4 w-48 text-white shadow-xl">
-              <div className="text-xs text-purple-200 mb-3">PPT Master / {t.export || "Export"}</div>
+              <div className="text-xs text-purple-100 mb-3">PPT Master / {t.export || "Export"}</div>
               <div className="flex flex-col items-center">
                 <div className="w-14 h-14 rounded-full bg-purple-400 mb-2 flex items-center justify-center">
                   <Share2 className="w-6 h-6 text-white" />
                 </div>
                 <p className="font-medium">{t.readyToShare || "Ready to Share"}</p>
-                <p className="text-xs text-purple-200">10 {t.slides || "slides"}</p>
+                <p className="text-xs text-purple-100">10 {t.slides || "slides"}</p>
                 <div className="flex gap-2 mt-3">
                   <SignInButton mode="modal">
                     <button className="px-3 py-1 bg-white text-purple-600 text-xs rounded-md font-medium hover:bg-purple-50 transition" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>{t.export || "Export"}</button>
                   </SignInButton>
                   <SignInButton mode="modal">
-                    <button className="px-3 py-1 border border-purple-400 text-xs rounded-md hover:bg-purple-500 transition" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>{t.share || "Share"}</button>
+                    <button className="px-3 py-1 border border-purple-300 text-xs rounded-md hover:bg-purple-500 transition" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>{t.share || "Share"}</button>
                   </SignInButton>
                 </div>
               </div>

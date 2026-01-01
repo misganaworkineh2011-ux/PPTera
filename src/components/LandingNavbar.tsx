@@ -191,6 +191,8 @@ export const LandingNavbar = ({ currentLang }: LandingNavbarProps) => {
             <button 
               className="lg:hidden p-2 text-zinc-600"
               onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileOpen}
             >
               {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>

@@ -33,9 +33,72 @@ export const metadata: Metadata = {
 
 export const revalidate = 3600;
 
+// HowTo Schema for AI and search engine discoverability
+const howToSchema = {
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to Write Effective AI Prompts for Presentations",
+  "description": "Learn how to write effective prompts for PPT Master's AI presentation generator to create stunning, professional slides.",
+  "totalTime": "PT5M",
+  "step": [
+    {
+      "@type": "HowToStep",
+      "name": "Be Specific About Your Topic",
+      "text": "Clearly state the main topic or subject of your presentation. Include the industry, audience, and purpose.",
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Define Your Audience",
+      "text": "Specify who will be viewing the presentation - executives, students, clients, or general audience.",
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Specify the Number of Slides",
+      "text": "Tell the AI how many slides you need. For example: 'Create a 10-slide presentation'.",
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Include Key Points",
+      "text": "List the main points or sections you want covered in your presentation.",
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Choose a Style or Tone",
+      "text": "Specify if you want a professional, casual, creative, or formal tone for your slides.",
+    },
+  ],
+};
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://www.pptmaster.app",
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Prompt Guide",
+      "item": "https://www.pptmaster.app/prompt-guide",
+    },
+  ],
+};
+
 export default function PromptGuidePage() {
   return (
     <div className="landing-page min-h-screen bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <LandingNavbar currentLang="en" />
       <PromptGuideContent currentLang="en" />
       <LandingFooter currentLang="en" />

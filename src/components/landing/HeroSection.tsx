@@ -347,11 +347,11 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
             {/* Prompt Box synced with cards */}
             <div className="w-full bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-zinc-100 p-5 mb-8">
               <div className="flex items-center gap-2 mb-3 border-b border-zinc-50 pb-3">
-                <Command className="w-4 h-4 text-zinc-300" />
-                <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                <Command className="w-4 h-4 text-zinc-500" />
+                <span className="text-xs font-semibold text-zinc-600 uppercase tracking-wider">
                   {t.aiPrompt}
                 </span>
-                <span className="ml-auto text-xs text-zinc-300">
+                <span className="ml-auto text-xs text-zinc-500">
                   {getWrappedIndex(activeIndex) + 1}/{baseCards.length}
                 </span>
               </div>
@@ -432,7 +432,7 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
               </div>
 
               {/* Mobile Indicators */}
-              <div className="flex justify-center gap-2 mt-4" role="tablist" aria-label="Presentation slides">
+              <div className="flex justify-center gap-1 mt-4" role="tablist" aria-label="Presentation slides">
                 {baseCards.map((_, idx) => (
                   <button
                     key={idx}
@@ -441,12 +441,14 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
                     aria-label={`Go to slide ${idx + 1}`}
                     aria-selected={getWrappedIndex(activeIndex) === idx}
                     role="tab"
-                    className={`rounded-full transition-all duration-400 ${
+                    className="p-2 -m-1"
+                  >
+                    <span className={`block rounded-full transition-all duration-400 ${
                       getWrappedIndex(activeIndex) === idx
                         ? "w-6 h-2 bg-zinc-900"
-                        : "w-2 h-2 bg-zinc-300"
-                    }`}
-                  />
+                        : "w-2 h-2 bg-zinc-500"
+                    }`} />
+                  </button>
                 ))}
               </div>
             </div>
@@ -498,7 +500,7 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
             </div>
 
             {/* Indicators */}
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col gap-2 mr-4" role="tablist" aria-label="Presentation slides">
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col gap-1 mr-2" role="tablist" aria-label="Presentation slides">
               {baseCards.map((_, idx) => (
                 <button
                   key={idx}
@@ -507,12 +509,14 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
                   aria-label={`Go to slide ${idx + 1}`}
                   aria-selected={getWrappedIndex(activeIndex) === idx}
                   role="tab"
-                  className={`w-2 rounded-full transition-all duration-400 ${
+                  className="p-2 -m-1"
+                >
+                  <span className={`block w-2 rounded-full transition-all duration-400 ${
                     getWrappedIndex(activeIndex) === idx
                       ? "h-8 bg-zinc-900"
-                      : "h-2 bg-zinc-300 hover:bg-zinc-400"
-                  }`}
-                />
+                      : "h-2 bg-zinc-500 hover:bg-zinc-600"
+                  }`} />
+                </button>
               ))}
             </div>
           </div>

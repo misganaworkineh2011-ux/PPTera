@@ -1,0 +1,312 @@
+66
+Performance
+Values are estimated and may vary. The performance score is calculated directly from these metrics.See calculator.
+0–49
+50–89
+90–100
+Final Screenshot
+
+Metrics
+Expand view
+First Contentful Paint
+1.8 s
+Largest Contentful Paint
+7.7 s
+Total Blocking Time
+70 ms
+Cumulative Layout Shift
+0.175
+Speed Index
+3.3 s
+View Treemap
+Screenshot
+Screenshot
+Screenshot
+Screenshot
+Screenshot
+Screenshot
+Screenshot
+Screenshot
+Show audits relevant to:
+
+All
+
+FCP
+
+LCP
+
+TBT
+
+CLS
+Insights
+Render blocking requests Est savings of 1,400 ms
+Layout shift culprits
+Network dependency tree
+Improve image delivery Est savings of 557 KiB
+Legacy JavaScript Est savings of 11 KiB
+LCP breakdown
+3rd parties
+These insights are also available in the Chrome DevTools Performance Panel - record a trace to view more detailed information.
+Diagnostics
+Reduce unused JavaScript Est savings of 469 KiB
+Reduce unused CSS Est savings of 27 KiB
+Avoid enormous network payloads Total size was 28,417 KiB
+Avoid long main-thread tasks 3 long tasks found
+More information about the performance of your application. These numbers don't directly affect the Performance score.
+Passed audits (16)
+Show
+87
+Accessibility
+These checks highlight opportunities to improve the accessibility of your web app. Automatic detection can only detect a subset of issues and does not guarantee the accessibility of your web app, so manual testing is also encouraged.
+Names and labels
+Buttons do not have an accessible name
+When a button doesn't have an accessible name, screen readers announce it as "button", making it unusable for users who rely on screen readers. Learn how to make buttons more accessible.
+Failing Elements
+nav.mx-auto > div.flex > div.flex > button.lg:hidden
+<button class="lg:hidden p-2 text-zinc-600">
+These are opportunities to improve the semantics of the controls in your application. This may enhance the experience for users of assistive technology, like a screen reader.
+Contrast
+Background and foreground colors do not have a sufficient contrast ratio.
+Low-contrast text is difficult or impossible for many users to read. Learn how to provide sufficient color contrast.
+Failing Elements
+AI PROMPT
+<span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+AI PROMPT 1/5 Create an investor pitch deck for my AI startup with market anal…
+<div class="w-full bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] border bord…">
+1/5
+<span class="ml-auto text-xs text-zinc-300">
+AI PROMPT 1/5 Create an investor pitch deck for my AI startup with market anal…
+<div class="w-full bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] border bord…">
+duolingo
+<span class="text-zinc-400 font-semibold text-sm tracking-wide whitespace-nowrap">
+duolingo GitHub Microsoft NETFLIX The New York Times Pentagram slack stripe zoo…
+<section class="py-2 border-y border-zinc-100 overflow-hidden bg-white">
+GitHub
+<span class="text-zinc-400 font-semibold text-sm tracking-wide whitespace-nowrap">
+duolingo GitHub Microsoft NETFLIX The New York Times Pentagram slack stripe zoo…
+<section class="py-2 border-y border-zinc-100 overflow-hidden bg-white">
+Microsoft
+<span class="text-zinc-400 font-semibold text-sm tracking-wide whitespace-nowrap">
+duolingo GitHub Microsoft NETFLIX The New York Times Pentagram slack stripe zoo…
+<section class="py-2 border-y border-zinc-100 overflow-hidden bg-white">
+NETFLIX
+<span class="text-zinc-400 font-semibold text-sm tracking-wide whitespace-nowrap">
+duolingo GitHub Microsoft NETFLIX The New York Times Pentagram slack stripe zoo…
+<section class="py-2 border-y border-zinc-100 overflow-hidden bg-white">
+Generating
+<p class="text-xs text-zinc-400 font-medium">
+AI Assistant Create a pitch deck for my SaaS startup with modern design. Gene…
+<div class="border-r border-zinc-200 p-6 bg-white">
+Slides included:
+<p class="text-xs text-zinc-400 font-medium">
+AI Assistant Create a pitch deck for my SaaS startup with modern design. Gene…
+<div class="border-r border-zinc-200 p-6 bg-white">
+Design
+<span class="text-sm font-medium transition cursor-default text-zinc-400">
+Get started for free Design beautiful presentations The smartest way to create…
+<div class="landing-page min-h-screen bg-white font-sans text-zinc-900 selection:bg-bl…">
+Edit
+<span class="text-sm font-medium transition cursor-default text-zinc-400">
+Get started for free Design beautiful presentations The smartest way to create…
+<div class="landing-page min-h-screen bg-white font-sans text-zinc-900 selection:bg-bl…">
+Publish
+<span class="text-sm font-medium transition cursor-default text-zinc-400">
+Get started for free Design beautiful presentations The smartest way to create…
+<div class="landing-page min-h-screen bg-white font-sans text-zinc-900 selection:bg-bl…">
+Present
+<span class="text-sm font-medium transition cursor-default text-zinc-400">
+Get started for free Design beautiful presentations The smartest way to create…
+<div class="landing-page min-h-screen bg-white font-sans text-zinc-900 selection:bg-bl…">
+PPT Master / Export
+<div class="text-xs text-purple-200 mb-3">
+PPT Master / Export Ready to Share 10 slides Export Share
+<div class="absolute -right-4 top-8 bg-purple-600 rounded-xl p-4 w-48 text-white shado…">
+10 slides
+<p class="text-xs text-purple-200">
+PPT Master / Export Ready to Share 10 slides Export Share
+<div class="absolute -right-4 top-8 bg-purple-600 rounded-xl p-4 w-48 text-white shado…">
+Layouts
+<span class="text-zinc-500">
+Theme/Corporate Layouts Colors elegant-noir
+<button class="flex-shrink-0 w-64 bg-zinc-900 rounded-xl p-4 text-white hover:bg-zinc-800…" component="SignInButton">
+Colors
+<span class="text-zinc-500">
+Theme/Corporate Layouts Colors elegant-noir
+<button class="flex-shrink-0 w-64 bg-zinc-900 rounded-xl p-4 text-white hover:bg-zinc-800…" component="SignInButton">
+© 2025 PPTMaster Tech, Inc.
+<p class="text-sm text-zinc-500">
+How good ideas get into the universe. Subscribe Product Pricing Inspiration Pr…
+<footer class="bg-zinc-900 text-white">
+Privacy Policy
+<span class="">
+How good ideas get into the universe. Subscribe Product Pricing Inspiration Pr…
+<footer class="bg-zinc-900 text-white">
+Terms of Service
+<span class="">
+How good ideas get into the universe. Subscribe Product Pricing Inspiration Pr…
+<footer class="bg-zinc-900 text-white">
+Cookie Notice
+<span class="">
+How good ideas get into the universe. Subscribe Product Pricing Inspiration Pr…
+<footer class="bg-zinc-900 text-white">
+These are opportunities to improve the legibility of your content.
+Best practices
+Touch targets do not have sufficient size or spacing.
+Touch targets with sufficient size and spacing help users who may have difficulty targeting small controls to activate the targets. Learn more about touch targets.
+Failing Elements
+Go to slide 2
+<button aria-label="Go to slide 2" aria-selected="false" role="tab" class="rounded-full transition-all duration-400 w-2 h-2 bg-zinc-300" style="cursor: url(&quot;/pointinghand.svg&quot;) 12 8, pointer;">
+Go to slide 3
+<button aria-label="Go to slide 3" aria-selected="false" role="tab" class="rounded-full transition-all duration-400 w-2 h-2 bg-zinc-300" style="cursor: url(&quot;/pointinghand.svg&quot;) 12 8, pointer;">
+Go to slide 3
+<button aria-label="Go to slide 3" aria-selected="false" role="tab" class="rounded-full transition-all duration-400 w-2 h-2 bg-zinc-300" style="cursor: url(&quot;/pointinghand.svg&quot;) 12 8, pointer;">
+Go to slide 2
+<button aria-label="Go to slide 2" aria-selected="false" role="tab" class="rounded-full transition-all duration-400 w-2 h-2 bg-zinc-300" style="cursor: url(&quot;/pointinghand.svg&quot;) 12 8, pointer;">
+Go to slide 4
+<button aria-label="Go to slide 4" aria-selected="false" role="tab" class="rounded-full transition-all duration-400 w-2 h-2 bg-zinc-300" style="cursor: url(&quot;/pointinghand.svg&quot;) 12 8, pointer;">
+Go to slide 4
+<button aria-label="Go to slide 4" aria-selected="false" role="tab" class="rounded-full transition-all duration-400 w-2 h-2 bg-zinc-300" style="cursor: url(&quot;/pointinghand.svg&quot;) 12 8, pointer;">
+Go to slide 3
+<button aria-label="Go to slide 3" aria-selected="false" role="tab" class="rounded-full transition-all duration-400 w-2 h-2 bg-zinc-300" style="cursor: url(&quot;/pointinghand.svg&quot;) 12 8, pointer;">
+Go to slide 5
+<button aria-label="Go to slide 5" aria-selected="false" role="tab" class="rounded-full transition-all duration-400 w-2 h-2 bg-zinc-300" style="cursor: url(&quot;/pointinghand.svg&quot;) 12 8, pointer;">
+Go to slide 5
+<button aria-label="Go to slide 5" aria-selected="false" role="tab" class="rounded-full transition-all duration-400 w-2 h-2 bg-zinc-300" style="cursor: url(&quot;/pointinghand.svg&quot;) 12 8, pointer;">
+Go to slide 4
+<button aria-label="Go to slide 4" aria-selected="false" role="tab" class="rounded-full transition-all duration-400 w-2 h-2 bg-zinc-300" style="cursor: url(&quot;/pointinghand.svg&quot;) 12 8, pointer;">
+These items highlight common accessibility best practices.
+Navigation
+Heading elements are not in a sequentially-descending order
+Properly ordered headings that do not skip levels convey the semantic structure of the page, making it easier to navigate and understand when using assistive technologies. Learn more about heading order.
+Failing Elements
+Product
+<h4 class="font-medium text-white mb-4">
+These are opportunities to improve keyboard navigation in your application.
+
+87
+Accessibility
+These checks highlight opportunities to improve the accessibility of your web app. Automatic detection can only detect a subset of issues and does not guarantee the accessibility of your web app, so manual testing is also encouraged.
+Names and labels
+Buttons do not have an accessible name
+When a button doesn't have an accessible name, screen readers announce it as "button", making it unusable for users who rely on screen readers. Learn how to make buttons more accessible.
+Failing Elements
+nav.mx-auto > div.flex > div.flex > button.lg:hidden
+<button class="lg:hidden p-2 text-zinc-600">
+These are opportunities to improve the semantics of the controls in your application. This may enhance the experience for users of assistive technology, like a screen reader.
+Contrast
+Background and foreground colors do not have a sufficient contrast ratio.
+Low-contrast text is difficult or impossible for many users to read. Learn how to provide sufficient color contrast.
+Failing Elements
+AI PROMPT
+<span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+AI PROMPT 1/5 Create an investor pitch deck for my AI startup with market anal…
+<div class="w-full bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] border bord…">
+1/5
+<span class="ml-auto text-xs text-zinc-300">
+AI PROMPT 1/5 Create an investor pitch deck for my AI startup with market anal…
+<div class="w-full bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] border bord…">
+duolingo
+<span class="text-zinc-400 font-semibold text-sm tracking-wide whitespace-nowrap">
+duolingo GitHub Microsoft NETFLIX The New York Times Pentagram slack stripe zoo…
+<section class="py-2 border-y border-zinc-100 overflow-hidden bg-white">
+GitHub
+<span class="text-zinc-400 font-semibold text-sm tracking-wide whitespace-nowrap">
+duolingo GitHub Microsoft NETFLIX The New York Times Pentagram slack stripe zoo…
+<section class="py-2 border-y border-zinc-100 overflow-hidden bg-white">
+Microsoft
+<span class="text-zinc-400 font-semibold text-sm tracking-wide whitespace-nowrap">
+duolingo GitHub Microsoft NETFLIX The New York Times Pentagram slack stripe zoo…
+<section class="py-2 border-y border-zinc-100 overflow-hidden bg-white">
+NETFLIX
+<span class="text-zinc-400 font-semibold text-sm tracking-wide whitespace-nowrap">
+duolingo GitHub Microsoft NETFLIX The New York Times Pentagram slack stripe zoo…
+<section class="py-2 border-y border-zinc-100 overflow-hidden bg-white">
+Generating
+<p class="text-xs text-zinc-400 font-medium">
+AI Assistant Create a pitch deck for my SaaS startup with modern design. Gene…
+<div class="border-r border-zinc-200 p-6 bg-white">
+Slides included:
+<p class="text-xs text-zinc-400 font-medium">
+AI Assistant Create a pitch deck for my SaaS startup with modern design. Gene…
+<div class="border-r border-zinc-200 p-6 bg-white">
+Design
+<span class="text-sm font-medium transition cursor-default text-zinc-400">
+Get started for free Design beautiful presentations The smartest way to create…
+<div class="landing-page min-h-screen bg-white font-sans text-zinc-900 selection:bg-bl…">
+Edit
+<span class="text-sm font-medium transition cursor-default text-zinc-400">
+Get started for free Design beautiful presentations The smartest way to create…
+<div class="landing-page min-h-screen bg-white font-sans text-zinc-900 selection:bg-bl…">
+Publish
+<span class="text-sm font-medium transition cursor-default text-zinc-400">
+Get started for free Design beautiful presentations The smartest way to create…
+<div class="landing-page min-h-screen bg-white font-sans text-zinc-900 selection:bg-bl…">
+Present
+<span class="text-sm font-medium transition cursor-default text-zinc-400">
+Get started for free Design beautiful presentations The smartest way to create…
+<div class="landing-page min-h-screen bg-white font-sans text-zinc-900 selection:bg-bl…">
+PPT Master / Export
+<div class="text-xs text-purple-200 mb-3">
+PPT Master / Export Ready to Share 10 slides Export Share
+<div class="absolute -right-4 top-8 bg-purple-600 rounded-xl p-4 w-48 text-white shado…">
+10 slides
+<p class="text-xs text-purple-200">
+PPT Master / Export Ready to Share 10 slides Export Share
+<div class="absolute -right-4 top-8 bg-purple-600 rounded-xl p-4 w-48 text-white shado…">
+Layouts
+<span class="text-zinc-500">
+Theme/Corporate Layouts Colors elegant-noir
+<button class="flex-shrink-0 w-64 bg-zinc-900 rounded-xl p-4 text-white hover:bg-zinc-800…" component="SignInButton">
+Colors
+<span class="text-zinc-500">
+Theme/Corporate Layouts Colors elegant-noir
+<button class="flex-shrink-0 w-64 bg-zinc-900 rounded-xl p-4 text-white hover:bg-zinc-800…" component="SignInButton">
+© 2025 PPTMaster Tech, Inc.
+<p class="text-sm text-zinc-500">
+How good ideas get into the universe. Subscribe Product Pricing Inspiration Pr…
+<footer class="bg-zinc-900 text-white">
+Privacy Policy
+<span class="">
+How good ideas get into the universe. Subscribe Product Pricing Inspiration Pr…
+<footer class="bg-zinc-900 text-white">
+Terms of Service
+<span class="">
+How good ideas get into the universe. Subscribe Product Pricing Inspiration Pr…
+<footer class="bg-zinc-900 text-white">
+Cookie Notice
+<span class="">
+How good ideas get into the universe. Subscribe Product Pricing Inspiration Pr…
+<footer class="bg-zinc-900 text-white">
+These are opportunities to improve the legibility of your content.
+Best practices
+Touch targets do not have sufficient size or spacing.
+Touch targets with sufficient size and spacing help users who may have difficulty targeting small controls to activate the targets. Learn more about touch targets.
+Failing Elements
+Go to slide 2
+<button aria-label="Go to slide 2" aria-selected="false" role="tab" class="rounded-full transition-all duration-400 w-2 h-2 bg-zinc-300" style="cursor: url(&quot;/pointinghand.svg&quot;) 12 8, pointer;">
+Go to slide 3
+<button aria-label="Go to slide 3" aria-selected="false" role="tab" class="rounded-full transition-all duration-400 w-2 h-2 bg-zinc-300" style="cursor: url(&quot;/pointinghand.svg&quot;) 12 8, pointer;">
+Go to slide 3
+<button aria-label="Go to slide 3" aria-selected="false" role="tab" class="rounded-full transition-all duration-400 w-2 h-2 bg-zinc-300" style="cursor: url(&quot;/pointinghand.svg&quot;) 12 8, pointer;">
+Go to slide 2
+<button aria-label="Go to slide 2" aria-selected="false" role="tab" class="rounded-full transition-all duration-400 w-2 h-2 bg-zinc-300" style="cursor: url(&quot;/pointinghand.svg&quot;) 12 8, pointer;">
+Go to slide 4
+<button aria-label="Go to slide 4" aria-selected="false" role="tab" class="rounded-full transition-all duration-400 w-2 h-2 bg-zinc-300" style="cursor: url(&quot;/pointinghand.svg&quot;) 12 8, pointer;">
+Go to slide 4
+<button aria-label="Go to slide 4" aria-selected="false" role="tab" class="rounded-full transition-all duration-400 w-2 h-2 bg-zinc-300" style="cursor: url(&quot;/pointinghand.svg&quot;) 12 8, pointer;">
+Go to slide 3
+<button aria-label="Go to slide 3" aria-selected="false" role="tab" class="rounded-full transition-all duration-400 w-2 h-2 bg-zinc-300" style="cursor: url(&quot;/pointinghand.svg&quot;) 12 8, pointer;">
+Go to slide 5
+<button aria-label="Go to slide 5" aria-selected="false" role="tab" class="rounded-full transition-all duration-400 w-2 h-2 bg-zinc-300" style="cursor: url(&quot;/pointinghand.svg&quot;) 12 8, pointer;">
+Go to slide 5
+<button aria-label="Go to slide 5" aria-selected="false" role="tab" class="rounded-full transition-all duration-400 w-2 h-2 bg-zinc-300" style="cursor: url(&quot;/pointinghand.svg&quot;) 12 8, pointer;">
+Go to slide 4
+<button aria-label="Go to slide 4" aria-selected="false" role="tab" class="rounded-full transition-all duration-400 w-2 h-2 bg-zinc-300" style="cursor: url(&quot;/pointinghand.svg&quot;) 12 8, pointer;">
+These items highlight common accessibility best practices.
+Navigation
+Heading elements are not in a sequentially-descending order
+Properly ordered headings that do not skip levels convey the semantic structure of the page, making it easier to navigate and understand when using assistive technologies. Learn more about heading order.
+Failing Elements
+Product
+<h4 class="font-medium text-white mb-4">
+These are opportunities to improve keyboard navigation in your application.

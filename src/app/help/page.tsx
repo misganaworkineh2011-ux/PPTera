@@ -176,8 +176,52 @@ export default async function HelpPage() {
   const { gettingStartedArticles, featuresArticles, troubleshootingArticles, faqArticles } =
     getHelpContent(t);
 
+  // FAQPage Schema for better AI and search engine discoverability
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqArticles.map((faq) => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer,
+      },
+    })),
+  };
+
+  // BreadcrumbList Schema for navigation
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.pptmaster.app",
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Help Center",
+        "item": "https://www.pptmaster.app/help",
+      },
+    ],
+  };
+
   return (
     <div className="landing-page min-h-screen bg-white">
+      {/* JSON-LD Structured Data for SEO and AI discoverability */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      
       <LandingNavbar currentLang="en" />
 
       {/* Hero Section */}
