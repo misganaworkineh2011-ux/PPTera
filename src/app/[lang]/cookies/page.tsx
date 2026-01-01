@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { generateLanguageParams, isValidLanguage, type Language } from "~/lib/i18n";
+import { generateLanguageParams, getTranslations, isValidLanguage, type Language } from "~/lib/i18n";
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
 import { CookiesContent } from "../../cookies/CookiesContent";
