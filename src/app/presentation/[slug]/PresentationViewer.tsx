@@ -215,33 +215,6 @@ export default function PresentationViewer({
   const streamingTextRef = useRef<Record<number, Record<string, string>>>({});
   // Track EventSource to prevent duplicates - use window to persist across re-renders
   const eventSourceRef = useRef<EventSource | null>(null);
-  // Track scroll position when content layout panel opens
-  const scrollPositionRef = useRef<number>(0);
-  const mainContentRef = useRef<HTMLDivElement>(null);
-
-  // Hide body scrollbar and preserve scroll position when content layout panel is open
-  useEffect(() => {
-    if (showContentLayoutPanel) {
-      // Save current scroll position before switching to fixed
-      scrollPositionRef.current = window.scrollY;
-      document.body.style.overflow = 'hidden';
-      // After the container becomes fixed, set its scroll position
-      requestAnimationFrame(() => {
-        if (mainContentRef.current) {
-          mainContentRef.current.scrollTop = scrollPositionRef.current;
-        }
-      });
-    } else {
-      document.body.style.overflow = '';
-      // Restore scroll position when closing panel
-      if (scrollPositionRef.current > 0) {
-        window.scrollTo(0, scrollPositionRef.current);
-      }
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [showContentLayoutPanel]);
 
   // Connect to streaming endpoint when in streaming mode
   useEffect(() => {
@@ -1622,16 +1595,11 @@ export default function PresentationViewer({
           />
         )}
 
-        {/* Main content area - scrollable container that shrinks when panel is open */}
+        {/* Main content area - uses margin to make room for panel, preserving scroll position */}
         <div 
-          ref={mainContentRef}
-          className={`transition-all duration-300 ${showContentLayoutPanel ? 'fixed left-0 overflow-y-scroll' : ''}`}
+          className="transition-all duration-300"
           style={showContentLayoutPanel ? {
-            top: '53px',
-            right: `${CONTENT_LAYOUT_PANEL_WIDTH}px`,
-            bottom: '0',
-            left: '0',
-            height: 'calc(100vh - 53px)',
+            marginRight: `${CONTENT_LAYOUT_PANEL_WIDTH}px`,
           } : {}}
         >
         <div className={`${isFullscreen ? "" : "px-0 sm:px-2 md:px-4 py-4 sm:py-8"} max-w-full ${showContentLayoutPanel ? 'pb-20' : ''}`}>
