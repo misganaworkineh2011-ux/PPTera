@@ -4,15 +4,27 @@ import { useState, useEffect } from "react";
 import { Star, X, Send, Loader2, CheckCircle } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { useUser } from "@clerk/nextjs";
+import type { Theme } from "~/lib/themes";
 
 const STORAGE_KEY = "pptmaster_rate_prompt";
 const PRESENTATIONS_THRESHOLD = 5;
 
-interface RateUsModalProps {
-  onClose: () => void;
+// Helper to determine if a color is dark
+function isColorDark(hexColor: string): boolean {
+  const hex = hexColor.replace("#", "");
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance < 0.5;
 }
 
-export function RateUsModal({ onClose }: RateUsModalProps) {
+interface RateUsModalProps {
+  onClose: () => void;
+  theme?: Theme;
+}
+
+export function RateUsModal({ onClose, theme }: RateUsModalProps) {
   const { user } = useUser();
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -24,6 +36,32 @@ export function RateUsModal({ onClose }: RateUsModalProps) {
     title: "",
     content: "",
   });
+
+  // Theme-aware colors
+  const isDark = theme ? isColorDark(theme.colors.background) : true;
+  const colors = isDark ? {
+    bg: "#18181b",
+    text: "#fafafa",
+    textMuted: "#a1a1aa",
+    border: "#3f3f46",
+    inputBg: "#27272a",
+    hoverBg: "#3f3f46",
+    successBg: "rgba(34, 197, 94, 0.1)",
+    successText: "#4ade80",
+    starFill: "#facc15",
+    starEmpty: "#3f3f46",
+  } : {
+    bg: "#ffffff",
+    text: "#0f172a",
+    textMuted: "#64748b",
+    border: "#e2e8f0",
+    inputBg: "#ffffff",
+    hoverBg: "#f1f5f9",
+    successBg: "#dcfce7",
+    successText: "#16a34a",
+    starFill: "#facc15",
+    starEmpty: "#e2e8f0",
+  };
 
   useEffect(() => {
     if (user) {
@@ -83,11 +121,10 @@ export function RateUsModal({ onClose }: RateUsModalProps) {
         >
           <Star
             size={36}
-            className={cn(
-              star <= rating
-                ? "fill-yellow-400 text-yellow-400"
-                : "fill-slate-200 text-slate-200 dark:fill-slate-600 dark:text-slate-600 dark:text-neutral-400"
-            )}
+            style={{
+              fill: star <= rating ? colors.starFill : colors.starEmpty,
+              color: star <= rating ? colors.starFill : colors.starEmpty,
+            }}
           />
         </button>
       ))}
@@ -97,14 +134,20 @@ export function RateUsModal({ onClose }: RateUsModalProps) {
   if (submitted) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-        <div className="bg-white dark:bg-neutral-900 rounded-2xl p-8 max-w-md mx-4 shadow-2xl text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 mb-4">
-            <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+        <div 
+          className="rounded-2xl p-8 max-w-md mx-4 shadow-2xl text-center"
+          style={{ backgroundColor: colors.bg }}
+        >
+          <div 
+            className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
+            style={{ backgroundColor: colors.successBg }}
+          >
+            <CheckCircle className="h-8 w-8" style={{ color: colors.successText }} />
           </div>
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+          <h3 className="text-xl font-bold mb-2" style={{ color: colors.text }}>
             Thank You! 🎉
           </h3>
-          <p className="text-slate-500 dark:text-slate-400">
+          <p style={{ color: colors.textMuted }}>
             Your feedback helps us improve PPTMaster for everyone.
           </p>
         </div>
@@ -114,19 +157,26 @@ export function RateUsModal({ onClose }: RateUsModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={handleSkip}>
-      <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+      <div 
+        className="rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl" 
+        style={{ backgroundColor: colors.bg }}
+        onClick={e => e.stopPropagation()}
+      >
         <div className="flex justify-between items-start mb-4">
           <div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+            <h2 className="text-xl font-bold" style={{ color: colors.text }}>
               Enjoying PPTMaster? ⭐
             </h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            <p className="text-sm mt-1" style={{ color: colors.textMuted }}>
               You&apos;ve created {PRESENTATIONS_THRESHOLD}+ presentations! We&apos;d love your feedback.
             </p>
           </div>
           <button
             onClick={handleSkip}
-            className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition"
+            className="p-1 transition"
+            style={{ color: colors.textMuted }}
+            onMouseEnter={(e) => e.currentTarget.style.color = colors.text}
+            onMouseLeave={(e) => e.currentTarget.style.color = colors.textMuted}
           >
             <X size={20} />
           </button>
@@ -139,7 +189,7 @@ export function RateUsModal({ onClose }: RateUsModalProps) {
               rating={formData.rating}
               onChange={(rating) => setFormData({ ...formData, rating })}
             />
-            <p className="text-center text-sm text-slate-500 dark:text-slate-400 mt-2">
+            <p className="text-center text-sm mt-2" style={{ color: colors.textMuted }}>
               {formData.rating === 5 && "Excellent!"}
               {formData.rating === 4 && "Great!"}
               {formData.rating === 3 && "Good"}
@@ -156,7 +206,12 @@ export function RateUsModal({ onClose }: RateUsModalProps) {
               minLength={5}
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent"
+              className="w-full px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent"
+              style={{ 
+                backgroundColor: colors.inputBg,
+                borderColor: colors.border,
+                color: colors.text,
+              }}
               placeholder="Title your review (e.g., 'Great for quick presentations!')"
             />
           </div>
@@ -169,14 +224,19 @@ export function RateUsModal({ onClose }: RateUsModalProps) {
               rows={3}
               value={formData.content}
               onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent resize-none"
+              className="w-full px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent resize-none"
+              style={{ 
+                backgroundColor: colors.inputBg,
+                borderColor: colors.border,
+                color: colors.text,
+              }}
               placeholder="What do you like most? Any suggestions for improvement?"
             />
           </div>
 
           {/* Error */}
           {error && (
-            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <p className="text-sm text-red-500">{error}</p>
           )}
 
           {/* Buttons */}
@@ -184,7 +244,13 @@ export function RateUsModal({ onClose }: RateUsModalProps) {
             <button
               type="button"
               onClick={handleSkip}
-              className="flex-1 px-4 py-2.5 border border-slate-200 dark:border-neutral-700 text-slate-600 dark:text-slate-300 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition"
+              className="flex-1 px-4 py-2.5 border rounded-lg font-medium transition"
+              style={{ 
+                borderColor: colors.border,
+                color: colors.textMuted,
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.hoverBg}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             >
               Maybe Later
             </button>

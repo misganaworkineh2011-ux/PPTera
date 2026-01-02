@@ -3,6 +3,7 @@
 import { useEffect, useRef, useMemo } from "react";
 import { X, LayoutGrid, CheckCircle2 } from "lucide-react";
 import type { Theme } from "~/lib/themes";
+import { getThemeType } from "~/app/presentation/[slug]/components/types";
 import { boxLayouts } from "~/lib/layouts/content/boxes";
 import { stepsLayouts } from "~/lib/layouts/content/steps";
 import { bulletLayouts } from "~/lib/layouts/content/bullets";
@@ -319,6 +320,34 @@ export default function ContentLayoutPanel({
     return "Unknown";
   }, [currentContentLayout]);
 
+  // Theme-aware colors
+  const themeType = getThemeType(theme);
+  const isLight = themeType === "light" || themeType === "corporate" || themeType === "custom-light";
+  
+  const colors = isLight ? {
+    bg: "#ffffff",
+    headerBg: "#f8fafc",
+    border: "#e2e8f0",
+    text: "#0f172a",
+    textMuted: "#64748b",
+    accent: "#06b6d4",
+    hoverBg: "#f1f5f9",
+    categoryBg: "#f8fafc",
+    currentBg: "rgba(6, 182, 212, 0.05)",
+    infoBg: "#f8fafc",
+  } : {
+    bg: "#18181b",
+    headerBg: "#27272a",
+    border: "#3f3f46",
+    text: "#fafafa",
+    textMuted: "#a1a1aa",
+    accent: "#a78bfa",
+    hoverBg: "#27272a",
+    categoryBg: "rgba(39, 39, 42, 0.5)",
+    currentBg: "rgba(167, 139, 250, 0.1)",
+    infoBg: "#27272a",
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -326,22 +355,39 @@ export default function ContentLayoutPanel({
       {/* Panel - fixed at right edge */}
       <div
         ref={panelRef}
-        className="fixed right-0 z-40 bg-white shadow-2xl border-l border-slate-200 animate-slide-in-right"
+        className="fixed right-0 z-40 shadow-2xl animate-slide-in-right"
         style={{ 
           width: `${CONTENT_LAYOUT_PANEL_WIDTH}px`,
           top: `${HEADER_HEIGHT}px`,
           height: `calc(100vh - ${HEADER_HEIGHT}px)`,
+          backgroundColor: colors.bg,
+          borderLeft: `1px solid ${colors.border}`,
         }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-slate-50">
+        <div 
+          className="flex items-center justify-between p-4"
+          style={{ 
+            borderBottom: `1px solid ${colors.border}`,
+            backgroundColor: colors.headerBg,
+          }}
+        >
           <div className="flex items-center gap-2">
-            <LayoutGrid size={18} className="text-[#06b6d4]" />
-            <h3 className="font-semibold text-slate-900">Content Layout</h3>
+            <LayoutGrid size={18} style={{ color: colors.accent }} />
+            <h3 className="font-semibold" style={{ color: colors.text }}>Content Layout</h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+            className="p-1.5 rounded-lg transition-colors"
+            style={{ color: colors.textMuted }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = colors.hoverBg;
+              e.currentTarget.style.color = colors.text;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.color = colors.textMuted;
+            }}
           >
             <X size={18} />
           </button>
@@ -354,11 +400,11 @@ export default function ContentLayoutPanel({
         >
           <div>
             <div className="p-3">
-              <p className="text-xs text-slate-500 mb-1">
+              <p className="text-xs mb-1" style={{ color: colors.textMuted }}>
                 Choose a layout style. Changes apply instantly.
               </p>
               {contentItems.length > 0 && (
-                <p className="text-[10px] text-slate-400">
+                <p className="text-[10px]" style={{ color: colors.textMuted }}>
                   Previews show your actual content ({contentItems.length} item{contentItems.length !== 1 ? "s" : ""})
                 </p>
               )}
@@ -369,21 +415,30 @@ export default function ContentLayoutPanel({
               const isCurrentCategory = category.id === currentCategory;
               
               return (
-                <div key={category.id} className="border-b border-slate-100 last:border-b-0">
+                <div 
+                  key={category.id} 
+                  style={{ borderBottom: `1px solid ${colors.border}` }}
+                  className="last:border-b-0"
+                >
                   {/* Category Header */}
                   <div
-                    className={`px-4 py-2 ${
-                      isCurrentCategory 
-                        ? "bg-[#06b6d4]/5" 
-                        : "bg-slate-50/50"
-                    }`}
+                    className="px-4 py-2"
+                    style={{
+                      backgroundColor: isCurrentCategory ? colors.currentBg : colors.categoryBg,
+                    }}
                   >
                     <div className="flex items-center gap-2">
-                      <h4 className={`text-sm font-medium ${isCurrentCategory ? "text-[#06b6d4]" : "text-slate-700"}`}>
+                      <h4 
+                        className="text-sm font-medium"
+                        style={{ color: isCurrentCategory ? colors.accent : colors.text }}
+                      >
                         {category.name}
                       </h4>
                       {isCurrentCategory && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#06b6d4] text-white">
+                        <span 
+                          className="text-[9px] px-1.5 py-0.5 rounded text-white"
+                          style={{ backgroundColor: colors.accent }}
+                        >
                           Current
                         </span>
                       )}
@@ -403,13 +458,14 @@ export default function ContentLayoutPanel({
                           key={layout.id}
                           onClick={() => onSelectContentLayout(layout.id as ContentLayoutId)}
                           disabled={!isSuitable && contentItems.length > 0}
-                          className={`relative p-1.5 rounded-lg border-2 transition-all ${
-                            !isSuitable && contentItems.length > 0
-                              ? "opacity-50 cursor-not-allowed border-slate-200 bg-slate-50"
-                              : isSelected
-                                ? "border-[#06b6d4] bg-[#06b6d4]/5 ring-2 ring-[#06b6d4]/20 shadow-md"
-                                : "border-slate-200 hover:border-[#06b6d4]/50 hover:shadow-md"
-                          }`}
+                          className="relative p-1.5 rounded-lg border-2 transition-all"
+                          style={{
+                            opacity: !isSuitable && contentItems.length > 0 ? 0.5 : 1,
+                            cursor: !isSuitable && contentItems.length > 0 ? "not-allowed" : "pointer",
+                            borderColor: isSelected ? colors.accent : colors.border,
+                            backgroundColor: isSelected ? colors.currentBg : "transparent",
+                            boxShadow: isSelected ? `0 0 0 2px ${colors.accent}33` : "none",
+                          }}
                         >
                           {/* Layout Preview with actual content */}
                           <div
@@ -425,7 +481,10 @@ export default function ContentLayoutPanel({
                           </div>
 
                           {isSelected && (
-                            <div className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-[#06b6d4] flex items-center justify-center">
+                            <div 
+                              className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center"
+                              style={{ backgroundColor: colors.accent }}
+                            >
                               <CheckCircle2 size={8} className="text-white" />
                             </div>
                           )}
@@ -439,13 +498,19 @@ export default function ContentLayoutPanel({
 
             {/* Current selection info */}
             <div className="p-3">
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <div className="text-xs text-slate-600">
+              <div 
+                className="p-3 rounded-lg"
+                style={{ 
+                  backgroundColor: colors.infoBg,
+                  border: `1px solid ${colors.border}`,
+                }}
+              >
+                <div className="text-xs" style={{ color: colors.textMuted }}>
                   <span className="font-medium">Current:</span>{" "}
-                  <span className="text-slate-900">{currentLayoutName}</span>
+                  <span style={{ color: colors.text }}>{currentLayoutName}</span>
                 </div>
                 {contentItems.length > 0 && (
-                  <div className="text-[10px] text-slate-400 mt-1">
+                  <div className="text-[10px] mt-1" style={{ color: colors.textMuted }}>
                     {contentItems.length} content item{contentItems.length !== 1 ? "s" : ""}
                   </div>
                 )}

@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { X, Check, Loader2, Sparkles } from "lucide-react";
 import { themes, type Theme } from "~/lib/themes";
+import { getThemeType } from "./types";
+import { getUIColors } from "./ui-colors";
 
 interface CustomTheme {
   id: string;
@@ -22,6 +24,7 @@ interface ThemeSidebarProps {
   currentThemeId: string;
   onThemeChange: (themeId: string) => void;
   presentationId: string;
+  theme?: Theme;
 }
 
 export function ThemeSidebar({
@@ -30,9 +33,15 @@ export function ThemeSidebar({
   currentThemeId,
   onThemeChange,
   presentationId,
+  theme,
 }: ThemeSidebarProps) {
   const [customThemes, setCustomThemes] = useState<CustomTheme[]>([]);
   const [changingTheme, setChangingTheme] = useState<string | null>(null);
+
+  // Get theme-aware colors
+  const themeType = theme ? getThemeType(theme) : "dark";
+  const ui = getUIColors(themeType);
+  const isLight = themeType === "light" || themeType === "corporate";
 
   // Fetch custom themes
   useEffect(() => {
@@ -81,16 +90,24 @@ export function ThemeSidebar({
       />
 
       {/* Sidebar */}
-      <div className="fixed right-0 top-0 h-full w-96 bg-zinc-900 border-l border-zinc-800 z-50 shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-300">
+      <div 
+        className={`fixed right-0 top-0 h-full w-96 border-l z-50 shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-300 ${
+          isLight ? "bg-white border-slate-200" : "bg-zinc-900 border-zinc-800"
+        }`}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-zinc-800">
+        <div className={`flex items-center justify-between p-4 border-b ${isLight ? "border-slate-200" : "border-zinc-800"}`}>
           <div className="flex items-center gap-2">
-            <Sparkles size={18} className="text-purple-400" />
-            <h2 className="text-lg font-semibold text-white">Themes</h2>
+            <Sparkles size={18} className={isLight ? "text-blue-500" : "text-purple-400"} />
+            <h2 className={`text-lg font-semibold ${isLight ? "text-slate-900" : "text-white"}`}>Themes</h2>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
+            className={`p-1.5 rounded-lg transition-colors ${
+              isLight 
+                ? "hover:bg-slate-100 text-slate-400 hover:text-slate-600" 
+                : "hover:bg-zinc-800 text-zinc-400 hover:text-white"
+            }`}
           >
             <X size={20} />
           </button>
@@ -100,17 +117,18 @@ export function ThemeSidebar({
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
           {/* Built-in Themes */}
           <div>
-            <h3 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-3">
+            <h3 className={`text-xs font-medium uppercase tracking-wider mb-3 ${isLight ? "text-slate-500" : "text-zinc-500"}`}>
               Built-in Themes
             </h3>
             <div className="grid grid-cols-2 gap-3">
-              {themes.map((theme) => (
+              {themes.map((t) => (
                 <ThemeCard
-                  key={theme.id}
-                  theme={theme}
-                  isSelected={currentThemeId === theme.id}
-                  isLoading={changingTheme === theme.id}
-                  onClick={() => handleThemeSelect(theme.id)}
+                  key={t.id}
+                  theme={t}
+                  isSelected={currentThemeId === t.id}
+                  isLoading={changingTheme === t.id}
+                  onClick={() => handleThemeSelect(t.id)}
+                  isLight={isLight}
                 />
               ))}
             </div>
@@ -119,17 +137,18 @@ export function ThemeSidebar({
           {/* Custom Themes */}
           {customThemes.length > 0 && (
             <div>
-              <h3 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-3">
+              <h3 className={`text-xs font-medium uppercase tracking-wider mb-3 ${isLight ? "text-slate-500" : "text-zinc-500"}`}>
                 Your Custom Themes
               </h3>
               <div className="grid grid-cols-2 gap-3">
-                {customThemes.map((theme) => (
+                {customThemes.map((t) => (
                   <CustomThemeCard
-                    key={theme.id}
-                    theme={theme}
-                    isSelected={currentThemeId === `custom-${theme.id}`}
-                    isLoading={changingTheme === `custom-${theme.id}`}
-                    onClick={() => handleThemeSelect(`custom-${theme.id}`)}
+                    key={t.id}
+                    theme={t}
+                    isSelected={currentThemeId === `custom-${t.id}`}
+                    isLoading={changingTheme === `custom-${t.id}`}
+                    onClick={() => handleThemeSelect(`custom-${t.id}`)}
+                    isLight={isLight}
                   />
                 ))}
               </div>
@@ -146,11 +165,13 @@ function ThemeCard({
   isSelected,
   isLoading,
   onClick,
+  isLight,
 }: {
   theme: Theme;
   isSelected: boolean;
   isLoading: boolean;
   onClick: () => void;
+  isLight: boolean;
 }) {
   return (
     <button
@@ -158,8 +179,8 @@ function ThemeCard({
       disabled={isLoading}
       className={`relative group rounded-lg overflow-hidden transition-all duration-200 text-left ${
         isSelected
-          ? "ring-2 ring-purple-500"
-          : "ring-1 ring-zinc-700 hover:ring-zinc-600"
+          ? isLight ? "ring-2 ring-blue-500" : "ring-2 ring-purple-500"
+          : isLight ? "ring-1 ring-slate-200 hover:ring-slate-300" : "ring-1 ring-zinc-700 hover:ring-zinc-600"
       }`}
     >
       {/* Theme Preview - Similar to outline page */}
@@ -222,14 +243,16 @@ function ThemeCard({
       {/* Theme Name Footer */}
       <div
         className={`px-2 py-1.5 border-t flex items-center justify-between ${
-          isSelected ? "bg-purple-500/10 border-purple-500/30" : "bg-zinc-800/50 border-zinc-700"
+          isSelected 
+            ? isLight ? "bg-blue-50 border-blue-200" : "bg-purple-500/10 border-purple-500/30" 
+            : isLight ? "bg-slate-50 border-slate-200" : "bg-zinc-800/50 border-zinc-700"
         }`}
       >
-        <span className="text-xs font-medium text-zinc-200 truncate">{theme.name}</span>
+        <span className={`text-xs font-medium truncate ${isLight ? "text-slate-700" : "text-zinc-200"}`}>{theme.name}</span>
         {isLoading ? (
-          <Loader2 size={12} className="text-purple-400 animate-spin" />
+          <Loader2 size={12} className={isLight ? "text-blue-500 animate-spin" : "text-purple-400 animate-spin"} />
         ) : isSelected ? (
-          <Check size={12} className="text-purple-400" />
+          <Check size={12} className={isLight ? "text-blue-500" : "text-purple-400"} />
         ) : null}
       </div>
     </button>
@@ -241,11 +264,13 @@ function CustomThemeCard({
   isSelected,
   isLoading,
   onClick,
+  isLight,
 }: {
   theme: CustomTheme;
   isSelected: boolean;
   isLoading: boolean;
   onClick: () => void;
+  isLight: boolean;
 }) {
   return (
     <button
@@ -253,8 +278,8 @@ function CustomThemeCard({
       disabled={isLoading}
       className={`relative group rounded-lg overflow-hidden transition-all duration-200 text-left ${
         isSelected
-          ? "ring-2 ring-purple-500"
-          : "ring-1 ring-zinc-700 hover:ring-zinc-600"
+          ? isLight ? "ring-2 ring-blue-500" : "ring-2 ring-purple-500"
+          : isLight ? "ring-1 ring-slate-200 hover:ring-slate-300" : "ring-1 ring-zinc-700 hover:ring-zinc-600"
       }`}
     >
       {/* Theme Preview */}
@@ -319,14 +344,16 @@ function CustomThemeCard({
       {/* Theme Name Footer */}
       <div
         className={`px-2 py-1.5 border-t flex items-center justify-between ${
-          isSelected ? "bg-purple-500/10 border-purple-500/30" : "bg-zinc-800/50 border-zinc-700"
+          isSelected 
+            ? isLight ? "bg-blue-50 border-blue-200" : "bg-purple-500/10 border-purple-500/30" 
+            : isLight ? "bg-slate-50 border-slate-200" : "bg-zinc-800/50 border-zinc-700"
         }`}
       >
-        <span className="text-xs font-medium text-zinc-200 truncate">{theme.name}</span>
+        <span className={`text-xs font-medium truncate ${isLight ? "text-slate-700" : "text-zinc-200"}`}>{theme.name}</span>
         {isLoading ? (
-          <Loader2 size={12} className="text-purple-400 animate-spin" />
+          <Loader2 size={12} className={isLight ? "text-blue-500 animate-spin" : "text-purple-400 animate-spin"} />
         ) : isSelected ? (
-          <Check size={12} className="text-purple-400" />
+          <Check size={12} className={isLight ? "text-blue-500" : "text-purple-400"} />
         ) : null}
       </div>
     </button>
