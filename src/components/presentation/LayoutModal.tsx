@@ -19,6 +19,27 @@ interface LayoutModalProps {
   onClose: () => void;
 }
 
+// Helper to determine if a color is dark
+function isColorDark(hexColor: string): boolean {
+  const hex = hexColor.replace("#", "");
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance < 0.5;
+}
+
+type ThemeType = "dark" | "light" | "corporate";
+
+function getThemeType(theme: Theme): ThemeType {
+  if (theme.id === "arctic-frost") return "light";
+  if (theme.id === "corporate-clean") return "corporate";
+  if (theme.id.startsWith("custom-")) {
+    return isColorDark(theme.colors.background) ? "dark" : "light";
+  }
+  return "dark";
+}
+
 // Visual preview for slide layouts
 function SlideLayoutPreview({ layoutId, imageSize = "medium" }: { layoutId: SlideLayoutType; imageSize?: ImageSize }) {
   const layout = slideLayouts.find((l) => l.id === layoutId);
@@ -138,9 +159,9 @@ function SlideLayoutPreview({ layoutId, imageSize = "medium" }: { layoutId: Slid
 export default function LayoutModal({
   slideType = "content",
   currentSlideLayout = "image-right",
-  currentContentLayout = "box-style-1",
+  currentContentLayout: _currentContentLayout = "box-style-1",
   currentImageSize = "medium",
-  contentItems = [],
+  contentItems: _contentItems = [],
   theme,
   onSelectSlideLayout,
   onOpenContentLayoutPanel,
@@ -149,6 +170,33 @@ export default function LayoutModal({
   const isTitleSlide = slideType === "title";
   const [selectedSlideLayout, setSelectedSlideLayout] = useState<SlideLayoutType>(currentSlideLayout);
   const [selectedImageSize, setSelectedImageSize] = useState<ImageSize>(currentImageSize);
+
+  // Theme-aware colors
+  const themeType = getThemeType(theme);
+  const isLight = themeType === "light" || themeType === "corporate";
+  const accentColor = theme.colors.primary;
+
+  const colors = isLight ? {
+    bg: "bg-white",
+    text: "text-slate-900",
+    textMuted: "text-slate-500",
+    border: "border-slate-200",
+    headerBg: "bg-slate-50",
+    cardBg: "bg-slate-50",
+    cardBorder: "border-slate-200",
+    cardHover: "hover:border-slate-300",
+    closeHover: "hover:bg-slate-100 text-slate-400 hover:text-slate-600",
+  } : {
+    bg: "bg-zinc-900",
+    text: "text-zinc-100",
+    textMuted: "text-zinc-400",
+    border: "border-zinc-700",
+    headerBg: "bg-zinc-800/50",
+    cardBg: "bg-zinc-800/50",
+    cardBorder: "border-zinc-700",
+    cardHover: "hover:border-zinc-600",
+    closeHover: "hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200",
+  };
 
   const imageSizes: { id: ImageSize; label: string }[] = [
     { id: "small", label: "S" },
@@ -163,12 +211,12 @@ export default function LayoutModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="relative w-full max-w-4xl rounded-2xl bg-white shadow-2xl max-h-[85vh] overflow-hidden">
+      <div className={`relative w-full max-w-4xl rounded-2xl shadow-2xl max-h-[85vh] overflow-hidden ${colors.bg}`}>
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-200">
+        <div className={`flex items-center justify-between p-6 border-b ${colors.border}`}>
           <div>
-            <h2 className="text-xl font-bold text-slate-900">Change Layout</h2>
-            <p className="text-sm text-slate-500 mt-1">
+            <h2 className={`text-xl font-bold ${colors.text}`}>Change Layout</h2>
+            <p className={`text-sm mt-1 ${colors.textMuted}`}>
               {isTitleSlide 
                 ? "Choose how your title slide image is positioned" 
                 : "Choose how your content is arranged"}
@@ -176,7 +224,7 @@ export default function LayoutModal({
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+            className={`p-2 rounded-lg transition-colors ${colors.closeHover}`}
           >
             <X size={20} />
           </button>
@@ -184,8 +232,11 @@ export default function LayoutModal({
 
         {/* Tabs - Hide content layout tab for title slides */}
         {!isTitleSlide && (
-          <div className="flex gap-2 p-4 border-b border-slate-200 bg-slate-50">
-            <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-[#06b6d4] text-white shadow-md">
+          <div className={`flex gap-2 p-4 border-b ${colors.border} ${colors.headerBg}`}>
+            <div 
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white shadow-md"
+              style={{ backgroundColor: accentColor }}
+            >
               <ImageIcon size={18} />
               <span>Slide Layout</span>
               <span className="text-xs text-white/70">(Image position)</span>
@@ -195,11 +246,15 @@ export default function LayoutModal({
                 onClose();
                 onOpenContentLayoutPanel();
               }}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 transition-colors"
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border transition-colors ${
+                isLight 
+                  ? "bg-white text-slate-600 hover:bg-slate-100 border-slate-200" 
+                  : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700 border-zinc-700"
+              }`}
             >
               <LayoutGrid size={18} />
               <span>Content Layout</span>
-              <span className="text-xs text-slate-400">(Box style)</span>
+              <span className={`text-xs ${colors.textMuted}`}>(Box style)</span>
             </button>
           </div>
         )}
@@ -209,7 +264,7 @@ export default function LayoutModal({
           <div className="space-y-6">
             {/* Image Position Layouts */}
             <div>
-              <h3 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+              <h3 className={`text-sm font-semibold mb-3 flex items-center gap-2 ${colors.text}`}>
                 <ImageIcon size={16} />
                 Image Position
               </h3>
@@ -225,17 +280,25 @@ export default function LayoutModal({
                       }}
                       className={`relative p-3 rounded-xl border-2 text-left transition-all hover:shadow-lg ${
                         isSelected
-                          ? "border-[#06b6d4] bg-[#06b6d4]/5 ring-2 ring-[#06b6d4]/20"
-                          : "border-slate-200 hover:border-[#06b6d4]/50"
+                          ? `ring-2 ring-opacity-20 ${colors.cardBg}`
+                          : `${colors.cardBorder} ${colors.cardHover} ${colors.cardBg}`
                       }`}
+                      style={isSelected ? { 
+                        borderColor: accentColor, 
+                        backgroundColor: `${accentColor}10`,
+                        ["--tw-ring-color" as string]: accentColor 
+                      } : {}}
                     >
-                      <div className="aspect-video bg-slate-100 rounded-lg mb-2 overflow-hidden">
+                      <div className={`aspect-video rounded-lg mb-2 overflow-hidden ${isLight ? "bg-slate-100" : "bg-zinc-700"}`}>
                         <SlideLayoutPreview layoutId={layout.id} imageSize={selectedImageSize} />
                       </div>
-                      <h4 className="font-semibold text-slate-900 text-sm">{layout.name}</h4>
-                      <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{layout.description}</p>
+                      <h4 className={`font-semibold text-sm ${colors.text}`}>{layout.name}</h4>
+                      <p className={`text-xs mt-0.5 line-clamp-1 ${colors.textMuted}`}>{layout.description}</p>
                       {isSelected && (
-                        <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#06b6d4] flex items-center justify-center">
+                        <div 
+                          className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center"
+                          style={{ backgroundColor: accentColor }}
+                        >
                           <CheckCircle2 size={12} className="text-white" />
                         </div>
                       )}
@@ -248,7 +311,7 @@ export default function LayoutModal({
               {/* Image Size Selector */}
               {selectedSlideLayout !== "no-image" && selectedSlideLayout !== "image-full" && selectedSlideLayout !== "image-background" && (
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-700 mb-3">Image Size</h3>
+                  <h3 className={`text-sm font-semibold mb-3 ${colors.text}`}>Image Size</h3>
                   <div className="flex gap-2">
                     {imageSizes.map((size) => (
                       <button
@@ -259,15 +322,18 @@ export default function LayoutModal({
                         }}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                           selectedImageSize === size.id
-                            ? "bg-[#06b6d4] text-white shadow-md"
-                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                            ? "text-white shadow-md"
+                            : isLight 
+                              ? "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                              : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
                         }`}
+                        style={selectedImageSize === size.id ? { backgroundColor: accentColor } : {}}
                       >
                         {size.label}
                       </button>
                     ))}
                   </div>
-                  <p className="text-xs text-slate-400 mt-2">
+                  <p className={`text-xs mt-2 ${colors.textMuted}`}>
                     {selectedImageSize === "small" && "30% of slide"}
                     {selectedImageSize === "medium" && "40% of slide"}
                     {selectedImageSize === "large" && "50% of slide"}
@@ -278,7 +344,7 @@ export default function LayoutModal({
 
               {/* Other Layouts (No Image, Full Image) */}
               <div>
-                <h3 className="text-sm font-semibold text-slate-700 mb-3">Other Options</h3>
+                <h3 className={`text-sm font-semibold mb-3 ${colors.text}`}>Other Options</h3>
                 <div className="grid grid-cols-4 gap-4">
                   {otherSlideLayouts.map((layout) => {
                     const isSelected = selectedSlideLayout === layout.id;
@@ -291,17 +357,25 @@ export default function LayoutModal({
                         }}
                         className={`relative p-3 rounded-xl border-2 text-left transition-all hover:shadow-lg ${
                           isSelected
-                            ? "border-[#06b6d4] bg-[#06b6d4]/5 ring-2 ring-[#06b6d4]/20"
-                            : "border-slate-200 hover:border-[#06b6d4]/50"
+                            ? `ring-2 ring-opacity-20 ${colors.cardBg}`
+                            : `${colors.cardBorder} ${colors.cardHover} ${colors.cardBg}`
                         }`}
+                        style={isSelected ? { 
+                          borderColor: accentColor, 
+                          backgroundColor: `${accentColor}10`,
+                          ["--tw-ring-color" as string]: accentColor 
+                        } : {}}
                       >
-                        <div className="aspect-video bg-slate-100 rounded-lg mb-2 overflow-hidden">
+                        <div className={`aspect-video rounded-lg mb-2 overflow-hidden ${isLight ? "bg-slate-100" : "bg-zinc-700"}`}>
                           <SlideLayoutPreview layoutId={layout.id} imageSize={selectedImageSize} />
                         </div>
-                        <h4 className="font-semibold text-slate-900 text-sm">{layout.name}</h4>
-                        <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{layout.description}</p>
+                        <h4 className={`font-semibold text-sm ${colors.text}`}>{layout.name}</h4>
+                        <p className={`text-xs mt-0.5 line-clamp-1 ${colors.textMuted}`}>{layout.description}</p>
                         {isSelected && (
-                          <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#06b6d4] flex items-center justify-center">
+                          <div 
+                            className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center"
+                            style={{ backgroundColor: accentColor }}
+                          >
                             <CheckCircle2 size={12} className="text-white" />
                           </div>
                         )}
@@ -314,19 +388,20 @@ export default function LayoutModal({
         </div>
 
         {/* Footer */}
-        <div className="border-t border-slate-200 px-6 py-4 bg-slate-50 flex items-center justify-between">
-          <div className="text-sm text-slate-600">
+        <div className={`border-t px-6 py-4 flex items-center justify-between ${colors.border} ${colors.headerBg}`}>
+          <div className={`text-sm ${colors.textMuted}`}>
             <span className="font-medium">Current:</span>{" "}
-            <span className="text-slate-900">
+            <span className={colors.text}>
               {slideLayouts.find((l) => l.id === selectedSlideLayout)?.name || "Unknown"}
             </span>
             {selectedSlideLayout !== "no-image" && selectedSlideLayout !== "image-full" && selectedSlideLayout !== "image-background" && (
-              <span className="text-slate-500"> ({selectedImageSize})</span>
+              <span className={colors.textMuted}> ({selectedImageSize})</span>
             )}
           </div>
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium rounded-lg bg-[#06b6d4] text-white hover:bg-[#0891b2] transition-colors"
+            className="px-4 py-2 text-sm font-medium rounded-lg text-white transition-colors hover:opacity-90"
+            style={{ backgroundColor: accentColor }}
           >
             Done
           </button>

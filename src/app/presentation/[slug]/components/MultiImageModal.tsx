@@ -40,7 +40,7 @@ export function MultiImageModal({
   onOpenWysiwygEditor,
 }: MultiImageModalProps) {
   const themeType = getThemeType(theme);
-  const isDark = themeType !== "light";
+  const isDark = themeType !== "light" && themeType !== "corporate";
   const isEditing = editingIndex !== null;
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -212,7 +212,7 @@ export function MultiImageModal({
             </p>
 
             {imageUrl && (
-              <div className="mt-3 aspect-video rounded-lg overflow-hidden bg-zinc-800 border border-dashed border-zinc-600 max-w-xs">
+              <div className={`mt-3 aspect-video rounded-lg overflow-hidden border border-dashed max-w-xs ${isDark ? "bg-zinc-800 border-zinc-600" : "bg-slate-100 border-slate-300"}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={imageUrl}

@@ -159,32 +159,84 @@ export default function ShareModal({
 }
 
 function ExportTab({ theme }: { theme?: Theme }) {
-  const textColor = theme?.colors.text || "#1e293b";
-  const mutedColor = theme?.colors.textMuted || "#64748b";
+  const isDark = theme?.colors.background.startsWith("#") &&
+    parseInt(theme.colors.background.slice(1, 3), 16) < 128;
+  
+  const colors = isDark ? {
+    text: "#fafafa",
+    textMuted: "#a1a1aa",
+    heading: "#fafafa",
+    border: "#3f3f46",
+    cardBg: "#27272a",
+    hoverBorder: "#06b6d4",
+    hoverBg: "rgba(6, 182, 212, 0.1)",
+    iconBg: {
+      pdf: "rgba(239, 68, 68, 0.2)",
+      pptx: "rgba(249, 115, 22, 0.2)",
+      images: "rgba(168, 85, 247, 0.2)",
+    },
+    iconColor: {
+      pdf: "#f87171",
+      pptx: "#fb923c",
+      images: "#c084fc",
+    },
+  } : {
+    text: "#0f172a",
+    textMuted: "#64748b",
+    heading: "#0f172a",
+    border: "#e2e8f0",
+    cardBg: "#ffffff",
+    hoverBorder: "#06b6d4",
+    hoverBg: "rgba(6, 182, 212, 0.05)",
+    iconBg: {
+      pdf: "#fee2e2",
+      pptx: "#ffedd5",
+      images: "#f3e8ff",
+    },
+    iconColor: {
+      pdf: "#dc2626",
+      pptx: "#ea580c",
+      images: "#9333ea",
+    },
+  };
 
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-slate-900 mb-2">Export Presentation</h3>
-        <p className="text-sm text-slate-500">Download your presentation in various formats</p>
+        <h3 className="text-lg font-semibold mb-2" style={{ color: colors.heading }}>Export Presentation</h3>
+        <p className="text-sm" style={{ color: colors.textMuted }}>Download your presentation in various formats</p>
       </div>
 
       <div className="grid gap-4">
         {/* PDF Export */}
-        <button className="flex items-center justify-between p-5 rounded-xl border-2 border-slate-200 hover:border-cyan-500 hover:bg-cyan-50/50 transition-all group">
+        <button 
+          className="flex items-center justify-between p-5 rounded-xl border-2 transition-all group"
+          style={{ borderColor: colors.border, backgroundColor: colors.cardBg }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = colors.hoverBorder;
+            e.currentTarget.style.backgroundColor = colors.hoverBg;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = colors.border;
+            e.currentTarget.style.backgroundColor = colors.cardBg;
+          }}
+        >
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-lg bg-red-100 flex items-center justify-center group-hover:bg-red-200 transition">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-red-600">
+            <div 
+              className="w-12 h-12 rounded-lg flex items-center justify-center transition"
+              style={{ backgroundColor: colors.iconBg.pdf }}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ color: colors.iconColor.pdf }}>
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 <polyline points="14 2 14 8 20 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
             <div className="text-left">
-              <p className="font-semibold text-slate-900">PDF Document</p>
-              <p className="text-sm text-slate-500">Best for sharing and printing</p>
+              <p className="font-semibold" style={{ color: colors.text }}>PDF Document</p>
+              <p className="text-sm" style={{ color: colors.textMuted }}>Best for sharing and printing</p>
             </div>
           </div>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-400 group-hover:text-cyan-600">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: colors.textMuted }}>
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
             <polyline points="7 10 12 15 17 10" />
             <line x1="12" y1="15" x2="12" y2="3" />
@@ -192,20 +244,34 @@ function ExportTab({ theme }: { theme?: Theme }) {
         </button>
 
         {/* PowerPoint Export */}
-        <button className="flex items-center justify-between p-5 rounded-xl border-2 border-slate-200 hover:border-cyan-500 hover:bg-cyan-50/50 transition-all group">
+        <button 
+          className="flex items-center justify-between p-5 rounded-xl border-2 transition-all group"
+          style={{ borderColor: colors.border, backgroundColor: colors.cardBg }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = colors.hoverBorder;
+            e.currentTarget.style.backgroundColor = colors.hoverBg;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = colors.border;
+            e.currentTarget.style.backgroundColor = colors.cardBg;
+          }}
+        >
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-lg bg-orange-100 flex items-center justify-center group-hover:bg-orange-200 transition">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-orange-600">
+            <div 
+              className="w-12 h-12 rounded-lg flex items-center justify-center transition"
+              style={{ backgroundColor: colors.iconBg.pptx }}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ color: colors.iconColor.pptx }}>
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 <polyline points="14 2 14 8 20 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
             <div className="text-left">
-              <p className="font-semibold text-slate-900">PowerPoint (PPTX)</p>
-              <p className="text-sm text-slate-500">Editable presentation file</p>
+              <p className="font-semibold" style={{ color: colors.text }}>PowerPoint (PPTX)</p>
+              <p className="text-sm" style={{ color: colors.textMuted }}>Editable presentation file</p>
             </div>
           </div>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-400 group-hover:text-cyan-600">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: colors.textMuted }}>
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
             <polyline points="7 10 12 15 17 10" />
             <line x1="12" y1="15" x2="12" y2="3" />
@@ -213,21 +279,35 @@ function ExportTab({ theme }: { theme?: Theme }) {
         </button>
 
         {/* Images Export */}
-        <button className="flex items-center justify-between p-5 rounded-xl border-2 border-slate-200 hover:border-cyan-500 hover:bg-cyan-50/50 transition-all group">
+        <button 
+          className="flex items-center justify-between p-5 rounded-xl border-2 transition-all group"
+          style={{ borderColor: colors.border, backgroundColor: colors.cardBg }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = colors.hoverBorder;
+            e.currentTarget.style.backgroundColor = colors.hoverBg;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = colors.border;
+            e.currentTarget.style.backgroundColor = colors.cardBg;
+          }}
+        >
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center group-hover:bg-purple-200 transition">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-purple-600">
+            <div 
+              className="w-12 h-12 rounded-lg flex items-center justify-center transition"
+              style={{ backgroundColor: colors.iconBg.images }}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ color: colors.iconColor.images }}>
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" strokeWidth="2" />
                 <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
                 <polyline points="21 15 16 10 5 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
             <div className="text-left">
-              <p className="font-semibold text-slate-900">Images (ZIP)</p>
-              <p className="text-sm text-slate-500">Individual slide images</p>
+              <p className="font-semibold" style={{ color: colors.text }}>Images (ZIP)</p>
+              <p className="text-sm" style={{ color: colors.textMuted }}>Individual slide images</p>
             </div>
           </div>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-400 group-hover:text-cyan-600">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: colors.textMuted }}>
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
             <polyline points="7 10 12 15 17 10" />
             <line x1="12" y1="15" x2="12" y2="3" />
@@ -255,6 +335,40 @@ function EmbedTab({ presentationId, theme }: { presentationId: string; theme?: T
   const isDark = theme?.colors.background.startsWith("#") &&
     parseInt(theme.colors.background.slice(1, 3), 16) < 128;
 
+  const colors = isDark ? {
+    text: "#fafafa",
+    textMuted: "#a1a1aa",
+    heading: "#fafafa",
+    border: "#3f3f46",
+    inputBg: "#27272a",
+    cardBg: "#27272a",
+    codeBg: "#27272a",
+    infoBg: "rgba(59, 130, 246, 0.1)",
+    infoBorder: "rgba(59, 130, 246, 0.3)",
+    activeBtn: "rgba(6, 182, 212, 0.2)",
+    activeBtnText: "#22d3ee",
+    activeBtnBorder: "#06b6d4",
+    inactiveBtn: "#27272a",
+    inactiveBtnText: "#a1a1aa",
+    inactiveBtnBorder: "#3f3f46",
+  } : {
+    text: "#0f172a",
+    textMuted: "#64748b",
+    heading: "#0f172a",
+    border: "#e2e8f0",
+    inputBg: "#ffffff",
+    cardBg: "#f8fafc",
+    codeBg: "#f8fafc",
+    infoBg: "#eff6ff",
+    infoBorder: "#bfdbfe",
+    activeBtn: "rgba(6, 182, 212, 0.1)",
+    activeBtnText: "#0891b2",
+    activeBtnBorder: "#06b6d4",
+    inactiveBtn: "#ffffff",
+    inactiveBtnText: "#64748b",
+    inactiveBtnBorder: "#e2e8f0",
+  };
+
   const copyEmbedCode = () => {
     navigator.clipboard.writeText(embedCode);
     setCopied(true);
@@ -265,29 +379,33 @@ function EmbedTab({ presentationId, theme }: { presentationId: string; theme?: T
   return (
     <div className="space-y-4 sm:space-y-6">
       <div>
-        <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-1 sm:mb-2">Embed Presentation</h3>
-        <p className="text-xs sm:text-sm text-slate-500">Add this presentation to your website or blog</p>
+        <h3 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2" style={{ color: colors.heading }}>Embed Presentation</h3>
+        <p className="text-xs sm:text-sm" style={{ color: colors.textMuted }}>Add this presentation to your website or blog</p>
       </div>
 
       {/* Size Options */}
       <div className="space-y-2 sm:space-y-3">
-        <label className="text-xs sm:text-sm font-semibold text-slate-700">Embed Size</label>
+        <label className="text-xs sm:text-sm font-semibold" style={{ color: colors.text }}>Embed Size</label>
         <div className="flex gap-2">
           <button
             onClick={() => setEmbedSize("responsive")}
-            className={`flex-1 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all border ${embedSize === "responsive"
-              ? "border-cyan-500 bg-cyan-50 text-cyan-700"
-              : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-              }`}
+            className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all border"
+            style={{
+              backgroundColor: embedSize === "responsive" ? colors.activeBtn : colors.inactiveBtn,
+              color: embedSize === "responsive" ? colors.activeBtnText : colors.inactiveBtnText,
+              borderColor: embedSize === "responsive" ? colors.activeBtnBorder : colors.inactiveBtnBorder,
+            }}
           >
             Responsive
           </button>
           <button
             onClick={() => setEmbedSize("fixed")}
-            className={`flex-1 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all border ${embedSize === "fixed"
-              ? "border-cyan-500 bg-cyan-50 text-cyan-700"
-              : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-              }`}
+            className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all border"
+            style={{
+              backgroundColor: embedSize === "fixed" ? colors.activeBtn : colors.inactiveBtn,
+              color: embedSize === "fixed" ? colors.activeBtnText : colors.inactiveBtnText,
+              borderColor: embedSize === "fixed" ? colors.activeBtnBorder : colors.inactiveBtnBorder,
+            }}
           >
             Fixed Size
           </button>
@@ -296,21 +414,31 @@ function EmbedTab({ presentationId, theme }: { presentationId: string; theme?: T
         {embedSize === "fixed" && (
           <div className="flex gap-2 sm:gap-3 mt-2 sm:mt-3">
             <div className="flex-1">
-              <label className="text-xs text-slate-500 mb-1 block">Width (px)</label>
+              <label className="text-xs mb-1 block" style={{ color: colors.textMuted }}>Width (px)</label>
               <input
                 type="number"
                 value={width}
                 onChange={(e) => setWidth(Number(e.target.value))}
-                className="w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-slate-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500"
+                className="w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500"
+                style={{ 
+                  backgroundColor: colors.inputBg,
+                  borderColor: colors.border,
+                  color: colors.text,
+                }}
               />
             </div>
             <div className="flex-1">
-              <label className="text-xs text-slate-500 mb-1 block">Height (px)</label>
+              <label className="text-xs mb-1 block" style={{ color: colors.textMuted }}>Height (px)</label>
               <input
                 type="number"
                 value={height}
                 onChange={(e) => setHeight(Number(e.target.value))}
-                className="w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-slate-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500"
+                className="w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500"
+                style={{ 
+                  backgroundColor: colors.inputBg,
+                  borderColor: colors.border,
+                  color: colors.text,
+                }}
               />
             </div>
           </div>
@@ -318,9 +446,15 @@ function EmbedTab({ presentationId, theme }: { presentationId: string; theme?: T
       </div>
 
       {/* Preview */}
-      <div className="rounded-xl border-2 border-slate-200 p-2 sm:p-4 bg-slate-50">
-        <p className="text-xs font-semibold text-slate-600 mb-2 sm:mb-3 uppercase tracking-wide">Preview</p>
-        <div className="aspect-video bg-white rounded-lg border border-slate-200 overflow-hidden">
+      <div 
+        className="rounded-xl border-2 p-2 sm:p-4"
+        style={{ borderColor: colors.border, backgroundColor: colors.cardBg }}
+      >
+        <p className="text-xs font-semibold mb-2 sm:mb-3 uppercase tracking-wide" style={{ color: colors.textMuted }}>Preview</p>
+        <div 
+          className="aspect-video rounded-lg border overflow-hidden"
+          style={{ borderColor: colors.border, backgroundColor: isDark ? "#18181b" : "#ffffff" }}
+        >
           <iframe
             src={`${baseUrl}/embed/${presentationId}`}
             className="w-full h-full"
@@ -332,23 +466,40 @@ function EmbedTab({ presentationId, theme }: { presentationId: string; theme?: T
 
       {/* Embed Code */}
       <div className="space-y-2 sm:space-y-3">
-        <label className="text-xs sm:text-sm font-semibold text-slate-700">Embed Code</label>
+        <label className="text-xs sm:text-sm font-semibold" style={{ color: colors.text }}>Embed Code</label>
         <div className="relative">
-          <pre className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-mono text-slate-700 overflow-x-auto whitespace-pre-wrap break-all max-h-32 sm:max-h-40 overflow-y-auto">
+          <pre 
+            className="w-full rounded-xl border px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-mono overflow-x-auto whitespace-pre-wrap break-all max-h-32 sm:max-h-40 overflow-y-auto"
+            style={{ 
+              backgroundColor: colors.codeBg,
+              borderColor: colors.border,
+              color: colors.text,
+            }}
+          >
             {embedCode}
           </pre>
           <button
             onClick={copyEmbedCode}
-            className={`absolute top-2 right-2 sm:top-3 sm:right-3 flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${copied
-              ? "bg-green-500 text-white"
-              : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
-              }`}
+            className="absolute top-2 right-2 sm:top-3 sm:right-3 flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all border"
+            style={{
+              backgroundColor: copied ? "#22c55e" : colors.inputBg,
+              color: copied ? "#ffffff" : colors.text,
+              borderColor: copied ? "#22c55e" : colors.border,
+            }}
           >
             {copied ? <CheckCircle2 size={14} className="sm:w-4 sm:h-4" /> : <Copy size={14} className="sm:w-4 sm:h-4" />}
             <span className="hidden sm:inline">{copied ? "Copied!" : "Copy"}</span>
           </button>
         </div>
-        <p className="text-[10px] sm:text-xs text-slate-500 bg-blue-50 border border-blue-100 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2">
+        <p 
+          className="text-[10px] sm:text-xs rounded-lg px-2 sm:px-3 py-1.5 sm:py-2"
+          style={{ 
+            backgroundColor: colors.infoBg,
+            borderColor: colors.infoBorder,
+            border: `1px solid ${colors.infoBorder}`,
+            color: colors.textMuted,
+          }}
+        >
           💡 Paste this code into your website&apos;s HTML to embed the presentation
         </p>
       </div>
@@ -374,6 +525,53 @@ function ShareTab({
 
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
   const shareUrl = shareToken ? `${baseUrl}/share/${shareToken}` : "";
+
+  const isDark = theme?.colors.background.startsWith("#") &&
+    parseInt(theme.colors.background.slice(1, 3), 16) < 128;
+
+  const colors = isDark ? {
+    text: "#fafafa",
+    textMuted: "#a1a1aa",
+    heading: "#fafafa",
+    border: "#3f3f46",
+    inputBg: "#27272a",
+    cardBg: "#27272a",
+    iconBg: "rgba(59, 130, 246, 0.2)",
+    iconColor: "#60a5fa",
+    successBg: "rgba(34, 197, 94, 0.15)",
+    successBorder: "rgba(34, 197, 94, 0.3)",
+    successIconBg: "rgba(34, 197, 94, 0.2)",
+    successIconColor: "#4ade80",
+    successText: "#4ade80",
+    successTextMuted: "#86efac",
+    lockBg: "#27272a",
+    lockIconColor: "#71717a",
+    btnBg: "#3b82f6",
+    btnHoverBg: "#2563eb",
+    copyBtnBg: "#27272a",
+    copyBtnHoverBg: "#3f3f46",
+  } : {
+    text: "#0f172a",
+    textMuted: "#64748b",
+    heading: "#0f172a",
+    border: "#e2e8f0",
+    inputBg: "#f8fafc",
+    cardBg: "#ffffff",
+    iconBg: "#dbeafe",
+    iconColor: "#2563eb",
+    successBg: "#dcfce7",
+    successBorder: "#bbf7d0",
+    successIconBg: "#dcfce7",
+    successIconColor: "#16a34a",
+    successText: "#166534",
+    successTextMuted: "#15803d",
+    lockBg: "#f1f5f9",
+    lockIconColor: "#94a3b8",
+    btnBg: "#2563eb",
+    btnHoverBg: "#1d4ed8",
+    copyBtnBg: "#f1f5f9",
+    copyBtnHoverBg: "#e2e8f0",
+  };
 
   const handleTogglePublic = async () => {
     setLoading(true);
@@ -412,29 +610,37 @@ function ShareTab({
   return (
     <div className="space-y-6">
       {/* View Analytics Section */}
-      <div className="flex items-center justify-between py-4 border-b border-slate-200">
+      <div 
+        className="flex items-center justify-between py-4"
+        style={{ borderBottom: `1px solid ${colors.border}` }}
+      >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-blue-600">
+          <div 
+            className="w-10 h-10 rounded-lg flex items-center justify-center"
+            style={{ backgroundColor: colors.iconBg }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: colors.iconColor }}>
               <path d="M18 20V10" />
               <path d="M12 20V4" />
               <path d="M6 20v-6" />
             </svg>
           </div>
           <div>
-            <p className="text-sm font-semibold text-slate-900">View analytics</p>
-            <p className="text-xs text-slate-500">Anyone can view, but not comment or edit.</p>
+            <p className="text-sm font-semibold" style={{ color: colors.text }}>View analytics</p>
+            <p className="text-xs" style={{ color: colors.textMuted }}>Anyone can view, but not comment or edit.</p>
           </div>
         </div>
         <button
           onClick={copyToClipboard}
           disabled={!isPublic || !shareUrl}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${copied
-            ? "bg-green-50 text-green-600 border border-green-200"
-            : isPublic && shareUrl
-              ? "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
-              : "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
-            }`}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all border"
+          style={{
+            backgroundColor: copied ? colors.successBg : (isPublic && shareUrl ? colors.cardBg : colors.lockBg),
+            color: copied ? colors.successText : (isPublic && shareUrl ? colors.text : colors.textMuted),
+            borderColor: copied ? colors.successBorder : colors.border,
+            cursor: !isPublic || !shareUrl ? "not-allowed" : "pointer",
+            opacity: !isPublic || !shareUrl ? 0.6 : 1,
+          }}
         >
           <Link2 size={16} />
           {copied ? "Copied!" : "Copy link"}
@@ -444,40 +650,58 @@ function ShareTab({
       {/* Share Link Section */}
       {isPublic && shareUrl ? (
         <div className="space-y-4">
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-green-50 border border-green-200">
-            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-              <Globe className="text-green-600" size={20} />
+          <div 
+            className="flex items-center gap-3 p-4 rounded-xl"
+            style={{ 
+              backgroundColor: colors.successBg,
+              border: `1px solid ${colors.successBorder}`,
+            }}
+          >
+            <div 
+              className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: colors.successIconBg }}
+            >
+              <Globe style={{ color: colors.successIconColor }} size={20} />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-green-900">Public link active</p>
-              <p className="text-xs text-green-700 mt-0.5">Anyone with the link can view this presentation</p>
+              <p className="text-sm font-semibold" style={{ color: colors.successText }}>Public link active</p>
+              <p className="text-xs mt-0.5" style={{ color: colors.successTextMuted }}>Anyone with the link can view this presentation</p>
             </div>
             <button
               onClick={handleTogglePublic}
               disabled={loading}
-              className="text-sm font-medium text-green-700 hover:text-green-800 px-3 py-1.5 rounded-lg hover:bg-green-100 transition"
+              className="text-sm font-medium px-3 py-1.5 rounded-lg transition"
+              style={{ color: colors.successText }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.successIconBg}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             >
               Disable
             </button>
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Share Link</label>
+            <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: colors.textMuted }}>Share Link</label>
             <div className="flex items-center gap-2">
               <div className="flex-1 relative">
                 <input
                   type="text"
                   value={shareUrl}
                   readOnly
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 font-mono focus:outline-none"
+                  className="w-full rounded-lg border px-4 py-3 text-sm font-mono focus:outline-none"
+                  style={{ 
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border,
+                    color: colors.text,
+                  }}
                 />
               </div>
               <button
                 onClick={copyToClipboard}
-                className={`p-3 rounded-lg transition-all ${copied
-                  ? "bg-green-500 text-white"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                  }`}
+                className="p-3 rounded-lg transition-all"
+                style={{
+                  backgroundColor: copied ? "#22c55e" : colors.copyBtnBg,
+                  color: copied ? "#ffffff" : colors.textMuted,
+                }}
               >
                 {copied ? <CheckCircle2 size={18} /> : <Copy size={18} />}
               </button>
@@ -486,17 +710,23 @@ function ShareTab({
         </div>
       ) : (
         <div className="text-center py-8">
-          <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
-            <Lock className="text-slate-400" size={28} />
+          <div 
+            className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+            style={{ backgroundColor: colors.lockBg }}
+          >
+            <Lock style={{ color: colors.lockIconColor }} size={28} />
           </div>
-          <p className="text-slate-900 font-semibold mb-2">Link sharing is off</p>
-          <p className="text-sm text-slate-500 mb-4">
+          <p className="font-semibold mb-2" style={{ color: colors.text }}>Link sharing is off</p>
+          <p className="text-sm mb-4" style={{ color: colors.textMuted }}>
             Enable link sharing to let anyone with the link view this presentation
           </p>
           <button
             onClick={handleTogglePublic}
             disabled={loading}
-            className="px-6 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition disabled:opacity-50"
+            className="px-6 py-2.5 rounded-lg text-white text-sm font-semibold transition disabled:opacity-50"
+            style={{ backgroundColor: colors.btnBg }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.btnHoverBg}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = colors.btnBg}
           >
             {loading ? "Enabling..." : "Enable link sharing"}
           </button>

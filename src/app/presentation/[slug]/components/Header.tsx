@@ -16,12 +16,15 @@ import {
   Hash,
   Palette,
   ChevronDown,
-  History,
   Eye,
-  Copy,
-  Trash2,
+  Sparkles,
+  Monitor,
+  Maximize,
+  FileText,
+  Link2,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { UserButton } from "@clerk/nextjs";
 import type { Theme } from "~/lib/themes";
 import { getThemeType } from "./types";
 import { getUIColors } from "./ui-colors";
@@ -42,6 +45,8 @@ interface HeaderProps {
   isMobile?: boolean;
   canUndo?: boolean;
   canRedo?: boolean;
+  isPresenting?: boolean;
+  presenterViewConnected?: boolean;
   onBack: () => void;
   onEditTitle: () => void;
   onTitleChange: (v: string) => void;
@@ -53,9 +58,14 @@ interface HeaderProps {
   onExport: () => void;
   onShare: () => void;
   onPresent: () => void;
+  onExitPresent?: () => void;
+  onPresentFullscreen?: () => void;
+  onPresentWithNotes?: () => void;
+  onShareFollowLink?: () => void;
   onUndo?: () => void;
   onRedo?: () => void;
   onOpenThemes?: () => void;
+  onOpenAgent?: () => void;
 }
 
 export function Header({
@@ -71,9 +81,11 @@ export function Header({
   theme,
   isSaving,
   hasUnsavedChanges,
-  isMobile = false,
+  isMobile: _isMobile = false,
   canUndo = false,
   canRedo = false,
+  isPresenting = false,
+  presenterViewConnected = false,
   onBack,
   onEditTitle,
   onTitleChange,
@@ -85,14 +97,21 @@ export function Header({
   onExport,
   onShare,
   onPresent,
+  onExitPresent,
+  onPresentFullscreen,
+  onPresentWithNotes,
+  onShareFollowLink,
   onUndo,
   onRedo,
   onOpenThemes,
+  onOpenAgent,
 }: HeaderProps) {
   const themeType = getThemeType(theme);
   const ui = getUIColors(themeType);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [showPresentMenu, setShowPresentMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const presentMenuRef = useRef<HTMLDivElement>(null);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -100,12 +119,15 @@ export function Header({
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setShowMoreMenu(false);
       }
+      if (presentMenuRef.current && !presentMenuRef.current.contains(e.target as Node)) {
+        setShowPresentMenu(false);
+      }
     };
-    if (showMoreMenu) {
+    if (showMoreMenu || showPresentMenu) {
       document.addEventListener("mousedown", handleClickOutside);
       return () => document.removeEventListener("mousedown", handleClickOutside);
     }
-  }, [showMoreMenu]);
+  }, [showMoreMenu, showPresentMenu]);
 
   return (
     <header
@@ -204,19 +226,136 @@ export function Header({
             </button>
           )}
 
-          {/* Present button with dropdown */}
-          <div className="flex items-center">
+          {/* Agent button - icon + text with dropdown arrow */}
+          {isOwner && onOpenAgent && (
             <button
-              onClick={onPresent}
-              className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-lg text-sm font-medium transition-colors"
-              style={{
-                backgroundColor: theme.colors.primary,
-                color: themeType === "light" ? "#ffffff" : "#18181b",
-              }}
+              onClick={onOpenAgent}
+              className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors border ${
+                themeType === "light" || themeType === "corporate"
+                  ? "bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200"
+                  : "bg-zinc-800 border-zinc-700 text-zinc-200 hover:bg-zinc-700"
+              }`}
             >
-              <Play size={14} fill="currentColor" />
-              <span className="hidden sm:inline">Present</span>
+              <Sparkles size={16} />
+              <span>Agent</span>
+              <ChevronDown size={14} />
             </button>
+          )}
+
+          {/* Present button with dropdown */}
+          <div className="relative" ref={presentMenuRef}>
+            <div className="flex items-center h-[34px]">
+              {isPresenting ? (
+                <button
+                  onClick={onExitPresent}
+                  className="flex items-center gap-1.5 px-3 sm:px-4 h-full rounded-lg text-sm font-medium transition-colors bg-red-500 hover:bg-red-600 text-white"
+                  title="Exit presentation mode"
+                >
+                  <X size={14} />
+                  <span className="hidden sm:inline">Exit</span>
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={onPresent}
+                    className="flex items-center gap-1.5 px-3 sm:px-4 h-full rounded-l-lg text-sm font-medium transition-colors"
+                    style={{
+                      backgroundColor: theme.colors.primary,
+                      color: themeType === "light" || themeType === "corporate" ? "#ffffff" : "#18181b",
+                    }}
+                    title="Present in this tab (Ctrl+Enter)"
+                  >
+                    <Play size={14} fill="currentColor" />
+                    <span className="hidden sm:inline">Present</span>
+                  </button>
+                  <button
+                    onClick={() => setShowPresentMenu(!showPresentMenu)}
+                    className="flex items-center justify-center px-2 h-full rounded-r-lg text-sm font-medium transition-colors border-l border-white/20"
+                    style={{
+                      backgroundColor: theme.colors.primary,
+                      color: themeType === "light" || themeType === "corporate" ? "#ffffff" : "#18181b",
+                    }}
+                  >
+                    <ChevronDown size={14} />
+                  </button>
+                </>
+              )}
+            </div>
+
+            {showPresentMenu && (
+              <div
+                className={`absolute right-0 top-full mt-2 w-72 rounded-xl shadow-2xl border backdrop-blur-md z-50 overflow-hidden ${ui.headerBg}`}
+                style={{ borderColor: themeType === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)" }}
+              >
+                {/* Start presenting section */}
+                <div className={`px-4 py-3 border-b ${themeType === "dark" ? "border-white/10" : "border-black/10"}`}>
+                  <p className={`text-sm font-semibold ${ui.headerText}`}>Start presenting</p>
+                </div>
+
+                <div className="p-2">
+                  <button
+                    onClick={() => { onPresentFullscreen?.(); setShowPresentMenu(false); }}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors ${ui.headerHover} ${ui.headerText}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Monitor size={18} />
+                      <span>In this tab</span>
+                    </div>
+                    <span className={`text-xs ${ui.headerMuted}`}>Ctrl+Enter</span>
+                  </button>
+
+                  <button
+                    onClick={() => { onPresent(); setShowPresentMenu(false); }}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors ${ui.headerHover} ${ui.headerText}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Maximize size={18} />
+                      <span>Full screen</span>
+                    </div>
+                    <span className={`text-xs ${ui.headerMuted}`}>Ctrl+Shift+Enter</span>
+                  </button>
+
+                  {onPresentWithNotes && (
+                    <button
+                      onClick={() => { onPresentWithNotes(); setShowPresentMenu(false); }}
+                      className={`w-full flex items-center px-3 py-2.5 rounded-lg text-sm transition-colors ${ui.headerHover} ${ui.headerText}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <FileText size={18} />
+                        <div className="text-left">
+                          <span>Presenter view</span>
+                          <p className={`text-xs ${ui.headerMuted}`}>View notes while presenting</p>
+                        </div>
+                      </div>
+                    </button>
+                  )}
+                </div>
+
+                {/* Other ways to share section */}
+                {onShareFollowLink && (
+                  <>
+                    <div className={`px-4 py-3 border-t ${themeType === "dark" ? "border-white/10" : "border-black/10"}`}>
+                      <p className={`text-sm font-semibold ${ui.headerText}`}>Other ways to share</p>
+                    </div>
+
+                    <div className="p-2">
+                      <button
+                        onClick={() => { onShareFollowLink(); setShowPresentMenu(false); }}
+                        className={`w-full flex items-center px-3 py-2.5 rounded-lg text-sm transition-colors ${ui.headerHover} ${ui.headerText}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Link2 size={18} />
+                          <div className="text-left">
+                            <span>Share a follow link</span>
+                            <p className={`text-xs ${ui.headerMuted}`}>People who join will follow you automatically</p>
+                          </div>
+                        </div>
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           {/* More menu (three dots) */}
@@ -334,11 +473,35 @@ export function Header({
                         <Download size={16} />
                         <span>Export...</span>
                       </button>
+
+                      {/* Mobile-only: Agent */}
+                      {onOpenAgent && (
+                        <button
+                          onClick={() => { onOpenAgent(); setShowMoreMenu(false); }}
+                          className={`sm:hidden w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${ui.headerHover} ${ui.headerText}`}
+                        >
+                          <Sparkles size={16} />
+                          <span>Agent</span>
+                        </button>
+                      )}
                     </>
                   )}
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Profile button */}
+          <div className="hidden sm:block">
+            <UserButton 
+              afterSignOutUrl="/"
+              appearance={{
+                elements: {
+                  avatarBox: "w-8 h-8 ring-2 ring-offset-1",
+                  userButtonTrigger: "focus:shadow-none",
+                },
+              }}
+            />
           </div>
         </div>
       </div>
