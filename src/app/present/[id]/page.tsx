@@ -13,7 +13,6 @@ import {
   Pause,
   RotateCcw,
   Loader2,
-  Monitor,
   StickyNote,
 } from "lucide-react";
 import { cn } from "~/lib/utils";
@@ -256,13 +255,6 @@ export default function PresenterPage({ params }: PresenterPageProps) {
     setIsTimerRunning(false);
   };
 
-  // Broadcast fullscreen command to main window
-  const triggerMainWindowFullscreen = () => {
-    if (channelRef.current) {
-      channelRef.current.postMessage({ type: "enter-fullscreen" });
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-slate-900">
@@ -315,18 +307,6 @@ export default function PresenterPage({ params }: PresenterPageProps) {
               <RotateCcw className="h-3 w-3" />
             </button>
           </div>
-
-          {/* Present on main screen button */}
-          {mainWindowConnected && (
-            <button
-              onClick={triggerMainWindowFullscreen}
-              className="flex items-center gap-2 px-3 py-1.5 bg-[#06b6d4] hover:bg-[#0891b2] rounded-lg transition text-sm font-medium"
-              title="Present on main screen"
-            >
-              <Monitor className="h-4 w-4" />
-              Present
-            </button>
-          )}
 
           {/* Actions */}
           <button
