@@ -1934,12 +1934,6 @@ export default function PresentationViewer({
         {/* Public View Controls - Always visible */}
         {isPublicView && (
           <>
-            <div className="fixed top-2 sm:top-4 left-2 sm:left-4 right-2 sm:right-auto z-50 max-w-md">
-              <h1 className={`text-sm sm:text-lg font-semibold ${getUIColors(getThemeType(theme)).headerText} bg-black/30 backdrop-blur-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg truncate`}>
-                {presentation.title}
-              </h1>
-            </div>
-
             <div className="fixed top-2 sm:top-4 right-2 sm:right-4 z-50 flex items-center gap-2">
               {/* View Mode Toggle */}
               {!isFullscreen && (
