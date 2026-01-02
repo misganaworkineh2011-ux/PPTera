@@ -183,45 +183,25 @@ function ThemeCard({
             />
           )}
 
-          {/* Content card overlaid on background */}
-          <div
-            className="absolute bottom-2 left-2 right-2 rounded-md p-2 backdrop-blur-md transition-all duration-300"
-            style={{
-              backgroundColor: theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
-              border: theme.cardBox?.borderColor
-                ? `1px solid ${theme.cardBox.borderColor}`
-                : "1px solid rgba(255,255,255,0.1)",
-              boxShadow: theme.cardBox?.shadow || "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-              maxWidth: "80%",
-            }}
-          >
+          {/* Content card centered on background with SVG preview */}
+          <div className="absolute inset-0 flex items-center justify-center">
             <div
-              className="text-xs font-bold mb-0.5 truncate"
+              className="rounded-md backdrop-blur-md transition-all duration-300 w-[85%] h-[75%] flex items-center justify-center overflow-hidden"
               style={{
-                fontFamily: theme.fonts?.heading?.family,
-                color: theme.cardBox?.titleColor || theme.colors?.heading,
+                backgroundColor: theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
+                border: theme.cardBox?.borderColor
+                  ? `1px solid ${theme.cardBox.borderColor}`
+                  : "1px solid rgba(255,255,255,0.1)",
+                boxShadow: theme.cardBox?.shadow || "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
               }}
             >
-              Title
-            </div>
-            <div
-              className="text-[10px] font-medium flex items-center gap-1"
-              style={{
-                fontFamily: theme.fonts?.body?.family,
-                color: theme.cardBox?.bodyColor || theme.colors?.text,
-              }}
-            >
-              Body &{" "}
-              <span
-                className="underline decoration-1 underline-offset-1"
-                style={{
-                  color: theme.cardBox?.accentColor || theme.preview?.accentColor || theme.colors?.accent,
-                  textDecorationColor:
-                    theme.cardBox?.accentColor || theme.preview?.accentColor || theme.colors?.accent,
-                }}
-              >
-                link
-              </span>
+              {/* SVG preview from API */}
+              <img 
+                src={`/api/themes/preview/${theme.id}`}
+                alt={`${theme.name} preview`}
+                className="w-full h-full object-contain"
+                loading="lazy"
+              />
             </div>
           </div>
 
@@ -283,35 +263,36 @@ function CustomThemeCard({
           className="aspect-[16/10] w-full rounded-md shadow-sm relative overflow-hidden"
           style={{ backgroundColor: theme.colors.background }}
         >
-          {/* Content card */}
-          <div
-            className="absolute bottom-2 left-2 right-2 rounded-md p-2 backdrop-blur-md"
-            style={{
-              backgroundColor: `${theme.colors.background}ee`,
-              border: `1px solid ${theme.colors.primary}40`,
-              maxWidth: "80%",
-            }}
-          >
+          {/* Content card centered */}
+          <div className="absolute inset-0 flex items-center justify-center">
             <div
-              className="text-xs font-bold mb-0.5 truncate"
-              style={{ color: theme.colors.text }}
+              className="rounded-md p-2.5 backdrop-blur-md w-[85%] h-[75%] flex flex-col justify-center"
+              style={{
+                backgroundColor: `${theme.colors.background}ee`,
+                border: `1px solid ${theme.colors.primary}40`,
+              }}
             >
-              Title
-            </div>
-            <div
-              className="text-[10px] font-medium flex items-center gap-1"
-              style={{ color: theme.colors.text }}
-            >
-              Body &{" "}
-              <span
-                className="underline decoration-1 underline-offset-1"
-                style={{
-                  color: theme.colors.accent,
-                  textDecorationColor: theme.colors.accent,
-                }}
+              <div
+                className="text-sm font-bold mb-1 truncate"
+                style={{ color: theme.colors.text }}
               >
-                link
-              </span>
+                Title
+              </div>
+              <div
+                className="text-xs font-medium flex items-center gap-1"
+                style={{ color: theme.colors.text }}
+              >
+                Body &{" "}
+                <span
+                  className="underline decoration-1 underline-offset-1"
+                  style={{
+                    color: theme.colors.accent,
+                    textDecorationColor: theme.colors.accent,
+                  }}
+                >
+                  link
+                </span>
+              </div>
             </div>
           </div>
 

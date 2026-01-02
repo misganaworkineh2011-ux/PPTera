@@ -304,14 +304,12 @@ export default function CreatePresentationClient({
   const [isCreatingPresentation, setIsCreatingPresentation] = useState(false);
 
   // Track recently selected themes for quick access (6 themes for 3x2 grid)
-  const [quickSelectThemes, setQuickSelectThemes] = useState<string[]>([
-    themes[0]?.id || "corporate-professional",
-    themes[1]?.id || "elegant-dark",
-    themes[2]?.id || "modern-minimal",
-    themes[3]?.id || "creative-bold",
-    themes[4]?.id || "nature-green",
-    themes[5]?.id || "tech-blue",
-  ]);
+  // Filter to only include unique theme IDs that exist
+  const [quickSelectThemes, setQuickSelectThemes] = useState<string[]>(() => {
+    const uniqueThemes = new Set<string>();
+    themes.forEach((t) => uniqueThemes.add(t.id));
+    return Array.from(uniqueThemes).slice(0, 6);
+  });
 
   // Cache for custom themes
   const [customThemesCache, setCustomThemesCache] = useState<Record<string, Theme>>({});
@@ -1208,42 +1206,23 @@ export default function CreatePresentationClient({
                                     backgroundPosition: theme.previewBackgroundImage ? "center" : "center",
                                   }}
                                 >
-                                  {/* Small content box overlaid on background */}
-                                  <div
-                                    className="absolute bottom-1.5 left-1.5 right-1.5 rounded p-1.5 backdrop-blur-md transition-all duration-300"
-                                    style={{
-                                      backgroundColor: theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
-                                      border: theme.cardBox?.borderColor ? `1px solid ${theme.cardBox.borderColor}` : "none",
-                                      boxShadow: theme.cardBox?.shadow || "0 1px 3px rgba(0, 0, 0, 0.1)",
-                                      maxWidth: "70%",
-                                    }}
-                                  >
+                                  {/* Content box centered on background with SVG preview */}
+                                  <div className="absolute inset-0 flex items-center justify-center">
                                     <div
-                                      className="text-[11px] font-bold mb-0.5 leading-tight"
+                                      className="rounded backdrop-blur-md transition-all duration-300 w-[85%] h-[75%] flex items-center justify-center overflow-hidden"
                                       style={{
-                                        fontFamily: theme.fonts.heading.family,
-                                        color: theme.cardBox?.titleColor || theme.colors.heading,
+                                        backgroundColor: theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
+                                        border: theme.cardBox?.borderColor ? `1px solid ${theme.cardBox.borderColor}` : "none",
+                                        boxShadow: theme.cardBox?.shadow || "0 1px 3px rgba(0, 0, 0, 0.1)",
                                       }}
                                     >
-                                      Title
-                                    </div>
-                                    <div
-                                      className="text-[8px] font-medium leading-tight"
-                                      style={{
-                                        fontFamily: theme.fonts.body.family,
-                                        color: theme.cardBox?.bodyColor || theme.colors.text,
-                                      }}
-                                    >
-                                      Body &{" "}
-                                      <span
-                                        className="underline decoration-1"
-                                        style={{
-                                          color: theme.cardBox?.accentColor || theme.preview.accentColor,
-                                          textDecorationColor: theme.cardBox?.accentColor || theme.preview.accentColor,
-                                        }}
-                                      >
-                                        link
-                                      </span>
+                                      {/* SVG preview from API */}
+                                      <img 
+                                        src={`/api/themes/preview/${theme.id}`}
+                                        alt={`${theme.name} preview`}
+                                        className="w-full h-full object-contain"
+                                        loading="lazy"
+                                      />
                                     </div>
                                   </div>
                                 </div>

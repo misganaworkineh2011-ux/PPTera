@@ -719,6 +719,9 @@ export default function SlideRenderer({
 
   // Check if this is a custom theme
   const isCustomTheme = theme.id.startsWith("custom-");
+  
+  // Check if theme has cardBox defined (for slide backgrounds like sprout theme)
+  const hasCardBox = !!theme.cardBox?.background;
 
   // For custom themes, generate the background gradient class dynamically
   // Since Tailwind can't use dynamic colors, we'll use inline styles for custom themes
@@ -733,8 +736,22 @@ export default function SlideRenderer({
     textMuted: theme.colors.textMuted,
   };
 
-  // Custom theme background style - used for slide backgrounds
-  const customBgStyle: React.CSSProperties = isCustomTheme ? { background: customBgGradient } : {};
+  // Slide background style - uses cardBox.background if available (for themes like sprout)
+  // This makes slides appear as "cards" on top of the page background image
+  // Added transparency so background image shows through nicely
+  const customBgStyle: React.CSSProperties = hasCardBox 
+    ? { 
+        backgroundColor: theme.cardBox.background + "cc", // ~80% opacity (cc = 204/255)
+        border: `1px solid ${theme.cardBox.borderColor}`,
+        backdropFilter: "blur(12px)",
+      }
+    : isCustomTheme 
+      ? { background: customBgGradient } 
+      : {};
+  
+  // Helper to determine if we should use Tailwind gradient classes
+  // Only use them when we don't have cardBox or custom theme styles
+  const useGradientClasses = !hasCardBox && !isCustomTheme;
 
   const SlideIndicator = ({ position = "top-left" }: { position?: "top-left" | "top-right" }) => {
     if (!showPageNumber) return null;
@@ -1171,7 +1188,7 @@ export default function SlideRenderer({
     
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         <div className={`absolute top-0 right-0 w-96 h-96 ${colors.orb1} rounded-full blur-3xl hidden sm:block`} />
         <div className={`absolute bottom-0 left-0 w-80 h-80 ${colors.orb2} rounded-full blur-3xl hidden sm:block`} />
 
@@ -1215,7 +1232,7 @@ export default function SlideRenderer({
     
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-bl ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-bl ${colors.bg}` : ''}`} style={customBgStyle} />
         <div className={`absolute top-0 left-0 w-96 h-96 ${colors.orb2} rounded-full blur-3xl hidden sm:block`} />
         <div className={`absolute bottom-0 right-0 w-80 h-80 ${colors.orb1} rounded-full blur-3xl hidden sm:block`} />
 
@@ -1260,7 +1277,7 @@ export default function SlideRenderer({
     
     return (
       <div className="h-full relative overflow-hidden flex flex-col">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-b ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-b ${colors.bg}` : ''}`} style={customBgStyle} />
 
         <SlideIndicator position="top-left" />
 
@@ -1312,7 +1329,7 @@ export default function SlideRenderer({
     
     return (
       <div className="h-full relative overflow-hidden flex flex-col">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-t ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-t ${colors.bg}` : ''}`} style={customBgStyle} />
 
         <SlideIndicator position="top-left" />
 
@@ -1358,7 +1375,7 @@ export default function SlideRenderer({
   if (layout === "centered") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-b ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-b ${colors.bg}` : ''}`} style={customBgStyle} />
         <div className={`absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] ${colors.orb1} rounded-full blur-3xl hidden sm:block`} />
 
         <SlideIndicator position="top-left" />
@@ -1392,7 +1409,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
 
         {hasImage && firstImage && (
           <div className="absolute inset-0 clip-diagonal hidden sm:block">
@@ -1448,7 +1465,7 @@ export default function SlideRenderer({
             <div className={`absolute inset-0 ${colors.sideOverlay}`} />
           </>
         ) : (
-          <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+          <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         )}
 
         <div className={`absolute top-0 left-0 w-full h-32 ${colors.topOverlay}`} />
@@ -1606,7 +1623,7 @@ export default function SlideRenderer({
     // Default cards-grid for other themes
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         <div className={`absolute top-1/3 right-0 w-80 h-80 ${colors.orb1} rounded-full blur-3xl hidden sm:block`} />
 
         <SlideIndicator position="top-left" />
@@ -1656,7 +1673,7 @@ export default function SlideRenderer({
 
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         <div className={`absolute top-1/4 right-1/4 w-64 h-64 ${colors.orb1} rounded-full blur-3xl hidden sm:block`} />
 
         <SlideIndicator position="top-left" />
@@ -1726,7 +1743,7 @@ export default function SlideRenderer({
   if (layout === "grid-3-col") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         <div className={`absolute bottom-0 left-1/3 w-72 h-72 ${colors.orb2} rounded-full blur-3xl hidden sm:block`} />
 
         <SlideIndicator position="top-left" />
@@ -1753,7 +1770,7 @@ export default function SlideRenderer({
   if (layout === "grid-4-card") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 ${colors.orb1} rounded-full blur-3xl hidden sm:block`} />
 
         <SlideIndicator position="top-left" />
@@ -1800,7 +1817,7 @@ export default function SlideRenderer({
   if (layout === "cards-2") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         <div className={`absolute top-0 right-0 w-80 h-80 ${colors.orb1Strong} rounded-full blur-3xl hidden sm:block`} />
         <div className={`absolute bottom-0 left-0 w-64 h-64 ${colors.orb2} rounded-full blur-3xl hidden sm:block`} />
 
@@ -1845,7 +1862,7 @@ export default function SlideRenderer({
   if (layout === "cards-3") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         <div className={`absolute top-1/3 left-1/4 w-72 h-72 ${colors.orb1} rounded-full blur-3xl hidden sm:block`} />
 
         <SlideIndicator position="top-left" />
@@ -1893,7 +1910,7 @@ export default function SlideRenderer({
 
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
 
         <SlideIndicator position="top-left" />
 
@@ -1968,7 +1985,7 @@ export default function SlideRenderer({
   if (layout === "stats-grid") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         <div className={`absolute top-0 left-1/2 w-96 h-96 ${colors.orb1Strong} rounded-full blur-3xl hidden sm:block`} />
 
         <SlideIndicator position="top-left" />
@@ -2022,7 +2039,7 @@ export default function SlideRenderer({
           </>
         )}
         {!hasImage && (
-          <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle}>
+          <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle}>
             {/* Placeholder for no image */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-dashed flex items-center justify-center mb-4" style={{ borderColor: colors.textMuted }}>
@@ -2056,7 +2073,7 @@ export default function SlideRenderer({
           </>
         )}
         {!hasImage && (
-          <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+          <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         )}
 
         <SlideIndicator position="top-left" />
@@ -2095,7 +2112,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         <div className={`absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 ${colors.orb1} rounded-full blur-3xl hidden sm:block`} />
 
         <SlideIndicator position="top-left" />
@@ -2155,7 +2172,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
 
         <SlideIndicator position="top-left" />
 
@@ -2219,7 +2236,7 @@ export default function SlideRenderer({
   if (layout === "quote-style") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
         <div className={`absolute top-0 left-1/4 w-96 h-96 ${colors.orb1Strong} rounded-full blur-3xl`} />
         <div className={`absolute bottom-0 right-1/4 w-72 h-72 ${colors.orb2Strong} rounded-full blur-3xl`} />
 
@@ -2275,7 +2292,7 @@ export default function SlideRenderer({
   if (layout === "timeline") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-b ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-b ${colors.bg}` : ''}`} style={customBgStyle} />
         <div className={`absolute top-0 right-1/3 w-64 h-64 ${colors.orb1Strong} rounded-full blur-3xl`} />
 
         <SlideIndicator position="top-left" />
@@ -2333,7 +2350,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
 
         {/* Diagonal image section */}
         {hasImage && firstImage && (
@@ -2378,7 +2395,7 @@ export default function SlideRenderer({
   if (layout === "circle-focus") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
 
         {/* Decorative circles */}
         <div className="absolute top-10 right-10 w-64 h-64 rounded-full border border-teal-500/10" />
@@ -2448,7 +2465,7 @@ export default function SlideRenderer({
   if (layout === "wave-layout") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-b ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-b ${colors.bg}` : ''}`} style={customBgStyle} />
 
         {/* Wave SVG background */}
         <svg className="absolute bottom-0 left-0 right-0 h-48 opacity-20" viewBox="0 0 1440 320" preserveAspectRatio="none">
@@ -2533,7 +2550,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
 
         {/* Aurora gradient streaks */}
         <div className="absolute top-0 left-0 right-0 h-full overflow-hidden">
@@ -2611,7 +2628,7 @@ export default function SlideRenderer({
   if (layout === "glass-cards") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
 
         {/* Aurora background effect */}
         <div className="absolute inset-0">
@@ -2686,7 +2703,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-b ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-b ${colors.bg}` : ''}`} style={customBgStyle} />
 
         {/* Full aurora effect background */}
         {hasImage && firstImage ? (
@@ -2770,7 +2787,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
 
         {/* Ember particles floating */}
         <div className="absolute inset-0 overflow-hidden">
@@ -2842,7 +2859,7 @@ export default function SlideRenderer({
   if (layout === "ember-cards") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
 
         {/* Ember background effect */}
         <div className="absolute inset-0">
@@ -2923,7 +2940,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
 
         {/* Molten divider effect */}
         <div className="absolute top-0 bottom-0 left-1/2 w-2 -translate-x-1/2">
@@ -2995,7 +3012,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
 
         {/* Botanical decorative elements */}
         <div className="absolute top-0 right-0 w-64 h-64 opacity-10">
@@ -3070,7 +3087,7 @@ export default function SlideRenderer({
   if (layout === "botanical-cards") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
 
         {/* Botanical corner decorations */}
         <div className="absolute top-0 left-0 w-32 h-32 opacity-15">
@@ -3167,7 +3184,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
 
         {/* Ornate center divider */}
         <div className="absolute top-12 bottom-12 left-1/2 -translate-x-1/2 w-px bg-gradient-to-b from-transparent via-pink-400/30 to-transparent" />
@@ -3240,7 +3257,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
 
         {/* Scanlines effect */}
         <div className="absolute inset-0 opacity-5" style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,255,0.1) 2px, rgba(0,255,255,0.1) 4px)" }} />
@@ -3318,7 +3335,7 @@ export default function SlideRenderer({
   if (layout === "neon-grid") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
 
         {/* Grid background */}
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "linear-gradient(rgba(0,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,255,0.1) 1px, transparent 1px)", backgroundSize: "50px 50px" }} />
@@ -3401,7 +3418,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
 
         {/* Holographic shimmer background */}
         <div className="absolute inset-0 opacity-5" style={{ backgroundImage: "linear-gradient(135deg, rgba(0,255,255,0.2) 0%, rgba(255,0,255,0.2) 25%, rgba(173,255,47,0.2) 50%, rgba(0,255,255,0.2) 75%, rgba(255,0,255,0.2) 100%)", backgroundSize: "400% 400%" }} />
@@ -3491,7 +3508,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
 
         {/* Scanning lines effect */}
         <div className="absolute inset-0 overflow-hidden opacity-15">
@@ -3592,7 +3609,7 @@ export default function SlideRenderer({
   if (layout === "bio-cards") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
 
         {/* Organic flowing shapes */}
         <div className={`absolute top-0 right-0 w-[500px] h-[500px] ${colors.orb1} rounded-full blur-3xl`} />
@@ -3660,7 +3677,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
 
         {/* Data stream lines */}
         <div className="absolute inset-0 overflow-hidden opacity-10">
@@ -3753,7 +3770,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''} pointer-events-none`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''} pointer-events-none`} style={customBgStyle} />
 
         {/* Premium corner accents */}
         <div className="absolute top-0 left-0 w-1.5 h-28 bg-gradient-to-b from-blue-500 via-blue-400 to-transparent pointer-events-none" />
@@ -3804,7 +3821,7 @@ export default function SlideRenderer({
   if (layout === "pro-cards") {
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''} pointer-events-none`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''} pointer-events-none`} style={customBgStyle} />
 
         {/* Elegant background elements */}
         <div className={`absolute top-0 right-0 w-[550px] h-[550px] ${colors.orb1} rounded-full blur-3xl pointer-events-none`} />
@@ -3842,7 +3859,7 @@ export default function SlideRenderer({
     const firstImage = allImages[0];
     return (
       <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''} pointer-events-none`} style={customBgStyle} />
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''} pointer-events-none`} style={customBgStyle} />
 
         {/* Subtle dot pattern */}
         <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: "radial-gradient(circle, #3182ce 1px, transparent 1px)", backgroundSize: "36px 36px" }} />

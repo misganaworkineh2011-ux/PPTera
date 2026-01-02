@@ -172,12 +172,18 @@ export function getBoxLayoutGridTemplate(
   };
 }
 
-// Base styles helper
+// Base styles helper - for layout elements inside slides
 export function getBaseBoxStyles(theme: Theme) {
+  // Use layoutElements for inner cards/boxes (lighter color)
+  // Fall back to cardBox if layoutElements not defined
+  const layoutElements = theme.layoutElements;
   const cardBox = theme.cardBox;
+  
   return {
-    bgColor: cardBox?.background || `${theme.colors.surface}80`,
-    borderColor: cardBox?.borderColor || theme.colors.border,
+    // Layout elements use the lighter layoutElements colors
+    bgColor: layoutElements?.background || cardBox?.background || `${theme.colors.surface}80`,
+    borderColor: layoutElements?.borderColor || cardBox?.borderColor || theme.colors.border,
+    // Text colors still come from cardBox
     accentColor: cardBox?.accentColor || theme.colors.accent,
     titleColor: cardBox?.titleColor || theme.colors.heading,
     bodyColor: cardBox?.bodyColor || theme.colors.textMuted,

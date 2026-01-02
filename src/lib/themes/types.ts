@@ -66,6 +66,8 @@ export interface ThemeFonts {
   mono?: {
     family: string;
   };
+  // Google Fonts URLs to load for this theme
+  googleFontsUrls?: string[];
 }
 
 // ============================================================================
@@ -124,6 +126,15 @@ export interface ThemeCardBox {
 }
 
 // ============================================================================
+// THEME LAYOUT ELEMENT STYLES (for inner cards/boxes inside slides)
+// ============================================================================
+export interface ThemeLayoutElements {
+  background: string;       // Low brightness color (tends to white but themed)
+  borderColor: string;      // Border for layout elements
+  hoverBackground?: string; // Hover state
+}
+
+// ============================================================================
 // THEME GRADIENTS
 // ============================================================================
 export interface ThemeGradients {
@@ -149,8 +160,11 @@ export interface Theme {
   design: ThemeDesign;
   slideStyles: ThemeSlideStyles;
   
-  // Card/Box styling
+  // Card/Box styling (for slide backgrounds)
   cardBox: ThemeCardBox;
+  
+  // Layout element styling (for inner cards/boxes inside slides)
+  layoutElements?: ThemeLayoutElements;
   
   // Gradients
   gradients: ThemeGradients;
@@ -166,6 +180,8 @@ export interface Theme {
   // Optional background customization
   backgroundImage?: string;
   previewBackgroundImage?: string;
+  backgroundPosition?: string;  // CSS background-position (e.g., "center", "top", "bottom 20%")
+  backgroundSize?: string;      // CSS background-size (e.g., "cover", "contain", "100% auto")
   overlay?: string;
   pageBackground?: string;
   

@@ -46,23 +46,29 @@ export {
   hexToRgba,
 } from "./theme-utils";
 
+// Re-export Cloudinary helpers for theme assets
+export {
+  getSlideBackgroundUrl,
+  getThemePreviewUrl,
+  getThemeBackgroundPath,
+} from "./cloudinary";
+
 // Import themes
-import { corporateClean } from "./corporate-clean";
-import { elegantNoir } from "./elegant-noir";
+import { sproutTheme } from "./sprout";
 
 // Re-export themes for direct imports
-export { corporateClean, elegantNoir };
+export { sproutTheme };
 
 // All themes array
-export const themes = [corporateClean, elegantNoir];
+export const themes = [sproutTheme];
 
 // Helper functions
 export const getThemeById = (id: string) => {
-  return themes.find((theme) => theme.id === id) ?? corporateClean;
+  return themes.find((theme) => theme.id === id) ?? sproutTheme;
 };
 
 export const getDefaultTheme = () => {
-  return corporateClean;
+  return sproutTheme;
 };
 
 // Re-export custom theme utilities for convenience

@@ -1565,7 +1565,12 @@ export default function PresentationViewer({
 
       <div
         className={`min-h-screen ${theme.pageBackground ? "" : getUIColors(getThemeType(theme)).pageBg}`}
-        style={theme.pageBackground ? { background: theme.pageBackground } : {}}
+        style={theme.backgroundImage ? {
+          backgroundImage: `url(${theme.backgroundImage})`,
+          backgroundSize: theme.backgroundSize || "cover",
+          backgroundPosition: theme.backgroundPosition || "center",
+          backgroundAttachment: "fixed",
+        } : theme.pageBackground ? { background: theme.pageBackground } : {}}
       >
         {!isFullscreen && !isPublicView && (
           <Header
@@ -1926,10 +1931,15 @@ function ScrollSlideContent({ slide, index, theme, renderSlide }: {
     "custom-light": "",
   };
 
+  // If theme has cardBox, the slide handles its own background with transparency
+  // Don't apply a solid background here so the page background shows through
+  const hasCardBox = !!theme.cardBox?.background;
+  
   // Use custom pageBackground if available, otherwise fall back to themeType-based classes
   const hasCustomPageBg = !!theme.pageBackground;
-  const bgClass = hasCustomPageBg ? "" : bgColors[themeType];
-  const bgStyle = hasCustomPageBg ? { background: theme.pageBackground } : {};
+  // When hasCardBox is true, don't apply any background - let the slide be transparent
+  const bgClass = hasCardBox ? "" : (hasCustomPageBg ? "" : bgColors[themeType]);
+  const bgStyle = hasCardBox ? {} : (hasCustomPageBg ? { background: theme.pageBackground } : {});
 
   // Always use fixed 16:9 aspect ratio for consistent slide sizing
   // This ensures h-full works correctly in child components

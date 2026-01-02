@@ -281,42 +281,23 @@ export default function ThemeSelector({
                           backgroundPosition: theme.previewBackgroundImage ? "center" : "center",
                         }}
                       >
-                        {/* Small content box overlaid on background */}
-                        <div 
-                          className="absolute bottom-3 left-3 right-3 rounded-lg p-3 backdrop-blur-md transition-all duration-300"
-                          style={{
-                            backgroundColor: theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
-                            border: theme.cardBox?.borderColor ? `1px solid ${theme.cardBox.borderColor}` : "none",
-                            boxShadow: theme.cardBox?.shadow || "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                            maxWidth: "75%",
-                          }}
-                        >
-                          <div
-                            className="text-lg font-bold mb-1"
+                        {/* Content box centered on background with SVG preview */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div 
+                            className="rounded-lg backdrop-blur-md transition-all duration-300 w-[85%] h-[80%] flex items-center justify-center overflow-hidden"
                             style={{
-                              fontFamily: theme.fonts.heading.family,
-                              color: theme.cardBox?.titleColor || theme.colors.heading,
+                              backgroundColor: theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
+                              border: theme.cardBox?.borderColor ? `1px solid ${theme.cardBox.borderColor}` : "none",
+                              boxShadow: theme.cardBox?.shadow || "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                             }}
                           >
-                            Title
-                          </div>
-                          <div
-                            className="text-xs font-medium"
-                            style={{
-                              fontFamily: theme.fonts.body.family,
-                              color: theme.cardBox?.bodyColor || theme.colors.text,
-                            }}
-                          >
-                            Body &{" "}
-                            <span
-                              className="underline decoration-2 underline-offset-2"
-                              style={{
-                                color: theme.cardBox?.accentColor || theme.preview.accentColor,
-                                textDecorationColor: theme.cardBox?.accentColor || theme.preview.accentColor,
-                              }}
-                            >
-                              link
-                            </span>
+                            {/* SVG preview from API */}
+                            <img 
+                              src={`/api/themes/preview/${theme.id}`}
+                              alt={`${theme.name} preview`}
+                              className="w-full h-full object-contain"
+                              loading="lazy"
+                            />
                           </div>
                         </div>
                       </div>
