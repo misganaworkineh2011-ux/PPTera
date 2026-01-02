@@ -137,6 +137,20 @@ export default function PresentationViewer({
   >(null);
   const [showRateModal, setShowRateModal] = useState(false);
 
+  // Track if this is a fresh AI creation (show feedback only on first view after creation)
+  const [showFeedback, setShowFeedback] = useState(() => {
+    // Only show feedback if mode is 'ai' and we haven't seen this presentation before
+    if (typeof window === "undefined") return false;
+    if (mode !== "ai") return false;
+    const seenKey = `ppt-seen-${presentation.id}`;
+    const hasSeen = sessionStorage.getItem(seenKey);
+    if (!hasSeen) {
+      sessionStorage.setItem(seenKey, "true");
+      return true;
+    }
+    return false;
+  });
+
   // Initialize based on screen size
   const [showThumbnails, setShowThumbnails] = useState(
     typeof window !== "undefined" ? window.innerWidth >= 768 : true,
@@ -1615,47 +1629,37 @@ export default function PresentationViewer({
         {/* Main content area - uses margin to make room for panel, preserving scroll position */}
         <div 
           className="transition-all duration-300"
-          style={showContentLayoutPanel ? {
-            marginRight: `${CONTENT_LAYOUT_PANEL_WIDTH}px`,
-          } : {}}
+          style={{
+            ...(showContentLayoutPanel ? { marginRight: `${CONTENT_LAYOUT_PANEL_WIDTH}px` } : {}),
+            ...(showThumbnails && !isPublicView && !isMobile && !isFullscreen ? { marginLeft: '176px' } : {}),
+          }}
         >
         <div className={`${isFullscreen ? "" : "px-0 sm:px-2 md:px-4 py-4 sm:py-8"} max-w-full ${showContentLayoutPanel ? 'pb-20' : ''}`}>
           {viewMode === "scroll" && !isFullscreen ? (
-            <div className="flex gap-6 mx-auto" style={{ maxWidth: "1400px" }}>
+            <>
               {showThumbnails && !isPublicView && !isMobile && (
                 <ThumbnailSidebar
                   slides={slides}
+                  currentSlide={currentSlide}
                   onSlideClick={(index) => document.getElementById(`slide-${index}`)?.scrollIntoView({ behavior: "smooth", block: "center" })}
                   onClose={() => setShowThumbnails(false)}
                   renderSlide={renderSlide}
                   theme={theme}
-                  onAddSlide={addSlideAt}
-                  isOwner={canEdit}
                 />
               )}
-              <div className="flex-1 w-full min-w-0">{renderScrollableView()}</div>
-            </div>
+              <div className="mx-auto" style={{ maxWidth: "1200px" }}>{renderScrollableView()}</div>
+            </>
           ) : (
             <div className={`flex gap-6 ${isFullscreen || isPublicView ? "h-screen w-screen" : "mx-auto"} overflow-x-hidden`} style={!isFullscreen && !isPublicView ? { maxWidth: "1700px" } : {}}>
               {showThumbnails && !isFullscreen && !isPublicView && viewMode === "slides" && (
-                <div className={`hidden lg:block w-44 shrink-0 space-y-2 max-h-[calc(100vh-140px)] overflow-y-auto scrollbar-thin pr-2 sticky top-20 ${getUIColors(getThemeType(theme)).scrollbar}`}>
-                  {slides.map((slide, index) => {
-                    const ui = getUIColors(getThemeType(theme));
-                    return (
-                      <button key={index} onClick={() => goToSlide(index)} className="w-full group relative">
-                        <div
-                          className={`aspect-video overflow-hidden transition-all duration-200 ring-1 ${currentSlide === index ? "ring-2 shadow-lg" : `${ui.ringHover} opacity-70 hover:opacity-100`}`}
-                          style={currentSlide === index ? { boxShadow: `0 0 0 2px ${theme.colors.primary}` } : {}}
-                        >
-                          {renderSlide(slide, index, false)}
-                        </div>
-                        <div className={`absolute top-1 left-1 w-4 h-4 backdrop-blur-sm flex items-center justify-center ${ui.thumbBg}`}>
-                          <span className={`text-[9px] font-bold ${ui.thumbText}`}>{index + 1}</span>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
+                <ThumbnailSidebar
+                  slides={slides}
+                  currentSlide={currentSlide}
+                  onSlideClick={goToSlide}
+                  onClose={() => setShowThumbnails(false)}
+                  renderSlide={renderSlide}
+                  theme={theme}
+                />
               )}
 
               <div className={`flex-1 flex flex-col ${isFullscreen ? "h-full justify-center items-center w-full" : ""} max-w-full overflow-hidden`}>
@@ -1760,7 +1764,7 @@ export default function PresentationViewer({
           </button>
         )}
 
-        {viewMode === "scroll" && !isFullscreen && !isPublicView && <FeedbackSection presentationId={presentation.id} theme={theme} />}
+        {viewMode === "scroll" && !isFullscreen && !isPublicView && showFeedback && <FeedbackSection presentationId={presentation.id} theme={theme} />}
         </div>
         {/* End of content area that shifts */}
 

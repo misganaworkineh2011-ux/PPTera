@@ -55,12 +55,13 @@ export {
 
 // Import themes
 import { sproutTheme } from "./sprout";
+import { corporateCleanTheme } from "./corporate-clean";
 
 // Re-export themes for direct imports
-export { sproutTheme };
+export { sproutTheme, corporateCleanTheme };
 
 // All themes array
-export const themes = [sproutTheme];
+export const themes = [sproutTheme, corporateCleanTheme];
 
 // Helper functions
 export const getThemeById = (id: string) => {
