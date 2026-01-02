@@ -50,13 +50,14 @@ export const LandingNavbar = ({ currentLang }: LandingNavbarProps) => {
         <div className="flex h-16 items-center justify-between">
           {/* Left: Logo & Nav */}
           <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center">
+            <Link href={localPath("/")} className="flex items-center">
               <Image
                 src="/logo.png"
                 alt="PPTMaster"
                 width={180}
-                height={52}
+                height={48}
                 className="h-12 w-auto"
+                priority
               />
             </Link>
 
@@ -190,6 +191,8 @@ export const LandingNavbar = ({ currentLang }: LandingNavbarProps) => {
             <button 
               className="lg:hidden p-2 text-zinc-600"
               onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileOpen}
             >
               {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>

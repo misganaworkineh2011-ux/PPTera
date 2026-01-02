@@ -185,6 +185,82 @@ export function AboutPageContent({ currentLang = "en" }: AboutPageContentProps) 
           </div>
         </div>
       </section>
+
+      {/* Technology Section - Additional content for SEO */}
+      <section className="relative py-24 px-6 bg-gradient-to-br from-slate-50 to-white">
+        <div className="mx-auto max-w-7xl">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+              {t.ourTechnology || "Our Technology"}
+            </h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              {t.ourTechnologyDesc || "Powered by cutting-edge artificial intelligence and machine learning"}
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="space-y-6">
+              <div className="p-6 rounded-2xl bg-white border border-slate-200 hover:shadow-lg transition-all">
+                <h3 className="text-xl font-bold text-slate-900 mb-3">{t.advancedAIModels || "Advanced AI Models"}</h3>
+                <p className="text-slate-600 leading-relaxed">
+                  {t.advancedAIModelsDesc || "PPT Master leverages state-of-the-art large language models and generative AI to understand your content and create visually stunning presentations. Our AI analyzes your input, structures information logically, and generates professional designs automatically."}
+                </p>
+              </div>
+              <div className="p-6 rounded-2xl bg-white border border-slate-200 hover:shadow-lg transition-all">
+                <h3 className="text-xl font-bold text-slate-900 mb-3">{t.smartDesignEngine || "Smart Design Engine"}</h3>
+                <p className="text-slate-600 leading-relaxed">
+                  {t.smartDesignEngineDesc || "Our proprietary design engine combines color theory, typography principles, and layout best practices to ensure every presentation looks professionally crafted. The system automatically balances visual elements for maximum impact and readability."}
+                </p>
+              </div>
+              <div className="p-6 rounded-2xl bg-white border border-slate-200 hover:shadow-lg transition-all">
+                <h3 className="text-xl font-bold text-slate-900 mb-3">{t.continuousLearning || "Continuous Learning"}</h3>
+                <p className="text-slate-600 leading-relaxed">
+                  {t.continuousLearningDesc || "PPT Master continuously improves through user feedback and advanced machine learning techniques. Every presentation created helps our AI become smarter, delivering better results with each iteration."}
+                </p>
+              </div>
+            </div>
+            <div className="relative">
+              <div className="aspect-square rounded-3xl bg-gradient-to-br from-[#06b6d4] to-[#1e3a8a] p-1 -rotate-3 hover:rotate-0 transition-transform duration-500">
+                <img
+                  src="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=800&fit=crop&q=80"
+                  alt="AI Technology powering PPT Master"
+                  className="h-full w-full rounded-3xl object-cover"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Global Reach Section */}
+      <section className="relative py-24 px-6">
+        <div className="mx-auto max-w-5xl text-center">
+          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
+            {t.trustedWorldwide || "Trusted Worldwide"}
+          </h2>
+          <p className="text-lg text-slate-600 max-w-3xl mx-auto mb-12 leading-relaxed">
+            {t.trustedWorldwideDesc || "From startups to Fortune 500 companies, educators to entrepreneurs, PPT Master serves users across 150+ countries. Our platform supports multiple languages and is designed to meet the diverse presentation needs of a global audience. Whether you're preparing a business pitch, academic lecture, or creative portfolio, PPT Master helps you communicate your ideas effectively."}
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="p-6 rounded-2xl bg-slate-50">
+              <div className="text-3xl font-bold text-[#06b6d4] mb-2">12+</div>
+              <div className="text-sm text-slate-600">{t.languagesSupported || "Languages Supported"}</div>
+            </div>
+            <div className="p-6 rounded-2xl bg-slate-50">
+              <div className="text-3xl font-bold text-[#06b6d4] mb-2">24/7</div>
+              <div className="text-sm text-slate-600">{t.platformAvailability || "Platform Availability"}</div>
+            </div>
+            <div className="p-6 rounded-2xl bg-slate-50">
+              <div className="text-3xl font-bold text-[#06b6d4] mb-2">50+</div>
+              <div className="text-sm text-slate-600">{t.professionalTemplatesCount || "Professional Templates"}</div>
+            </div>
+            <div className="p-6 rounded-2xl bg-slate-50">
+              <div className="text-3xl font-bold text-[#06b6d4] mb-2">99.9%</div>
+              <div className="text-sm text-slate-600">{t.uptimeGuarantee || "Uptime Guarantee"}</div>
+            </div>
+          </div>
+        </div>
+      </section>
     </>
   );
 }

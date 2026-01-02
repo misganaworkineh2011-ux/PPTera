@@ -13,22 +13,36 @@ interface EducationPageProps {
 export default function EducationPage({ currentLang = "en" }: EducationPageProps) {
   const t = getTranslations(currentLang);
 
+  // Use type assertion with fallback for new translations
+  const eduTranslations = t as typeof t & {
+    eduBadge?: string;
+    eduStudentDesc?: string;
+    eduFeature1?: string;
+    eduFeature2?: string;
+    eduFeature3?: string;
+    eduFeature4?: string;
+    eduFeature5?: string;
+    eduFeature6?: string;
+    eduFeature7?: string;
+    eduFeature8?: string;
+  };
+
   const studentTeacherFeatures = [
-    "Access to all premium templates",
-    "Export to PowerPoint, PDF, Google Slides",
-    "Real-time collaboration",
-    "Priority support",
-    "AI-powered slide generation",
+    eduTranslations.eduFeature1 || "Access to all premium templates",
+    eduTranslations.eduFeature2 || "Export to PowerPoint, PDF, Google Slides",
+    eduTranslations.eduFeature3 || "Real-time collaboration",
+    eduTranslations.eduFeature4 || "Priority support",
+    eduTranslations.eduFeature5 || "AI-powered slide generation",
   ];
 
   const schoolFeatures = [
-    "Unlimited AI-generated presentations",
-    "Access to all premium templates",
-    "Export to PowerPoint, PDF, Google Slides",
-    "Real-time collaboration",
-    "Priority support",
-    "Admin dashboard",
-    "Usage analytics",
+    eduTranslations.eduFeature6 || "Unlimited AI-generated presentations",
+    eduTranslations.eduFeature1 || "Access to all premium templates",
+    eduTranslations.eduFeature2 || "Export to PowerPoint, PDF, Google Slides",
+    eduTranslations.eduFeature3 || "Real-time collaboration",
+    eduTranslations.eduFeature4 || "Priority support",
+    eduTranslations.eduFeature7 || "Admin dashboard",
+    eduTranslations.eduFeature8 || "Usage analytics",
   ];
 
   return (
@@ -45,7 +59,7 @@ export default function EducationPage({ currentLang = "en" }: EducationPageProps
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-4 py-2 backdrop-blur-sm">
             <GraduationCap className="h-4 w-4 text-[#06b6d4]" />
             <span className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
-              Education
+              {eduTranslations.eduBadge || "Education"}
             </span>
           </div>
 
@@ -81,7 +95,7 @@ export default function EducationPage({ currentLang = "en" }: EducationPageProps
               </div>
               <h3 className="mb-2 text-2xl font-bold text-slate-900">{t.forStudents}</h3>
               <p className="mb-6 text-slate-600 leading-relaxed">
-                50% off on all Pro plans with full premium access
+                {eduTranslations.eduStudentDesc || "50% off on all Pro plans with full premium access"}
               </p>
               <ul className="space-y-3 mb-8">
                 {studentTeacherFeatures.map((feature, i) => (
@@ -109,7 +123,7 @@ export default function EducationPage({ currentLang = "en" }: EducationPageProps
               </div>
               <h3 className="mb-2 text-2xl font-bold text-slate-900">{t.forTeachers}</h3>
               <p className="mb-6 text-slate-600 leading-relaxed">
-                50% off on all Pro plans with full premium access
+                {eduTranslations.eduStudentDesc || "50% off on all Pro plans with full premium access"}
               </p>
               <ul className="space-y-3 mb-8">
                 {studentTeacherFeatures.map((feature, i) => (

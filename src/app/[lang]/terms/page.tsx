@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { generateLanguageParams, isValidLanguage, type Language } from "~/lib/i18n";
+import { generateLanguageParams, getTranslations, isValidLanguage, type Language } from "~/lib/i18n";
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
 import { TermsContent } from "../../terms/TermsContent";
@@ -10,9 +10,17 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const { lang } = await params;
+  const t = getTranslations(lang);
+  
   return {
-    title: "Terms of Service - PPT Master",
-    description: "Read PPT Master's terms of service to understand the rules and guidelines for using our platform.",
+    title: `${t.termsOfService || "Terms of Service"} - PPT Master`,
+    description: t.termsOfServiceDesc || "Read PPT Master's terms of service to understand the rules and guidelines for using our AI presentation platform.",
+    openGraph: {
+      title: `${t.termsOfService || "Terms of Service"} - PPT Master`,
+      description: t.termsOfServiceDesc || "Read PPT Master's terms of service to understand the rules and guidelines.",
+      type: "website",
+    },
   };
 }
 

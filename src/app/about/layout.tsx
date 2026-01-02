@@ -12,6 +12,15 @@ export const metadata: Metadata = {
     title: "About PPT Master - AI PowerPoint Generator",
     description: "Learn about our mission to revolutionize PowerPoint and presentation creation with AI.",
     url: "/about",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "About PPT Master - AI PowerPoint Generator",
+      },
+    ],
   },
 };
 

@@ -12,6 +12,15 @@ export const metadata: Metadata = {
     title: "PPT Master Privacy Policy",
     description: "Learn how PPT Master protects your data and respects your privacy.",
     url: "/privacy",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "PPT Master Privacy Policy",
+      },
+    ],
   },
 };
 

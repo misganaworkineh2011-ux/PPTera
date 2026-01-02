@@ -4,16 +4,28 @@ import { useState } from "react";
 import { Sparkles, Wand2, Share2 } from "lucide-react";
 import { SignInButton } from "@clerk/nextjs";
 import { LoadingLink } from "~/components/LoadingLink";
+import { LazyVideo } from "./LazyVideo";
+import { type Language } from "~/lib/i18n";
 
 interface FeaturesSectionProps {
   t: any;
+  currentLang: Language;
 }
 
-// Presentation images for the inspiration cards
+// Helper to get localized path
+function getLocalizedPath(path: string, lang: Language): string {
+  if (lang === "en") return path;
+  return `/${lang}${path}`;
+}
+
+// Cloudinary demo video URL - replace with your own when ready
+const FEATURE_DEMO_VIDEO = "https://res.cloudinary.com/demo/video/upload/f_auto,q_auto/docs/walking_talking";
+
+// Presentation images for the inspiration cards - optimized with auto format and quality
 const INSPIRATION_IMAGES = [
-  "https://res.cloudinary.com/di76ibrro/image/upload/v1766152567/Architectural_pptmaster_a18ccs.png",
-  "https://res.cloudinary.com/di76ibrro/image/upload/v1766152472/corporate_pptmaster_gcvo7p.png",
-  "https://res.cloudinary.com/di76ibrro/image/upload/v1766152111/alien_pptmaster_ldo5wm.png",
+  "https://res.cloudinary.com/di76ibrro/image/upload/f_auto,q_auto,w_800/v1766152567/Architectural_pptmaster_a18ccs.png",
+  "https://res.cloudinary.com/di76ibrro/image/upload/f_auto,q_auto,w_800/v1766152472/corporate_pptmaster_gcvo7p.png",
+  "https://res.cloudinary.com/di76ibrro/image/upload/f_auto,q_auto,w_800/v1766152111/alien_pptmaster_ldo5wm.png",
 ];
 
 // Best 5 themes for preview
@@ -70,8 +82,10 @@ const THEME_PREVIEWS = [
   },
 ];
 
-export function FeaturesSection({ t }: FeaturesSectionProps) {
+export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
+  const localPath = (path: string) => getLocalizedPath(path, currentLang);
+
   return (
     <section className="py-24 px-6 lg:px-8">
       <div className="mx-auto max-w-[1400px]">
@@ -101,13 +115,13 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
                     </div>
                     
                     <div className="space-y-2">
-                      <p className="text-xs text-zinc-400 font-medium">{t.generating || "Generating"}</p>
-                      <p className="text-xs text-zinc-500">{t.creatingSlides || "Creating professional slides with consistent branding and smart layouts..."}</p>
+                      <p className="text-xs text-zinc-600 font-medium">{t.generating || "Generating"}</p>
+                      <p className="text-xs text-zinc-600">{t.creatingSlides || "Creating professional slides with consistent branding and smart layouts..."}</p>
                     </div>
                     
                     <div className="space-y-2">
-                      <p className="text-xs text-zinc-400 font-medium">{t.slidesIncluded || "Slides included:"}</p>
-                      <ul className="text-xs text-zinc-500 space-y-1">
+                      <p className="text-xs text-zinc-600 font-medium">{t.slidesIncluded || "Slides included:"}</p>
+                      <ul className="text-xs text-zinc-600 space-y-1">
                         <li>• {t.titleSlideWithBranding || "Title slide with company branding"}</li>
                         <li>• {t.problemSolutionOverview || "Problem & solution overview"}</li>
                         <li>• {t.marketAnalysisCharts || "Market analysis with charts"}</li>
@@ -116,14 +130,12 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
                   </div>
                 </div>
                 
-                {/* Right Panel - Video */}
-                <div className="relative aspect-video overflow-hidden">
-                  <iframe
-                    src="https://player.vimeo.com/video/1150201596?autoplay=1&loop=1&muted=1&background=1"
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%]"
-                    style={{ border: 0 }}
-                    allow="autoplay; fullscreen; picture-in-picture"
-                    allowFullScreen
+                {/* Right Panel - Video (lazy loaded Cloudinary) */}
+                <div className="relative aspect-video overflow-hidden bg-zinc-900">
+                  <LazyVideo
+                    src={FEATURE_DEMO_VIDEO}
+                    className="absolute inset-0 w-full h-full"
+                    title="PPT Master AI presentation demo"
                   />
                 </div>
               </div>
@@ -141,12 +153,12 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
             ].map((tab, i, arr) => (
               <div key={tab.label} className="flex items-center gap-2">
                 <span
-                  className={`text-sm font-medium transition cursor-default ${i === 0 ? "text-zinc-900 border-b-2 border-zinc-900 pb-1" : "text-zinc-400"}`}
+                  className={`text-sm font-medium transition cursor-default ${i === 0 ? "text-zinc-900 border-b-2 border-zinc-900 pb-1" : "text-zinc-600"}`}
                 >
                   {tab.label}
                 </span>
                 {i < arr.length - 1 && (
-                  <svg className="w-4 h-4 text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-4 h-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 )}
@@ -289,7 +301,7 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
           </SignInButton>
 
           {/* Feature 2 - Get Inspired */}
-          <LoadingLink href="/inspiration" className="group block">
+          <LoadingLink href={localPath("/inspiration")} className="group block">
             <div className="overflow-hidden border border-zinc-200 aspect-[4/3] mb-6 relative group-hover:border-zinc-300 transition">
               {/* 3 Expandable Cards - Full height, no gap, sharp edges */}
               <div className="absolute inset-0 flex">
@@ -351,7 +363,7 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
             
             <div className="mt-12 space-y-8">
               {/* Feature Item */}
-              <LoadingLink href="/prompt-guide" className="group block border-b border-zinc-200 pb-8">
+              <LoadingLink href={localPath("/prompt-guide")} className="group block border-b border-zinc-200 pb-8">
                 <div className="flex items-start gap-3">
                   <Sparkles className="w-5 h-5 text-zinc-900 mt-0.5" />
                   <div>
@@ -419,19 +431,19 @@ export function FeaturesSection({ t }: FeaturesSectionProps) {
 
             {/* Floating Profile Card */}
             <div className="absolute -right-4 top-8 bg-purple-600 rounded-xl p-4 w-48 text-white shadow-xl">
-              <div className="text-xs text-purple-200 mb-3">PPT Master / {t.export || "Export"}</div>
+              <div className="text-xs text-purple-100 mb-3">PPT Master / {t.export || "Export"}</div>
               <div className="flex flex-col items-center">
                 <div className="w-14 h-14 rounded-full bg-purple-400 mb-2 flex items-center justify-center">
                   <Share2 className="w-6 h-6 text-white" />
                 </div>
                 <p className="font-medium">{t.readyToShare || "Ready to Share"}</p>
-                <p className="text-xs text-purple-200">10 {t.slides || "slides"}</p>
+                <p className="text-xs text-purple-100">10 {t.slides || "slides"}</p>
                 <div className="flex gap-2 mt-3">
                   <SignInButton mode="modal">
                     <button className="px-3 py-1 bg-white text-purple-600 text-xs rounded-md font-medium hover:bg-purple-50 transition" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>{t.export || "Export"}</button>
                   </SignInButton>
                   <SignInButton mode="modal">
-                    <button className="px-3 py-1 border border-purple-400 text-xs rounded-md hover:bg-purple-500 transition" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>{t.share || "Share"}</button>
+                    <button className="px-3 py-1 border border-purple-300 text-xs rounded-md hover:bg-purple-500 transition" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>{t.share || "Share"}</button>
                   </SignInButton>
                 </div>
               </div>

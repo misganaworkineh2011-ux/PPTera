@@ -3,7 +3,30 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Contact Us - PPT Master",
-  description: "Get in touch with the PPT Master team. We're here to help with any questions or feedback.",
+  description: "Get in touch with the PPT Master team. We're here to help with questions, feedback, or partnership inquiries.",
+  alternates: {
+    canonical: "https://www.pptmaster.app/contact",
+  },
+  openGraph: {
+    title: "Contact Us - PPT Master",
+    description: "Get in touch with the PPT Master team. We're here to help with questions, feedback, or partnership inquiries.",
+    url: "/contact",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "Contact PPT Master",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Contact Us - PPT Master",
+    description: "Get in touch with the PPT Master team. We're here to help with questions or feedback.",
+    images: ["/og-image.jpeg"],
+  },
 };
 
 export const revalidate = 3600;

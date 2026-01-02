@@ -86,7 +86,7 @@ export default function BoxLayoutRenderer({
               onStartEditLabel ? (
                 <EditableText
                   value={item.label}
-                  isEditing={isEditing && editingText?.field === `box-label-${index}`}
+                  isEditing={isEditing && editingText?.field === `content-label-${index}`}
                   onStartEdit={() => onStartEditLabel(index)}
                   onChange={(val) => onUpdateLabel?.(index, val)}
                   onFinish={onFinishEditing || (() => {})}
@@ -117,7 +117,7 @@ export default function BoxLayoutRenderer({
             {onStartEditText ? (
               <EditableText
                 value={item.text}
-                isEditing={isEditing && editingText?.field === `box-text-${index}`}
+                isEditing={isEditing && editingText?.field === `content-text-${index}`}
                 onStartEdit={() => onStartEditText(index)}
                 onChange={(val) => onUpdateText?.(index, val)}
                 onFinish={onFinishEditing || (() => {})}
@@ -165,7 +165,7 @@ export default function BoxLayoutRenderer({
               onStartEditLabel ? (
                 <EditableText
                   value={item.label}
-                  isEditing={isEditing && editingText?.field === `box-label-${index}`}
+                  isEditing={isEditing && editingText?.field === `content-label-${index}`}
                   onStartEdit={() => onStartEditLabel(index)}
                   onChange={(val) => onUpdateLabel?.(index, val)}
                   onFinish={onFinishEditing || (() => {})}
@@ -196,7 +196,7 @@ export default function BoxLayoutRenderer({
             {onStartEditText ? (
               <EditableText
                 value={item.text}
-                isEditing={isEditing && editingText?.field === `box-text-${index}`}
+                isEditing={isEditing && editingText?.field === `content-text-${index}`}
                 onStartEdit={() => onStartEditText(index)}
                 onChange={(val) => onUpdateText?.(index, val)}
                 onFinish={onFinishEditing || (() => {})}
@@ -261,7 +261,7 @@ export default function BoxLayoutRenderer({
               onStartEditLabel ? (
                 <EditableText
                   value={item.label}
-                  isEditing={isEditing && editingText?.field === `box-label-${index}`}
+                  isEditing={isEditing && editingText?.field === `content-label-${index}`}
                   onStartEdit={() => onStartEditLabel(index)}
                   onChange={(val) => onUpdateLabel?.(index, val)}
                   onFinish={onFinishEditing || (() => {})}
@@ -292,7 +292,7 @@ export default function BoxLayoutRenderer({
             {onStartEditText ? (
               <EditableText
                 value={item.text}
-                isEditing={isEditing && editingText?.field === `box-text-${index}`}
+                isEditing={isEditing && editingText?.field === `content-text-${index}`}
                 onStartEdit={() => onStartEditText(index)}
                 onChange={(val) => onUpdateText?.(index, val)}
                 onFinish={onFinishEditing || (() => {})}
@@ -374,7 +374,7 @@ export default function BoxLayoutRenderer({
               {onStartEditLabel ? (
                 <EditableText
                   value={item.label || ""}
-                  isEditing={isEditing && editingText?.field === `box-label-${index}`}
+                  isEditing={isEditing && editingText?.field === `content-label-${index}`}
                   onStartEdit={() => onStartEditLabel(index)}
                   onChange={(val) => onUpdateLabel?.(index, val)}
                   onFinish={onFinishEditing || (() => {})}
@@ -404,7 +404,7 @@ export default function BoxLayoutRenderer({
               {onStartEditText ? (
                 <EditableText
                   value={item.text}
-                  isEditing={isEditing && editingText?.field === `box-text-${index}`}
+                  isEditing={isEditing && editingText?.field === `content-text-${index}`}
                   onStartEdit={() => onStartEditText(index)}
                   onChange={(val) => onUpdateText?.(index, val)}
                   onFinish={onFinishEditing || (() => {})}

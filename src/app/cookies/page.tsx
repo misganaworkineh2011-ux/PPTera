@@ -5,7 +5,30 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Cookie Notice - PPT Master",
-  description: "Learn about how PPT Master uses cookies and similar technologies.",
+  description: "Learn how PPT Master uses cookies to enhance your experience. Understand our data practices and your privacy choices.",
+  alternates: {
+    canonical: "https://www.pptmaster.app/cookies",
+  },
+  openGraph: {
+    title: "Cookie Notice - PPT Master",
+    description: "Learn how PPT Master uses cookies to enhance your experience and understand your privacy choices.",
+    url: "/cookies",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "PPT Master Cookie Notice",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Cookie Notice - PPT Master",
+    description: "Learn how PPT Master uses cookies to enhance your experience.",
+    images: ["/og-image.jpeg"],
+  },
 };
 
 export const revalidate = 86400;

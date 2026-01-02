@@ -8,12 +8,23 @@ import {
   getArcIconPosition,
   getRingIconPosition,
 } from "~/lib/layouts/content/circles";
+import EditableText from "~/components/presentation/EditableText";
 
 interface CircleLayoutRendererProps {
   layoutId: CircleLayoutType;
   items: CircleContentItem[];
   accentColor?: string;
   className?: string;
+  // Editing props
+  isEditing?: boolean;
+  editingText?: { field: string; bulletIndex?: number } | null;
+  onStartEditLabel?: (index: number) => void;
+  onStartEditText?: (index: number) => void;
+  onUpdateLabel?: (index: number, value: string) => void;
+  onUpdateText?: (index: number, value: string) => void;
+  onFinishEditing?: () => void;
+  isOwner?: boolean;
+  isHovered?: boolean;
 }
 
 export function CircleLayoutRenderer({
@@ -21,6 +32,15 @@ export function CircleLayoutRenderer({
   items,
   accentColor = "#0d9488",
   className = "",
+  isEditing = false,
+  editingText = null,
+  onStartEditLabel,
+  onStartEditText,
+  onUpdateLabel,
+  onUpdateText,
+  onFinishEditing,
+  isOwner = false,
+  isHovered = false,
 }: CircleLayoutRendererProps) {
   const displayItems = items.slice(0, 8);
 
@@ -30,6 +50,15 @@ export function CircleLayoutRenderer({
         items={displayItems}
         accentColor={accentColor}
         className={className}
+        isEditing={isEditing}
+        editingText={editingText}
+        onStartEditLabel={onStartEditLabel}
+        onStartEditText={onStartEditText}
+        onUpdateLabel={onUpdateLabel}
+        onUpdateText={onUpdateText}
+        onFinishEditing={onFinishEditing}
+        isOwner={isOwner}
+        isHovered={isHovered}
       />
     );
   }
@@ -39,6 +68,15 @@ export function CircleLayoutRenderer({
       items={displayItems}
       accentColor={accentColor}
       className={className}
+      isEditing={isEditing}
+      editingText={editingText}
+      onStartEditLabel={onStartEditLabel}
+      onStartEditText={onStartEditText}
+      onUpdateLabel={onUpdateLabel}
+      onUpdateText={onUpdateText}
+      onFinishEditing={onFinishEditing}
+      isOwner={isOwner}
+      isHovered={isHovered}
     />
   );
 }
@@ -48,10 +86,28 @@ function ArcLayout({
   items,
   accentColor,
   className,
+  isEditing = false,
+  editingText = null,
+  onStartEditLabel,
+  onStartEditText,
+  onUpdateLabel,
+  onUpdateText,
+  onFinishEditing,
+  isOwner = false,
+  isHovered = false,
 }: {
   items: CircleContentItem[];
   accentColor: string;
   className: string;
+  isEditing?: boolean;
+  editingText?: { field: string; bulletIndex?: number } | null;
+  onStartEditLabel?: (index: number) => void;
+  onStartEditText?: (index: number) => void;
+  onUpdateLabel?: (index: number, value: string) => void;
+  onUpdateText?: (index: number, value: string) => void;
+  onFinishEditing?: () => void;
+  isOwner?: boolean;
+  isHovered?: boolean;
 }) {
   const itemCount = items.length;
 
@@ -112,16 +168,44 @@ function ArcLayout({
               }}
             >
               {item.label && (
-                <h3
-                  className="font-semibold text-slate-800 mb-1 leading-tight"
-                  style={{ fontSize: labelSize }}
-                >
-                  {item.label}
-                </h3>
+                onStartEditLabel ? (
+                  <EditableText
+                    value={item.label}
+                    isEditing={isEditing && editingText?.field === `content-label-${index}`}
+                    onStartEdit={() => onStartEditLabel(index)}
+                    onChange={(val) => onUpdateLabel?.(index, val)}
+                    onFinish={onFinishEditing || (() => {})}
+                    className="font-semibold text-slate-800 mb-1 leading-tight"
+                    style={{ fontSize: labelSize }}
+                    isOwner={isOwner}
+                    isHovered={isHovered}
+                  />
+                ) : (
+                  <h3
+                    className="font-semibold text-slate-800 mb-1 leading-tight"
+                    style={{ fontSize: labelSize }}
+                  >
+                    {item.label}
+                  </h3>
+                )
               )}
-              <p className="text-slate-600 leading-snug" style={{ fontSize }}>
-                {item.text}
-              </p>
+              {onStartEditText ? (
+                <EditableText
+                  value={item.text}
+                  isEditing={isEditing && editingText?.field === `content-text-${index}`}
+                  onStartEdit={() => onStartEditText(index)}
+                  onChange={(val) => onUpdateText?.(index, val)}
+                  onFinish={onFinishEditing || (() => {})}
+                  className="text-slate-600 leading-snug"
+                  style={{ fontSize }}
+                  isOwner={isOwner}
+                  isHovered={isHovered}
+                />
+              ) : (
+                <p className="text-slate-600 leading-snug" style={{ fontSize }}>
+                  {item.text}
+                </p>
+              )}
             </div>
           );
         })}
@@ -197,10 +281,28 @@ function RingLayout({
   items,
   accentColor,
   className,
+  isEditing = false,
+  editingText = null,
+  onStartEditLabel,
+  onStartEditText,
+  onUpdateLabel,
+  onUpdateText,
+  onFinishEditing,
+  isOwner = false,
+  isHovered = false,
 }: {
   items: CircleContentItem[];
   accentColor: string;
   className: string;
+  isEditing?: boolean;
+  editingText?: { field: string; bulletIndex?: number } | null;
+  onStartEditLabel?: (index: number) => void;
+  onStartEditText?: (index: number) => void;
+  onUpdateLabel?: (index: number, value: string) => void;
+  onUpdateText?: (index: number, value: string) => void;
+  onFinishEditing?: () => void;
+  isOwner?: boolean;
+  isHovered?: boolean;
 }) {
   const itemCount = items.length;
   
@@ -242,8 +344,36 @@ function RingLayout({
         <div className="w-full grid gap-2 px-4" style={{ gridTemplateColumns: `repeat(${Math.min(itemCount, 4)}, 1fr)` }}>
           {items.map((item, index) => (
             <div key={index} className="p-2 rounded-lg text-center" style={{ backgroundColor: `${accentColor}08` }}>
-              {item.label && <h3 className="text-sm font-semibold text-slate-800 mb-1">{item.label}</h3>}
-              <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">{item.text}</p>
+              {item.label && (
+                onStartEditLabel ? (
+                  <EditableText
+                    value={item.label}
+                    isEditing={isEditing && editingText?.field === `content-label-${index}`}
+                    onStartEdit={() => onStartEditLabel(index)}
+                    onChange={(val) => onUpdateLabel?.(index, val)}
+                    onFinish={onFinishEditing || (() => {})}
+                    className="text-sm font-semibold text-slate-800 mb-1"
+                    isOwner={isOwner}
+                    isHovered={isHovered}
+                  />
+                ) : (
+                  <h3 className="text-sm font-semibold text-slate-800 mb-1">{item.label}</h3>
+                )
+              )}
+              {onStartEditText ? (
+                <EditableText
+                  value={item.text}
+                  isEditing={isEditing && editingText?.field === `content-text-${index}`}
+                  onStartEdit={() => onStartEditText(index)}
+                  onChange={(val) => onUpdateText?.(index, val)}
+                  onFinish={onFinishEditing || (() => {})}
+                  className="text-xs text-slate-600 leading-relaxed line-clamp-2"
+                  isOwner={isOwner}
+                  isHovered={isHovered}
+                />
+              ) : (
+                <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">{item.text}</p>
+              )}
             </div>
           ))}
         </div>
@@ -254,16 +384,49 @@ function RingLayout({
   // Standard layout - content on sides
   const leftItems = items.filter((_, i) => i % 2 === 0);
   const rightItems = items.filter((_, i) => i % 2 === 1);
+  const leftIndices = items.map((_, i) => i).filter(i => i % 2 === 0);
+  const rightIndices = items.map((_, i) => i).filter(i => i % 2 === 1);
 
   return (
     <div className={`w-full flex items-center justify-center gap-6 ${className}`}>
       <div className="flex flex-col justify-center items-end text-right space-y-4" style={{ maxWidth: '180px' }}>
-        {leftItems.map((item, idx) => (
-          <div key={idx}>
-            {item.label && <h3 className="text-base font-semibold text-slate-800 mb-1">{item.label}</h3>}
-            <p className="text-sm text-slate-600 leading-relaxed">{item.text}</p>
-          </div>
-        ))}
+        {leftItems.map((item, idx) => {
+          const actualIndex = leftIndices[idx]!;
+          return (
+            <div key={idx}>
+              {item.label && (
+                onStartEditLabel ? (
+                  <EditableText
+                    value={item.label}
+                    isEditing={isEditing && editingText?.field === `content-label-${actualIndex}`}
+                    onStartEdit={() => onStartEditLabel(actualIndex)}
+                    onChange={(val) => onUpdateLabel?.(actualIndex, val)}
+                    onFinish={onFinishEditing || (() => {})}
+                    className="text-base font-semibold text-slate-800 mb-1"
+                    isOwner={isOwner}
+                    isHovered={isHovered}
+                  />
+                ) : (
+                  <h3 className="text-base font-semibold text-slate-800 mb-1">{item.label}</h3>
+                )
+              )}
+              {onStartEditText ? (
+                <EditableText
+                  value={item.text}
+                  isEditing={isEditing && editingText?.field === `content-text-${actualIndex}`}
+                  onStartEdit={() => onStartEditText(actualIndex)}
+                  onChange={(val) => onUpdateText?.(actualIndex, val)}
+                  onFinish={onFinishEditing || (() => {})}
+                  className="text-sm text-slate-600 leading-relaxed"
+                  isOwner={isOwner}
+                  isHovered={isHovered}
+                />
+              ) : (
+                <p className="text-sm text-slate-600 leading-relaxed">{item.text}</p>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <svg width={svgSize} height={svgSize} viewBox={`${-svgSize / 2} ${-svgSize / 2} ${svgSize} ${svgSize}`}>
@@ -289,12 +452,43 @@ function RingLayout({
       </svg>
 
       <div className="flex flex-col justify-center items-start text-left space-y-4" style={{ maxWidth: '180px' }}>
-        {rightItems.map((item, idx) => (
-          <div key={idx}>
-            {item.label && <h3 className="text-base font-semibold text-slate-800 mb-1">{item.label}</h3>}
-            <p className="text-sm text-slate-600 leading-relaxed">{item.text}</p>
-          </div>
-        ))}
+        {rightItems.map((item, idx) => {
+          const actualIndex = rightIndices[idx]!;
+          return (
+            <div key={idx}>
+              {item.label && (
+                onStartEditLabel ? (
+                  <EditableText
+                    value={item.label}
+                    isEditing={isEditing && editingText?.field === `content-label-${actualIndex}`}
+                    onStartEdit={() => onStartEditLabel(actualIndex)}
+                    onChange={(val) => onUpdateLabel?.(actualIndex, val)}
+                    onFinish={onFinishEditing || (() => {})}
+                    className="text-base font-semibold text-slate-800 mb-1"
+                    isOwner={isOwner}
+                    isHovered={isHovered}
+                  />
+                ) : (
+                  <h3 className="text-base font-semibold text-slate-800 mb-1">{item.label}</h3>
+                )
+              )}
+              {onStartEditText ? (
+                <EditableText
+                  value={item.text}
+                  isEditing={isEditing && editingText?.field === `content-text-${actualIndex}`}
+                  onStartEdit={() => onStartEditText(actualIndex)}
+                  onChange={(val) => onUpdateText?.(actualIndex, val)}
+                  onFinish={onFinishEditing || (() => {})}
+                  className="text-sm text-slate-600 leading-relaxed"
+                  isOwner={isOwner}
+                  isHovered={isHovered}
+                />
+              ) : (
+                <p className="text-sm text-slate-600 leading-relaxed">{item.text}</p>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

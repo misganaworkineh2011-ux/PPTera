@@ -7,7 +7,30 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Help Center - PPT Master",
   description:
-    "Get help with PPT Master. Find answers to common questions and learn how to use our AI presentation generator.",
+    "Get help with PPT Master. Find answers to common questions and learn how to use our AI presentation generator effectively.",
+  alternates: {
+    canonical: "https://www.pptmaster.app/help",
+  },
+  openGraph: {
+    title: "Help Center - PPT Master",
+    description: "Get help with PPT Master. Find answers to common questions and learn how to use our AI presentation generator.",
+    url: "/help",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "PPT Master Help Center",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Help Center - PPT Master",
+    description: "Get help with PPT Master. Find answers to common questions about our AI presentation generator.",
+    images: ["/og-image.jpeg"],
+  },
 };
 
 export const revalidate = 3600;
@@ -133,12 +156,6 @@ function getHelpContent(t: ReturnType<typeof getTranslations>) {
         "Absolutely. You can cancel your subscription at any time from your account settings.",
     },
     {
-      question: t.helpFaq5Question || "Do you offer refunds?",
-      answer:
-        t.helpFaq5Answer ||
-        "We offer a 30-day money-back guarantee for annual subscriptions.",
-    },
-    {
       question: t.helpFaq6Question || "How does the AI work?",
       answer:
         t.helpFaq6Answer ||
@@ -159,8 +176,52 @@ export default async function HelpPage() {
   const { gettingStartedArticles, featuresArticles, troubleshootingArticles, faqArticles } =
     getHelpContent(t);
 
+  // FAQPage Schema for better AI and search engine discoverability
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqArticles.map((faq) => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer,
+      },
+    })),
+  };
+
+  // BreadcrumbList Schema for navigation
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.pptmaster.app",
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Help Center",
+        "item": "https://www.pptmaster.app/help",
+      },
+    ],
+  };
+
   return (
     <div className="landing-page min-h-screen bg-white">
+      {/* JSON-LD Structured Data for SEO and AI discoverability */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      
       <LandingNavbar currentLang="en" />
 
       {/* Hero Section */}

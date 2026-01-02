@@ -1,5 +1,42 @@
 # robots.txt for PPTMaster
+# Optimized for Google, Bing, and AI crawlers (ChatGPT, GPTBot)
+
+# General rules for all crawlers
 User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /sign-in/
+Disallow: /sign-up/
+Disallow: /present/
+Disallow: /embed/
+Disallow: /share/
+Disallow: /createpresentation/
+Disallow: /presentation/
+
+# Bingbot (important for ChatGPT web browsing)
+User-agent: bingbot
+Allow: /
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /sign-in/
+Disallow: /sign-up/
+Disallow: /present/
+Disallow: /embed/
+Disallow: /share/
+Disallow: /createpresentation/
+Disallow: /presentation/
+
+# ChatGPT-User bot
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /sign-in/
+Disallow: /sign-up/
+
+# GPTBot (OpenAI's crawler)
+User-agent: GPTBot
 Allow: /
 Disallow: /dashboard/
 Disallow: /api/
@@ -9,5 +46,5 @@ Disallow: /sign-up/
 # Sitemap
 Sitemap: https://www.pptmaster.app/sitemap.xml
 
-# Crawl-delay
+# Crawl-delay for polite crawling
 Crawl-delay: 1

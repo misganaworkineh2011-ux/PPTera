@@ -12,6 +12,15 @@ export const metadata: Metadata = {
     title: "PPT Master Terms of Service",
     description: "Understand the terms and conditions for using PPT Master AI PowerPoint generator.",
     url: "/terms",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "PPT Master Terms of Service",
+      },
+    ],
   },
 };
 

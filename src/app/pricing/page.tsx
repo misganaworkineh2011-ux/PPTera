@@ -1,5 +1,113 @@
 import { PricingPageClient } from "./PricingPageClient";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Pricing - PPT Master AI PowerPoint Plans",
+  description: "Choose the perfect PPT Master plan. Compare free and premium AI presentation features, credits, and pricing options.",
+  alternates: {
+    canonical: "https://www.pptmaster.app/pricing",
+  },
+  openGraph: {
+    title: "Pricing - PPT Master AI PowerPoint Plans",
+    description: "Choose the perfect PPT Master plan. Compare free and premium AI presentation features, credits, and pricing options.",
+    url: "/pricing",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "PPT Master Pricing Plans",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Pricing - PPT Master AI PowerPoint Plans",
+    description: "Choose the perfect PPT Master plan. Compare free and premium AI presentation features.",
+    images: ["/og-image.jpeg"],
+  },
+};
+
+// Pricing FAQ Schema for AI and search engine discoverability
+const pricingFaqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How much does PPT Master cost?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "PPT Master offers a free plan with 200 credits. Paid plans start at $9/month for Plus (1,000 credits), $19/month for Pro (4,000 credits), and $49/month for Ultra (20,000 credits).",
+      },
+    },
+    {
+      "@type": "Question",
+      "name": "What is included in the free plan?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The free plan includes 200 credits, access to basic templates, AI-powered slide generation, and export to PowerPoint and PDF formats.",
+      },
+    },
+    {
+      "@type": "Question",
+      "name": "Can I cancel my subscription anytime?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, you can cancel your PPT Master subscription at any time from your account settings. Your access continues until the end of your billing period.",
+      },
+    },
+    {
+      "@type": "Question",
+      "name": "What are credits used for?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Credits are used for AI-powered features like generating presentations, creating slides, and using AI image generation. Different actions consume different amounts of credits.",
+      },
+    },
+    {
+      "@type": "Question",
+      "name": "Is there a student or education discount?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes! Students and teachers get 50% off on all Pro plans. Schools can contact us for custom enterprise pricing with unlimited seats.",
+      },
+    },
+  ],
+};
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://www.pptmaster.app",
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Pricing",
+      "item": "https://www.pptmaster.app/pricing",
+    },
+  ],
+};
 
 export default function PricingPage() {
-  return <PricingPageClient currentLang="en" />;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingFaqSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <PricingPageClient currentLang="en" />
+    </>
+  );
 }

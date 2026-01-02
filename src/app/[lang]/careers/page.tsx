@@ -1,16 +1,26 @@
 import { redirect } from "next/navigation";
-import { generateLanguageParams, isValidLanguage, type Language } from "~/lib/i18n";
-import CareersPage from "../../careers/page";
+import { generateLanguageParams, getTranslations, isValidLanguage, type Language } from "~/lib/i18n";
+import CareersPageClient from "../../careers/CareersPageClient";
 import type { Metadata } from "next";
 
 export async function generateStaticParams() {
   return generateLanguageParams();
 }
 
-export const metadata: Metadata = {
-  title: "Careers - PPT Master",
-  description: "Join PPT Master and help build the future of AI-powered presentations. View open positions and apply today.",
-};
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const { lang } = await params;
+  const t = getTranslations(lang);
+  
+  return {
+    title: `${t.careers || "Careers"} - PPT Master | ${t.careersHeroTitle} ${t.careersHeroHighlight}`,
+    description: t.careersHeroDesc || "Join PPT Master and help build the future of AI-powered presentations. View open positions and apply today to join our team.",
+    openGraph: {
+      title: `${t.careers || "Careers"} - PPT Master`,
+      description: t.careersHeroDesc,
+      type: "website",
+    },
+  };
+}
 
 export const revalidate = 3600;
 
@@ -22,5 +32,5 @@ export default async function CareersLangPage({ params }: { params: Promise<{ la
     redirect("/careers");
   }
 
-  return <CareersPage currentLang={lang as Language} />;
+  return <CareersPageClient currentLang={lang as Language} />;
 }

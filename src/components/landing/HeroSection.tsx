@@ -4,9 +4,18 @@ import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import { ArrowRight, Command } from "lucide-react";
 import { LoadingLink } from "~/components/LoadingLink";
+import { LazyVideo } from "./LazyVideo";
+import { type Language } from "~/lib/i18n";
 
 interface HeroSectionProps {
   t: any;
+  currentLang: Language;
+}
+
+// Helper to get localized path
+function getLocalizedPath(path: string, lang: Language): string {
+  if (lang === "en") return path;
+  return `/${lang}${path}`;
 }
 
 const CARD_HEIGHT = 420;
@@ -22,23 +31,26 @@ const MOBILE_CARD_HEIGHT = 265; // Same ratio as desktop (350/420)
 const MOBILE_CARD_GAP = 12;
 const TOTAL_MOBILE_CARD_WIDTH = MOBILE_CARD_WIDTH + MOBILE_CARD_GAP;
 
-// Vimeo video IDs with their hash parameters
-const VIMEO_VIDEOS = [
-  { id: "1103822384", hash: "d87e2634b3" },
-  { id: "1103822624", hash: "d2e608ba23" },
-  { id: "1103862294", hash: "802500bb17" },
-  { id: "1106141156", hash: "394f5f9721" },
-  { id: "1103822749", hash: "ad2a6b8283" },
+// Cloudinary video URLs - optimized with f_auto for best format, q_auto for quality
+// Replace these with your own Cloudinary video URLs when ready
+const CLOUDINARY_VIDEOS = [
+  "https://res.cloudinary.com/demo/video/upload/f_auto,q_auto/docs/walking_talking",
+  "https://res.cloudinary.com/demo/video/upload/f_auto,q_auto/samples/sea-turtle",
+  "https://res.cloudinary.com/demo/video/upload/f_auto,q_auto/samples/elephants",
+  "https://res.cloudinary.com/demo/video/upload/f_auto,q_auto/dog",
+  "https://res.cloudinary.com/demo/video/upload/f_auto,q_auto/samples/cld-sample-video",
 ];
 
-export function HeroSection({ t }: HeroSectionProps) {
+export function HeroSection({ t, currentLang }: HeroSectionProps) {
+  const localPath = (path: string) => getLocalizedPath(path, currentLang);
+  
   // Create cards with video URLs
   const baseCards = useMemo(() => [
-    { id: 1, prompt: t.heroCard1Prompt || "Create a 10-slide investor pitch deck for my AI startup with market analysis and financials...", video: VIMEO_VIDEOS[0] },
-    { id: 2, prompt: t.heroCard2Prompt || "Generate a quarterly sales report with charts showing revenue growth and KPIs...", video: VIMEO_VIDEOS[1] },
-    { id: 3, prompt: t.heroCard3Prompt || "Design a professional team introduction with photos and role descriptions...", video: VIMEO_VIDEOS[2] },
-    { id: 4, prompt: t.heroCard4Prompt || "Build a comprehensive business plan presentation with SWOT analysis...", video: VIMEO_VIDEOS[3] },
-    { id: 5, prompt: t.heroCard5Prompt || "Create an engaging product demo showcasing features and benefits...", video: VIMEO_VIDEOS[4] },
+    { id: 1, prompt: t.heroCard1Prompt || "Create a 10-slide investor pitch deck for my AI startup with market analysis and financials...", video: CLOUDINARY_VIDEOS[0] },
+    { id: 2, prompt: t.heroCard2Prompt || "Generate a quarterly sales report with charts showing revenue growth and KPIs...", video: CLOUDINARY_VIDEOS[1] },
+    { id: 3, prompt: t.heroCard3Prompt || "Design a professional team introduction with photos and role descriptions...", video: CLOUDINARY_VIDEOS[2] },
+    { id: 4, prompt: t.heroCard4Prompt || "Build a comprehensive business plan presentation with SWOT analysis...", video: CLOUDINARY_VIDEOS[3] },
+    { id: 5, prompt: t.heroCard5Prompt || "Create an engaging product demo showcasing features and benefits...", video: CLOUDINARY_VIDEOS[4] },
   ], [t]);
 
   const [activeIndex, setActiveIndex] = useState(0);
@@ -335,11 +347,11 @@ export function HeroSection({ t }: HeroSectionProps) {
             {/* Prompt Box synced with cards */}
             <div className="w-full bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-zinc-100 p-5 mb-8">
               <div className="flex items-center gap-2 mb-3 border-b border-zinc-50 pb-3">
-                <Command className="w-4 h-4 text-zinc-300" />
-                <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                <Command className="w-4 h-4 text-zinc-500" />
+                <span className="text-xs font-semibold text-zinc-600 uppercase tracking-wider">
                   {t.aiPrompt}
                 </span>
-                <span className="ml-auto text-xs text-zinc-300">
+                <span className="ml-auto text-xs text-zinc-500">
                   {getWrappedIndex(activeIndex) + 1}/{baseCards.length}
                 </span>
               </div>
@@ -367,7 +379,7 @@ export function HeroSection({ t }: HeroSectionProps) {
               <SignedIn>
                 <div style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
                   <LoadingLink
-                    href="/"
+                    href={localPath("/")}
                     className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-zinc-900 rounded-lg hover:bg-zinc-800 transition-all shadow-lg hover:shadow-zinc-900/20"
                   >
                     {t.goToDashboard} <ArrowRight className="w-5 h-5" />
@@ -377,8 +389,8 @@ export function HeroSection({ t }: HeroSectionProps) {
               <span className="text-sm text-zinc-500 px-2">{t.noCreditCard}</span>
             </div>
 
-            {/* Mobile Horizontal Slider - Below CTA buttons */}
-            <div className="lg:hidden mt-10 -mx-6 px-6">
+            {/* Mobile Horizontal Slider - Below CTA buttons - Fixed height to prevent CLS */}
+            <div className="lg:hidden mt-10 -mx-6 px-6" style={{ minHeight: MOBILE_CARD_HEIGHT + 60 }}>
               <div
                 ref={mobileContainerRef}
                 className={`relative overflow-hidden select-none ${isMobileDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
@@ -391,9 +403,6 @@ export function HeroSection({ t }: HeroSectionProps) {
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="relative" style={{ width: MOBILE_CARD_WIDTH, height: MOBILE_CARD_HEIGHT }}>
                     {visibleCards.map((card) => {
-                      const isCenter = isMobileCenterCard(card.virtualIndex);
-                      const videoUrl = `https://player.vimeo.com/video/${card.video?.id}?h=${card.video?.hash}&autoplay=${isCenter ? 1 : 0}&loop=1&muted=1&background=1&playsinline=1`;
-                      
                       return (
                         <div
                           key={`mobile-${card.key}`}
@@ -407,15 +416,10 @@ export function HeroSection({ t }: HeroSectionProps) {
                           }}
                         >
                           <div className="w-full h-full overflow-hidden border border-zinc-200/50 shadow-lg relative bg-zinc-900">
-                            <iframe
-                              src={videoUrl}
-                              className="absolute inset-0 w-full h-full pointer-events-none"
-                              style={{
-                                border: 'none',
-                                transform: 'scale(1.5)',
-                                transformOrigin: 'center center',
-                              }}
-                              allow="autoplay; fullscreen"
+                            <LazyVideo
+                              src={card.video || ""}
+                              className="absolute inset-0 w-full h-full"
+                              title={`Presentation demo ${card.id}`}
                             />
                           </div>
                         </div>
@@ -428,18 +432,23 @@ export function HeroSection({ t }: HeroSectionProps) {
               </div>
 
               {/* Mobile Indicators */}
-              <div className="flex justify-center gap-2 mt-4">
+              <div className="flex justify-center gap-1 mt-4" role="tablist" aria-label="Presentation slides">
                 {baseCards.map((_, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleIndicatorClick(idx)}
                     style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}
-                    className={`rounded-full transition-all duration-400 ${
+                    aria-label={`Go to slide ${idx + 1}`}
+                    aria-selected={getWrappedIndex(activeIndex) === idx}
+                    role="tab"
+                    className="p-2 -m-1"
+                  >
+                    <span className={`block rounded-full transition-all duration-400 ${
                       getWrappedIndex(activeIndex) === idx
                         ? "w-6 h-2 bg-zinc-900"
-                        : "w-2 h-2 bg-zinc-300"
-                    }`}
-                  />
+                        : "w-2 h-2 bg-zinc-500"
+                    }`} />
+                  </button>
                 ))}
               </div>
             </div>
@@ -460,11 +469,6 @@ export function HeroSection({ t }: HeroSectionProps) {
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="relative w-[320px] sm:w-[360px] md:w-[380px]" style={{ height: CARD_HEIGHT }}>
                   {visibleCards.map((card) => {
-                    const isCenter = isCenterCard(card.virtualIndex);
-                    // Center card autoplays immediately, others stay paused but show first frame
-                    // autopause=0 prevents pausing when another video plays
-                    const videoUrl = `https://player.vimeo.com/video/${card.video?.id}?h=${card.video?.hash}&autoplay=${isCenter ? 1 : 0}&loop=1&muted=1&background=1&playsinline=1`;
-                    
                     return (
                       <div
                         key={card.key}
@@ -476,17 +480,12 @@ export function HeroSection({ t }: HeroSectionProps) {
                           marginTop: -CARD_HEIGHT / 2,
                         }}
                       >
-                        {/* Sharp square card with video only - no placeholder */}
+                        {/* Sharp square card with video only - lazy loaded */}
                         <div className="w-full h-full overflow-hidden border border-zinc-200/50 shadow-lg relative bg-zinc-900">
-                          <iframe
-                            src={videoUrl}
-                            className="absolute inset-0 w-full h-full pointer-events-none"
-                            style={{
-                              border: 'none',
-                              transform: 'scale(1.5)',
-                              transformOrigin: 'center center',
-                            }}
-                            allow="autoplay; fullscreen"
+                          <LazyVideo
+                            src={card.video || ""}
+                            className="absolute inset-0 w-full h-full"
+                            title={`Presentation demo ${card.id}`}
                           />
                         </div>
                       </div>
@@ -501,18 +500,23 @@ export function HeroSection({ t }: HeroSectionProps) {
             </div>
 
             {/* Indicators */}
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col gap-2 mr-4">
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col gap-1 mr-2" role="tablist" aria-label="Presentation slides">
               {baseCards.map((_, idx) => (
                 <button
                   key={idx}
                   onClick={() => handleIndicatorClick(idx)}
                   style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}
-                  className={`w-2 rounded-full transition-all duration-400 ${
+                  aria-label={`Go to slide ${idx + 1}`}
+                  aria-selected={getWrappedIndex(activeIndex) === idx}
+                  role="tab"
+                  className="p-2 -m-1"
+                >
+                  <span className={`block w-2 rounded-full transition-all duration-400 ${
                     getWrappedIndex(activeIndex) === idx
                       ? "h-8 bg-zinc-900"
-                      : "h-2 bg-zinc-300 hover:bg-zinc-400"
-                  }`}
-                />
+                      : "h-2 bg-zinc-500 hover:bg-zinc-600"
+                  }`} />
+                </button>
               ))}
             </div>
           </div>

@@ -12,6 +12,15 @@ export const metadata: Metadata = {
     title: "PPT Master Community - Connect with PowerPoint Creators",
     description: "Join our community of AI PowerPoint creators and presentation enthusiasts.",
     url: "/community",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "PPT Master Community",
+      },
+    ],
   },
 };
 
