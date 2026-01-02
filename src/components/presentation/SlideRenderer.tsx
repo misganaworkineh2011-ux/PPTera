@@ -3786,13 +3786,8 @@ export default function SlideRenderer({
   if (layout === "clean-frame") {
     const firstImage = allImages[0];
     return (
-<<<<<<< HEAD
       <div className="h-full relative overflow-hidden">
         <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''} pointer-events-none`} style={customBgStyle} />
-=======
-      <div className="relative overflow-hidden py-8 sm:py-10 md:py-12">
-        <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''} pointer-events-none`} style={customBgStyle} />
->>>>>>> ec8e674dd4aa0570b56e5cdeb89828f8db300859
 
         {/* Premium corner accents */}
         <div className="absolute top-0 left-0 w-1.5 h-28 bg-gradient-to-b from-blue-500 via-blue-400 to-transparent pointer-events-none" />
@@ -3842,13 +3837,8 @@ export default function SlideRenderer({
   // LAYOUT 29: Pro Cards - Premium professional card grid layout (Corporate Clean)
   if (layout === "pro-cards") {
     return (
-<<<<<<< HEAD
-      <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''} pointer-events-none`} style={customBgStyle} />
-=======
       <div className="relative overflow-hidden py-8 sm:py-10 md:py-12">
         <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''} pointer-events-none`} style={customBgStyle} />
->>>>>>> ec8e674dd4aa0570b56e5cdeb89828f8db300859
 
         {/* Elegant background elements */}
         <div className={`absolute top-0 right-0 w-[550px] h-[550px] ${colors.orb1} rounded-full blur-3xl pointer-events-none`} />
@@ -3883,13 +3873,8 @@ export default function SlideRenderer({
   if (layout === "executive-split") {
     const firstImage = allImages[0];
     return (
-<<<<<<< HEAD
-      <div className="h-full relative overflow-hidden">
-        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''} pointer-events-none`} style={customBgStyle} />
-=======
       <div className="relative overflow-hidden py-8 sm:py-10 md:py-12">
         <div className={`absolute inset-0 ${!isCustomTheme ? `bg-gradient-to-br ${colors.bg}` : ''} pointer-events-none`} style={customBgStyle} />
->>>>>>> ec8e674dd4aa0570b56e5cdeb89828f8db300859
 
         {/* Subtle dot pattern */}
         <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: "radial-gradient(circle, #3182ce 1px, transparent 1px)", backgroundSize: "36px 36px" }} />
