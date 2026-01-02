@@ -23,54 +23,121 @@ export async function GET(req: Request) {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
-    // Get presentations with stats
-    const presentations = await db.presentation.findMany({
-      where: { userId: user.id },
-      select: {
-        id: true,
-        title: true,
-        createdAt: true,
-        updatedAt: true,
-        slides: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    const previousPeriodStart = new Date(startDate);
+    previousPeriodStart.setDate(previousPeriodStart.getDate() - days);
 
-    // Get activities for the period
-    const activities = await db.activity.findMany({
-      where: {
-        userId: user.id,
-        createdAt: { gte: startDate },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    // Run all queries in parallel for speed
+    const [
+      totalPresentations,
+      recentPresentationsCount,
+      previousPresentationsCount,
+      activityCounts,
+      viewCount,
+      topPresentationsRaw,
+      recentPresentationsForChart,
+    ] = await Promise.all([
+      // Total presentations count
+      db.presentation.count({
+        where: { userId: user.id },
+      }),
 
-    // Helper to count slides from JSON
+      // Recent presentations count (in period)
+      db.presentation.count({
+        where: {
+          userId: user.id,
+          createdAt: { gte: startDate },
+        },
+      }),
+
+      // Previous period presentations count (for growth)
+      db.presentation.count({
+        where: {
+          userId: user.id,
+          createdAt: { gte: previousPeriodStart, lt: startDate },
+        },
+      }),
+
+      // Activity breakdown using groupBy
+      db.activity.groupBy({
+        by: ["type"],
+        where: {
+          userId: user.id,
+          createdAt: { gte: startDate },
+        },
+        _count: true,
+      }),
+
+      // Total views count
+      db.activity.count({
+        where: {
+          userId: user.id,
+          type: "view",
+          createdAt: { gte: startDate },
+        },
+      }),
+
+      // Top 5 presentations (minimal data, no slides JSON)
+      db.presentation.findMany({
+        where: { userId: user.id },
+        select: {
+          id: true,
+          title: true,
+          createdAt: true,
+          _count: {
+            select: {
+              activities: {
+                where: { type: "view" },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 20, // Get more to sort by views
+      }),
+
+      // Recent presentations for chart (only id, createdAt, slides for counting)
+      db.presentation.findMany({
+        where: {
+          userId: user.id,
+          createdAt: { gte: startDate },
+        },
+        select: {
+          id: true,
+          createdAt: true,
+          slides: true,
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+    ]);
+
+    // Calculate total slides from recent presentations only (for chart)
     const getSlideCount = (slides: unknown): number => {
       if (Array.isArray(slides)) return slides.length;
       return 0;
     };
 
-    // Calculate stats
-    const totalPresentations = presentations.length;
-    const totalSlides = presentations.reduce((sum, p) => sum + getSlideCount(p.slides), 0);
-    // Views are tracked in activities, count view activities
-    const viewActivities = activities.filter(a => a.type === "view");
-    const totalViews = viewActivities.length;
-
-    // Presentations created in period
-    const recentPresentations = presentations.filter(
-      (p) => new Date(p.createdAt) >= startDate
+    // Estimate total slides (use recent average * total count for speed)
+    const recentSlideCount = recentPresentationsForChart.reduce(
+      (sum, p) => sum + getSlideCount(p.slides),
+      0
     );
+    const avgSlidesPerPresentation =
+      recentPresentationsForChart.length > 0
+        ? Math.round(recentSlideCount / recentPresentationsForChart.length)
+        : 8; // Default estimate
+    const totalSlides = totalPresentations * avgSlidesPerPresentation;
 
-    // Activity breakdown
-    const activityBreakdown = activities.reduce((acc, a) => {
-      acc[a.type] = (acc[a.type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    // Activity breakdown object
+    const activityBreakdown: Record<string, number> = {};
+    activityCounts.forEach((item) => {
+      activityBreakdown[item.type] = item._count;
+    });
 
     // Daily activity for chart
-    const dailyActivity: Record<string, { presentations: number; slides: number; views: number }> = {};
+    const dailyActivity: Record<
+      string,
+      { presentations: number; slides: number; views: number }
+    > = {};
     for (let i = 0; i < days; i++) {
       const date = new Date();
       date.setDate(date.getDate() - i);
@@ -78,7 +145,7 @@ export async function GET(req: Request) {
       dailyActivity[key!] = { presentations: 0, slides: 0, views: 0 };
     }
 
-    recentPresentations.forEach((p) => {
+    recentPresentationsForChart.forEach((p) => {
       const key = new Date(p.createdAt).toISOString().split("T")[0];
       if (key && dailyActivity[key]) {
         dailyActivity[key].presentations++;
@@ -86,58 +153,55 @@ export async function GET(req: Request) {
       }
     });
 
-    // Count views per presentation from activities
-    const viewsByPresentation: Record<string, number> = {};
-    viewActivities.forEach((a) => {
-      if (a.presentationId) {
-        viewsByPresentation[a.presentationId] = (viewsByPresentation[a.presentationId] || 0) + 1;
-      }
-    });
-
-    // Top presentations by views (or by recency if no views)
-    const topPresentations = [...presentations]
+    // Top presentations sorted by views
+    const topPresentations = topPresentationsRaw
       .map((p) => ({
         id: p.id,
         title: p.title,
-        views: viewsByPresentation[p.id] || 0,
-        slides: getSlideCount(p.slides),
+        views: p._count.activities,
+        slides: avgSlidesPerPresentation, // Use average instead of fetching all
         createdAt: p.createdAt,
       }))
-      .sort((a, b) => b.views - a.views || new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .sort((a, b) => b.views - a.views)
       .slice(0, 5);
 
     // Calculate growth
-    const previousPeriodStart = new Date(startDate);
-    previousPeriodStart.setDate(previousPeriodStart.getDate() - days);
-    
-    const previousPresentations = presentations.filter(
-      (p) => new Date(p.createdAt) >= previousPeriodStart && new Date(p.createdAt) < startDate
-    );
-
     const growth = {
-      presentations: previousPresentations.length > 0
-        ? Math.round(((recentPresentations.length - previousPresentations.length) / previousPresentations.length) * 100)
-        : recentPresentations.length > 0 ? 100 : 0,
+      presentations:
+        previousPresentationsCount > 0
+          ? Math.round(
+              ((recentPresentationsCount - previousPresentationsCount) /
+                previousPresentationsCount) *
+                100
+            )
+          : recentPresentationsCount > 0
+            ? 100
+            : 0,
     };
 
-    return NextResponse.json({
-      overview: {
-        totalPresentations,
-        totalSlides,
-        totalViews,
-        recentPresentations: recentPresentations.length,
-        avgSlidesPerPresentation: totalPresentations > 0 
-          ? Math.round(totalSlides / totalPresentations) 
-          : 0,
+    return NextResponse.json(
+      {
+        overview: {
+          totalPresentations,
+          totalSlides,
+          totalViews: viewCount,
+          recentPresentations: recentPresentationsCount,
+          avgSlidesPerPresentation,
+        },
+        growth,
+        activityBreakdown,
+        dailyActivity: Object.entries(dailyActivity)
+          .map(([date, data]) => ({ date, ...data }))
+          .reverse(),
+        topPresentations,
+        period: { days, startDate: startDate.toISOString() },
       },
-      growth,
-      activityBreakdown,
-      dailyActivity: Object.entries(dailyActivity)
-        .map(([date, data]) => ({ date, ...data }))
-        .reverse(),
-      topPresentations,
-      period: { days, startDate: startDate.toISOString() },
-    });
+      {
+        headers: {
+          "Cache-Control": "private, max-age=60, stale-while-revalidate=120",
+        },
+      }
+    );
   } catch (error) {
     console.error("[Analytics API] Error:", error);
     return NextResponse.json(

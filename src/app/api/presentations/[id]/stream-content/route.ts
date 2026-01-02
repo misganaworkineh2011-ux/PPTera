@@ -306,6 +306,16 @@ export async function GET(
   const textDensity = content?.textDensity as string | undefined;
   const streamingComplete = content?.streamingComplete as boolean | undefined;
 
+  console.log("[stream-content] Content parsed:", {
+    imageSource,
+    textDensity,
+    streamingComplete,
+    hasPendingSlides: !!pendingSlides,
+    pendingSlidesCount: pendingSlides?.length,
+    outlineId: content?.outlineId,
+    outlineIdType: typeof content?.outlineId,
+  });
+
   // If streaming is already complete, return the existing slides
   if (streamingComplete) {
     const existingSlides = presentation.slides as unknown[];
@@ -418,6 +428,7 @@ export async function GET(
                     mapIndex++;
                   }
                 } else if (imageSource === "ai-generated") {
+                  console.log("[stream-content] Generating AI images for batch:", batch.map(b => b.index));
                   const slidesWithMetadata = batch.map(({ slide }) => ({
                     type: slide.type,
                     title: slide.title,
@@ -426,11 +437,17 @@ export async function GET(
                   }));
 
                   const generatedImages = await generateAIImages(slidesWithMetadata as Parameters<typeof generateAIImages>[0]);
+                  console.log("[stream-content] Generated images count:", generatedImages.size);
 
                   let mapIndex = 0;
                   for (const { index } of batch) {
                     if (isClosed.value) break;
                     const result = generatedImages.get(mapIndex);
+                    console.log(`[stream-content] Image result for slide ${index}:`, {
+                      hasResult: !!result,
+                      hasUrl: !!result?.url,
+                      source: result?.source,
+                    });
                     if (result && result.url) {
                       const image = {
                         url: result.url,
@@ -439,9 +456,11 @@ export async function GET(
                       };
                       // Store in imageMap for later merging
                       imageMap.set(index, image);
+                      console.log(`[stream-content] Stored image in imageMap for slide ${index}`);
                       // Also update finalSlides if it exists
                       if (finalSlides[index]) {
                         finalSlides[index]!.image = image;
+                        console.log(`[stream-content] Updated finalSlides[${index}] with image`);
                       }
                       sendEvent(controller, "imageReady", { slideIndex: index, image }, isClosed);
                     }
@@ -612,9 +631,17 @@ export async function GET(
         }
 
         // Merge images from imageMap into finalSlides (in case they weren't set during streaming)
+        console.log("[stream-content] Merging images from imageMap. imageMap size:", imageMap.size);
         for (const [index, image] of imageMap) {
+          console.log(`[stream-content] imageMap entry ${index}:`, {
+            url: (image as { url?: string }).url?.substring(0, 50),
+            source: (image as { source?: string }).source,
+          });
           if (finalSlides[index] && !finalSlides[index]!.image) {
             finalSlides[index]!.image = image;
+            console.log(`[stream-content] Merged image into slide ${index}`);
+          } else if (finalSlides[index]?.image) {
+            console.log(`[stream-content] Slide ${index} already has image`);
           }
         }
 
@@ -622,6 +649,8 @@ export async function GET(
         if (finalSlides.length > 0) {
           // Update presentation with final slides
           const thumbnailUrl = (finalSlides[0]?.image as { url?: string })?.url || null;
+          
+          console.log("[stream-content] Saving presentation. Original content.outlineId:", content?.outlineId);
           
           await db.presentation.update({
             where: { id: presentationId },
@@ -632,9 +661,53 @@ export async function GET(
                 ...content,
                 pendingSlides: undefined, // Clear pending
                 streamingComplete: true,
+                // outlineId is already in content from the spread, no need to set it again
               })),
             },
           });
+          
+          console.log("[stream-content] Presentation saved successfully");
+
+          // Save AI-generated images to the Image library for the user's dashboard
+          if (imageSource === "ai-generated") {
+            console.log("[stream-content] Checking for AI images to save...");
+            console.log("[stream-content] finalSlides count:", finalSlides.length);
+            
+            try {
+              const aiSlideImages = finalSlides
+                .map((slide, index) => ({ slide, index }))
+                .filter(({ slide }) => {
+                  const img = slide.image as { source?: string; url?: string } | null;
+                  console.log(`[stream-content] Slide image check:`, {
+                    hasImage: !!img,
+                    source: img?.source,
+                    hasUrl: !!img?.url,
+                  });
+                  return img && img.source === "ai" && img.url;
+                });
+
+              console.log("[stream-content] AI images found:", aiSlideImages.length);
+
+              if (aiSlideImages.length > 0) {
+                const slug = presentation.title?.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "presentation";
+                await db.image.createMany({
+                  data: aiSlideImages.map(({ slide, index }) => ({
+                    url: (slide.image as { url: string }).url,
+                    filename: `${slug}-slide-${index + 1}.png`,
+                    userId: user.id,
+                    presentationId: presentationId,
+                  })),
+                });
+                console.log("[stream-content] Saved AI images to Image library:", aiSlideImages.length);
+              } else {
+                console.log("[stream-content] No AI images to save");
+              }
+            } catch (e) {
+              console.error("[stream-content] Failed to save AI images to Image library:", e);
+            }
+          } else {
+            console.log("[stream-content] Image source is not ai-generated:", imageSource);
+          }
         }
 
         if (!isClosed.value) {

@@ -13,13 +13,13 @@ import {
   Pause,
   RotateCcw,
   Loader2,
+  StickyNote,
 } from "lucide-react";
 import { cn } from "~/lib/utils";
 import SlideRenderer from "~/components/presentation/SlideRenderer";
 import { getThemeById, getDefaultTheme, type Theme } from "~/lib/themes";
 import { convertCustomThemeToTheme } from "~/lib/custom-theme-utils";
 import { type PresentationData } from "~/components/presentation/types";
-import Link from "next/link";
 
 interface PresenterPageProps {
   params: Promise<{ id: string }>;
@@ -41,58 +41,134 @@ export default function PresenterPage({ params }: PresenterPageProps) {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [theme, setTheme] = useState<Theme>(getDefaultTheme());
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [mainWindowConnected, setMainWindowConnected] = useState(false);
+  
+  // BroadcastChannel for communicating with main app
+  const channelRef = useRef<BroadcastChannel | null>(null);
+  const mountTimeRef = useRef<number>(0);
+
+  // Initialize BroadcastChannel
+  useEffect(() => {
+    channelRef.current = new BroadcastChannel(`presentation-${id}`);
+    mountTimeRef.current = Date.now();
+    
+    // Notify main app that presenter view is opened
+    channelRef.current.postMessage({ type: "presenter-opened" });
+    
+    // Listen for messages from main app
+    channelRef.current.onmessage = (event) => {
+      const { type, slideIndex } = event.data;
+      
+      switch (type) {
+        case "main-connected":
+          setMainWindowConnected(true);
+          // Sync current slide to main window
+          channelRef.current?.postMessage({ 
+            type: "slide-change", 
+            slideIndex: currentSlide 
+          });
+          break;
+        case "main-disconnected":
+          setMainWindowConnected(false);
+          break;
+        case "slide-change":
+          // Main window changed slide, sync here
+          if (typeof slideIndex === "number") {
+            setCurrentSlide(slideIndex);
+          }
+          break;
+        case "presentation-updated":
+          // Presentation data was updated, refetch
+          fetchPresentation();
+          break;
+      }
+    };
+    
+    // Handle page unload to send presenter-closed
+    const handleBeforeUnload = () => {
+      channelRef.current?.postMessage({ type: "presenter-closed" });
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      // Only send presenter-closed if component was mounted for more than 500ms
+      // This prevents React StrictMode double-mount from triggering close
+      const mountDuration = Date.now() - mountTimeRef.current;
+      if (mountDuration > 500) {
+        channelRef.current?.postMessage({ type: "presenter-closed" });
+      }
+      channelRef.current?.close();
+    };
+  }, [id]);
+
+  // Broadcast slide changes to main window
+  useEffect(() => {
+    if (channelRef.current && mainWindowConnected) {
+      channelRef.current.postMessage({ 
+        type: "slide-change", 
+        slideIndex: currentSlide 
+      });
+    }
+  }, [currentSlide, mainWindowConnected]);
 
   // Fetch presentation
-  useEffect(() => {
-    async function fetchPresentation() {
-      try {
-        const res = await fetch(`/api/presentations/${id}`);
-        if (!res.ok) throw new Error("Failed to load presentation");
-        const data = await res.json();
-
-        // Check user subscription for watermark
-        let showWatermark = true;
-        try {
-          const userRes = await fetch("/api/user/me");
-          if (userRes.ok) {
-            const userData = await userRes.json();
-            showWatermark = !userData.subscriptionPlan ||
-              !["plus", "pro", "ultra"].includes(userData.subscriptionPlan);
-          }
-        } catch {
-          // ignore
-        }
-
-        const fullData = { ...data, showWatermark };
-        setPresentation(fullData);
-
-        // Resolve theme (copied from EmbedPage)
-        const themeId = data.content?.theme || data.themeId;
-        const customThemeData = data.content?.themeConfig || data.theme;
-
-        if (themeId) {
-          if (themeId.startsWith("custom-")) {
-            if (customThemeData) {
-              const customTheme = convertCustomThemeToTheme(customThemeData);
-              setTheme(customTheme);
-            } else {
-              setTheme(getDefaultTheme());
-            }
-          } else {
-            const staticTheme = getThemeById(themeId);
-            if (staticTheme) setTheme(staticTheme);
-          }
-        }
-
-      } catch (err: any) {
-        setError(err.message || "Failed to load presentation");
-      } finally {
-        setLoading(false);
+  const fetchPresentation = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/presentations/${id}`, {
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to load presentation (${res.status})`);
       }
+      const data = await res.json();
+
+      // Check user subscription for watermark
+      let showWatermark = true;
+      try {
+        const userRes = await fetch("/api/user/me");
+        if (userRes.ok) {
+          const userData = await userRes.json();
+          showWatermark = !userData.subscriptionPlan ||
+            !["plus", "pro", "ultra"].includes(userData.subscriptionPlan);
+        }
+      } catch {
+        // ignore
+      }
+
+      const fullData = { ...data, showWatermark };
+      setPresentation(fullData);
+
+      // Resolve theme
+      const themeId = data.content?.theme || data.themeId;
+      const customThemeData = data.content?.themeConfig || data.theme;
+
+      if (themeId) {
+        if (themeId.startsWith("custom-")) {
+          if (customThemeData) {
+            const customTheme = convertCustomThemeToTheme(customThemeData);
+            setTheme(customTheme);
+          } else {
+            setTheme(getDefaultTheme());
+          }
+        } else {
+          const staticTheme = getThemeById(themeId);
+          if (staticTheme) setTheme(staticTheme);
+        }
+      }
+
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to load presentation";
+      setError(message);
+    } finally {
+      setLoading(false);
     }
-    fetchPresentation();
   }, [id]);
+
+  useEffect(() => {
+    fetchPresentation();
+  }, [fetchPresentation]);
 
   // Timer
   useEffect(() => {
@@ -104,6 +180,15 @@ export default function PresenterPage({ params }: PresenterPageProps) {
     }
     return () => clearInterval(interval);
   }, [isTimerRunning]);
+
+  // Sync fullscreen state with browser fullscreen API
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
 
   // Keyboard navigation
   useEffect(() => {
@@ -123,7 +208,7 @@ export default function PresenterPage({ params }: PresenterPageProps) {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentSlide, presentation, isFullscreen]); // dependencies need to be correct
+  }, [currentSlide, presentation, isFullscreen]);
 
   const goNext = useCallback(() => {
     if (presentation && currentSlide < presentation.slides.length - 1) {
@@ -136,6 +221,12 @@ export default function PresenterPage({ params }: PresenterPageProps) {
       setCurrentSlide((prev) => prev - 1);
     }
   }, [currentSlide]);
+
+  const goToSlide = useCallback((index: number) => {
+    if (presentation && index >= 0 && index < presentation.slides.length) {
+      setCurrentSlide(index);
+    }
+  }, [presentation]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -186,150 +277,154 @@ export default function PresenterPage({ params }: PresenterPageProps) {
   if (!slide) return null;
 
   return (
-    <div className="h-screen bg-slate-900 text-white flex flex-col">
-      {/* Top Bar - hidden when fullscreen if desired, but user might want controls */}
-      {!isFullscreen && (
-        <div className="flex items-center justify-between px-4 py-2 bg-slate-800 border-b border-slate-700 shrink-0">
-          <div className="flex items-center gap-4">
-            <h1 className="font-semibold truncate max-w-xs">{presentation.title}</h1>
-            <span className="text-slate-400 text-sm">
-              Slide {currentSlide + 1} of {presentation.slides.length}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* Timer */}
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-700 rounded-lg">
-              <Clock className="h-4 w-4 text-slate-400" />
-              <span className="font-mono text-sm">{formatTime(elapsedTime)}</span>
-              <button
-                onClick={() => setIsTimerRunning(!isTimerRunning)}
-                className="p-1 hover:bg-slate-600 rounded"
-              >
-                {isTimerRunning ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
-              </button>
-              <button onClick={resetTimer} className="p-1 hover:bg-slate-600 rounded">
-                <RotateCcw className="h-3 w-3" />
-              </button>
-            </div>
-
-            {/* Actions */}
-            <button
-              onClick={() => setShowNotes(!showNotes)}
-              className={cn(
-                "p-2 rounded-lg transition",
-                showNotes ? "bg-[#06b6d4] text-white" : "bg-slate-700 hover:bg-slate-600"
-              )}
-              title={showNotes ? "Hide Notes" : "Show Notes"}
-            >
-              {showNotes ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-            </button>
-
-            <button
-              onClick={toggleFullscreen}
-              className="p-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition"
-            >
-              {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-            </button>
-          </div>
+    <div className="h-screen bg-slate-900 text-white flex flex-col select-none">
+      {/* Top Bar */}
+      <div className="flex items-center justify-between px-4 py-2 bg-slate-800 border-b border-slate-700 shrink-0">
+        <div className="flex items-center gap-4">
+          <h1 className="font-semibold truncate max-w-xs">{presentation.title}</h1>
+          <span className="text-slate-400 text-sm">
+            Slide {currentSlide + 1} of {presentation.slides.length}
+          </span>
+          {/* Connection status indicator - just a dot */}
+          <div className={cn(
+            "w-2.5 h-2.5 rounded-full",
+            mainWindowConnected ? "bg-emerald-400 animate-pulse" : "bg-slate-500"
+          )} title={mainWindowConnected ? "Connected to main window" : "Not connected"} />
         </div>
-      )}
+
+        <div className="flex items-center gap-2">
+          {/* Timer */}
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-700 rounded-lg">
+            <Clock className="h-4 w-4 text-slate-400" />
+            <span className="font-mono text-sm">{formatTime(elapsedTime)}</span>
+            <button
+              onClick={() => setIsTimerRunning(!isTimerRunning)}
+              className="p-1 hover:bg-slate-600 rounded"
+            >
+              {isTimerRunning ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+            </button>
+            <button onClick={resetTimer} className="p-1 hover:bg-slate-600 rounded">
+              <RotateCcw className="h-3 w-3" />
+            </button>
+          </div>
+
+          {/* Actions */}
+          <button
+            onClick={() => setShowNotes(!showNotes)}
+            className={cn(
+              "p-2 rounded-lg transition",
+              showNotes ? "bg-amber-500 text-white" : "bg-slate-700 hover:bg-slate-600"
+            )}
+            title={showNotes ? "Hide Notes" : "Show Notes"}
+          >
+            {showNotes ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+          </button>
+
+          <button
+            onClick={toggleFullscreen}
+            className="p-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition"
+          >
+            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+          </button>
+        </div>
+      </div>
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Current Slide */}
-        <div className="flex-1 p-4 flex flex-col items-center justify-center bg-black/90">
-          {/* Slide Container - maintains 16:9 aspect ratio centered */}
-          <div className="relative w-full aspect-video max-h-full max-w-[177.78vh] bg-white overflow-hidden shadow-2xl">
-            <SlideRenderer
-              slide={slide}
-              index={currentSlide}
-              totalSlides={presentation.slides.length}
-              theme={theme}
-              isOwner={false}
-              isFullscreen={true}
-              isHovered={false}
-              isEditing={false}
-              editingText={null}
-              onStartEditing={() => { }}
-              onUpdateContent={() => { }}
-              onFinishEditing={() => { }}
-              onAddBullet={() => { }}
-              onDeleteBullet={() => { }}
-            />
+        <div className="flex-1 p-4 flex flex-col">
+          {/* Slide Container */}
+          <div className="flex-1 flex items-center justify-center">
+            <div className="relative w-full aspect-video max-h-full max-w-[calc(100vh*16/9)] bg-white overflow-hidden shadow-2xl rounded-lg">
+              <SlideRenderer
+                slide={slide}
+                index={currentSlide}
+                totalSlides={presentation.slides.length}
+                theme={theme}
+                isOwner={false}
+                isFullscreen={true}
+                isHovered={false}
+                isEditing={false}
+                editingText={null}
+                onStartEditing={() => { }}
+                onUpdateContent={() => { }}
+                onFinishEditing={() => { }}
+                onAddBullet={() => { }}
+                onDeleteBullet={() => { }}
+              />
+            </div>
           </div>
 
-          {/* Navigation - Floating controls at bottom when fullscreen or integrated? 
-              Let's keep the existing buttons below the slide if not fullscreen, 
-              or overlay if fullscreen. The original had buttons below.
-           */}
-          {!isFullscreen && (
-            <div className="flex items-center justify-center gap-4 mt-4 shrink-0">
-              <button
-                onClick={goPrev}
-                disabled={currentSlide === 0}
-                className="p-3 bg-slate-700 hover:bg-slate-600 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg transition"
-              >
-                <ChevronLeft className="h-6 w-6" />
-              </button>
+          {/* Navigation */}
+          <div className="flex items-center justify-center gap-4 mt-4 shrink-0">
+            <button
+              onClick={goPrev}
+              disabled={currentSlide === 0}
+              className="p-3 bg-slate-700 hover:bg-slate-600 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg transition"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </button>
 
-              <div className="flex gap-1">
-                {presentation.slides.map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentSlide(idx)}
-                    className={cn(
-                      "w-2 h-2 rounded-full transition",
-                      idx === currentSlide ? "bg-[#06b6d4]" : "bg-slate-600 hover:bg-slate-500"
-                    )}
-                  />
-                ))}
-              </div>
-
-              <button
-                onClick={goNext}
-                disabled={currentSlide === presentation.slides.length - 1}
-                className="p-3 bg-slate-700 hover:bg-slate-600 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg transition"
-              >
-                <ChevronRight className="h-6 w-6" />
-              </button>
+            <div className="flex gap-1 max-w-md overflow-x-auto py-1">
+              {presentation.slides.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => goToSlide(idx)}
+                  className={cn(
+                    "w-2.5 h-2.5 rounded-full transition shrink-0",
+                    idx === currentSlide ? "bg-[#06b6d4] scale-125" : "bg-slate-600 hover:bg-slate-500"
+                  )}
+                />
+              ))}
             </div>
-          )}
+
+            <button
+              onClick={goNext}
+              disabled={currentSlide === presentation.slides.length - 1}
+              className="p-3 bg-slate-700 hover:bg-slate-600 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg transition"
+            >
+              <ChevronRight className="h-6 w-6" />
+            </button>
+          </div>
         </div>
 
-        {/* Side Panel (Notes) - Hidden in fullscreen usually? Or overlaid. 
-            Standard PPT behavior: Fullscreen is just the slide.
-            "Presenter View" is usually on a separate screen. 
-            But this is a web app. 
-            If isFullscreen is true, we probably want JUST the slide (Cinema Mode).
-            Unless the user explicitly wants notes.
-            Let's keep notes in the side panel if !isFullscreen.
-        */}
-        {showNotes && !isFullscreen && (
-          <div className="w-80 border-l border-slate-700 flex flex-col shrink-0 bg-slate-900">
+        {/* Side Panel (Notes + Next Slide) */}
+        {showNotes && (
+          <div className="w-96 border-l border-slate-700 flex flex-col shrink-0 bg-slate-900">
             {/* Next Slide Preview */}
             <div className="p-4 border-b border-slate-700">
-              <h3 className="text-xs font-medium text-slate-400 mb-2">NEXT SLIDE</h3>
+              <h3 className="text-xs font-medium text-slate-400 mb-2 uppercase tracking-wide">Next Slide</h3>
               {nextSlide ? (
-                <div className="aspect-video bg-white rounded overflow-hidden relative">
-                  {/* Reuse SlideRenderer for preview if possible, but scaling might be an issue.
-                        For now, keep it simple/text-based OR use a scaled down renderer? 
-                        The original code used raw text. Let's try to be better but safe.
-                        Actually, render raw text to be safe/fast for preview.
-                    */}
-                  <div className="absolute inset-0 p-1 overflow-hidden pointer-events-none transform scale-50 origin-top-left w-[200%] h-[200%]">
+                <button 
+                  onClick={goNext}
+                  className="w-full aspect-video bg-white rounded-lg overflow-hidden relative hover:ring-2 hover:ring-[#06b6d4] transition group"
+                >
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none transform scale-50 origin-top-left w-[200%] h-[200%]">
                     <SlideRenderer
                       slide={nextSlide}
                       index={currentSlide + 1}
                       totalSlides={presentation.slides.length}
-                      theme={theme} // Same theme
-                      isOwner={false} isFullscreen={true} isHovered={false} isEditing={false} editingText={null}
-                      onStartEditing={() => { }} onUpdateContent={() => { }} onFinishEditing={() => { }} onAddBullet={() => { }} onDeleteBullet={() => { }}
+                      theme={theme}
+                      isOwner={false} 
+                      isFullscreen={true} 
+                      isHovered={false} 
+                      isEditing={false} 
+                      editingText={null}
+                      onStartEditing={() => { }} 
+                      onUpdateContent={() => { }} 
+                      onFinishEditing={() => { }} 
+                      onAddBullet={() => { }} 
+                      onDeleteBullet={() => { }}
                     />
                   </div>
-                </div>
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition flex items-center justify-center">
+                    <span className="opacity-0 group-hover:opacity-100 transition text-xs font-medium text-white bg-black/50 px-2 py-1 rounded">
+                      Click to advance
+                    </span>
+                  </div>
+                </button>
               ) : (
-                <div className="aspect-video bg-slate-800 rounded flex items-center justify-center text-slate-500 text-sm">
+                <div className="aspect-video bg-slate-800 rounded-lg flex items-center justify-center text-slate-500 text-sm">
                   End of presentation
                 </div>
               )}
@@ -337,25 +432,103 @@ export default function PresenterPage({ params }: PresenterPageProps) {
 
             {/* Speaker Notes */}
             <div className="flex-1 p-4 overflow-y-auto">
-              <h3 className="text-xs font-medium text-slate-400 mb-2">SPEAKER NOTES</h3>
-              {slide?.notes ? (
-                <p className="text-sm text-slate-300 whitespace-pre-wrap">{slide.notes}</p>
+              <div className="flex items-center gap-2 mb-3">
+                <StickyNote className="h-4 w-4 text-amber-400" />
+                <h3 className="text-xs font-medium text-slate-400 uppercase tracking-wide">Speaker Notes</h3>
+                {slide?.speakerNotes && slide.speakerNotes.length > 0 && (
+                  <span className="ml-auto text-xs text-amber-400 font-medium">
+                    {slide.speakerNotes.length} note{slide.speakerNotes.length > 1 ? "s" : ""}
+                  </span>
+                )}
+              </div>
+              
+              {slide?.speakerNotes && slide.speakerNotes.length > 0 ? (
+                <div className="space-y-3">
+                  {slide.speakerNotes.map((note, idx) => (
+                    <div 
+                      key={idx} 
+                      className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg"
+                    >
+                      <p className="text-sm text-slate-200 whitespace-pre-wrap leading-relaxed">{note}</p>
+                    </div>
+                  ))}
+                </div>
               ) : (
-                <p className="text-sm text-slate-500 italic">No notes for this slide</p>
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <StickyNote className="h-8 w-8 text-slate-600 mb-2" />
+                  <p className="text-sm text-slate-500">No notes for this slide</p>
+                  <p className="text-xs text-slate-600 mt-1">
+                    Add notes in the editor to see them here
+                  </p>
+                </div>
               )}
+            </div>
+
+            {/* Slide thumbnails strip */}
+            <div className="p-3 border-t border-slate-700 bg-slate-800/50">
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {presentation.slides.map((s, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => goToSlide(idx)}
+                    className={cn(
+                      "shrink-0 w-16 aspect-video bg-white rounded overflow-hidden relative transition",
+                      idx === currentSlide 
+                        ? "ring-2 ring-[#06b6d4]" 
+                        : "ring-1 ring-slate-600 hover:ring-slate-500"
+                    )}
+                  >
+                    <div className="absolute inset-0 overflow-hidden pointer-events-none transform scale-[0.1] origin-top-left w-[1000%] h-[1000%]">
+                      <SlideRenderer
+                        slide={s}
+                        index={idx}
+                        totalSlides={presentation.slides.length}
+                        theme={theme}
+                        isOwner={false} 
+                        isFullscreen={true} 
+                        isHovered={false} 
+                        isEditing={false} 
+                        editingText={null}
+                        onStartEditing={() => { }} 
+                        onUpdateContent={() => { }} 
+                        onFinishEditing={() => { }} 
+                        onAddBullet={() => { }} 
+                        onDeleteBullet={() => { }}
+                      />
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-[8px] text-white text-center py-0.5">
+                      {idx + 1}
+                    </div>
+                    {/* Note indicator */}
+                    {s.speakerNotes && s.speakerNotes.length > 0 && (
+                      <div className="absolute top-0.5 right-0.5 w-2 h-2 bg-amber-400 rounded-full" />
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* Watermark for free users - logic maintained */}
+      {/* Keyboard shortcuts hint */}
+      <div className="absolute bottom-4 left-4 text-xs text-slate-500">
+        <span className="opacity-70">← → Navigate</span>
+        <span className="mx-2 opacity-50">•</span>
+        <span className="opacity-70">F Fullscreen</span>
+        <span className="mx-2 opacity-50">•</span>
+        <span className="opacity-70">Space Next</span>
+      </div>
+
+      {/* Watermark for free users */}
       {presentation.showWatermark && (
         <a
           href="https://www.pptmaster.app"
           target="_blank"
           rel="noopener noreferrer"
-          className="fixed bottom-4 left-4 z-50 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-white/70 text-sm font-medium hover:text-white hover:bg-white/20 transition"
+          className="fixed bottom-4 right-4 z-50 px-4 py-2 bg-slate-800 border border-slate-700 rounded-full text-white text-sm font-medium hover:bg-slate-700 transition flex items-center gap-2 shadow-lg"
         >
+          <img src="/logo.png" alt="PPTMaster" className="h-5 w-5" />
           Made with PPTMaster
         </a>
       )}

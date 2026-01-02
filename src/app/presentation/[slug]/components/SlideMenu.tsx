@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import {
-  MoreVertical,
+  MoreHorizontal,
   Palette,
   Sparkles,
   Copy,
@@ -14,7 +14,6 @@ import {
   ImagePlus,
   LayoutGrid,
   Link2,
-  ChevronDown,
   Loader2,
   Send,
 } from "lucide-react";
@@ -49,16 +48,23 @@ interface SlideMenuProps {
   index: number;
   totalSlides: number;
   imageCount: number;
+  hasChart?: boolean;
   slideContent?: SlideContent;
+  speakerNotes?: string[];
   onChangeLayout: () => void;
   onChangeContentLayout?: () => void;
   onDuplicate: () => void;
   onAddSlide: () => void;
   onAddImage: () => void;
+  onAddChart?: () => void;
+  onRemoveChart?: () => void;
   onMoveUp: () => void;
   onMoveDown: () => void;
   onDelete: () => void;
   onAIEdit?: (editedSlide: SlideContent) => void;
+  onAddNote?: (note: string) => void;
+  onEditNote?: (noteIndex: number, note: string) => void;
+  onDeleteNote?: (noteIndex: number) => void;
   isAIEditing?: boolean;
   onAIEditingChange?: (isEditing: boolean) => void;
 }
@@ -93,54 +99,80 @@ function MorePanel({
   onClose,
 }: MorePanelProps) {
   return (
-    <div className="flex items-center gap-1 px-2 py-1.5 bg-white rounded-full shadow-xl border border-slate-200">
-      <ActionButton
-        icon={<Copy size={16} />}
-        title="Duplicate"
-        onClick={() => {
-          onDuplicate();
-          onClose();
-        }}
-      />
-      <ActionButton
-        icon={<MoveUp size={16} />}
-        title="Move Up"
-        onClick={onMoveUp}
-        disabled={index === 0}
-      />
-      <ActionButton
-        icon={<Link2 size={16} />}
-        title="Copy Link"
-        onClick={() => {
-          onCopyLink();
-          onClose();
-        }}
-      />
-      <ActionButton
-        icon={<PlusCircle size={16} />}
-        title="Add Slide"
-        onClick={() => {
-          onAddSlide();
-          onClose();
-        }}
-      />
-      <ActionButton
-        icon={<MoveDown size={16} />}
-        title="Move Down"
-        onClick={onMoveDown}
-        disabled={index === totalSlides - 1}
-      />
-      <ActionButton
-        icon={<Trash2 size={16} />}
-        title="Delete"
-        onClick={() => {
-          onDelete();
-          onClose();
-        }}
-        disabled={totalSlides <= 1}
-        danger
-      />
+    <div className="bg-white rounded-xl shadow-2xl border border-slate-200/80 p-2 min-w-[180px]">
+      <div className="space-y-0.5">
+        <MenuButton
+          icon={<Copy size={15} />}
+          label="Duplicate"
+          onClick={() => { onDuplicate(); onClose(); }}
+        />
+        <MenuButton
+          icon={<PlusCircle size={15} />}
+          label="Add slide below"
+          onClick={() => { onAddSlide(); onClose(); }}
+        />
+        <MenuButton
+          icon={<Link2 size={15} />}
+          label="Copy link"
+          onClick={() => { onCopyLink(); onClose(); }}
+        />
+        <div className="h-px bg-slate-100 my-1.5" />
+        <MenuButton
+          icon={<MoveUp size={15} />}
+          label="Move up"
+          onClick={onMoveUp}
+          disabled={index === 0}
+        />
+        <MenuButton
+          icon={<MoveDown size={15} />}
+          label="Move down"
+          onClick={onMoveDown}
+          disabled={index === totalSlides - 1}
+        />
+        <div className="h-px bg-slate-100 my-1.5" />
+        <MenuButton
+          icon={<Trash2 size={15} />}
+          label="Delete"
+          onClick={() => { onDelete(); onClose(); }}
+          disabled={totalSlides <= 1}
+          danger
+        />
+      </div>
     </div>
+  );
+}
+
+function MenuButton({
+  icon,
+  label,
+  onClick,
+  disabled,
+  danger,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+  danger?: boolean;
+}) {
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        if (!disabled) onClick();
+      }}
+      disabled={disabled}
+      className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-colors ${
+        disabled
+          ? "opacity-40 cursor-not-allowed text-slate-400"
+          : danger
+            ? "text-red-600 hover:bg-red-50"
+            : "text-slate-700 hover:bg-slate-100"
+      }`}
+    >
+      {icon}
+      <span>{label}</span>
+    </button>
   );
 }
 
@@ -166,50 +198,42 @@ function StylingPanel({
     onClose();
   };
 
-  // Show Change Layout for:
-  // - Title slides (always, so they can change image position)
-  // - Content slides with images
   const showChangeLayout = slideType === "title" || imageCount > 0;
-  // Show Content Layout only for content slides (not title slides)
   const showContentLayout = slideType !== "title" && onChangeContentLayout;
 
   return (
-    <div className="bg-white rounded-xl shadow-xl border border-slate-200 p-3 min-w-[240px]">
-      <div className="space-y-1">
+    <div className="bg-white rounded-xl shadow-2xl border border-slate-200/80 p-2 min-w-[200px]">
+      <div className="space-y-0.5">
         {showChangeLayout && (
-          <OptionRow
-            icon={<LayoutGrid size={16} />}
-            label="Slide Layout"
+          <MenuButton
+            icon={<LayoutGrid size={15} />}
+            label="Slide layout"
             onClick={handleAction(onChangeLayout)}
-            action="Select"
           />
         )}
         {showContentLayout && (
-          <OptionRow
-            icon={<LayoutGrid size={16} />}
-            label="Content Layout"
+          <MenuButton
+            icon={<LayoutGrid size={15} />}
+            label="Content layout"
             onClick={handleAction(onChangeContentLayout)}
-            action="Live Edit"
           />
         )}
-        <OptionRow
-          icon={<ImagePlus size={16} />}
-          label={imageCount > 0 ? `Images (${imageCount})` : "Add Image"}
+        <MenuButton
+          icon={<ImagePlus size={15} />}
+          label={imageCount > 0 ? `Images (${imageCount})` : "Add image"}
           onClick={handleAction(onAddImage)}
-          action={imageCount > 0 ? "Manage" : "+ Add"}
-          highlight={imageCount === 0}
         />
       </div>
     </div>
   );
 }
 
-function AIPanel({ 
-  slideContent, 
-  onAIEdit, 
+function AIPanel({
+  slideContent,
+  onAIEdit,
   onClose,
   onLoadingChange,
-}: { 
+}: {
   slideContent?: SlideContent;
   onAIEdit?: (editedSlide: SlideContent) => void;
   onClose: () => void;
@@ -220,7 +244,6 @@ function AIPanel({
   const [error, setError] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Focus textarea when panel opens
   useEffect(() => {
     textareaRef.current?.focus();
   }, []);
@@ -236,7 +259,7 @@ function AIPanel({
       const response = await fetch("/api/ai/edit-slide", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           slide: slideContent,
           prompt: prompt.trim(),
         }),
@@ -264,9 +287,7 @@ function AIPanel({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Stop propagation for all keys to prevent parent handlers from capturing them
     e.stopPropagation();
-    
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
@@ -275,28 +296,27 @@ function AIPanel({
 
   const suggestions = [
     "Add a relevant image",
-    "Change to 3-card layout",
     "Make it more professional",
     "Add more bullet points",
     "Simplify the content",
-    "Add sections with icons",
   ];
 
   return (
-    <div 
-      className="bg-white rounded-xl shadow-xl border border-slate-200 p-3 min-w-[300px] max-w-[350px]"
+    <div
+      className="bg-white rounded-xl shadow-2xl border border-slate-200/80 p-3 w-[320px]"
       onKeyDown={(e) => e.stopPropagation()}
       onKeyUp={(e) => e.stopPropagation()}
-      onKeyPress={(e) => e.stopPropagation()}
     >
-      <div className="flex items-center gap-2 mb-2">
-        <div className="p-1.5 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center">
           <Sparkles size={14} className="text-white" />
         </div>
-        <p className="text-sm font-medium text-slate-700">Edit with AI</p>
-        <span className="text-xs text-slate-400 ml-auto">Full control</span>
+        <div>
+          <p className="text-sm font-semibold text-slate-800">Edit with AI</p>
+          <p className="text-[11px] text-slate-400">2 credits per edit</p>
+        </div>
       </div>
-      
+
       {error && (
         <div className="mb-2 px-3 py-2 text-xs text-red-600 bg-red-50 rounded-lg">
           {error}
@@ -310,120 +330,37 @@ function AIPanel({
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
           onKeyUp={(e) => e.stopPropagation()}
-          onKeyPress={(e) => e.stopPropagation()}
           placeholder="How would you like to edit this slide?"
-          className="w-full px-3 py-2 pr-10 border border-slate-300 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-400 disabled:opacity-50 disabled:bg-slate-50"
+          className="w-full px-3 py-2.5 pr-10 border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 disabled:opacity-50 disabled:bg-slate-50 placeholder:text-slate-400"
           rows={2}
           disabled={isLoading}
         />
-        <button 
-          className="absolute bottom-2 right-2 p-1.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition-opacity disabled:opacity-50"
+        <button
+          className="absolute bottom-2.5 right-2.5 w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center"
           onClick={handleSubmit}
           disabled={isLoading || !prompt.trim()}
         >
           {isLoading ? (
-            <Loader2 size={12} className="text-white animate-spin" />
+            <Loader2 size={14} className="text-white animate-spin" />
           ) : (
-            <Send size={12} className="text-white" />
+            <Send size={14} className="text-white" />
           )}
         </button>
       </div>
 
-      {/* Quick suggestions */}
-      <div className="mt-2 flex flex-wrap gap-1">
-        {suggestions.slice(0, 4).map((suggestion) => (
+      <div className="mt-2.5 flex flex-wrap gap-1.5">
+        {suggestions.map((suggestion) => (
           <button
             key={suggestion}
             onClick={() => setPrompt(suggestion)}
             disabled={isLoading}
-            className="px-2 py-1 text-xs text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors disabled:opacity-50"
+            className="px-2.5 py-1 text-xs text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors disabled:opacity-50"
           >
             {suggestion}
           </button>
         ))}
       </div>
-
-      <p className="text-xs text-slate-400 mt-2">2 credits per edit • Press Enter to submit</p>
     </div>
-  );
-}
-
-// ============================================================================
-// HELPER COMPONENTS
-// ============================================================================
-
-function ActionButton({
-  icon,
-  title,
-  onClick,
-  disabled,
-  danger,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  onClick: () => void;
-  disabled?: boolean;
-  danger?: boolean;
-}) {
-  return (
-    <button
-      onClick={(e) => {
-        e.stopPropagation();
-        if (!disabled) onClick();
-      }}
-      disabled={disabled}
-      title={title}
-      className={`p-2 rounded-full transition-colors ${
-        disabled
-          ? "opacity-40 cursor-not-allowed text-slate-400"
-          : danger
-            ? "text-red-500 hover:bg-red-50"
-            : "text-slate-600 hover:bg-slate-100"
-      }`}
-    >
-      {icon}
-    </button>
-  );
-}
-
-function OptionRow({
-  icon,
-  label,
-  onClick,
-  action,
-  highlight,
-  danger,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  onClick: () => void;
-  action?: React.ReactNode;
-  highlight?: boolean;
-  danger?: boolean;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`w-full flex items-center justify-between py-2 px-2 rounded-lg transition-colors ${
-        danger ? "hover:bg-red-50 text-red-500" : "hover:bg-slate-50"
-      }`}
-    >
-      <div className="flex items-center gap-2 text-slate-600">
-        {icon}
-        <span className="text-sm">{label}</span>
-      </div>
-      {typeof action === "string" ? (
-        <span
-          className={`text-xs font-medium ${
-            highlight ? "text-blue-500" : danger ? "text-red-400" : "text-slate-400"
-          }`}
-        >
-          {action}
-        </span>
-      ) : (
-        action
-      )}
-    </button>
   );
 }
 
@@ -435,20 +372,16 @@ export function SlideMenu({
   index,
   totalSlides,
   imageCount,
-  hasChart,
   slideContent,
   onChangeLayout,
   onChangeContentLayout,
   onDuplicate,
   onAddSlide,
   onAddImage,
-  onAddChart,
-  onRemoveChart,
   onMoveUp,
   onMoveDown,
   onDelete,
   onAIEdit,
-  isAIEditing,
   onAIEditingChange,
 }: SlideMenuProps) {
   const [activePanel, setActivePanel] = useState<ActivePanel>("none");
@@ -456,12 +389,10 @@ export function SlideMenu({
   const toolbarRef = useRef<HTMLDivElement>(null);
   const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
 
-  // Setup portal
   useEffect(() => {
     setPortalContainer(document.body);
   }, []);
 
-  // Close panel when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
@@ -475,7 +406,6 @@ export function SlideMenu({
     }
   }, [activePanel]);
 
-  // Calculate panel position
   const openPanel = (panel: ActivePanel) => {
     if (activePanel === panel) {
       setActivePanel("none");
@@ -499,7 +429,6 @@ export function SlideMenu({
 
   const closePanel = () => setActivePanel("none");
 
-  // Render panel via portal
   const renderPanel = () => {
     if (activePanel === "none" || !portalContainer) return null;
 
@@ -531,7 +460,14 @@ export function SlideMenu({
             />
           );
         case "ai":
-          return <AIPanel slideContent={slideContent} onAIEdit={onAIEdit} onClose={closePanel} onLoadingChange={onAIEditingChange} />;
+          return (
+            <AIPanel
+              slideContent={slideContent}
+              onAIEdit={onAIEdit}
+              onClose={closePanel}
+              onLoadingChange={onAIEditingChange}
+            />
+          );
         default:
           return null;
       }
@@ -555,59 +491,56 @@ export function SlideMenu({
 
   return (
     <>
-      {/* Main Toolbar - 3 buttons */}
+      {/* Redesigned Toolbar - Clean, modern look */}
       <div
         ref={toolbarRef}
         data-slide-toolbar
         data-slide-menu
-        className="absolute top-0 right-0 z-30"
+        className="absolute top-3 right-3 z-30"
         onMouseDown={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center gap-1 p-1 bg-zinc-800/95 backdrop-blur-sm rounded-lg shadow-xl border border-zinc-700">
-          {/* More Options Button */}
+        <div className="flex items-center gap-0.5 p-1 bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-slate-300 ring-1 ring-black/10">
+          {/* More Options */}
           <button
             onClick={() => openPanel("more")}
-            className={`p-2 rounded-md transition-colors ${
+            className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${
               activePanel === "more"
-                ? "bg-blue-500 text-white"
-                : "text-zinc-300 hover:bg-zinc-700"
+                ? "bg-slate-900 text-white"
+                : "text-slate-600 hover:bg-slate-100 hover:text-slate-800"
             }`}
             title="More options"
           >
-            <MoreVertical size={18} />
+            <MoreHorizontal size={16} />
           </button>
 
-          {/* Styling Button */}
+          {/* Styling */}
           <button
             onClick={() => openPanel("styling")}
-            className={`flex items-center gap-1 px-2 py-2 rounded-md transition-colors ${
+            className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${
               activePanel === "styling"
-                ? "bg-blue-500 text-white"
-                : "text-zinc-300 hover:bg-zinc-700"
+                ? "bg-slate-900 text-white"
+                : "text-slate-600 hover:bg-slate-100 hover:text-slate-800"
             }`}
-            title="Card styling"
+            title="Styling"
           >
-            <Palette size={18} />
-            <ChevronDown size={14} />
+            <Palette size={16} />
           </button>
 
-          {/* AI Button */}
+          {/* AI Edit */}
           <button
             onClick={() => openPanel("ai")}
-            className={`flex items-center gap-1 px-2 py-2 rounded-md transition-colors ${
+            className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${
               activePanel === "ai"
-                ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-                : "text-zinc-300 hover:bg-zinc-700"
+                ? "bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white"
+                : "text-slate-600 hover:bg-violet-50 hover:text-violet-600"
             }`}
-            title="AI tools"
+            title="Edit with AI"
           >
-            <Sparkles size={18} />
-            <ChevronDown size={14} />
+            <Sparkles size={16} />
           </button>
         </div>
       </div>
 
-      {/* Panels rendered via Portal */}
       {renderPanel()}
     </>
   );

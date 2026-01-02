@@ -35,6 +35,9 @@ import {
   MultiImageModal,
   TitleSlide,
   ThemeSidebar,
+  AgentPanel,
+  SlideNoteButton,
+  AddSlideButtons,
   getThemeType,
   getGoogleFontsUrl,
   getUIColors,
@@ -120,6 +123,7 @@ export default function PresentationViewer({
   const [isAnimating, setIsAnimating] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showThemeSidebar, setShowThemeSidebar] = useState(false);
+  const [showAgentPanel, setShowAgentPanel] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState(presentation.title);
@@ -136,6 +140,20 @@ export default function PresentationViewer({
     "pdf" | "pptx" | "images" | null
   >(null);
   const [showRateModal, setShowRateModal] = useState(false);
+
+  // Track if this is a fresh AI creation (show feedback only on first view after creation)
+  const [showFeedback, setShowFeedback] = useState(() => {
+    // Only show feedback if mode is 'ai' and we haven't seen this presentation before
+    if (typeof window === "undefined") return false;
+    if (mode !== "ai") return false;
+    const seenKey = `ppt-seen-${presentation.id}`;
+    const hasSeen = sessionStorage.getItem(seenKey);
+    if (!hasSeen) {
+      sessionStorage.setItem(seenKey, "true");
+      return true;
+    }
+    return false;
+  });
 
   // Initialize based on screen size
   const [showThumbnails, setShowThumbnails] = useState(
@@ -199,10 +217,20 @@ export default function PresentationViewer({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   // AI editing state - tracks which slide is being edited by AI
   const [aiEditingSlideIndex, setAiEditingSlideIndex] = useState<number | null>(null);
+  // In-tab presentation mode (not fullscreen, but focused view)
+  const [isPresenting, setIsPresenting] = useState(false);
+  // Store previous thumbnail state before entering in-tab present mode
+  const [prevThumbnailState, setPrevThumbnailState] = useState(true);
+  // Navbar visibility in presentation mode (show on hover)
+  const [showNavbarInPresent, setShowNavbarInPresent] = useState(false);
   // WYSIWYG Image Editor state
   const [showImageEditor, setShowImageEditor] = useState<{ slideIndex: number; imageIndex: number } | null>(null);
   const slidesRef = useRef<SlideData[]>(presentation.slides);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // BroadcastChannel for presenter view communication
+  const presenterChannelRef = useRef<BroadcastChannel | null>(null);
+  const [presenterViewConnected, setPresenterViewConnected] = useState(false);
 
   // Streaming state
   const [streamingStatus, setStreamingStatus] = useState<"idle" | "loading" | "streaming" | "complete">(
@@ -215,33 +243,6 @@ export default function PresentationViewer({
   const streamingTextRef = useRef<Record<number, Record<string, string>>>({});
   // Track EventSource to prevent duplicates - use window to persist across re-renders
   const eventSourceRef = useRef<EventSource | null>(null);
-  // Track scroll position when content layout panel opens
-  const scrollPositionRef = useRef<number>(0);
-  const mainContentRef = useRef<HTMLDivElement>(null);
-
-  // Hide body scrollbar and preserve scroll position when content layout panel is open
-  useEffect(() => {
-    if (showContentLayoutPanel) {
-      // Save current scroll position before switching to fixed
-      scrollPositionRef.current = window.scrollY;
-      document.body.style.overflow = 'hidden';
-      // After the container becomes fixed, set its scroll position
-      requestAnimationFrame(() => {
-        if (mainContentRef.current) {
-          mainContentRef.current.scrollTop = scrollPositionRef.current;
-        }
-      });
-    } else {
-      document.body.style.overflow = '';
-      // Restore scroll position when closing panel
-      if (scrollPositionRef.current > 0) {
-        window.scrollTo(0, scrollPositionRef.current);
-      }
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [showContentLayoutPanel]);
 
   // Connect to streaming endpoint when in streaming mode
   useEffect(() => {
@@ -527,6 +528,51 @@ export default function PresentationViewer({
         globalEventSource.close();
         delete (window as unknown as Record<string, unknown>)[globalKey];
       }
+    };
+  }, [presentation.id]);
+
+  // BroadcastChannel for presenter view communication
+  useEffect(() => {
+    presenterChannelRef.current = new BroadcastChannel(`presentation-${presentation.id}`);
+    
+    // Listen for messages from presenter view
+    presenterChannelRef.current.onmessage = (event) => {
+      const { type, slideIndex } = event.data;
+      
+      switch (type) {
+        case "presenter-opened":
+          setPresenterViewConnected(true);
+          // Send confirmation to presenter view
+          presenterChannelRef.current?.postMessage({ type: "main-connected" });
+          break;
+        case "presenter-closed":
+          setPresenterViewConnected(false);
+          // Exit presentation mode when presenter view closes
+          setIsPresenting(false);
+          setViewMode("scroll");
+          // Restore thumbnails - use a ref to get the stored value
+          setShowThumbnails(true);
+          break;
+        case "slide-change":
+          // Presenter view changed slide, sync here
+          if (typeof slideIndex === "number" && slideIndex >= 0 && slideIndex < slidesRef.current.length) {
+            setCurrentSlide(slideIndex);
+          }
+          break;
+        case "enter-fullscreen":
+          // Presenter view requested fullscreen on main window (requires user gesture)
+          if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(() => {
+              // Fullscreen blocked by browser - already in presentation mode so this is fine
+            });
+          }
+          break;
+      }
+    };
+    
+    return () => {
+      presenterChannelRef.current?.postMessage({ type: "main-disconnected" });
+      presenterChannelRef.current?.close();
     };
   }, [presentation.id]);
 
@@ -818,18 +864,35 @@ export default function PresentationViewer({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [nextSlide, prevSlide, isFullscreen, editingText, undo, redo]);
 
+  // Track thumbnail state before fullscreen to restore it after
+  const thumbnailsBeforeFullscreenRef = useRef<boolean>(true);
+  const wasFullscreenRef = useRef<boolean>(false);
+
   useEffect(() => {
-    const handleFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
+    const handleFullscreenChange = () => {
+      const isNowFullscreen = !!document.fullscreenElement;
+      
+      // If exiting fullscreen, restore thumbnail state
+      if (wasFullscreenRef.current && !isNowFullscreen) {
+        setShowThumbnails(thumbnailsBeforeFullscreenRef.current);
+      }
+      
+      wasFullscreenRef.current = isNowFullscreen;
+      setIsFullscreen(isNowFullscreen);
+    };
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
   const toggleFullscreen = async () => {
     if (!document.fullscreenElement) {
+      // Save current thumbnail state before entering fullscreen
+      thumbnailsBeforeFullscreenRef.current = showThumbnails;
       await document.documentElement.requestFullscreen();
       setShowThumbnails(false);
     } else {
       await document.exitFullscreen();
+      // Note: thumbnail restoration is handled by fullscreenchange event
     }
   };
 
@@ -911,6 +974,53 @@ export default function PresentationViewer({
     newSlides.splice(index + 1, 0, newSlide);
     updateSlidesWithSave(newSlides);
     setCurrentSlide(index + 1);
+  };
+
+  const handleAddAISlide = async (index: number, prompt: string) => {
+    // Get context from surrounding slides
+    const previousSlide = slidesData[index];
+    const nextSlide = slidesData[index + 1];
+    
+    try {
+      const response = await fetch("/api/ai/generate-slide", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt,
+          presentationContext: presentation.title,
+          previousSlide: previousSlide ? { 
+            title: previousSlide.title, 
+            bulletPoints: previousSlide.bulletPoints 
+          } : undefined,
+          nextSlide: nextSlide ? { 
+            title: nextSlide.title, 
+            bulletPoints: nextSlide.bulletPoints 
+          } : undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to generate slide");
+      }
+
+      const data = await response.json();
+      if (data.success && data.slide) {
+        const newSlides = [...slidesData];
+        newSlides.splice(index + 1, 0, data.slide);
+        updateSlidesWithSave(newSlides);
+        setCurrentSlide(index + 1);
+        toast.success("AI slide generated!", {
+          description: `${data.creditsUsed} credits used`,
+        });
+      } else {
+        throw new Error("No slide content returned");
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to generate slide";
+      toast.error(message);
+      throw error;
+    }
   };
 
   const deleteSlide = (index: number) => {
@@ -1206,7 +1316,7 @@ export default function PresentationViewer({
       <div
         className="w-full h-full relative overflow-hidden transition-all duration-500 group slide-content-container"
         style={!hasImage ? backgroundStyle : undefined}
-        onMouseEnter={() => canEdit && !isFullscreen && !isPublicView && setActiveSlideIndex(index)}
+        onMouseEnter={() => canEdit && !isFullscreen && !isPublicView && !isPresenting && setActiveSlideIndex(index)}
         onMouseLeave={() => !isEditing && !showContentLayoutPanel && setActiveSlideIndex(null)}
       >
         {/* Full cover background image for title slides (only when no custom slideLayout) */}
@@ -1251,7 +1361,7 @@ export default function PresentationViewer({
           </div>
         )}
 
-        {canEdit && !isFullscreen && !isPublicView && (isHovered || aiEditingSlideIndex === index) && (
+        {canEdit && !isFullscreen && !isPublicView && !isPresenting && (isHovered || aiEditingSlideIndex === index) && (
           <SlideMenu
             index={index}
             totalSlides={slides.length}
@@ -1276,7 +1386,6 @@ export default function PresentationViewer({
             onMoveUp={() => moveSlide(index, "up")}
             onMoveDown={() => moveSlide(index, "down")}
             onDelete={() => deleteSlide(index)}
-            isAIEditing={aiEditingSlideIndex === index}
             onAIEditingChange={(isEditing) => setAiEditingSlideIndex(isEditing ? index : null)}
             onAIEdit={(editedSlide) => {
               // Update the slide with AI-edited content - full slide replacement
@@ -1309,6 +1418,45 @@ export default function PresentationViewer({
               toast.success("Slide updated with AI");
             }}
           />
+        )}
+
+        {/* Note button - top left, appears on hover */}
+        {canEdit && !isFullscreen && !isPublicView && !isPresenting && (isHovered || aiEditingSlideIndex === index) && (
+          <div className="absolute top-3 left-3 z-30">
+            <SlideNoteButton
+              slideIndex={index}
+              speakerNotes={slide.speakerNotes}
+              onAddNote={(note) => {
+                const newSlides = [...slidesData];
+                const existingSlide = newSlides[index];
+                if (!existingSlide) return;
+                const currentNotes = existingSlide.speakerNotes || [];
+                newSlides[index] = { ...existingSlide, speakerNotes: [...currentNotes, note] };
+                updateSlidesWithSave(newSlides);
+                toast.success("Note added");
+              }}
+              onEditNote={(noteIndex, note) => {
+                const newSlides = [...slidesData];
+                const existingSlide = newSlides[index];
+                if (!existingSlide) return;
+                const currentNotes = [...(existingSlide.speakerNotes || [])];
+                currentNotes[noteIndex] = note;
+                newSlides[index] = { ...existingSlide, speakerNotes: currentNotes };
+                updateSlidesWithSave(newSlides);
+                toast.success("Note updated");
+              }}
+              onDeleteNote={(noteIndex) => {
+                const newSlides = [...slidesData];
+                const existingSlide = newSlides[index];
+                if (!existingSlide) return;
+                const currentNotes = [...(existingSlide.speakerNotes || [])];
+                currentNotes.splice(noteIndex, 1);
+                newSlides[index] = { ...existingSlide, speakerNotes: currentNotes };
+                updateSlidesWithSave(newSlides);
+                toast.success("Note deleted");
+              }}
+            />
+          </div>
         )}
 
         {isTitle && !slide.slideLayout ? (
@@ -1365,40 +1513,72 @@ export default function PresentationViewer({
           const isTitle = slide.type === "title";
           const isSlideStreaming = isCurrentlyStreaming && streamingSlideIndex === index;
           const isNewSlide = isCurrentlyStreaming && index === slides.length - 1;
+          const isAiEditing = aiEditingSlideIndex === index;
 
-          if (isTitle && !slide.slideLayout) {
+          // Render the slide with add buttons between slides
+          const slideElement = isTitle && !slide.slideLayout ? (
             // Default title slide layout - use simple min-height container
-            return (
-              <div
-                key={index}
-                id={`slide-${index}`}
-                className={`w-full rounded-md sm:rounded-lg shadow-xl sm:shadow-2xl overflow-hidden scroll-mt-20 ring-1 ${ui.ring} ${isNewSlide ? "animate-fade-in" : ""} ${isSlideStreaming ? "ring-2" : ""}`}
-                style={{
-                  ...(isMobile ? { minHeight: "280px", maxWidth: "100%" } : { width: "1109.33px", maxWidth: "100%", height: "auto", minHeight: "400px" }),
-                  ...(isSlideStreaming ? { boxShadow: `0 0 20px ${theme.colors.primary}40` } : {}),
-                }}
-              >
-                {renderSlide(slide, index, true)}
-              </div>
-            );
-          }
-
-          return (
             <div
-              key={index}
               id={`slide-${index}`}
-              className={`rounded-md sm:rounded-lg shadow-xl sm:shadow-2xl overflow-hidden scroll-mt-20 ring-1 ${ui.ring} ${isNewSlide ? "animate-fade-in" : ""} ${isSlideStreaming ? "ring-2" : ""}`}
+              className={`w-full rounded-md sm:rounded-lg shadow-xl sm:shadow-2xl overflow-hidden scroll-mt-20 ring-1 ${ui.ring} ${isNewSlide ? "animate-fade-in" : ""} ${isSlideStreaming || isAiEditing ? "ring-2" : ""} relative`}
+              style={{
+                ...(isMobile ? { minHeight: "280px", maxWidth: "100%" } : { width: "1109.33px", maxWidth: "100%", height: "auto", minHeight: "400px" }),
+                ...(isSlideStreaming || isAiEditing ? { boxShadow: `0 0 20px ${theme.colors.primary}40` } : {}),
+              }}
+            >
+              {isAiEditing && (
+                <div className="absolute top-3 right-3 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/90 text-white text-xs font-medium backdrop-blur-sm">
+                  <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>Updating...</span>
+                </div>
+              )}
+              {renderSlide(slide, index, true)}
+            </div>
+          ) : (
+            <div
+              id={`slide-${index}`}
+              className={`rounded-md sm:rounded-lg shadow-xl sm:shadow-2xl overflow-hidden scroll-mt-20 ring-1 ${ui.ring} ${isNewSlide ? "animate-fade-in" : ""} ${isSlideStreaming || isAiEditing ? "ring-2" : ""} relative`}
               style={{
                 width: isMobile ? "100%" : "1109.33px",
                 maxWidth: "100%",
                 height: "auto",
-                ...(isSlideStreaming ? { boxShadow: `0 0 20px ${theme.colors.primary}40` } : {}),
+                ...(isSlideStreaming || isAiEditing ? { boxShadow: `0 0 20px ${theme.colors.primary}40` } : {}),
               }}
             >
+              {isAiEditing && (
+                <div className="absolute top-3 right-3 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/90 text-white text-xs font-medium backdrop-blur-sm">
+                  <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>Updating...</span>
+                </div>
+              )}
               <ScrollSlideContent slide={slide} index={index} theme={theme} renderSlide={renderSlide} isMobile={isMobile} />
             </div>
           );
+
+          return (
+            <div key={index}>
+              {slideElement}
+
+              {/* Add slide buttons between slides - only show for editors, not during streaming */}
+              {canEdit && !isPublicView && !isMobile && !isCurrentlyStreaming && index < slides.length - 1 && (
+                <AddSlideButtons
+                  onAddSlide={() => addSlideAt(index)}
+                  onAddAISlide={(prompt) => handleAddAISlide(index, prompt)}
+                  presentationContext={presentation.title}
+                />
+              )}
+            </div>
+          );
         })}
+
+        {/* Add slide buttons after the last slide */}
+        {canEdit && !isPublicView && !isMobile && !isCurrentlyStreaming && slides.length > 0 && (
+          <AddSlideButtons
+            onAddSlide={() => addSlideAt(slides.length - 1)}
+            onAddAISlide={(prompt) => handleAddAISlide(slides.length - 1, prompt)}
+            presentationContext={presentation.title}
+          />
+        )}
 
         {/* Streaming indicator at the bottom */}
         {isCurrentlyStreaming && (
@@ -1580,7 +1760,7 @@ export default function PresentationViewer({
       `}</style>
 
       <div
-        className={`min-h-screen ${theme.pageBackground ? "" : getUIColors(getThemeType(theme)).pageBg}`}
+        className={`${isPresenting ? "h-screen overflow-hidden" : "min-h-screen"} ${theme.pageBackground ? "" : getUIColors(getThemeType(theme)).pageBg}`}
         style={theme.backgroundImage ? {
           backgroundImage: `url(${theme.backgroundImage})`,
           backgroundSize: theme.backgroundSize || "cover",
@@ -1588,7 +1768,19 @@ export default function PresentationViewer({
           backgroundAttachment: "fixed",
         } : theme.pageBackground ? { background: theme.pageBackground } : {}}
       >
-        {!isFullscreen && !isPublicView && (
+        {/* Navbar hover zone for presentation mode */}
+        {isPresenting && !showNavbarInPresent && (
+          <div 
+            className="fixed top-0 left-0 right-0 h-4 z-50"
+            onMouseEnter={() => setShowNavbarInPresent(true)}
+          />
+        )}
+
+        {!isFullscreen && !isPublicView && (!isPresenting || showNavbarInPresent) && (
+          <div 
+            className={`${isPresenting ? "fixed top-0 left-0 right-0 z-50 transition-transform duration-300" : "sticky top-0 z-40"}`}
+            onMouseLeave={() => isPresenting && setShowNavbarInPresent(false)}
+          >
           <Header
             title={editedTitle || presentation.title}
             editedTitle={editedTitle}
@@ -1605,6 +1797,8 @@ export default function PresentationViewer({
             isMobile={isMobile}
             canUndo={canUndo}
             canRedo={canRedo}
+            isPresenting={isPresenting}
+            presenterViewConnected={presenterViewConnected}
             onBack={() => router.push("/dashboard")}
             onEditTitle={() => setIsEditingTitle(true)}
             onTitleChange={setEditedTitle}
@@ -1615,75 +1809,91 @@ export default function PresentationViewer({
             onTogglePageNumbers={() => setShowPageNumbers(!showPageNumbers)}
             onExport={() => setShowExportModal(true)}
             onShare={() => setShowShareModal(true)}
-            onPresent={toggleFullscreen}
+            onPresent={() => {
+              // Main Present button triggers fullscreen
+              toggleFullscreen();
+              if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen();
+              }
+            }}
+            onExitPresent={() => {
+              setIsPresenting(false);
+              setViewMode("scroll");
+              // Restore previous thumbnail state
+              setShowThumbnails(prevThumbnailState);
+            }}
+            onPresentFullscreen={() => {
+              // "In this tab" option - switch to slides view and hide thumbnails
+              setPrevThumbnailState(showThumbnails); // Store current state before hiding
+              setIsPresenting(true);
+              setViewMode("slides");
+              setShowThumbnails(false);
+            }}
+            onPresentWithNotes={() => {
+              // Enter tab view mode first, then open presenter view
+              setPrevThumbnailState(showThumbnails);
+              setIsPresenting(true);
+              setViewMode("slides");
+              setShowThumbnails(false);
+              // Open presenter view in new window
+              window.open(`/present/${presentation.id}`, "_blank", "width=1200,height=800");
+            }}
+            onShareFollowLink={() => setShowShareModal(true)}
             onUndo={undo}
             onRedo={redo}
             onOpenThemes={() => setShowThemeSidebar(true)}
+            onOpenAgent={() => setShowAgentPanel(true)}
           />
+          </div>
         )}
 
-        {/* Main content area - scrollable container that shrinks when panel is open */}
+        {/* Main content area - uses margin to make room for panel, preserving scroll position */}
         <div 
-          ref={mainContentRef}
-          className={`transition-all duration-300 ${showContentLayoutPanel ? 'fixed left-0 overflow-y-scroll' : ''}`}
-          style={showContentLayoutPanel ? {
-            top: '53px',
-            right: `${CONTENT_LAYOUT_PANEL_WIDTH}px`,
-            bottom: '0',
-            left: '0',
-            height: 'calc(100vh - 53px)',
-          } : {}}
+          className="transition-all duration-300"
+          style={{
+            ...(showContentLayoutPanel ? { marginRight: `${CONTENT_LAYOUT_PANEL_WIDTH}px` } : {}),
+            ...(showThumbnails && !isPublicView && !isMobile && !isFullscreen && !isPresenting ? { marginLeft: '176px' } : {}),
+          }}
         >
-        <div className={`${isFullscreen ? "" : "px-0 sm:px-2 md:px-4 py-4 sm:py-8"} max-w-full ${showContentLayoutPanel ? 'pb-20' : ''}`}>
+        <div className={`${isFullscreen || isPresenting ? "" : "px-0 sm:px-2 md:px-4 py-4 sm:py-8"} max-w-full ${showContentLayoutPanel ? 'pb-20' : ''}`}>
           {viewMode === "scroll" && !isFullscreen ? (
-            <div className="flex gap-6 mx-auto" style={{ maxWidth: "1400px" }}>
+            <>
               {showThumbnails && !isPublicView && !isMobile && (
                 <ThumbnailSidebar
                   slides={slides}
+                  currentSlide={currentSlide}
                   onSlideClick={(index) => document.getElementById(`slide-${index}`)?.scrollIntoView({ behavior: "smooth", block: "center" })}
                   onClose={() => setShowThumbnails(false)}
                   renderSlide={renderSlide}
                   theme={theme}
-                  onAddSlide={addSlideAt}
-                  isOwner={canEdit}
                 />
               )}
-              <div className="flex-1 w-full min-w-0">{renderScrollableView()}</div>
-            </div>
+              <div className="mx-auto" style={{ maxWidth: "1200px" }}>{renderScrollableView()}</div>
+            </>
           ) : (
-            <div className={`flex gap-6 ${isFullscreen || isPublicView ? "h-screen w-screen" : "mx-auto"} overflow-x-hidden`} style={!isFullscreen && !isPublicView ? { maxWidth: "1700px" } : {}}>
-              {showThumbnails && !isFullscreen && !isPublicView && viewMode === "slides" && (
-                <div className={`hidden lg:block w-44 shrink-0 space-y-2 max-h-[calc(100vh-140px)] overflow-y-auto scrollbar-thin pr-2 sticky top-20 ${getUIColors(getThemeType(theme)).scrollbar}`}>
-                  {slides.map((slide, index) => {
-                    const ui = getUIColors(getThemeType(theme));
-                    return (
-                      <button key={index} onClick={() => goToSlide(index)} className="w-full group relative">
-                        <div
-                          className={`aspect-video overflow-hidden transition-all duration-200 ring-1 ${currentSlide === index ? "ring-2 shadow-lg" : `${ui.ringHover} opacity-70 hover:opacity-100`}`}
-                          style={currentSlide === index ? { boxShadow: `0 0 0 2px ${theme.colors.primary}` } : {}}
-                        >
-                          {renderSlide(slide, index, false)}
-                        </div>
-                        <div className={`absolute top-1 left-1 w-4 h-4 backdrop-blur-sm flex items-center justify-center ${ui.thumbBg}`}>
-                          <span className={`text-[9px] font-bold ${ui.thumbText}`}>{index + 1}</span>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
+            <div className={`flex gap-6 ${isFullscreen || isPublicView || isPresenting ? "h-screen w-screen" : "mx-auto"} overflow-x-hidden`} style={!isFullscreen && !isPublicView && !isPresenting ? { maxWidth: "1700px" } : {}}>
+              {showThumbnails && !isFullscreen && !isPublicView && !isPresenting && viewMode === "slides" && (
+                <ThumbnailSidebar
+                  slides={slides}
+                  currentSlide={currentSlide}
+                  onSlideClick={goToSlide}
+                  onClose={() => setShowThumbnails(false)}
+                  renderSlide={renderSlide}
+                  theme={theme}
+                />
               )}
 
-              <div className={`flex-1 flex flex-col ${isFullscreen ? "h-full justify-center items-center w-full" : ""} max-w-full overflow-hidden`}>
+              <div className={`flex-1 flex flex-col ${isFullscreen || isPresenting ? "h-full justify-center items-center w-full" : ""} max-w-full overflow-hidden`}>
                 {(() => {
                   const isTitle = currentSlideData.type === "title";
                   const bulletCount = currentSlideData.bulletPoints?.length || 0;
-                  const useFixedRatio = isFullscreen || isTitle || bulletCount <= 3;
+                  const useFixedRatio = isFullscreen || isPresenting || isTitle || bulletCount <= 3;
                   const dynamicHeight = Math.max(450, 380 + bulletCount * 65);
 
                   if (useFixedRatio) {
                     return (
-                      <div className={`relative overflow-hidden ${isFullscreen ? "w-full h-full max-h-screen flex items-center justify-center" : `w-full rounded-lg shadow-2xl ring-1 ${getUIColors(getThemeType(theme)).ring}`}`} style={!isFullscreen ? { aspectRatio: "16/9", maxHeight: "calc(100vh - 200px)" } : {}}>
-                        <div className="w-full h-full">
+                      <div className={`relative overflow-hidden ${isFullscreen || isPresenting ? "w-screen h-screen flex items-center justify-center" : `w-full rounded-lg shadow-2xl ring-1 ${getUIColors(getThemeType(theme)).ring}`}`} style={!isFullscreen && !isPresenting ? { aspectRatio: "16/9", maxHeight: "calc(100vh - 200px)" } : {}}>
+                        <div className={`${isFullscreen || isPresenting ? "w-full h-full" : "w-full h-full"}`}>
                           {renderSlide(currentSlideData, currentSlide, true)}
                         </div>
                       </div>
@@ -1697,17 +1907,20 @@ export default function PresentationViewer({
                   );
                 })()}
 
-                <NavigationControls
-                  currentSlide={currentSlide}
-                  totalSlides={slides.length}
-                  isFullscreen={isFullscreen || isPublicView}
-                  onPrev={prevSlide}
-                  onNext={nextSlide}
-                  onGoTo={goToSlide}
-                  theme={theme}
-                />
+                {/* Navigation controls - hidden during presentation mode */}
+                {!isPresenting && (
+                  <NavigationControls
+                    currentSlide={currentSlide}
+                    totalSlides={slides.length}
+                    isFullscreen={isFullscreen || isPublicView}
+                    onPrev={prevSlide}
+                    onNext={nextSlide}
+                    onGoTo={goToSlide}
+                    theme={theme}
+                  />
+                )}
 
-                {!isFullscreen && !isPublicView && (
+                {!isFullscreen && !isPublicView && !isPresenting && (
                   <div className={`mt-4 text-center text-xs sm:text-sm ${getUIColors(getThemeType(theme)).endMuted}`}>
                     <span>Slide {currentSlide + 1} of {slides.length}</span>
                     <span className="hidden sm:inline ml-2 opacity-70">• Press <kbd className={`px-1.5 py-0.5 rounded text-xs ${getUIColors(getThemeType(theme)).kbd}`}>F</kbd> for fullscreen</span>
@@ -1721,12 +1934,6 @@ export default function PresentationViewer({
         {/* Public View Controls - Always visible */}
         {isPublicView && (
           <>
-            <div className="fixed top-2 sm:top-4 left-2 sm:left-4 right-2 sm:right-auto z-50 max-w-md">
-              <h1 className={`text-sm sm:text-lg font-semibold ${getUIColors(getThemeType(theme)).headerText} bg-black/30 backdrop-blur-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg truncate`}>
-                {presentation.title}
-              </h1>
-            </div>
-
             <div className="fixed top-2 sm:top-4 right-2 sm:right-4 z-50 flex items-center gap-2">
               {/* View Mode Toggle */}
               {!isFullscreen && (
@@ -1775,7 +1982,7 @@ export default function PresentationViewer({
           </button>
         )}
 
-        {viewMode === "scroll" && !isFullscreen && !isPublicView && <FeedbackSection presentationId={presentation.id} theme={theme} />}
+        {viewMode === "scroll" && !isFullscreen && !isPublicView && showFeedback && <FeedbackSection presentationId={presentation.id} theme={theme} />}
         </div>
         {/* End of content area that shifts */}
 
@@ -1840,7 +2047,7 @@ export default function PresentationViewer({
         )}
 
         {showRateModal && (
-          <RateUsModal onClose={() => setShowRateModal(false)} />
+          <RateUsModal onClose={() => setShowRateModal(false)} theme={theme} />
         )}
 
         {/* WYSIWYG Image Editor Modal */}
@@ -1894,6 +2101,25 @@ export default function PresentationViewer({
           currentThemeId={currentThemeId}
           onThemeChange={handleThemeChange}
           presentationId={presentation.id}
+          theme={theme}
+        />
+
+        {/* Agent Panel */}
+        <AgentPanel
+          isOpen={showAgentPanel}
+          onClose={() => setShowAgentPanel(false)}
+          theme={theme}
+          slides={slidesData}
+          currentSlideIndex={currentSlide}
+          presentationTitle={presentation.title}
+          presentationId={presentation.id}
+          onUpdateSlide={(index, slide) => {
+            // Use slidesRef.current to get the latest slides (avoids stale closure)
+            const newSlides = [...slidesRef.current];
+            newSlides[index] = slide;
+            updateSlidesWithSave(newSlides);
+          }}
+          onSetEditingSlide={setAiEditingSlideIndex}
         />
 
       </div>
@@ -1972,7 +2198,7 @@ function ScrollSlideContent({ slide, index, theme, renderSlide, isMobile }: {
 
   // Check if this is a full-image or image-background layout that needs fixed aspect ratio
   const slideLayout = slide.slideLayout;
-  const layout = slide.layout;
+  const layout = slide.layout as string | undefined;
   const isFullImageLayout = slideLayout === "image-full" || layout === "full-image";
   const isImageBackgroundLayout = slideLayout === "image-background" || layout === "image-background";
   const needsFixedAspectRatio = isFullImageLayout || isImageBackgroundLayout;

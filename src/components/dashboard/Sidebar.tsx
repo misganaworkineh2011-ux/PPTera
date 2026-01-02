@@ -77,14 +77,21 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
       )}
     >
       {/* Sidebar Header */}
-      <div className="flex h-16 lg:h-20 items-center justify-between px-4 lg:px-6">
-        <div className="flex items-center justify-center flex-1">
-          <img src="/logo.png" alt="PPTMaster Logo" className={cn(
-            "w-auto transition-all",
-            "h-8 lg:h-10",
-            isCollapsed && "lg:h-10"
-          )} />
+      <div className="flex h-16 lg:h-20 items-center px-4 lg:px-6 border-b border-slate-100 dark:border-zinc-800">
+        {/* Logo - centered when expanded, centered icon when collapsed */}
+        <div className={cn(
+          "flex items-center justify-center flex-1",
+        )}>
+          <img 
+            src="/logo.png" 
+            alt="PPTMaster Logo" 
+            className={cn(
+              "w-auto transition-all",
+              isCollapsed ? "lg:h-8" : "h-8 lg:h-10"
+            )} 
+          />
         </div>
+        
         {/* Mobile close button */}
         <button
           onClick={onCloseMobile}
@@ -113,6 +120,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
                     <Link
                       key={item.href}
                       href={item.href}
+                      prefetch={false}
                       onClick={() => onCloseMobile?.()}
                       className={cn(
                         "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-semibold transition-all",
@@ -152,7 +160,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
       </div>
 
       {/* Account Info at Bottom */}
-      <div className="border-t border-slate-100 dark:border-zinc-800 relative">
+      <div className="border-t border-slate-100 dark:border-zinc-800">
         {/* Show account info on mobile always, on desktop only when not collapsed */}
         <div className={cn(
           "p-3 lg:p-4",
@@ -179,14 +187,12 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
           </button>
         </div>
         
-        {/* Collapse/Expand Button - Hidden on mobile */}
-        <div className="absolute bottom-0 right-0 p-2 hidden lg:block">
-          <button
-            onClick={toggleCollapse}
-            className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-white transition"
-          >
-            {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-          </button>
+        {/* Collapsed state: show just the user avatar */}
+        <div className={cn(
+          "hidden p-3 justify-center",
+          isCollapsed && "lg:flex"
+        )}>
+          <UserButton afterSignOutUrl="/" />
         </div>
       </div>
     </aside>

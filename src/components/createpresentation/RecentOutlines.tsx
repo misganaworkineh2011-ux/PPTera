@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Clock, Calendar, ChevronDown, ChevronUp, Loader2, BookOpen, FileText } from "lucide-react";
 
@@ -45,7 +45,6 @@ export default function RecentOutlines({ outlines: initialOutlines, mode = "ai" 
   const router = useRouter();
   const [outlines, setOutlines] = useState<Outline[]>(initialOutlines);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [isNavigating, setIsNavigating] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(initialOutlines.length === 3);
   const [showAll, setShowAll] = useState(false);
 
@@ -79,36 +78,14 @@ export default function RecentOutlines({ outlines: initialOutlines, mode = "ai" 
     }
   };
 
-  const handleOutlineClick = async (outlineId: string) => {
-    setIsNavigating(outlineId);
+  const handleOutlineClick = (outlineId: string) => {
+    // Don't set loading state - let the page transition handle it naturally
+    // The NavigationContext or Next.js loading.tsx will show loading state
     router.push(`/createpresentation/outline/${outlineId}?mode=${mode}`);
-    // Clear loading state after a delay (page will load and component will unmount)
-    // This is a fallback in case navigation doesn't complete
-    setTimeout(() => {
-      setIsNavigating(null);
-    }, 10000); // 10 second timeout
   };
 
-  // Clear loading state on unmount
-  useEffect(() => {
-    return () => {
-      setIsNavigating(null);
-    };
-  }, []);
-
   return (
-    <>
-      {/* Full-page loading overlay when navigating */}
-      {isNavigating && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm">
-          <div className="flex flex-col items-center gap-3">
-            <Loader2 size={32} className="text-[#06b6d4] animate-spin" />
-            <p className="text-sm font-medium text-slate-700">Loading outline...</p>
-          </div>
-        </div>
-      )}
-      
-      <div className="mt-12 mb-8">
+    <div className="mt-12 mb-8">
         <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
           <div className="rounded-xl border border-white/30 bg-white/40 backdrop-blur-md px-6 py-5 shadow-lg">
           <h3 className="text-sm font-semibold text-slate-700 mb-4 uppercase tracking-wide">
@@ -124,7 +101,6 @@ export default function RecentOutlines({ outlines: initialOutlines, mode = "ai" 
               const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
               const diffDays = Math.floor(diffHours / 24);
               const isDays = diffDays > 0;
-              const isNavigatingToThis = isNavigating === outline.id;
               const presentationCount = outline.presentationCount ?? 0;
               const hasPresentation = presentationCount > 0;
 
@@ -132,37 +108,24 @@ export default function RecentOutlines({ outlines: initialOutlines, mode = "ai" 
                 <button
                   key={outline.id}
                   onClick={() => handleOutlineClick(outline.id)}
-                  disabled={isNavigating !== null}
-                  className="w-full text-left group disabled:opacity-50 disabled:cursor-wait"
+                  className="w-full text-left group"
                 >
                   <div className="relative flex items-center justify-between p-3 rounded-lg bg-white/60 hover:bg-white/80 transition-all duration-200 hover:shadow-md border border-white/50 group-hover:border-[#06b6d4]/30">
-                    {/* Status badge - inside card, top right corner */}
-                    <div className="absolute top-2 right-2 z-10">
+                    {/* Status badge - inside card, top right corner - pointer-events-none to ensure clicks go to parent button */}
+                    <div className="absolute top-2 right-2 z-10 pointer-events-none">
                       {hasPresentation ? (
-                        <div className="relative group/badge">
-                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-600 cursor-help">
+                        <div className="relative">
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-600">
                             <BookOpen size={11} className="text-emerald-500" />
                             {presentationCount}
                           </span>
-                          {/* Tooltip */}
-                          <div className="absolute bottom-full right-0 mb-1.5 px-2 py-1 bg-slate-800 text-white text-[10px] rounded-md whitespace-nowrap opacity-0 invisible group-hover/badge:opacity-100 group-hover/badge:visible transition-all duration-200 shadow-lg">
-                            {presentationCount === 1 
-                              ? "You created 1 presentation from this outline" 
-                              : `You created ${presentationCount} presentations from this outline`}
-                            <div className="absolute top-full right-3 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-800"></div>
-                          </div>
                         </div>
                       ) : (
-                        <div className="relative group/badge">
-                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-600 cursor-help">
+                        <div className="relative">
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-600">
                             <FileText size={11} className="text-amber-500" />
                             Draft
                           </span>
-                          {/* Tooltip */}
-                          <div className="absolute bottom-full right-0 mb-1.5 px-2 py-1 bg-slate-800 text-white text-[10px] rounded-md whitespace-nowrap opacity-0 invisible group-hover/badge:opacity-100 group-hover/badge:visible transition-all duration-200 shadow-lg">
-                            No presentation created yet
-                            <div className="absolute top-full right-3 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-800"></div>
-                          </div>
                         </div>
                       )}
                     </div>
@@ -186,23 +149,19 @@ export default function RecentOutlines({ outlines: initialOutlines, mode = "ai" 
                       </div>
                     </div>
                     <div className="ml-3 flex items-center">
-                      {isNavigatingToThis ? (
-                        <Loader2 size={16} className="text-[#06b6d4] animate-spin" />
-                      ) : (
-                        <svg
-                          className="w-4 h-4 text-[#06b6d4] opacity-0 group-hover:opacity-100 transition-opacity"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 5l7 7-7 7"
-                          />
-                        </svg>
-                      )}
+                      <svg
+                        className="w-4 h-4 text-[#06b6d4] opacity-0 group-hover:opacity-100 transition-opacity"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
                     </div>
                   </div>
                 </button>
@@ -275,7 +234,6 @@ export default function RecentOutlines({ outlines: initialOutlines, mode = "ai" 
         </div>
       </div>
     </div>
-    </>
   );
 }
 

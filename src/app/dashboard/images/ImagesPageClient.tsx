@@ -19,6 +19,7 @@ import Image from "next/image";
 import AIImageGenerator from "~/components/AIImageGenerator";
 import { cn } from "~/lib/utils";
 import { CREDIT_COSTS } from "~/lib/credits";
+import DashboardStickyHeader from "~/components/dashboard/DashboardStickyHeader";
 
 interface ImageData {
   id: string;
@@ -99,33 +100,37 @@ export default function ImagesPageClient({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[#1e3a8a] dark:text-white">
-            Images
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-neutral-400 mt-1">
-            Manage your images and generate new ones with AI
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          {/* Credits Display */}
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
-            <Zap className="h-4 w-4 text-amber-500" />
-            <span className="text-sm font-medium text-amber-700 dark:text-amber-400">
-              {credits.toLocaleString()} credits
-            </span>
+      {/* Header with sticky behavior */}
+      <DashboardStickyHeader
+        icon={
+          <>
+            <ImageIcon size={18} className="sm:hidden" />
+            <ImageIcon size={22} className="hidden sm:block" />
+          </>
+        }
+        title="Images"
+        stickyIcon={<ImageIcon size={18} />}
+        stickyTitle="Images"
+        actions={
+          <div className="flex items-center gap-2 md:gap-3">
+            {/* Credits Display */}
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+              <Zap className="h-4 w-4 text-amber-500" />
+              <span className="text-sm font-medium text-amber-700 dark:text-amber-400">
+                {credits.toLocaleString()}
+              </span>
+            </div>
+            <button
+              onClick={() => setShowGenerator(true)}
+              className="flex items-center gap-1.5 md:gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-white shadow-lg shadow-[#06b6d4]/20 transition-all hover:from-[#172554] hover:to-[#0891b2] hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap"
+            >
+              <Sparkles size={16} className="md:w-[18px] md:h-[18px]" />
+              <span className="hidden sm:inline">Generate with AI</span>
+              <span className="sm:hidden">Generate</span>
+            </button>
           </div>
-          <button
-            onClick={() => setShowGenerator(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white rounded-xl font-medium hover:opacity-90 transition"
-          >
-            <Sparkles className="h-4 w-4" />
-            Generate with AI
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Search and View Toggle */}
       <div className="flex items-center gap-4">

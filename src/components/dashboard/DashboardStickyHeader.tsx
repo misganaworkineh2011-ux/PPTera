@@ -1,22 +1,29 @@
 "use client";
 
-import { Palette, Plus } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useStickyContext } from "~/components/dashboard/DashboardLayout";
-import { useLanguage } from "~/contexts/LanguageContext";
-import { dashboardTranslations } from "~/lib/dashboard-translations";
 
-interface ThemesStickyHeaderProps {
-  onCreateClick?: () => void;
+interface DashboardStickyHeaderProps {
+  icon: ReactNode;
+  title: string;
+  subtitle?: string;
+  stickyIcon: ReactNode;
+  stickyTitle: string;
+  actions?: ReactNode;
 }
 
-export default function ThemesStickyHeader({ onCreateClick }: ThemesStickyHeaderProps) {
+export default function DashboardStickyHeader({
+  icon,
+  title,
+  subtitle,
+  stickyIcon,
+  stickyTitle,
+  actions,
+}: DashboardStickyHeaderProps) {
   const [isSticky, setIsSticky] = useState(false);
   const headerRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const { setIsTitleSticky, setStickyTitleContent } = useStickyContext();
-  const { language } = useLanguage();
-  const t = dashboardTranslations[language] || dashboardTranslations.en;
 
   useEffect(() => {
     // Only enable sticky behavior on md+ screens
@@ -39,10 +46,12 @@ export default function ThemesStickyHeader({ onCreateClick }: ThemesStickyHeader
         if (sticky) {
           setStickyTitleContent(
             <>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
-                <Palette size={18} />
+              <div className="flex h-7 w-7 lg:h-8 lg:w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
+                {stickyIcon}
               </div>
-              <h1 className="text-xl font-bold tracking-tight text-[#1e3a8a] dark:text-white whitespace-nowrap">{t.themes || "Themes"}</h1>
+              <h1 className="text-lg lg:text-xl font-bold tracking-tight text-[#1e3a8a] dark:text-white whitespace-nowrap">
+                {stickyTitle}
+              </h1>
             </>
           );
         } else {
@@ -63,13 +72,13 @@ export default function ThemesStickyHeader({ onCreateClick }: ThemesStickyHeader
       }
       setStickyTitleContent(null);
     };
-  }, [setIsTitleSticky, setStickyTitleContent]);
+  }, [setIsTitleSticky, setStickyTitleContent, stickyIcon, stickyTitle]);
 
   return (
     <>
       {/* Sentinel element at the top to detect when header starts going out of view */}
       <div ref={sentinelRef} className="h-0 -mb-1" />
-      
+
       {/* Header that becomes sticky - hides when sticky, title moves to TopBar */}
       <div
         ref={headerRef}
@@ -79,21 +88,14 @@ export default function ThemesStickyHeader({ onCreateClick }: ThemesStickyHeader
       >
         <div className="flex items-center gap-2 sm:gap-3">
           <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
-            <Palette size={18} className="sm:hidden" />
-            <Palette size={22} className="hidden sm:block" />
+            {icon}
           </div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[#1e3a8a] dark:text-white">{t.myThemes || "My Themes"}</h1>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[#1e3a8a] dark:text-white">
+            {title}
+          </h1>
         </div>
-        <button 
-          onClick={onCreateClick}
-          className="flex items-center gap-1.5 md:gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-white shadow-lg shadow-[#06b6d4]/20 transition-all hover:from-[#172554] hover:to-[#0891b2] hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap"
-        >
-          <Plus size={16} className="md:w-[18px] md:h-[18px]" />
-          <span className="hidden sm:inline">{t.createCustomTheme || "Create Custom Theme"}</span>
-          <span className="sm:hidden">{t.createBtn || "Create"}</span>
-        </button>
+        {actions && <div className="flex items-center gap-2 md:gap-3">{actions}</div>}
       </div>
     </>
   );
 }
-

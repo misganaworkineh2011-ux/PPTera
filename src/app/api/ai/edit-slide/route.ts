@@ -21,10 +21,13 @@ interface SlideContent {
   title: string;
   subtitle?: string;
   bullets?: string[];
+  bulletPoints?: string[];
   sections?: Array<{ heading: string; description: string }>;
   introText?: string;
   tagline?: string;
   layout?: LayoutType;
+  slideLayout?: string;
+  imageSize?: string;
   image?: SlideImage | null;
   images?: SlideImage[];
   // AI can request image search
@@ -57,8 +60,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // AI slide editing costs 2 credits
-    const CREDIT_COST = 2;
+    // AI slide editing costs 4 credits per slide
+    const CREDIT_COST = 4;
     if (user.credits < CREDIT_COST) {
       return NextResponse.json(
         { 
@@ -83,6 +86,9 @@ export async function POST(req: Request) {
     }
 
     // Build comprehensive slide content description
+    const isTitleSlide = slide.type === "title";
+    const bulletPointsContent = slide.bulletPoints || slide.bullets || [];
+    
     const currentContent = `
 Current slide content:
 - Type: ${slide.type || "content"}
@@ -90,49 +96,57 @@ Current slide content:
 ${slide.subtitle ? `- Subtitle: ${slide.subtitle}` : ""}
 ${slide.tagline ? `- Tagline: ${slide.tagline}` : ""}
 ${slide.introText ? `- Intro Text: ${slide.introText}` : ""}
-${slide.bullets && slide.bullets.length > 0 ? `- Bullet points:\n${slide.bullets.map((b, i) => `  ${i + 1}. ${b}`).join("\n")}` : ""}
+${bulletPointsContent.length > 0 ? `- Bullet points (MAIN CONTENT):\n${bulletPointsContent.map((b, i) => `  ${i + 1}. ${b}`).join("\n")}` : ""}
 ${slide.sections && slide.sections.length > 0 ? `- Sections:\n${slide.sections.map((s, i) => `  ${i + 1}. ${s.heading}: ${s.description}`).join("\n")}` : ""}
 - Current Layout: ${slide.layout || "default"}
 - Has Image: ${slide.image ? "Yes" : "No"}
-- Has Multiple Images: ${slide.images && slide.images.length > 0 ? `Yes (${slide.images.length})` : "No"}
 `.trim();
 
-    const systemPrompt = `You are an expert presentation editor with FULL control over slide content and design. You can modify ANY aspect of a slide based on user instructions.
+    const systemPrompt = `You are an expert presentation editor. Edit this ${isTitleSlide ? "TITLE" : "CONTENT"} slide based on user instructions.
+
+## SLIDE TYPE: ${isTitleSlide ? "TITLE SLIDE" : "CONTENT SLIDE"}
+${isTitleSlide ? "Title slides should NOT have images, slideLayout, or bulletPoints." : "Content slides MUST have bulletPoints - this is the main text content."}
 
 ## YOUR CAPABILITIES:
-1. **Text Content**: Edit title, subtitle, tagline, introText, bullet points
-2. **Sections**: Add/edit/remove card sections (heading + description pairs)
-3. **Layout**: Change the slide layout to any available option
-4. **Images**: Request new images by providing search terms, or remove existing images
+1. **Text Content**: Edit title, subtitle, ${isTitleSlide ? "tagline" : "bulletPoints (MAIN CONTENT), introText"}
+${!isTitleSlide ? `2. **Layout**: Change the slide layout
+3. **Images**: Request new images by providing search terms
+4. **Image Position**: Change where the image appears` : ""}
 
-## AVAILABLE LAYOUTS:
-${JSON.stringify(layoutOptions, null, 2)}
+${!isTitleSlide ? `## AVAILABLE CONTENT LAYOUTS:
+${JSON.stringify(layoutOptions.slice(0, 8), null, 2)}
+
+## SLIDE LAYOUT OPTIONS (slideLayout field):
+- "image-left", "image-right", "image-top", "image-bottom", "no-image"
+
+## IMAGE SIZE OPTIONS (imageSize field):
+- "small" (30%), "medium" (40%), "large" (50%), "full" (60%)` : ""}
 
 ## RESPONSE FORMAT:
-Return a JSON object with the edited slide. Include ONLY the fields you want to change or keep.
+Return a JSON object with the edited slide.
 
-### Required fields:
-- "title": string (always include)
+${isTitleSlide ? `For TITLE slides:
+{
+  "type": "title",
+  "title": "Presentation Title",
+  "subtitle": "Optional subtitle",
+  "tagline": "Optional tagline"
+}` : `For CONTENT slides:
+{
+  "type": "content",
+  "title": "Slide Title",
+  "bulletPoints": ["Point 1", "Point 2", "Point 3"],  // REQUIRED - main content
+  "subtitle": "Optional",
+  "introText": "Optional intro paragraph",
+  "slideLayout": "image-right",
+  "imageSearch": "search term for new image"
+}`}
 
-### Optional fields (include if relevant):
-- "subtitle": string or null
-- "tagline": string (short catchy phrase)
-- "introText": string (intro paragraph before bullets)
-- "bullets": string[] (bullet points array)
-- "sections": array of {heading: string, description: string} for card layouts
-- "layout": one of the layout IDs listed above
-- "imageSearch": string (search term to find a new image - use descriptive terms like "team collaboration office" or "technology innovation")
-- "removeImage": true (to remove the current image)
-
-## IMPORTANT RULES:
-1. Return ONLY valid JSON - no markdown, no explanation
-2. Do NOT include HTML tags in text content
-3. Keep content concise and suitable for presentation slides
-4. When user asks for layout change, pick the most appropriate layout from the list
-5. When user asks for images, provide a descriptive imageSearch term
-6. For card/grid layouts, use the "sections" array with heading/description pairs
-7. Match the number of sections to the layout (e.g., 3 sections for content-cards-3)
-8. Be creative but professional
+## CRITICAL RULES:
+1. Return ONLY valid JSON
+2. ${isTitleSlide ? "Do NOT add bulletPoints, slideLayout, or images to title slides" : "ALWAYS include bulletPoints array - this is the main content text"}
+3. When improving writing, ${isTitleSlide ? "improve the title and subtitle" : "improve the bulletPoints text, not just the title"}
+4. NO HTML tags
 
 ${currentContent}`;
 
@@ -203,6 +217,24 @@ ${currentContent}`;
       if (!validLayout) {
         delete editedSlide.layout; // Remove invalid layout
       }
+    }
+
+    // Validate slideLayout if provided
+    const validSlideLayouts = ["image-left", "image-right", "image-top", "image-bottom", "image-background", "image-full", "no-image"];
+    if (editedSlide.slideLayout && !validSlideLayouts.includes(editedSlide.slideLayout)) {
+      delete editedSlide.slideLayout;
+    }
+
+    // Validate imageSize if provided
+    const validImageSizes = ["small", "medium", "large", "full"];
+    if (editedSlide.imageSize && !validImageSizes.includes(editedSlide.imageSize)) {
+      delete editedSlide.imageSize;
+    }
+
+    // Convert bullets to bulletPoints if needed
+    if (editedSlide.bullets && !editedSlide.bulletPoints) {
+      editedSlide.bulletPoints = editedSlide.bullets;
+      delete editedSlide.bullets;
     }
 
     // Deduct credits

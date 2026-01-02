@@ -297,6 +297,14 @@ export default function CreatePresentationClient({
   const [slides, setSlides] = useState<Slide[]>(existingOutline?.slides || []);
   const [outlineId, setOutlineId] = useState<string | null>(existingOutline?.id || null);
 
+  // Debug: Log outlineId state changes
+  useEffect(() => {
+    console.log("[CreatePresentation] outlineId state changed:", {
+      outlineId,
+      existingOutlineId: existingOutline?.id,
+    });
+  }, [outlineId, existingOutline?.id]);
+
   // Drag state
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -358,7 +366,13 @@ export default function CreatePresentationClient({
     } else if (streamState.status === "completed") {
       setView("completed");
       setSlides(streamState.slides);
-      setOutlineId(streamState.outlineId);
+      // Only update outlineId from stream if:
+      // 1. We don't have an existingOutline (new generation), OR
+      // 2. The stream returned a valid outlineId (regeneration case)
+      // This prevents overwriting existingOutline.id with null when loading from URL
+      if (!existingOutline || streamState.outlineId) {
+        setOutlineId(streamState.outlineId);
+      }
     } else if (streamState.status === "error") {
       // On error, reset to form view so user can try again
       setView("form");
@@ -511,6 +525,18 @@ export default function CreatePresentationClient({
 
     setIsCreatingPresentation(true);
 
+    // Determine the final outlineId to use
+    const finalOutlineId = outlineId || existingOutline?.id || null;
+    console.log("[CreatePresentation] Creating presentation - FULL DEBUG:", {
+      outlineIdState: outlineId,
+      outlineIdStateType: typeof outlineId,
+      existingOutline: existingOutline ? { id: existingOutline.id, hasSlides: existingOutline.slides?.length } : null,
+      existingOutlineId: existingOutline?.id,
+      existingOutlineIdType: typeof existingOutline?.id,
+      finalOutlineId,
+      finalOutlineIdType: typeof finalOutlineId,
+    });
+
     try {
       // Prepare slides with full visual metadata
       const slidesWithMetadata = slides.map(slide => ({
@@ -525,27 +551,32 @@ export default function CreatePresentationClient({
         contentLayoutHint: slide.contentLayoutHint, // Include content layout hint for box layouts
       }));
 
+      // Build request body
+      const requestBody = {
+        outlineId: finalOutlineId,
+        slides: slidesWithMetadata,
+        theme: formData.theme,
+        imageSource: formData.imageSource,
+        textDensity: formData.textDensity,
+        metadata: {
+          topic: formData.description || existingOutline?.metadata?.topic || "Presentation",
+          totalSlides: slides.length,
+          tone: formData.tone,
+          language: formData.language,
+        },
+        imageModel: formData.imageModel,
+        streaming: true, // Enable Gamma-style streaming
+      };
+
+      console.log("[CreatePresentation] Request body outlineId:", requestBody.outlineId);
+
       // Create presentation with streaming mode (Gamma-style)
       // This creates the presentation immediately and redirects to the page
       // where content will be streamed in real-time
       const response = await fetch("/api/create-presentation", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          outlineId: outlineId || existingOutline?.id || "",
-          slides: slidesWithMetadata,
-          theme: formData.theme,
-          imageSource: formData.imageSource,
-          textDensity: formData.textDensity,
-          metadata: {
-            topic: formData.description || existingOutline?.metadata?.topic || "Presentation",
-            totalSlides: slides.length,
-            tone: formData.tone,
-            language: formData.language,
-          },
-          imageModel: formData.imageModel,
-          streaming: true, // Enable Gamma-style streaming
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();

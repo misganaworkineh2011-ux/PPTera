@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     const skip = parseInt(searchParams.get("skip") || "0", 10);
     const take = parseInt(searchParams.get("take") || "5", 10);
 
-    // Fetch recent completed outlines for the user with presentation count
+    // Fetch recent completed outlines for the user
     const outlines = await db.outline.findMany({
       where: {
         userId: user.id,
@@ -21,6 +21,34 @@ export async function GET(request: NextRequest) {
       skip,
       take,
     });
+
+    // Get all presentations for this user to count which ones came from each outline
+    const presentations = await db.presentation.findMany({
+      where: {
+        userId: user.id,
+      },
+      select: {
+        content: true,
+      },
+    });
+
+    // Count presentations per outline
+    const presentationCountByOutline = new Map<string, number>();
+    console.log("[outlines/recent] Processing", presentations.length, "presentations");
+    
+    for (const pres of presentations) {
+      const content = pres.content as { outlineId?: string } | null;
+      // Handle both null and empty string cases
+      const outlineId = content?.outlineId && content.outlineId.trim() ? content.outlineId : null;
+      console.log("[outlines/recent] Presentation content outlineId:", outlineId);
+      if (outlineId) {
+        const count = presentationCountByOutline.get(outlineId) || 0;
+        presentationCountByOutline.set(outlineId, count + 1);
+      }
+    }
+    
+    console.log("[outlines/recent] Presentation counts:", Object.fromEntries(presentationCountByOutline));
+    console.log("[outlines/recent] Outline IDs:", outlines.map(o => o.id));
 
     // Extract title from metadata and include presentation count
     const formattedOutlines = outlines.map((outline) => {
@@ -35,7 +63,7 @@ export async function GET(request: NextRequest) {
         id: outline.id,
         title: metadata.topic || "Untitled Presentation",
         createdAt: outline.createdAt.toISOString(),
-        presentationCount: 0,
+        presentationCount: presentationCountByOutline.get(outline.id) || 0,
       };
     });
 

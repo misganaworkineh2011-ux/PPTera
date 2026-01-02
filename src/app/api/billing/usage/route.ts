@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
-    // Get activity history for credit usage
+    // Get activity history for credit usage - only fetch what we need
     const activities = await db.activity.findMany({
       where: {
         userId: authUser.id,
@@ -19,12 +19,15 @@ export async function GET(request: Request) {
         type: { in: ["create", "generate", "image_generate"] },
       },
       orderBy: { createdAt: "desc" },
+      take: 100, // Limit to last 100 for calculations
       select: {
         id: true,
         type: true,
         description: true,
-        metadata: true,
         createdAt: true,
+        // Only select creditsUsed from metadata via raw query would be ideal,
+        // but for now we process it server-side and don't send full metadata
+        metadata: true,
         presentation: {
           select: { id: true, title: true },
         },
@@ -73,11 +76,24 @@ export async function GET(request: Request) {
       { slides: 0, images: 0, total: 0 }
     );
 
+    // Return minimal activity data for display (only 5 shown in UI)
+    const recentActivities = activities.slice(0, 5).map(a => ({
+      id: a.id,
+      type: a.type,
+      description: a.description,
+      createdAt: a.createdAt,
+      presentation: a.presentation,
+    }));
+
     return NextResponse.json({
-      activities: activities.slice(0, 50), // Last 50 activities
+      activities: recentActivities,
       chartData,
       totals,
-      period: { days, startDate, endDate: new Date() },
+      period: { days },
+    }, {
+      headers: {
+        "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
+      },
     });
   } catch (error) {
     console.error("Error fetching usage history:", error);

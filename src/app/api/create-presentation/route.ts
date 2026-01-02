@@ -13,6 +13,7 @@ import {
 } from "~/lib/presentation";
 import type { BoxLayoutType } from "~/lib/layouts/content/boxes";
 import { generateSlug } from "~/lib/utils";
+import type { ChartData } from "~/lib/blocks";
 
 interface SlideInput {
   type: "title" | "content";
@@ -99,6 +100,8 @@ export async function POST(request: Request) {
 
     console.log("[create-presentation] Received request:", {
       outlineId,
+      outlineIdType: typeof outlineId,
+      outlineIdTruthy: !!outlineId,
       slidesCount: slides?.length || 0,
       theme,
       imageSource,
@@ -126,6 +129,9 @@ export async function POST(request: Request) {
       const slug = generateSlug(presentationTitle);
 
       // Create presentation with empty slides but store pending content
+      // Ensure outlineId is null if empty string (for proper matching later)
+      const validOutlineId = outlineId && outlineId.trim() ? outlineId : null;
+      
       const presentation = await db.presentation.create({
         data: {
           title: presentationTitle,
@@ -139,7 +145,7 @@ export async function POST(request: Request) {
             textDensity,
             metadata,
             createdFrom: "outline",
-            outlineId, // Store outlineId in content JSON
+            outlineId: validOutlineId, // Store outlineId in content JSON (null if empty)
             // Store slides for streaming processing
             pendingSlides: slides,
             streamingComplete: false,
@@ -148,6 +154,8 @@ export async function POST(request: Request) {
           userId: user.id,
         },
       });
+
+      console.log("[create-presentation] Created presentation with outlineId:", validOutlineId);
 
       const redirectUrl = `/presentation/${slug}-${presentation.id}?mode=ai&streaming=true`;
 
@@ -327,6 +335,9 @@ export async function POST(request: Request) {
         ? titleSlide.image.url
         : null;
 
+    // Ensure outlineId is null if empty string (for proper matching later)
+    const validOutlineIdNonStreaming = outlineId && outlineId.trim() ? outlineId : null;
+
     // Create the presentation in the database
     const presentation = await db.presentation.create({
       data: {
@@ -340,7 +351,7 @@ export async function POST(request: Request) {
           textDensity: textDensity,
           metadata: metadata,
           createdFrom: "outline",
-          outlineId: outlineId, // Store outlineId in content JSON
+          outlineId: validOutlineIdNonStreaming, // Store outlineId in content JSON (null if empty)
         },
         slides: presentationSlides,
         userId: user.id,
@@ -350,6 +361,7 @@ export async function POST(request: Request) {
     console.log("[create-presentation] Created presentation:", {
       id: presentation.id,
       title: presentation.title,
+      outlineId: validOutlineIdNonStreaming,
       slidesStored: Array.isArray(presentation.slides) ? (presentation.slides as unknown[]).length : "not-array",
     });
 

@@ -21,6 +21,7 @@ import InteractiveChart from "~/components/charts/InteractiveChart";
 import { type ChartData, CHART_TEMPLATES } from "~/lib/charts/types";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
+import DashboardStickyHeader from "~/components/dashboard/DashboardStickyHeader";
 
 // Sample saved charts for demo
 const SAMPLE_CHARTS: (ChartData & { id: string; createdAt: Date })[] = [
@@ -162,29 +163,35 @@ export default function ChartsPage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
-      {/* Header */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">{t.charts || "Charts"}</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-neutral-400">
-            Create and manage interactive charts for your presentations
-          </p>
-        </div>
-        <button
-          onClick={() => {
-            setEditingChart(null);
-            setShowChartModal(true);
-          }}
-          className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#06b6d4] to-[#0891b2] px-4 py-2.5 font-medium text-white transition-all hover:shadow-lg hover:shadow-[#06b6d4]/25"
-        >
-          <Plus size={18} />
-          Create Chart
-        </button>
-      </div>
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+      {/* Header with sticky behavior */}
+      <DashboardStickyHeader
+        icon={
+          <>
+            <BarChart3 size={18} className="sm:hidden" />
+            <BarChart3 size={22} className="hidden sm:block" />
+          </>
+        }
+        title={t.charts || "Charts"}
+        stickyIcon={<BarChart3 size={18} />}
+        stickyTitle={t.charts || "Charts"}
+        actions={
+          <button
+            onClick={() => {
+              setEditingChart(null);
+              setShowChartModal(true);
+            }}
+            className="flex items-center gap-1.5 md:gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-white shadow-lg shadow-[#06b6d4]/20 transition-all hover:from-[#172554] hover:to-[#0891b2] hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap"
+          >
+            <Plus size={16} className="md:w-[18px] md:h-[18px]" />
+            <span className="hidden sm:inline">Create Chart</span>
+            <span className="sm:hidden">Create</span>
+          </button>
+        }
+      />
 
       {/* Search and Filters */}
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row">
+      <div className="flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">
           <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
