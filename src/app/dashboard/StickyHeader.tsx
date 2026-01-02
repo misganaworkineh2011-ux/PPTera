@@ -79,11 +79,12 @@ export default function StickyHeader({ userId, credits }: StickyHeaderProps) {
           }`}
       >
         {/* Title Section */}
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
-            <FileText size={22} />
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
+            <FileText size={18} className="sm:hidden" />
+            <FileText size={22} className="hidden sm:block" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-[#1e3a8a]">Presentations</h1>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[#1e3a8a]">Presentations</h1>
         </div>
 
         {/* Action buttons - right aligned */}
