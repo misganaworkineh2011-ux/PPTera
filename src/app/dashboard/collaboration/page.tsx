@@ -130,11 +130,15 @@ export default function CollaborationPage() {
   return (
     <div className="space-y-6 h-full">
       <DashboardStickyHeader
-        icon={<Users size={22} />}
-        title={t.collaborationTitle}
-        subtitle={t.collaborationSubtitle}
+        icon={
+          <>
+            <Users size={18} className="sm:hidden" />
+            <Users size={22} className="hidden sm:block" />
+          </>
+        }
+        title={t.collaborationTitle || "Collaboration"}
         stickyIcon={<Users size={18} />}
-        stickyTitle={t.collaborationTitle}
+        stickyTitle={t.collaborationTitle || "Collaboration"}
       />
 
       <div className="flex gap-2 border-b border-slate-200 dark:border-neutral-800">

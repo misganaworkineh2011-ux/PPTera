@@ -86,18 +86,13 @@ export default function DashboardStickyHeader({
           isSticky ? "opacity-0 h-0 overflow-hidden pointer-events-none" : "opacity-100"
         }`}
       >
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
             {icon}
           </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#1e3a8a] dark:text-white">
-              {title}
-            </h1>
-            {subtitle && (
-              <p className="text-sm text-slate-500 dark:text-neutral-400">{subtitle}</p>
-            )}
-          </div>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[#1e3a8a] dark:text-white">
+            {title}
+          </h1>
         </div>
         {actions && <div className="flex items-center gap-2 md:gap-3">{actions}</div>}
       </div>

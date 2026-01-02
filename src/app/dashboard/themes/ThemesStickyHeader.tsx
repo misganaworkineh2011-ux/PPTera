@@ -77,14 +77,12 @@ export default function ThemesStickyHeader({ onCreateClick }: ThemesStickyHeader
           isSticky ? "opacity-0 h-0 overflow-hidden pointer-events-none" : "opacity-100"
         }`}
       >
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
-            <Palette size={22} />
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
+            <Palette size={18} className="sm:hidden" />
+            <Palette size={22} className="hidden sm:block" />
           </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-[#1e3a8a] dark:text-white">{t.myThemes || "My Themes"}</h1>
-            <p className="text-sm text-slate-500 dark:text-neutral-400">{t.themesSubtitle || "Create and manage your custom presentation themes"}</p>
-          </div>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[#1e3a8a] dark:text-white">{t.myThemes || "My Themes"}</h1>
         </div>
         <button 
           onClick={onCreateClick}

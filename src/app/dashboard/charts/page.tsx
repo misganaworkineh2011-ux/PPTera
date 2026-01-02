@@ -166,9 +166,13 @@ export default function ChartsPage() {
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       {/* Header with sticky behavior */}
       <DashboardStickyHeader
-        icon={<BarChart3 size={22} />}
+        icon={
+          <>
+            <BarChart3 size={18} className="sm:hidden" />
+            <BarChart3 size={22} className="hidden sm:block" />
+          </>
+        }
         title={t.charts || "Charts"}
-        subtitle="Create and manage interactive charts for your presentations"
         stickyIcon={<BarChart3 size={18} />}
         stickyTitle={t.charts || "Charts"}
         actions={
@@ -177,10 +181,11 @@ export default function ChartsPage() {
               setEditingChart(null);
               setShowChartModal(true);
             }}
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#06b6d4] to-[#0891b2] px-4 py-2.5 font-medium text-white transition-all hover:shadow-lg hover:shadow-[#06b6d4]/25"
+            className="flex items-center gap-1.5 md:gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-white shadow-lg shadow-[#06b6d4]/20 transition-all hover:from-[#172554] hover:to-[#0891b2] hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap"
           >
-            <Plus size={18} />
-            Create Chart
+            <Plus size={16} className="md:w-[18px] md:h-[18px]" />
+            <span className="hidden sm:inline">Create Chart</span>
+            <span className="sm:hidden">Create</span>
           </button>
         }
       />
