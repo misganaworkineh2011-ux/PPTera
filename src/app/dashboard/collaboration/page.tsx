@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
 import { getPresentationUrl } from "~/lib/utils";
+import DashboardStickyHeader from "~/components/dashboard/DashboardStickyHeader";
 
 interface Collaborator {
   id: string;
@@ -128,17 +129,13 @@ export default function CollaborationPage() {
 
   return (
     <div className="space-y-6 h-full">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
-            <Users size={22} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-[#1e3a8a] dark:text-white">{t.collaborationTitle}</h1>
-            <p className="text-sm text-slate-500 dark:text-neutral-400">{t.collaborationSubtitle}</p>
-          </div>
-        </div>
-      </div>
+      <DashboardStickyHeader
+        icon={<Users size={22} />}
+        title={t.collaborationTitle}
+        subtitle={t.collaborationSubtitle}
+        stickyIcon={<Users size={18} />}
+        stickyTitle={t.collaborationTitle}
+      />
 
       <div className="flex gap-2 border-b border-slate-200 dark:border-neutral-800">
         <button

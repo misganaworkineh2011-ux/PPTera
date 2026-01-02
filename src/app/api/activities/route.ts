@@ -30,7 +30,7 @@ export async function GET(request: Request) {
         type: true,
         description: true,
         createdAt: true,
-        metadata: true,
+        // metadata removed - not used in UI, can be large
         presentation: {
           select: { id: true, title: true },
         },

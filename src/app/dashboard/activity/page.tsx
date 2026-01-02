@@ -18,6 +18,7 @@ import Link from "next/link";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
 import { getPresentationUrl } from "~/lib/utils";
+import DashboardStickyHeader from "~/components/dashboard/DashboardStickyHeader";
 
 interface Activity {
   id: string;
@@ -217,28 +218,22 @@ export default function ActivityPage() {
   if (isLoading) {
     return (
       <div className="space-y-6 h-full">
-        {/* Header - static */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
-              <History size={22} />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-[#1e3a8a] dark:text-white">
-                {t.activityTitle}
-              </h1>
-              <p className="text-sm text-slate-500 dark:text-neutral-400">
-                {t.activitySubtitle}
-              </p>
-            </div>
-          </div>
-          <button
-            disabled
-            className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-400 dark:border-neutral-700"
-          >
-            <RefreshCw size={14} /> {t.refresh}
-          </button>
-        </div>
+        {/* Header - static with sticky behavior */}
+        <DashboardStickyHeader
+          icon={<History size={22} />}
+          title={t.activityTitle}
+          subtitle={t.activitySubtitle}
+          stickyIcon={<History size={18} />}
+          stickyTitle={t.activityTitle}
+          actions={
+            <button
+              disabled
+              className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-400 dark:border-neutral-700"
+            >
+              <RefreshCw size={14} /> {t.refresh}
+            </button>
+          }
+        />
 
         {/* Filter buttons - static */}
         <div className="flex gap-2 overflow-x-auto pb-2">
@@ -284,29 +279,23 @@ export default function ActivityPage() {
 
   return (
     <div className="space-y-6 h-full">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
-            <History size={22} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-[#1e3a8a] dark:text-white">
-              {t.activityTitle}
-            </h1>
-            <p className="text-sm text-slate-500 dark:text-neutral-400">
-              {t.activitySubtitle}
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={() => fetchActivities(currentPage, filter, false)}
-          disabled={isPageLoading}
-          className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800 disabled:opacity-50"
-        >
-          <RefreshCw size={14} className={isPageLoading ? "animate-spin" : ""} />{" "}
-          {t.refresh}
-        </button>
-      </div>
+      <DashboardStickyHeader
+        icon={<History size={22} />}
+        title={t.activityTitle}
+        subtitle={t.activitySubtitle}
+        stickyIcon={<History size={18} />}
+        stickyTitle={t.activityTitle}
+        actions={
+          <button
+            onClick={() => fetchActivities(currentPage, filter, false)}
+            disabled={isPageLoading}
+            className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800 disabled:opacity-50"
+          >
+            <RefreshCw size={14} className={isPageLoading ? "animate-spin" : ""} />{" "}
+            {t.refresh}
+          </button>
+        }
+      />
 
       <div className="flex gap-2 overflow-x-auto pb-2">
         {activityTypes.map((type) => (

@@ -105,6 +105,12 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
+      
+      // Skip if clicking on a button or inside a button (for menu actions, favorites, etc.)
+      if (target.closest("button")) {
+        return;
+      }
+      
       const anchor = target.closest("a");
       
       if (!anchor) return;
@@ -129,6 +135,11 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       
       // Skip dashboard routes - they have their own loading
       if (href.startsWith("/dashboard") || window.location.pathname.startsWith("/dashboard")) {
+        return;
+      }
+      
+      // Skip createpresentation routes - they have their own loading
+      if (href.startsWith("/createpresentation") || window.location.pathname.startsWith("/createpresentation")) {
         return;
       }
       

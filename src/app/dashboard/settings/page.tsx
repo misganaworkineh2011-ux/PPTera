@@ -7,6 +7,7 @@ import { useUser, useClerk } from "@clerk/nextjs";
 import { useSettings } from "~/contexts/SettingsContext";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations, type Language } from "~/lib/dashboard-translations";
+import DashboardStickyHeader from "~/components/dashboard/DashboardStickyHeader";
 
 interface UserSettings {
   id: string;
@@ -171,15 +172,13 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 py-4">
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
-          <Monitor size={22} />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-[#1e3a8a] dark:text-white">{t.settingsTitle}</h1>
-          <p className="text-sm text-slate-500 dark:text-neutral-400">{t.settingsSubtitle}</p>
-        </div>
-      </div>
+      <DashboardStickyHeader
+        icon={<Monitor size={22} />}
+        title={t.settingsTitle}
+        subtitle={t.settingsSubtitle}
+        stickyIcon={<Monitor size={18} />}
+        stickyTitle={t.settingsTitle}
+      />
 
       <div className="flex flex-col gap-6 lg:flex-row">
         <aside className="w-full lg:w-64 shrink-0">

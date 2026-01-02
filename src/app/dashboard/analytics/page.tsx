@@ -8,13 +8,13 @@ import {
   Eye,
   FileText,
   Layers,
-  Loader2,
   AlertCircle,
   Calendar,
   ArrowUpRight,
 } from "lucide-react";
 import Link from "next/link";
 import { cn, getPresentationUrl } from "~/lib/utils";
+import DashboardStickyHeader from "~/components/dashboard/DashboardStickyHeader";
 
 interface AnalyticsData {
   overview: {
@@ -74,34 +74,28 @@ export default function AnalyticsPage() {
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto space-y-8 p-4 sm:p-6 lg:p-8">
-        {/* Header - static, no skeleton */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
-              <BarChart3 size={22} />
+        {/* Header - static with sticky behavior */}
+        <DashboardStickyHeader
+          icon={<BarChart3 size={22} />}
+          title="Analytics"
+          subtitle="Track your presentation performance"
+          stickyIcon={<BarChart3 size={18} />}
+          stickyTitle="Analytics"
+          actions={
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-slate-400" />
+              <select
+                value={period}
+                onChange={(e) => setPeriod(Number(e.target.value))}
+                className="px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-sm"
+              >
+                <option value={7}>Last 7 days</option>
+                <option value={30}>Last 30 days</option>
+                <option value={90}>Last 90 days</option>
+              </select>
             </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-[#1e3a8a] dark:text-white">
-                Analytics
-              </h1>
-              <p className="text-slate-500 dark:text-neutral-400 text-sm">
-                Track your presentation performance
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-slate-400" />
-            <select
-              value={period}
-              onChange={(e) => setPeriod(Number(e.target.value))}
-              className="px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-sm"
-            >
-              <option value={7}>Last 7 days</option>
-              <option value={30}>Last 30 days</option>
-              <option value={90}>Last 90 days</option>
-            </select>
-          </div>
-        </div>
+          }
+        />
 
         {/* Overview Cards Skeleton */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -182,34 +176,28 @@ export default function AnalyticsPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 p-4 sm:p-6 lg:p-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
-            <BarChart3 size={22} />
+      {/* Header with sticky behavior */}
+      <DashboardStickyHeader
+        icon={<BarChart3 size={22} />}
+        title="Analytics"
+        subtitle="Track your presentation performance"
+        stickyIcon={<BarChart3 size={18} />}
+        stickyTitle="Analytics"
+        actions={
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-slate-400" />
+            <select
+              value={period}
+              onChange={(e) => setPeriod(Number(e.target.value))}
+              className="px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-sm"
+            >
+              <option value={7}>Last 7 days</option>
+              <option value={30}>Last 30 days</option>
+              <option value={90}>Last 90 days</option>
+            </select>
           </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#1e3a8a] dark:text-white">
-              Analytics
-            </h1>
-            <p className="text-slate-500 dark:text-neutral-400 text-sm">
-              Track your presentation performance
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-slate-400" />
-          <select
-            value={period}
-            onChange={(e) => setPeriod(Number(e.target.value))}
-            className="px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-sm"
-          >
-            <option value={7}>Last 7 days</option>
-            <option value={30}>Last 30 days</option>
-            <option value={90}>Last 90 days</option>
-          </select>
-        </div>
-      </div>
+        }
+      />
 
       {/* Overview Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

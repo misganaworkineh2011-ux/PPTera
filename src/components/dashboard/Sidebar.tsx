@@ -120,6 +120,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
                     <Link
                       key={item.href}
                       href={item.href}
+                      prefetch={false}
                       onClick={() => onCloseMobile?.()}
                       className={cn(
                         "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-semibold transition-all",

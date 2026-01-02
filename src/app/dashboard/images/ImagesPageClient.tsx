@@ -19,6 +19,7 @@ import Image from "next/image";
 import AIImageGenerator from "~/components/AIImageGenerator";
 import { cn } from "~/lib/utils";
 import { CREDIT_COSTS } from "~/lib/credits";
+import DashboardStickyHeader from "~/components/dashboard/DashboardStickyHeader";
 
 interface ImageData {
   id: string;
@@ -99,38 +100,32 @@ export default function ImagesPageClient({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
-            <ImageIcon size={22} />
+      {/* Header with sticky behavior */}
+      <DashboardStickyHeader
+        icon={<ImageIcon size={22} />}
+        title="Images"
+        subtitle="Manage your images and generate new ones with AI"
+        stickyIcon={<ImageIcon size={18} />}
+        stickyTitle="Images"
+        actions={
+          <div className="flex items-center gap-3">
+            {/* Credits Display */}
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+              <Zap className="h-4 w-4 text-amber-500" />
+              <span className="text-sm font-medium text-amber-700 dark:text-amber-400">
+                {credits.toLocaleString()} credits
+              </span>
+            </div>
+            <button
+              onClick={() => setShowGenerator(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white rounded-xl font-medium hover:opacity-90 transition"
+            >
+              <Sparkles className="h-4 w-4" />
+              Generate with AI
+            </button>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-[#1e3a8a] dark:text-white">
-              Images
-            </h1>
-            <p className="text-sm text-slate-500 dark:text-neutral-400">
-              Manage your images and generate new ones with AI
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          {/* Credits Display */}
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
-            <Zap className="h-4 w-4 text-amber-500" />
-            <span className="text-sm font-medium text-amber-700 dark:text-amber-400">
-              {credits.toLocaleString()} credits
-            </span>
-          </div>
-          <button
-            onClick={() => setShowGenerator(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white rounded-xl font-medium hover:opacity-90 transition"
-          >
-            <Sparkles className="h-4 w-4" />
-            Generate with AI
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Search and View Toggle */}
       <div className="flex items-center gap-4">

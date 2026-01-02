@@ -155,7 +155,6 @@ export default function DashboardContent({ presentations: initialPresentations, 
   const [showShareModal, setShowShareModal] = useState<string | null>(null);
   const [showRenameDialog, setShowRenameDialog] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [loadingAction, setLoadingAction] = useState<{ id: string; action: string } | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState<string | null>(null);
@@ -238,7 +237,7 @@ export default function DashboardContent({ presentations: initialPresentations, 
     return filtered;
   }, [presentations, filterMode, searchQuery]);
 
-  const handleMenuAction = async (action: string, presId: string, pres?: Presentation, e?: React.MouseEvent) => {
+  const handleMenuAction = async (action: string, presId: string, _pres?: Presentation, e?: React.MouseEvent) => {
     // Prevent event propagation
     if (e) {
       e.preventDefault();
@@ -311,7 +310,6 @@ export default function DashboardContent({ presentations: initialPresentations, 
         setMenuPosition(null);
 
         try {
-          setIsLoading(true);
           setLoadingAction({ id: presId, action: "duplicate" });
           const response = await fetch(`/api/presentations/${presId}/duplicate`, {
             method: "POST",
@@ -329,7 +327,6 @@ export default function DashboardContent({ presentations: initialPresentations, 
           console.error("Error duplicating:", error);
           toast.error("Failed to duplicate presentation");
         } finally {
-          setIsLoading(false);
           setLoadingAction(null);
         }
         break;
@@ -424,9 +421,8 @@ export default function DashboardContent({ presentations: initialPresentations, 
       }
     } catch (error) {
       console.error("Error deleting:", error);
-      alert("Failed to delete presentation");
-    } finally {
-      setIsLoading(false);
+      rollbackDelete();
+      toast?.error?.("Failed to delete presentation") || alert("Failed to delete presentation");
     }
   };
 
@@ -781,22 +777,20 @@ export default function DashboardContent({ presentations: initialPresentations, 
               className="w-full rounded-md border border-slate-200 px-3 sm:px-4 py-2 text-sm focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
               placeholder={t.enterNewTitle || "Enter new title"}
               autoFocus
-              disabled={isLoading}
             />
             <div className="flex gap-2 sm:gap-3 mt-3 sm:mt-4">
               <button
                 onClick={() => setShowRenameDialog(null)}
                 className="flex-1 rounded-md border border-slate-200 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
-                disabled={isLoading}
               >
                 {t.cancel || "Cancel"}
               </button>
               <button
                 onClick={() => handleRename(showRenameDialog)}
                 className="flex-1 rounded-md bg-[#1e3a8a] dark:bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white dark:text-black hover:bg-[#1e3a8a]/90 dark:hover:bg-neutral-200 disabled:opacity-50"
-                disabled={isLoading || !renameValue.trim()}
+                disabled={!renameValue.trim()}
               >
-                {isLoading ? (t.saving || "Saving...") : (t.saveChanges || "Save")}
+                {t.saveChanges || "Save"}
               </button>
             </div>
           </div>
@@ -821,27 +815,16 @@ export default function DashboardContent({ presentations: initialPresentations, 
               <button
                 onClick={() => setShowDeleteDialog(null)}
                 className="flex-1 rounded-md border border-slate-200 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
-                disabled={isLoading}
               >
                 {t.cancel || "Cancel"}
               </button>
               <button
                 onClick={() => handleDelete(showDeleteDialog)}
-                className="flex-1 rounded-md bg-red-600 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
-                disabled={isLoading}
+                className="flex-1 rounded-md bg-red-600 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white hover:bg-red-700"
               >
-                {isLoading ? (t.deleting || "Deleting...") : (t.delete || "Delete")}
+                {t.delete || "Delete"}
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Loading Overlay */}
-      {isLoading && (
-        <div className="fixed inset-0 flex items-center justify-center z-40 pointer-events-none">
-          <div className="bg-white dark:bg-neutral-900 rounded-lg p-4 shadow-lg">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#06b6d4] dark:border-white"></div>
           </div>
         </div>
       )}
@@ -908,14 +891,9 @@ export default function DashboardContent({ presentations: initialPresentations, 
                   e.stopPropagation();
                   handleMenuAction("favorite", activeMenu, undefined, e);
                 }}
-                disabled={loadingAction?.id === activeMenu && loadingAction?.action === "favorite"}
-                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
+                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
               >
-                {loadingAction?.id === activeMenu && loadingAction?.action === "favorite" ? (
-                  <Loader2 size={15} className="animate-spin" />
-                ) : (
-                  <Heart size={15} className={presentations.find(p => p.id === activeMenu)?.isPinned ? "fill-yellow-500 text-yellow-500" : "text-slate-500"} />
-                )}
+                <Heart size={15} className={presentations.find(p => p.id === activeMenu)?.isPinned ? "fill-yellow-500 text-yellow-500" : "text-slate-500"} />
                 {presentations.find(p => p.id === activeMenu)?.isPinned ? (t.unfavorite || "Unfavorite") : (t.favorite || "Favorite")}
               </button>
               <button

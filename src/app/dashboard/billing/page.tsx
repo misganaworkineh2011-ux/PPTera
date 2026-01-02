@@ -7,13 +7,13 @@ import {
   Calendar,
   TrendingUp,
   ChevronRight,
-  Loader2,
   CheckCircle2,
   AlertCircle,
   Clock,
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
+import DashboardStickyHeader from "~/components/dashboard/DashboardStickyHeader";
 
 interface BillingData {
   subscription: {
@@ -89,18 +89,14 @@ export default function BillingPage() {
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto space-y-6 py-6">
-        {/* Header - static */}
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
-            <CreditCard size={22} />
-          </div>
-          <div>
-            <h1 className="text-xl font-semibold text-[#1e3a8a] dark:text-white">Billing</h1>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              Manage your subscription and credits
-            </p>
-          </div>
-        </div>
+        {/* Header - static with sticky behavior */}
+        <DashboardStickyHeader
+          icon={<CreditCard size={22} />}
+          title="Billing"
+          subtitle="Manage your subscription and credits"
+          stickyIcon={<CreditCard size={18} />}
+          stickyTitle="Billing"
+        />
 
         {/* Current Plan Skeleton */}
         <div className="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 p-6">
@@ -212,18 +208,14 @@ export default function BillingPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 py-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
-          <CreditCard size={22} />
-        </div>
-        <div>
-          <h1 className="text-xl font-semibold text-[#1e3a8a] dark:text-white">Billing</h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Manage your subscription and credits
-          </p>
-        </div>
-      </div>
+      {/* Header with sticky behavior */}
+      <DashboardStickyHeader
+        icon={<CreditCard size={22} />}
+        title="Billing"
+        subtitle="Manage your subscription and credits"
+        stickyIcon={<CreditCard size={18} />}
+        stickyTitle="Billing"
+      />
 
       {/* Current Plan */}
       <div className="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 p-6">

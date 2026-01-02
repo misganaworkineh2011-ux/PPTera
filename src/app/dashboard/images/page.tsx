@@ -4,6 +4,9 @@ import { db } from "~/server/db";
 import ImagesPageClient from "./ImagesPageClient";
 import ImagesGridSkeleton from "~/app/dashboard/images/ImagesGridSkeleton";
 
+// Force dynamic rendering to always fetch fresh data
+export const dynamic = "force-dynamic";
+
 // Async component for images data
 async function ImagesGrid({ userId }: { userId: string }) {
   const [user, images] = await Promise.all([
