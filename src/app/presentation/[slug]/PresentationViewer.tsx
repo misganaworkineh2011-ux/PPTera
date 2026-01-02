@@ -791,18 +791,35 @@ export default function PresentationViewer({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [nextSlide, prevSlide, isFullscreen, editingText, undo, redo]);
 
+  // Track thumbnail state before fullscreen to restore it after
+  const thumbnailsBeforeFullscreenRef = useRef<boolean>(true);
+  const wasFullscreenRef = useRef<boolean>(false);
+
   useEffect(() => {
-    const handleFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
+    const handleFullscreenChange = () => {
+      const isNowFullscreen = !!document.fullscreenElement;
+      
+      // If exiting fullscreen, restore thumbnail state
+      if (wasFullscreenRef.current && !isNowFullscreen) {
+        setShowThumbnails(thumbnailsBeforeFullscreenRef.current);
+      }
+      
+      wasFullscreenRef.current = isNowFullscreen;
+      setIsFullscreen(isNowFullscreen);
+    };
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
   const toggleFullscreen = async () => {
     if (!document.fullscreenElement) {
+      // Save current thumbnail state before entering fullscreen
+      thumbnailsBeforeFullscreenRef.current = showThumbnails;
       await document.documentElement.requestFullscreen();
       setShowThumbnails(false);
     } else {
       await document.exitFullscreen();
+      // Note: thumbnail restoration is handled by fullscreenchange event
     }
   };
 
