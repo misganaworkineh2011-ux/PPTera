@@ -69,6 +69,10 @@ export async function GET() {
         estimatedImages: Math.floor(user.credits / CREDIT_COSTS.IMAGE_BASIC),
       },
       memberSince: user.createdAt,
+    }, {
+      headers: {
+        "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
+      },
     });
   } catch (error) {
     console.error("Error fetching billing info:", error);

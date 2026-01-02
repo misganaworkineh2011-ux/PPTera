@@ -165,11 +165,16 @@ export default function ChartsPage() {
     <div className="p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">{t.charts || "Charts"}</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-neutral-400">
-            Create and manage interactive charts for your presentations
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
+            <BarChart3 size={22} />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-[#1e3a8a] dark:text-white">{t.charts || "Charts"}</h1>
+            <p className="text-sm text-slate-500 dark:text-neutral-400">
+              Create and manage interactive charts for your presentations
+            </p>
+          </div>
         </div>
         <button
           onClick={() => {
