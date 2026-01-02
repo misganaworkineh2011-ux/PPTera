@@ -24,7 +24,7 @@ export default function CreateProjectButton({ userId, credits }: Props) {
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[95vw] sm:w-full max-w-5xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl sm:rounded-3xl bg-transparent shadow-2xl outline-none transition-all h-[90vh] sm:h-[85vh] max-h-[900px]">
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[95vw] sm:w-full max-w-2xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl bg-transparent shadow-2xl outline-none">
           <Dialog.Title className="sr-only">Create New Presentation</Dialog.Title>
           <ProjectCreationWizard 
             userId={userId} 
