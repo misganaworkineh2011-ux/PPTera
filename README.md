@@ -6,7 +6,7 @@ An AI-powered SaaS application that generates professional PowerPoint presentati
 
 - 🤖 AI-powered presentation generation using OpenAI GPT-4
 - 🔐 Authentication with Clerk
-- 💳 Payment processing with Polar
+- 💳 Payment processing with Polar 
 - 🗄️ PostgreSQL database with Prisma ORM (Neon)
 - 📊 Credit-based system
 - 📥 Download presentations as PPTX files
