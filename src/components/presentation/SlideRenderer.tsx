@@ -53,6 +53,7 @@ interface SlideRendererProps {
   onAddBullet: (slideIndex: number) => void;
   onDeleteBullet: (slideIndex: number, bulletIndex: number) => void;
   onChangeContentLayout?: (slideIndex: number, layoutId: BoxLayoutType) => void;
+  onOpenContentLayoutPanel?: () => void;
 }
 
 type LayoutVariant = "left-content" | "right-content" | "image-top" | "image-bottom" | "centered" | "split-diagonal" | "image-focus" | "minimal-left" | "cards-grid" | "quote-style" | "timeline" | "diagonal-cut" | "circle-focus" | "wave-layout" | "hexagon-frame" | "glass-cards" | "aurora-glow" | "diamond-frame" | "ember-cards" | "molten-split" | "arch-frame" | "botanical-cards" | "elegant-split" | "glitch-frame" | "neon-grid" | "holo-cards" | "scan-frame" | "bio-cards" | "transmission-split" | "clean-frame" | "pro-cards" | "executive-split" | "nebula-float" | "orbital-rings" | "starfield-cards" | "cosmic-portal" | "galaxy-split" | "celestial-frame" | "mono-brutalist" | "geometric-slice" | "contrast-blocks" | "angular-frame" | "stripe-accent" | "bold-stack" | "cloud-float" | "sakura-cards" | "dreamy-split" | "soft-bubble" | "twilight-frame" | "pastel-stack" | "terminal-window" | "matrix-cards" | "code-block" | "shell-prompt" | "cyber-grid" | "hack-split" | "grid-2-col" | "grid-3-col" | "grid-4-card" | "cards-2" | "cards-3" | "comparison" | "stats-grid" | "full-image" | "image-background" | "centered-image" | "feature-showcase";
@@ -240,7 +241,7 @@ function getSlideImages(slide: SlideData) {
 export default function SlideRenderer({
   slide, index, totalSlides, theme, isOwner, isFullscreen, isHovered, isEditing,
   editingText, showPageNumber = true, onStartEditing, onUpdateContent, onFinishEditing, onAddBullet, onDeleteBullet,
-  onChangeContentLayout,
+  onChangeContentLayout, onOpenContentLayoutPanel,
 }: SlideRendererProps) {
   const [showContentLayoutSelector, setShowContentLayoutSelector] = useState(false);
   const [contentHovered, setContentHovered] = useState(false);
@@ -907,7 +908,13 @@ export default function SlideRenderer({
     
     return (
       <button
-        onClick={() => setShowContentLayoutSelector(true)}
+        onClick={() => {
+          if (onOpenContentLayoutPanel) {
+            onOpenContentLayoutPanel();
+          } else {
+            setShowContentLayoutSelector(true);
+          }
+        }}
         className="absolute top-2 right-2 z-10 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all opacity-90 hover:opacity-100 shadow-md"
         style={{
           backgroundColor: theme.colors.surface,

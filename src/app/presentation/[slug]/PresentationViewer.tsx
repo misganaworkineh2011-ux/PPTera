@@ -215,13 +215,28 @@ export default function PresentationViewer({
   const streamingTextRef = useRef<Record<number, Record<string, string>>>({});
   // Track EventSource to prevent duplicates - use window to persist across re-renders
   const eventSourceRef = useRef<EventSource | null>(null);
+  // Track scroll position when content layout panel opens
+  const scrollPositionRef = useRef<number>(0);
+  const mainContentRef = useRef<HTMLDivElement>(null);
 
-  // Hide body scrollbar when content layout panel is open
+  // Hide body scrollbar and preserve scroll position when content layout panel is open
   useEffect(() => {
     if (showContentLayoutPanel) {
+      // Save current scroll position before switching to fixed
+      scrollPositionRef.current = window.scrollY;
       document.body.style.overflow = 'hidden';
+      // After the container becomes fixed, set its scroll position
+      requestAnimationFrame(() => {
+        if (mainContentRef.current) {
+          mainContentRef.current.scrollTop = scrollPositionRef.current;
+        }
+      });
     } else {
       document.body.style.overflow = '';
+      // Restore scroll position when closing panel
+      if (scrollPositionRef.current > 0) {
+        window.scrollTo(0, scrollPositionRef.current);
+      }
     }
     return () => {
       document.body.style.overflow = '';
@@ -1333,6 +1348,7 @@ export default function PresentationViewer({
             onAddBullet={addBulletPoint}
             onDeleteBullet={deleteBulletPoint}
             onChangeContentLayout={changeContentLayout}
+            onOpenContentLayoutPanel={() => { setActiveSlideIndex(index); setShowContentLayoutPanel(true); }}
           />
         )}
       </div>
@@ -1608,6 +1624,7 @@ export default function PresentationViewer({
 
         {/* Main content area - scrollable container that shrinks when panel is open */}
         <div 
+          ref={mainContentRef}
           className={`transition-all duration-300 ${showContentLayoutPanel ? 'fixed left-0 overflow-y-scroll' : ''}`}
           style={showContentLayoutPanel ? {
             top: '53px',
