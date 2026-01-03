@@ -132,8 +132,9 @@ function defineSlideMasters(
 }
 
 /**
- * Post-process an Adobe-converted PPTX to inject uneditable Slide Master watermark
- * This modifies the PPTX XML directly to add watermark elements to the slide master
+ * Post-process an Adobe-converted PPTX to inject watermark into Slide Master
+ * This makes the watermark "uneditable" in normal view - users would need to
+ * go to View > Slide Master to modify it, which most users don't know how to do.
  */
 export async function injectSlideMasterWatermark(
   pptxBuffer: Buffer
@@ -151,14 +152,12 @@ export async function injectSlideMasterWatermark(
       .file("ppt/presentation.xml")
       ?.async("string");
     if (presentationXml) {
-      // Match sldSz tag with any namespace prefix (e.g. p:sldSz, a:sldSz, or just sldSz)
       const sldSzTagMatch = presentationXml.match(/<(?:\w+:)?sldSz\s+[^>]*>/);
       if (sldSzTagMatch) {
         const sldSzTag = sldSzTagMatch[0];
-        // Match cx and cy with single or double quotes
         const cxMatch = sldSzTag.match(/cx=["'](\d+)["']/);
         const cyMatch = sldSzTag.match(/cy=["'](\d+)["']/);
-        
+
         if (cxMatch && cxMatch[1] && cyMatch && cyMatch[1]) {
           const cx = parseInt(cxMatch[1]);
           const cy = parseInt(cyMatch[1]);
@@ -168,8 +167,12 @@ export async function injectSlideMasterWatermark(
       }
     }
 
+    console.log(
+      `[injectSlideMasterWatermark] Slide dimensions: ${slideWidth}" x ${slideHeight}"`
+    );
+
     // Generate unique relationship IDs
-    const logoRId = "rIdLogo" + Date.now();
+    const logoRId = "rIdWatermarkLogo";
     const logoImagePath = "ppt/media/watermark_logo.png";
 
     // Add logo image to the PPTX package
@@ -177,83 +180,130 @@ export async function injectSlideMasterWatermark(
       zip.file(logoImagePath, logoBuffer);
     }
 
-    // Find all slide masters
+    // Find all slide masters and inject watermark
     const slideMasterFiles: string[] = [];
-    zip.folder("ppt/slideMasters")?.forEach((relativePath, file) => {
+    zip.folder("ppt/slideMasters")?.forEach((relativePath) => {
       if (relativePath.match(/^slideMaster\d+\.xml$/)) {
         slideMasterFiles.push(relativePath);
       }
     });
 
-    console.log(`[injectSlideMasterWatermark] Found ${slideMasterFiles.length} slide masters`);
+    console.log(
+      `[injectSlideMasterWatermark] Found ${slideMasterFiles.length} slide masters`
+    );
 
-    for (const slideMasterFile of slideMasterFiles) {
-      const slideMasterPath = `ppt/slideMasters/${slideMasterFile}`;
-      const slideMasterRelsPath = `ppt/slideMasters/_rels/${slideMasterFile}.rels`;
+    for (const masterFile of slideMasterFiles) {
+      const masterPath = `ppt/slideMasters/${masterFile}`;
+      const masterRelsPath = `ppt/slideMasters/_rels/${masterFile}.rels`;
 
-      let slideMasterXml = await zip.file(slideMasterPath)?.async("string");
-      let slideMasterRels = await zip.file(slideMasterRelsPath)?.async("string");
+      let masterXml = await zip.file(masterPath)?.async("string");
+      let masterRels = await zip.file(masterRelsPath)?.async("string");
 
-      if (slideMasterXml) {
-        // Add relationship for logo image
+      if (masterXml) {
+        // Skip if watermark already exists
+        if (masterXml.includes('name="Watermark Background"')) {
+          continue;
+        }
+
+        // Add relationship for logo image if needed
         if (logoBuffer) {
-          // If rels file doesn't exist, create it
-          if (!slideMasterRels) {
-            slideMasterRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+          if (!masterRels) {
+            masterRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
 </Relationships>`;
           }
-
-          // Check if relationship already exists to avoid duplicates
-          if (!slideMasterRels.includes(`Target="../media/watermark_logo.png"`)) {
+          if (!masterRels.includes(`Id="${logoRId}"`)) {
             const newRel = `<Relationship Id="${logoRId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/watermark_logo.png"/>`;
-            slideMasterRels = slideMasterRels.replace(
+            masterRels = masterRels.replace(
               "</Relationships>",
               `${newRel}</Relationships>`
             );
-            zip.file(slideMasterRelsPath, slideMasterRels);
+            zip.file(masterRelsPath, masterRels);
           }
         }
 
         // Create watermark shapes XML
-        const watermarkShapes = createWatermarkShapesXml(
+        const watermarkShapes = createSimpleWatermarkXml(
           logoRId,
           !!logoBuffer,
           slideWidth,
-          slideHeight,
-          slideMasterXml
+          slideHeight
         );
 
         // Insert watermark shapes into slide master's shape tree (spTree)
-        // We need to be careful not to break the XML structure
-        // The spTree usually ends with </p:spTree>
-        if (slideMasterXml.includes("</p:spTree>")) {
-          // Check if we already injected watermark (simple check)
-          if (!slideMasterXml.includes('name="Watermark Background"')) {
-             slideMasterXml = slideMasterXml.replace(
-              "</p:spTree>",
-              `${watermarkShapes}</p:spTree>`
-            );
-            zip.file(slideMasterPath, slideMasterXml);
-            console.log(`[injectSlideMasterWatermark] Injected watermark into ${slideMasterPath}`);
-          }
-        } else if (slideMasterXml.includes("</p:cSld>")) {
-           if (!slideMasterXml.includes('name="Watermark Background"')) {
-            const spTreeWithWatermark = `<p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr/>${watermarkShapes}</p:spTree>`;
-            slideMasterXml = slideMasterXml.replace(
-              "</p:cSld>",
-              `${spTreeWithWatermark}</p:cSld>`
-            );
-            zip.file(slideMasterPath, slideMasterXml);
-            console.log(`[injectSlideMasterWatermark] Injected watermark into ${slideMasterPath} (created spTree)`);
-           }
+        if (masterXml.includes("</p:spTree>")) {
+          masterXml = masterXml.replace(
+            "</p:spTree>",
+            `${watermarkShapes}</p:spTree>`
+          );
+          zip.file(masterPath, masterXml);
+          console.log(
+            `[injectSlideMasterWatermark] Injected watermark into ${masterPath}`
+          );
         }
       }
     }
 
-    // Ensure all slides show master shapes
+    // Also inject into slide layouts to ensure watermark appears
+    const slideLayoutFiles: string[] = [];
+    zip.folder("ppt/slideLayouts")?.forEach((relativePath) => {
+      if (relativePath.match(/^slideLayout\d+\.xml$/)) {
+        slideLayoutFiles.push(relativePath);
+      }
+    });
+
+    for (const layoutFile of slideLayoutFiles) {
+      const layoutPath = `ppt/slideLayouts/${layoutFile}`;
+      const layoutRelsPath = `ppt/slideLayouts/_rels/${layoutFile}.rels`;
+
+      let layoutXml = await zip.file(layoutPath)?.async("string");
+      let layoutRels = await zip.file(layoutRelsPath)?.async("string");
+
+      if (layoutXml) {
+        // Skip if watermark already exists
+        if (layoutXml.includes('name="Watermark Background"')) {
+          continue;
+        }
+
+        // Add relationship for logo image if needed
+        if (logoBuffer) {
+          if (!layoutRels) {
+            layoutRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+</Relationships>`;
+          }
+          if (!layoutRels.includes(`Id="${logoRId}"`)) {
+            const newRel = `<Relationship Id="${logoRId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/watermark_logo.png"/>`;
+            layoutRels = layoutRels.replace(
+              "</Relationships>",
+              `${newRel}</Relationships>`
+            );
+            zip.file(layoutRelsPath, layoutRels);
+          }
+        }
+
+        // Create watermark shapes XML
+        const watermarkShapes = createSimpleWatermarkXml(
+          logoRId,
+          !!logoBuffer,
+          slideWidth,
+          slideHeight
+        );
+
+        // Insert watermark shapes into slide layout's shape tree (spTree)
+        if (layoutXml.includes("</p:spTree>")) {
+          layoutXml = layoutXml.replace(
+            "</p:spTree>",
+            `${watermarkShapes}</p:spTree>`
+          );
+          zip.file(layoutPath, layoutXml);
+        }
+      }
+    }
+
+    // Ensure all slides show master shapes (showMasterSp="1")
     const slideFiles: string[] = [];
-    zip.folder("ppt/slides")?.forEach((relativePath, file) => {
+    zip.folder("ppt/slides")?.forEach((relativePath) => {
       if (relativePath.match(/^slide\d+\.xml$/)) {
         slideFiles.push(relativePath);
       }
@@ -262,12 +312,12 @@ export async function injectSlideMasterWatermark(
     for (const slideFile of slideFiles) {
       const slidePath = `ppt/slides/${slideFile}`;
       let slideXml = await zip.file(slidePath)?.async("string");
+
       if (slideXml) {
-        // Check for showMasterSp="0" or "false" and enable it
-        if (slideXml.match(/showMasterSp=["'](?:0|false)["']/)) {
-          slideXml = slideXml.replace(/showMasterSp=["'](?:0|false)["']/, 'showMasterSp="1"');
+        // Enable showing master shapes if disabled
+        if (slideXml.match(/showMasterSp=["']0["']/)) {
+          slideXml = slideXml.replace(/showMasterSp=["']0["']/, 'showMasterSp="1"');
           zip.file(slidePath, slideXml);
-          console.log(`[injectSlideMasterWatermark] Enabled master shapes on ${slidePath}`);
         }
       }
     }
@@ -287,67 +337,27 @@ export async function injectSlideMasterWatermark(
 }
 
 /**
- * Create XML for watermark shapes to inject into slide master
- * These shapes will be uneditable in normal slide view
+ * Create simple watermark XML for direct slide injection
  * Positioned in bottom-right corner with dark pill background and white bold text
  */
-function createWatermarkShapesXml(
+function createSimpleWatermarkXml(
   logoRId: string,
   hasLogo: boolean,
-  physicalWidthInches: number,
-  physicalHeightInches: number,
-  slideMasterXml: string
+  slideWidthInches: number,
+  slideHeightInches: number
 ): string {
   const shapes: string[] = [];
 
-  // Determine coordinate system from slide master
-  let layoutWidthEmu = physicalWidthInches * 914400;
-  let layoutHeightEmu = physicalHeightInches * 914400;
-
-  // Try to find custom coordinate system in spTree
-  const spTreeStart = slideMasterXml.indexOf("<p:spTree>");
-  if (spTreeStart !== -1) {
-    // Look for the first grpSpPr after spTree start, which belongs to the root group
-    const afterSpTree = slideMasterXml.substring(spTreeStart);
-    const grpSpPrMatch = afterSpTree.match(/<p:grpSpPr>([\s\S]*?)<\/p:grpSpPr>/);
-    
-    if (grpSpPrMatch && grpSpPrMatch[1]) {
-      const xfrmContent = grpSpPrMatch[1];
-      // Look for chExt inside the xfrm of grpSpPr
-      const chExtMatch = xfrmContent.match(/<a:chExt\s+([^>]+)>/);
-      if (chExtMatch && chExtMatch[1]) {
-        const cxMatch = chExtMatch[1].match(/cx=["'](\d+)["']/);
-        const cyMatch = chExtMatch[1].match(/cy=["'](\d+)["']/);
-        if (cxMatch && cxMatch[1] && cyMatch && cyMatch[1]) {
-          layoutWidthEmu = parseInt(cxMatch[1]);
-          layoutHeightEmu = parseInt(cyMatch[1]);
-        }
-      }
-    }
-  }
-
-  // Calculate scaling factors
-  const emuPerInchX = layoutWidthEmu / physicalWidthInches;
-  const emuPerInchY = layoutHeightEmu / physicalHeightInches;
-
-  const inchToEmuX = (inches: number) => Math.round(inches * emuPerInchX);
-  const inchToEmuY = (inches: number) => Math.round(inches * emuPerInchY);
+  // EMU conversions (1 inch = 914400 EMUs)
+  const inchToEmu = (inches: number) => Math.round(inches * 914400);
 
   // Badge dimensions and position (in inches)
   const badgeWidth = hasLogo ? 2.2 : 1.8;
   const badgeHeight = 0.35;
-  
-  // Calculate position in inches first
-  const badgeXInch = physicalWidthInches - badgeWidth - 0.15; // 0.15" from right edge
-  const badgeYInch = physicalHeightInches - badgeHeight - 0.12; // 0.12" from bottom edge
+  const badgeX = slideWidthInches - badgeWidth - 0.15; // 0.15" from right edge
+  const badgeY = slideHeightInches - badgeHeight - 0.12; // 0.12" from bottom edge
 
-  // Convert to coordinate system units
-  const badgeX = inchToEmuX(badgeXInch);
-  const badgeY = inchToEmuY(badgeYInch);
-  const badgeW = inchToEmuX(badgeWidth);
-  const badgeH = inchToEmuY(badgeHeight);
-
-  // Add dark pill background shape - fully rounded, no border
+  // Add dark pill background shape
   shapes.push(`
     <p:sp>
       <p:nvSpPr>
@@ -357,8 +367,8 @@ function createWatermarkShapesXml(
       </p:nvSpPr>
       <p:spPr>
         <a:xfrm>
-          <a:off x="${badgeX}" y="${badgeY}"/>
-          <a:ext cx="${badgeW}" cy="${badgeH}"/>
+          <a:off x="${inchToEmu(badgeX)}" y="${inchToEmu(badgeY)}"/>
+          <a:ext cx="${inchToEmu(badgeWidth)}" cy="${inchToEmu(badgeHeight)}"/>
         </a:xfrm>
         <a:prstGeom prst="roundRect">
           <a:avLst>
@@ -381,18 +391,6 @@ function createWatermarkShapesXml(
   `);
 
   // Logo position inside the pill
-  const logoX = inchToEmuX(badgeXInch + 0.1);
-  const logoY = inchToEmuY(badgeYInch + 0.05);
-  const logoW = inchToEmuX(0.25);
-  const logoH = inchToEmuY(0.25);
-
-  // Text position inside the pill
-  const textX = inchToEmuX(hasLogo ? badgeXInch + 0.4 : badgeXInch + 0.15);
-  const textY = inchToEmuY(badgeYInch);
-  const textW = inchToEmuX(hasLogo ? 1.7 : 1.5);
-  const textH = inchToEmuY(badgeHeight);
-
-  // Add logo image shape
   if (hasLogo) {
     shapes.push(`
       <p:pic>
@@ -411,8 +409,8 @@ function createWatermarkShapesXml(
         </p:blipFill>
         <p:spPr>
           <a:xfrm>
-            <a:off x="${logoX}" y="${logoY}"/>
-            <a:ext cx="${logoW}" cy="${logoH}"/>
+            <a:off x="${inchToEmu(badgeX + 0.1)}" y="${inchToEmu(badgeY + 0.05)}"/>
+            <a:ext cx="${inchToEmu(0.25)}" cy="${inchToEmu(0.25)}"/>
           </a:xfrm>
           <a:prstGeom prst="rect">
             <a:avLst/>
@@ -422,7 +420,11 @@ function createWatermarkShapesXml(
     `);
   }
 
-  // Add "Made with PPTMaster" text shape - white bold text, centered vertically
+  // Text position inside the pill
+  const textX = hasLogo ? badgeX + 0.4 : badgeX + 0.15;
+  const textW = hasLogo ? 1.7 : 1.5;
+
+  // Add "Made with PPTMaster" text shape
   shapes.push(`
     <p:sp>
       <p:nvSpPr>
@@ -432,8 +434,8 @@ function createWatermarkShapesXml(
       </p:nvSpPr>
       <p:spPr>
         <a:xfrm>
-          <a:off x="${textX}" y="${textY}"/>
-          <a:ext cx="${textW}" cy="${textH}"/>
+          <a:off x="${inchToEmu(textX)}" y="${inchToEmu(badgeY)}"/>
+          <a:ext cx="${inchToEmu(textW)}" cy="${inchToEmu(badgeHeight)}"/>
         </a:xfrm>
         <a:prstGeom prst="rect">
           <a:avLst/>
