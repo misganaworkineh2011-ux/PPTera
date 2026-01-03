@@ -6,10 +6,58 @@ import type {
   QuoteContentItem,
 } from "~/lib/layouts/content/quotes";
 import EditableText from "~/components/presentation/EditableText";
+import type { Theme } from "~/lib/themes";
+
+// Theme styles type
+interface ThemeStyles {
+  shapeBgColor: string;
+  shapeBorderColor: string;
+  cardBgColor: string;
+  cardBorderColor: string;
+  accentColor: string;
+  titleColor: string;
+  bodyColor: string;
+}
+
+// Helper to get theme-aware styles
+function getThemeStyles(theme?: Theme, accentColor?: string): ThemeStyles {
+  const defaultAccent = accentColor || "#047857";
+
+  if (!theme) {
+    return {
+      shapeBgColor: defaultAccent,
+      shapeBorderColor: `${defaultAccent}20`,
+      cardBgColor: "#ffffff",
+      cardBorderColor: `${defaultAccent}30`,
+      accentColor: defaultAccent,
+      titleColor: "#1e293b",
+      bodyColor: "#64748b",
+    };
+  }
+
+  const cardBox = theme.cardBox;
+  const layoutElements = theme.layoutElements;
+  const accent = accentColor || cardBox?.accentColor || theme.colors.accent;
+
+  // Use layoutElements if available for better theme consistency
+  const cardBg = layoutElements?.background || theme.colors.surface || "#ffffff";
+  const cardBorder = layoutElements?.borderColor || `${accent}30`;
+
+  return {
+    shapeBgColor: accent,
+    shapeBorderColor: `${accent}20`,
+    cardBgColor: cardBg,
+    cardBorderColor: cardBorder,
+    accentColor: accent,
+    titleColor: cardBox?.titleColor || theme.colors.heading,
+    bodyColor: cardBox?.bodyColor || theme.colors.textMuted,
+  };
+}
 
 interface QuotesLayoutRendererProps {
   layoutId: QuotesLayoutType;
   items: QuoteContentItem[];
+  theme?: Theme;
   accentColor?: string;
   className?: string;
   isNarrowSpace?: boolean;
@@ -28,6 +76,7 @@ interface QuotesLayoutRendererProps {
 export function QuotesLayoutRenderer({
   layoutId,
   items,
+  theme,
   accentColor = "#047857",
   className = "",
   isNarrowSpace = false,
@@ -42,12 +91,13 @@ export function QuotesLayoutRenderer({
   isHovered = false,
 }: QuotesLayoutRendererProps) {
   const displayItems = items.slice(0, 6);
+  const themeStyles = getThemeStyles(theme, accentColor);
 
   if (layoutId === "quote-bubble") {
     return (
       <BubbleQuotes
         items={displayItems}
-        accentColor={accentColor}
+        themeStyles={themeStyles}
         className={className}
         isEditing={isEditing}
         editingText={editingText}
@@ -65,7 +115,7 @@ export function QuotesLayoutRenderer({
   return (
     <MarksQuotes
       items={displayItems}
-      accentColor={accentColor}
+      themeStyles={themeStyles}
       className={className}
       isEditing={isEditing}
       editingText={editingText}
@@ -97,7 +147,7 @@ function QuoteIcon({ className, color }: { className?: string; color?: string })
 // Style 1: Thought Bubble - Solid color card with tail and white quotes
 function BubbleQuotes({
   items,
-  accentColor,
+  themeStyles,
   className,
   isEditing = false,
   editingText = null,
@@ -110,7 +160,7 @@ function BubbleQuotes({
   isHovered = false,
 }: {
   items: QuoteContentItem[];
-  accentColor: string;
+  themeStyles: ThemeStyles;
   className: string;
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
@@ -123,19 +173,18 @@ function BubbleQuotes({
   isHovered?: boolean;
 }) {
   return (
-    <div className={`flex flex-wrap gap-8 justify-center items-start ${className}`}>
+    <div
+      className={`flex flex-wrap gap-8 justify-center items-start ${className}`}
+    >
       {items.map((item, index) => (
-        <div 
-          key={index}
-          className="flex-1 min-w-[300px] max-w-[500px] flex flex-col"
-        >
+        <div key={index} className="flex-1 min-w-[300px] max-w-[500px] flex flex-col">
           {/* Main Bubble Card */}
           <div className="relative group filter drop-shadow-md transition-transform hover:-translate-y-1">
-            <div 
+            <div
               className="relative rounded-2xl p-8"
               style={{
-                backgroundColor: accentColor, // Solid fill
-                color: 'white', // White text
+                backgroundColor: themeStyles.accentColor, // Solid fill
+                color: "white", // White text
               }}
             >
               {/* Top-left opening quote */}
@@ -145,11 +194,14 @@ function BubbleQuotes({
 
               {/* Content */}
               <div className="flex flex-col gap-3 relative z-10 px-4 text-center">
-                {item.label && (
-                  onStartEditLabel ? (
+                {item.label &&
+                  (onStartEditLabel ? (
                     <EditableText
                       value={item.label}
-                      isEditing={isEditing && editingText?.field === `content-label-${index}`}
+                      isEditing={
+                        isEditing &&
+                        editingText?.field === `content-label-${index}`
+                      }
                       onStartEdit={() => onStartEditLabel(index)}
                       onChange={(val) => onUpdateLabel?.(index, val)}
                       onFinish={onFinishEditing || (() => {})}
@@ -161,13 +213,14 @@ function BubbleQuotes({
                     <h3 className="text-lg font-bold mb-1 text-white opacity-90">
                       {item.label}
                     </h3>
-                  )
-                )}
-                
+                  ))}
+
                 {onStartEditText ? (
                   <EditableText
                     value={item.text}
-                    isEditing={isEditing && editingText?.field === `content-text-${index}`}
+                    isEditing={
+                      isEditing && editingText?.field === `content-text-${index}`
+                    }
                     onStartEdit={() => onStartEditText(index)}
                     onChange={(val) => onUpdateText?.(index, val)}
                     onFinish={onFinishEditing || (() => {})}
@@ -180,7 +233,7 @@ function BubbleQuotes({
                     {item.text}
                   </p>
                 )}
-                
+
                 {item.author && (
                   <div className="mt-2 border-t border-white/20 pt-2 inline-block mx-auto">
                     <span className="text-sm font-semibold opacity-90">
@@ -197,15 +250,15 @@ function BubbleQuotes({
             </div>
 
             {/* Seamless Tail - Slightly smaller */}
-            <svg 
-               className="absolute -bottom-[28px] left-12 filter drop-shadow-sm"
-               width="35" 
-               height="30" 
-               viewBox="0 0 50 50"
-               style={{ color: accentColor }}
+            <svg
+              className="absolute -bottom-[28px] left-12 filter drop-shadow-sm"
+              width="35"
+              height="30"
+              viewBox="0 0 50 50"
+              style={{ color: themeStyles.accentColor }}
             >
-               {/* Triangle tail */}
-               <path d="M0 0 L25 50 L50 0 Z" fill="currentColor" />
+              {/* Triangle tail */}
+              <path d="M0 0 L25 50 L50 0 Z" fill="currentColor" />
             </svg>
           </div>
         </div>
@@ -217,7 +270,7 @@ function BubbleQuotes({
 // Style 2: Quote Marks - Elegant clean cards with positioned quotes
 function MarksQuotes({
   items,
-  accentColor,
+  themeStyles,
   className,
   isEditing = false,
   editingText = null,
@@ -230,7 +283,7 @@ function MarksQuotes({
   isHovered = false,
 }: {
   items: QuoteContentItem[];
-  accentColor: string;
+  themeStyles: ThemeStyles;
   className: string;
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
@@ -245,84 +298,93 @@ function MarksQuotes({
   return (
     <div className={`flex flex-wrap gap-8 justify-center ${className}`}>
       {items.map((item, index) => (
-        <div 
-          key={index}
-          className="flex-1 min-w-[320px] max-w-[500px]"
-        >
-          <div 
-            className="h-full rounded-xl p-8 pt-10 relative bg-white shadow-sm border hover:shadow-md transition-all"
+        <div key={index} className="flex-1 min-w-[320px] max-w-[500px]">
+          <div
+            className="h-full rounded-xl p-8 pt-10 relative shadow-sm border hover:shadow-md transition-all"
             style={{
-              borderColor: `${accentColor}20`,
+              backgroundColor: themeStyles.cardBgColor,
+              borderColor: themeStyles.cardBorderColor,
             }}
           >
             {/* Opening Quote - Top Left, positioned distinctly */}
-            <div 
-              className="absolute -top-3 left-8 bg-white px-2"
-              style={{ color: accentColor }}
+            <div
+              className="absolute -top-3 left-8 px-2"
+              style={{ color: themeStyles.accentColor, backgroundColor: themeStyles.cardBgColor }}
             >
               <QuoteIcon className="w-6 h-6 rotate-180" />
             </div>
 
             <div className="flex flex-col h-full">
-              {item.label && (
-                onStartEditLabel ? (
+              {item.label &&
+                (onStartEditLabel ? (
                   <EditableText
                     value={item.label}
-                    isEditing={isEditing && editingText?.field === `content-label-${index}`}
+                    isEditing={
+                      isEditing &&
+                      editingText?.field === `content-label-${index}`
+                    }
                     onStartEdit={() => onStartEditLabel(index)}
                     onChange={(val) => onUpdateLabel?.(index, val)}
                     onFinish={onFinishEditing || (() => {})}
                     className="text-lg font-bold mb-3"
-                    style={{ color: '#1e293b' }}
+                    style={{ color: themeStyles.titleColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
                   />
                 ) : (
-                  <h3 
+                  <h3
                     className="text-lg font-bold mb-3"
-                    style={{ color: '#1e293b' }}
+                    style={{ color: themeStyles.titleColor }}
                   >
                     {item.label}
                   </h3>
-                )
-              )}
-              
+                ))}
+
               {onStartEditText ? (
                 <EditableText
                   value={item.text}
-                  isEditing={isEditing && editingText?.field === `content-text-${index}`}
+                  isEditing={
+                    isEditing && editingText?.field === `content-text-${index}`
+                  }
                   onStartEdit={() => onStartEditText(index)}
                   onChange={(val) => onUpdateText?.(index, val)}
                   onFinish={onFinishEditing || (() => {})}
-                  className="text-base text-slate-700 leading-relaxed italic flex-1"
+                  className="text-base leading-relaxed italic flex-1"
+                  style={{ color: themeStyles.bodyColor }}
                   isOwner={isOwner}
                   isHovered={isHovered}
                 />
               ) : (
-                <p className="text-base text-slate-700 leading-relaxed italic flex-1">
+                <p
+                  className="text-base leading-relaxed italic flex-1"
+                  style={{ color: themeStyles.bodyColor }}
+                >
                   {item.text}
                 </p>
               )}
 
               {item.author && (
                 <div className="mt-6 flex items-center justify-end gap-3">
-                   <div className="h-px w-8 bg-slate-200" />
-                   <span 
-                     className="text-sm font-bold uppercase tracking-wider"
-                     style={{ color: accentColor }}
-                   >
-                     {item.author}
-                   </span>
+                  <div
+                    className="h-px w-8"
+                    style={{ backgroundColor: themeStyles.cardBorderColor }}
+                  />
+                  <span
+                    className="text-sm font-bold uppercase tracking-wider"
+                    style={{ color: themeStyles.accentColor }}
+                  >
+                    {item.author}
+                  </span>
                 </div>
               )}
             </div>
 
             {/* Closing Quote - Bottom Right, matches top style */}
-            <div 
-              className="absolute -bottom-3 right-8 bg-white px-2"
-              style={{ color: accentColor }}
+            <div
+              className="absolute -bottom-3 right-8 px-2"
+              style={{ color: themeStyles.accentColor, backgroundColor: themeStyles.cardBgColor }}
             >
-               <QuoteIcon className="w-6 h-6" />
+              <QuoteIcon className="w-6 h-6" />
             </div>
           </div>
         </div>

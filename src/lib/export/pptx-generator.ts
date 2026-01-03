@@ -15,6 +15,45 @@ export interface ExportOptions {
   addWatermark: boolean;
 }
 
+export interface ScreenshotExportOptions {
+  screenshots: Buffer[];
+  title: string;
+  addWatermark: boolean;
+}
+
+// Generate PPTX with pixel-perfect screenshots as slide backgrounds
+export async function generatePptxWithScreenshots(options: ScreenshotExportOptions): Promise<Buffer> {
+  const { screenshots, title } = options;
+  const pptx = new PptxGenJS();
+
+  pptx.title = title;
+  pptx.author = "PPTMaster";
+  pptx.layout = "LAYOUT_16x9";
+
+  for (let i = 0; i < screenshots.length; i++) {
+    const screenshot = screenshots[i]!;
+    const slide = pptx.addSlide();
+
+    // Convert buffer to base64 data URL
+    const base64 = screenshot.toString("base64");
+    const dataUrl = `data:image/png;base64,${base64}`;
+
+    // Add screenshot as full-slide background image
+    slide.addImage({
+      data: dataUrl,
+      x: 0,
+      y: 0,
+      w: "100%",
+      h: "100%",
+      sizing: { type: "cover", w: "100%", h: "100%" },
+    });
+  }
+
+  // Write to buffer
+  const buffer = await pptx.write({ outputType: "nodebuffer" });
+  return buffer as Buffer;
+}
+
 // Main export function
 export async function generatePptx(options: ExportOptions): Promise<Buffer> {
   const { slides, theme, title, addWatermark } = options;
@@ -69,6 +108,6 @@ export async function generatePptx(options: ExportOptions): Promise<Buffer> {
   }
 
   // Write to buffer
-  const buffer = await pptx.write("nodebuffer");
+  const buffer = await pptx.write({ outputType: "nodebuffer" });
   return buffer as Buffer;
 }

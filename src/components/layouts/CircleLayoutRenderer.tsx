@@ -1,7 +1,10 @@
 "use client";
 
 import React from "react";
-import type { CircleLayoutType, CircleContentItem } from "~/lib/layouts/content/circles";
+import type {
+  CircleLayoutType,
+  CircleContentItem,
+} from "~/lib/layouts/content/circles";
 import {
   getArcSegmentPath,
   getRingSegmentPath,
@@ -9,10 +12,58 @@ import {
   getRingIconPosition,
 } from "~/lib/layouts/content/circles";
 import EditableText from "~/components/presentation/EditableText";
+import type { Theme } from "~/lib/themes";
+
+// Theme styles type
+interface ThemeStyles {
+  shapeBgColor: string;
+  shapeBorderColor: string;
+  cardBgColor: string;
+  cardBorderColor: string;
+  accentColor: string;
+  titleColor: string;
+  bodyColor: string;
+}
+
+// Helper to get theme-aware styles
+function getThemeStyles(theme?: Theme, accentColor?: string): ThemeStyles {
+  const defaultAccent = accentColor || "#0d9488";
+
+  if (!theme) {
+    return {
+      shapeBgColor: `${defaultAccent}20`,
+      shapeBorderColor: `${defaultAccent}40`,
+      cardBgColor: `${defaultAccent}15`,
+      cardBorderColor: `${defaultAccent}30`,
+      accentColor: defaultAccent,
+      titleColor: "#1e293b",
+      bodyColor: "#64748b",
+    };
+  }
+
+  const cardBox = theme.cardBox;
+  const layoutElements = theme.layoutElements;
+  const accent = accentColor || cardBox?.accentColor || theme.colors.accent;
+
+  // Use layoutElements if available for better theme consistency
+  const bgColor = layoutElements?.background || `${accent}15`;
+  const borderColor = layoutElements?.borderColor || `${accent}30`;
+
+  return {
+    shapeBgColor: bgColor,
+    shapeBorderColor: borderColor,
+    cardBgColor: bgColor,
+    cardBorderColor: borderColor,
+    accentColor: accent,
+    titleColor: cardBox?.titleColor || theme.colors.heading,
+    bodyColor: cardBox?.bodyColor || theme.colors.textMuted,
+  };
+}
 
 interface CircleLayoutRendererProps {
   layoutId: CircleLayoutType;
   items: CircleContentItem[];
+  theme?: Theme;
   accentColor?: string;
   className?: string;
   // Editing props
@@ -30,6 +81,7 @@ interface CircleLayoutRendererProps {
 export function CircleLayoutRenderer({
   layoutId,
   items,
+  theme,
   accentColor = "#0d9488",
   className = "",
   isEditing = false,
@@ -43,12 +95,13 @@ export function CircleLayoutRenderer({
   isHovered = false,
 }: CircleLayoutRendererProps) {
   const displayItems = items.slice(0, 8);
+  const themeStyles = getThemeStyles(theme, accentColor);
 
   if (layoutId === "circle-arc") {
     return (
       <ArcLayout
         items={displayItems}
-        accentColor={accentColor}
+        themeStyles={themeStyles}
         className={className}
         isEditing={isEditing}
         editingText={editingText}
@@ -66,7 +119,7 @@ export function CircleLayoutRenderer({
   return (
     <RingLayout
       items={displayItems}
-      accentColor={accentColor}
+      themeStyles={themeStyles}
       className={className}
       isEditing={isEditing}
       editingText={editingText}
@@ -84,7 +137,7 @@ export function CircleLayoutRenderer({
 // Arc Layout - Text positioned above each arc segment following the curve
 function ArcLayout({
   items,
-  accentColor,
+  themeStyles,
   className,
   isEditing = false,
   editingText = null,
@@ -97,7 +150,7 @@ function ArcLayout({
   isHovered = false,
 }: {
   items: CircleContentItem[];
-  accentColor: string;
+  themeStyles: ThemeStyles;
   className: string;
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
@@ -167,42 +220,46 @@ function ArcLayout({
                 textAlign: pos.textAlign,
               }}
             >
-              {item.label && (
-                onStartEditLabel ? (
+              {item.label &&
+                (onStartEditLabel ? (
                   <EditableText
                     value={item.label}
-                    isEditing={isEditing && editingText?.field === `content-label-${index}`}
+                    isEditing={
+                      isEditing &&
+                      editingText?.field === `content-label-${index}`
+                    }
                     onStartEdit={() => onStartEditLabel(index)}
                     onChange={(val) => onUpdateLabel?.(index, val)}
                     onFinish={onFinishEditing || (() => {})}
-                    className="font-semibold text-slate-800 mb-1 leading-tight"
-                    style={{ fontSize: labelSize }}
+                    className="font-semibold mb-1 leading-tight"
+                    style={{ fontSize: labelSize, color: themeStyles.titleColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
                   />
                 ) : (
                   <h3
-                    className="font-semibold text-slate-800 mb-1 leading-tight"
-                    style={{ fontSize: labelSize }}
+                    className="font-semibold mb-1 leading-tight"
+                    style={{ fontSize: labelSize, color: themeStyles.titleColor }}
                   >
                     {item.label}
                   </h3>
-                )
-              )}
+                ))}
               {onStartEditText ? (
                 <EditableText
                   value={item.text}
-                  isEditing={isEditing && editingText?.field === `content-text-${index}`}
+                  isEditing={
+                    isEditing && editingText?.field === `content-text-${index}`
+                  }
                   onStartEdit={() => onStartEditText(index)}
                   onChange={(val) => onUpdateText?.(index, val)}
                   onFinish={onFinishEditing || (() => {})}
-                  className="text-slate-600 leading-snug"
-                  style={{ fontSize }}
+                  className="leading-snug"
+                  style={{ fontSize, color: themeStyles.bodyColor }}
                   isOwner={isOwner}
                   isHovered={isHovered}
                 />
               ) : (
-                <p className="text-slate-600 leading-snug" style={{ fontSize }}>
+                <p className="leading-snug" style={{ fontSize, color: themeStyles.bodyColor }}>
                   {item.text}
                 </p>
               )}
@@ -237,8 +294,8 @@ function ArcLayout({
             <g key={index}>
               <path
                 d={path}
-                fill={`${accentColor}15`}
-                stroke={`${accentColor}30`}
+                fill={themeStyles.shapeBgColor}
+                stroke={themeStyles.shapeBorderColor}
                 strokeWidth="1"
               />
               <circle
@@ -246,7 +303,7 @@ function ArcLayout({
                 cy={iconPos.y}
                 r={itemCount <= 4 ? 16 : 13}
                 fill="white"
-                stroke={`${accentColor}40`}
+                stroke={`${themeStyles.accentColor}40`}
                 strokeWidth="1"
               />
               {item?.icon ? (
@@ -256,7 +313,7 @@ function ArcLayout({
                   textAnchor="middle"
                   dominantBaseline="central"
                   fontSize="12"
-                  fill={accentColor}
+                  fill={themeStyles.accentColor}
                 >
                   {item.icon}
                 </text>
@@ -265,7 +322,7 @@ function ArcLayout({
                   cx={iconPos.x}
                   cy={iconPos.y}
                   r={3}
-                  fill={`${accentColor}40`}
+                  fill={`${themeStyles.accentColor}40`}
                 />
               )}
             </g>
@@ -279,7 +336,7 @@ function ArcLayout({
 // Ring Layout
 function RingLayout({
   items,
-  accentColor,
+  themeStyles,
   className,
   isEditing = false,
   editingText = null,
@@ -292,7 +349,7 @@ function RingLayout({
   isHovered = false,
 }: {
   items: CircleContentItem[];
-  accentColor: string;
+  themeStyles: ThemeStyles;
   className: string;
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
@@ -305,7 +362,7 @@ function RingLayout({
   isHovered?: boolean;
 }) {
   const itemCount = items.length;
-  
+
   const outerRadius = itemCount <= 4 ? 100 : itemCount <= 6 ? 85 : 75;
   const innerRadius = itemCount <= 4 ? 50 : itemCount <= 6 ? 42 : 36;
   const svgSize = itemCount <= 4 ? 240 : itemCount <= 6 ? 200 : 180;
@@ -321,58 +378,117 @@ function RingLayout({
           viewBox={`${-svgSize / 2} ${-svgSize / 2} ${svgSize} ${svgSize}`}
         >
           {Array.from({ length: itemCount }).map((_, index) => {
-            const path = getRingSegmentPath(index, itemCount, outerRadius, innerRadius, gapAngle);
-            const iconPos = getRingIconPosition(index, itemCount, (outerRadius + innerRadius) / 2);
+            const path = getRingSegmentPath(
+              index,
+              itemCount,
+              outerRadius,
+              innerRadius,
+              gapAngle
+            );
+            const iconPos = getRingIconPosition(
+              index,
+              itemCount,
+              (outerRadius + innerRadius) / 2
+            );
             const item = items[index];
 
             return (
               <g key={index}>
-                <path d={path} fill={`${accentColor}15`} stroke={`${accentColor}30`} strokeWidth="1" />
-                <circle cx={iconPos.x} cy={iconPos.y} r={11} fill="white" stroke={`${accentColor}40`} strokeWidth="1" />
+                <path
+                  d={path}
+                  fill={themeStyles.shapeBgColor}
+                  stroke={themeStyles.shapeBorderColor}
+                  strokeWidth="1"
+                />
+                <circle
+                  cx={iconPos.x}
+                  cy={iconPos.y}
+                  r={11}
+                  fill="white"
+                  stroke={`${themeStyles.accentColor}40`}
+                  strokeWidth="1"
+                />
                 {item?.icon ? (
-                  <text x={iconPos.x} y={iconPos.y} textAnchor="middle" dominantBaseline="central" fontSize="10" fill={accentColor}>
+                  <text
+                    x={iconPos.x}
+                    y={iconPos.y}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fontSize="10"
+                    fill={themeStyles.accentColor}
+                  >
                     {item.icon}
                   </text>
                 ) : (
-                  <circle cx={iconPos.x} cy={iconPos.y} r={2} fill={`${accentColor}40`} />
+                  <circle
+                    cx={iconPos.x}
+                    cy={iconPos.y}
+                    r={2}
+                    fill={`${themeStyles.accentColor}40`}
+                  />
                 )}
               </g>
             );
           })}
         </svg>
 
-        <div className="w-full grid gap-2 px-4" style={{ gridTemplateColumns: `repeat(${Math.min(itemCount, 4)}, 1fr)` }}>
+        <div
+          className="w-full grid gap-2 px-4"
+          style={{
+            gridTemplateColumns: `repeat(${Math.min(itemCount, 4)}, 1fr)`,
+          }}
+        >
           {items.map((item, index) => (
-            <div key={index} className="p-2 rounded-lg text-center" style={{ backgroundColor: `${accentColor}08` }}>
-              {item.label && (
-                onStartEditLabel ? (
+            <div
+              key={index}
+              className="p-2 rounded-lg text-center"
+              style={{ backgroundColor: themeStyles.cardBgColor }}
+            >
+              {item.label &&
+                (onStartEditLabel ? (
                   <EditableText
                     value={item.label}
-                    isEditing={isEditing && editingText?.field === `content-label-${index}`}
+                    isEditing={
+                      isEditing &&
+                      editingText?.field === `content-label-${index}`
+                    }
                     onStartEdit={() => onStartEditLabel(index)}
                     onChange={(val) => onUpdateLabel?.(index, val)}
                     onFinish={onFinishEditing || (() => {})}
-                    className="text-sm font-semibold text-slate-800 mb-1"
+                    className="text-sm font-semibold mb-1"
+                    style={{ color: themeStyles.titleColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
                   />
                 ) : (
-                  <h3 className="text-sm font-semibold text-slate-800 mb-1">{item.label}</h3>
-                )
-              )}
+                  <h3
+                    className="text-sm font-semibold mb-1"
+                    style={{ color: themeStyles.titleColor }}
+                  >
+                    {item.label}
+                  </h3>
+                ))}
               {onStartEditText ? (
                 <EditableText
                   value={item.text}
-                  isEditing={isEditing && editingText?.field === `content-text-${index}`}
+                  isEditing={
+                    isEditing && editingText?.field === `content-text-${index}`
+                  }
                   onStartEdit={() => onStartEditText(index)}
                   onChange={(val) => onUpdateText?.(index, val)}
                   onFinish={onFinishEditing || (() => {})}
-                  className="text-xs text-slate-600 leading-relaxed line-clamp-2"
+                  className="text-xs leading-relaxed line-clamp-2"
+                  style={{ color: themeStyles.bodyColor }}
                   isOwner={isOwner}
                   isHovered={isHovered}
                 />
               ) : (
-                <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">{item.text}</p>
+                <p
+                  className="text-xs leading-relaxed line-clamp-2"
+                  style={{ color: themeStyles.bodyColor }}
+                >
+                  {item.text}
+                </p>
               )}
             </div>
           ))}
@@ -384,107 +500,187 @@ function RingLayout({
   // Standard layout - content on sides
   const leftItems = items.filter((_, i) => i % 2 === 0);
   const rightItems = items.filter((_, i) => i % 2 === 1);
-  const leftIndices = items.map((_, i) => i).filter(i => i % 2 === 0);
-  const rightIndices = items.map((_, i) => i).filter(i => i % 2 === 1);
+  const leftIndices = items.map((_, i) => i).filter((i) => i % 2 === 0);
+  const rightIndices = items.map((_, i) => i).filter((i) => i % 2 === 1);
 
   return (
-    <div className={`w-full flex items-center justify-center gap-6 ${className}`}>
-      <div className="flex flex-col justify-center items-end text-right space-y-4" style={{ maxWidth: '180px' }}>
+    <div
+      className={`w-full flex items-center justify-center gap-6 ${className}`}
+    >
+      <div
+        className="flex flex-col justify-center items-end text-right space-y-4"
+        style={{ maxWidth: "180px" }}
+      >
         {leftItems.map((item, idx) => {
           const actualIndex = leftIndices[idx]!;
           return (
             <div key={idx}>
-              {item.label && (
-                onStartEditLabel ? (
+              {item.label &&
+                (onStartEditLabel ? (
                   <EditableText
                     value={item.label}
-                    isEditing={isEditing && editingText?.field === `content-label-${actualIndex}`}
+                    isEditing={
+                      isEditing &&
+                      editingText?.field === `content-label-${actualIndex}`
+                    }
                     onStartEdit={() => onStartEditLabel(actualIndex)}
                     onChange={(val) => onUpdateLabel?.(actualIndex, val)}
                     onFinish={onFinishEditing || (() => {})}
-                    className="text-base font-semibold text-slate-800 mb-1"
+                    className="text-base font-semibold mb-1"
+                    style={{ color: themeStyles.titleColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
                   />
                 ) : (
-                  <h3 className="text-base font-semibold text-slate-800 mb-1">{item.label}</h3>
-                )
-              )}
+                  <h3
+                    className="text-base font-semibold mb-1"
+                    style={{ color: themeStyles.titleColor }}
+                  >
+                    {item.label}
+                  </h3>
+                ))}
               {onStartEditText ? (
                 <EditableText
                   value={item.text}
-                  isEditing={isEditing && editingText?.field === `content-text-${actualIndex}`}
+                  isEditing={
+                    isEditing &&
+                    editingText?.field === `content-text-${actualIndex}`
+                  }
                   onStartEdit={() => onStartEditText(actualIndex)}
                   onChange={(val) => onUpdateText?.(actualIndex, val)}
                   onFinish={onFinishEditing || (() => {})}
-                  className="text-sm text-slate-600 leading-relaxed"
+                  className="text-sm leading-relaxed"
+                  style={{ color: themeStyles.bodyColor }}
                   isOwner={isOwner}
                   isHovered={isHovered}
                 />
               ) : (
-                <p className="text-sm text-slate-600 leading-relaxed">{item.text}</p>
+                <p
+                  className="text-sm leading-relaxed"
+                  style={{ color: themeStyles.bodyColor }}
+                >
+                  {item.text}
+                </p>
               )}
             </div>
           );
         })}
       </div>
 
-      <svg width={svgSize} height={svgSize} viewBox={`${-svgSize / 2} ${-svgSize / 2} ${svgSize} ${svgSize}`}>
+      <svg
+        width={svgSize}
+        height={svgSize}
+        viewBox={`${-svgSize / 2} ${-svgSize / 2} ${svgSize} ${svgSize}`}
+      >
         {Array.from({ length: itemCount }).map((_, index) => {
-          const path = getRingSegmentPath(index, itemCount, outerRadius, innerRadius, 15);
-          const iconPos = getRingIconPosition(index, itemCount, (outerRadius + innerRadius) / 2);
+          const path = getRingSegmentPath(
+            index,
+            itemCount,
+            outerRadius,
+            innerRadius,
+            15
+          );
+          const iconPos = getRingIconPosition(
+            index,
+            itemCount,
+            (outerRadius + innerRadius) / 2
+          );
           const item = items[index];
 
           return (
             <g key={index}>
-              <path d={path} fill={`${accentColor}15`} stroke={`${accentColor}30`} strokeWidth="1" />
-              <circle cx={iconPos.x} cy={iconPos.y} r="14" fill="white" stroke={`${accentColor}40`} strokeWidth="1" />
+              <path
+                d={path}
+                fill={themeStyles.shapeBgColor}
+                stroke={themeStyles.shapeBorderColor}
+                strokeWidth="1"
+              />
+              <circle
+                cx={iconPos.x}
+                cy={iconPos.y}
+                r="14"
+                fill="white"
+                stroke={`${themeStyles.accentColor}40`}
+                strokeWidth="1"
+              />
               {item?.icon ? (
-                <text x={iconPos.x} y={iconPos.y} textAnchor="middle" dominantBaseline="central" fontSize="11" fill={accentColor}>
+                <text
+                  x={iconPos.x}
+                  y={iconPos.y}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fontSize="11"
+                  fill={themeStyles.accentColor}
+                >
                   {item.icon}
                 </text>
               ) : (
-                <circle cx={iconPos.x} cy={iconPos.y} r="3" fill={`${accentColor}40`} />
+                <circle
+                  cx={iconPos.x}
+                  cy={iconPos.y}
+                  r="3"
+                  fill={`${themeStyles.accentColor}40`}
+                />
               )}
             </g>
           );
         })}
       </svg>
 
-      <div className="flex flex-col justify-center items-start text-left space-y-4" style={{ maxWidth: '180px' }}>
+      <div
+        className="flex flex-col justify-center items-start text-left space-y-4"
+        style={{ maxWidth: "180px" }}
+      >
         {rightItems.map((item, idx) => {
           const actualIndex = rightIndices[idx]!;
           return (
             <div key={idx}>
-              {item.label && (
-                onStartEditLabel ? (
+              {item.label &&
+                (onStartEditLabel ? (
                   <EditableText
                     value={item.label}
-                    isEditing={isEditing && editingText?.field === `content-label-${actualIndex}`}
+                    isEditing={
+                      isEditing &&
+                      editingText?.field === `content-label-${actualIndex}`
+                    }
                     onStartEdit={() => onStartEditLabel(actualIndex)}
                     onChange={(val) => onUpdateLabel?.(actualIndex, val)}
                     onFinish={onFinishEditing || (() => {})}
-                    className="text-base font-semibold text-slate-800 mb-1"
+                    className="text-base font-semibold mb-1"
+                    style={{ color: themeStyles.titleColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
                   />
                 ) : (
-                  <h3 className="text-base font-semibold text-slate-800 mb-1">{item.label}</h3>
-                )
-              )}
+                  <h3
+                    className="text-base font-semibold mb-1"
+                    style={{ color: themeStyles.titleColor }}
+                  >
+                    {item.label}
+                  </h3>
+                ))}
               {onStartEditText ? (
                 <EditableText
                   value={item.text}
-                  isEditing={isEditing && editingText?.field === `content-text-${actualIndex}`}
+                  isEditing={
+                    isEditing &&
+                    editingText?.field === `content-text-${actualIndex}`
+                  }
                   onStartEdit={() => onStartEditText(actualIndex)}
                   onChange={(val) => onUpdateText?.(actualIndex, val)}
                   onFinish={onFinishEditing || (() => {})}
-                  className="text-sm text-slate-600 leading-relaxed"
+                  className="text-sm leading-relaxed"
+                  style={{ color: themeStyles.bodyColor }}
                   isOwner={isOwner}
                   isHovered={isHovered}
                 />
               ) : (
-                <p className="text-sm text-slate-600 leading-relaxed">{item.text}</p>
+                <p
+                  className="text-sm leading-relaxed"
+                  style={{ color: themeStyles.bodyColor }}
+                >
+                  {item.text}
+                </p>
               )}
             </div>
           );

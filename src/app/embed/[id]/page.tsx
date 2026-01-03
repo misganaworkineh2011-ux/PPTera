@@ -1,18 +1,17 @@
 "use client";
 
-import { useState, useEffect, use, useCallback, useRef } from "react";
+import { useState, useEffect, use, useCallback, useRef, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import {
     ChevronLeft,
     ChevronRight,
-    Maximize2,
-    Minimize2,
     Loader2,
 } from "lucide-react";
 import { cn } from "~/lib/utils";
 import SlideRenderer from "~/components/presentation/SlideRenderer";
 import { getThemeById, getDefaultTheme, type Theme } from "~/lib/themes";
 import { convertCustomThemeToTheme } from "~/lib/custom-theme-utils";
-import { type PresentationData, type SlideData } from "~/components/presentation/types";
+import { type PresentationData } from "~/components/presentation/types";
 import Link from "next/link";
 
 interface EmbedPageProps {
@@ -30,11 +29,29 @@ interface PresentationResponse extends PresentationData {
     // content.theme is where the theme ID usually lives
 }
 
+// Main embed page wrapper with Suspense for useSearchParams
 export default function EmbedPage({ params }: EmbedPageProps) {
+    return (
+        <Suspense fallback={
+            <div className="flex items-center justify-center h-screen bg-slate-900">
+                <Loader2 className="h-8 w-8 animate-spin text-white" />
+            </div>
+        }>
+            <EmbedPageContent params={params} />
+        </Suspense>
+    );
+}
+
+function EmbedPageContent({ params }: EmbedPageProps) {
     const { id } = use(params);
+    const searchParams = useSearchParams();
+    
+    // Export mode: hide all UI overlays for pixel-perfect screenshot capture
+    const isExportMode = searchParams.get("export") === "true";
+    const initialSlide = parseInt(searchParams.get("slide") || "0", 10);
 
     const [presentation, setPresentation] = useState<PresentationResponse | null>(null);
-    const [currentSlide, setCurrentSlide] = useState(0);
+    const [currentSlide, setCurrentSlide] = useState(initialSlide);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [theme, setTheme] = useState<Theme>(getDefaultTheme());
@@ -148,11 +165,20 @@ export default function EmbedPage({ params }: EmbedPageProps) {
     if (!slide) return null;
 
     return (
-        <div className="relative w-full h-screen overflow-hidden bg-black group" ref={containerRef}>
+        <div className={cn(
+            "relative w-full h-screen overflow-hidden group",
+            isExportMode ? "bg-transparent" : "bg-black"
+        )} ref={containerRef}>
 
             {/* Slide Container - maintains 16:9 aspect ratio centered */}
             <div className="absolute inset-0 flex items-center justify-center">
-                <div className="relative w-full aspect-video max-h-screen max-w-[177.78vh] bg-white overflow-hidden shadow-2xl">
+                <div 
+                    className={cn(
+                        "relative w-full aspect-video max-h-screen max-w-[177.78vh] overflow-hidden",
+                        isExportMode ? "" : "bg-white shadow-2xl"
+                    )}
+                    data-export-slide="true"
+                >
                     <SlideRenderer
                         slide={slide}
                         index={currentSlide}
@@ -172,50 +198,54 @@ export default function EmbedPage({ params }: EmbedPageProps) {
                 </div>
             </div>
 
-            {/* Navigation Overlay (Visible on Hover / Touch) */}
-            <div className="absolute inset-0 pointer-events-none flex items-center justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <button
-                    onClick={goPrev}
-                    disabled={currentSlide === 0}
-                    className="pointer-events-auto p-3 rounded-full bg-black/30 text-white hover:bg-black/50 backdrop-blur-sm transition disabled:opacity-0"
-                >
-                    <ChevronLeft className="w-8 h-8" />
-                </button>
-
-                <button
-                    onClick={goNext}
-                    disabled={currentSlide === presentation.slides.length - 1}
-                    className="pointer-events-auto p-3 rounded-full bg-black/30 text-white hover:bg-black/50 backdrop-blur-sm transition disabled:opacity-0"
-                >
-                    <ChevronRight className="w-8 h-8" />
-                </button>
-            </div>
-
-            {/* Bottom Bar (Progress & Info) */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                <div className="flex items-center justify-between pointer-events-auto">
-                    <div className="text-white text-sm font-medium drop-shadow-md">
-                        {currentSlide + 1} / {presentation.slides.length}
-                    </div>
-
-                    {/* Simple progress bar */}
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
-                        <div
-                            className="h-full bg-[#06b6d4] transition-all duration-300"
-                            style={{ width: `${((currentSlide + 1) / presentation.slides.length) * 100}%` }}
-                        />
-                    </div>
-
-                    {/* Branding/Watermark */}
-                    <Link
-                        href="/"
-                        target="_blank"
-                        className="text-white/80 text-xs hover:text-white font-medium drop-shadow-md"
+            {/* Navigation Overlay (Hidden in export mode) */}
+            {!isExportMode && (
+                <div className="absolute inset-0 pointer-events-none flex items-center justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <button
+                        onClick={goPrev}
+                        disabled={currentSlide === 0}
+                        className="pointer-events-auto p-3 rounded-full bg-black/30 text-white hover:bg-black/50 backdrop-blur-sm transition disabled:opacity-0"
                     >
-                        PPTMaster
-                    </Link>
+                        <ChevronLeft className="w-8 h-8" />
+                    </button>
+
+                    <button
+                        onClick={goNext}
+                        disabled={currentSlide === presentation.slides.length - 1}
+                        className="pointer-events-auto p-3 rounded-full bg-black/30 text-white hover:bg-black/50 backdrop-blur-sm transition disabled:opacity-0"
+                    >
+                        <ChevronRight className="w-8 h-8" />
+                    </button>
                 </div>
-            </div>
+            )}
+
+            {/* Bottom Bar (Hidden in export mode) */}
+            {!isExportMode && (
+                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                    <div className="flex items-center justify-between pointer-events-auto">
+                        <div className="text-white text-sm font-medium drop-shadow-md">
+                            {currentSlide + 1} / {presentation.slides.length}
+                        </div>
+
+                        {/* Simple progress bar */}
+                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+                            <div
+                                className="h-full bg-[#06b6d4] transition-all duration-300"
+                                style={{ width: `${((currentSlide + 1) / presentation.slides.length) * 100}%` }}
+                            />
+                        </div>
+
+                        {/* Branding/Watermark */}
+                        <Link
+                            href="/"
+                            target="_blank"
+                            className="text-white/80 text-xs hover:text-white font-medium drop-shadow-md"
+                        >
+                            PPTMaster
+                        </Link>
+                    </div>
+                </div>
+            )}
 
         </div>
     );

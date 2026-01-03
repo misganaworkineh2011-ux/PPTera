@@ -771,14 +771,14 @@ export default function PresentationViewer({
     }
   };
 
-  const handleExport = (
+  const handleExport = async (
     format: "pdf" | "pptx" | "images",
     options?: {
       range: "all" | "current" | "custom";
       customRange?: { from: number; to: number };
     },
   ) => {
-    console.log("[PresentationViewer] Starting export via GET:", format);
+    console.log("[PresentationViewer] Starting export via fetch:", format);
     setIsExporting(true);
 
     try {
@@ -797,23 +797,49 @@ export default function PresentationViewer({
       }
 
       const exportUrl = `/api/presentations/${presentation.id}/export?${params.toString()}`;
-      console.log("[PresentationViewer] Redirecting to:", exportUrl);
+      console.log("[PresentationViewer] Fetching:", exportUrl);
 
-      // Trigger native browser download
-      window.location.assign(exportUrl);
+      toast.info("Preparing export...");
 
-      // Optimistically clear loading state and close modal
-      // We assume the browser handles the download request successfully
-      toast.info("Download started...");
+      // Fetch the file as blob
+      const response = await fetch(exportUrl);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Export failed with status ${response.status}`);
+      }
 
-      setTimeout(() => {
-        setIsExporting(false);
-        setShowExportModal(false);
-      }, 2000);
+      // Get the blob
+      const blob = await response.blob();
+      
+      // Get filename from Content-Disposition header or use default
+      const contentDisposition = response.headers.get("Content-Disposition");
+      let filename = `${presentation.title}.${format === "images" ? "zip" : format}`;
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?([^";\n]+)"?/);
+        if (match && match[1]) {
+          filename = decodeURIComponent(match[1]);
+        }
+      }
 
+      // Create download link and trigger download
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Cleanup
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast.success("Export complete!");
+      setShowExportModal(false);
     } catch (error) {
       console.error("[PresentationViewer] Export failed:", error);
-      toast.error("Export failed to start.");
+      toast.error(error instanceof Error ? error.message : "Export failed");
+    } finally {
       setIsExporting(false);
     }
   };

@@ -135,11 +135,12 @@ export const sproutTheme: Theme = {
     hoverBorderColor: "#8cb88c",
   },
 
-  // Layout element colors (for cards, boxes, steps inside slides - low brightness)
+  // Layout element colors (for cards, boxes, steps inside slides)
+  // These need good contrast against the slide background (#d4ecd4)
   layoutElements: {
-    background: "#e8f5e8",        // Very light green - tends to white
-    borderColor: "#c4e0c4",       // Light green border
-    hoverBackground: "#dceede",   // Slightly darker on hover
+    background: "#ffffff",        // White background for cards/boxes - good contrast
+    borderColor: "#8cb88c",       // Stronger green border for visibility
+    hoverBackground: "#f5faf5",   // Slightly off-white on hover
   },
 
   // Gradients

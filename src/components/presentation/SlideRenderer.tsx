@@ -1025,6 +1025,7 @@ export default function SlideRenderer({
               <BulletLayoutRenderer
                 layoutId={slide.contentLayout as BulletLayoutType}
                 items={boxContentItems}
+                theme={theme}
                 accentColor={accentColor}
                 isNarrowSpace={isNarrowSpace}
                 {...editingProps}
@@ -1036,6 +1037,7 @@ export default function SlideRenderer({
               <StepsLayoutRenderer
                 layoutId={slide.contentLayout as StepsLayoutType}
                 items={boxContentItems}
+                theme={theme}
                 accentColor={accentColor}
                 isNarrowSpace={isNarrowSpace}
                 {...editingProps}
@@ -1047,6 +1049,7 @@ export default function SlideRenderer({
               <QuotesLayoutRenderer
                 layoutId={slide.contentLayout as QuotesLayoutType}
                 items={boxContentItems}
+                theme={theme}
                 accentColor={accentColor}
                 isNarrowSpace={isNarrowSpace}
                 {...editingProps}
@@ -1058,6 +1061,7 @@ export default function SlideRenderer({
               <CircleLayoutRenderer
                 layoutId={slide.contentLayout as CircleLayoutType}
                 items={boxContentItems}
+                theme={theme}
                 accentColor={accentColor}
                 className="w-full min-h-[300px]"
                 {...editingProps}
@@ -1069,6 +1073,7 @@ export default function SlideRenderer({
               <ImageLayoutRenderer
                 layoutId={slide.contentLayout as ImageLayoutType}
                 items={boxContentItems}
+                theme={theme}
                 accentColor={accentColor}
                 isNarrowSpace={isNarrowSpace}
               />
@@ -1204,11 +1209,9 @@ export default function SlideRenderer({
   );
 
   // LAYOUT 1: Left Content - Image Right (supports multiple images in stack layout)
-  // Uses arc clip-path for image edge effect
+  // Uses arc clip-path for image edge effect (desktop only, rectangular on mobile)
   if (layout === "left-content") {
     const firstImage = allImages[0];
-    const arcIntensity = 50; // Arc curve intensity in pixels
-    const imageClipPath = `polygon(${arcIntensity}px 0, 100% 0, 100% 100%, ${arcIntensity}px 100%, 0 50%)`;
     
     return (
       <div className="h-full relative overflow-hidden">
@@ -1225,11 +1228,10 @@ export default function SlideRenderer({
             {!isTitleSlide && <EnhancedContent />}
           </div>
 
-          {/* Image Area - Edge-to-edge with arc clip-path */}
+          {/* Image Area - Edge-to-edge with arc clip-path on desktop, rectangular on mobile */}
           {hasImage && firstImage && (
             <div 
-              className="w-full sm:w-[40%] relative overflow-hidden flex-shrink-0 min-h-[200px] sm:min-h-0"
-              style={{ clipPath: imageClipPath }}
+              className="w-full sm:w-[40%] relative overflow-hidden flex-shrink-0 min-h-[200px] sm:min-h-0 slide-clip-left"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
@@ -1243,16 +1245,20 @@ export default function SlideRenderer({
           {slide.image?.source === "placeholder" && <div className="w-full sm:w-[40%] p-4 sm:p-8"><Placeholder /></div>}
         </div>
         <div className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${colors.borderLine} to-transparent`} />
+        <style jsx>{`
+          .slide-clip-left { clip-path: none; }
+          @media (min-width: 640px) {
+            .slide-clip-left { clip-path: polygon(50px 0, 100% 0, 100% 100%, 50px 100%, 0 50%); }
+          }
+        `}</style>
       </div>
     );
   }
 
   // LAYOUT 2: Right Content - Image Left (supports multiple images in stack layout)
-  // Uses arc clip-path for image edge effect
+  // Uses arc clip-path for image edge effect (desktop only, rectangular on mobile)
   if (layout === "right-content") {
     const firstImage = allImages[0];
-    const arcIntensity = 50; // Arc curve intensity in pixels
-    const imageClipPath = `polygon(0 0, calc(100% - ${arcIntensity}px) 0, 100% 50%, calc(100% - ${arcIntensity}px) 100%, 0 100%)`;
     
     return (
       <div className="h-full relative overflow-hidden">
@@ -1263,11 +1269,10 @@ export default function SlideRenderer({
         <SlideIndicator position="top-right" />
 
         <div className="relative h-full flex flex-col-reverse sm:flex-row items-stretch">
-          {/* Image Area - Edge-to-edge with arc clip-path */}
+          {/* Image Area - Edge-to-edge with arc clip-path on desktop, rectangular on mobile */}
           {hasImage && firstImage && (
             <div 
-              className="w-full sm:w-[40%] relative overflow-hidden flex-shrink-0 min-h-[200px] sm:min-h-0"
-              style={{ clipPath: imageClipPath }}
+              className="w-full sm:w-[40%] relative overflow-hidden flex-shrink-0 min-h-[200px] sm:min-h-0 slide-clip-right"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
@@ -1287,16 +1292,20 @@ export default function SlideRenderer({
           </div>
         </div>
         <div className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${colors.borderLine} to-transparent`} />
+        <style jsx>{`
+          .slide-clip-right { clip-path: none; }
+          @media (min-width: 640px) {
+            .slide-clip-right { clip-path: polygon(0 0, calc(100% - 50px) 0, 100% 50%, calc(100% - 50px) 100%, 0 100%); }
+          }
+        `}</style>
       </div>
     );
   }
 
   // LAYOUT: Image Top - Image at top with arc clip-path, content below
-  // Uses arc clip-path for smooth edge effect like try/page.tsx
+  // Uses arc clip-path for smooth edge effect (desktop only, rectangular on mobile)
   if (layout === "image-top") {
     const firstImage = allImages[0];
-    const arcIntensity = 40; // Arc curve intensity in pixels
-    const imageClipPath = `polygon(0 0, 100% 0, 100% calc(100% - ${arcIntensity}px), 50% 100%, 0 calc(100% - ${arcIntensity}px))`;
     const imageHeight = "300px"; // Fixed medium height for top/bottom images
     
     return (
@@ -1305,14 +1314,11 @@ export default function SlideRenderer({
 
         <SlideIndicator position="top-left" />
 
-        {/* Image Area - Top with arc clip-path */}
+        {/* Image Area - Top with arc clip-path on desktop, rectangular on mobile */}
         {hasImage && firstImage && (
           <div 
-            className="w-full relative overflow-hidden flex-shrink-0 z-10"
-            style={{ 
-              height: imageHeight,
-              clipPath: imageClipPath,
-            }}
+            className="w-full relative overflow-hidden flex-shrink-0 z-10 slide-clip-top"
+            style={{ height: imageHeight }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
@@ -1339,16 +1345,20 @@ export default function SlideRenderer({
         </div>
         
         <div className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${colors.borderLine} to-transparent`} />
+        <style jsx>{`
+          .slide-clip-top { clip-path: none; }
+          @media (min-width: 640px) {
+            .slide-clip-top { clip-path: polygon(0 0, 100% 0, 100% calc(100% - 40px), 50% 100%, 0 calc(100% - 40px)); }
+          }
+        `}</style>
       </div>
     );
   }
 
   // LAYOUT: Image Bottom - Image at bottom with arc clip-path, content above
-  // Uses arc clip-path for smooth edge effect like try/page.tsx
+  // Uses arc clip-path for smooth edge effect (desktop only, rectangular on mobile)
   if (layout === "image-bottom") {
     const firstImage = allImages[0];
-    const arcIntensity = 40; // Arc curve intensity in pixels
-    const imageClipPath = `polygon(0 ${arcIntensity}px, 50% 0, 100% ${arcIntensity}px, 100% 100%, 0 100%)`;
     const imageHeight = "300px"; // Fixed medium height for top/bottom images
     
     return (
@@ -1372,14 +1382,11 @@ export default function SlideRenderer({
           )}
         </div>
 
-        {/* Image Area - Bottom with arc clip-path */}
+        {/* Image Area - Bottom with arc clip-path on desktop, rectangular on mobile */}
         {hasImage && firstImage && (
           <div 
-            className="w-full relative overflow-hidden flex-shrink-0 z-10"
-            style={{ 
-              height: imageHeight,
-              clipPath: imageClipPath,
-            }}
+            className="w-full relative overflow-hidden flex-shrink-0 z-10 slide-clip-bottom"
+            style={{ height: imageHeight }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
@@ -1391,6 +1398,12 @@ export default function SlideRenderer({
         )}
         
         <div className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${colors.borderLine} to-transparent`} />
+        <style jsx>{`
+          .slide-clip-bottom { clip-path: none; }
+          @media (min-width: 640px) {
+            .slide-clip-bottom { clip-path: polygon(0 40px, 50% 0, 100% 40px, 100% 100%, 0 100%); }
+          }
+        `}</style>
       </div>
     );
   }

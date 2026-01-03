@@ -3,10 +3,58 @@
 import React from "react";
 import type { StepsLayoutType, StepContentItem } from "~/lib/layouts/content/steps";
 import EditableText from "~/components/presentation/EditableText";
+import type { Theme } from "~/lib/themes";
+
+// Theme styles type
+interface ThemeStyles {
+  shapeBgColor: string;
+  shapeBorderColor: string;
+  cardBgColor: string;
+  cardBorderColor: string;
+  accentColor: string;
+  titleColor: string;
+  bodyColor: string;
+}
+
+// Helper to get theme-aware styles
+function getThemeStyles(theme?: Theme, accentColor?: string): ThemeStyles {
+  const defaultAccent = accentColor || "#047857";
+
+  if (!theme) {
+    return {
+      shapeBgColor: `${defaultAccent}20`,
+      shapeBorderColor: `${defaultAccent}40`,
+      cardBgColor: `${defaultAccent}15`,
+      cardBorderColor: `${defaultAccent}30`,
+      accentColor: defaultAccent,
+      titleColor: "#1e293b",
+      bodyColor: "#64748b",
+    };
+  }
+
+  const cardBox = theme.cardBox;
+  const layoutElements = theme.layoutElements;
+  const accent = accentColor || cardBox?.accentColor || theme.colors.accent;
+
+  // Use layoutElements if available for better theme consistency
+  const bgColor = layoutElements?.background || `${accent}15`;
+  const borderColor = layoutElements?.borderColor || `${accent}30`;
+
+  return {
+    shapeBgColor: bgColor,
+    shapeBorderColor: borderColor,
+    cardBgColor: bgColor,
+    cardBorderColor: borderColor,
+    accentColor: accent,
+    titleColor: cardBox?.titleColor || theme.colors.heading,
+    bodyColor: cardBox?.bodyColor || theme.colors.textMuted,
+  };
+}
 
 interface StepsLayoutRendererProps {
   layoutId: StepsLayoutType;
   items: StepContentItem[];
+  theme?: Theme;
   accentColor?: string;
   className?: string;
   isNarrowSpace?: boolean;
@@ -25,6 +73,7 @@ interface StepsLayoutRendererProps {
 export function StepsLayoutRenderer({
   layoutId,
   items,
+  theme,
   accentColor = "#047857",
   className = "",
   isNarrowSpace = false,
@@ -39,12 +88,13 @@ export function StepsLayoutRenderer({
   isHovered = false,
 }: StepsLayoutRendererProps) {
   const displayItems = items.slice(0, 6);
+  const themeStyles = getThemeStyles(theme, accentColor);
 
   if (layoutId === "steps-pyramid") {
     return (
       <PyramidSteps
         items={displayItems}
-        accentColor={accentColor}
+        themeStyles={themeStyles}
         className={className}
         isEditing={isEditing}
         editingText={editingText}
@@ -63,7 +113,7 @@ export function StepsLayoutRenderer({
     return (
       <ArrowSteps
         items={displayItems}
-        accentColor={accentColor}
+        themeStyles={themeStyles}
         className={className}
         isEditing={isEditing}
         editingText={editingText}
@@ -82,7 +132,7 @@ export function StepsLayoutRenderer({
     return (
       <CardSteps
         items={displayItems}
-        accentColor={accentColor}
+        themeStyles={themeStyles}
         className={className}
         isNarrowSpace={isNarrowSpace}
         isEditing={isEditing}
@@ -101,7 +151,7 @@ export function StepsLayoutRenderer({
   return (
     <BarSteps
       items={displayItems}
-      accentColor={accentColor}
+      themeStyles={themeStyles}
       className={className}
       isEditing={isEditing}
       editingText={editingText}
@@ -119,7 +169,7 @@ export function StepsLayoutRenderer({
 // Style 1: Pyramid Steps - Sharp triangle with gaps between sections, text staggered diagonally
 function PyramidSteps({
   items,
-  accentColor,
+  themeStyles,
   className,
   isEditing = false,
   editingText = null,
@@ -132,7 +182,7 @@ function PyramidSteps({
   isHovered = false,
 }: {
   items: StepContentItem[];
-  accentColor: string;
+  themeStyles: ThemeStyles;
   className: string;
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
@@ -185,8 +235,8 @@ function PyramidSteps({
                 <g key={index}>
                   <path
                     d={`M ${centerX} 0 L ${bottomRightX} ${bottomY} L ${bottomLeftX} ${bottomY} Z`}
-                    fill={`${accentColor}12`}
-                    stroke={`${accentColor}25`}
+                    fill={themeStyles.shapeBgColor}
+                    stroke={themeStyles.shapeBorderColor}
                     strokeWidth="1"
                   />
                   <text
@@ -195,7 +245,7 @@ function PyramidSteps({
                     textAnchor="middle"
                     dominantBaseline="middle"
                     className="text-xl"
-                    fill={`${accentColor}40`}
+                    fill={`${themeStyles.accentColor}60`}
                     style={{ fontWeight: 300 }}
                   >
                     {index + 1}
@@ -209,8 +259,8 @@ function PyramidSteps({
               <g key={index}>
                 <path
                   d={`M ${topLeftX} ${topY} L ${topRightX} ${topY} L ${bottomRightX} ${bottomY} L ${bottomLeftX} ${bottomY} Z`}
-                  fill={`${accentColor}12`}
-                  stroke={`${accentColor}25`}
+                  fill={themeStyles.shapeBgColor}
+                  stroke={themeStyles.shapeBorderColor}
                   strokeWidth="1"
                 />
                 <text
@@ -219,7 +269,7 @@ function PyramidSteps({
                   textAnchor="middle"
                   dominantBaseline="middle"
                   className="text-xl"
-                  fill={`${accentColor}40`}
+                  fill={`${themeStyles.accentColor}60`}
                   style={{ fontWeight: 300 }}
                 >
                   {index + 1}
@@ -254,12 +304,13 @@ function PyramidSteps({
                     onStartEdit={() => onStartEditLabel(index)}
                     onChange={(val) => onUpdateLabel?.(index, val)}
                     onFinish={onFinishEditing || (() => {})}
-                    className="text-lg font-semibold text-slate-800 mb-1"
+                    className="text-lg font-semibold mb-1"
+                    style={{ color: themeStyles.titleColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
                   />
                 ) : (
-                  <h3 className="text-lg font-semibold text-slate-800 mb-1">
+                  <h3 className="text-lg font-semibold mb-1" style={{ color: themeStyles.titleColor }}>
                     {item.label}
                   </h3>
                 )
@@ -271,12 +322,13 @@ function PyramidSteps({
                   onStartEdit={() => onStartEditText(index)}
                   onChange={(val) => onUpdateText?.(index, val)}
                   onFinish={onFinishEditing || (() => {})}
-                  className="text-sm text-slate-600 leading-relaxed"
+                  className="text-sm leading-relaxed"
+                  style={{ color: themeStyles.bodyColor }}
                   isOwner={isOwner}
                   isHovered={isHovered}
                 />
               ) : (
-                <p className="text-sm text-slate-600 leading-relaxed">
+                <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
                   {item.text}
                 </p>
               )}
@@ -291,7 +343,7 @@ function PyramidSteps({
 // Style 2: Arrow Steps - Thick downward arrows, staggered to the right
 function ArrowSteps({
   items,
-  accentColor,
+  themeStyles,
   className,
   isEditing = false,
   editingText = null,
@@ -304,7 +356,7 @@ function ArrowSteps({
   isHovered = false,
 }: {
   items: StepContentItem[];
-  accentColor: string;
+  themeStyles: ThemeStyles;
   className: string;
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
@@ -344,12 +396,12 @@ function ArrowSteps({
                 y="0" 
                 width={bodyWidth} 
                 height={arrowHeight - headHeight} 
-                fill={`${accentColor}15`} 
+                fill={themeStyles.shapeBgColor} 
               />
               {/* Arrow head (wide triangle pointing down) */}
               <polygon 
                 points={`${arrowWidth / 2},${arrowHeight} 0,${arrowHeight - headHeight} ${arrowWidth},${arrowHeight - headHeight}`} 
-                fill={`${accentColor}15`} 
+                fill={themeStyles.shapeBgColor} 
               />
             </svg>
           </div>
@@ -364,12 +416,13 @@ function ArrowSteps({
                   onStartEdit={() => onStartEditLabel(index)}
                   onChange={(val) => onUpdateLabel?.(index, val)}
                   onFinish={onFinishEditing || (() => {})}
-                  className="text-lg font-semibold text-slate-800 mb-1"
+                  className="text-lg font-semibold mb-1"
+                  style={{ color: themeStyles.titleColor }}
                   isOwner={isOwner}
                   isHovered={isHovered}
                 />
               ) : (
-                <h3 className="text-lg font-semibold text-slate-800 mb-1">
+                <h3 className="text-lg font-semibold mb-1" style={{ color: themeStyles.titleColor }}>
                   {item.label}
                 </h3>
               )
@@ -381,12 +434,13 @@ function ArrowSteps({
                 onStartEdit={() => onStartEditText(index)}
                 onChange={(val) => onUpdateText?.(index, val)}
                 onFinish={onFinishEditing || (() => {})}
-                className="text-sm text-slate-600 leading-relaxed"
+                className="text-sm leading-relaxed"
+                style={{ color: themeStyles.bodyColor }}
                 isOwner={isOwner}
                 isHovered={isHovered}
               />
             ) : (
-              <p className="text-sm text-slate-600 leading-relaxed">
+              <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
                 {item.text}
               </p>
             )}
@@ -400,7 +454,7 @@ function ArrowSteps({
 // Style 3: Card Steps - Horizontal cards with INCREASING HEIGHT (stairs going up)
 function CardSteps({
   items,
-  accentColor,
+  themeStyles,
   className,
   isNarrowSpace,
   isEditing = false,
@@ -414,7 +468,7 @@ function CardSteps({
   isHovered = false,
 }: {
   items: StepContentItem[];
-  accentColor: string;
+  themeStyles: ThemeStyles;
   className: string;
   isNarrowSpace: boolean;
   isEditing?: boolean;
@@ -446,10 +500,10 @@ function CardSteps({
             key={index}
             className="rounded-xl p-5"
             style={{
-              backgroundColor: `${accentColor}06`,
-              border: `1px solid ${accentColor}15`,
+              backgroundColor: themeStyles.cardBgColor,
+              border: `1px solid ${themeStyles.cardBorderColor}`,
               borderLeftWidth: "3px",
-              borderLeftColor: `${accentColor}25`,
+              borderLeftColor: themeStyles.accentColor,
             }}
           >
             {item.label && (
@@ -460,12 +514,13 @@ function CardSteps({
                   onStartEdit={() => onStartEditLabel(index)}
                   onChange={(val) => onUpdateLabel?.(index, val)}
                   onFinish={onFinishEditing || (() => {})}
-                  className="text-base font-semibold text-slate-800 mb-2"
+                  className="text-base font-semibold mb-2"
+                  style={{ color: themeStyles.titleColor }}
                   isOwner={isOwner}
                   isHovered={isHovered}
                 />
               ) : (
-                <h3 className="text-base font-semibold text-slate-800 mb-2">
+                <h3 className="text-base font-semibold mb-2" style={{ color: themeStyles.titleColor }}>
                   {item.label}
                 </h3>
               )
@@ -477,12 +532,13 @@ function CardSteps({
                 onStartEdit={() => onStartEditText(index)}
                 onChange={(val) => onUpdateText?.(index, val)}
                 onFinish={onFinishEditing || (() => {})}
-                className="text-sm text-slate-600 leading-relaxed"
+                className="text-sm leading-relaxed"
+                style={{ color: themeStyles.bodyColor }}
                 isOwner={isOwner}
                 isHovered={isHovered}
               />
             ) : (
-              <p className="text-sm text-slate-600 leading-relaxed">
+              <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
                 {item.text}
               </p>
             )}
@@ -499,10 +555,10 @@ function CardSteps({
           key={index}
           className="flex-1 rounded-2xl p-6 flex flex-col"
           style={{
-            backgroundColor: `${accentColor}05`,
-            border: `1px solid ${accentColor}12`,
+            backgroundColor: themeStyles.cardBgColor,
+            border: `1px solid ${themeStyles.cardBorderColor}`,
             borderLeftWidth: "4px",
-            borderLeftColor: `${accentColor}30`,
+            borderLeftColor: themeStyles.accentColor,
             height: `${getHeight(index)}px`,
           }}
         >
@@ -514,12 +570,13 @@ function CardSteps({
                 onStartEdit={() => onStartEditLabel(index)}
                 onChange={(val) => onUpdateLabel?.(index, val)}
                 onFinish={onFinishEditing || (() => {})}
-                className="text-base font-semibold text-slate-800 mb-2"
+                className="text-base font-semibold mb-2"
+                style={{ color: themeStyles.titleColor }}
                 isOwner={isOwner}
                 isHovered={isHovered}
               />
             ) : (
-              <h3 className="text-base font-semibold text-slate-800 mb-2">
+              <h3 className="text-base font-semibold mb-2" style={{ color: themeStyles.titleColor }}>
                 {item.label}
               </h3>
             )
@@ -531,12 +588,13 @@ function CardSteps({
               onStartEdit={() => onStartEditText(index)}
               onChange={(val) => onUpdateText?.(index, val)}
               onFinish={onFinishEditing || (() => {})}
-              className="text-sm text-slate-600 leading-relaxed"
+              className="text-sm leading-relaxed"
+              style={{ color: themeStyles.bodyColor }}
               isOwner={isOwner}
               isHovered={isHovered}
             />
           ) : (
-            <p className="text-sm text-slate-600 leading-relaxed">
+            <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
               {item.text}
             </p>
           )}
@@ -549,7 +607,7 @@ function CardSteps({
 // Style 4: Bar Steps - Vertical bars with INCREASING WIDTH, text OUTSIDE the bar
 function BarSteps({
   items,
-  accentColor,
+  themeStyles,
   className,
   isEditing = false,
   editingText = null,
@@ -562,7 +620,7 @@ function BarSteps({
   isHovered = false,
 }: {
   items: StepContentItem[];
-  accentColor: string;
+  themeStyles: ThemeStyles;
   className: string;
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
@@ -575,7 +633,7 @@ function BarSteps({
   isHovered?: boolean;
 }) {
   const itemCount = items.length;
-  
+
   // Widths increase from top to bottom (like steps)
   const getWidth = (index: number) => {
     const minWidth = 25; // percentage
@@ -592,15 +650,15 @@ function BarSteps({
           <div
             className="flex-shrink-0 rounded-xl flex items-center justify-center py-5"
             style={{
-              backgroundColor: `${accentColor}10`,
-              border: `1px solid ${accentColor}15`,
+              backgroundColor: themeStyles.shapeBgColor,
+              border: `1px solid ${themeStyles.shapeBorderColor}`,
               width: `${getWidth(index)}%`,
               minWidth: "80px",
             }}
           >
             <span
               className="text-2xl"
-              style={{ color: `${accentColor}50`, fontWeight: 300 }}
+              style={{ color: `${themeStyles.accentColor}70`, fontWeight: 300 }}
             >
               {index + 1}
             </span>
@@ -617,14 +675,14 @@ function BarSteps({
                   onChange={(val) => onUpdateLabel?.(index, val)}
                   onFinish={onFinishEditing || (() => {})}
                   className="text-base font-semibold mb-1"
-                  style={{ color: accentColor }}
+                  style={{ color: themeStyles.accentColor }}
                   isOwner={isOwner}
                   isHovered={isHovered}
                 />
               ) : (
                 <h3
                   className="text-base font-semibold mb-1"
-                  style={{ color: accentColor }}
+                  style={{ color: themeStyles.accentColor }}
                 >
                   {item.label}
                 </h3>
@@ -637,12 +695,13 @@ function BarSteps({
                 onStartEdit={() => onStartEditText(index)}
                 onChange={(val) => onUpdateText?.(index, val)}
                 onFinish={onFinishEditing || (() => {})}
-                className="text-sm text-slate-600 leading-relaxed"
+                className="text-sm leading-relaxed"
+                style={{ color: themeStyles.bodyColor }}
                 isOwner={isOwner}
                 isHovered={isHovered}
               />
             ) : (
-              <p className="text-sm text-slate-600 leading-relaxed">
+              <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
                 {item.text}
               </p>
             )}

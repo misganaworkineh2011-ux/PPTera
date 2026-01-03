@@ -4,10 +4,41 @@ import React from "react";
 import { ImageIcon } from "lucide-react";
 import type { ImageLayoutType, ImageContentItem } from "~/lib/layouts/content/images";
 import { calculateImageGridDimensions } from "~/lib/layouts/content/images";
+import type { Theme } from "~/lib/themes";
+
+// Theme styles type
+interface ThemeStyles {
+  accentColor: string;
+  titleColor: string;
+  bodyColor: string;
+}
+
+// Helper to get theme-aware styles
+function getThemeStyles(theme?: Theme, accentColor?: string): ThemeStyles {
+  const defaultAccent = accentColor || "#047857";
+
+  if (!theme) {
+    return {
+      accentColor: defaultAccent,
+      titleColor: "#1e293b",
+      bodyColor: "#64748b",
+    };
+  }
+
+  const cardBox = theme.cardBox;
+  const accent = accentColor || cardBox?.accentColor || theme.colors.accent;
+
+  return {
+    accentColor: accent,
+    titleColor: cardBox?.titleColor || theme.colors.heading,
+    bodyColor: cardBox?.bodyColor || theme.colors.textMuted,
+  };
+}
 
 interface ImageLayoutRendererProps {
   layoutId: ImageLayoutType;
   items: ImageContentItem[];
+  theme?: Theme;
   accentColor?: string;
   className?: string;
   isNarrowSpace?: boolean;
@@ -16,12 +47,14 @@ interface ImageLayoutRendererProps {
 export function ImageLayoutRenderer({
   layoutId,
   items,
+  theme,
   accentColor = "#047857",
   className = "",
   isNarrowSpace = false,
 }: ImageLayoutRendererProps) {
   const displayItems = items.slice(0, 6);
   const { columns } = calculateImageGridDimensions(displayItems.length, isNarrowSpace);
+  const themeStyles = getThemeStyles(theme, accentColor);
 
   // Style 1: Small rounded square left, text right (horizontal layout per item)
   if (layoutId === "image-style-1") {
@@ -38,8 +71,8 @@ export function ImageLayoutRenderer({
             <div
               className="flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden"
               style={{
-                backgroundColor: item.image ? undefined : `${accentColor}15`,
-                border: item.image ? "none" : `1px dashed ${accentColor}40`,
+                backgroundColor: item.image ? undefined : `${themeStyles.accentColor}15`,
+                border: item.image ? "none" : `1px dashed ${themeStyles.accentColor}40`,
               }}
             >
               {item.image ? (
@@ -50,18 +83,18 @@ export function ImageLayoutRenderer({
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <ImageIcon size={24} style={{ color: `${accentColor}50` }} />
+                  <ImageIcon size={24} style={{ color: `${themeStyles.accentColor}50` }} />
                 </div>
               )}
             </div>
             {/* Text content */}
             <div className="flex-1 min-w-0">
               {item.label && (
-                <h3 className="text-base font-semibold text-slate-800 mb-1">
+                <h3 className="text-base font-semibold mb-1" style={{ color: themeStyles.titleColor }}>
                   {item.label}
                 </h3>
               )}
-              <p className="text-sm text-slate-600 leading-relaxed">
+              <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
                 {item.text}
               </p>
             </div>
@@ -86,8 +119,8 @@ export function ImageLayoutRenderer({
             <div
               className="w-full aspect-square rounded-2xl overflow-hidden mb-4"
               style={{
-                backgroundColor: item.image ? undefined : `${accentColor}15`,
-                border: item.image ? "none" : `1px dashed ${accentColor}40`,
+                backgroundColor: item.image ? undefined : `${themeStyles.accentColor}15`,
+                border: item.image ? "none" : `1px dashed ${themeStyles.accentColor}40`,
                 maxWidth: "180px",
               }}
             >
@@ -99,18 +132,18 @@ export function ImageLayoutRenderer({
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <ImageIcon size={40} style={{ color: `${accentColor}50` }} />
+                  <ImageIcon size={40} style={{ color: `${themeStyles.accentColor}50` }} />
                 </div>
               )}
             </div>
             {/* Text content */}
             <div>
               {item.label && (
-                <h3 className="text-lg font-semibold text-slate-800 mb-2">
+                <h3 className="text-lg font-semibold mb-2" style={{ color: themeStyles.titleColor }}>
                   {item.label}
                 </h3>
               )}
-              <p className="text-sm text-slate-600 leading-relaxed">
+              <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
                 {item.text}
               </p>
             </div>
@@ -135,8 +168,8 @@ export function ImageLayoutRenderer({
             <div
               className="w-40 h-40 rounded-full overflow-hidden mb-4 flex-shrink-0"
               style={{
-                backgroundColor: item.image ? undefined : `${accentColor}15`,
-                border: item.image ? "none" : `1px dashed ${accentColor}40`,
+                backgroundColor: item.image ? undefined : `${themeStyles.accentColor}15`,
+                border: item.image ? "none" : `1px dashed ${themeStyles.accentColor}40`,
               }}
             >
               {item.image ? (
@@ -147,18 +180,18 @@ export function ImageLayoutRenderer({
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <ImageIcon size={48} style={{ color: `${accentColor}50` }} />
+                  <ImageIcon size={48} style={{ color: `${themeStyles.accentColor}50` }} />
                 </div>
               )}
             </div>
             {/* Text content centered */}
             <div>
               {item.label && (
-                <h3 className="text-lg font-semibold text-slate-800 mb-2">
+                <h3 className="text-lg font-semibold mb-2" style={{ color: themeStyles.titleColor }}>
                   {item.label}
                 </h3>
               )}
-              <p className="text-sm text-slate-600 leading-relaxed max-w-[250px]">
+              <p className="text-sm leading-relaxed max-w-[250px]" style={{ color: themeStyles.bodyColor }}>
                 {item.text}
               </p>
             </div>
@@ -184,8 +217,8 @@ export function ImageLayoutRenderer({
             style={{
               aspectRatio: "4/3",
               maxWidth: "280px",
-              backgroundColor: item.image ? undefined : `${accentColor}15`,
-              border: item.image ? "none" : `1px dashed ${accentColor}40`,
+              backgroundColor: item.image ? undefined : `${themeStyles.accentColor}15`,
+              border: item.image ? "none" : `1px dashed ${themeStyles.accentColor}40`,
             }}
           >
             {item.image ? (
@@ -196,18 +229,18 @@ export function ImageLayoutRenderer({
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <ImageIcon size={48} style={{ color: `${accentColor}50` }} />
+                <ImageIcon size={48} style={{ color: `${themeStyles.accentColor}50` }} />
               </div>
             )}
           </div>
           {/* Text content centered */}
           <div>
             {item.label && (
-              <h3 className="text-lg font-semibold text-slate-800 mb-2">
+              <h3 className="text-lg font-semibold mb-2" style={{ color: themeStyles.titleColor }}>
                 {item.label}
               </h3>
             )}
-            <p className="text-sm text-slate-600 leading-relaxed max-w-[280px]">
+            <p className="text-sm leading-relaxed max-w-[280px]" style={{ color: themeStyles.bodyColor }}>
               {item.text}
             </p>
           </div>
