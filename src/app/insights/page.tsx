@@ -6,12 +6,12 @@ import { InsightsPageClient } from "./InsightsPageClient";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Insights & Blog | PPT Master - Presentation Tips",
-  description: "Discover expert tips and best practices for creating stunning AI presentations. Learn design principles and techniques.",
-  keywords: "ppt master,ai powerpoint generator,presentation tips,powerpoint design,slide design,presentation best practices,ai presentation tool,powerpoint templates,presentation maker,design guides,presentation techniques,visual storytelling,presentation software",
+  title: "Insights & Blog",
+  description: "Discover expert tips and best practices for creating stunning AI presentations with PPTMaster (PPT Master). Learn design principles and techniques.",
+  keywords: "pptmaster,ppt master,ai powerpoint generator,presentation tips,powerpoint design,slide design,presentation best practices,ai presentation tool,powerpoint templates,presentation maker,design guides,presentation techniques,visual storytelling,presentation software",
   openGraph: {
-    title: "Insights & Blog | PPT Master - Presentation Tips",
-    description: "Expert tips and guides for creating stunning presentations with AI powerpoint generator tools. Learn design principles, best practices, and presentation techniques.",
+    title: "Insights & Blog | PPTMaster – Presentation Tips",
+    description: "Expert tips and guides for creating stunning presentations with PPTMaster AI powerpoint generator. Learn design principles, best practices, and presentation techniques.",
     url: "https://www.pptmaster.app/insights",
     type: "website",
     images: [
@@ -19,13 +19,13 @@ export const metadata: Metadata = {
         url: "https://www.pptmaster.app/og-image.jpeg",
         width: 1200,
         height: 630,
-        alt: "PPT Master Insights - Presentation Design Tips",
+        alt: "PPTMaster Insights – Presentation Design Tips",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Insights & Blog | PPT Master - Presentation Tips",
+    title: "Insights & Blog | PPTMaster – Presentation Tips",
     description: "Expert tips and guides for creating stunning AI presentations. Learn design principles and best practices.",
     images: ["https://www.pptmaster.app/og-image.jpeg"],
   },
@@ -105,12 +105,12 @@ export default async function InsightsPage({ currentLang = "en" }: InsightsPageP
   const blogSchema = {
     "@context": "https://schema.org",
     "@type": "Blog",
-    name: "PPT Master Insights",
-    description: "Expert tips, guides, and insights for creating better presentations with AI powerpoint generator tools",
+    name: "PPTMaster Insights",
+    description: "Expert tips, guides, and insights for creating better presentations with PPTMaster (PPT Master) AI powerpoint generator",
     url: "https://www.pptmaster.app/insights",
     publisher: {
       "@type": "Organization",
-      name: "PPT Master",
+      name: "PPTMaster",
       logo: {
         "@type": "ImageObject",
         url: "https://www.pptmaster.app/logo.png",

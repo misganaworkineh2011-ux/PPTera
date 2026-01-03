@@ -4,14 +4,14 @@ import { AboutPageContent } from "./AboutPageContent";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "About Us - PPT Master",
-  description: "Learn about PPT Master's mission to make professional presentations accessible to everyone with AI-powered tools.",
+  title: "About Us",
+  description: "Learn about PPTMaster's (PPT Master) mission to make professional presentations accessible to everyone with AI-powered tools.",
   alternates: {
     canonical: "https://www.pptmaster.app/about",
   },
   openGraph: {
-    title: "About Us - PPT Master",
-    description: "Learn about PPT Master's mission to make professional presentations accessible to everyone with AI-powered tools.",
+    title: "About Us | PPTMaster",
+    description: "Learn about PPTMaster's mission to make professional presentations accessible to everyone with AI-powered tools.",
     url: "/about",
     type: "website",
     images: [
@@ -19,14 +19,14 @@ export const metadata: Metadata = {
         url: "/og-image.jpeg",
         width: 1200,
         height: 630,
-        alt: "About PPT Master",
+        alt: "About PPTMaster",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "About Us - PPT Master",
-    description: "Learn about PPT Master's mission to make professional presentations accessible to everyone.",
+    title: "About Us | PPTMaster",
+    description: "Learn about PPTMaster's mission to make professional presentations accessible to everyone.",
     images: ["/og-image.jpeg"],
   },
 };

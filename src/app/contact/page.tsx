@@ -2,14 +2,14 @@ import { ContactPageClient } from "./ContactPageClient";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Contact Us - PPT Master",
-  description: "Get in touch with the PPT Master team. We're here to help with questions, feedback, or partnership inquiries.",
+  title: "Contact Us",
+  description: "Get in touch with the PPTMaster (PPT Master) team. We're here to help with questions, feedback, or partnership inquiries.",
   alternates: {
     canonical: "https://www.pptmaster.app/contact",
   },
   openGraph: {
-    title: "Contact Us - PPT Master",
-    description: "Get in touch with the PPT Master team. We're here to help with questions, feedback, or partnership inquiries.",
+    title: "Contact Us | PPTMaster",
+    description: "Get in touch with the PPTMaster team. We're here to help with questions, feedback, or partnership inquiries.",
     url: "/contact",
     type: "website",
     images: [
@@ -17,14 +17,14 @@ export const metadata: Metadata = {
         url: "/og-image.jpeg",
         width: 1200,
         height: 630,
-        alt: "Contact PPT Master",
+        alt: "Contact PPTMaster",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Contact Us - PPT Master",
-    description: "Get in touch with the PPT Master team. We're here to help with questions or feedback.",
+    title: "Contact Us | PPTMaster",
+    description: "Get in touch with the PPTMaster team. We're here to help with questions or feedback.",
     images: ["/og-image.jpeg"],
   },
 };

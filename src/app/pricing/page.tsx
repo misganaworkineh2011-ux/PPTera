@@ -2,14 +2,14 @@ import { PricingPageClient } from "./PricingPageClient";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Pricing - PPT Master AI PowerPoint Plans",
-  description: "Choose the perfect PPT Master plan. Compare free and premium AI presentation features, credits, and pricing options.",
+  title: "Pricing",
+  description: "Choose the perfect PPTMaster (PPT Master) plan. Compare free and premium AI presentation features, credits, and pricing options.",
   alternates: {
     canonical: "https://www.pptmaster.app/pricing",
   },
   openGraph: {
-    title: "Pricing - PPT Master AI PowerPoint Plans",
-    description: "Choose the perfect PPT Master plan. Compare free and premium AI presentation features, credits, and pricing options.",
+    title: "Pricing | PPTMaster – AI PowerPoint Plans",
+    description: "Choose the perfect PPTMaster plan. Compare free and premium AI presentation features, credits, and pricing options.",
     url: "/pricing",
     type: "website",
     images: [
@@ -17,14 +17,14 @@ export const metadata: Metadata = {
         url: "/og-image.jpeg",
         width: 1200,
         height: 630,
-        alt: "PPT Master Pricing Plans",
+        alt: "PPTMaster Pricing Plans",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Pricing - PPT Master AI PowerPoint Plans",
-    description: "Choose the perfect PPT Master plan. Compare free and premium AI presentation features.",
+    title: "Pricing | PPTMaster – AI PowerPoint Plans",
+    description: "Choose the perfect PPTMaster plan. Compare free and premium AI presentation features.",
     images: ["/og-image.jpeg"],
   },
 };
@@ -36,10 +36,10 @@ const pricingFaqSchema = {
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "How much does PPT Master cost?",
+      "name": "How much does PPTMaster cost?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "PPT Master offers a free plan with 200 credits. Paid plans start at $9/month for Plus (1,000 credits), $19/month for Pro (4,000 credits), and $49/month for Ultra (20,000 credits).",
+        "text": "PPTMaster (PPT Master) offers a free plan with 200 credits. Paid plans start at $9/month for Plus (1,000 credits), $19/month for Pro (4,000 credits), and $49/month for Ultra (20,000 credits).",
       },
     },
     {
@@ -55,7 +55,7 @@ const pricingFaqSchema = {
       "name": "Can I cancel my subscription anytime?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes, you can cancel your PPT Master subscription at any time from your account settings. Your access continues until the end of your billing period.",
+        "text": "Yes, you can cancel your PPTMaster subscription at any time from your account settings. Your access continues until the end of your billing period.",
       },
     },
     {

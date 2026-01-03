@@ -2,14 +2,14 @@ import CareersPageClient from "./CareersPageClient";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Careers - Join PPT Master Team",
-  description: "Join the PPT Master team and help build the future of AI presentations. Explore open positions and apply today.",
+  title: "Careers",
+  description: "Join the PPTMaster (PPT Master) team and help build the future of AI presentations. Explore open positions and apply today.",
   alternates: {
     canonical: "https://www.pptmaster.app/careers",
   },
   openGraph: {
-    title: "Careers - Join PPT Master Team",
-    description: "Join the PPT Master team and help build the future of AI presentations. Explore open positions.",
+    title: "Careers | PPTMaster – Join Our Team",
+    description: "Join the PPTMaster team and help build the future of AI presentations. Explore open positions.",
     url: "/careers",
     type: "website",
     images: [
@@ -17,14 +17,14 @@ export const metadata: Metadata = {
         url: "/og-image.jpeg",
         width: 1200,
         height: 630,
-        alt: "PPT Master Careers",
+        alt: "PPTMaster Careers",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Careers - Join PPT Master Team",
-    description: "Join the PPT Master team and help build the future of AI presentations.",
+    title: "Careers | PPTMaster – Join Our Team",
+    description: "Join the PPTMaster team and help build the future of AI presentations.",
     images: ["/og-image.jpeg"],
   },
 };
