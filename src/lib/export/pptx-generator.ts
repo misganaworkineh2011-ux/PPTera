@@ -66,33 +66,54 @@ function defineSlideMasters(
   if (addWatermark) {
     const masterObjects: PptxGenJS.SlideMasterProps["objects"] = [];
 
-    // Add logo in bottom-right corner (uneditable) - larger size
+    // Watermark container background - bottom right corner with padding
+    // Standard 16:9 slide is 10" x 5.625"
+    const containerWidth = logoBase64 ? 2.0 : 1.6;
+    const containerHeight = 0.35;
+    const containerX = 10 - containerWidth - 0.15; // 0.15" from right edge
+    const containerY = 5.625 - containerHeight - 0.1; // 0.1" from bottom edge
+
+    // Add background rectangle for watermark
+    masterObjects.push({
+      rect: {
+        x: containerX,
+        y: containerY,
+        w: containerWidth,
+        h: containerHeight,
+        fill: { color: "F5F5F5" },
+        line: { color: "E0E0E0", width: 0.5 },
+        rectRadius: 0.05,
+      },
+    });
+
+    // Add logo in bottom-right corner (uneditable)
     if (logoBase64) {
       masterObjects.push({
         image: {
-          x: 7.8,
-          y: 4.7,
-          w: 0.4,
-          h: 0.4,
+          x: containerX + 0.08,
+          y: containerY + 0.05,
+          w: 0.25,
+          h: 0.25,
           data: logoBase64,
         },
       });
     }
 
-    // Add "Made with PPTMaster" text watermark (uneditable) - larger
+    // Add "Made with PPTMaster" text watermark (uneditable) - single line
     masterObjects.push({
       text: {
         text: "Made with PPTMaster",
         options: {
-          x: logoBase64 ? 8.25 : 7.8,
-          y: 4.75,
-          w: 1.8,
-          h: 0.35,
-          fontSize: 12,
+          x: logoBase64 ? containerX + 0.38 : containerX + 0.1,
+          y: containerY,
+          w: logoBase64 ? 1.5 : 1.4,
+          h: containerHeight,
+          fontSize: 10,
           fontFace: "Arial",
-          color: "888888",
+          color: "666666",
           align: "left",
           valign: "middle",
+          wrap: false,
         },
       },
     });
@@ -185,7 +206,7 @@ export async function injectSlideMasterWatermark(
 /**
  * Create XML for watermark shapes to inject into slide master
  * These shapes will be uneditable in normal slide view
- * Larger size with "Made with PPTMaster" text in bottom-right corner
+ * Positioned in bottom-right corner with solid background
  */
 function createWatermarkShapesXml(logoRId: string, hasLogo: boolean): string {
   const shapes: string[] = [];
@@ -193,17 +214,58 @@ function createWatermarkShapesXml(logoRId: string, hasLogo: boolean): string {
   // EMU conversions (1 inch = 914400 EMUs)
   const inchToEmu = (inches: number) => Math.round(inches * 914400);
 
-  // Logo position: bottom-right corner - larger
-  const logoX = inchToEmu(7.8);
-  const logoY = inchToEmu(4.7);
-  const logoW = inchToEmu(0.4);
-  const logoH = inchToEmu(0.4);
+  // Standard 16:9 slide is 10" x 5.625"
+  const containerWidth = hasLogo ? 2.0 : 1.6;
+  const containerHeight = 0.35;
+  const containerX = 10 - containerWidth - 0.15; // 0.15" from right edge
+  const containerY = 5.625 - containerHeight - 0.1; // 0.1" from bottom edge
 
-  // Text position: next to logo - larger
-  const textX = hasLogo ? inchToEmu(8.25) : inchToEmu(7.8);
-  const textY = inchToEmu(4.75);
-  const textW = inchToEmu(1.8);
-  const textH = inchToEmu(0.35);
+  // Add background rectangle shape
+  shapes.push(`
+    <p:sp>
+      <p:nvSpPr>
+        <p:cNvPr id="99900" name="Watermark Background"/>
+        <p:cNvSpPr/>
+        <p:nvPr/>
+      </p:nvSpPr>
+      <p:spPr>
+        <a:xfrm>
+          <a:off x="${inchToEmu(containerX)}" y="${inchToEmu(containerY)}"/>
+          <a:ext cx="${inchToEmu(containerWidth)}" cy="${inchToEmu(containerHeight)}"/>
+        </a:xfrm>
+        <a:prstGeom prst="roundRect">
+          <a:avLst>
+            <a:gd name="adj" fmla="val 10000"/>
+          </a:avLst>
+        </a:prstGeom>
+        <a:solidFill>
+          <a:srgbClr val="F5F5F5"/>
+        </a:solidFill>
+        <a:ln w="6350">
+          <a:solidFill>
+            <a:srgbClr val="E0E0E0"/>
+          </a:solidFill>
+        </a:ln>
+      </p:spPr>
+      <p:txBody>
+        <a:bodyPr/>
+        <a:lstStyle/>
+        <a:p/>
+      </p:txBody>
+    </p:sp>
+  `);
+
+  // Logo position inside container
+  const logoX = containerX + 0.08;
+  const logoY = containerY + 0.05;
+  const logoW = 0.25;
+  const logoH = 0.25;
+
+  // Text position inside container
+  const textX = hasLogo ? containerX + 0.38 : containerX + 0.1;
+  const textY = containerY;
+  const textW = hasLogo ? 1.5 : 1.4;
+  const textH = containerHeight;
 
   // Add logo image shape
   if (hasLogo) {
@@ -224,8 +286,8 @@ function createWatermarkShapesXml(logoRId: string, hasLogo: boolean): string {
         </p:blipFill>
         <p:spPr>
           <a:xfrm>
-            <a:off x="${logoX}" y="${logoY}"/>
-            <a:ext cx="${logoW}" cy="${logoH}"/>
+            <a:off x="${inchToEmu(logoX)}" y="${inchToEmu(logoY)}"/>
+            <a:ext cx="${inchToEmu(logoW)}" cy="${inchToEmu(logoH)}"/>
           </a:xfrm>
           <a:prstGeom prst="rect">
             <a:avLst/>
@@ -235,7 +297,7 @@ function createWatermarkShapesXml(logoRId: string, hasLogo: boolean): string {
     `);
   }
 
-  // Add "Made with PPTMaster" text shape - larger font
+  // Add "Made with PPTMaster" text shape - no wrap for single line
   shapes.push(`
     <p:sp>
       <p:nvSpPr>
@@ -245,8 +307,8 @@ function createWatermarkShapesXml(logoRId: string, hasLogo: boolean): string {
       </p:nvSpPr>
       <p:spPr>
         <a:xfrm>
-          <a:off x="${textX}" y="${textY}"/>
-          <a:ext cx="${textW}" cy="${textH}"/>
+          <a:off x="${inchToEmu(textX)}" y="${inchToEmu(textY)}"/>
+          <a:ext cx="${inchToEmu(textW)}" cy="${inchToEmu(textH)}"/>
         </a:xfrm>
         <a:prstGeom prst="rect">
           <a:avLst/>
@@ -254,14 +316,14 @@ function createWatermarkShapesXml(logoRId: string, hasLogo: boolean): string {
         <a:noFill/>
       </p:spPr>
       <p:txBody>
-        <a:bodyPr wrap="square" anchor="ctr"/>
+        <a:bodyPr wrap="none" anchor="ctr"/>
         <a:lstStyle/>
         <a:p>
           <a:pPr algn="l"/>
           <a:r>
-            <a:rPr lang="en-US" sz="1200" dirty="0">
+            <a:rPr lang="en-US" sz="1000" dirty="0">
               <a:solidFill>
-                <a:srgbClr val="888888"/>
+                <a:srgbClr val="666666"/>
               </a:solidFill>
               <a:latin typeface="Arial"/>
             </a:rPr>

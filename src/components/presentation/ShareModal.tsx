@@ -160,8 +160,11 @@ export default function ShareModal({
 
 function ExportTab({ presentationId, theme, onExportStart }: { presentationId: string; theme?: Theme; onExportStart?: (format: "pdf" | "pptx" | "images") => void }) {
   const [isExporting, setIsExporting] = useState<"pdf" | "pptx" | "images" | null>(null);
+  const [selectedFormat, setSelectedFormat] = useState<"pdf" | "pptx" | "images">("pptx");
   const isDark = theme?.colors.background.startsWith("#") &&
     parseInt(theme.colors.background.slice(1, 3), 16) < 128;
+  
+  const primaryColor = theme?.colors.primary || "#06b6d4";
   
   const colors = isDark ? {
     text: "#fafafa",
@@ -171,16 +174,6 @@ function ExportTab({ presentationId, theme, onExportStart }: { presentationId: s
     cardBg: "#27272a",
     hoverBorder: "#06b6d4",
     hoverBg: "rgba(6, 182, 212, 0.1)",
-    iconBg: {
-      pdf: "rgba(239, 68, 68, 0.2)",
-      pptx: "rgba(249, 115, 22, 0.2)",
-      images: "rgba(168, 85, 247, 0.2)",
-    },
-    iconColor: {
-      pdf: "#f87171",
-      pptx: "#fb923c",
-      images: "#c084fc",
-    },
   } : {
     text: "#0f172a",
     textMuted: "#64748b",
@@ -189,29 +182,55 @@ function ExportTab({ presentationId, theme, onExportStart }: { presentationId: s
     cardBg: "#ffffff",
     hoverBorder: "#06b6d4",
     hoverBg: "rgba(6, 182, 212, 0.05)",
-    iconBg: {
-      pdf: "#fee2e2",
-      pptx: "#ffedd5",
-      images: "#f3e8ff",
-    },
-    iconColor: {
-      pdf: "#dc2626",
-      pptx: "#ea580c",
-      images: "#9333ea",
-    },
   };
 
-  const handleExport = async (format: "pdf" | "pptx" | "images") => {
-    setIsExporting(format);
-    onExportStart?.(format);
+  // Microsoft PowerPoint icon - official style
+  const PowerPointIcon = ({ selected }: { selected: boolean }) => (
+    <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+      <rect x="8" y="4" width="32" height="40" rx="2" fill={selected ? "#D24726" : "#6B7280"} />
+      <rect x="4" y="12" width="20" height="24" rx="1" fill={selected ? "#B7472A" : "#525252"} />
+      <text x="14" y="28" fontSize="14" fontWeight="bold" fill="white" textAnchor="middle">P</text>
+      <path d="M28 14h8M28 20h8M28 26h8M28 32h6" stroke="white" strokeWidth="2" strokeLinecap="round" opacity="0.8" />
+    </svg>
+  );
+
+  // Adobe PDF icon - official style  
+  const PDFIcon = ({ selected }: { selected: boolean }) => (
+    <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+      <path d="M8 4h24l8 8v32a2 2 0 01-2 2H8a2 2 0 01-2-2V6a2 2 0 012-2z" fill={selected ? "#FF0000" : "#6B7280"} />
+      <path d="M32 4v8h8" fill={selected ? "#CC0000" : "#525252"} />
+      <path d="M32 4l8 8h-8V4z" fill={selected ? "#FF3333" : "#737373"} />
+      <text x="24" y="32" fontSize="10" fontWeight="bold" fill="white" textAnchor="middle">PDF</text>
+    </svg>
+  );
+
+  // Image/Gallery icon - photo style
+  const ImagesIcon = ({ selected }: { selected: boolean }) => (
+    <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+      <rect x="4" y="8" width="40" height="32" rx="3" fill={selected ? "#4CAF50" : "#6B7280"} />
+      <circle cx="14" cy="18" r="4" fill={selected ? "#81C784" : "#9CA3AF"} />
+      <path d="M4 32l10-10 8 8 8-12 14 18H4v-4z" fill={selected ? "#2E7D32" : "#525252"} />
+      <rect x="8" y="4" width="36" height="28" rx="2" fill="none" stroke={selected ? "#66BB6A" : "#9CA3AF"} strokeWidth="2" opacity="0.5" />
+    </svg>
+  );
+
+  const formats = [
+    { id: "pptx" as const, Icon: PowerPointIcon, label: "PowerPoint", ext: ".pptx" },
+    { id: "pdf" as const, Icon: PDFIcon, label: "PDF", ext: ".pdf" },
+    { id: "images" as const, Icon: ImagesIcon, label: "Images", ext: ".zip" },
+  ];
+
+  const handleExport = async () => {
+    setIsExporting(selectedFormat);
+    onExportStart?.(selectedFormat);
     
     try {
       const params = new URLSearchParams();
-      params.set("format", format);
+      params.set("format", selectedFormat);
       params.set("range", "all");
 
       const exportUrl = `/api/presentations/${presentationId}/export?${params.toString()}`;
-      toast.info(`Preparing ${format.toUpperCase()} export...`);
+      toast.info(`Preparing ${selectedFormat.toUpperCase()} export...`);
 
       const response = await fetch(exportUrl);
       
@@ -223,7 +242,7 @@ function ExportTab({ presentationId, theme, onExportStart }: { presentationId: s
       const blob = await response.blob();
       
       const contentDisposition = response.headers.get("Content-Disposition");
-      let filename = `presentation.${format === "images" ? "zip" : format}`;
+      let filename = `presentation.${selectedFormat === "images" ? "zip" : selectedFormat}`;
       if (contentDisposition) {
         const match = contentDisposition.match(/filename="?([^";\n]+)"?/);
         if (match && match[1]) {
@@ -257,134 +276,51 @@ function ExportTab({ presentationId, theme, onExportStart }: { presentationId: s
         <p className="text-sm" style={{ color: colors.textMuted }}>Download your presentation in various formats</p>
       </div>
 
-      <div className="grid gap-4">
-        {/* PDF Export */}
-        <button 
-          onClick={() => handleExport("pdf")}
-          disabled={isExporting !== null}
-          className="flex items-center justify-between p-5 rounded-xl border-2 transition-all group disabled:opacity-50"
-          style={{ borderColor: colors.border, backgroundColor: colors.cardBg }}
-          onMouseEnter={(e) => {
-            if (!isExporting) {
-              e.currentTarget.style.borderColor = colors.hoverBorder;
-              e.currentTarget.style.backgroundColor = colors.hoverBg;
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = colors.border;
-            e.currentTarget.style.backgroundColor = colors.cardBg;
-          }}
-        >
-          <div className="flex items-center gap-4">
-            <div 
-              className="w-12 h-12 rounded-lg flex items-center justify-center transition"
-              style={{ backgroundColor: colors.iconBg.pdf }}
+      {/* Format Selection - Grid like ExportModal */}
+      <div>
+        <label className="text-sm font-medium mb-3 block" style={{ color: colors.textMuted }}>Format</label>
+        <div className="grid grid-cols-3 gap-3">
+          {formats.map((fmt) => (
+            <button
+              key={fmt.id}
+              onClick={() => setSelectedFormat(fmt.id)}
+              disabled={isExporting !== null}
+              className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all disabled:opacity-50"
+              style={{
+                borderColor: selectedFormat === fmt.id ? primaryColor : colors.border,
+                backgroundColor: selectedFormat === fmt.id ? (isDark ? "rgba(6, 182, 212, 0.1)" : "rgba(6, 182, 212, 0.05)") : colors.cardBg,
+              }}
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ color: colors.iconColor.pdf }}>
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <polyline points="14 2 14 8 20 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-            <div className="text-left">
-              <p className="font-semibold" style={{ color: colors.text }}>PDF Document</p>
-              <p className="text-sm" style={{ color: colors.textMuted }}>Best for sharing and printing</p>
-            </div>
-          </div>
-          {isExporting === "pdf" ? (
-            <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" style={{ color: colors.textMuted }} />
-          ) : (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: colors.textMuted }}>
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-          )}
-        </button>
+              <fmt.Icon selected={selectedFormat === fmt.id} />
+              <span className="text-sm font-medium" style={{ color: colors.text }}>{fmt.label}</span>
+              <span className="text-xs" style={{ color: colors.textMuted }}>{fmt.ext}</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
-        {/* PowerPoint Export */}
-        <button 
-          onClick={() => handleExport("pptx")}
+      {/* Export Button */}
+      <div className="flex justify-end">
+        <button
+          onClick={handleExport}
           disabled={isExporting !== null}
-          className="flex items-center justify-between p-5 rounded-xl border-2 transition-all group disabled:opacity-50"
-          style={{ borderColor: colors.border, backgroundColor: colors.cardBg }}
-          onMouseEnter={(e) => {
-            if (!isExporting) {
-              e.currentTarget.style.borderColor = colors.hoverBorder;
-              e.currentTarget.style.backgroundColor = colors.hoverBg;
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = colors.border;
-            e.currentTarget.style.backgroundColor = colors.cardBg;
-          }}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity disabled:opacity-50"
+          style={{ backgroundColor: primaryColor }}
         >
-          <div className="flex items-center gap-4">
-            <div 
-              className="w-12 h-12 rounded-lg flex items-center justify-center transition"
-              style={{ backgroundColor: colors.iconBg.pptx }}
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ color: colors.iconColor.pptx }}>
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <polyline points="14 2 14 8 20 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-            <div className="text-left">
-              <p className="font-semibold" style={{ color: colors.text }}>PowerPoint (PPTX)</p>
-              <p className="text-sm" style={{ color: colors.textMuted }}>Editable presentation file</p>
-            </div>
-          </div>
-          {isExporting === "pptx" ? (
-            <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" style={{ color: colors.textMuted }} />
+          {isExporting ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Exporting...
+            </>
           ) : (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: colors.textMuted }}>
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-          )}
-        </button>
-
-        {/* Images Export */}
-        <button 
-          onClick={() => handleExport("images")}
-          disabled={isExporting !== null}
-          className="flex items-center justify-between p-5 rounded-xl border-2 transition-all group disabled:opacity-50"
-          style={{ borderColor: colors.border, backgroundColor: colors.cardBg }}
-          onMouseEnter={(e) => {
-            if (!isExporting) {
-              e.currentTarget.style.borderColor = colors.hoverBorder;
-              e.currentTarget.style.backgroundColor = colors.hoverBg;
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = colors.border;
-            e.currentTarget.style.backgroundColor = colors.cardBg;
-          }}
-        >
-          <div className="flex items-center gap-4">
-            <div 
-              className="w-12 h-12 rounded-lg flex items-center justify-center transition"
-              style={{ backgroundColor: colors.iconBg.images }}
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ color: colors.iconColor.images }}>
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" strokeWidth="2" />
-                <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
-                <polyline points="21 15 16 10 5 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
               </svg>
-            </div>
-            <div className="text-left">
-              <p className="font-semibold" style={{ color: colors.text }}>Images (ZIP)</p>
-              <p className="text-sm" style={{ color: colors.textMuted }}>Individual slide images</p>
-            </div>
-          </div>
-          {isExporting === "images" ? (
-            <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" style={{ color: colors.textMuted }} />
-          ) : (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: colors.textMuted }}>
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
+              Export
+            </>
           )}
         </button>
       </div>
