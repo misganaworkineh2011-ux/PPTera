@@ -999,7 +999,7 @@ export async function generateSlideLayout(
     theme: Theme,
     index: number,
     total: number
-) {
+): Promise<void> {
     const layout = slide.layout || "title-center"; // Default
 
     switch (layout) {

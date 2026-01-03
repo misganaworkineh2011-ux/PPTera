@@ -3,7 +3,10 @@ import { db } from "~/server/db";
 import { requireAuth } from "~/lib/clerk-server";
 import { PDFDocument } from "pdf-lib";
 import archiver from "archiver";
-import { generatePptx, generatePptxWithScreenshots } from "~/lib/export/pptx-generator";
+import {
+  generatePptx,
+  injectSlideMasterWatermark,
+} from "~/lib/export/pptx-generator";
 import { isAdobeConfigured, convertPdfToPptx } from "~/lib/export/adobe-pdf-services";
 import { getThemeById, getDefaultTheme } from "~/lib/themes";
 import {
@@ -124,8 +127,15 @@ async function exportPresentation(
   );
 
   // PPTX Export - Using Adobe PDF Services for pixel-perfect AND editable output
-  // Falls back to screenshot-based export if Adobe is not configured
   if (format === "pptx") {
+    // Check if Adobe is configured
+    if (!isAdobeConfigured()) {
+      return NextResponse.json(
+        { error: "PPTX export requires Adobe PDF Services configuration" },
+        { status: 503 }
+      );
+    }
+
     const baseUrl =
       process.env.NEXT_PUBLIC_APP_URL ||
       (process.env.VERCEL_URL
@@ -134,8 +144,8 @@ async function exportPresentation(
 
     let browser;
     try {
-      // First, generate the pixel-perfect PDF using Puppeteer
-      console.log(`[Export PPTX] Generating PDF first for conversion...`);
+      // Generate the pixel-perfect PDF using Puppeteer
+      console.log(`[Export PPTX] Generating PDF for Adobe conversion...`);
       browser = await puppeteer.launch({
         headless: true,
         args: [
@@ -161,7 +171,8 @@ async function exportPresentation(
 
       for (let i = 0; i < slideIndices.length; i++) {
         const slideIndex = slideIndices[i]!;
-        const renderUrl = `${baseUrl}/export-slide/${presentationId}/${slideIndex}?theme=${encodeURIComponent(themeId)}&watermark=${addWatermark}`;
+        // DON'T render watermark in HTML - we'll inject it as uneditable Slide Master element after Adobe conversion
+        const renderUrl = `${baseUrl}/export-slide/${presentationId}/${slideIndex}?theme=${encodeURIComponent(themeId)}&watermark=false`;
 
         console.log(`[Export PPTX] Rendering slide ${slideIndex + 1} to PDF...`);
 
@@ -215,116 +226,15 @@ async function exportPresentation(
       const finalPdfBytes = await mergedPdf.save();
       const pdfBuffer = Buffer.from(finalPdfBytes);
 
-      // Try Adobe PDF Services for pixel-perfect + editable PPTX
-      if (isAdobeConfigured()) {
-        console.log(`[Export PPTX] Using Adobe PDF Services for conversion...`);
-        try {
-          const pptxBuffer = await convertPdfToPptx(pdfBuffer);
+      // Convert PDF to PPTX using Adobe PDF Services
+      console.log(`[Export PPTX] Using Adobe PDF Services for conversion...`);
+      let pptxBuffer = await convertPdfToPptx(pdfBuffer);
 
-          await db.activity.create({
-            data: {
-              userId: userId,
-              type: "export",
-              description: `Exported "${presentation.title}" as PPTX (Adobe)`,
-              metadata: {
-                presentationId: presentationId,
-                format: "pptx",
-                slideCount: slidesToExport.length,
-                method: "adobe",
-              },
-            },
-          });
-
-          return new NextResponse(new Uint8Array(pptxBuffer), {
-            headers: {
-              "Content-Type":
-                "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-              "Content-Disposition": `attachment; filename="${encodeURIComponent(presentation.title)}.pptx"`,
-              "Content-Length": pptxBuffer.length.toString(),
-            },
-          });
-        } catch (adobeError) {
-          console.error("[Export PPTX] Adobe conversion failed:", adobeError);
-          // Fall through to screenshot-based export
-        }
+      // Inject uneditable Slide Master watermark for free users
+      if (addWatermark) {
+        console.log(`[Export PPTX] Injecting uneditable Slide Master watermark...`);
+        pptxBuffer = await injectSlideMasterWatermark(pptxBuffer);
       }
-
-      // Fallback: Use screenshots for pixel-perfect (but non-editable) PPTX
-      console.log(`[Export PPTX] Using screenshot-based export...`);
-      
-      // Re-launch browser for screenshots
-      browser = await puppeteer.launch({
-        headless: true,
-        args: [
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage",
-          "--disable-gpu",
-          "--font-render-hinting=none",
-        ],
-      });
-
-      const screenshotPage = await browser.newPage();
-      await screenshotPage.setViewport({
-        width: pageWidth,
-        height: pageHeight,
-        deviceScaleFactor: 2,
-      });
-
-      const slideScreenshots: Buffer[] = [];
-
-      for (let i = 0; i < slideIndices.length; i++) {
-        const slideIndex = slideIndices[i]!;
-        const renderUrl = `${baseUrl}/export-slide/${presentationId}/${slideIndex}?theme=${encodeURIComponent(themeId)}&watermark=${addWatermark}`;
-
-        await screenshotPage.goto(renderUrl, {
-          waitUntil: "networkidle0",
-          timeout: 60000,
-        });
-
-        await screenshotPage
-          .waitForSelector('[data-slide-container="true"]', { timeout: 15000 })
-          .catch(() => {});
-
-        await screenshotPage.evaluate(async () => {
-          const images = document.querySelectorAll("img");
-          await Promise.all(
-            Array.from(images).map((img) => {
-              if (img.complete) return Promise.resolve();
-              return new Promise((resolve) => {
-                img.onload = resolve;
-                img.onerror = resolve;
-                setTimeout(resolve, 5000);
-              });
-            })
-          );
-        });
-
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-
-        const slideElement = await screenshotPage.$('[data-slide-container="true"]');
-        let screenshot: Buffer;
-
-        if (slideElement) {
-          screenshot = (await slideElement.screenshot({ type: "png" })) as Buffer;
-        } else {
-          screenshot = (await screenshotPage.screenshot({
-            type: "png",
-            fullPage: false,
-            clip: { x: 0, y: 0, width: pageWidth, height: pageHeight },
-          })) as Buffer;
-        }
-
-        slideScreenshots.push(Buffer.from(screenshot));
-      }
-
-      await browser.close();
-
-      const pptxBuffer = await generatePptxWithScreenshots({
-        screenshots: slideScreenshots,
-        title: presentation.title,
-        addWatermark: false,
-      });
 
       await db.activity.create({
         data: {
@@ -335,7 +245,7 @@ async function exportPresentation(
             presentationId: presentationId,
             format: "pptx",
             slideCount: slidesToExport.length,
-            method: "screenshot",
+            method: "adobe",
           },
         },
       });
@@ -358,45 +268,13 @@ async function exportPresentation(
         }
       }
 
-      // Final fallback to programmatic generation
-      console.log("[Export PPTX] Falling back to programmatic generation...");
-      try {
-        const pptxBuffer = await generatePptx({
-          slides: slidesToExport,
-          theme,
-          title: presentation.title,
-          addWatermark,
-        });
-
-        await db.activity.create({
-          data: {
-            userId: userId,
-            type: "export",
-            description: `Exported "${presentation.title}" as PPTX (fallback)`,
-            metadata: {
-              presentationId: presentationId,
-              format: "pptx",
-              slideCount: slidesToExport.length,
-              method: "programmatic",
-            },
-          },
-        });
-
-        return new NextResponse(new Uint8Array(pptxBuffer), {
-          headers: {
-            "Content-Type":
-              "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-            "Content-Disposition": `attachment; filename="${encodeURIComponent(presentation.title)}.pptx"`,
-            "Content-Length": pptxBuffer.length.toString(),
-          },
-        });
-      } catch (fallbackError) {
-        console.error("[Export PPTX] Fallback also failed:", fallbackError);
-        return NextResponse.json(
-          { error: "PPTX export failed", details: error instanceof Error ? error.message : "Unknown error" },
-          { status: 500 }
-        );
-      }
+      return NextResponse.json(
+        {
+          error: "PPTX export failed",
+          details: error instanceof Error ? error.message : "Unknown error",
+        },
+        { status: 500 }
+      );
     }
   }
 
