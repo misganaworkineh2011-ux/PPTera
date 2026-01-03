@@ -258,6 +258,7 @@ export default function ThemeSelector({
             <div className="grid grid-cols-2 gap-4">
               {filteredThemes.map((theme) => {
                 const isSelected = theme.id === previewThemeId;
+                const hasBackgroundImage = !!theme.previewBackgroundImage || !!theme.backgroundImage;
                 return (
                   <button
                     key={theme.id}
@@ -276,28 +277,51 @@ export default function ThemeSelector({
                           backgroundColor: theme.preview.titleBg,
                           backgroundImage: theme.previewBackgroundImage 
                             ? `url(${theme.previewBackgroundImage})`
+                            : theme.backgroundImage
+                            ? `url(${theme.backgroundImage})`
                             : theme.slideStyles.title.pattern || "none",
-                          backgroundSize: theme.previewBackgroundImage ? "cover" : "auto",
-                          backgroundPosition: theme.previewBackgroundImage ? "center" : "center",
+                          backgroundSize: "cover",
+                          backgroundPosition: "center",
                         }}
                       >
-                        {/* Content box centered on background with SVG preview */}
+                        {/* Overlay for background images */}
+                        {(hasBackgroundImage || theme.overlay) && (
+                          <div
+                            className="absolute inset-0"
+                            style={{ background: theme.overlay || "rgba(0,0,0,0.4)" }}
+                          />
+                        )}
+                        
+                        {/* Content box centered on background with inline preview */}
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div 
-                            className="rounded-lg backdrop-blur-md transition-all duration-300 w-[85%] h-[80%] flex items-center justify-center overflow-hidden"
+                            className={`rounded-lg backdrop-blur-sm transition-all duration-300 flex flex-col justify-center px-3 py-2 overflow-hidden ${
+                              hasBackgroundImage ? "w-[75%] h-[70%]" : "w-[85%] h-[80%]"
+                            }`}
                             style={{
-                              backgroundColor: theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
+                              backgroundColor: hasBackgroundImage 
+                                ? `${theme.cardBox?.background || theme.colors.background}f0`
+                                : theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
                               border: theme.cardBox?.borderColor ? `1px solid ${theme.cardBox.borderColor}` : "none",
-                              boxShadow: theme.cardBox?.shadow || "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
                             }}
                           >
-                            {/* SVG preview from API */}
-                            <img 
-                              src={`/api/themes/preview/${theme.id}`}
-                              alt={`${theme.name} preview`}
-                              className="w-full h-full object-contain"
-                              loading="lazy"
-                            />
+                            {/* Inline text preview */}
+                            <div 
+                              className="text-sm font-bold mb-1 truncate"
+                              style={{ color: theme.cardBox?.titleColor || theme.colors.heading, fontFamily: theme.fonts?.heading?.family || "inherit" }}
+                            >
+                              Title
+                            </div>
+                            <div className="flex items-center gap-1 text-xs">
+                              <span style={{ color: theme.cardBox?.bodyColor || theme.colors.text }}>Body &</span>
+                              <span 
+                                className="underline"
+                                style={{ color: theme.cardBox?.accentColor || theme.colors.accent || theme.colors.primary }}
+                              >
+                                link
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
