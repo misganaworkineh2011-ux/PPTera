@@ -96,7 +96,7 @@ function LandingPageServer() {
     <>
       {/* Critical SEO content - server-rendered for Google */}
       <div className="sr-only" aria-hidden="false">
-        <h1>PPT Master | Best AI PowerPoint Generator & Presentation Maker</h1>
+        <h1>PPTMaster | Best AI PowerPoint Generator and Presentation Maker</h1>
         <p>
           PPT Master is your free AI-powered design partner for creating stunning presentations effortlessly. 
           No coding or design skills required. Just describe your idea and let AI build professional slides for you.
