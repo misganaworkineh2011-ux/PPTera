@@ -174,14 +174,14 @@ export function getBoxLayoutGridTemplate(
 
 // Base styles helper - for layout elements inside slides
 export function getBaseBoxStyles(theme: Theme) {
-  // Use layoutElements for inner cards/boxes (lighter color)
+  // Use layoutElements for inner cards/boxes (better contrast)
   // Fall back to cardBox if layoutElements not defined
   const layoutElements = theme.layoutElements;
   const cardBox = theme.cardBox;
   
   return {
-    // Layout elements use the lighter layoutElements colors
-    bgColor: layoutElements?.background || cardBox?.background || `${theme.colors.surface}80`,
+    // Layout elements use the layoutElements colors for good contrast
+    bgColor: layoutElements?.background || cardBox?.background || theme.colors.surface,
     borderColor: layoutElements?.borderColor || cardBox?.borderColor || theme.colors.border,
     // Text colors still come from cardBox
     accentColor: cardBox?.accentColor || theme.colors.accent,

@@ -121,23 +121,24 @@ export const corporateCleanTheme: Theme = {
     },
   },
 
-  // Card/Box styling
+  // Card/Box styling (used for slide backgrounds)
   cardBox: {
-    background: "linear-gradient(135deg, #ffffff 0%, #f8f9fc 100%)",
-    borderColor: "#e5e7eb",
-    titleColor: "#0d0d1a",
-    bodyColor: "#4b5563",
-    accentColor: "#4f46e5",
+    background: "#f8f9fc",           // Soft blue-white - slide background color
+    borderColor: "#e5e7eb",          // Light gray border
+    titleColor: "#0d0d1a",           // Near-black for titles
+    bodyColor: "#4b5563",            // Gray for body text
+    accentColor: "#4f46e5",          // Indigo accent
     shadow: "0 2px 8px rgba(0, 0, 0, 0.04)",
-    hoverBackground: "#f8f9ff",
+    hoverBackground: "#f0f1f5",
     hoverBorderColor: "#d1d5db",
   },
 
-  // Layout element colors
+  // Layout element colors (for cards, boxes, steps inside slides)
+  // These need good contrast against the slide background (#f8f9fc)
   layoutElements: {
-    background: "linear-gradient(135deg, #f8f9fc 0%, #f3f4f8 100%)",
-    borderColor: "#e5e7eb",
-    hoverBackground: "#f0f1f5",
+    background: "#ffffff",           // White background for cards/boxes - good contrast
+    borderColor: "#d1d5db",          // Stronger gray border for visibility
+    hoverBackground: "#f9fafb",      // Slightly off-white on hover
   },
 
   // Gradients

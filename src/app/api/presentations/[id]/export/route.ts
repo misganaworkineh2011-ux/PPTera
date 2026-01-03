@@ -1,25 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/server/db";
 import { requireAuth } from "~/lib/clerk-server";
-import { PDFDocument, rgb } from "pdf-lib";
+import { PDFDocument } from "pdf-lib";
 import archiver from "archiver";
-import { generatePptx } from "~/lib/export/pptx-generator";
+import { generatePptx, generatePptxWithScreenshots } from "~/lib/export/pptx-generator";
+import { isAdobeConfigured, convertPdfToPptx } from "~/lib/export/adobe-pdf-services";
 import { getThemeById, getDefaultTheme } from "~/lib/themes";
-import { isCustomThemeId, getCustomThemeDbId, convertCustomThemeToTheme } from "~/lib/custom-theme-utils";
-import fs from "fs";
-import path from "path";
-
-function getLogoBuffer(): Buffer | null {
-  try {
-    const logoPath = path.join(process.cwd(), "public", "logo.png");
-    if (fs.existsSync(logoPath)) {
-      return fs.readFileSync(logoPath);
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
+import {
+  isCustomThemeId,
+  getCustomThemeDbId,
+  convertCustomThemeToTheme,
+} from "~/lib/custom-theme-utils";
+import puppeteer from "puppeteer";
 
 interface SlideImage {
   url: string;
@@ -48,20 +40,6 @@ interface SlideData {
   transformedContent?: TransformedContent;
 }
 
-async function fetchImageAsBuffer(url: string): Promise<Buffer | null> {
-  try {
-    const response = await fetch(url, {
-      headers: { "User-Agent": "Mozilla/5.0" },
-      signal: AbortSignal.timeout(15000),
-    });
-    if (!response.ok) return null;
-    const arrayBuffer = await response.arrayBuffer();
-    return Buffer.from(arrayBuffer);
-  } catch {
-    return null;
-  }
-}
-
 async function exportPresentation(
   presentationId: string,
   userId: string,
@@ -73,7 +51,6 @@ async function exportPresentation(
     return NextResponse.json({ error: "Invalid format" }, { status: 400 });
   }
 
-  // Get presentation
   const presentation = await db.presentation.findFirst({
     where: {
       id: presentationId,
@@ -85,12 +62,14 @@ async function exportPresentation(
   });
 
   if (!presentation) {
-    return NextResponse.json({ error: "Presentation not found" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Presentation not found" },
+      { status: 404 }
+    );
   }
 
   const allSlides = (presentation.slides as unknown as SlideData[]) || [];
 
-  // Apply slide range filter
   let slideIndices: number[] = [];
   if (range === "current" && customRange?.from) {
     slideIndices = [customRange.from - 1];
@@ -106,16 +85,17 @@ async function exportPresentation(
     slideIndices = Array.from({ length: allSlides.length }, (_, i) => i);
   }
 
-  // Check subscription for watermark
   const user = await db.user.findUnique({
     where: { id: userId },
     select: { subscriptionPlan: true },
   });
-  const isPaidPlan = user?.subscriptionPlan && ["plus", "pro", "ultra"].includes(user.subscriptionPlan);
+  const isPaidPlan =
+    user?.subscriptionPlan &&
+    ["plus", "pro", "ultra"].includes(user.subscriptionPlan);
   const addWatermark = !isPaidPlan;
 
-  // Get theme
-  const themeId = (presentation.content as { theme?: string })?.theme || "elegant-noir";
+  const themeId =
+    (presentation.content as { theme?: string })?.theme || "sprout";
   let theme = getDefaultTheme();
 
   if (isCustomThemeId(themeId)) {
@@ -134,141 +114,421 @@ async function exportPresentation(
     theme = getThemeById(themeId) || getDefaultTheme();
   }
 
-  // Get slides to export
-  const slidesToExport = slideIndices.map(i => allSlides[i]!);
+  const slidesToExport = slideIndices.map((i) => allSlides[i]!);
 
-  console.log(`[Export] Starting ${format} export for presentation ${presentationId}`);
-  console.log(`[Export] Theme: ${theme.id}, Slides: ${slidesToExport.length}, Watermark: ${addWatermark}`);
+  console.log(
+    `[Export] Starting ${format} export for presentation ${presentationId}`
+  );
+  console.log(
+    `[Export] Theme: ${theme.id}, Slides: ${slidesToExport.length}, Watermark: ${addWatermark}`
+  );
 
-  // Handle different export formats
+  // PPTX Export - Using Adobe PDF Services for pixel-perfect AND editable output
+  // Falls back to screenshot-based export if Adobe is not configured
   if (format === "pptx") {
-    // Generate PPTX with pptxgenjs
-    const pptxBuffer = await generatePptx({
-      slides: slidesToExport,
-      theme,
-      title: presentation.title,
-      addWatermark,
-    });
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      (process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "http://localhost:3000");
 
-    // Log activity
-    await db.activity.create({
-      data: {
-        userId: userId,
-        type: "export",
-        description: `Exported "${presentation.title}" as PPTX`,
-        metadata: { presentationId: presentationId, format: "pptx", slideCount: slidesToExport.length },
-      },
-    });
+    let browser;
+    try {
+      // First, generate the pixel-perfect PDF using Puppeteer
+      console.log(`[Export PPTX] Generating PDF first for conversion...`);
+      browser = await puppeteer.launch({
+        headless: true,
+        args: [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage",
+          "--disable-gpu",
+          "--font-render-hinting=none",
+        ],
+      });
 
-    return new NextResponse(new Uint8Array(pptxBuffer), {
-      headers: {
-        "Content-Type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-        "Content-Disposition": `attachment; filename="${encodeURIComponent(presentation.title)}.pptx"`,
-        "Content-Length": pptxBuffer.length.toString(),
-      },
-    });
-  }
-
-  if (format === "pdf") {
-    // Generate PDF from slide content (text-based, not screenshot)
-    const pdfDoc = await PDFDocument.create();
-    const pageWidth = 960;
-    const pageHeight = 540;
-
-    for (const slide of slidesToExport) {
-      const page = pdfDoc.addPage([pageWidth, pageHeight]);
-
-      // Background color
-      const bgColor = theme.colors.background.startsWith("#")
-        ? theme.colors.background
-        : "#0a0a0b";
-      const bgRgb = hexToRgb(bgColor);
-      page.drawRectangle({
-        x: 0,
-        y: 0,
+      const page = await browser.newPage();
+      const pageWidth = 1920;
+      const pageHeight = 1080;
+      await page.setViewport({
         width: pageWidth,
         height: pageHeight,
-        color: rgb(bgRgb.r / 255, bgRgb.g / 255, bgRgb.b / 255),
+        deviceScaleFactor: 1,
       });
 
-      // Title
-      const titleColor = hexToRgb(theme.colors.heading);
-      page.drawText(slide.title || "", {
-        x: 40,
-        y: pageHeight - 80,
-        size: slide.type === "title" ? 36 : 28,
-        color: rgb(titleColor.r / 255, titleColor.g / 255, titleColor.b / 255),
-      });
+      // Generate PDF for each slide and merge them
+      const pdfBuffers: Buffer[] = [];
 
-      // Subtitle for title slides
-      if (slide.type === "title" && slide.subtitle) {
-        const subtitleColor = hexToRgb(theme.colors.textMuted);
-        page.drawText(slide.subtitle, {
-          x: 40,
-          y: pageHeight - 130,
-          size: 18,
-          color: rgb(subtitleColor.r / 255, subtitleColor.g / 255, subtitleColor.b / 255),
+      for (let i = 0; i < slideIndices.length; i++) {
+        const slideIndex = slideIndices[i]!;
+        const renderUrl = `${baseUrl}/export-slide/${presentationId}/${slideIndex}?theme=${encodeURIComponent(themeId)}&watermark=${addWatermark}`;
+
+        console.log(`[Export PPTX] Rendering slide ${slideIndex + 1} to PDF...`);
+
+        await page.goto(renderUrl, {
+          waitUntil: "networkidle0",
+          timeout: 60000,
         });
+
+        await page
+          .waitForSelector('[data-slide-container="true"]', { timeout: 15000 })
+          .catch(() => {});
+
+        // Wait for images to load
+        await page.evaluate(async () => {
+          const images = document.querySelectorAll("img");
+          await Promise.all(
+            Array.from(images).map((img) => {
+              if (img.complete) return Promise.resolve();
+              return new Promise((resolve) => {
+                img.onload = resolve;
+                img.onerror = resolve;
+                setTimeout(resolve, 5000);
+              });
+            })
+          );
+        });
+
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
+        const pdfBuffer = await page.pdf({
+          width: `${pageWidth}px`,
+          height: `${pageHeight}px`,
+          printBackground: true,
+          preferCSSPageSize: false,
+          margin: { top: 0, right: 0, bottom: 0, left: 0 },
+        });
+
+        pdfBuffers.push(Buffer.from(pdfBuffer));
       }
 
-      // Bullet points for content slides
-      if (slide.type === "content") {
-        const textColor = hexToRgb(theme.colors.text);
-        const items: TransformedBulletItem[] = slide.transformedContent?.items ||
-          (slide.bulletPoints || []).map(bp => ({ text: bp }));
+      await browser.close();
+      browser = undefined;
 
-        let yPos = pageHeight - 140;
-        for (const item of items.slice(0, 8)) {
-          const text = item.label ? `${item.label}: ${item.text}` : item.text;
-          // Truncate long text
-          const displayText = text.length > 100 ? text.substring(0, 97) + "..." : text;
-          page.drawText(`• ${displayText}`, {
-            x: 50,
-            y: yPos,
-            size: 14,
-            color: rgb(textColor.r / 255, textColor.g / 255, textColor.b / 255),
+      // Merge all PDF pages
+      const mergedPdf = await PDFDocument.create();
+      for (const pdfBuffer of pdfBuffers) {
+        const pdf = await PDFDocument.load(pdfBuffer);
+        const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+        pages.forEach((p) => mergedPdf.addPage(p));
+      }
+      const finalPdfBytes = await mergedPdf.save();
+      const pdfBuffer = Buffer.from(finalPdfBytes);
+
+      // Try Adobe PDF Services for pixel-perfect + editable PPTX
+      if (isAdobeConfigured()) {
+        console.log(`[Export PPTX] Using Adobe PDF Services for conversion...`);
+        try {
+          const pptxBuffer = await convertPdfToPptx(pdfBuffer);
+
+          await db.activity.create({
+            data: {
+              userId: userId,
+              type: "export",
+              description: `Exported "${presentation.title}" as PPTX (Adobe)`,
+              metadata: {
+                presentationId: presentationId,
+                format: "pptx",
+                slideCount: slidesToExport.length,
+                method: "adobe",
+              },
+            },
           });
-          yPos -= 35;
+
+          return new NextResponse(new Uint8Array(pptxBuffer), {
+            headers: {
+              "Content-Type":
+                "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+              "Content-Disposition": `attachment; filename="${encodeURIComponent(presentation.title)}.pptx"`,
+              "Content-Length": pptxBuffer.length.toString(),
+            },
+          });
+        } catch (adobeError) {
+          console.error("[Export PPTX] Adobe conversion failed:", adobeError);
+          // Fall through to screenshot-based export
         }
       }
 
-      // Watermark
-      if (addWatermark) {
-        page.drawText("Made with PPTMaster", {
-          x: pageWidth - 180,
-          y: 20,
-          size: 12,
-          color: rgb(1, 1, 1),
-          opacity: 0.7,
+      // Fallback: Use screenshots for pixel-perfect (but non-editable) PPTX
+      console.log(`[Export PPTX] Using screenshot-based export...`);
+      
+      // Re-launch browser for screenshots
+      browser = await puppeteer.launch({
+        headless: true,
+        args: [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage",
+          "--disable-gpu",
+          "--font-render-hinting=none",
+        ],
+      });
+
+      const screenshotPage = await browser.newPage();
+      await screenshotPage.setViewport({
+        width: pageWidth,
+        height: pageHeight,
+        deviceScaleFactor: 2,
+      });
+
+      const slideScreenshots: Buffer[] = [];
+
+      for (let i = 0; i < slideIndices.length; i++) {
+        const slideIndex = slideIndices[i]!;
+        const renderUrl = `${baseUrl}/export-slide/${presentationId}/${slideIndex}?theme=${encodeURIComponent(themeId)}&watermark=${addWatermark}`;
+
+        await screenshotPage.goto(renderUrl, {
+          waitUntil: "networkidle0",
+          timeout: 60000,
         });
+
+        await screenshotPage
+          .waitForSelector('[data-slide-container="true"]', { timeout: 15000 })
+          .catch(() => {});
+
+        await screenshotPage.evaluate(async () => {
+          const images = document.querySelectorAll("img");
+          await Promise.all(
+            Array.from(images).map((img) => {
+              if (img.complete) return Promise.resolve();
+              return new Promise((resolve) => {
+                img.onload = resolve;
+                img.onerror = resolve;
+                setTimeout(resolve, 5000);
+              });
+            })
+          );
+        });
+
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
+        const slideElement = await screenshotPage.$('[data-slide-container="true"]');
+        let screenshot: Buffer;
+
+        if (slideElement) {
+          screenshot = (await slideElement.screenshot({ type: "png" })) as Buffer;
+        } else {
+          screenshot = (await screenshotPage.screenshot({
+            type: "png",
+            fullPage: false,
+            clip: { x: 0, y: 0, width: pageWidth, height: pageHeight },
+          })) as Buffer;
+        }
+
+        slideScreenshots.push(Buffer.from(screenshot));
+      }
+
+      await browser.close();
+
+      const pptxBuffer = await generatePptxWithScreenshots({
+        screenshots: slideScreenshots,
+        title: presentation.title,
+        addWatermark: false,
+      });
+
+      await db.activity.create({
+        data: {
+          userId: userId,
+          type: "export",
+          description: `Exported "${presentation.title}" as PPTX`,
+          metadata: {
+            presentationId: presentationId,
+            format: "pptx",
+            slideCount: slidesToExport.length,
+            method: "screenshot",
+          },
+        },
+      });
+
+      return new NextResponse(new Uint8Array(pptxBuffer), {
+        headers: {
+          "Content-Type":
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+          "Content-Disposition": `attachment; filename="${encodeURIComponent(presentation.title)}.pptx"`,
+          "Content-Length": pptxBuffer.length.toString(),
+        },
+      });
+    } catch (error) {
+      console.error("[Export PPTX] Error:", error);
+      if (browser) {
+        try {
+          await browser.close();
+        } catch (e) {
+          console.error("[Export PPTX] Error closing browser:", e);
+        }
+      }
+
+      // Final fallback to programmatic generation
+      console.log("[Export PPTX] Falling back to programmatic generation...");
+      try {
+        const pptxBuffer = await generatePptx({
+          slides: slidesToExport,
+          theme,
+          title: presentation.title,
+          addWatermark,
+        });
+
+        await db.activity.create({
+          data: {
+            userId: userId,
+            type: "export",
+            description: `Exported "${presentation.title}" as PPTX (fallback)`,
+            metadata: {
+              presentationId: presentationId,
+              format: "pptx",
+              slideCount: slidesToExport.length,
+              method: "programmatic",
+            },
+          },
+        });
+
+        return new NextResponse(new Uint8Array(pptxBuffer), {
+          headers: {
+            "Content-Type":
+              "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            "Content-Disposition": `attachment; filename="${encodeURIComponent(presentation.title)}.pptx"`,
+            "Content-Length": pptxBuffer.length.toString(),
+          },
+        });
+      } catch (fallbackError) {
+        console.error("[Export PPTX] Fallback also failed:", fallbackError);
+        return NextResponse.json(
+          { error: "PPTX export failed", details: error instanceof Error ? error.message : "Unknown error" },
+          { status: 500 }
+        );
       }
     }
-
-    const pdfBytes = await pdfDoc.save();
-
-    // Log activity
-    await db.activity.create({
-      data: {
-        userId: userId,
-        type: "export",
-        description: `Exported "${presentation.title}" as PDF`,
-        metadata: { presentationId: presentationId, format: "pdf", slideCount: slidesToExport.length },
-      },
-    });
-
-    return new NextResponse(Buffer.from(pdfBytes), {
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${encodeURIComponent(presentation.title)}.pdf"`,
-        "Content-Length": pdfBytes.length.toString(),
-      },
-    });
   }
 
-  if (format === "images") {
-    // Export images as ZIP
-    const chunks: Buffer[] = [];
+  // PDF Export - Using Puppeteer for pixel-perfect rendering with selectable text
+  if (format === "pdf") {
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      (process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "http://localhost:3000");
 
+    let browser;
+    try {
+      browser = await puppeteer.launch({
+        headless: true,
+        args: [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage",
+          "--disable-gpu",
+          "--font-render-hinting=none",
+        ],
+      });
+
+      const page = await browser.newPage();
+      
+      // Set viewport for 16:9 aspect ratio
+      const pageWidth = 1920;
+      const pageHeight = 1080;
+      await page.setViewport({
+        width: pageWidth,
+        height: pageHeight,
+        deviceScaleFactor: 1,
+      });
+
+      // Generate PDF for each slide and merge them
+      const pdfBuffers: Buffer[] = [];
+
+      for (let i = 0; i < slideIndices.length; i++) {
+        const slideIndex = slideIndices[i]!;
+        // Use the export-slide page which renders actual React components
+        const renderUrl = `${baseUrl}/export-slide/${presentationId}/${slideIndex}?theme=${encodeURIComponent(themeId)}&watermark=${addWatermark}`;
+
+        console.log(`[Export PDF] Rendering slide ${slideIndex + 1}...`);
+
+        await page.goto(renderUrl, {
+          waitUntil: "networkidle0",
+          timeout: 60000,
+        });
+
+        // Wait for slide to render
+        await page
+          .waitForSelector('[data-slide-container="true"]', { timeout: 15000 })
+          .catch(() => {});
+
+        // Wait for images to load
+        await page.evaluate(async () => {
+          const images = document.querySelectorAll("img");
+          await Promise.all(
+            Array.from(images).map((img) => {
+              if (img.complete) return Promise.resolve();
+              return new Promise((resolve) => {
+                img.onload = resolve;
+                img.onerror = resolve;
+                setTimeout(resolve, 5000);
+              });
+            })
+          );
+        });
+
+        // Wait for fonts and CSS
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
+        // Generate PDF with Puppeteer - this creates selectable text!
+        const pdfBuffer = await page.pdf({
+          width: `${pageWidth}px`,
+          height: `${pageHeight}px`,
+          printBackground: true,
+          preferCSSPageSize: false,
+          margin: { top: 0, right: 0, bottom: 0, left: 0 },
+        });
+
+        pdfBuffers.push(Buffer.from(pdfBuffer));
+      }
+
+      await browser.close();
+
+      // Merge all PDF pages into one document
+      const mergedPdf = await PDFDocument.create();
+      
+      for (const pdfBuffer of pdfBuffers) {
+        const pdf = await PDFDocument.load(pdfBuffer);
+        const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+        pages.forEach((p) => mergedPdf.addPage(p));
+      }
+
+      const finalPdfBytes = await mergedPdf.save();
+
+      await db.activity.create({
+        data: {
+          userId: userId,
+          type: "export",
+          description: `Exported "${presentation.title}" as PDF`,
+          metadata: {
+            presentationId: presentationId,
+            format: "pdf",
+            slideCount: slidesToExport.length,
+          },
+        },
+      });
+
+      return new NextResponse(Buffer.from(finalPdfBytes), {
+        headers: {
+          "Content-Type": "application/pdf",
+          "Content-Disposition": `attachment; filename="${encodeURIComponent(presentation.title)}.pdf"`,
+          "Content-Length": finalPdfBytes.length.toString(),
+        },
+      });
+    } catch (error) {
+      console.error("[Export PDF] Puppeteer error:", error);
+      if (browser) await browser.close();
+      
+      return NextResponse.json(
+        { error: "PDF export failed", details: error instanceof Error ? error.message : "Unknown error" },
+        { status: 500 }
+      );
+    }
+  }
+
+  // Image Export - Screenshots as PNG
+  if (format === "images") {
+    const chunks: Buffer[] = [];
     const archive = archiver("zip", { zlib: { level: 9 } });
 
     archive.on("data", (chunk: Buffer) => chunks.push(chunk));
@@ -278,43 +538,141 @@ async function exportPresentation(
       archive.on("error", reject);
     });
 
-    // Add slide images to archive
-    for (let i = 0; i < slidesToExport.length; i++) {
-      const slide = slidesToExport[i]!;
-      const images = getSlideImages(slide);
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      (process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "http://localhost:3000");
 
-      for (let j = 0; j < images.length; j++) {
-        const img = images[j]!;
-        const imgBuffer = await fetchImageAsBuffer(img.url);
-        if (imgBuffer) {
-          const ext = img.url.includes(".png") ? "png" : "jpg";
-          archive.append(imgBuffer, { name: `slide_${i + 1}_image_${j + 1}.${ext}` });
+    const pageWidth = 1920;
+    const pageHeight = 1080;
+
+    let browser;
+    try {
+      browser = await puppeteer.launch({
+        headless: true,
+        args: [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage",
+          "--disable-gpu",
+          "--font-render-hinting=none",
+        ],
+      });
+
+      const page = await browser.newPage();
+      await page.setViewport({
+        width: pageWidth,
+        height: pageHeight,
+        deviceScaleFactor: 2, // High DPI for crisp images
+      });
+
+      for (let i = 0; i < slideIndices.length; i++) {
+        const slideIndex = slideIndices[i]!;
+        // Use the export-slide page which renders actual React components
+        const renderUrl = `${baseUrl}/export-slide/${presentationId}/${slideIndex}?theme=${encodeURIComponent(themeId)}&watermark=${addWatermark}`;
+
+        console.log(`[Export Images] Capturing slide ${slideIndex + 1}...`);
+
+        await page.goto(renderUrl, {
+          waitUntil: "networkidle0",
+          timeout: 60000,
+        });
+
+        await page
+          .waitForSelector('[data-slide-container="true"]', { timeout: 15000 })
+          .catch(() => {});
+
+        // Wait for images to load
+        await page.evaluate(async () => {
+          const images = document.querySelectorAll("img");
+          await Promise.all(
+            Array.from(images).map((img) => {
+              if (img.complete) return Promise.resolve();
+              return new Promise((resolve) => {
+                img.onload = resolve;
+                img.onerror = resolve;
+                setTimeout(resolve, 5000);
+              });
+            })
+          );
+        });
+
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
+        const slideElement = await page.$('[data-slide-container="true"]');
+        let screenshot: Buffer;
+
+        if (slideElement) {
+          screenshot = (await slideElement.screenshot({
+            type: "png",
+          })) as Buffer;
+        } else {
+          screenshot = (await page.screenshot({
+            type: "png",
+            fullPage: false,
+            clip: { x: 0, y: 0, width: pageWidth, height: pageHeight },
+          })) as Buffer;
+        }
+
+        archive.append(Buffer.from(screenshot), {
+          name: `slide_${slideIndex + 1}.png`,
+        });
+      }
+
+      await browser.close();
+    } catch (puppeteerError) {
+      console.error("[Export Images] Puppeteer error:", puppeteerError);
+      if (browser) await browser.close();
+
+      // Fallback: extract images from slides
+      for (let i = 0; i < slidesToExport.length; i++) {
+        const slide = slidesToExport[i]!;
+        const images = getSlideImages(slide);
+
+        for (let j = 0; j < images.length; j++) {
+          const img = images[j]!;
+          const imgBuffer = await fetchImageAsBuffer(img.url);
+          if (imgBuffer) {
+            const ext = img.url.includes(".png") ? "png" : "jpg";
+            archive.append(imgBuffer, {
+              name: `slide_${i + 1}_image_${j + 1}.${ext}`,
+            });
+          }
         }
       }
     }
 
-    // Add a text file with slide content
-    const slideContent = slidesToExport.map((slide, i) => {
-      const items: TransformedBulletItem[] = slide.transformedContent?.items ||
-        (slide.bulletPoints || []).map(bp => ({ text: bp }));
-      const bullets = items.map(item =>
-        item.label ? `  - ${item.label}: ${item.text}` : `  - ${item.text}`
-      ).join("\n");
-      return `Slide ${i + 1}: ${slide.title}\n${slide.subtitle ? `Subtitle: ${slide.subtitle}\n` : ""}${bullets}`;
-    }).join("\n\n---\n\n");
+    // Add text content file
+    const slideContent = slidesToExport
+      .map((slide, i) => {
+        const items: TransformedBulletItem[] =
+          slide.transformedContent?.items ||
+          (slide.bulletPoints || []).map((bp) => ({ text: bp }));
+        const bullets = items
+          .map((item) =>
+            item.label ? `  - ${item.label}: ${item.text}` : `  - ${item.text}`
+          )
+          .join("\n");
+        return `Slide ${i + 1}: ${slide.title}\n${slide.subtitle ? `Subtitle: ${slide.subtitle}\n` : ""}${bullets}`;
+      })
+      .join("\n\n---\n\n");
 
     archive.append(slideContent, { name: "slides_content.txt" });
 
     await archive.finalize();
     const zipBuffer = await archivePromise;
 
-    // Log activity
     await db.activity.create({
       data: {
         userId: userId,
         type: "export",
         description: `Exported "${presentation.title}" images as ZIP`,
-        metadata: { presentationId: presentationId, format: "images", slideCount: slidesToExport.length },
+        metadata: {
+          presentationId: presentationId,
+          format: "images",
+          slideCount: slidesToExport.length,
+        },
       },
     });
 
@@ -340,17 +698,21 @@ export async function GET(
     const { searchParams } = new URL(request.url);
 
     const format = searchParams.get("format") as "pdf" | "pptx" | "images";
-    const range = searchParams.get("range") as "all" | "current" | "custom" || "all";
+    const range =
+      (searchParams.get("range") as "all" | "current" | "custom") || "all";
     const from = parseInt(searchParams.get("from") || "0");
     const to = parseInt(searchParams.get("to") || "0");
 
-    const customRange = (from > 0 || to > 0) ? { from, to } : undefined;
+    const customRange = from > 0 || to > 0 ? { from, to } : undefined;
 
     return exportPresentation(id, authUser.id, format, range, customRange);
   } catch (error) {
     console.error("[Export GET] Error:", error);
     return NextResponse.json(
-      { error: "Export failed", details: error instanceof Error ? error.message : "Unknown error" },
+      {
+        error: "Export failed",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     );
   }
@@ -374,28 +736,22 @@ export async function POST(
   } catch (error) {
     console.error("[Export POST] Error:", error);
     return NextResponse.json(
-      { error: "Export failed", details: error instanceof Error ? error.message : "Unknown error" },
+      {
+        error: "Export failed",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     );
   }
 }
 
 // Helper functions
-function hexToRgb(hex: string): { r: number; g: number; b: number } {
-  const cleanHex = hex.replace("#", "");
-  const match = cleanHex.match(/^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
-  if (!match) return { r: 255, g: 255, b: 255 };
-  return {
-    r: parseInt(match[1]!, 16),
-    g: parseInt(match[2]!, 16),
-    b: parseInt(match[3]!, 16),
-  };
-}
-
 function getSlideImages(slide: SlideData): SlideImage[] {
   const images: SlideImage[] = [];
   if (slide.images?.length) {
-    images.push(...slide.images.filter((img) => img.url && img.source !== "placeholder"));
+    images.push(
+      ...slide.images.filter((img) => img.url && img.source !== "placeholder")
+    );
   }
   if (slide.image?.url && slide.image.source !== "placeholder") {
     if (!images.some((img) => img.url === slide.image?.url)) {
@@ -403,4 +759,18 @@ function getSlideImages(slide: SlideData): SlideImage[] {
     }
   }
   return images;
+}
+
+async function fetchImageAsBuffer(url: string): Promise<Buffer | null> {
+  try {
+    const response = await fetch(url, {
+      headers: { "User-Agent": "Mozilla/5.0" },
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!response.ok) return null;
+    const arrayBuffer = await response.arrayBuffer();
+    return Buffer.from(arrayBuffer);
+  } catch {
+    return null;
+  }
 }
