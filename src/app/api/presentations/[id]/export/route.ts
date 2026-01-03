@@ -4,6 +4,7 @@ import { requireAuth } from "~/lib/clerk-server";
 import { PDFDocument } from "pdf-lib";
 import archiver from "archiver";
 import { generatePptx, generatePptxWithScreenshots } from "~/lib/export/pptx-generator";
+import { isAdobeConfigured, convertPdfToPptx } from "~/lib/export/adobe-pdf-services";
 import { getThemeById, getDefaultTheme } from "~/lib/themes";
 import {
   isCustomThemeId,
@@ -122,8 +123,8 @@ async function exportPresentation(
     `[Export] Theme: ${theme.id}, Slides: ${slidesToExport.length}, Watermark: ${addWatermark}`
   );
 
-  // PPTX Export - Pixel-perfect using Puppeteer screenshots
-  // Screenshots are embedded as full-slide images for exact visual match
+  // PPTX Export - Using Adobe PDF Services for pixel-perfect AND editable output
+  // Falls back to screenshot-based export if Adobe is not configured
   if (format === "pptx") {
     const baseUrl =
       process.env.NEXT_PUBLIC_APP_URL ||
@@ -133,7 +134,8 @@ async function exportPresentation(
 
     let browser;
     try {
-      console.log(`[Export PPTX] Launching Puppeteer for pixel-perfect export...`);
+      // First, generate the pixel-perfect PDF using Puppeteer
+      console.log(`[Export PPTX] Generating PDF first for conversion...`);
       browser = await puppeteer.launch({
         headless: true,
         args: [
@@ -151,17 +153,17 @@ async function exportPresentation(
       await page.setViewport({
         width: pageWidth,
         height: pageHeight,
-        deviceScaleFactor: 2, // High DPI for crisp images
+        deviceScaleFactor: 1,
       });
 
-      // Capture screenshots of each slide
-      const slideScreenshots: Buffer[] = [];
+      // Generate PDF for each slide and merge them
+      const pdfBuffers: Buffer[] = [];
 
       for (let i = 0; i < slideIndices.length; i++) {
         const slideIndex = slideIndices[i]!;
         const renderUrl = `${baseUrl}/export-slide/${presentationId}/${slideIndex}?theme=${encodeURIComponent(themeId)}&watermark=${addWatermark}`;
 
-        console.log(`[Export PPTX] Capturing slide ${slideIndex + 1}...`);
+        console.log(`[Export PPTX] Rendering slide ${slideIndex + 1} to PDF...`);
 
         await page.goto(renderUrl, {
           waitUntil: "networkidle0",
@@ -170,9 +172,7 @@ async function exportPresentation(
 
         await page
           .waitForSelector('[data-slide-container="true"]', { timeout: 15000 })
-          .catch(() => {
-            console.log(`[Export PPTX] Slide container not found for slide ${slideIndex + 1}`);
-          });
+          .catch(() => {});
 
         // Wait for images to load
         await page.evaluate(async () => {
@@ -189,18 +189,126 @@ async function exportPresentation(
           );
         });
 
-        // Wait for fonts and CSS to fully render
         await new Promise((resolve) => setTimeout(resolve, 1500));
 
-        const slideElement = await page.$('[data-slide-container="true"]');
+        const pdfBuffer = await page.pdf({
+          width: `${pageWidth}px`,
+          height: `${pageHeight}px`,
+          printBackground: true,
+          preferCSSPageSize: false,
+          margin: { top: 0, right: 0, bottom: 0, left: 0 },
+        });
+
+        pdfBuffers.push(Buffer.from(pdfBuffer));
+      }
+
+      await browser.close();
+      browser = undefined;
+
+      // Merge all PDF pages
+      const mergedPdf = await PDFDocument.create();
+      for (const pdfBuffer of pdfBuffers) {
+        const pdf = await PDFDocument.load(pdfBuffer);
+        const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+        pages.forEach((p) => mergedPdf.addPage(p));
+      }
+      const finalPdfBytes = await mergedPdf.save();
+      const pdfBuffer = Buffer.from(finalPdfBytes);
+
+      // Try Adobe PDF Services for pixel-perfect + editable PPTX
+      if (isAdobeConfigured()) {
+        console.log(`[Export PPTX] Using Adobe PDF Services for conversion...`);
+        try {
+          const pptxBuffer = await convertPdfToPptx(pdfBuffer);
+
+          await db.activity.create({
+            data: {
+              userId: userId,
+              type: "export",
+              description: `Exported "${presentation.title}" as PPTX (Adobe)`,
+              metadata: {
+                presentationId: presentationId,
+                format: "pptx",
+                slideCount: slidesToExport.length,
+                method: "adobe",
+              },
+            },
+          });
+
+          return new NextResponse(new Uint8Array(pptxBuffer), {
+            headers: {
+              "Content-Type":
+                "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+              "Content-Disposition": `attachment; filename="${encodeURIComponent(presentation.title)}.pptx"`,
+              "Content-Length": pptxBuffer.length.toString(),
+            },
+          });
+        } catch (adobeError) {
+          console.error("[Export PPTX] Adobe conversion failed:", adobeError);
+          // Fall through to screenshot-based export
+        }
+      }
+
+      // Fallback: Use screenshots for pixel-perfect (but non-editable) PPTX
+      console.log(`[Export PPTX] Using screenshot-based export...`);
+      
+      // Re-launch browser for screenshots
+      browser = await puppeteer.launch({
+        headless: true,
+        args: [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage",
+          "--disable-gpu",
+          "--font-render-hinting=none",
+        ],
+      });
+
+      const screenshotPage = await browser.newPage();
+      await screenshotPage.setViewport({
+        width: pageWidth,
+        height: pageHeight,
+        deviceScaleFactor: 2,
+      });
+
+      const slideScreenshots: Buffer[] = [];
+
+      for (let i = 0; i < slideIndices.length; i++) {
+        const slideIndex = slideIndices[i]!;
+        const renderUrl = `${baseUrl}/export-slide/${presentationId}/${slideIndex}?theme=${encodeURIComponent(themeId)}&watermark=${addWatermark}`;
+
+        await screenshotPage.goto(renderUrl, {
+          waitUntil: "networkidle0",
+          timeout: 60000,
+        });
+
+        await screenshotPage
+          .waitForSelector('[data-slide-container="true"]', { timeout: 15000 })
+          .catch(() => {});
+
+        await screenshotPage.evaluate(async () => {
+          const images = document.querySelectorAll("img");
+          await Promise.all(
+            Array.from(images).map((img) => {
+              if (img.complete) return Promise.resolve();
+              return new Promise((resolve) => {
+                img.onload = resolve;
+                img.onerror = resolve;
+                setTimeout(resolve, 5000);
+              });
+            })
+          );
+        });
+
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
+        const slideElement = await screenshotPage.$('[data-slide-container="true"]');
         let screenshot: Buffer;
 
         if (slideElement) {
-          screenshot = (await slideElement.screenshot({
-            type: "png",
-          })) as Buffer;
+          screenshot = (await slideElement.screenshot({ type: "png" })) as Buffer;
         } else {
-          screenshot = (await page.screenshot({
+          screenshot = (await screenshotPage.screenshot({
             type: "png",
             fullPage: false,
             clip: { x: 0, y: 0, width: pageWidth, height: pageHeight },
@@ -211,15 +319,11 @@ async function exportPresentation(
       }
 
       await browser.close();
-      browser = undefined;
 
-      console.log(`[Export PPTX] Generating PPTX with ${slideScreenshots.length} pixel-perfect screenshots...`);
-
-      // Generate PPTX with screenshots as slide backgrounds
       const pptxBuffer = await generatePptxWithScreenshots({
         screenshots: slideScreenshots,
         title: presentation.title,
-        addWatermark: false, // Watermark is already in the screenshots
+        addWatermark: false,
       });
 
       await db.activity.create({
@@ -231,6 +335,7 @@ async function exportPresentation(
             presentationId: presentationId,
             format: "pptx",
             slideCount: slidesToExport.length,
+            method: "screenshot",
           },
         },
       });
@@ -244,7 +349,7 @@ async function exportPresentation(
         },
       });
     } catch (error) {
-      console.error("[Export PPTX] Puppeteer error:", error);
+      console.error("[Export PPTX] Error:", error);
       if (browser) {
         try {
           await browser.close();
@@ -253,7 +358,7 @@ async function exportPresentation(
         }
       }
 
-      // Fallback to programmatic generation if Puppeteer fails
+      // Final fallback to programmatic generation
       console.log("[Export PPTX] Falling back to programmatic generation...");
       try {
         const pptxBuffer = await generatePptx({
@@ -272,6 +377,7 @@ async function exportPresentation(
               presentationId: presentationId,
               format: "pptx",
               slideCount: slidesToExport.length,
+              method: "programmatic",
             },
           },
         });

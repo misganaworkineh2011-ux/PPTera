@@ -35,3 +35,6 @@ next-env.d.ts
 
 # prisma
 prisma/migrations
+
+# Adobe PDF Services SDK samples (contains credentials)
+PDFServicesSDK-Node.jsSamples/
