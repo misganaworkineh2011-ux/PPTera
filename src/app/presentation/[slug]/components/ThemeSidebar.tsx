@@ -5,6 +5,9 @@ import { X, Check, Loader2, Sparkles } from "lucide-react";
 import { themes, type Theme } from "~/lib/themes";
 import { getThemeType } from "./types";
 
+// All theme fonts for preview - loaded when sidebar opens
+const THEME_FONTS_URL = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Lato:wght@400;700&family=Cormorant+Garamond:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Nunito+Sans:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap";
+
 interface CustomTheme {
   id: string;
   name: string;
@@ -40,6 +43,19 @@ export function ThemeSidebar({
   // Get theme-aware colors
   const themeType = theme ? getThemeType(theme) : "dark";
   const isLight = themeType === "light" || themeType === "corporate";
+
+  // Load theme fonts when sidebar opens
+  useEffect(() => {
+    if (isOpen) {
+      const existingLink = document.querySelector(`link[href="${THEME_FONTS_URL}"]`);
+      if (!existingLink) {
+        const link = document.createElement("link");
+        link.href = THEME_FONTS_URL;
+        link.rel = "stylesheet";
+        document.head.appendChild(link);
+      }
+    }
+  }, [isOpen]);
 
   // Fetch custom themes
   useEffect(() => {
@@ -172,6 +188,7 @@ function ThemeCard({
   isLight: boolean;
 }) {
   const hasBackgroundImage = !!theme.previewBackgroundImage || !!theme.backgroundImage;
+  const bgImageUrl = theme.previewBackgroundImage || theme.backgroundImage;
   
   return (
     <button
@@ -189,20 +206,18 @@ function ThemeCard({
           className="aspect-[16/10] w-full rounded-md shadow-sm relative overflow-hidden"
           style={{
             backgroundColor: theme.preview?.titleBg || theme.colors.background,
-            backgroundImage: theme.previewBackgroundImage
-              ? `url(${theme.previewBackgroundImage})`
-              : theme.backgroundImage
-              ? `url(${theme.backgroundImage})`
+            backgroundImage: hasBackgroundImage
+              ? `url(${bgImageUrl})`
               : theme.slideStyles?.title?.pattern || "none",
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
         >
-          {/* Overlay for background images */}
-          {(hasBackgroundImage || theme.overlay) && (
+          {/* Lighter overlay for background images to show them better */}
+          {hasBackgroundImage && (
             <div
               className="absolute inset-0"
-              style={{ background: theme.overlay || "rgba(0,0,0,0.4)" }}
+              style={{ background: "rgba(0,0,0,0.25)" }}
             />
           )}
 
@@ -210,11 +225,11 @@ function ThemeCard({
           <div className="absolute inset-0 flex items-center justify-center">
             <div
               className={`rounded-md backdrop-blur-sm transition-all duration-300 flex flex-col justify-center px-2 py-1.5 overflow-hidden ${
-                hasBackgroundImage ? "w-[75%] h-[65%]" : "w-[85%] h-[75%]"
+                hasBackgroundImage ? "w-[70%] h-[60%]" : "w-[85%] h-[75%]"
               }`}
               style={{
                 backgroundColor: hasBackgroundImage 
-                  ? `${theme.cardBox?.background || theme.colors.background}f0`
+                  ? `${theme.cardBox?.background || theme.colors.background}e8`
                   : theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
                 border: theme.cardBox?.borderColor
                   ? `1px solid ${theme.cardBox.borderColor}`

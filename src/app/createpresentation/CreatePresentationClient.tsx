@@ -626,9 +626,9 @@ export default function CreatePresentationClient({
         currentPlan={subscriptionPlan}
       />
 
-      {/* Load Google Fonts */}
+      {/* Load Google Fonts for theme previews */}
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Outfit:wght@400;700&family=Playfair+Display:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Lato:wght@400;700&family=Cormorant+Garamond:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Nunito+Sans:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap');
       `}</style>
 
       {/* Logo-Inspired Gradient Background - Extra Soft with More Upper M Color */}
@@ -1230,20 +1230,18 @@ export default function CreatePresentationClient({
                                   className="aspect-[1.8/1] w-full rounded shadow-sm relative overflow-hidden"
                                   style={{
                                     backgroundColor: theme.preview.titleBg,
-                                    backgroundImage: theme.previewBackgroundImage
-                                      ? `url(${theme.previewBackgroundImage})`
-                                      : theme.backgroundImage
-                                      ? `url(${theme.backgroundImage})`
+                                    backgroundImage: (theme.previewBackgroundImage || theme.backgroundImage)
+                                      ? `url(${theme.previewBackgroundImage || theme.backgroundImage})`
                                       : theme.slideStyles.title.pattern || "none",
                                     backgroundSize: "cover",
                                     backgroundPosition: "center",
                                   }}
                                 >
-                                  {/* Overlay for background images */}
-                                  {(theme.previewBackgroundImage || theme.backgroundImage || theme.overlay) && (
+                                  {/* Lighter overlay for background images */}
+                                  {(theme.previewBackgroundImage || theme.backgroundImage) && (
                                     <div
                                       className="absolute inset-0"
-                                      style={{ background: theme.overlay || "rgba(0,0,0,0.4)" }}
+                                      style={{ background: "rgba(0,0,0,0.25)" }}
                                     />
                                   )}
                                   
@@ -1251,11 +1249,11 @@ export default function CreatePresentationClient({
                                   <div className="absolute inset-0 flex items-center justify-center">
                                     <div
                                       className={`rounded backdrop-blur-sm transition-all duration-300 flex flex-col justify-center px-2 py-1.5 overflow-hidden ${
-                                        theme.previewBackgroundImage || theme.backgroundImage ? "w-[75%] h-[65%]" : "w-[85%] h-[75%]"
+                                        theme.previewBackgroundImage || theme.backgroundImage ? "w-[70%] h-[60%]" : "w-[85%] h-[75%]"
                                       }`}
                                       style={{
                                         backgroundColor: (theme.previewBackgroundImage || theme.backgroundImage)
-                                          ? `${theme.cardBox?.background || theme.colors.background}f0`
+                                          ? `${theme.cardBox?.background || theme.colors.background}e8`
                                           : theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
                                         border: theme.cardBox?.borderColor ? `1px solid ${theme.cardBox.borderColor}` : "none",
                                         boxShadow: "0 2px 6px rgba(0, 0, 0, 0.12)",
