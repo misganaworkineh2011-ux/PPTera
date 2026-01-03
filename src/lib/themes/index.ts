@@ -56,12 +56,42 @@ export {
 // Import themes
 import { sproutTheme } from "./sprout";
 import { corporateCleanTheme } from "./corporate-clean";
+import { nebulaTheme } from "./nebula";
+import { auroraTheme } from "./aurora";
+import { obsidianTheme } from "./obsidian";
+import { emberTheme } from "./ember";
+import { frostTheme } from "./frost";
+import { sakuraTheme } from "./sakura";
+import { midnightTheme } from "./midnight";
+import { terracottaTheme } from "./terracotta";
 
 // Re-export themes for direct imports
-export { sproutTheme, corporateCleanTheme };
+export {
+  sproutTheme,
+  corporateCleanTheme,
+  nebulaTheme,
+  auroraTheme,
+  obsidianTheme,
+  emberTheme,
+  frostTheme,
+  sakuraTheme,
+  midnightTheme,
+  terracottaTheme,
+};
 
 // All themes array
-export const themes = [sproutTheme, corporateCleanTheme];
+export const themes = [
+  sproutTheme,
+  corporateCleanTheme,
+  nebulaTheme,
+  auroraTheme,
+  obsidianTheme,
+  emberTheme,
+  frostTheme,
+  sakuraTheme,
+  midnightTheme,
+  terracottaTheme,
+];
 
 // Helper functions
 export const getThemeById = (id: string) => {

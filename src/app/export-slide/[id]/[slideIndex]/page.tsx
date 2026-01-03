@@ -87,7 +87,7 @@ function ExportSlideContent({ params }: ExportSlidePageProps) {
     <div
       className="relative w-[1920px] h-[1080px] overflow-hidden"
       data-slide-container="true"
-      style={{ background: theme.pageBackground || theme.colors.background }}
+      style={{ background: theme.pageBackgroundGradient || theme.pageBackground || theme.colors.background }}
     >
       <SlideRenderer
         slide={slide}

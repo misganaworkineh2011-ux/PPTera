@@ -204,7 +204,11 @@ export default function StreamingPresentationViewer({
     : 100;
 
   return (
-    <div className="min-h-screen flex" style={{ background: theme.pageBackground || "#0a0a0b" }}>
+    <div className="min-h-screen flex" style={{ 
+      background: theme.pageBackgroundGradient || theme.pageBackground || "#0a0a0b",
+      backgroundColor: theme.pageBackground || "#0a0a0b",
+      backgroundAttachment: "fixed",
+    }}>
       {/* Sidebar with thumbnails */}
       <div className="w-48 bg-black/30 border-r border-white/10 p-3 flex flex-col gap-3 overflow-y-auto">
         {/* Progress header */}
