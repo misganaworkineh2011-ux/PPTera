@@ -546,7 +546,7 @@ function CalloutBlockRenderer({
   );
 }
 
-// Chart Block Renderer
+// Chart Block Renderer - Uses InteractiveChart with theme integration
 function ChartBlockRenderer({ 
   block, 
   theme,
@@ -554,15 +554,44 @@ function ChartBlockRenderer({
   block: ChartBlock; 
   theme: Theme;
 }) {
-  // Simple chart placeholder - would integrate with actual chart library
+  // Import dynamically to avoid circular dependencies
+  const InteractiveChart = require("~/components/charts/InteractiveChart").default;
+  
+  // Convert block data format to InteractiveChart format
+  // Block format: { labels: string[], datasets: [{ label, data, color }] }
+  // Chart format: { data: [{ label, value, color }] }
+  const convertedData = block.data?.labels?.map((label, i) => ({
+    label,
+    value: block.data.datasets?.[0]?.data?.[i] || 0,
+    color: block.data.datasets?.[0]?.color,
+  })) || [
+    { label: "Item 1", value: 75 },
+    { label: "Item 2", value: 50 },
+    { label: "Item 3", value: 25 },
+  ];
+
+  const chartData = {
+    type: block.chartType || "bar",
+    title: block.data?.datasets?.[0]?.label,
+    data: convertedData,
+    config: {
+      showValues: true,
+      showLabels: block.options?.showLabels ?? true,
+      showLegend: block.options?.showLegend ?? (block.chartType === "pie" || block.chartType === "donut"),
+      showGrid: block.options?.showGrid ?? true,
+      showAnimation: block.options?.animate ?? true,
+      colorScheme: "theme" as const,
+    },
+  };
+
   return (
-    <div 
-      className="rounded-lg p-4"
-      style={{ backgroundColor: theme.colors.backgroundAlt }}
-    >
-      <p className="text-center" style={{ color: theme.colors.textMuted }}>
-        Chart: {block.chartType}
-      </p>
+    <div className="w-full py-2">
+      <InteractiveChart
+        chart={chartData}
+        theme={theme}
+        compact={false}
+        interactive={true}
+      />
     </div>
   );
 }

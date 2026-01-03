@@ -24,13 +24,23 @@ interface ChartRendererProps {
   chart: AnyChartData;
   theme: Theme;
   compact?: boolean;
+  editable?: boolean;
+  onTitleChange?: (newTitle: string) => void;
+  onChartUpdate?: (chart: AnyChartData) => void;
 }
 
 /**
  * Renders charts for presentations - now uses the new InteractiveChart component
  * This wrapper maintains backward compatibility with existing chart data structures
  */
-export default function ChartRenderer({ chart, theme, compact = false }: ChartRendererProps) {
+export default function ChartRenderer({ 
+  chart, 
+  theme, 
+  compact = false,
+  editable = false,
+  onTitleChange,
+  onChartUpdate,
+}: ChartRendererProps) {
   // Validate chart data - be more lenient and provide fallback
   if (!chart) {
     return (
@@ -63,6 +73,16 @@ export default function ChartRenderer({ chart, theme, compact = false }: ChartRe
     );
   }
 
+  // Handle title change
+  const handleTitleChange = (newTitle: string) => {
+    if (onTitleChange) {
+      onTitleChange(newTitle);
+    }
+    if (onChartUpdate) {
+      onChartUpdate({ ...chart, title: newTitle });
+    }
+  };
+
   // Convert any chart format to the new format for InteractiveChart
   const normalizedChart: NewChartData = {
     type: normalizeChartType(chart.type || "bar"),
@@ -80,7 +100,8 @@ export default function ChartRenderer({ chart, theme, compact = false }: ChartRe
       unit: chart.config?.unit,
       showAnimation: chart.config?.showAnimation ?? true,
       showGrid: chart.config?.showGrid ?? true,
-      colorScheme: chart.config?.colorScheme ?? "default",
+      colorScheme: chart.config?.colorScheme ?? "theme", // Default to theme colors for slides
+      lineSmooth: true, // Enable smooth curves by default
       // Pass through any other config options
       ...chart.config,
     },
@@ -93,6 +114,8 @@ export default function ChartRenderer({ chart, theme, compact = false }: ChartRe
         theme={theme}
         compact={compact}
         interactive={true}
+        editable={editable}
+        onTitleChange={handleTitleChange}
       />
     </div>
   );

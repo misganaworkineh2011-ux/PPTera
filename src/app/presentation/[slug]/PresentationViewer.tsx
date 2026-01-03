@@ -25,6 +25,8 @@ import ShareModal from "~/components/presentation/ShareModal";
 import FeedbackSection from "~/components/presentation/FeedbackSection";
 import { RateUsModal, incrementPresentationCount, checkExistingReview } from "~/components/RateUsModal";
 import { ImageEditor, type ImageBlock } from "~/lib/blocks";
+import ChartModal from "~/components/charts/ChartModal";
+import { type ChartData } from "~/lib/charts/types";
 
 // Import extracted components
 import {
@@ -215,6 +217,8 @@ export default function PresentationViewer({
   const [isLoadingImage, setIsLoadingImage] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  // Chart modal state
+  const [showChartModal, setShowChartModal] = useState<number | null>(null);
   // AI editing state - tracks which slide is being edited by AI
   const [aiEditingSlideIndex, setAiEditingSlideIndex] = useState<number | null>(null);
   // In-tab presentation mode (not fullscreen, but focused view)
@@ -1411,6 +1415,18 @@ export default function PresentationViewer({
             onDuplicate={() => duplicateSlide(index)}
             onAddSlide={() => addSlideAt(index)}
             onAddImage={() => { setShowImageModal(index); setEditingImageIndex(null); setImageUrl(""); }}
+            onAddChart={() => setShowChartModal(index)}
+            onRemoveChart={() => {
+              const newSlides = slidesData.map((s, idx) => {
+                if (idx === index) {
+                  return { ...s, chart: null };
+                }
+                return s;
+              });
+              updateSlidesWithSave(newSlides);
+              toast.success("Chart removed from slide");
+            }}
+            hasChart={!!slide.chart}
             onMoveUp={() => moveSlide(index, "up")}
             onMoveDown={() => moveSlide(index, "down")}
             onDelete={() => deleteSlide(index)}
@@ -2090,6 +2106,28 @@ export default function PresentationViewer({
 
         {showRateModal && (
           <RateUsModal onClose={() => setShowRateModal(false)} theme={theme} />
+        )}
+
+        {showChartModal !== null && (
+          <ChartModal
+            isOpen={true}
+            theme={theme}
+            existingChart={slides[showChartModal]?.chart as ChartData | null}
+            onClose={() => setShowChartModal(null)}
+            onInsert={(chart: ChartData) => {
+              const slideIndex = showChartModal;
+              const newSlides = slidesData.map((slide, idx) => {
+                if (idx === slideIndex) {
+                  // Create a new slide object with the chart
+                  return { ...slide, chart };
+                }
+                return slide;
+              });
+              updateSlidesWithSave(newSlides);
+              toast.success(slides[slideIndex]?.chart ? "Chart updated" : "Chart added to slide");
+              setShowChartModal(null);
+            }}
+          />
         )}
 
         {/* WYSIWYG Image Editor Modal */}

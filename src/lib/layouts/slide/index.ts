@@ -9,7 +9,9 @@ export type SlideLayoutType =
   | "image-bottom"
   | "image-background"
   | "image-full"
-  | "no-image";
+  | "no-image"
+  | "chart-left"
+  | "chart-right";
 
 export type ImageSize = "small" | "medium" | "large" | "full";
 

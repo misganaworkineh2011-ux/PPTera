@@ -22,6 +22,7 @@ import { QuotesLayoutRenderer } from "~/components/layouts/QuotesLayoutRenderer"
 import { CircleLayoutRenderer } from "~/components/layouts/CircleLayoutRenderer";
 import { ImageLayoutRenderer } from "~/components/layouts/ImageLayoutRenderer";
 import ContentLayoutSelector from "./ContentLayoutSelector";
+import ChartRenderer from "./ChartRenderer";
 
 // Helper to determine layout category from layout style ID
 function getLayoutCategory(layoutId: string): ContentLayoutCategory {
@@ -54,9 +55,10 @@ interface SlideRendererProps {
   onDeleteBullet: (slideIndex: number, bulletIndex: number) => void;
   onChangeContentLayout?: (slideIndex: number, layoutId: BoxLayoutType) => void;
   onOpenContentLayoutPanel?: () => void;
+  onUpdateChart?: (slideIndex: number, chart: SlideChartData) => void;
 }
 
-type LayoutVariant = "left-content" | "right-content" | "image-top" | "image-bottom" | "centered" | "split-diagonal" | "image-focus" | "minimal-left" | "cards-grid" | "quote-style" | "timeline" | "diagonal-cut" | "circle-focus" | "wave-layout" | "hexagon-frame" | "glass-cards" | "aurora-glow" | "diamond-frame" | "ember-cards" | "molten-split" | "arch-frame" | "botanical-cards" | "elegant-split" | "glitch-frame" | "neon-grid" | "holo-cards" | "scan-frame" | "bio-cards" | "transmission-split" | "clean-frame" | "pro-cards" | "executive-split" | "nebula-float" | "orbital-rings" | "starfield-cards" | "cosmic-portal" | "galaxy-split" | "celestial-frame" | "mono-brutalist" | "geometric-slice" | "contrast-blocks" | "angular-frame" | "stripe-accent" | "bold-stack" | "cloud-float" | "sakura-cards" | "dreamy-split" | "soft-bubble" | "twilight-frame" | "pastel-stack" | "terminal-window" | "matrix-cards" | "code-block" | "shell-prompt" | "cyber-grid" | "hack-split" | "grid-2-col" | "grid-3-col" | "grid-4-card" | "cards-2" | "cards-3" | "comparison" | "stats-grid" | "full-image" | "image-background" | "centered-image" | "feature-showcase";
+type LayoutVariant = "left-content" | "right-content" | "image-top" | "image-bottom" | "centered" | "split-diagonal" | "image-focus" | "minimal-left" | "cards-grid" | "quote-style" | "timeline" | "diagonal-cut" | "circle-focus" | "wave-layout" | "hexagon-frame" | "glass-cards" | "aurora-glow" | "diamond-frame" | "ember-cards" | "molten-split" | "arch-frame" | "botanical-cards" | "elegant-split" | "glitch-frame" | "neon-grid" | "holo-cards" | "scan-frame" | "bio-cards" | "transmission-split" | "clean-frame" | "pro-cards" | "executive-split" | "nebula-float" | "orbital-rings" | "starfield-cards" | "cosmic-portal" | "galaxy-split" | "celestial-frame" | "mono-brutalist" | "geometric-slice" | "contrast-blocks" | "angular-frame" | "stripe-accent" | "bold-stack" | "cloud-float" | "sakura-cards" | "dreamy-split" | "soft-bubble" | "twilight-frame" | "pastel-stack" | "terminal-window" | "matrix-cards" | "code-block" | "shell-prompt" | "cyber-grid" | "hack-split" | "grid-2-col" | "grid-3-col" | "grid-4-card" | "cards-2" | "cards-3" | "comparison" | "stats-grid" | "full-image" | "image-background" | "centered-image" | "feature-showcase" | "chart-left" | "chart-right";
 
 // Theme type detection
 type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber" | "alien" | "corporate" | "cosmic" | "architectural" | "anime" | "hacker" | "custom-dark" | "custom-light";
@@ -199,6 +201,9 @@ function getLayoutVariant(index: number, themeType: ThemeType, slideLayout?: str
       "image-full": "full-image",
       // Title slide variants
       "title-centered": "centered",
+      // Chart layouts (chart on left or right side)
+      "chart-left": "chart-left",
+      "chart-right": "chart-right",
     };
     const mappedLayout = layoutMap[slideLayout];
     if (mappedLayout) return mappedLayout;
@@ -241,7 +246,7 @@ function getSlideImages(slide: SlideData) {
 export default function SlideRenderer({
   slide, index, totalSlides, theme, isOwner, isFullscreen, isHovered, isEditing,
   editingText, showPageNumber = true, onStartEditing, onUpdateContent, onFinishEditing, onAddBullet, onDeleteBullet,
-  onChangeContentLayout, onOpenContentLayoutPanel,
+  onChangeContentLayout, onOpenContentLayoutPanel, onUpdateChart,
 }: SlideRendererProps) {
   const [showContentLayoutSelector, setShowContentLayoutSelector] = useState(false);
   const [contentHovered, setContentHovered] = useState(false);
@@ -252,8 +257,28 @@ export default function SlideRenderer({
   const bulletPoints = slide.bulletPoints || [];
   const canEdit = isOwner && !isFullscreen;
   const themeType = getThemeType(theme);
+  
+  // Determine layout - if slide has chart but no image, use chart layout
+  // Auto-detect chart slides and use chart-right layout by default
+  const hasChart = !!slide.chart;
+  let effectiveSlideLayout: string | undefined = slide.slideLayout || slide.layout;
+  
+  // If slide has a chart and no image, ALWAYS use a chart layout
+  // This ensures charts are displayed on the side, not below content
+  if (hasChart && !hasImage) {
+    // Force chart-right layout for slides with charts but no images
+    effectiveSlideLayout = "chart-right";
+  }
+  
   // Use slideLayout (canonical) first, then fall back to layout (legacy)
-  const layout = getLayoutVariant(index, themeType, slide.slideLayout || slide.layout);
+  const layout = getLayoutVariant(index, themeType, effectiveSlideLayout);
+  
+  // Handle chart title update
+  const handleChartTitleChange = (newTitle: string) => {
+    if (onUpdateChart && slide.chart) {
+      onUpdateChart(index, { ...slide.chart, title: newTitle });
+    }
+  };
   
   // Check if content supports box layouts (has sections or transformed content with labels)
   // Check if slide has content that can be displayed in box layout
@@ -1099,6 +1124,18 @@ export default function SlideRenderer({
         <ContentWrapper>
           <div className={compact ? "space-y-3" : "space-y-4"}>
             {renderContentLayout()}
+            {/* Render chart if present */}
+            {slide.chart && (
+              <div className="mt-4">
+                <ChartRenderer 
+                  chart={slide.chart} 
+                  theme={theme} 
+                  compact={compact}
+                  editable={canEdit}
+                  onTitleChange={handleChartTitleChange}
+                />
+              </div>
+            )}
           </div>
         </ContentWrapper>
       );
@@ -1110,6 +1147,18 @@ export default function SlideRenderer({
       <ContentWrapper>
         <div className={compact ? "space-y-3" : "space-y-4"}>
           <BulletPoints compact={compact} />
+          {/* Render chart if present */}
+          {slide.chart && (
+            <div className="mt-4">
+              <ChartRenderer 
+                chart={slide.chart} 
+                theme={theme} 
+                compact={compact}
+                editable={canEdit}
+                onTitleChange={handleChartTitleChange}
+              />
+            </div>
+          )}
         </div>
       </ContentWrapper>
     );
@@ -1207,6 +1256,85 @@ export default function SlideRenderer({
       </div>
     </div>
   );
+
+  // CHART LAYOUTS - Check these FIRST before other layouts
+  // LAYOUT: Chart Left - Chart on left (55%), content on right (45%)
+  if (layout === "chart-left" && slide.chart) {
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-br ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute top-0 right-0 w-96 h-96 ${colors.orb1} rounded-full blur-3xl hidden sm:block`} />
+        <div className={`absolute bottom-0 left-0 w-80 h-80 ${colors.orb2} rounded-full blur-3xl hidden sm:block`} />
+
+        <SlideIndicator position="top-left" />
+
+        <div className="relative h-full flex flex-col sm:flex-row items-stretch">
+          {/* Chart Area - Left side (55%) - Bigger for better visibility */}
+          <div className="w-full sm:w-[55%] flex flex-col justify-center p-6 sm:p-8 md:p-10 lg:p-12 pt-14 sm:pt-10">
+            <div className="w-full h-full flex items-center justify-center">
+              <div className="w-full max-w-xl">
+                <ChartRenderer 
+                  chart={slide.chart} 
+                  theme={theme} 
+                  compact={false}
+                  editable={canEdit}
+                  onTitleChange={handleChartTitleChange}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Content Area - Right side (45%) */}
+          <div className="w-full sm:w-[45%] flex flex-col justify-center p-4 sm:p-6 md:p-8 pt-4 sm:pt-10">
+            <Title className="text-lg sm:text-xl md:text-2xl lg:text-3xl mb-3 sm:mb-4 md:mb-5" />
+            <div className="space-y-1.5">
+              <BulletPoints compact />
+            </div>
+          </div>
+        </div>
+        <div className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${colors.borderLine} to-transparent`} />
+      </div>
+    );
+  }
+
+  // LAYOUT: Chart Right - Chart on right (55%), content on left (45%)
+  if (layout === "chart-right" && slide.chart) {
+    return (
+      <div className="h-full relative overflow-hidden">
+        <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-bl ${colors.bg}` : ''}`} style={customBgStyle} />
+        <div className={`absolute top-0 left-0 w-96 h-96 ${colors.orb2} rounded-full blur-3xl hidden sm:block`} />
+        <div className={`absolute bottom-0 right-0 w-80 h-80 ${colors.orb1} rounded-full blur-3xl hidden sm:block`} />
+
+        <SlideIndicator position="top-right" />
+
+        <div className="relative h-full flex flex-col-reverse sm:flex-row items-stretch">
+          {/* Content Area - Left side (45%) */}
+          <div className="w-full sm:w-[45%] flex flex-col justify-center p-4 sm:p-6 md:p-8 pt-4 sm:pt-10">
+            <Title className="text-lg sm:text-xl md:text-2xl lg:text-3xl mb-3 sm:mb-4 md:mb-5" />
+            <div className="space-y-1.5">
+              <BulletPoints compact />
+            </div>
+          </div>
+
+          {/* Chart Area - Right side (55%) - Bigger for better visibility */}
+          <div className="w-full sm:w-[55%] flex flex-col justify-center p-6 sm:p-8 md:p-10 lg:p-12 pt-14 sm:pt-10">
+            <div className="w-full h-full flex items-center justify-center">
+              <div className="w-full max-w-xl">
+                <ChartRenderer 
+                  chart={slide.chart} 
+                  theme={theme} 
+                  compact={false}
+                  editable={canEdit}
+                  onTitleChange={handleChartTitleChange}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${colors.borderLine} to-transparent`} />
+      </div>
+    );
+  }
 
   // LAYOUT 1: Left Content - Image Right (supports multiple images in stack layout)
   // Uses arc clip-path for image edge effect (desktop only, rectangular on mobile)
