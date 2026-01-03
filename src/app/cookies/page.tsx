@@ -4,14 +4,14 @@ import { CookiesContent } from "./CookiesContent";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Cookie Notice - PPT Master",
-  description: "Learn how PPT Master uses cookies to enhance your experience. Understand our data practices and your privacy choices.",
+  title: "Cookie Notice",
+  description: "Learn how PPTMaster (PPT Master) uses cookies to enhance your experience. Understand our data practices and your privacy choices.",
   alternates: {
     canonical: "https://www.pptmaster.app/cookies",
   },
   openGraph: {
-    title: "Cookie Notice - PPT Master",
-    description: "Learn how PPT Master uses cookies to enhance your experience and understand your privacy choices.",
+    title: "Cookie Notice | PPTMaster",
+    description: "Learn how PPTMaster uses cookies to enhance your experience and understand your privacy choices.",
     url: "/cookies",
     type: "website",
     images: [
@@ -19,14 +19,14 @@ export const metadata: Metadata = {
         url: "/og-image.jpeg",
         width: 1200,
         height: 630,
-        alt: "PPT Master Cookie Notice",
+        alt: "PPTMaster Cookie Notice",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Cookie Notice - PPT Master",
-    description: "Learn how PPT Master uses cookies to enhance your experience.",
+    title: "Cookie Notice | PPTMaster",
+    description: "Learn how PPTMaster uses cookies to enhance your experience.",
     images: ["/og-image.jpeg"],
   },
 };

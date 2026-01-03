@@ -4,14 +4,14 @@ import { TermsContent } from "./TermsContent";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms of Service - PPT Master",
-  description: "Read PPT Master's terms of service. Understand the rules, user responsibilities, and policies for our AI platform.",
+  title: "Terms of Service",
+  description: "Read PPTMaster's (PPT Master) terms of service. Understand the rules, user responsibilities, and policies for our AI platform.",
   alternates: {
     canonical: "https://www.pptmaster.app/terms",
   },
   openGraph: {
-    title: "Terms of Service - PPT Master",
-    description: "Read PPT Master's terms of service. Understand the rules, user responsibilities, and policies for our AI platform.",
+    title: "Terms of Service | PPTMaster",
+    description: "Read PPTMaster's terms of service. Understand the rules, user responsibilities, and policies for our AI platform.",
     url: "/terms",
     type: "website",
     images: [
@@ -19,14 +19,14 @@ export const metadata: Metadata = {
         url: "/og-image.jpeg",
         width: 1200,
         height: 630,
-        alt: "PPT Master Terms of Service",
+        alt: "PPTMaster Terms of Service",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Terms of Service - PPT Master",
-    description: "Understand the rules and policies for using PPT Master's AI platform.",
+    title: "Terms of Service | PPTMaster",
+    description: "Understand the rules and policies for using PPTMaster's AI platform.",
     images: ["/og-image.jpeg"],
   },
 };
