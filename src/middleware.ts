@@ -40,11 +40,12 @@ export default clerkMiddleware(async (auth, request) => {
   const { pathname } = request.nextUrl;
   const userAgent = request.headers.get("user-agent");
 
-  // Skip i18n for API routes, static files, and protected routes
+  // Skip i18n for API routes, static files, protected routes, and export pages
   if (
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/export-slide") ||
     pathname.match(/\.(ico|png|jpg|jpeg|svg|webp|gif|css|js|json|xml|txt)$/)
   ) {
     // Skip auth for bots on public pages
