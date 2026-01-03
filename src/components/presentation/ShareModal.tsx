@@ -150,7 +150,7 @@ export default function ShareModal({
               theme={theme}
             />
           )}
-          {activeTab === "export" && <ExportTab theme={theme} />}
+          {activeTab === "export" && <ExportTab presentationId={presentationId} theme={theme} />}
           {activeTab === "embed" && <EmbedTab presentationId={presentationId} theme={theme} />}
         </div>
       </div>
@@ -158,7 +158,8 @@ export default function ShareModal({
   );
 }
 
-function ExportTab({ theme }: { theme?: Theme }) {
+function ExportTab({ presentationId, theme, onExportStart }: { presentationId: string; theme?: Theme; onExportStart?: (format: "pdf" | "pptx" | "images") => void }) {
+  const [isExporting, setIsExporting] = useState<"pdf" | "pptx" | "images" | null>(null);
   const isDark = theme?.colors.background.startsWith("#") &&
     parseInt(theme.colors.background.slice(1, 3), 16) < 128;
   
@@ -200,6 +201,55 @@ function ExportTab({ theme }: { theme?: Theme }) {
     },
   };
 
+  const handleExport = async (format: "pdf" | "pptx" | "images") => {
+    setIsExporting(format);
+    onExportStart?.(format);
+    
+    try {
+      const params = new URLSearchParams();
+      params.set("format", format);
+      params.set("range", "all");
+
+      const exportUrl = `/api/presentations/${presentationId}/export?${params.toString()}`;
+      toast.info(`Preparing ${format.toUpperCase()} export...`);
+
+      const response = await fetch(exportUrl);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Export failed with status ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      
+      const contentDisposition = response.headers.get("Content-Disposition");
+      let filename = `presentation.${format === "images" ? "zip" : format}`;
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?([^";\n]+)"?/);
+        if (match && match[1]) {
+          filename = decodeURIComponent(match[1]);
+        }
+      }
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast.success("Export complete!");
+    } catch (error) {
+      console.error("Export failed:", error);
+      toast.error(error instanceof Error ? error.message : "Export failed");
+    } finally {
+      setIsExporting(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -210,11 +260,15 @@ function ExportTab({ theme }: { theme?: Theme }) {
       <div className="grid gap-4">
         {/* PDF Export */}
         <button 
-          className="flex items-center justify-between p-5 rounded-xl border-2 transition-all group"
+          onClick={() => handleExport("pdf")}
+          disabled={isExporting !== null}
+          className="flex items-center justify-between p-5 rounded-xl border-2 transition-all group disabled:opacity-50"
           style={{ borderColor: colors.border, backgroundColor: colors.cardBg }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = colors.hoverBorder;
-            e.currentTarget.style.backgroundColor = colors.hoverBg;
+            if (!isExporting) {
+              e.currentTarget.style.borderColor = colors.hoverBorder;
+              e.currentTarget.style.backgroundColor = colors.hoverBg;
+            }
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.borderColor = colors.border;
@@ -236,20 +290,28 @@ function ExportTab({ theme }: { theme?: Theme }) {
               <p className="text-sm" style={{ color: colors.textMuted }}>Best for sharing and printing</p>
             </div>
           </div>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: colors.textMuted }}>
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="7 10 12 15 17 10" />
-            <line x1="12" y1="15" x2="12" y2="3" />
-          </svg>
+          {isExporting === "pdf" ? (
+            <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" style={{ color: colors.textMuted }} />
+          ) : (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: colors.textMuted }}>
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+          )}
         </button>
 
         {/* PowerPoint Export */}
         <button 
-          className="flex items-center justify-between p-5 rounded-xl border-2 transition-all group"
+          onClick={() => handleExport("pptx")}
+          disabled={isExporting !== null}
+          className="flex items-center justify-between p-5 rounded-xl border-2 transition-all group disabled:opacity-50"
           style={{ borderColor: colors.border, backgroundColor: colors.cardBg }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = colors.hoverBorder;
-            e.currentTarget.style.backgroundColor = colors.hoverBg;
+            if (!isExporting) {
+              e.currentTarget.style.borderColor = colors.hoverBorder;
+              e.currentTarget.style.backgroundColor = colors.hoverBg;
+            }
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.borderColor = colors.border;
@@ -271,20 +333,28 @@ function ExportTab({ theme }: { theme?: Theme }) {
               <p className="text-sm" style={{ color: colors.textMuted }}>Editable presentation file</p>
             </div>
           </div>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: colors.textMuted }}>
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="7 10 12 15 17 10" />
-            <line x1="12" y1="15" x2="12" y2="3" />
-          </svg>
+          {isExporting === "pptx" ? (
+            <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" style={{ color: colors.textMuted }} />
+          ) : (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: colors.textMuted }}>
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+          )}
         </button>
 
         {/* Images Export */}
         <button 
-          className="flex items-center justify-between p-5 rounded-xl border-2 transition-all group"
+          onClick={() => handleExport("images")}
+          disabled={isExporting !== null}
+          className="flex items-center justify-between p-5 rounded-xl border-2 transition-all group disabled:opacity-50"
           style={{ borderColor: colors.border, backgroundColor: colors.cardBg }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = colors.hoverBorder;
-            e.currentTarget.style.backgroundColor = colors.hoverBg;
+            if (!isExporting) {
+              e.currentTarget.style.borderColor = colors.hoverBorder;
+              e.currentTarget.style.backgroundColor = colors.hoverBg;
+            }
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.borderColor = colors.border;
@@ -307,11 +377,15 @@ function ExportTab({ theme }: { theme?: Theme }) {
               <p className="text-sm" style={{ color: colors.textMuted }}>Individual slide images</p>
             </div>
           </div>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: colors.textMuted }}>
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="7 10 12 15 17 10" />
-            <line x1="12" y1="15" x2="12" y2="3" />
-          </svg>
+          {isExporting === "images" ? (
+            <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" style={{ color: colors.textMuted }} />
+          ) : (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: colors.textMuted }}>
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+          )}
         </button>
       </div>
     </div>

@@ -106,14 +106,17 @@ function ExportSlideContent({ params }: ExportSlidePageProps) {
         onDeleteBullet={() => {}}
       />
 
-      {/* Watermark for free users - larger and more prominent */}
+      {/* Watermark for free users - larger with solid background */}
       {addWatermark && (
-        <div className="absolute bottom-8 right-10 flex items-center gap-3 z-50">
-          <img src="/logo.png" alt="PPTMaster" className="h-10 w-auto opacity-80" />
-          <span
-            className="text-2xl font-semibold opacity-80"
-            style={{ color: theme.colors.textMuted }}
-          >
+        <div 
+          className="absolute bottom-8 right-10 flex items-center gap-3 z-50 px-5 py-3 rounded-lg"
+          style={{ 
+            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+            backdropFilter: 'blur(4px)',
+          }}
+        >
+          <img src="/logo.png" alt="PPTMaster" className="h-8 w-auto" />
+          <span className="text-xl font-semibold text-white">
             Made with PPTMaster
           </span>
         </div>

@@ -780,6 +780,7 @@ export default function PresentationViewer({
   ) => {
     console.log("[PresentationViewer] Starting export via fetch:", format);
     setIsExporting(true);
+    setExportingFormat(format);
 
     try {
       // Build query params
@@ -841,6 +842,7 @@ export default function PresentationViewer({
       toast.error(error instanceof Error ? error.message : "Export failed");
     } finally {
       setIsExporting(false);
+      setExportingFormat(null);
     }
   };
 
@@ -1784,6 +1786,14 @@ export default function PresentationViewer({
           }
         }
       `}</style>
+
+      {/* Global Export Indicator - shows even when modals are closed */}
+      {isExporting && (
+        <div className="fixed bottom-6 right-6 z-[10001] flex items-center gap-3 px-5 py-3 rounded-xl shadow-2xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white animate-pulse">
+          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          <span className="font-medium">Exporting {exportingFormat?.toUpperCase() || "file"}...</span>
+        </div>
+      )}
 
       <div
         className={`${isPresenting ? "h-screen overflow-hidden" : "min-h-screen"} ${theme.pageBackground ? "" : getUIColors(getThemeType(theme)).pageBg}`}
