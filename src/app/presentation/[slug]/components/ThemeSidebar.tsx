@@ -4,7 +4,9 @@ import { useState, useEffect } from "react";
 import { X, Check, Loader2, Sparkles } from "lucide-react";
 import { themes, type Theme } from "~/lib/themes";
 import { getThemeType } from "./types";
-import { getUIColors } from "./ui-colors";
+
+// All theme fonts for preview - loaded when sidebar opens
+const THEME_FONTS_URL = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Lato:wght@400;700&family=Cormorant+Garamond:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Nunito+Sans:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap";
 
 interface CustomTheme {
   id: string;
@@ -40,8 +42,20 @@ export function ThemeSidebar({
 
   // Get theme-aware colors
   const themeType = theme ? getThemeType(theme) : "dark";
-  const ui = getUIColors(themeType);
   const isLight = themeType === "light" || themeType === "corporate";
+
+  // Load theme fonts when sidebar opens
+  useEffect(() => {
+    if (isOpen) {
+      const existingLink = document.querySelector(`link[href="${THEME_FONTS_URL}"]`);
+      if (!existingLink) {
+        const link = document.createElement("link");
+        link.href = THEME_FONTS_URL;
+        link.rel = "stylesheet";
+        document.head.appendChild(link);
+      }
+    }
+  }, [isOpen]);
 
   // Fetch custom themes
   useEffect(() => {
@@ -173,6 +187,9 @@ function ThemeCard({
   onClick: () => void;
   isLight: boolean;
 }) {
+  const hasBackgroundImage = !!theme.previewBackgroundImage || !!theme.backgroundImage;
+  const bgImageUrl = theme.previewBackgroundImage || theme.backgroundImage;
+  
   return (
     <button
       onClick={onClick}
@@ -183,57 +200,70 @@ function ThemeCard({
           : isLight ? "ring-1 ring-slate-200 hover:ring-slate-300" : "ring-1 ring-zinc-700 hover:ring-zinc-600"
       }`}
     >
-      {/* Theme Preview - Similar to outline page */}
+      {/* Theme Preview */}
       <div className="p-2">
         <div
           className="aspect-[16/10] w-full rounded-md shadow-sm relative overflow-hidden"
           style={{
             backgroundColor: theme.preview?.titleBg || theme.colors.background,
-            backgroundImage: theme.previewBackgroundImage
-              ? `url(${theme.previewBackgroundImage})`
+            backgroundImage: hasBackgroundImage
+              ? `url(${bgImageUrl})`
               : theme.slideStyles?.title?.pattern || "none",
-            backgroundSize: theme.previewBackgroundImage ? "cover" : "auto",
+            backgroundSize: "cover",
             backgroundPosition: "center",
           }}
         >
-          {/* Overlay if exists */}
-          {theme.overlay && (
+          {/* Lighter overlay for background images to show them better */}
+          {hasBackgroundImage && (
             <div
               className="absolute inset-0"
-              style={{ background: theme.overlay }}
+              style={{ background: "rgba(0,0,0,0.25)" }}
             />
           )}
 
-          {/* Content card centered on background with SVG preview */}
+          {/* Content card - smaller for background image themes to show more bg */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div
-              className="rounded-md backdrop-blur-md transition-all duration-300 w-[85%] h-[75%] flex items-center justify-center overflow-hidden"
+              className={`rounded-md backdrop-blur-sm transition-all duration-300 flex flex-col justify-center px-2 py-1.5 overflow-hidden ${
+                hasBackgroundImage ? "w-[70%] h-[60%]" : "w-[85%] h-[75%]"
+              }`}
               style={{
-                backgroundColor: theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
+                backgroundColor: hasBackgroundImage 
+                  ? `${theme.cardBox?.background || theme.colors.background}e8`
+                  : theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
                 border: theme.cardBox?.borderColor
                   ? `1px solid ${theme.cardBox.borderColor}`
                   : "1px solid rgba(255,255,255,0.1)",
-                boxShadow: theme.cardBox?.shadow || "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
               }}
             >
-              {/* SVG preview from API */}
-              <img 
-                src={`/api/themes/preview/${theme.id}`}
-                alt={`${theme.name} preview`}
-                className="w-full h-full object-contain"
-                loading="lazy"
-              />
+              {/* Inline text preview */}
+              <div 
+                className="text-[10px] font-bold mb-0.5 truncate"
+                style={{ color: theme.cardBox?.titleColor || theme.colors.heading, fontFamily: theme.fonts?.heading?.family || "inherit" }}
+              >
+                Title
+              </div>
+              <div className="flex items-center gap-0.5 text-[8px]">
+                <span style={{ color: theme.cardBox?.bodyColor || theme.colors.text }}>Body &</span>
+                <span 
+                  className="underline"
+                  style={{ color: theme.cardBox?.accentColor || theme.colors.accent || theme.colors.primary }}
+                >
+                  link
+                </span>
+              </div>
             </div>
           </div>
 
           {/* Color dots */}
           <div className="absolute top-1.5 right-1.5 flex gap-0.5">
             <div
-              className="w-2 h-2 rounded-full border border-white/20"
+              className="w-2 h-2 rounded-full border border-white/30 shadow-sm"
               style={{ backgroundColor: theme.colors?.primary }}
             />
             <div
-              className="w-2 h-2 rounded-full border border-white/20"
+              className="w-2 h-2 rounded-full border border-white/30 shadow-sm"
               style={{ backgroundColor: theme.colors?.accent || theme.colors?.secondary }}
             />
           </div>

@@ -210,13 +210,13 @@ export default function LayoutModal({
   const otherSlideLayouts = slideLayouts.filter((l) => l.imagePosition === "none" || l.imagePosition === "full");
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className={`relative w-full max-w-4xl rounded-2xl shadow-2xl max-h-[85vh] overflow-hidden ${colors.bg}`}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-2 sm:p-4">
+      <div className={`relative w-full max-w-[95vw] sm:max-w-4xl rounded-xl sm:rounded-2xl shadow-2xl max-h-[90vh] sm:max-h-[85vh] overflow-hidden ${colors.bg}`}>
         {/* Header */}
-        <div className={`flex items-center justify-between p-6 border-b ${colors.border}`}>
-          <div>
-            <h2 className={`text-xl font-bold ${colors.text}`}>Change Layout</h2>
-            <p className={`text-sm mt-1 ${colors.textMuted}`}>
+        <div className={`flex items-center justify-between p-4 sm:p-6 border-b ${colors.border}`}>
+          <div className="flex-1 min-w-0">
+            <h2 className={`text-lg sm:text-xl font-bold ${colors.text}`}>Change Layout</h2>
+            <p className={`text-xs sm:text-sm mt-1 ${colors.textMuted} hidden sm:block`}>
               {isTitleSlide 
                 ? "Choose how your title slide image is positioned" 
                 : "Choose how your content is arranged"}
@@ -224,7 +224,7 @@ export default function LayoutModal({
           </div>
           <button
             onClick={onClose}
-            className={`p-2 rounded-lg transition-colors ${colors.closeHover}`}
+            className={`p-2 rounded-lg transition-colors flex-shrink-0 ${colors.closeHover}`}
           >
             <X size={20} />
           </button>
@@ -232,43 +232,43 @@ export default function LayoutModal({
 
         {/* Tabs - Hide content layout tab for title slides */}
         {!isTitleSlide && (
-          <div className={`flex gap-2 p-4 border-b ${colors.border} ${colors.headerBg}`}>
+          <div className={`flex gap-2 p-3 sm:p-4 border-b ${colors.border} ${colors.headerBg} overflow-x-auto`}>
             <div 
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white shadow-md"
+              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium text-white shadow-md flex-shrink-0"
               style={{ backgroundColor: accentColor }}
             >
-              <ImageIcon size={18} />
+              <ImageIcon size={16} className="sm:w-[18px] sm:h-[18px]" />
               <span>Slide Layout</span>
-              <span className="text-xs text-white/70">(Image position)</span>
+              <span className="text-[10px] sm:text-xs text-white/70 hidden sm:inline">(Image position)</span>
             </div>
             <button
               onClick={() => {
                 onClose();
                 onOpenContentLayoutPanel();
               }}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border transition-colors ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium border transition-colors flex-shrink-0 ${
                 isLight 
                   ? "bg-white text-slate-600 hover:bg-slate-100 border-slate-200" 
                   : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700 border-zinc-700"
               }`}
             >
-              <LayoutGrid size={18} />
+              <LayoutGrid size={16} className="sm:w-[18px] sm:h-[18px]" />
               <span>Content Layout</span>
-              <span className={`text-xs ${colors.textMuted}`}>(Box style)</span>
+              <span className={`text-[10px] sm:text-xs ${colors.textMuted} hidden sm:inline`}>(Box style)</span>
             </button>
           </div>
         )}
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[55vh]">
-          <div className="space-y-6">
+        <div className="p-3 sm:p-6 overflow-y-auto max-h-[60vh] sm:max-h-[55vh]">
+          <div className="space-y-4 sm:space-y-6">
             {/* Image Position Layouts */}
             <div>
-              <h3 className={`text-sm font-semibold mb-3 flex items-center gap-2 ${colors.text}`}>
-                <ImageIcon size={16} />
+              <h3 className={`text-xs sm:text-sm font-semibold mb-2 sm:mb-3 flex items-center gap-2 ${colors.text}`}>
+                <ImageIcon size={14} className="sm:w-4 sm:h-4" />
                 Image Position
               </h3>
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-4">
                 {slideLayoutsWithImage.map((layout) => {
                   const isSelected = selectedSlideLayout === layout.id;
                   return (
@@ -278,7 +278,7 @@ export default function LayoutModal({
                         setSelectedSlideLayout(layout.id);
                         onSelectSlideLayout(layout.id, selectedImageSize);
                       }}
-                      className={`relative p-3 rounded-xl border-2 text-left transition-all hover:shadow-lg ${
+                      className={`relative p-2 sm:p-3 rounded-lg sm:rounded-xl border-2 text-left transition-all hover:shadow-lg ${
                         isSelected
                           ? `ring-2 ring-opacity-20 ${colors.cardBg}`
                           : `${colors.cardBorder} ${colors.cardHover} ${colors.cardBg}`
@@ -289,17 +289,17 @@ export default function LayoutModal({
                         ["--tw-ring-color" as string]: accentColor 
                       } : {}}
                     >
-                      <div className={`aspect-video rounded-lg mb-2 overflow-hidden ${isLight ? "bg-slate-100" : "bg-zinc-700"}`}>
+                      <div className={`aspect-video rounded-md sm:rounded-lg mb-1.5 sm:mb-2 overflow-hidden ${isLight ? "bg-slate-100" : "bg-zinc-700"}`}>
                         <SlideLayoutPreview layoutId={layout.id} imageSize={selectedImageSize} />
                       </div>
-                      <h4 className={`font-semibold text-sm ${colors.text}`}>{layout.name}</h4>
-                      <p className={`text-xs mt-0.5 line-clamp-1 ${colors.textMuted}`}>{layout.description}</p>
+                      <h4 className={`font-semibold text-xs sm:text-sm ${colors.text} truncate`}>{layout.name}</h4>
+                      <p className={`text-[10px] sm:text-xs mt-0.5 line-clamp-1 ${colors.textMuted} hidden sm:block`}>{layout.description}</p>
                       {isSelected && (
                         <div 
-                          className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center"
+                          className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center"
                           style={{ backgroundColor: accentColor }}
                         >
-                          <CheckCircle2 size={12} className="text-white" />
+                          <CheckCircle2 size={10} className="sm:w-3 sm:h-3 text-white" />
                         </div>
                       )}
                     </button>
@@ -311,8 +311,8 @@ export default function LayoutModal({
               {/* Image Size Selector */}
               {selectedSlideLayout !== "no-image" && selectedSlideLayout !== "image-full" && selectedSlideLayout !== "image-background" && (
                 <div>
-                  <h3 className={`text-sm font-semibold mb-3 ${colors.text}`}>Image Size</h3>
-                  <div className="flex gap-2">
+                  <h3 className={`text-xs sm:text-sm font-semibold mb-2 sm:mb-3 ${colors.text}`}>Image Size</h3>
+                  <div className="flex gap-1.5 sm:gap-2">
                     {imageSizes.map((size) => (
                       <button
                         key={size.id}
@@ -320,7 +320,7 @@ export default function LayoutModal({
                           setSelectedImageSize(size.id);
                           onSelectSlideLayout(selectedSlideLayout, size.id);
                         }}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                        className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all ${
                           selectedImageSize === size.id
                             ? "text-white shadow-md"
                             : isLight 
@@ -333,7 +333,7 @@ export default function LayoutModal({
                       </button>
                     ))}
                   </div>
-                  <p className={`text-xs mt-2 ${colors.textMuted}`}>
+                  <p className={`text-[10px] sm:text-xs mt-1.5 sm:mt-2 ${colors.textMuted}`}>
                     {selectedImageSize === "small" && "30% of slide"}
                     {selectedImageSize === "medium" && "40% of slide"}
                     {selectedImageSize === "large" && "50% of slide"}
@@ -344,8 +344,8 @@ export default function LayoutModal({
 
               {/* Other Layouts (No Image, Full Image) */}
               <div>
-                <h3 className={`text-sm font-semibold mb-3 ${colors.text}`}>Other Options</h3>
-                <div className="grid grid-cols-4 gap-4">
+                <h3 className={`text-xs sm:text-sm font-semibold mb-2 sm:mb-3 ${colors.text}`}>Other Options</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-4">
                   {otherSlideLayouts.map((layout) => {
                     const isSelected = selectedSlideLayout === layout.id;
                     return (
@@ -355,7 +355,7 @@ export default function LayoutModal({
                           setSelectedSlideLayout(layout.id);
                           onSelectSlideLayout(layout.id, selectedImageSize);
                         }}
-                        className={`relative p-3 rounded-xl border-2 text-left transition-all hover:shadow-lg ${
+                        className={`relative p-2 sm:p-3 rounded-lg sm:rounded-xl border-2 text-left transition-all hover:shadow-lg ${
                           isSelected
                             ? `ring-2 ring-opacity-20 ${colors.cardBg}`
                             : `${colors.cardBorder} ${colors.cardHover} ${colors.cardBg}`
@@ -366,17 +366,17 @@ export default function LayoutModal({
                           ["--tw-ring-color" as string]: accentColor 
                         } : {}}
                       >
-                        <div className={`aspect-video rounded-lg mb-2 overflow-hidden ${isLight ? "bg-slate-100" : "bg-zinc-700"}`}>
+                        <div className={`aspect-video rounded-md sm:rounded-lg mb-1.5 sm:mb-2 overflow-hidden ${isLight ? "bg-slate-100" : "bg-zinc-700"}`}>
                           <SlideLayoutPreview layoutId={layout.id} imageSize={selectedImageSize} />
                         </div>
-                        <h4 className={`font-semibold text-sm ${colors.text}`}>{layout.name}</h4>
-                        <p className={`text-xs mt-0.5 line-clamp-1 ${colors.textMuted}`}>{layout.description}</p>
+                        <h4 className={`font-semibold text-xs sm:text-sm ${colors.text} truncate`}>{layout.name}</h4>
+                        <p className={`text-[10px] sm:text-xs mt-0.5 line-clamp-1 ${colors.textMuted} hidden sm:block`}>{layout.description}</p>
                         {isSelected && (
                           <div 
-                            className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center"
+                            className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center"
                             style={{ backgroundColor: accentColor }}
                           >
-                            <CheckCircle2 size={12} className="text-white" />
+                            <CheckCircle2 size={10} className="sm:w-3 sm:h-3 text-white" />
                           </div>
                         )}
                       </button>
@@ -388,8 +388,8 @@ export default function LayoutModal({
         </div>
 
         {/* Footer */}
-        <div className={`border-t px-6 py-4 flex items-center justify-between ${colors.border} ${colors.headerBg}`}>
-          <div className={`text-sm ${colors.textMuted}`}>
+        <div className={`border-t px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2 ${colors.border} ${colors.headerBg}`}>
+          <div className={`text-xs sm:text-sm ${colors.textMuted} truncate flex-1 min-w-0`}>
             <span className="font-medium">Current:</span>{" "}
             <span className={colors.text}>
               {slideLayouts.find((l) => l.id === selectedSlideLayout)?.name || "Unknown"}
@@ -400,7 +400,7 @@ export default function LayoutModal({
           </div>
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium rounded-lg text-white transition-colors hover:opacity-90"
+            className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-lg text-white transition-colors hover:opacity-90 flex-shrink-0"
             style={{ backgroundColor: accentColor }}
           >
             Done

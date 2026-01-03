@@ -121,6 +121,22 @@ export default function ThemeSelector({
   const [customThemes, setCustomThemes] = useState<(Theme & { isCustom?: boolean })[]>([]);
   const [isLoadingCustom, setIsLoadingCustom] = useState(false);
 
+  // All theme fonts for preview
+  const THEME_FONTS_URL = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Lato:wght@400;700&family=Cormorant+Garamond:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Nunito+Sans:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap";
+
+  // Load theme fonts when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      const existingLink = document.querySelector(`link[href="${THEME_FONTS_URL}"]`);
+      if (!existingLink) {
+        const link = document.createElement("link");
+        link.href = THEME_FONTS_URL;
+        link.rel = "stylesheet";
+        document.head.appendChild(link);
+      }
+    }
+  }, [isOpen]);
+
   // Fetch custom themes when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -258,6 +274,8 @@ export default function ThemeSelector({
             <div className="grid grid-cols-2 gap-4">
               {filteredThemes.map((theme) => {
                 const isSelected = theme.id === previewThemeId;
+                const hasBackgroundImage = !!theme.previewBackgroundImage || !!theme.backgroundImage;
+                const bgImageUrl = theme.previewBackgroundImage || theme.backgroundImage;
                 return (
                   <button
                     key={theme.id}
@@ -274,30 +292,51 @@ export default function ThemeSelector({
                         className="aspect-[1.6/1] w-full rounded-md shadow-sm relative overflow-hidden"
                         style={{
                           backgroundColor: theme.preview.titleBg,
-                          backgroundImage: theme.previewBackgroundImage 
-                            ? `url(${theme.previewBackgroundImage})`
+                          backgroundImage: hasBackgroundImage
+                            ? `url(${bgImageUrl})`
                             : theme.slideStyles.title.pattern || "none",
-                          backgroundSize: theme.previewBackgroundImage ? "cover" : "auto",
-                          backgroundPosition: theme.previewBackgroundImage ? "center" : "center",
+                          backgroundSize: "cover",
+                          backgroundPosition: "center",
                         }}
                       >
-                        {/* Content box centered on background with SVG preview */}
+                        {/* Lighter overlay for background images to show them better */}
+                        {hasBackgroundImage && (
+                          <div
+                            className="absolute inset-0"
+                            style={{ background: "rgba(0,0,0,0.25)" }}
+                          />
+                        )}
+                        
+                        {/* Content box centered on background with inline preview */}
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div 
-                            className="rounded-lg backdrop-blur-md transition-all duration-300 w-[85%] h-[80%] flex items-center justify-center overflow-hidden"
+                            className={`rounded-lg backdrop-blur-sm transition-all duration-300 flex flex-col justify-center px-3 py-2 overflow-hidden ${
+                              hasBackgroundImage ? "w-[70%] h-[65%]" : "w-[85%] h-[80%]"
+                            }`}
                             style={{
-                              backgroundColor: theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
+                              backgroundColor: hasBackgroundImage 
+                                ? `${theme.cardBox?.background || theme.colors.background}e8`
+                                : theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
                               border: theme.cardBox?.borderColor ? `1px solid ${theme.cardBox.borderColor}` : "none",
-                              boxShadow: theme.cardBox?.shadow || "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
                             }}
                           >
-                            {/* SVG preview from API */}
-                            <img 
-                              src={`/api/themes/preview/${theme.id}`}
-                              alt={`${theme.name} preview`}
-                              className="w-full h-full object-contain"
-                              loading="lazy"
-                            />
+                            {/* Inline text preview */}
+                            <div 
+                              className="text-sm font-bold mb-1 truncate"
+                              style={{ color: theme.cardBox?.titleColor || theme.colors.heading, fontFamily: theme.fonts?.heading?.family || "inherit" }}
+                            >
+                              Title
+                            </div>
+                            <div className="flex items-center gap-1 text-xs">
+                              <span style={{ color: theme.cardBox?.bodyColor || theme.colors.text }}>Body &</span>
+                              <span 
+                                className="underline"
+                                style={{ color: theme.cardBox?.accentColor || theme.colors.accent || theme.colors.primary }}
+                              >
+                                link
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>

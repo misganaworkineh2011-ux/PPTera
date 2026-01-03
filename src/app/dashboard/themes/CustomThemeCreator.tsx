@@ -187,12 +187,12 @@ export default function CustomThemeCreator({ isOpen, onClose, onSave }: CustomTh
   const stepNames = [t.colors || "Colors", t.fontsLabel || "Fonts", t.designLabel || "Design", t.themeNameStep || "Theme name"];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="flex w-full max-w-5xl h-[85vh] max-h-[750px] overflow-hidden rounded-2xl bg-white dark:bg-black shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-2 sm:p-4">
+      <div className="flex flex-col md:flex-row w-full max-w-5xl h-[95vh] sm:h-[85vh] max-h-[750px] overflow-hidden rounded-xl sm:rounded-2xl bg-white dark:bg-black shadow-2xl">
         {/* Left Panel - Form */}
-        <div className="w-1/2 flex flex-col border-r border-slate-200 dark:border-neutral-800">
+        <div className="w-full md:w-1/2 flex flex-col border-b md:border-b-0 md:border-r border-slate-200 dark:border-neutral-800 max-h-[60vh] md:max-h-none">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-slate-200 dark:border-neutral-800 px-6 py-4">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-neutral-800 px-4 sm:px-6 py-3 sm:py-4">
             <button onClick={handleClose} className="text-slate-400 hover:text-slate-600 dark:text-neutral-400 dark:hover:text-slate-300">
               <X size={20} />
             </button>
@@ -201,19 +201,19 @@ export default function CustomThemeCreator({ isOpen, onClose, onSave }: CustomTh
                 const step = STEPS[currentStep - 1];
                 if (!step) return null;
                 const CurrentIcon = step.icon;
-                return CurrentIcon ? <CurrentIcon size={18} /> : null;
+                return CurrentIcon ? <CurrentIcon size={16} className="sm:w-[18px] sm:h-[18px]" /> : null;
               })()}
-              <span className="font-semibold">{stepNames[currentStep - 1]}</span>
+              <span className="font-semibold text-sm sm:text-base">{stepNames[currentStep - 1]}</span>
             </div>
             <div className="w-5" />
           </div>
 
           {/* Progress Steps */}
-          <div className="flex items-center justify-center gap-2 px-6 py-4 border-b border-slate-100 dark:border-neutral-800">
+          <div className="flex items-center justify-center gap-1 sm:gap-2 px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100 dark:border-neutral-800">
             {STEPS.map((step, idx) => (
               <div key={step.id} className="flex items-center">
                 <div
-                  className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition-all ${
+                  className={`flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-full text-xs sm:text-sm font-bold transition-all ${
                     currentStep === step.id
                       ? "bg-[#06b6d4] text-white"
                       : currentStep > step.id
@@ -221,17 +221,17 @@ export default function CustomThemeCreator({ isOpen, onClose, onSave }: CustomTh
                       : "bg-slate-200 dark:bg-neutral-800 text-slate-500 dark:text-neutral-400"
                   }`}
                 >
-                  {currentStep > step.id ? <Check size={14} /> : step.id}
+                  {currentStep > step.id ? <Check size={12} className="sm:w-[14px] sm:h-[14px]" /> : step.id}
                 </div>
                 {idx < STEPS.length - 1 && (
-                  <div className={`mx-2 h-0.5 w-8 ${currentStep > step.id ? "bg-green-500" : "bg-slate-200 dark:bg-neutral-800"}`} />
+                  <div className={`mx-1 sm:mx-2 h-0.5 w-4 sm:w-8 ${currentStep > step.id ? "bg-green-500" : "bg-slate-200 dark:bg-neutral-800"}`} />
                 )}
               </div>
             ))}
           </div>
 
           {/* Step Content */}
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6">
             {currentStep === 1 && (
               <Step1Colors
                 themeData={themeData}
@@ -253,27 +253,27 @@ export default function CustomThemeCreator({ isOpen, onClose, onSave }: CustomTh
           </div>
 
           {/* Footer Navigation */}
-          <div className="flex items-center justify-between border-t border-slate-200 dark:border-neutral-800 px-6 py-4">
+          <div className="flex items-center justify-between border-t border-slate-200 dark:border-neutral-800 px-4 sm:px-6 py-3 sm:py-4">
             <button
               onClick={handleBack}
               disabled={currentStep === 1}
-              className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-slate-600 dark:text-neutral-400 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-1 sm:gap-2 rounded-lg px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-slate-600 dark:text-neutral-400 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <ChevronLeft size={16} /> {t.back || "Back"}
+              <ChevronLeft size={14} className="sm:w-4 sm:h-4" /> {t.back || "Back"}
             </button>
             {currentStep < 4 ? (
               <button
                 onClick={handleNext}
                 disabled={currentStep === 1 && !themeData.selectedPalette && themeData.colorMode === "curated"}
-                className="flex items-center gap-2 rounded-lg bg-[#06b6d4] px-6 py-2 text-sm font-bold text-white hover:bg-[#0891b2] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-1 sm:gap-2 rounded-lg bg-[#06b6d4] px-4 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-white hover:bg-[#0891b2] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {t.next || "Next"} <ChevronRight size={16} />
+                {t.next || "Next"} <ChevronRight size={14} className="sm:w-4 sm:h-4" />
               </button>
             ) : (
               <button
                 onClick={handleSave}
                 disabled={isSaving || !themeData.themeName.trim()}
-                className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-6 py-2 text-sm font-bold text-white hover:from-[#172554] hover:to-[#0891b2] disabled:opacity-50"
+                className="flex items-center gap-1 sm:gap-2 rounded-lg bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-4 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-white hover:from-[#172554] hover:to-[#0891b2] disabled:opacity-50"
               >
                 {isSaving ? (t.creating || "Creating...") : (t.createTheme || "Create Theme")}
               </button>
@@ -282,7 +282,7 @@ export default function CustomThemeCreator({ isOpen, onClose, onSave }: CustomTh
         </div>
 
         {/* Right Panel - Preview */}
-        <div className="w-1/2 bg-slate-100 dark:bg-neutral-900 p-6 overflow-y-auto">
+        <div className="w-full md:w-1/2 bg-slate-100 dark:bg-neutral-900 p-3 sm:p-6 overflow-y-auto flex-1 md:flex-none">
           <ThemePreview
             colors={colors}
             headingFont={headingFont}
@@ -344,12 +344,12 @@ function Step1Colors({
       {themeData.colorMode === "curated" ? (
         <>
           {/* Category Filter */}
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
             {COLOR_CATEGORIES.map(cat => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                className={`rounded-full px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium transition ${
                   selectedCategory === cat
                     ? "bg-[#1e3a8a] text-white"
                     : "bg-slate-100 text-slate-600 dark:text-neutral-400 hover:bg-slate-200"
@@ -361,7 +361,7 @@ function Step1Colors({
           </div>
 
           {/* Palette Grid */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
             {filteredPalettes.map(palette => (
               <button
                 key={palette.id}
@@ -372,17 +372,17 @@ function Step1Colors({
                     : "border-slate-200 hover:border-slate-300"
                 }`}
               >
-                <div className="h-16 flex">
+                <div className="h-12 sm:h-16 flex">
                   <div className="flex-1" style={{ backgroundColor: palette.colors.background }} />
                   <div className="flex-1" style={{ backgroundColor: palette.colors.primary }} />
                   <div className="flex-1" style={{ backgroundColor: palette.colors.accent }} />
                 </div>
-                <div className="p-2 bg-white">
-                  <p className="text-xs font-medium text-slate-700 dark:text-neutral-300 truncate">{palette.name}</p>
+                <div className="p-1.5 sm:p-2 bg-white">
+                  <p className="text-[10px] sm:text-xs font-medium text-slate-700 dark:text-neutral-300 truncate">{palette.name}</p>
                 </div>
                 {themeData.selectedPalette === palette.id && (
-                  <div className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#06b6d4] text-white">
-                    <Check size={12} />
+                  <div className="absolute top-1 right-1 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-[#06b6d4] text-white">
+                    <Check size={10} className="sm:w-3 sm:h-3" />
                   </div>
                 )}
               </button>
@@ -438,30 +438,30 @@ function Step2Fonts({
   setThemeData: React.Dispatch<React.SetStateAction<CustomThemeData>>;
 }) {
   return (
-    <div className="space-y-6">
-      <p className="text-sm text-slate-500">Choose fonts for your theme</p>
+    <div className="space-y-4 sm:space-y-6">
+      <p className="text-xs sm:text-sm text-slate-500">Choose fonts for your theme</p>
 
       {/* Heading Font */}
       <div>
-        <h3 className="text-sm font-semibold text-slate-700 dark:text-neutral-300 mb-3">Heading Font</h3>
-        <div className="grid grid-cols-2 gap-2">
+        <h3 className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-neutral-300 mb-2 sm:mb-3">Heading Font</h3>
+        <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
           {FONT_OPTIONS.map(font => (
             <button
               key={font.id}
               onClick={() => setThemeData(prev => ({ ...prev, headingFont: font.id }))}
-              className={`relative rounded-lg border-2 p-3 text-left transition-all ${
+              className={`relative rounded-lg border-2 p-2 sm:p-3 text-left transition-all ${
                 themeData.headingFont === font.id
                   ? "border-[#06b6d4] bg-[#e0f2fe]"
                   : "border-slate-200 hover:border-slate-300"
               }`}
             >
-              <p className="font-bold text-slate-800 dark:text-white" style={{ fontFamily: font.family }}>
+              <p className="font-bold text-xs sm:text-base text-slate-800 dark:text-white truncate" style={{ fontFamily: font.family }}>
                 {font.name}
               </p>
-              <p className="text-xs text-slate-500">{font.style}</p>
+              <p className="text-[10px] sm:text-xs text-slate-500 truncate">{font.style}</p>
               {themeData.headingFont === font.id && (
-                <div className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#06b6d4] text-white">
-                  <Check size={12} />
+                <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-[#06b6d4] text-white">
+                  <Check size={10} className="sm:w-3 sm:h-3" />
                 </div>
               )}
             </button>
@@ -471,25 +471,25 @@ function Step2Fonts({
 
       {/* Body Font */}
       <div>
-        <h3 className="text-sm font-semibold text-slate-700 dark:text-neutral-300 mb-3">Body Font</h3>
-        <div className="grid grid-cols-2 gap-2">
+        <h3 className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-neutral-300 mb-2 sm:mb-3">Body Font</h3>
+        <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
           {FONT_OPTIONS.map(font => (
             <button
               key={font.id}
               onClick={() => setThemeData(prev => ({ ...prev, bodyFont: font.id }))}
-              className={`relative rounded-lg border-2 p-3 text-left transition-all ${
+              className={`relative rounded-lg border-2 p-2 sm:p-3 text-left transition-all ${
                 themeData.bodyFont === font.id
                   ? "border-[#06b6d4] bg-[#e0f2fe]"
                   : "border-slate-200 hover:border-slate-300"
               }`}
             >
-              <p className="text-slate-800 dark:text-white" style={{ fontFamily: font.family }}>
+              <p className="text-xs sm:text-base text-slate-800 dark:text-white truncate" style={{ fontFamily: font.family }}>
                 {font.name}
               </p>
-              <p className="text-xs text-slate-500">{font.style}</p>
+              <p className="text-[10px] sm:text-xs text-slate-500 truncate">{font.style}</p>
               {themeData.bodyFont === font.id && (
-                <div className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#06b6d4] text-white">
-                  <Check size={12} />
+                <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-[#06b6d4] text-white">
+                  <Check size={10} className="sm:w-3 sm:h-3" />
                 </div>
               )}
             </button>
@@ -509,24 +509,24 @@ function Step3Design({
   setThemeData: React.Dispatch<React.SetStateAction<CustomThemeData>>;
 }) {
   return (
-    <div className="space-y-6">
-      <p className="text-sm text-slate-500">Choose a style for your content</p>
+    <div className="space-y-4 sm:space-y-6">
+      <p className="text-xs sm:text-sm text-slate-500">Choose a style for your content</p>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
         {CARD_STYLES.map(style => (
           <button
             key={style.id}
             onClick={() => setThemeData(prev => ({ ...prev, cardStyle: style.id }))}
-            className={`relative rounded-lg border-2 p-4 transition-all ${
+            className={`relative rounded-lg border-2 p-2 sm:p-4 transition-all ${
               themeData.cardStyle === style.id
                 ? "border-[#06b6d4] bg-[#e0f2fe]"
                 : "border-slate-200 hover:border-slate-300"
             }`}
           >
             {/* Card Preview */}
-            <div className="mb-3 flex justify-center">
+            <div className="mb-2 sm:mb-3 flex justify-center">
               <div
-                className={`h-12 w-16 border-2 border-slate-300 bg-white ${
+                className={`h-8 w-12 sm:h-12 sm:w-16 border-2 border-slate-300 bg-white ${
                   style.id === "standard" ? "rounded-lg shadow-md" :
                   style.id === "flat" ? "rounded-none" :
                   style.id === "outline" ? "rounded-none border-2 border-slate-400" :
@@ -539,11 +539,11 @@ function Step3Design({
                 }`}
               />
             </div>
-            <p className="text-xs font-bold text-slate-700 dark:text-neutral-300">{style.name}</p>
-            <p className="text-[10px] text-slate-500 mt-1">{style.description}</p>
+            <p className="text-[10px] sm:text-xs font-bold text-slate-700 dark:text-neutral-300">{style.name}</p>
+            <p className="text-[8px] sm:text-[10px] text-slate-500 mt-0.5 sm:mt-1 line-clamp-2">{style.description}</p>
             {themeData.cardStyle === style.id && (
-              <div className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#06b6d4] text-white">
-                <Check size={12} />
+              <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-[#06b6d4] text-white">
+                <Check size={10} className="sm:w-3 sm:h-3" />
               </div>
             )}
           </button>

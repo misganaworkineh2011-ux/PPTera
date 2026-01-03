@@ -1,6 +1,7 @@
 /**
  * Obsidian Theme
- * A sleek, dark, and modern theme with high contrast and neon accents
+ * A sleek, dark volcanic glass theme with deep blacks, subtle purple undertones,
+ * and sharp, polished aesthetics. Perfect for professional and tech presentations.
  */
 
 import type { Theme } from "./types";
@@ -12,46 +13,46 @@ export const obsidianTheme: Theme = {
   // Identity
   id: THEME_ID,
   name: "Obsidian",
-  description: "A sleek, dark, and modern theme with high contrast and neon accents",
-  category: "modern",
+  description: "A sleek volcanic glass theme with deep blacks and polished aesthetics",
+  category: "dark",
 
   // Core color tokens
   colors: {
-    // Backgrounds
-    background: "#0a0a0a",
-    backgroundAlt: "#121212",
-    surface: "#1e1e1e",
-    surfaceHover: "#2a2a2a",
+    // Backgrounds - Deep obsidian blacks with subtle warmth
+    background: "#0c0c0e",
+    backgroundAlt: "#141418",
+    surface: "#1c1c22",
+    surfaceHover: "#26262e",
 
-    // Text
-    text: "#e0e0e0",
-    textMuted: "#a0a0a0",
-    textInverse: "#0a0a0a",
+    // Text - Clean whites and grays for readability
+    text: "#e4e4e8",
+    textMuted: "#9898a0",
+    textInverse: "#0c0c0e",
     heading: "#ffffff",
 
-    // Brand
-    primary: "#8b5cf6", // Violet
-    primaryHover: "#7c3aed",
-    secondary: "#ec4899", // Pink
-    secondaryHover: "#db2777",
-    accent: "#06b6d4", // Cyan
+    // Brand - Violet and rose accents
+    primary: "#a855f7",      // Bright violet
+    primaryHover: "#c084fc",
+    secondary: "#f43f5e",    // Rose
+    secondaryHover: "#fb7185",
+    accent: "#22d3ee",       // Cyan accent
 
     // Borders
-    border: "#333333",
-    borderStrong: "#444444",
-    borderHover: "#666666",
+    border: "#2a2a32",
+    borderStrong: "#3a3a44",
+    borderHover: "#4a4a56",
 
     // Effects
-    shadow: "rgba(0, 0, 0, 0.5)",
-    overlay: "rgba(0, 0, 0, 0.7)",
-    glow: "rgba(139, 92, 246, 0.5)",
+    shadow: "rgba(0, 0, 0, 0.6)",
+    overlay: "rgba(12, 12, 14, 0.85)",
+    glow: "rgba(168, 85, 247, 0.4)",
 
     // Links
-    link: "#8b5cf6",
-    linkHover: "#7c3aed",
+    link: "#a855f7",
+    linkHover: "#c084fc",
 
     // Status
-    success: "#10b981",
+    success: "#22c55e",
     warning: "#f59e0b",
     error: "#ef4444",
   },
@@ -66,7 +67,7 @@ export const obsidianTheme: Theme = {
     body: {
       family: "'Inter', sans-serif",
       weight: 400,
-      lineHeight: "1.6",
+      lineHeight: "1.65",
     },
     caption: {
       family: "'Inter', sans-serif",
@@ -77,48 +78,99 @@ export const obsidianTheme: Theme = {
       family: "'Fira Code', monospace",
     },
     googleFontsUrls: [
-      "https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Inter:wght@400;500;600&display=swap",
+      "https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap",
     ],
   },
 
   // Design tokens
   design: {
     borderRadius: {
-      small: "0.25rem",
-      medium: "0.5rem",
-      large: "0.75rem",
+      small: "0.375rem",
+      medium: "0.625rem",
+      large: "1rem",
       full: "9999px",
     },
     shadows: {
-      small: "0 1px 3px rgba(0, 0, 0, 0.3)",
-      medium: "0 4px 12px rgba(0, 0, 0, 0.5)",
-      large: "0 12px 32px rgba(0, 0, 0, 0.7)",
+      small: "0 2px 6px rgba(0, 0, 0, 0.4)",
+      medium: "0 6px 20px rgba(0, 0, 0, 0.5)",
+      large: "0 16px 40px rgba(0, 0, 0, 0.6)",
     },
     spacing: {
-      tight: "0.5rem",
-      normal: "1rem",
-      relaxed: "1.5rem",
+      tight: "0.625rem",
+      normal: "1.25rem",
+      relaxed: "2rem",
     },
   },
 
-  // Slide specific styles
-  slides: {
+  // Slide-specific styles
+  slideStyles: {
     title: {
-      background: "linear-gradient(135deg, #0a0a0a 0%, #1e1e1e 100%)",
-      titleColor: "#ffffff",
-      subtitleColor: "#a0a0a0",
-      accentColor: "#8b5cf6",
+      background: "linear-gradient(145deg, #0c0c0e 0%, #1c1c22 50%, #141418 100%)",
+      pattern: "radial-gradient(ellipse at 20% 30%, rgba(168, 85, 247, 0.08) 0%, transparent 50%), radial-gradient(ellipse at 80% 70%, rgba(244, 63, 94, 0.06) 0%, transparent 50%)",
     },
     content: {
-      background: "#0a0a0a",
-      titleColor: "#ffffff",
-      bodyColor: "#e0e0e0",
-      accentColor: "#ec4899",
+      background: "#0c0c0e",
+      bulletStyle: "disc",
     },
-    section: {
-      background: "#1e1e1e",
-      titleColor: "#ffffff",
-      accentColor: "#06b6d4",
+    image: {
+      borderRadius: "0.625rem",
+      shadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
+      overlay: "linear-gradient(to top, rgba(12, 12, 14, 0.6), transparent)",
     },
   },
+
+  // Card/Box styling (used for slide backgrounds)
+  cardBox: {
+    background: "#1c1c22",
+    borderColor: "#3a3a44",
+    titleColor: "#ffffff",
+    bodyColor: "#e4e4e8",
+    accentColor: "#a855f7",
+    shadow: "0 4px 16px rgba(0, 0, 0, 0.4)",
+    hoverBackground: "#26262e",
+    hoverBorderColor: "#4a4a56",
+  },
+
+  // Layout element colors (for cards, boxes, steps inside slides)
+  layoutElements: {
+    background: "#1c1c22",
+    borderColor: "#3a3a44",
+    hoverBackground: "#26262e",
+  },
+
+  // Gradients
+  gradients: {
+    primary: "linear-gradient(135deg, #a855f7 0%, #f43f5e 100%)",
+    secondary: "linear-gradient(135deg, #1c1c22 0%, #26262e 100%)",
+    overlay: "linear-gradient(to bottom, transparent 0%, rgba(12, 12, 14, 0.9) 100%)",
+    text: "linear-gradient(135deg, #a855f7 0%, #22d3ee 100%)",
+  },
+
+  // Preview colors for theme selector
+  preview: {
+    titleBg: "#1c1c22",
+    bodyBg: "#0c0c0e",
+    textColor: "#e4e4e8",
+    accentColor: "#a855f7",
+  },
+
+  // No background image - pure dark aesthetic
+  backgroundImage: undefined,
+  previewBackgroundImage: undefined,
+  backgroundPosition: "center",
+  backgroundSize: "cover",
+
+  // Overlay for text readability
+  overlay: "rgba(12, 12, 14, 0.8)",
+
+  // Page background - subtle gradient with violet undertones
+  pageBackground: "radial-gradient(ellipse at 30% 20%, rgba(168, 85, 247, 0.06) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(244, 63, 94, 0.04) 0%, transparent 50%), linear-gradient(180deg, #0c0c0e 0%, #141418 50%, #0c0c0e 100%)",
+
+  // CSS variable overrides
+  cssVariables: {
+    "--obsidian-glow": "0 0 30px rgba(168, 85, 247, 0.3)",
+    "--obsidian-border-glow": "0 0 15px rgba(168, 85, 247, 0.2)",
+  },
 };
+
+export default obsidianTheme;
