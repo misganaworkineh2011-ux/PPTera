@@ -57,6 +57,7 @@ function getLogoBuffer(): Buffer | null {
 /**
  * Define Slide Masters for the presentation
  * Elements on Slide Masters are "uneditable" in normal view
+ * Watermark positioned in bottom-right corner with dark background and white text
  */
 function defineSlideMasters(
   pptx: PptxGenJS,
@@ -66,23 +67,15 @@ function defineSlideMasters(
   if (addWatermark) {
     const masterObjects: PptxGenJS.SlideMasterProps["objects"] = [];
 
-    // Watermark container background - bottom right corner with padding
-    // Standard 16:9 slide is 10" x 5.625"
-    const containerWidth = logoBase64 ? 2.0 : 1.6;
-    const containerHeight = 0.35;
-    const containerX = 10 - containerWidth - 0.15; // 0.15" from right edge
-    const containerY = 5.625 - containerHeight - 0.1; // 0.1" from bottom edge
-
-    // Add background rectangle for watermark
+    // Add dark background rectangle for watermark - using percentage positioning, fully rounded, no border
     masterObjects.push({
       rect: {
-        x: containerX,
-        y: containerY,
-        w: containerWidth,
-        h: containerHeight,
-        fill: { color: "F5F5F5" },
-        line: { color: "E0E0E0", width: 0.5 },
-        rectRadius: 0.05,
+        x: "78%",
+        y: "92%",
+        w: "20%",
+        h: 0.4,
+        fill: { color: "1a1a1a" },
+        rectRadius: 0.2,
       },
     });
 
@@ -90,27 +83,28 @@ function defineSlideMasters(
     if (logoBase64) {
       masterObjects.push({
         image: {
-          x: containerX + 0.08,
-          y: containerY + 0.05,
-          w: 0.25,
-          h: 0.25,
+          x: "79%",
+          y: "92.5%",
+          w: 0.3,
+          h: 0.3,
           data: logoBase64,
         },
       });
     }
 
-    // Add "Made with PPTMaster" text watermark (uneditable) - single line
+    // Add "Made with PPTMaster" text watermark - white bold text, single line
     masterObjects.push({
       text: {
         text: "Made with PPTMaster",
         options: {
-          x: logoBase64 ? containerX + 0.38 : containerX + 0.1,
-          y: containerY,
-          w: logoBase64 ? 1.5 : 1.4,
-          h: containerHeight,
-          fontSize: 10,
+          x: logoBase64 ? "82.5%" : "79%",
+          y: "92%",
+          w: "16%",
+          h: 0.4,
+          fontSize: 11,
           fontFace: "Arial",
-          color: "666666",
+          bold: true,
+          color: "FFFFFF",
           align: "left",
           valign: "middle",
           wrap: false,
@@ -206,7 +200,7 @@ export async function injectSlideMasterWatermark(
 /**
  * Create XML for watermark shapes to inject into slide master
  * These shapes will be uneditable in normal slide view
- * Positioned in bottom-right corner with solid background
+ * Positioned in bottom-right corner with dark background and white bold text
  */
 function createWatermarkShapesXml(logoRId: string, hasLogo: boolean): string {
   const shapes: string[] = [];
@@ -214,13 +208,17 @@ function createWatermarkShapesXml(logoRId: string, hasLogo: boolean): string {
   // EMU conversions (1 inch = 914400 EMUs)
   const inchToEmu = (inches: number) => Math.round(inches * 914400);
 
-  // Standard 16:9 slide is 10" x 5.625"
-  const containerWidth = hasLogo ? 2.0 : 1.6;
-  const containerHeight = 0.35;
-  const containerX = 10 - containerWidth - 0.15; // 0.15" from right edge
-  const containerY = 5.625 - containerHeight - 0.1; // 0.1" from bottom edge
+  // Standard 16:9 slide dimensions in EMUs
+  const slideWidth = 9144000; // 10 inches
+  const slideHeight = 5143500; // 5.625 inches
 
-  // Add background rectangle shape
+  // Watermark container - bottom right corner (using percentages converted to EMUs)
+  const containerWidth = Math.round(slideWidth * 0.2); // 20% width
+  const containerHeight = inchToEmu(0.4);
+  const containerX = Math.round(slideWidth * 0.78); // 78% from left
+  const containerY = Math.round(slideHeight * 0.92); // 92% from top
+
+  // Add dark background rectangle shape - fully rounded, no border
   shapes.push(`
     <p:sp>
       <p:nvSpPr>
@@ -230,21 +228,19 @@ function createWatermarkShapesXml(logoRId: string, hasLogo: boolean): string {
       </p:nvSpPr>
       <p:spPr>
         <a:xfrm>
-          <a:off x="${inchToEmu(containerX)}" y="${inchToEmu(containerY)}"/>
-          <a:ext cx="${inchToEmu(containerWidth)}" cy="${inchToEmu(containerHeight)}"/>
+          <a:off x="${containerX}" y="${containerY}"/>
+          <a:ext cx="${containerWidth}" cy="${containerHeight}"/>
         </a:xfrm>
         <a:prstGeom prst="roundRect">
           <a:avLst>
-            <a:gd name="adj" fmla="val 10000"/>
+            <a:gd name="adj" fmla="val 50000"/>
           </a:avLst>
         </a:prstGeom>
         <a:solidFill>
-          <a:srgbClr val="F5F5F5"/>
+          <a:srgbClr val="1A1A1A"/>
         </a:solidFill>
-        <a:ln w="6350">
-          <a:solidFill>
-            <a:srgbClr val="E0E0E0"/>
-          </a:solidFill>
+        <a:ln>
+          <a:noFill/>
         </a:ln>
       </p:spPr>
       <p:txBody>
@@ -256,15 +252,15 @@ function createWatermarkShapesXml(logoRId: string, hasLogo: boolean): string {
   `);
 
   // Logo position inside container
-  const logoX = containerX + 0.08;
-  const logoY = containerY + 0.05;
-  const logoW = 0.25;
-  const logoH = 0.25;
+  const logoX = Math.round(slideWidth * 0.79);
+  const logoY = Math.round(slideHeight * 0.925);
+  const logoW = inchToEmu(0.3);
+  const logoH = inchToEmu(0.3);
 
   // Text position inside container
-  const textX = hasLogo ? containerX + 0.38 : containerX + 0.1;
+  const textX = hasLogo ? Math.round(slideWidth * 0.825) : Math.round(slideWidth * 0.79);
   const textY = containerY;
-  const textW = hasLogo ? 1.5 : 1.4;
+  const textW = Math.round(slideWidth * 0.16);
   const textH = containerHeight;
 
   // Add logo image shape
@@ -286,8 +282,8 @@ function createWatermarkShapesXml(logoRId: string, hasLogo: boolean): string {
         </p:blipFill>
         <p:spPr>
           <a:xfrm>
-            <a:off x="${inchToEmu(logoX)}" y="${inchToEmu(logoY)}"/>
-            <a:ext cx="${inchToEmu(logoW)}" cy="${inchToEmu(logoH)}"/>
+            <a:off x="${logoX}" y="${logoY}"/>
+            <a:ext cx="${logoW}" cy="${logoH}"/>
           </a:xfrm>
           <a:prstGeom prst="rect">
             <a:avLst/>
@@ -297,7 +293,7 @@ function createWatermarkShapesXml(logoRId: string, hasLogo: boolean): string {
     `);
   }
 
-  // Add "Made with PPTMaster" text shape - no wrap for single line
+  // Add "Made with PPTMaster" text shape - white bold text, no wrap
   shapes.push(`
     <p:sp>
       <p:nvSpPr>
@@ -307,8 +303,8 @@ function createWatermarkShapesXml(logoRId: string, hasLogo: boolean): string {
       </p:nvSpPr>
       <p:spPr>
         <a:xfrm>
-          <a:off x="${inchToEmu(textX)}" y="${inchToEmu(textY)}"/>
-          <a:ext cx="${inchToEmu(textW)}" cy="${inchToEmu(textH)}"/>
+          <a:off x="${textX}" y="${textY}"/>
+          <a:ext cx="${textW}" cy="${textH}"/>
         </a:xfrm>
         <a:prstGeom prst="rect">
           <a:avLst/>
@@ -321,9 +317,9 @@ function createWatermarkShapesXml(logoRId: string, hasLogo: boolean): string {
         <a:p>
           <a:pPr algn="l"/>
           <a:r>
-            <a:rPr lang="en-US" sz="1000" dirty="0">
+            <a:rPr lang="en-US" sz="1100" b="1" dirty="0">
               <a:solidFill>
-                <a:srgbClr val="666666"/>
+                <a:srgbClr val="FFFFFF"/>
               </a:solidFill>
               <a:latin typeface="Arial"/>
             </a:rPr>
