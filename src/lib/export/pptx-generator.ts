@@ -66,29 +66,29 @@ function defineSlideMasters(
   if (addWatermark) {
     const masterObjects: PptxGenJS.SlideMasterProps["objects"] = [];
 
-    // Add logo in bottom-right corner (uneditable) - smaller size
+    // Add logo in bottom-right corner (uneditable) - larger size
     if (logoBase64) {
       masterObjects.push({
         image: {
-          x: 8.5,
-          y: 5.0,
-          w: 0.22,
-          h: 0.22,
+          x: 7.8,
+          y: 4.7,
+          w: 0.4,
+          h: 0.4,
           data: logoBase64,
         },
       });
     }
 
-    // Add "Made with PPTMaster" text watermark (uneditable) - smaller
+    // Add "Made with PPTMaster" text watermark (uneditable) - larger
     masterObjects.push({
       text: {
         text: "Made with PPTMaster",
         options: {
-          x: logoBase64 ? 8.75 : 8.3,
-          y: 5.0,
-          w: 1.3,
-          h: 0.22,
-          fontSize: 8,
+          x: logoBase64 ? 8.25 : 7.8,
+          y: 4.75,
+          w: 1.8,
+          h: 0.35,
+          fontSize: 12,
           fontFace: "Arial",
           color: "888888",
           align: "left",
@@ -185,7 +185,7 @@ export async function injectSlideMasterWatermark(
 /**
  * Create XML for watermark shapes to inject into slide master
  * These shapes will be uneditable in normal slide view
- * Smaller size with "Made with PPTMaster" text
+ * Larger size with "Made with PPTMaster" text in bottom-right corner
  */
 function createWatermarkShapesXml(logoRId: string, hasLogo: boolean): string {
   const shapes: string[] = [];
@@ -193,17 +193,17 @@ function createWatermarkShapesXml(logoRId: string, hasLogo: boolean): string {
   // EMU conversions (1 inch = 914400 EMUs)
   const inchToEmu = (inches: number) => Math.round(inches * 914400);
 
-  // Logo position: bottom-right corner - smaller
-  const logoX = inchToEmu(8.5);
-  const logoY = inchToEmu(5.0);
-  const logoW = inchToEmu(0.22);
-  const logoH = inchToEmu(0.22);
+  // Logo position: bottom-right corner - larger
+  const logoX = inchToEmu(7.8);
+  const logoY = inchToEmu(4.7);
+  const logoW = inchToEmu(0.4);
+  const logoH = inchToEmu(0.4);
 
-  // Text position: next to logo - smaller
-  const textX = hasLogo ? inchToEmu(8.75) : inchToEmu(8.3);
-  const textY = inchToEmu(5.0);
-  const textW = inchToEmu(1.3);
-  const textH = inchToEmu(0.22);
+  // Text position: next to logo - larger
+  const textX = hasLogo ? inchToEmu(8.25) : inchToEmu(7.8);
+  const textY = inchToEmu(4.75);
+  const textW = inchToEmu(1.8);
+  const textH = inchToEmu(0.35);
 
   // Add logo image shape
   if (hasLogo) {
@@ -235,7 +235,7 @@ function createWatermarkShapesXml(logoRId: string, hasLogo: boolean): string {
     `);
   }
 
-  // Add "Made with PPTMaster" text shape - smaller font
+  // Add "Made with PPTMaster" text shape - larger font
   shapes.push(`
     <p:sp>
       <p:nvSpPr>
@@ -259,7 +259,7 @@ function createWatermarkShapesXml(logoRId: string, hasLogo: boolean): string {
         <a:p>
           <a:pPr algn="l"/>
           <a:r>
-            <a:rPr lang="en-US" sz="800" dirty="0">
+            <a:rPr lang="en-US" sz="1200" dirty="0">
               <a:solidFill>
                 <a:srgbClr val="888888"/>
               </a:solidFill>
