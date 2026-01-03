@@ -148,11 +148,16 @@ async function exportPresentation(
       );
     }
 
-    const baseUrl =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      (process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "http://localhost:3000");
+    // Determine base URL - prefer NEXT_PUBLIC_APP_URL for production
+    let baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+    if (!baseUrl && process.env.VERCEL_URL) {
+      baseUrl = `https://${process.env.VERCEL_URL}`;
+    }
+    if (!baseUrl) {
+      baseUrl = "http://localhost:3000";
+    }
+    
+    console.log(`[Export PPTX] Using baseUrl: ${baseUrl}`);
 
     let browser;
     try {
@@ -283,11 +288,16 @@ async function exportPresentation(
 
   // PDF Export - Using Puppeteer for pixel-perfect rendering with selectable text
   if (format === "pdf") {
-    const baseUrl =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      (process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "http://localhost:3000");
+    // Determine base URL
+    let baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+    if (!baseUrl && process.env.VERCEL_URL) {
+      baseUrl = `https://${process.env.VERCEL_URL}`;
+    }
+    if (!baseUrl) {
+      baseUrl = "http://localhost:3000";
+    }
+    
+    console.log(`[Export PDF] Using baseUrl: ${baseUrl}`);
 
     let browser;
     try {
@@ -410,11 +420,16 @@ async function exportPresentation(
       archive.on("error", reject);
     });
 
-    const baseUrl =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      (process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "http://localhost:3000");
+    // Determine base URL
+    let baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+    if (!baseUrl && process.env.VERCEL_URL) {
+      baseUrl = `https://${process.env.VERCEL_URL}`;
+    }
+    if (!baseUrl) {
+      baseUrl = "http://localhost:3000";
+    }
+    
+    console.log(`[Export Images] Using baseUrl: ${baseUrl}`);
 
     const pageWidth = 1920;
     const pageHeight = 1080;

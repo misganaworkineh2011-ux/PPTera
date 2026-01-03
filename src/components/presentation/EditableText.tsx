@@ -699,12 +699,12 @@ export default function EditableText({
         key="static-container"
         ref={containerRef}
         className="relative"
-        onMouseEnter={() => setIsHovered(true)}
+        onMouseEnter={() => isOwner && setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
         <div
           key="static-content"
-          className={`${className} ${isOwner && isHovered ? "cursor-text ring-2 ring-white/30 ring-offset-2 ring-offset-transparent rounded" : ""}`}
+          className={`${className} ${isOwner && isHovered ? "cursor-text ring-2 ring-white/30 ring-offset-2 ring-offset-transparent rounded" : ""} ${!isOwner ? "pointer-events-none select-none" : ""}`}
           style={style}
           onMouseDown={isOwner ? (e) => { 
             e.stopPropagation();
