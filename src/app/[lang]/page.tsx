@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { generateLanguageParams, getTranslations, isValidLanguage, type Language } from "~/lib/i18n";
 import type { Metadata } from "next";
+import { LandingPageClient } from "../LandingPageClient";
 
 export async function generateStaticParams() {
   return generateLanguageParams();
@@ -27,6 +28,29 @@ export async function generateMetadata({
 
 export const revalidate = 3600;
 
+// Server-rendered landing page with critical SEO content for each language
+function LandingPageServer({ lang }: { lang: Language }) {
+  const t = getTranslations(lang);
+  
+  return (
+    <>
+      {/* Critical SEO content - server-rendered for Google */}
+      <div className="sr-only" aria-hidden="false">
+        <h1>PPT Master | {t.heroTitle} {t.heroSubtitle} {t.heroSubtitle2}</h1>
+        <p>{t.heroDescription}</p>
+        <ul>
+          <li>{t.aiPresentations}</li>
+          <li>{t.templates}</li>
+          <li>{t.exportFormats}</li>
+          <li>{t.noCreditCard}</li>
+        </ul>
+      </div>
+      {/* Interactive landing page */}
+      <LandingPageClient currentLang={lang} />
+    </>
+  );
+}
+
 export default async function LangHomePage({
   params,
 }: {
@@ -39,7 +63,5 @@ export default async function LangHomePage({
     redirect("/");
   }
 
-  // Import the landing page client component
-  const { LandingPageClient } = await import("../LandingPageClient");
-  return <LandingPageClient currentLang={lang as Language} />;
+  return <LandingPageServer lang={lang as Language} />;
 }

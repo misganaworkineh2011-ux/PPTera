@@ -17,24 +17,27 @@ async function PresentationsGrid({
   userId: string;
   userName: string;
 }) {
-  const presentations = await db.presentation.findMany({
-    where: { userId },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-    select: {
-      id: true,
-      title: true,
-      isPublic: true,
-      isPinned: true,
-      createdAt: true,
-      updatedAt: true,
-      thumbnailUrl: true,
-      shareToken: true,
-    },
-  });
+  const [presentations, totalCount] = await Promise.all([
+    db.presentation.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      select: {
+        id: true,
+        title: true,
+        isPublic: true,
+        isPinned: true,
+        createdAt: true,
+        updatedAt: true,
+        thumbnailUrl: true,
+        shareToken: true,
+      },
+    }),
+    db.presentation.count({ where: { userId } }),
+  ]);
 
   return (
-    <DashboardContentWrapper presentations={presentations} userName={userName} />
+    <DashboardContentWrapper presentations={presentations} userName={userName} totalCount={totalCount} />
   );
 }
 
@@ -56,7 +59,7 @@ async function DashboardContent({ userId }: { userId: string }) {
   if (!user) {
     // User exists in Clerk but not in DB yet - show landing page
     // The webhook or next request will create the user
-    return <LandingPageClient currentLang="en" />;
+    return <LandingPageServer />;
   }
 
   const initialUser = {
@@ -87,6 +90,31 @@ async function DashboardContent({ userId }: { userId: string }) {
   );
 }
 
+// Server-rendered landing page with critical SEO content
+function LandingPageServer() {
+  return (
+    <>
+      {/* Critical SEO content - server-rendered for Google */}
+      <div className="sr-only" aria-hidden="false">
+        <h1>PPT Master | Best AI PowerPoint Generator & Presentation Maker</h1>
+        <p>
+          PPT Master is the smartest way to create professional PowerPoint presentations. 
+          Just describe your idea, and our AI PowerPoint generator creates the story, design, 
+          and slides for you. No design skills required. Create stunning AI presentations in seconds.
+        </p>
+        <ul>
+          <li>AI-powered presentation generation</li>
+          <li>Professional PowerPoint templates</li>
+          <li>Export to PPTX, PDF, Google Slides</li>
+          <li>Free to use, no credit card required</li>
+        </ul>
+      </div>
+      {/* Interactive landing page */}
+      <LandingPageClient currentLang="en" />
+    </>
+  );
+}
+
 export default async function HomePage() {
   const { userId } = await auth();
 
@@ -95,7 +123,6 @@ export default async function HomePage() {
     return <DashboardContent userId={userId} />;
   }
 
-  // If not logged in, show landing page with default language (en)
-  const { LandingPageClient } = await import("./LandingPageClient");
-  return <LandingPageClient currentLang="en" />;
+  // If not logged in, show server-rendered landing page for SEO
+  return <LandingPageServer />;
 }
