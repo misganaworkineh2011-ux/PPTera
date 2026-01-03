@@ -15,7 +15,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://www.pptmaster.app'),
   title: {
-    default: "PPT Master | Best AI PowerPoint Generator & Presentation Maker",
+    default: "PPTMaster | Best AI PowerPoint Generator & Presentation Maker",
     template: "%s | PPT Master"
   },
   description: "Create stunning AI presentations in seconds. PPT Master is the best free PowerPoint generator for professionals and teams.",
@@ -184,47 +184,24 @@ export default function RootLayout({
           <link rel="dns-prefetch" href="https://res.cloudinary.com" />
         </head>
         <body className="font-sans bg-white">
+          {/* Minimal noscript fallback - doesn't interfere with SEO */}
           <noscript>
-            <div style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: 'white',
-              zIndex: 9999,
-              padding: '2rem',
-              textAlign: 'center'
-            }}>
-              <div>
-                <p style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1rem', color: '#0f172a' }}>
-                  JavaScript Required
-                </p>
-                <p style={{ fontSize: '1.125rem', color: '#64748b', marginBottom: '1.5rem' }}>
-                  PPT Master requires JavaScript to run. Please enable JavaScript in your browser settings.
-                </p>
-                <a 
-                  href="https://www.enable-javascript.com/" 
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'inline-block',
-                    padding: '0.75rem 2rem',
-                    background: 'linear-gradient(to right, #1e3a8a, #06b6d4)',
-                    color: 'white',
-                    borderRadius: '0.5rem',
-                    fontWeight: '600',
-                    textDecoration: 'none'
-                  }}
-                >
-                  Learn How to Enable JavaScript
+            <style>{`.js-only { display: none !important; }`}</style>
+            <div style={{ padding: '1rem', textAlign: 'center', background: '#fef3c7', borderBottom: '1px solid #f59e0b' }}>
+              <p style={{ margin: 0, color: '#92400e' }}>
+                For the best experience, please enable JavaScript. 
+                <a href="https://www.enable-javascript.com/" target="_blank" rel="noopener noreferrer" style={{ marginLeft: '0.5rem', color: '#1e40af', textDecoration: 'underline' }}>
+                  Learn how
                 </a>
-              </div>
+              </p>
             </div>
           </noscript>
+          <LanguageProvider>
+            <NavigationProvider>
+              {children}
+            </NavigationProvider>
+          </LanguageProvider>
+          {/* Structured data placed after visible content for better SEO */}
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
@@ -237,11 +214,6 @@ export default function RootLayout({
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationSchema) }}
           />
-          <LanguageProvider>
-            <NavigationProvider>
-              {children}
-            </NavigationProvider>
-          </LanguageProvider>
           <Toaster />
         </body>
       </html>

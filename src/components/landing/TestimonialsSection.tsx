@@ -41,7 +41,7 @@ export function TestimonialsSection({ t }: TestimonialsSectionProps) {
                 </div>
                 <div>
                   <p className="text-xl font-semibold text-zinc-900">Amanuel Garomsa</p>
-                  <p className="text-lg text-zinc-500">CEO</p>
+                  <p className="text-lg text-zinc-500">CEO of Canvelete</p>
                 </div>
               </div>
             </div>
