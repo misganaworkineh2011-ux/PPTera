@@ -125,7 +125,7 @@ function generateSlideHtml(
 
   // Background image handling
   const backgroundImage = theme.backgroundImage;
-  const pageBackground = theme.pageBackground || theme.colors.background;
+  const pageBackground = theme.pageBackgroundGradient || theme.pageBackground || theme.colors.background;
 
   // Get bullet items
   const items = slide.transformedContent?.items ||

@@ -1495,8 +1495,8 @@ export default function PresentationViewer({
             totalSlides={slides.length}
             theme={theme}
             hasImage={!!hasImage}
-            isOwner={canEdit}
-            isFullscreen={isFullscreen || isPublicView}
+            isOwner={canEdit && !isPresenting}
+            isFullscreen={isFullscreen || isPublicView || isPresenting}
             isHovered={isHovered ?? false}
             isEditing={isEditing ?? false}
             editingText={editingText}
@@ -1512,8 +1512,8 @@ export default function PresentationViewer({
             index={index}
             totalSlides={slides.length}
             theme={theme}
-            isOwner={canEdit}
-            isFullscreen={isFullscreen || isPublicView}
+            isOwner={canEdit && !isPresenting}
+            isFullscreen={isFullscreen || isPublicView || isPresenting}
             isHovered={isHovered ?? false}
             isEditing={isEditing ?? false}
             editingText={editingText}
@@ -1796,13 +1796,19 @@ export default function PresentationViewer({
       )}
 
       <div
-        className={`${isPresenting ? "h-screen overflow-hidden" : "min-h-screen"} ${theme.pageBackground ? "" : getUIColors(getThemeType(theme)).pageBg}`}
-        style={theme.backgroundImage ? {
-          backgroundImage: `url(${theme.backgroundImage})`,
-          backgroundSize: theme.backgroundSize || "cover",
-          backgroundPosition: theme.backgroundPosition || "center",
-          backgroundAttachment: "fixed",
-        } : theme.pageBackground ? { background: theme.pageBackground } : {}}
+        className={`h-screen overflow-hidden flex flex-col ${theme.pageBackground ? "" : getUIColors(getThemeType(theme)).pageBg}`}
+        style={{
+          ...(theme.backgroundImage ? {
+            backgroundImage: `url(${theme.backgroundImage})`,
+            backgroundSize: theme.backgroundSize || "cover",
+            backgroundPosition: theme.backgroundPosition || "center",
+          } : theme.pageBackgroundGradient ? { 
+            background: theme.pageBackgroundGradient,
+            backgroundColor: theme.pageBackground || theme.colors.background,
+          } : theme.pageBackground ? { 
+            background: theme.pageBackground,
+          } : {}),
+        }}
       >
         {/* Navbar hover zone for presentation mode */}
         {isPresenting && !showNavbarInPresent && (
@@ -1885,7 +1891,7 @@ export default function PresentationViewer({
 
         {/* Main content area - uses margin to make room for panel, preserving scroll position */}
         <div 
-          className="transition-all duration-300"
+          className="flex-1 overflow-y-auto transition-all duration-300"
           style={{
             ...(showContentLayoutPanel ? { marginRight: `${CONTENT_LAYOUT_PANEL_WIDTH}px` } : {}),
             ...(showThumbnails && !isPublicView && !isMobile && !isFullscreen && !isPresenting ? { marginLeft: '176px' } : {}),

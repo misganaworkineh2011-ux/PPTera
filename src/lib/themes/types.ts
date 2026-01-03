@@ -184,6 +184,7 @@ export interface Theme {
   backgroundSize?: string;      // CSS background-size (e.g., "cover", "contain", "100% auto")
   overlay?: string;
   pageBackground?: string;
+  pageBackgroundGradient?: string;  // CSS gradient for page background (layered on top of pageBackground)
   
   // CSS variable overrides (for runtime theming)
   cssVariables?: Record<string, string>;
