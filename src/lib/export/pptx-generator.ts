@@ -177,48 +177,71 @@ export async function injectSlideMasterWatermark(
       zip.file(logoImagePath, logoBuffer);
     }
 
-    // Find and modify the slide master
-    const slideMasterPath = "ppt/slideMasters/slideMaster1.xml";
-    const slideMasterRelsPath = "ppt/slideMasters/_rels/slideMaster1.xml.rels";
-
-    let slideMasterXml = await zip.file(slideMasterPath)?.async("string");
-    let slideMasterRels = await zip.file(slideMasterRelsPath)?.async("string");
-
-    if (slideMasterXml && slideMasterRels) {
-      // Add relationship for logo image
-      if (logoBuffer) {
-        const newRel = `<Relationship Id="${logoRId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/watermark_logo.png"/>`;
-        slideMasterRels = slideMasterRels.replace(
-          "</Relationships>",
-          `${newRel}</Relationships>`
-        );
-        zip.file(slideMasterRelsPath, slideMasterRels);
+    // Find all slide masters
+    const slideMasterFiles: string[] = [];
+    zip.folder("ppt/slideMasters")?.forEach((relativePath, file) => {
+      if (relativePath.match(/^slideMaster\d+\.xml$/)) {
+        slideMasterFiles.push(relativePath);
       }
+    });
 
-      // Create watermark shapes XML
-      const watermarkShapes = createWatermarkShapesXml(
-        logoRId,
-        !!logoBuffer,
-        slideWidth,
-        slideHeight,
-        slideMasterXml
-      );
+    console.log(`[injectSlideMasterWatermark] Found ${slideMasterFiles.length} slide masters`);
 
-      // Insert watermark shapes into slide master's shape tree (spTree)
-      if (slideMasterXml.includes("</p:spTree>")) {
-        slideMasterXml = slideMasterXml.replace(
-          "</p:spTree>",
-          `${watermarkShapes}</p:spTree>`
+    for (const slideMasterFile of slideMasterFiles) {
+      const slideMasterPath = `ppt/slideMasters/${slideMasterFile}`;
+      const slideMasterRelsPath = `ppt/slideMasters/_rels/${slideMasterFile}.rels`;
+
+      let slideMasterXml = await zip.file(slideMasterPath)?.async("string");
+      let slideMasterRels = await zip.file(slideMasterRelsPath)?.async("string");
+
+      if (slideMasterXml && slideMasterRels) {
+        // Add relationship for logo image
+        if (logoBuffer) {
+          // Check if relationship already exists to avoid duplicates
+          if (!slideMasterRels.includes(`Target="../media/watermark_logo.png"`)) {
+            const newRel = `<Relationship Id="${logoRId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/watermark_logo.png"/>`;
+            slideMasterRels = slideMasterRels.replace(
+              "</Relationships>",
+              `${newRel}</Relationships>`
+            );
+            zip.file(slideMasterRelsPath, slideMasterRels);
+          }
+        }
+
+        // Create watermark shapes XML
+        const watermarkShapes = createWatermarkShapesXml(
+          logoRId,
+          !!logoBuffer,
+          slideWidth,
+          slideHeight,
+          slideMasterXml
         );
-      } else if (slideMasterXml.includes("</p:cSld>")) {
-        const spTreeWithWatermark = `<p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr/>${watermarkShapes}</p:spTree>`;
-        slideMasterXml = slideMasterXml.replace(
-          "</p:cSld>",
-          `${spTreeWithWatermark}</p:cSld>`
-        );
+
+        // Insert watermark shapes into slide master's shape tree (spTree)
+        // We need to be careful not to break the XML structure
+        // The spTree usually ends with </p:spTree>
+        if (slideMasterXml.includes("</p:spTree>")) {
+          // Check if we already injected watermark (simple check)
+          if (!slideMasterXml.includes('name="Watermark Background"')) {
+             slideMasterXml = slideMasterXml.replace(
+              "</p:spTree>",
+              `${watermarkShapes}</p:spTree>`
+            );
+            zip.file(slideMasterPath, slideMasterXml);
+            console.log(`[injectSlideMasterWatermark] Injected watermark into ${slideMasterPath}`);
+          }
+        } else if (slideMasterXml.includes("</p:cSld>")) {
+           if (!slideMasterXml.includes('name="Watermark Background"')) {
+            const spTreeWithWatermark = `<p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr/>${watermarkShapes}</p:spTree>`;
+            slideMasterXml = slideMasterXml.replace(
+              "</p:cSld>",
+              `${spTreeWithWatermark}</p:cSld>`
+            );
+            zip.file(slideMasterPath, slideMasterXml);
+            console.log(`[injectSlideMasterWatermark] Injected watermark into ${slideMasterPath} (created spTree)`);
+           }
+        }
       }
-
-      zip.file(slideMasterPath, slideMasterXml);
     }
 
     // Generate the modified PPTX
