@@ -16,6 +16,7 @@ import {
   Link2,
   Loader2,
   Send,
+  BarChart3,
 } from "lucide-react";
 import { type LayoutType } from "~/lib/slide-layouts";
 
@@ -178,19 +179,25 @@ function MenuButton({
 
 interface StylingPanelProps {
   imageCount: number;
+  hasChart?: boolean;
   slideType?: "title" | "content";
   onChangeLayout: () => void;
   onChangeContentLayout?: () => void;
   onAddImage: () => void;
+  onAddChart?: () => void;
+  onRemoveChart?: () => void;
   onClose: () => void;
 }
 
 function StylingPanel({
   imageCount,
+  hasChart,
   slideType,
   onChangeLayout,
   onChangeContentLayout,
   onAddImage,
+  onAddChart,
+  onRemoveChart,
   onClose,
 }: StylingPanelProps) {
   const handleAction = (action: () => void) => () => {
@@ -223,6 +230,21 @@ function StylingPanel({
           label={imageCount > 0 ? `Images (${imageCount})` : "Add image"}
           onClick={handleAction(onAddImage)}
         />
+        {onAddChart && (
+          <MenuButton
+            icon={<BarChart3 size={15} />}
+            label={hasChart ? "Edit chart" : "Add chart"}
+            onClick={handleAction(onAddChart)}
+          />
+        )}
+        {hasChart && onRemoveChart && (
+          <MenuButton
+            icon={<Trash2 size={15} />}
+            label="Remove chart"
+            onClick={handleAction(onRemoveChart)}
+            danger
+          />
+        )}
       </div>
     </div>
   );
@@ -372,12 +394,15 @@ export function SlideMenu({
   index,
   totalSlides,
   imageCount,
+  hasChart,
   slideContent,
   onChangeLayout,
   onChangeContentLayout,
   onDuplicate,
   onAddSlide,
   onAddImage,
+  onAddChart,
+  onRemoveChart,
   onMoveUp,
   onMoveDown,
   onDelete,
@@ -452,10 +477,13 @@ export function SlideMenu({
           return (
             <StylingPanel
               imageCount={imageCount}
+              hasChart={hasChart}
               slideType={slideContent?.type}
               onChangeLayout={onChangeLayout}
               onChangeContentLayout={onChangeContentLayout}
               onAddImage={onAddImage}
+              onAddChart={onAddChart}
+              onRemoveChart={onRemoveChart}
               onClose={closePanel}
             />
           );

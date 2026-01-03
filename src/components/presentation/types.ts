@@ -12,6 +12,7 @@ import type { QuotesLayoutType } from "~/lib/layouts/content/quotes";
 import type { ImageLayoutType } from "~/lib/layouts/content/images";
 import type { CircleLayoutType } from "~/lib/layouts/content/circles";
 import type { SlideLayoutType, ImageSize } from "~/lib/layouts/slide";
+import type { ChartData, ChartConfig } from "~/lib/charts/types";
 
 // Combined content layout type for all categories
 export type ContentLayoutType = 
@@ -30,15 +31,8 @@ export interface SlideImage {
   source: string;
 }
 
-// Flexible chart data type that accepts both legacy and new formats
-export interface SlideChartData {
-  type: string;
-  title?: string;
-  data: Array<{ label: string; value: number; color?: string }>;
-  labels?: string[];
-  config: Record<string, unknown>;
-  css?: string;
-}
+// Re-export ChartData for use in slides - this ensures type compatibility
+export type SlideChartData = ChartData;
 
 export interface SlideData {
   type: "title" | "content";

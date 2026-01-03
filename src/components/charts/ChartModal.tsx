@@ -169,6 +169,7 @@ export default function ChartModal({ isOpen, onClose, onInsert, theme, existingC
                 initialChart={getInitialChart()}
                 onSave={handleSave}
                 onCancel={onClose}
+                theme={theme}
               />
             </div>
           )}

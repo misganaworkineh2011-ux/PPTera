@@ -129,6 +129,7 @@ export interface ChartTemplate {
 // Color schemes
 export const COLOR_SCHEMES = {
   default: ["#06b6d4", "#1e3a8a", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#14b8a6"],
+  theme: ["#06b6d4", "#06b6d4cc", "#06b6d499", "#06b6d466", "#06b6d4", "#06b6d4cc", "#06b6d499", "#06b6d466"], // Placeholder - actual theme colors used at runtime
   rainbow: ["#ef4444", "#f97316", "#eab308", "#22c55e", "#06b6d4", "#3b82f6", "#8b5cf6", "#ec4899"],
   monochrome: ["#1e3a8a", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe", "#dbeafe", "#eff6ff"],
   gradient: ["#06b6d4", "#0891b2", "#0e7490", "#155e75", "#164e63", "#134e4a", "#115e59", "#0f766e"],
@@ -241,7 +242,7 @@ export const CHART_TEMPLATES: ChartTemplate[] = [
     description: "Show traffic trends with filled area",
     type: "area",
     category: "analytics",
-    defaultConfig: { showGrid: true, areaFill: true, lineSmooth: true },
+    defaultConfig: { showGrid: true, areaFill: true, lineSmooth: true, showLabels: true, showValues: true },
     sampleData: [
       { label: "Mon", value: 2400 },
       { label: "Tue", value: 3200 },
