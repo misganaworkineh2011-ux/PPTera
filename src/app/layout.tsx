@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     default: "PPTMaster | Best AI PowerPoint Generator & Presentation Maker",
     template: "%s | PPT Master"
   },
-  description: "Create stunning AI presentations in seconds. PPT Master is the best free PowerPoint generator for professionals and teams.",
+  description: "PPT Master is your free AI-powered design partner for creating stunning presentations effortlessly. No coding or design skills required. Just describe your idea and let AI build professional slides for you.",
   keywords: [
     "PPTMaster",
     "AI presentation generator",
@@ -124,7 +124,7 @@ export default function RootLayout({
     "name": "PPT Master",
     "alternateName": "PPTMaster",
     "url": process.env.NEXT_PUBLIC_APP_URL || "https://www.pptmaster.app",
-    "description": "PPT Master is the best AI-powered PowerPoint generator that creates professional presentations, slides, documents, and social media content instantly.",
+    "description": "PPT Master is your free AI-powered design partner for creating stunning presentations effortlessly. No coding or design skills required. Just describe your idea and let AI build professional slides for you.",
     "potentialAction": {
       "@type": "SearchAction",
       "target": {
