@@ -143,6 +143,31 @@ export async function injectSlideMasterWatermark(
   try {
     const zip = await JSZip.loadAsync(pptxBuffer);
 
+    // Get slide dimensions from presentation.xml
+    let slideWidth = 10;
+    let slideHeight = 5.625;
+
+    const presentationXml = await zip
+      .file("ppt/presentation.xml")
+      ?.async("string");
+    if (presentationXml) {
+      // Match sldSz tag with any namespace prefix (e.g. p:sldSz, a:sldSz, or just sldSz)
+      const sldSzTagMatch = presentationXml.match(/<(?:\w+:)?sldSz\s+[^>]*>/);
+      if (sldSzTagMatch) {
+        const sldSzTag = sldSzTagMatch[0];
+        // Match cx and cy with single or double quotes
+        const cxMatch = sldSzTag.match(/cx=["'](\d+)["']/);
+        const cyMatch = sldSzTag.match(/cy=["'](\d+)["']/);
+        
+        if (cxMatch && cxMatch[1] && cyMatch && cyMatch[1]) {
+          const cx = parseInt(cxMatch[1]);
+          const cy = parseInt(cyMatch[1]);
+          slideWidth = cx / 914400;
+          slideHeight = cy / 914400;
+        }
+      }
+    }
+
     // Generate unique relationship IDs
     const logoRId = "rIdLogo" + Date.now();
     const logoImagePath = "ppt/media/watermark_logo.png";
@@ -171,7 +196,13 @@ export async function injectSlideMasterWatermark(
       }
 
       // Create watermark shapes XML
-      const watermarkShapes = createWatermarkShapesXml(logoRId, !!logoBuffer);
+      const watermarkShapes = createWatermarkShapesXml(
+        logoRId,
+        !!logoBuffer,
+        slideWidth,
+        slideHeight,
+        slideMasterXml
+      );
 
       // Insert watermark shapes into slide master's shape tree (spTree)
       if (slideMasterXml.includes("</p:spTree>")) {
@@ -209,21 +240,61 @@ export async function injectSlideMasterWatermark(
  * These shapes will be uneditable in normal slide view
  * Positioned in bottom-right corner with dark pill background and white bold text
  */
-function createWatermarkShapesXml(logoRId: string, hasLogo: boolean): string {
+function createWatermarkShapesXml(
+  logoRId: string,
+  hasLogo: boolean,
+  physicalWidthInches: number,
+  physicalHeightInches: number,
+  slideMasterXml: string
+): string {
   const shapes: string[] = [];
 
-  // EMU conversions (1 inch = 914400 EMUs)
-  const inchToEmu = (inches: number) => Math.round(inches * 914400);
+  // Determine coordinate system from slide master
+  let layoutWidthEmu = physicalWidthInches * 914400;
+  let layoutHeightEmu = physicalHeightInches * 914400;
 
-  // Standard 16:9 slide is 10" x 5.625"
-  const slideWidth = 10;
-  const slideHeight = 5.625;
+  // Try to find custom coordinate system in spTree
+  const spTreeStart = slideMasterXml.indexOf("<p:spTree>");
+  if (spTreeStart !== -1) {
+    // Look for the first grpSpPr after spTree start, which belongs to the root group
+    const afterSpTree = slideMasterXml.substring(spTreeStart);
+    const grpSpPrMatch = afterSpTree.match(/<p:grpSpPr>([\s\S]*?)<\/p:grpSpPr>/);
+    
+    if (grpSpPrMatch && grpSpPrMatch[1]) {
+      const xfrmContent = grpSpPrMatch[1];
+      // Look for chExt inside the xfrm of grpSpPr
+      const chExtMatch = xfrmContent.match(/<a:chExt\s+([^>]+)>/);
+      if (chExtMatch && chExtMatch[1]) {
+        const cxMatch = chExtMatch[1].match(/cx=["'](\d+)["']/);
+        const cyMatch = chExtMatch[1].match(/cy=["'](\d+)["']/);
+        if (cxMatch && cxMatch[1] && cyMatch && cyMatch[1]) {
+          layoutWidthEmu = parseInt(cxMatch[1]);
+          layoutHeightEmu = parseInt(cyMatch[1]);
+        }
+      }
+    }
+  }
+
+  // Calculate scaling factors
+  const emuPerInchX = layoutWidthEmu / physicalWidthInches;
+  const emuPerInchY = layoutHeightEmu / physicalHeightInches;
+
+  const inchToEmuX = (inches: number) => Math.round(inches * emuPerInchX);
+  const inchToEmuY = (inches: number) => Math.round(inches * emuPerInchY);
 
   // Badge dimensions and position (in inches)
   const badgeWidth = hasLogo ? 2.2 : 1.8;
   const badgeHeight = 0.35;
-  const badgeX = slideWidth - badgeWidth - 0.15; // 0.15" from right edge
-  const badgeY = slideHeight - badgeHeight - 0.12; // 0.12" from bottom edge
+  
+  // Calculate position in inches first
+  const badgeXInch = physicalWidthInches - badgeWidth - 0.15; // 0.15" from right edge
+  const badgeYInch = physicalHeightInches - badgeHeight - 0.12; // 0.12" from bottom edge
+
+  // Convert to coordinate system units
+  const badgeX = inchToEmuX(badgeXInch);
+  const badgeY = inchToEmuY(badgeYInch);
+  const badgeW = inchToEmuX(badgeWidth);
+  const badgeH = inchToEmuY(badgeHeight);
 
   // Add dark pill background shape - fully rounded, no border
   shapes.push(`
@@ -235,8 +306,8 @@ function createWatermarkShapesXml(logoRId: string, hasLogo: boolean): string {
       </p:nvSpPr>
       <p:spPr>
         <a:xfrm>
-          <a:off x="${inchToEmu(badgeX)}" y="${inchToEmu(badgeY)}"/>
-          <a:ext cx="${inchToEmu(badgeWidth)}" cy="${inchToEmu(badgeHeight)}"/>
+          <a:off x="${badgeX}" y="${badgeY}"/>
+          <a:ext cx="${badgeW}" cy="${badgeH}"/>
         </a:xfrm>
         <a:prstGeom prst="roundRect">
           <a:avLst>
@@ -259,16 +330,16 @@ function createWatermarkShapesXml(logoRId: string, hasLogo: boolean): string {
   `);
 
   // Logo position inside the pill
-  const logoX = badgeX + 0.1;
-  const logoY = badgeY + 0.05;
-  const logoW = 0.25;
-  const logoH = 0.25;
+  const logoX = inchToEmuX(badgeXInch + 0.1);
+  const logoY = inchToEmuY(badgeYInch + 0.05);
+  const logoW = inchToEmuX(0.25);
+  const logoH = inchToEmuY(0.25);
 
   // Text position inside the pill
-  const textX = hasLogo ? badgeX + 0.4 : badgeX + 0.15;
-  const textY = badgeY;
-  const textW = hasLogo ? 1.7 : 1.5;
-  const textH = badgeHeight;
+  const textX = inchToEmuX(hasLogo ? badgeXInch + 0.4 : badgeXInch + 0.15);
+  const textY = inchToEmuY(badgeYInch);
+  const textW = inchToEmuX(hasLogo ? 1.7 : 1.5);
+  const textH = inchToEmuY(badgeHeight);
 
   // Add logo image shape
   if (hasLogo) {
@@ -289,8 +360,8 @@ function createWatermarkShapesXml(logoRId: string, hasLogo: boolean): string {
         </p:blipFill>
         <p:spPr>
           <a:xfrm>
-            <a:off x="${inchToEmu(logoX)}" y="${inchToEmu(logoY)}"/>
-            <a:ext cx="${inchToEmu(logoW)}" cy="${inchToEmu(logoH)}"/>
+            <a:off x="${logoX}" y="${logoY}"/>
+            <a:ext cx="${logoW}" cy="${logoH}"/>
           </a:xfrm>
           <a:prstGeom prst="rect">
             <a:avLst/>
@@ -310,8 +381,8 @@ function createWatermarkShapesXml(logoRId: string, hasLogo: boolean): string {
       </p:nvSpPr>
       <p:spPr>
         <a:xfrm>
-          <a:off x="${inchToEmu(textX)}" y="${inchToEmu(textY)}"/>
-          <a:ext cx="${inchToEmu(textW)}" cy="${inchToEmu(textH)}"/>
+          <a:off x="${textX}" y="${textY}"/>
+          <a:ext cx="${textW}" cy="${textH}"/>
         </a:xfrm>
         <a:prstGeom prst="rect">
           <a:avLst/>
