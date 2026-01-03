@@ -3,18 +3,30 @@ import { db } from "~/server/db";
 import { requireAuth } from "~/lib/clerk-server";
 import { PDFDocument } from "pdf-lib";
 import archiver from "archiver";
+import { injectSlideMasterWatermark } from "~/lib/export/pptx-generator";
 import {
-  generatePptx,
-  injectSlideMasterWatermark,
-} from "~/lib/export/pptx-generator";
-import { isAdobeConfigured, convertPdfToPptx } from "~/lib/export/adobe-pdf-services";
+  isAdobeConfigured,
+  convertPdfToPptx,
+} from "~/lib/export/adobe-pdf-services";
 import { getThemeById, getDefaultTheme } from "~/lib/themes";
 import {
   isCustomThemeId,
   getCustomThemeDbId,
   convertCustomThemeToTheme,
 } from "~/lib/custom-theme-utils";
-import puppeteer from "puppeteer";
+
+// Use puppeteer-core with @sparticuz/chromium for serverless compatibility
+import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium";
+
+// Helper to get browser instance
+async function getBrowser() {
+  return puppeteer.launch({
+    args: chromium.args,
+    executablePath: await chromium.executablePath(),
+    headless: true,
+  });
+}
 
 interface SlideImage {
   url: string;
@@ -146,16 +158,7 @@ async function exportPresentation(
     try {
       // Generate the pixel-perfect PDF using Puppeteer
       console.log(`[Export PPTX] Generating PDF for Adobe conversion...`);
-      browser = await puppeteer.launch({
-        headless: true,
-        args: [
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage",
-          "--disable-gpu",
-          "--font-render-hinting=none",
-        ],
-      });
+      browser = await getBrowser();
 
       const page = await browser.newPage();
       const pageWidth = 1920;
@@ -288,16 +291,7 @@ async function exportPresentation(
 
     let browser;
     try {
-      browser = await puppeteer.launch({
-        headless: true,
-        args: [
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage",
-          "--disable-gpu",
-          "--font-render-hinting=none",
-        ],
-      });
+      browser = await getBrowser();
 
       const page = await browser.newPage();
       
@@ -427,16 +421,7 @@ async function exportPresentation(
 
     let browser;
     try {
-      browser = await puppeteer.launch({
-        headless: true,
-        args: [
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage",
-          "--disable-gpu",
-          "--font-render-hinting=none",
-        ],
-      });
+      browser = await getBrowser();
 
       const page = await browser.newPage();
       await page.setViewport({
