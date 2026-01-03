@@ -194,9 +194,16 @@ export async function injectSlideMasterWatermark(
       let slideMasterXml = await zip.file(slideMasterPath)?.async("string");
       let slideMasterRels = await zip.file(slideMasterRelsPath)?.async("string");
 
-      if (slideMasterXml && slideMasterRels) {
+      if (slideMasterXml) {
         // Add relationship for logo image
         if (logoBuffer) {
+          // If rels file doesn't exist, create it
+          if (!slideMasterRels) {
+            slideMasterRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+</Relationships>`;
+          }
+
           // Check if relationship already exists to avoid duplicates
           if (!slideMasterRels.includes(`Target="../media/watermark_logo.png"`)) {
             const newRel = `<Relationship Id="${logoRId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/watermark_logo.png"/>`;
@@ -240,6 +247,27 @@ export async function injectSlideMasterWatermark(
             zip.file(slideMasterPath, slideMasterXml);
             console.log(`[injectSlideMasterWatermark] Injected watermark into ${slideMasterPath} (created spTree)`);
            }
+        }
+      }
+    }
+
+    // Ensure all slides show master shapes
+    const slideFiles: string[] = [];
+    zip.folder("ppt/slides")?.forEach((relativePath, file) => {
+      if (relativePath.match(/^slide\d+\.xml$/)) {
+        slideFiles.push(relativePath);
+      }
+    });
+
+    for (const slideFile of slideFiles) {
+      const slidePath = `ppt/slides/${slideFile}`;
+      let slideXml = await zip.file(slidePath)?.async("string");
+      if (slideXml) {
+        // Check for showMasterSp="0" or "false" and enable it
+        if (slideXml.match(/showMasterSp=["'](?:0|false)["']/)) {
+          slideXml = slideXml.replace(/showMasterSp=["'](?:0|false)["']/, 'showMasterSp="1"');
+          zip.file(slidePath, slideXml);
+          console.log(`[injectSlideMasterWatermark] Enabled master shapes on ${slidePath}`);
         }
       }
     }
