@@ -12,7 +12,9 @@ export interface VisualStrategy {
 export interface SlideImage {
   required: boolean;
   style?: string | null; // e.g., conceptual-illustration, realistic-photo, abstract
-  promptHint?: string | null; // meaning-driven description for image generation
+  promptHint?: string | null; // Legacy - for backward compatibility
+  pexelsPromptHint?: string | null; // Short keywords for Pexels search (3-5 words)
+  aiPromptHint?: string | null; // Detailed description for AI generation
 }
 
 export interface SlideChart {

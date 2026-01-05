@@ -125,20 +125,41 @@ export function getRecommendedBoxLayout(itemCount: number): BoxLayout {
 // Calculate adaptive grid dimensions based on available space
 export function calculateBoxGridDimensions(
   itemCount: number,
-  isNarrowSpace: boolean = false // true when image is left/right, false when top/bottom
-): { columns: number; rows: number; specialLayout?: "narrow-3" } {
-  // Special case: 3 items in narrow space (image left/right)
-  if (itemCount === 3 && isNarrowSpace) {
+  isNarrowSpace: boolean = false, // true when image is left/right, false when top/bottom/no-image
+  hasImage: boolean = false // whether slide has an image
+): { columns: number; rows: number; specialLayout?: "narrow-3" | "image-2-1" } {
+  // When there's NO image, always use full-width row layout
+  if (!hasImage) {
+    // All items in a single row, using content-driven sizing
+    return { columns: itemCount, rows: 1 };
+  }
+  
+  // When image exists, ALWAYS use responsive 2-1 layout for 3 items (regardless of narrow/wide space)
+  if (itemCount === 3 && hasImage) {
+    return { columns: 2, rows: 2, specialLayout: "image-2-1" }; // 2 on top, 1 full-width below
+  }
+  
+  // Special case: 3 items in narrow space (image left/right) - but only if hasImage is false (shouldn't happen, but fallback)
+  if (itemCount === 3 && isNarrowSpace && !hasImage) {
     return { columns: 2, rows: 2, specialLayout: "narrow-3" }; // 2 on top, 1 full-width below
   }
   
-  // Wide space (image top/bottom) - can use horizontal layout
-  if (!isNarrowSpace) {
+  // Wide space (image top/bottom) - use 2-1 layout for 3 items, otherwise grid
+  if (!isNarrowSpace && hasImage) {
     if (itemCount <= 2) return { columns: itemCount, rows: 1 };
-    if (itemCount <= 3) return { columns: 3, rows: 1 };
-    if (itemCount <= 4) return { columns: 2, rows: 2 };
+    if (itemCount === 3) return { columns: 2, rows: 2, specialLayout: "image-2-1" }; // 2 on top, 1 below
+    if (itemCount <= 4) return { columns: 2, rows: 2 }; // 2x2 grid
     if (itemCount <= 6) return { columns: 3, rows: 2 };
     return { columns: 3, rows: Math.ceil(itemCount / 3) };
+  }
+  
+  // Narrow space (image left/right) - use vertical-friendly layout
+  if (isNarrowSpace && hasImage) {
+    if (itemCount <= 2) return { columns: itemCount, rows: 1 };
+    if (itemCount === 3) return { columns: 2, rows: 2, specialLayout: "image-2-1" }; // 2 on top, 1 below
+    if (itemCount <= 4) return { columns: 2, rows: 2 };
+    if (itemCount <= 6) return { columns: 2, rows: 3 };
+    return { columns: 2, rows: Math.ceil(itemCount / 2) };
   }
   
   // Narrow space (image left/right) - use vertical-friendly layout
@@ -151,17 +172,28 @@ export function calculateBoxGridDimensions(
 // Get CSS grid template with context awareness
 export function getBoxLayoutGridTemplate(
   itemCount: number,
-  isNarrowSpace: boolean = false
-): { gridTemplateColumns: string; gridTemplateRows: string; gap: string; specialLayout?: "narrow-3" } {
-  const { columns, rows, specialLayout } = calculateBoxGridDimensions(itemCount, isNarrowSpace);
+  isNarrowSpace: boolean = false,
+  hasImage: boolean = false
+): { gridTemplateColumns: string; gridTemplateRows: string; gap: string; specialLayout?: "narrow-3" | "image-2-1" } {
+  const { columns, rows, specialLayout } = calculateBoxGridDimensions(itemCount, isNarrowSpace, hasImage);
   
-  // Special layout for 3 items in narrow space
-  if (specialLayout === "narrow-3") {
+  // Special layout for 3 items with image (2 on top, 1 below)
+  if (specialLayout === "image-2-1" || specialLayout === "narrow-3") {
     return {
       gridTemplateColumns: "1fr 1fr", // 2 columns for top row
       gridTemplateRows: "auto auto", // 2 rows
       gap: "1.25rem",
-      specialLayout: "narrow-3",
+      specialLayout: specialLayout,
+    };
+  }
+  
+  // When no image, use content-driven sizing (auto) instead of equal fractions
+  if (!hasImage) {
+    // Use auto sizing so boxes size based on content, but ensure they fit in a row
+    return {
+      gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`, // minmax allows content-driven sizing
+      gridTemplateRows: `repeat(${rows}, auto)`, // auto height for flexible content
+      gap: "1.25rem",
     };
   }
   

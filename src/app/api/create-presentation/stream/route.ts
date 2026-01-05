@@ -1,9 +1,10 @@
 import { auth } from "@clerk/nextjs/server";
 import { db } from "~/server/db";
-import { fetchImagesForSlides, type SlideWithVisualMetadata } from "~/lib/pexels";
+import { fetchImagesForSlides, type SlideWithVisualMetadata, searchPexelsPhotos } from "~/lib/pexels";
 import { getThemeById } from "~/lib/themes";
 import {
   generateImagesForSlides as generateAIImages,
+  generateImageFromSpec,
   transformOutlineToPresentationStream,
   planSlideLayout,
   extractPlannerInput,
@@ -71,6 +72,14 @@ interface PresentationSlide {
     photographerUrl?: string;
     source: "pexels" | "ai" | "upload" | "placeholder" | "none";
   } | null;
+  // Multiple images for image gallery layouts
+  images?: Array<{
+    url: string;
+    alt: string;
+    photographer?: string;
+    photographerUrl?: string;
+    source: "pexels" | "ai" | "upload" | "placeholder" | "none";
+  }>;
   // New slide layout system (image position) - canonical field
   slideLayout?: SlideLayoutType;
   // Image size for slide layout
@@ -258,6 +267,7 @@ export async function POST(request: Request) {
           const plannerInput = extractPlannerInput(
             {
               type: transformedSlide.type,
+              title: transformedSlide.title,
               bulletPoints: transformedSlide.bulletPoints,
               semanticIntent: originalSlide.semanticIntent,
               visualStrategy: originalSlide.visualStrategy,
@@ -270,7 +280,7 @@ export async function POST(request: Request) {
           );
           
           // Get the planned layout
-          const layoutPlan = planSlideLayout(plannerInput);
+          const layoutPlan = await planSlideLayout(plannerInput);
 
           // Create slide object with planned layout
           const presentationSlide: PresentationSlide = {
@@ -381,6 +391,125 @@ export async function POST(request: Request) {
                 batchIndex,
                 totalBatches: batches.length,
               });
+            }
+          }
+
+          // Special handling: Generate 2-3 additional images for slides with "images" layout
+          const imagesLayoutSlides = presentationSlides
+            .map((slide, index) => ({ slide, index, originalSlide: slides[index] }))
+            .filter(({ slide, originalSlide }) => {
+              if (!originalSlide) return false;
+              // Check if content layout is "images" category
+              const contentLayoutCategory = slide.contentLayoutCategory;
+              return contentLayoutCategory === "images";
+            });
+
+          if (imagesLayoutSlides.length > 0 && imageSource === "stock-photos") {
+            // Generate 2-3 additional images for each images layout slide
+            for (const { slide, index, originalSlide } of imagesLayoutSlides) {
+              if (!originalSlide) continue;
+              
+              const slidesWithMetadata: SlideWithVisualMetadata[] = [originalSlide];
+              const imageMap = await fetchImagesForSlides(slidesWithMetadata);
+              
+              // Get 2-3 additional images (total 3-4 images for the slide)
+              const numAdditionalImages = 2; // Generate 2 more (total 3 images)
+              const additionalImages: Array<{
+                url: string;
+                alt: string;
+                photographer?: string;
+                photographerUrl?: string;
+                source: "pexels";
+              }> = [];
+
+              // Try to get multiple different images
+              for (let i = 0; i < numAdditionalImages; i++) {
+                const photos = await searchPexelsPhotos(
+                  originalSlide.assets?.image?.pexelsPromptHint || 
+                  originalSlide.assets?.image?.promptHint || 
+                  originalSlide.title,
+                  10,
+                  i + 2 // Different page to get variety
+                );
+                
+                if (photos.length > 0) {
+                  const photo = photos[Math.floor(Math.random() * photos.length)]!;
+                  additionalImages.push({
+                    url: photo.src.large,
+                    alt: photo.alt || slide.title,
+                    photographer: photo.photographer,
+                    photographerUrl: photo.photographer_url,
+                    source: "pexels",
+                  });
+                }
+              }
+
+              // Store additional images in the slide's images array
+              if (additionalImages.length > 0) {
+                if (!presentationSlides[index]!.images) {
+                  presentationSlides[index]!.images = [];
+                }
+                presentationSlides[index]!.images!.push(...additionalImages);
+                
+                // Send events for each additional image
+                additionalImages.forEach((img, imgIndex) => {
+                  sendEvent(controller, "imageLoaded", {
+                    slideIndex: index,
+                    image: img,
+                    imageIndex: imgIndex + 1, // 0 is the main image
+                  });
+                });
+              }
+            }
+          } else if (imagesLayoutSlides.length > 0 && imageSource === "ai-generated") {
+            // For AI-generated, generate 2-3 additional images
+            for (const { slide, index, originalSlide } of imagesLayoutSlides) {
+              if (!originalSlide) continue;
+              
+              const numAdditionalImages = 2; // Generate 2 more (total 3 images)
+              const additionalImages: Array<{
+                url: string;
+                alt: string;
+                source: "ai";
+              }> = [];
+
+              for (let i = 0; i < numAdditionalImages; i++) {
+                const imageSpec = originalSlide.type === "title" 
+                  ? originalSlide.image 
+                  : originalSlide.assets?.image;
+                
+                if (imageSpec?.required && imageSpec.aiPromptHint) {
+                  try {
+                    const result = await generateImageFromSpec(imageSpec, imageModel as any);
+                    if (result.url) {
+                      additionalImages.push({
+                        url: result.url,
+                        alt: result.alt || slide.title,
+                        source: "ai",
+                      });
+                    }
+                  } catch (error) {
+                    console.error(`[create-presentation] Failed to generate additional image ${i + 1} for slide ${index}:`, error);
+                  }
+                }
+              }
+
+              // Store additional images
+              if (additionalImages.length > 0) {
+                if (!presentationSlides[index]!.images) {
+                  presentationSlides[index]!.images = [];
+                }
+                presentationSlides[index]!.images!.push(...additionalImages);
+                
+                // Send events for each additional image
+                additionalImages.forEach((img, imgIndex) => {
+                  sendEvent(controller, "imageLoaded", {
+                    slideIndex: index,
+                    image: img,
+                    imageIndex: imgIndex + 1,
+                  });
+                });
+              }
             }
           }
         } else if (imageSource === "placeholders") {

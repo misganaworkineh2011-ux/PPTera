@@ -42,6 +42,7 @@ export default function BoxLayoutRenderer({
   showIcons = true,
   className = "",
   isNarrowSpace = false,
+  hasImage = false, // New prop to indicate if slide has image
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -51,14 +52,14 @@ export default function BoxLayoutRenderer({
   onFinishEditing,
   isOwner = false,
   isHovered = false,
-}: BoxLayoutRendererProps) {
+}: BoxLayoutRendererProps & { hasImage?: boolean }) {
   const layout = layoutId
     ? getBoxLayoutById(layoutId) || getRecommendedBoxLayout(items.length)
     : getRecommendedBoxLayout(items.length);
 
   if (!layout || items.length === 0) return null;
 
-  const gridStyles = getBoxLayoutGridTemplate(items.length, isNarrowSpace);
+  const gridStyles = getBoxLayoutGridTemplate(items.length, isNarrowSpace, hasImage);
   const baseStyles = getBaseBoxStyles(theme);
 
   // Style-specific rendering
@@ -123,7 +124,7 @@ export default function BoxLayoutRenderer({
                 onFinish={onFinishEditing || (() => {})}
                 style={{
                   color: baseStyles.bodyColor,
-                  fontSize: compact ? "0.8rem" : "0.9rem",
+                  fontSize: compact ? "1rem" : "1.1rem",
                   lineHeight: 1.5,
                   textAlign: "center",
                 }}
@@ -134,7 +135,7 @@ export default function BoxLayoutRenderer({
               <p
                 style={{
                   color: baseStyles.bodyColor,
-                  fontSize: compact ? "0.8rem" : "0.9rem",
+                  fontSize: compact ? "1rem" : "1.1rem",
                   lineHeight: 1.5,
                   textAlign: "center",
                 }}
@@ -202,7 +203,7 @@ export default function BoxLayoutRenderer({
                 onFinish={onFinishEditing || (() => {})}
                 style={{
                   color: baseStyles.bodyColor,
-                  fontSize: compact ? "0.8rem" : "0.9rem",
+                  fontSize: compact ? "1rem" : "1.1rem",
                   lineHeight: 1.5,
                   textAlign: "center",
                 }}
@@ -213,7 +214,7 @@ export default function BoxLayoutRenderer({
               <p
                 style={{
                   color: baseStyles.bodyColor,
-                  fontSize: compact ? "0.8rem" : "0.9rem",
+                  fontSize: compact ? "1rem" : "1.1rem",
                   lineHeight: 1.5,
                   textAlign: "center",
                 }}
@@ -298,7 +299,7 @@ export default function BoxLayoutRenderer({
                 onFinish={onFinishEditing || (() => {})}
                 style={{
                   color: baseStyles.bodyColor,
-                  fontSize: compact ? "0.8rem" : "0.9rem",
+                  fontSize: compact ? "1rem" : "1.1rem",
                   lineHeight: 1.5,
                   textAlign: "center",
                 }}
@@ -309,7 +310,7 @@ export default function BoxLayoutRenderer({
               <p
                 style={{
                   color: baseStyles.bodyColor,
-                  fontSize: compact ? "0.8rem" : "0.9rem",
+                  fontSize: compact ? "1rem" : "1.1rem",
                   lineHeight: 1.5,
                   textAlign: "center",
                 }}
@@ -410,7 +411,7 @@ export default function BoxLayoutRenderer({
                   onFinish={onFinishEditing || (() => {})}
                   style={{
                     color: baseStyles.bodyColor,
-                    fontSize: compact ? "0.8rem" : "0.9rem",
+                    fontSize: compact ? "1rem" : "1.1rem",
                     lineHeight: 1.5,
                     textAlign: "center",
                   }}
@@ -421,7 +422,7 @@ export default function BoxLayoutRenderer({
                 <p
                   style={{
                     color: baseStyles.bodyColor,
-                    fontSize: compact ? "0.8rem" : "0.9rem",
+                    fontSize: compact ? "1rem" : "1.1rem",
                     lineHeight: 1.5,
                     textAlign: "center",
                   }}
@@ -438,39 +439,54 @@ export default function BoxLayoutRenderer({
     }
   };
 
-  // Special handling for narrow-3 layout (2 on top, 1 full-width below)
-  if (gridStyles.specialLayout === "narrow-3") {
-    return (
-      <div
-        className={className}
-        style={{
-          display: "grid",
-          gridTemplateColumns: gridStyles.gridTemplateColumns,
-          gridTemplateRows: gridStyles.gridTemplateRows,
-          gap: gridStyles.gap,
-          width: "100%",
-        }}
-      >
-        {/* First two items on top row */}
-        {items.slice(0, 2).map((item, index) => renderBox(item, index))}
-        {/* Third item spans full width on bottom row */}
-        <div style={{ gridColumn: "1 / -1" }}>
-          {renderBox(items[2]!, 2)}
+  // Special handling for 2-1 layout (2 on top, 1 full-width below) - used when image exists
+  if (gridStyles.specialLayout === "image-2-1" || gridStyles.specialLayout === "narrow-3") {
+    // Ensure we have exactly 3 items for 2-1 layout
+    if (items.length === 3) {
+      return (
+        <div
+          className={className}
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gridTemplateRows: "auto auto",
+            gap: gridStyles.gap,
+            width: "100%",
+          }}
+        >
+          {/* First two items on top row */}
+          {items.slice(0, 2).map((item, index) => (
+            <div key={index}>{renderBox(item, index)}</div>
+          ))}
+          {/* Third item spans full width on bottom row */}
+          <div key={2} style={{ gridColumn: "1 / -1" }}>
+            {renderBox(items[2]!, 2)}
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
+  }
+
+  // When no image, ensure boxes use full width and content-driven sizing
+  const gridStyle: React.CSSProperties = {
+    display: "grid",
+    gridTemplateColumns: gridStyles.gridTemplateColumns,
+    gridTemplateRows: gridStyles.gridTemplateRows,
+    gap: gridStyles.gap,
+    width: "100%",
+  };
+
+  // For content-driven sizing when no image, ensure items can grow/shrink based on content
+  if (!hasImage) {
+    gridStyle.gridAutoFlow = "row";
+    // Use minmax to allow content-driven sizing while ensuring they fit in a row
+    gridStyle.gridTemplateColumns = `repeat(${items.length}, minmax(0, 1fr))`;
   }
 
   return (
     <div
       className={className}
-      style={{
-        display: "grid",
-        gridTemplateColumns: gridStyles.gridTemplateColumns,
-        gridTemplateRows: gridStyles.gridTemplateRows,
-        gap: gridStyles.gap,
-        width: "100%",
-      }}
+      style={gridStyle}
     >
       {items.map((item, index) => renderBox(item, index))}
     </div>
@@ -482,12 +498,14 @@ export function BoxLayoutPreview({
   layout,
   itemCount = 3,
   theme,
+  hasImage = false,
 }: {
   layout: BoxLayout;
   itemCount?: number;
   theme?: Theme;
+  hasImage?: boolean;
 }) {
-  const gridStyles = getBoxLayoutGridTemplate(itemCount);
+  const gridStyles = getBoxLayoutGridTemplate(itemCount, false, hasImage);
   const items = Array.from({ length: itemCount }, (_, i) => i);
   const baseStyles = getBaseBoxStyles(theme || {} as Theme);
 
@@ -535,13 +553,15 @@ export function BoxLayoutPreviewWithContent({
   layout,
   items,
   theme,
+  hasImage = false,
 }: {
   layout: BoxLayout;
   items: BoxContentItem[];
   theme: Theme;
+  hasImage?: boolean;
 }) {
   const displayItems = items.slice(0, layout.maxItems);
-  const gridStyles = getBoxLayoutGridTemplate(displayItems.length);
+  const gridStyles = getBoxLayoutGridTemplate(displayItems.length, false, hasImage);
   const baseStyles = getBaseBoxStyles(theme);
 
   return (

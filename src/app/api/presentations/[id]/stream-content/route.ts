@@ -138,7 +138,7 @@ CRITICAL: DO NOT change the slide title. Keep it EXACTLY as provided: "${slide.t
 
 OUTPUT FORMAT (respond with these exact markers):
 ${slide.type === "title" ? "[SUBTITLE]Enhanced subtitle that expands on the title[/SUBTITLE]\n[TAGLINE]Short impactful phrase[/TAGLINE]" : ""}
-${slide.type === "content" ? "[SLIDE_DESC]OPTIONAL - natural 1-2 line description/gateway point (omit if not needed, max 2 lines, do NOT use phrases like 'this slide')[/SLIDE_DESC]\n[INTRO]Optional intro sentence to set context[/INTRO]\n[BULLET]ShortTitle — Well-crafted detailed description (max 30 words, visually equal length)[/BULLET]\n[BULLET]ShortTitle — Well-crafted detailed description (max 30 words, visually equal length)[/BULLET]\n(continue for ALL ${slide.bulletPoints?.length || 0} outline bullets)" : ""}
+${slide.type === "content" ? "[SLIDE_DESC]OPTIONAL - natural 1-2 line description of the topic itself (omit if not needed, max 2 lines). Write directly about the topic, NOT about the slide. NEVER use: 'This slide highlights', 'This slide covers', 'In this slide'. INSTEAD write: 'Understanding the core principles...', 'Exploring key factors...'[/SLIDE_DESC]\n[INTRO]Optional intro sentence to set context[/INTRO]\n[BULLET]ShortTitle — Well-crafted detailed description (max 30 words, visually equal length)[/BULLET]\n[BULLET]ShortTitle — Well-crafted detailed description (max 30 words, visually equal length)[/BULLET]\n(continue for ALL ${slide.bulletPoints?.length || 0} outline bullets)" : ""}
 
 CONTENT SLIDE BULLET RULES (IMPORTANT):
 - Transform ALL ${slide.bulletPoints?.length || 0} outline bullets - none should be skipped
@@ -600,6 +600,7 @@ export async function GET(
             const plannerInput = extractPlannerInput(
               {
                 type: slide.type === "title" ? "title" : "content",
+                title: slideData.title as string | undefined,
                 bulletPoints: slideData.bulletPoints as string[] | undefined,
                 semanticIntent: (slide as { semanticIntent?: string }).semanticIntent,
                 visualStrategy: (slide as { visualStrategy?: { pattern?: string } }).visualStrategy,
@@ -613,7 +614,7 @@ export async function GET(
               pendingSlides.length
             );
 
-            const plan = planSlideLayout(plannerInput);
+            const plan = await planSlideLayout(plannerInput);
 
             // Canonical image placement fields
             slideData.slideLayout = plan.slideLayout;

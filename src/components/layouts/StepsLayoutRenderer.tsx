@@ -404,7 +404,7 @@ function PyramidSteps({
 }
 
 // Style 2: Arrow Steps - Thick downward arrows, staggered to the right
-// Uses fixed heights for consistent layout
+// Dynamic heights based on content
 function ArrowSteps({
   items,
   themeStyles,
@@ -432,32 +432,59 @@ function ArrowSteps({
   isOwner?: boolean;
   isHovered?: boolean;
 }) {
-  const rowHeight = 70; // Fixed row height
+  const minRowHeight = 60; // Minimum row height
+  const contentRefs = React.useRef<(HTMLDivElement | null)[]>([]);
+  const [rowHeights, setRowHeights] = React.useState<number[]>(() => 
+    items.map(() => minRowHeight)
+  );
+  const hasInitialized = React.useRef(false);
+
+  // Measure content heights
+  React.useLayoutEffect(() => {
+    if (hasInitialized.current) return;
+    
+    const newHeights = contentRefs.current.map((ref) => {
+      if (ref) {
+        const height = ref.offsetHeight;
+        return Math.max(height + 20, minRowHeight); // Add padding
+      }
+      return minRowHeight;
+    });
+    
+    hasInitialized.current = true;
+    setRowHeights(newHeights);
+  }, []);
+
+  // Reset when items change
+  React.useEffect(() => {
+    hasInitialized.current = false;
+  }, [items.length]);
 
   // Each arrow is offset more to the right (staggered effect)
   const getLeftPadding = (index: number) => {
     return index * 35;
   };
 
-  // Arrow dimensions - fixed size
+  // Arrow dimensions - dynamic height based on content
   const arrowWidth = 50;
-  const arrowHeight = rowHeight;
   const bodyWidth = 30;
   const headHeight = 25;
 
   return (
     <div className={`flex flex-col gap-3 ${className}`}>
       {items.map((item, index) => {
+        const arrowHeight = rowHeights[index] || minRowHeight;
+        
         return (
           <div
             key={index}
             className="flex items-stretch gap-5"
             style={{ 
               paddingLeft: `${getLeftPadding(index)}px`,
-              minHeight: `${rowHeight}px`,
+              minHeight: `${arrowHeight}px`,
             }}
           >
-            {/* Thick arrow pointing down - fixed size */}
+            {/* Thick arrow pointing down - dynamic size */}
             <div className="flex-shrink-0 flex items-center">
               <svg 
                 width={arrowWidth} 
@@ -482,6 +509,9 @@ function ArrowSteps({
 
             {/* Content */}
             <div 
+              ref={(el) => {
+                contentRefs.current[index] = el;
+              }}
               className="flex-1 flex flex-col justify-center py-2"
             >
               {item.label && (
@@ -528,7 +558,7 @@ function ArrowSteps({
   );
 }
 
-// Style 3: Card Steps - Horizontal cards with INCREASING HEIGHT (stairs going up)
+// Style 3: Card Steps - Horizontal cards with INCREASING HEIGHT (stairs going up), height matches content
 function CardSteps({
   items,
   themeStyles,
@@ -559,13 +589,44 @@ function CardSteps({
   isHovered?: boolean;
 }) {
   const itemCount = items.length;
+  const baseMinHeight = 120;
+  const baseMaxHeight = 200;
+  const contentRefs = React.useRef<(HTMLDivElement | null)[]>([]);
+  const [contentHeights, setContentHeights] = React.useState<number[]>(() => 
+    items.map(() => baseMinHeight)
+  );
+  const hasInitialized = React.useRef(false);
+
+  // Measure content heights
+  React.useLayoutEffect(() => {
+    if (hasInitialized.current) return;
+    
+    const newHeights = contentRefs.current.map((ref) => {
+      if (ref) {
+        const height = ref.offsetHeight;
+        return Math.max(height + 40, baseMinHeight); // Add padding
+      }
+      return baseMinHeight;
+    });
+    
+    hasInitialized.current = true;
+    setContentHeights(newHeights);
+  }, []);
+
+  // Reset when items change
+  React.useEffect(() => {
+    hasInitialized.current = false;
+  }, [items.length]);
   
-  // Heights increase from left to right (like stairs)
+  // Heights increase from left to right (like stairs) - ORIGINAL DESIGN
+  // But each card's height matches its content (dynamic)
   const getHeight = (index: number) => {
-    const minHeight = 120;
-    const maxHeight = 200;
-    const step = (maxHeight - minHeight) / Math.max(itemCount - 1, 1);
-    return minHeight + step * index;
+    const contentHeight = contentHeights[index] || baseMinHeight;
+    // Calculate the increasing base height
+    const step = (baseMaxHeight - baseMinHeight) / Math.max(itemCount - 1, 1);
+    const increasingBase = baseMinHeight + step * index;
+    // Use the larger of content height or increasing base height
+    return Math.max(contentHeight, increasingBase);
   };
 
   if (isNarrowSpace) {
@@ -630,13 +691,16 @@ function CardSteps({
       {items.map((item, index) => (
         <div
           key={index}
+          ref={(el) => {
+            contentRefs.current[index] = el;
+          }}
           className="flex-1 rounded-2xl p-6 flex flex-col"
           style={{
             backgroundColor: themeStyles.cardBgColor,
             border: `1px solid ${themeStyles.cardBorderColor}`,
             borderLeftWidth: "4px",
             borderLeftColor: themeStyles.accentColor,
-            height: `${getHeight(index)}px`,
+            minHeight: `${getHeight(index)}px`,
           }}
         >
           {item.label && (
@@ -681,7 +745,7 @@ function CardSteps({
   );
 }
 
-// Style 4: Bar Steps - Vertical bars with INCREASING WIDTH, text OUTSIDE the bar
+// Style 4: Bar Steps - Vertical bars with INCREASING WIDTH (original design), dynamic HEIGHT based on content
 function BarSteps({
   items,
   themeStyles,
@@ -710,8 +774,35 @@ function BarSteps({
   isHovered?: boolean;
 }) {
   const itemCount = items.length;
+  const minBarHeight = 60; // Minimum height for bar
+  const contentRefs = React.useRef<(HTMLDivElement | null)[]>([]);
+  const [barHeights, setBarHeights] = React.useState<number[]>(() => 
+    items.map(() => minBarHeight)
+  );
+  const hasInitialized = React.useRef(false);
 
-  // Widths increase from top to bottom (like steps)
+  // Measure content heights to determine bar height
+  React.useLayoutEffect(() => {
+    if (hasInitialized.current) return;
+    
+    const newHeights = contentRefs.current.map((ref) => {
+      if (ref) {
+        const height = ref.offsetHeight;
+        return Math.max(height + 20, minBarHeight); // Add padding
+      }
+      return minBarHeight;
+    });
+    
+    hasInitialized.current = true;
+    setBarHeights(newHeights);
+  }, []);
+
+  // Reset when items change
+  React.useEffect(() => {
+    hasInitialized.current = false;
+  }, [items.length]);
+
+  // Widths increase from top to bottom (like steps) - ORIGINAL DESIGN
   const getWidth = (index: number) => {
     const minWidth = 25; // percentage
     const maxWidth = 45;
@@ -719,18 +810,25 @@ function BarSteps({
     return minWidth + step * index;
   };
 
+  // Get dynamic height based on content
+  const getHeight = (index: number) => {
+    return barHeights[index] || minBarHeight;
+  };
+
   return (
     <div className={`flex flex-col gap-4 ${className}`}>
       {items.map((item, index) => (
         <div key={index} className="flex items-center gap-5">
-          {/* Number bar - only contains the number */}
+          {/* Number bar - only contains the number, width increases downward, height matches content */}
           <div
-            className="flex-shrink-0 rounded-xl flex items-center justify-center py-5"
+            className="flex-shrink-0 rounded-xl flex items-center justify-center"
             style={{
               backgroundColor: themeStyles.shapeBgColor,
               border: `1px solid ${themeStyles.shapeBorderColor}`,
               width: `${getWidth(index)}%`,
               minWidth: "80px",
+              height: `${getHeight(index)}px`,
+              minHeight: `${minBarHeight}px`,
             }}
           >
             <span
@@ -742,7 +840,12 @@ function BarSteps({
           </div>
 
           {/* Content section - OUTSIDE the bar */}
-          <div className="flex-1">
+          <div 
+            ref={(el) => {
+              contentRefs.current[index] = el;
+            }}
+            className="flex-1"
+          >
             {item.label && (
               onStartEditLabel ? (
                 <EditableText

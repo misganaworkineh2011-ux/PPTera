@@ -80,6 +80,7 @@ export function QuotesLayoutRenderer({
   accentColor = "#047857",
   className = "",
   isNarrowSpace = false,
+  hasImage = false, // New prop to indicate if slide has image
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -89,7 +90,7 @@ export function QuotesLayoutRenderer({
   onFinishEditing,
   isOwner = false,
   isHovered = false,
-}: QuotesLayoutRendererProps) {
+}: QuotesLayoutRendererProps & { hasImage?: boolean }) {
   const displayItems = items.slice(0, 6);
   const themeStyles = getThemeStyles(theme, accentColor);
 
@@ -99,6 +100,7 @@ export function QuotesLayoutRenderer({
         items={displayItems}
         themeStyles={themeStyles}
         className={className}
+        hasImage={hasImage}
         isEditing={isEditing}
         editingText={editingText}
         onStartEditLabel={onStartEditLabel}
@@ -117,6 +119,7 @@ export function QuotesLayoutRenderer({
       items={displayItems}
       themeStyles={themeStyles}
       className={className}
+      hasImage={hasImage}
       isEditing={isEditing}
       editingText={editingText}
       onStartEditLabel={onStartEditLabel}
@@ -149,6 +152,7 @@ function BubbleQuotes({
   items,
   themeStyles,
   className,
+  hasImage = false,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -162,6 +166,7 @@ function BubbleQuotes({
   items: QuoteContentItem[];
   themeStyles: ThemeStyles;
   className: string;
+  hasImage?: boolean;
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
   onStartEditLabel?: (index: number) => void;
@@ -172,12 +177,19 @@ function BubbleQuotes({
   isOwner?: boolean;
   isHovered?: boolean;
 }) {
+  // When no image, use row layout with content-driven sizing
+  const containerClass = hasImage
+    ? `flex flex-wrap gap-8 justify-center items-start ${className}`
+    : `flex gap-6 items-stretch w-full ${className}`;
+  
+  const itemClass = hasImage
+    ? "flex-1 min-w-[300px] max-w-[500px] flex flex-col"
+    : "flex-1 min-w-0 flex flex-col"; // min-w-0 allows flex shrinking, content-driven sizing
+
   return (
-    <div
-      className={`flex flex-wrap gap-8 justify-center items-start ${className}`}
-    >
+    <div className={containerClass}>
       {items.map((item, index) => (
-        <div key={index} className="flex-1 min-w-[300px] max-w-[500px] flex flex-col">
+        <div key={index} className={itemClass}>
           {/* Main Bubble Card */}
           <div className="relative group filter drop-shadow-md transition-transform hover:-translate-y-1">
             <div
@@ -272,6 +284,7 @@ function MarksQuotes({
   items,
   themeStyles,
   className,
+  hasImage = false,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -285,6 +298,7 @@ function MarksQuotes({
   items: QuoteContentItem[];
   themeStyles: ThemeStyles;
   className: string;
+  hasImage?: boolean;
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
   onStartEditLabel?: (index: number) => void;
@@ -295,10 +309,19 @@ function MarksQuotes({
   isOwner?: boolean;
   isHovered?: boolean;
 }) {
+  // When no image, use row layout with content-driven sizing
+  const containerClass = hasImage
+    ? `flex flex-wrap gap-8 justify-center ${className}`
+    : `flex gap-6 items-stretch w-full ${className}`;
+  
+  const itemClass = hasImage
+    ? "flex-1 min-w-[320px] max-w-[500px]"
+    : "flex-1 min-w-0"; // min-w-0 allows flex shrinking, content-driven sizing
+
   return (
-    <div className={`flex flex-wrap gap-8 justify-center ${className}`}>
+    <div className={containerClass}>
       {items.map((item, index) => (
-        <div key={index} className="flex-1 min-w-[320px] max-w-[500px]">
+        <div key={index} className={itemClass}>
           <div
             className="h-full rounded-xl p-8 pt-10 relative shadow-sm border hover:shadow-md transition-all"
             style={{

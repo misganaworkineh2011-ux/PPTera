@@ -237,18 +237,38 @@ TITLE slides do not need this field.
 4. "assets":
 Describe visual assets meaningfully.
 CRITICAL: Visual assets (images) MUST be generated AFTER bullet points are created, so you have the full picture of the slide content.
+
+LAYOUT-IMAGE COMPATIBILITY RULES (CRITICAL):
+Some content layouts are INCOMPATIBLE with images and will automatically remove images if selected:
+- "circles" layout: NEVER compatible with images (circular arrangements take full slide space)
+- "quotes" layout: NEVER compatible with images (quote layouts are full-width focused)
+- "sequence" layout: Some styles incompatible (vertical sequences like sequence-style-3, sequence-style-4)
+- "steps" layout: Some styles incompatible (pyramid, arrows, bars styles)
+- "images" layout: ALWAYS requires images (this layout is specifically for image galleries). When using this layout, the system will automatically generate 2-3 images for the slide to create a proper image gallery.
+- "boxes", "bullets", "numbers": Generally compatible with images
+
+IMPORTANT: When suggesting contentLayoutHint, consider image compatibility:
+- If you suggest "circles" or "quotes", set image.required to FALSE (these layouts cannot have images)
+- If you suggest "images", set image.required to TRUE (this layout requires images)
+- For other layouts, you can suggest images, but the system will automatically adjust if incompatible
+
 - image:
-  - required: true | false (TITLE slide ALWAYS true, content slides: 5-7 out of 10 slides should have images)
+  - required: true | false (TITLE slide ALWAYS true, content slides: consider layout compatibility)
   - orientation: "landscape" | "portrait" (choose based on slide layout and content - landscape for wide scenes, portrait for people/vertical subjects)
-  - promptHint: Pexels-searchable keywords (3-5 words). MUST START with either "[people]" or "[no people]" to indicate if humans should appear in the image, followed by search keywords. Examples: "[people] business team collaboration office" or "[no people] laptop coffee workspace minimal"
+  - pexelsPromptHint: Short search keywords for Pexels API (3-5 words). MUST START with either "[people]" or "[no people]" to indicate if humans should appear, followed by concise search keywords that are Pexels-supported and represent the BEST use case for this slide. The prompt should summarize the full slide content by capturing ONE key/famous point that partially or fully represents the slide's main message. Think: "What is the most iconic, searchable visual that represents this slide's core idea?" Examples: "[people] business team collaboration" or "[no people] laptop workspace minimal". Keep it SHORT, Pexels-searchable, and focused on the slide's most representative visual concept.
+  - aiPromptHint: Detailed, comprehensive description for AI image generation (50-100 words). Include: the main topic/theme from the user's original request, how this specific slide relates to that main topic, visual elements from the slide title and bullet points, style and mood, composition details. Be descriptive and wordy - this is for AI generation, not search. Example: "A professional illustration representing [main topic] focusing on [slide-specific concept]. The image should show [visual elements from title/bullets] in a [style] aesthetic, conveying [mood/feeling]. Include [specific details] to connect this slide's content back to the overarching theme of [main topic]."
 
 VISUAL BALANCING RULES:
 - TITLE slide ALWAYS requires an image
-- Images: 6-9 out of 10 slides (think outside the box using title + bullet points for inspiration)
+- Content slides: 6-9 out of 10 slides should have images, BUT respect layout-image compatibility rules
+- If suggesting "circles" or "quotes" layout, do NOT request images (set required: false)
+- If suggesting "images" layout, ALWAYS request images (set required: true)
 
 The outline must be well-structured, engaging, written in ${languageDescription}, using a ${toneDescription} tone, and applicable to any field. Output format must be a valid JSON object with a "slides" array.`;
 
   const userPrompt = `Create a presentation outline with exactly ${numberOfSlides} slides based on: "${description}"
+
+MAIN TOPIC/THEME: "${description}" - This is the core topic the user requested. ALWAYS include this main topic context in both pexelsPromptHint and aiPromptHint when generating image prompts, even if individual slide bullets mention different specific things. The image should connect back to the main topic while also representing the slide's specific content.
 
 CRITICAL REQUIREMENTS:
 1. TITLE slide:
@@ -319,7 +339,8 @@ Return ONLY a valid JSON object in this exact structure:
       "image": {
         "required": true,
         "orientation": "landscape",
-        "promptHint": "[people] or [no people] + Pexels search keywords"
+        "pexelsPromptHint": "[people] or [no people] + short search keywords",
+        "aiPromptHint": "detailed comprehensive description for AI generation"
       }
     },
     {
@@ -342,7 +363,8 @@ Return ONLY a valid JSON object in this exact structure:
         "image": {
           "required": false,
           "orientation": "landscape",
-          "promptHint": "Pexels search keywords"
+          "pexelsPromptHint": "[people] or [no people] + short search keywords",
+          "aiPromptHint": "detailed comprehensive description for AI generation"
         }
       }
     }

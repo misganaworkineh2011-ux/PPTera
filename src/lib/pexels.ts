@@ -192,32 +192,45 @@ export interface SlideWithVisualMetadata {
     image?: {
       required: boolean;
       orientation?: "landscape" | "portrait" | null;
-      promptHint?: string | null;
+      promptHint?: string | null; // Legacy - for backward compatibility
+      pexelsPromptHint?: string | null; // Short keywords for Pexels search (3-5 words)
+      aiPromptHint?: string | null; // Detailed description for AI generation
     };
   };
   // Title slide specific image metadata
   image?: {
     required: boolean;
     orientation?: "landscape" | "portrait" | null;
-    promptHint?: string | null;
+    promptHint?: string | null; // Legacy - for backward compatibility
+    pexelsPromptHint?: string | null; // Short keywords for Pexels search (3-5 words)
+    aiPromptHint?: string | null; // Detailed description for AI generation
   };
 }
 
 /**
- * Get search query from slide - prioritizes promptHint from visual metadata
+ * Get search query from slide - prioritizes pexelsPromptHint from visual metadata
  */
 function getSearchQuery(slide: SlideWithVisualMetadata): string {
-  // Priority 1: Use promptHint from assets.image (for content slides)
+  // Priority 1: Use pexelsPromptHint from assets.image (for content slides)
+  if (slide.type === "content" && slide.assets?.image?.pexelsPromptHint) {
+    return slide.assets.image.pexelsPromptHint;
+  }
+  
+  // Priority 2: Use pexelsPromptHint from direct image property (for title slides)
+  if (slide.type === "title" && slide.image?.pexelsPromptHint) {
+    return slide.image.pexelsPromptHint;
+  }
+  
+  // Priority 3: Fallback to legacy promptHint (for backward compatibility)
   if (slide.type === "content" && slide.assets?.image?.promptHint) {
     return slide.assets.image.promptHint;
   }
   
-  // Priority 2: Use promptHint from direct image property (for title slides)
   if (slide.type === "title" && slide.image?.promptHint) {
     return slide.image.promptHint;
   }
   
-  // Priority 3: Fallback to keyword extraction from title/bullets
+  // Priority 4: Fallback to keyword extraction from title/bullets
   return extractKeywordsFromSlide(slide);
 }
 
@@ -317,10 +330,10 @@ export async function fetchImagesWithPromptHints(
     const promises = batch.map(async (slide, batchIndex) => {
       const slideIndex = i + batchIndex;
       
-      // Get promptHint based on slide type
+      // Get pexelsPromptHint based on slide type (prefer new field, fallback to legacy)
       const promptHint = slide.type === "title" 
-        ? slide.image?.promptHint 
-        : slide.assets?.image?.promptHint;
+        ? (slide.image?.pexelsPromptHint || slide.image?.promptHint)
+        : (slide.assets?.image?.pexelsPromptHint || slide.assets?.image?.promptHint);
       
       // Skip slides without promptHint
       if (!promptHint) {

@@ -57,7 +57,10 @@ TRANSFORMATION RULES:
 5. CREATE TWO VERSIONS OF EACH BULLET:
    - "bulletPoints": Well-crafted slide text (max 30 words each, visually equal length) - what appears on the slide
    - "speakerNotes": Even more detailed explanations (1-3 sentences each) - what the presenter reads
-6. ADD SLIDE DESCRIPTION (OPTIONAL): Only include a slideDescription when it genuinely adds value. It should be a natural, flowing description or gateway point that introduces the slide content. Do NOT use phrases like "this slide" or "in this slide" - just write naturally as if describing the topic. Maximum 2 lines. If not needed, omit it entirely.
+6. ADD SLIDE DESCRIPTION (OPTIONAL): Only include a slideDescription when it genuinely adds value. Write it as a natural, flowing description that introduces what the slide covers. Write it as if you're directly describing the topic itself, NOT describing the slide. 
+   - BAD: "This slide highlights...", "This slide covers...", "In this slide we will...", "This slide explains..."
+   - GOOD: "Understanding the core principles...", "Exploring the key factors...", "The foundation of modern approaches..."
+   - Just describe the topic naturally. Maximum 2 lines. If not needed, omit it entirely.
 7. The speaker notes should contain the full context, examples, and details
 
 OUTPUT FORMAT (JSON):
@@ -267,7 +270,10 @@ For this TITLE slide:
 ` : `
 For this CONTENT slide:
 - Keep the title EXACTLY as provided: "${slide.title}"
-- slideDescription (OPTIONAL): Only include if it genuinely adds value. Write a natural, flowing description or gateway point that introduces the slide content. Do NOT use phrases like "this slide" or "in this slide" - just write naturally as if describing the topic. Maximum 2 lines. If not needed, omit it entirely.
+- slideDescription (OPTIONAL): Only include if it genuinely adds value. Write it as a natural description of the topic itself, NOT a description of the slide. 
+   - NEVER use: "This slide highlights", "This slide covers", "In this slide", "This slide explains", "We will explore", "Let's look at"
+   - INSTEAD write directly about the topic: "Understanding the core principles...", "Exploring key factors...", "The foundation of..."
+   - Write as if describing the subject matter directly. Maximum 2 lines. If not needed, omit it entirely.
 - Create DETAILED bulletPoints (max 30 words each, visually equal length) - transform ALL ${slide.bulletPoints?.length || 0} outline bullets, expanding each with more detail
 - Create DETAILED speakerNotes (1+ sentences each) - what the presenter reads
 - The speakerNotes array must have the same length as bulletPoints (one note per bullet)

@@ -10,7 +10,7 @@ import type { BulletLayoutType } from "~/lib/layouts/content/bullets";
 import type { StepsLayoutType } from "~/lib/layouts/content/steps";
 import type { QuotesLayoutType } from "~/lib/layouts/content/quotes";
 import type { CircleLayoutType } from "~/lib/layouts/content/circles";
-import type { ImageLayoutType } from "~/lib/layouts/content/images";
+import type { ImageLayoutType, ImageContentItem } from "~/lib/layouts/content/images";
 import type { ContentLayoutCategory } from "~/lib/layouts/content";
 import EditableText from "./EditableText";
 import TransformedContentRenderer from "./TransformedContent";
@@ -1099,6 +1099,7 @@ export default function SlideRenderer({
                 theme={theme}
                 accentColor={accentColor}
                 isNarrowSpace={isNarrowSpace}
+                hasImage={hasImage}
                 {...editingProps}
               />
             );
@@ -1116,10 +1117,26 @@ export default function SlideRenderer({
             );
           
           case "images":
+            // Map images to ImageContentItem format - combine slide images with content items
+            const imageContentItems: ImageContentItem[] = boxContentItems.map((item, index) => ({
+              label: item.label,
+              text: item.text,
+              image: allImages[index]?.url, // Map slide images to content items
+            }));
+            // If we have more images than content items, add them
+            if (allImages.length > boxContentItems.length) {
+              for (let i = boxContentItems.length; i < allImages.length; i++) {
+                imageContentItems.push({
+                  label: undefined,
+                  text: allImages[i]?.alt || slide.title,
+                  image: allImages[i]?.url,
+                });
+              }
+            }
             return (
               <ImageLayoutRenderer
                 layoutId={slide.contentLayout as ImageLayoutType}
-                items={boxContentItems}
+                items={imageContentItems}
                 theme={theme}
                 accentColor={accentColor}
                 isNarrowSpace={isNarrowSpace}
@@ -1136,6 +1153,7 @@ export default function SlideRenderer({
                 compact={compact}
                 showIcons={true}
                 isNarrowSpace={isNarrowSpace}
+                hasImage={hasImage}
                 {...editingProps}
               />
             );
@@ -1568,7 +1586,7 @@ export default function SlideRenderer({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full flex flex-col items-center justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-8 md:pt-12 text-center overflow-y-auto">
+        <div className={`relative h-full flex flex-col ${hasImage ? "items-center justify-center" : "justify-start"} ${hasImage ? "p-4 sm:p-8 md:p-12" : "p-4 sm:p-6 md:p-8"} pt-12 sm:pt-8 md:pt-12 ${hasImage ? "text-center" : ""} overflow-y-auto`}>
           {hasImage && (
             <div className={`w-full ${hasMultipleImages ? "max-w-4xl" : "max-w-2xl"} mb-4 sm:mb-6 md:mb-8 relative`}>
               {hasMultipleImages ? (
@@ -1581,10 +1599,10 @@ export default function SlideRenderer({
             </div>
           )}
 
-          <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-3 sm:mb-4 md:mb-6 max-w-4xl" align="center" />
-          {!isTitleSlide && <SlideDescription className="mb-3 sm:mb-4 md:mb-5" align="center" />}
+          <Title className={`text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-3 sm:mb-4 md:mb-6 ${hasImage ? "max-w-4xl" : "w-full"} ${hasImage ? "" : "text-left"}`} align={hasImage ? "center" : "left"} />
+          {!isTitleSlide && <SlideDescription className={`mb-3 sm:mb-4 md:mb-5 ${hasImage ? "" : "text-left"}`} align={hasImage ? "center" : "left"} />}
 
-          <div className="max-w-2xl w-full text-left mt-2 sm:mt-3 md:mt-4">
+          <div className={`${hasImage ? "max-w-2xl w-full text-left" : "w-full"} mt-2 sm:mt-3 md:mt-4`}>
             <EnhancedContent compact />
           </div>
         </div>
