@@ -14,6 +14,11 @@ import {
   extractPlannerInput,
 } from "~/lib/presentation";
 import { env } from "~/env.js";
+import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
+const gemini = env.GEMINI_API_KEY ? new GoogleGenerativeAI(env.GEMINI_API_KEY) : null;
 
 function parseTitledBullet(bullet: string): { label?: string; text: string } {
   const trimmed = bullet.trim();
@@ -70,19 +75,19 @@ function delay(ms: number): Promise<void> {
 }
 
 // LLM transformation for a single slide with character streaming
+// Uses OpenAI first, Gemini as fallback (same as outline generation)
 async function* streamSlideTransformation(
   slide: { type: string; title: string; subtitle?: string; bulletPoints?: string[] },
   slideIndex: number,
   totalSlides: number,
   options: { tone?: string; language?: string; textDensity?: string }
 ): AsyncGenerator<{ type: string; content: string }> {
-  const apiKey = env.GEMINI_API_KEY;
+  // First yield title (complete, not streamed)
+  yield { type: "title", content: slide.title };
   
-  if (!apiKey) {
+  // Check if we have any API keys
+  if (!env.OPENAI_API_KEY && !env.GEMINI_API_KEY) {
     // Fallback: simulate character-by-character streaming for original content
-    // First yield title (complete, not streamed)
-    yield { type: "title", content: slide.title };
-    
     // Stream subtitle character by character with small delay
     if (slide.subtitle) {
       for (const char of slide.subtitle) {
@@ -153,115 +158,163 @@ CONTENT SLIDE BULLET RULES (IMPORTANT):
 Transform each outline bullet into a clean, balanced slide item with a title + detailed description (card-ready).
 DO NOT output any [TITLE] tag - the title is fixed and will not change.`;
 
-  try {
-    // First, yield the original title immediately (titles are never changed)
-    yield { type: "title", content: slide.title };
+  // Helper function to process streaming chunks and yield events
+  const processChar = (
+    char: string,
+    currentTag: string,
+    currentContent: string
+  ): { tag: string; content: string; event?: { type: string; content: string } } => {
+    let tag = currentTag;
+    let content = currentContent + char;
+    let event: { type: string; content: string } | undefined;
 
-    const apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent";
-    
-    const response = await fetch(`${apiUrl}?key=${apiKey}&alt=sse`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 4096,
-        },
-      }),
-    });
-
-    if (!response.ok || !response.body) {
-      throw new Error(`API error: ${response.status}`);
+    // Check for tag openings (skip TITLE tag - we already yielded original title)
+    if (content.endsWith("[TITLE]")) {
+      tag = "skipTitle";
+      content = "";
+    } else if (content.endsWith("[SUBTITLE]")) {
+      tag = "subtitle";
+      content = "";
+    } else if (content.endsWith("[TAGLINE]")) {
+      tag = "tagline";
+      content = "";
+    } else if (content.endsWith("[SLIDE_DESC]")) {
+      tag = "slideDesc";
+      content = "";
+    } else if (content.endsWith("[INTRO]")) {
+      tag = "intro";
+      content = "";
+    } else if (content.endsWith("[BULLET]")) {
+      tag = "bullet";
+      content = "";
+    } else if (content.endsWith("[SECTION_HEADING]")) {
+      tag = "sectionHeading";
+      content = "";
+    } else if (content.endsWith("[SECTION_DESC]")) {
+      tag = "sectionDesc";
+      content = "";
+    }
+    // Check for tag closings
+    else if (content.endsWith("[/TITLE]") || 
+             content.endsWith("[/SUBTITLE]") ||
+             content.endsWith("[/TAGLINE]") ||
+             content.endsWith("[/SLIDE_DESC]") ||
+             content.endsWith("[/INTRO]") ||
+             content.endsWith("[/BULLET]") ||
+             content.endsWith("[/SECTION_HEADING]") ||
+             content.endsWith("[/SECTION_DESC]")) {
+      // Remove the closing tag from content
+      const tagLength = content.lastIndexOf("[/");
+      const finalContent = content.slice(0, tagLength);
+      // Skip yielding if it's a title tag (we already have the original)
+      if (tag && tag !== "skipTitle" && finalContent) {
+        event = { type: tag, content: finalContent };
+      }
+      tag = "";
+      content = "";
+    }
+    // Yield character for streaming effect if we're in a tag (skip title)
+    else if (tag && tag !== "skipTitle" && !content.includes("[")) {
+      event = { type: `${tag}Char`, content: char };
     }
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = "";
-    let currentTag = "";
-    let currentContent = "";
+    return { tag, content, event };
+  };
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+  // Try OpenAI first, then Gemini as fallback (same as outline generation)
+  let useGeminiFallback = false;
+  
+  try {
+    // Try OpenAI first
+    if (env.OPENAI_API_KEY) {
+      try {
+        const completion = await openai.chat.completions.create({
+          model: "gpt-4o", // Same model as outline generation
+          messages: [
+            {
+              role: "system",
+              content: "You are an expert presentation content writer. Transform outline content into presentation-ready content with well-crafted, detailed slide bullets.",
+            },
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+          temperature: 0.7,
+          max_tokens: 8192, // Increased from 4096 to prevent content cutoff
+          stream: true,
+        });
 
-      buffer += decoder.decode(value, { stream: true });
-      
-      // Parse SSE data from Gemini
-      const lines = buffer.split("\n");
-      buffer = lines.pop() || "";
+        let currentTag = "";
+        let currentContent = "";
 
-      for (const line of lines) {
-        if (line.startsWith("data: ")) {
-          try {
-            const data = JSON.parse(line.slice(6));
-            const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-            
-            // Process character by character for streaming effect
-            for (const char of text) {
-              currentContent += char;
-              
-              // Check for tag openings (skip TITLE tag - we already yielded original title)
-              if (currentContent.endsWith("[TITLE]")) {
-                currentTag = "skipTitle"; // Skip any title the LLM might output
-                currentContent = "";
-              } else if (currentContent.endsWith("[SUBTITLE]")) {
-                currentTag = "subtitle";
-                currentContent = "";
-              } else if (currentContent.endsWith("[TAGLINE]")) {
-                currentTag = "tagline";
-                currentContent = "";
-              } else if (currentContent.endsWith("[SLIDE_DESC]")) {
-                currentTag = "slideDesc";
-                currentContent = "";
-              } else if (currentContent.endsWith("[INTRO]")) {
-                currentTag = "intro";
-                currentContent = "";
-              } else if (currentContent.endsWith("[BULLET]")) {
-                currentTag = "bullet";
-                currentContent = "";
-              } else if (currentContent.endsWith("[SECTION_HEADING]")) {
-                currentTag = "sectionHeading";
-                currentContent = "";
-              } else if (currentContent.endsWith("[SECTION_DESC]")) {
-                currentTag = "sectionDesc";
-                currentContent = "";
-              }
-              // Check for tag closings
-              else if (currentContent.endsWith("[/TITLE]") || 
-                       currentContent.endsWith("[/SUBTITLE]") ||
-                       currentContent.endsWith("[/TAGLINE]") ||
-                       currentContent.endsWith("[/SLIDE_DESC]") ||
-                       currentContent.endsWith("[/INTRO]") ||
-                       currentContent.endsWith("[/BULLET]") ||
-                       currentContent.endsWith("[/SECTION_HEADING]") ||
-                       currentContent.endsWith("[/SECTION_DESC]")) {
-                // Remove the closing tag from content
-                const tagLength = currentContent.lastIndexOf("[/");
-                const finalContent = currentContent.slice(0, tagLength);
-                // Skip yielding if it's a title tag (we already have the original)
-                if (currentTag && currentTag !== "skipTitle" && finalContent) {
-                  yield { type: currentTag, content: finalContent };
-                }
-                currentTag = "";
-                currentContent = "";
-              }
-              // Yield character for streaming effect if we're in a tag (skip title)
-              else if (currentTag && currentTag !== "skipTitle" && !currentContent.includes("[")) {
-                yield { type: `${currentTag}Char`, content: char };
-              }
+        for await (const chunk of completion) {
+          const text = chunk.choices[0]?.delta?.content || "";
+          if (!text) continue;
+
+          // Process each character
+          for (const char of text) {
+            const result = processChar(char, currentTag, currentContent);
+            currentTag = result.tag;
+            currentContent = result.content;
+            if (result.event) {
+              yield result.event;
             }
-          } catch {
-            // Skip invalid JSON
           }
         }
+
+        // Yield any remaining content (skip if it's title)
+        if (currentTag && currentTag !== "skipTitle" && currentContent && !currentContent.includes("[")) {
+          yield { type: currentTag, content: currentContent };
+        }
+        
+        return; // Success with OpenAI
+      } catch (openaiError) {
+        console.error("[stream-content] OpenAI failed, trying Gemini fallback:", openaiError);
+        useGeminiFallback = true;
       }
     }
 
-    // Yield any remaining content (skip if it's title)
-    if (currentTag && currentTag !== "skipTitle" && currentContent && !currentContent.includes("[")) {
-      yield { type: currentTag, content: currentContent };
+    // Fallback to Gemini if OpenAI failed or not available
+    if (gemini) {
+      const model = gemini.getGenerativeModel({ 
+        model: "gemini-flash-latest", // Same model as outline generation
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 8192, // Increased from default to prevent content cutoff
+        },
+      });
+
+      const result = await model.generateContentStream(prompt);
+      
+      let currentTag = "";
+      let currentContent = "";
+
+      for await (const chunk of result.stream) {
+        const text = chunk.text();
+        if (!text) continue;
+
+        // Process each character
+        for (const char of text) {
+          const result = processChar(char, currentTag, currentContent);
+          currentTag = result.tag;
+          currentContent = result.content;
+          if (result.event) {
+            yield result.event;
+          }
+        }
+      }
+
+      // Yield any remaining content (skip if it's title)
+      if (currentTag && currentTag !== "skipTitle" && currentContent && !currentContent.includes("[")) {
+        yield { type: currentTag, content: currentContent };
+      }
+      
+      return; // Success with Gemini
     }
+
+    // No API keys available - fallback to original content
+    throw new Error("No API keys configured");
   } catch (error) {
     console.error(`[stream-content] Error streaming slide ${slideIndex}:`, error);
     // Fallback to original content (title already yielded at start)

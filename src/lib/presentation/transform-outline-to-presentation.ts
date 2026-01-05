@@ -8,6 +8,11 @@
  */
 
 import { env } from "~/env.js";
+import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
+const gemini = env.GEMINI_API_KEY ? new GoogleGenerativeAI(env.GEMINI_API_KEY) : null;
 
 export interface OutlineSlide {
   type: "title" | "content";
@@ -96,72 +101,46 @@ WRITING STYLE:
 - Slide bullets are well-crafted and detailed; speaker notes are comprehensive`;
 
 /**
- * Call OpenAI API
+ * Call OpenAI API (using OpenAI SDK - same as outline generation)
  */
 async function callOpenAI(prompt: string): Promise<string> {
-  const apiKey = env.OPENAI_API_KEY;
-  if (!apiKey) {
+  if (!env.OPENAI_API_KEY) {
     throw new Error("OPENAI_API_KEY not configured");
   }
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-4o",
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: prompt },
-      ],
-      temperature: 0.7,
-      max_tokens: 6000,
-    }),
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o", // Same model as outline generation
+    messages: [
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "user", content: prompt },
+    ],
+    temperature: 0.7,
+    max_tokens: 8192, // Increased from 6000 to prevent content cutoff
   });
 
-  if (!response.ok) {
-    const errorBody = await response.text();
-    console.error(`[transform-outline] OpenAI API error: ${response.status}`, errorBody);
-    throw new Error(`OpenAI API error: ${response.status}`);
-  }
-
-  const data = await response.json();
-  return data?.choices?.[0]?.message?.content || "";
+  return completion.choices[0]?.message?.content || "";
 }
 
 /**
- * Call Gemini API (fallback)
+ * Call Gemini API (fallback - using GoogleGenerativeAI SDK - same as outline generation)
  */
 async function callGemini(prompt: string): Promise<string> {
-  const apiKey = env.GEMINI_API_KEY;
-  if (!apiKey) {
+  if (!gemini) {
     throw new Error("GEMINI_API_KEY not configured");
   }
 
-  const apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
-  
-  const response = await fetch(`${apiUrl}?key=${apiKey}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: SYSTEM_PROMPT + "\n\n" + prompt }] }],
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 4096,
-      },
-    }),
+  const model = gemini.getGenerativeModel({ 
+    model: "gemini-flash-latest", // Same model as outline generation
+    generationConfig: {
+      temperature: 0.7,
+      maxOutputTokens: 8192, // Increased to prevent content cutoff
+    },
   });
 
-  if (!response.ok) {
-    const errorBody = await response.text();
-    console.error(`[transform-outline] Gemini API error: ${response.status}`, errorBody);
-    throw new Error(`Gemini API error: ${response.status}`);
-  }
+  const result = await model.generateContent(SYSTEM_PROMPT + "\n\n" + prompt);
+  const response = await result.response;
 
-  const data = await response.json();
-  return data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  return response.text() || "";
 }
 
 /**
