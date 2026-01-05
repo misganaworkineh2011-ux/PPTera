@@ -120,26 +120,37 @@ Original Title: ${slide.title}
 ${slide.subtitle ? `Subtitle: ${slide.subtitle}` : ""}
 ${slide.bulletPoints ? `Bullet Points:\n${slide.bulletPoints.map((b, i) => `${i + 1}. ${b}`).join("\n")}` : ""}
 
+CRITICAL REQUIREMENTS:
+- Transform ALL ${slide.bulletPoints?.length || 0} outline bullets - do not skip or omit any
+- Each generated bullet must be well-crafted and detailed, expanding on the outline with context, examples, implications
+- Maximum 30 words per bullet description
+- All bullets should have visually similar length (approximately equal word count) for visual balance
+- EXPAND and ELABORATE on the outline bullets - add context, examples, implications, causes, effects, or specific details
+- Make the generated content MORE detailed and explanatory than the outline
+
 REQUIREMENTS:
 - Tone: ${options.tone || "professional"}
 - Language: ${options.language || "English"}  
 - Text Density: ${densityGuidance[options.textDensity || "concise"]}
+- Slide bullets: Maximum 30 words each, visually equal length, well-crafted with expanded detail
 
 CRITICAL: DO NOT change the slide title. Keep it EXACTLY as provided: "${slide.title}"
 
 OUTPUT FORMAT (respond with these exact markers):
 ${slide.type === "title" ? "[SUBTITLE]Enhanced subtitle that expands on the title[/SUBTITLE]\n[TAGLINE]Short impactful phrase[/TAGLINE]" : ""}
-${slide.type === "content" ? "[INTRO]Optional intro sentence to set context[/INTRO]\n[BULLET]ShortTitle — 1-2 line description[/BULLET]\n[BULLET]ShortTitle — 1-2 line description[/BULLET]\n(continue for all bullets)" : ""}
+${slide.type === "content" ? "[SLIDE_DESC]OPTIONAL - natural 1-2 line description/gateway point (omit if not needed, max 2 lines, do NOT use phrases like 'this slide')[/SLIDE_DESC]\n[INTRO]Optional intro sentence to set context[/INTRO]\n[BULLET]ShortTitle — Well-crafted detailed description (max 30 words, visually equal length)[/BULLET]\n[BULLET]ShortTitle — Well-crafted detailed description (max 30 words, visually equal length)[/BULLET]\n(continue for ALL ${slide.bulletPoints?.length || 0} outline bullets)" : ""}
 
 CONTENT SLIDE BULLET RULES (IMPORTANT):
+- Transform ALL ${slide.bulletPoints?.length || 0} outline bullets - none should be skipped
 - Each outline bullet must become ONE slide item with TWO parts:
   - ShortTitle: 2–5 words, noun phrase (no colon), suitable as a card title
-  - Description: 1–2 lines, ~12–20 words, clear and concrete
+  - Description: Maximum 30 words, visually equal length across all bullets, expand with more detail, context, examples, implications
 - Use this exact separator between title and description: " — " (space, em dash, space)
 - Keep descriptions within a slide roughly similar length so cards look balanced
 - Avoid the forbidden pattern "Title: description" (no colons)
+- EXPAND on the outline - add more detail, not less
 
-Transform each outline bullet into a clean, balanced slide item with a title + description (card-ready).
+Transform each outline bullet into a clean, balanced slide item with a title + detailed description (card-ready).
 DO NOT output any [TITLE] tag - the title is fixed and will not change.`;
 
   try {
@@ -155,7 +166,7 @@ DO NOT output any [TITLE] tag - the title is fixed and will not change.`;
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 1024,
+          maxOutputTokens: 4096,
         },
       }),
     });
@@ -200,6 +211,9 @@ DO NOT output any [TITLE] tag - the title is fixed and will not change.`;
               } else if (currentContent.endsWith("[TAGLINE]")) {
                 currentTag = "tagline";
                 currentContent = "";
+              } else if (currentContent.endsWith("[SLIDE_DESC]")) {
+                currentTag = "slideDesc";
+                currentContent = "";
               } else if (currentContent.endsWith("[INTRO]")) {
                 currentTag = "intro";
                 currentContent = "";
@@ -217,6 +231,7 @@ DO NOT output any [TITLE] tag - the title is fixed and will not change.`;
               else if (currentContent.endsWith("[/TITLE]") || 
                        currentContent.endsWith("[/SUBTITLE]") ||
                        currentContent.endsWith("[/TAGLINE]") ||
+                       currentContent.endsWith("[/SLIDE_DESC]") ||
                        currentContent.endsWith("[/INTRO]") ||
                        currentContent.endsWith("[/BULLET]") ||
                        currentContent.endsWith("[/SECTION_HEADING]") ||
@@ -526,8 +541,8 @@ export async function GET(
             }
             
             if (chunk.type === "titleChar" || chunk.type === "subtitleChar" || 
-                chunk.type === "taglineChar" || chunk.type === "introChar" || 
-                chunk.type === "bulletChar") {
+                chunk.type === "taglineChar" || chunk.type === "slideDescChar" ||
+                chunk.type === "introChar" || chunk.type === "bulletChar") {
               // Stream individual characters
               sendEvent(controller, "char", { 
                 slideIndex: i, 
@@ -543,6 +558,9 @@ export async function GET(
             } else if (chunk.type === "tagline") {
               slideData.tagline = chunk.content;
               sendEvent(controller, "fieldComplete", { slideIndex: i, field: "tagline", value: chunk.content }, isClosed);
+            } else if (chunk.type === "slideDesc") {
+              slideData.slideDescription = chunk.content;
+              sendEvent(controller, "fieldComplete", { slideIndex: i, field: "slideDescription", value: chunk.content }, isClosed);
             } else if (chunk.type === "intro") {
               slideData.introText = chunk.content;
               sendEvent(controller, "fieldComplete", { slideIndex: i, field: "introText", value: chunk.content }, isClosed);

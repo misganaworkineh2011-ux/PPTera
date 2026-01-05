@@ -48,6 +48,8 @@ export interface SlideData {
   }>;
   // New: intro text before content
   introText?: string;
+  // New: slide description - simple 2-line description between title and content
+  slideDescription?: string;
   // New: tagline for title slides
   tagline?: string;
   // Support both single image (legacy) and multiple images

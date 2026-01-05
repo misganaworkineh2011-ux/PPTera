@@ -793,6 +793,28 @@ export default function SlideRenderer({
 
   const isTitleSlide = slide.type === "title";
 
+  const SlideDescription = ({ className = "", align = "left" }: { className?: string; align?: "left" | "center" | "right" }) => {
+    if (!slide.slideDescription || slide.type === "title") return null;
+    return (
+      <EditableText
+        value={slide.slideDescription}
+        isEditing={isEditing && editingText?.field === "slideDescription"}
+        onStartEdit={() => onStartEditing(index, "slideDescription")}
+        onChange={(val) => onUpdateContent(index, "slideDescription", val)}
+        onFinish={onFinishEditing}
+        className={`text-sm sm:text-base md:text-lg leading-relaxed mb-3 sm:mb-4 md:mb-5 ${className}`}
+        style={{
+          fontFamily: theme.fonts.body.family,
+          color: colors.textMuted || colors.text,
+          opacity: 0.8,
+          textAlign: align,
+        }}
+        isOwner={canEdit}
+        isHovered={isHovered}
+      />
+    );
+  };
+
   const Title = ({ className = "", align = "left", showSubtitle = false }: { className?: string; align?: "left" | "center" | "right"; showSubtitle?: boolean }) => (
     <div className={showSubtitle ? "space-y-2" : ""}>
       <EditableText
@@ -1353,6 +1375,7 @@ export default function SlideRenderer({
           {/* Content Area */}
           <div className={`flex flex-col justify-center pt-12 sm:pt-16 md:pt-20 pb-4 sm:pb-8 md:pb-12 pl-4 sm:pl-8 md:pl-12 pr-4 sm:pr-6 md:pr-8 ${hasImage ? "w-full sm:w-[60%]" : "w-full"}`}>
             <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-4 sm:mb-6 md:mb-8" showSubtitle={isTitleSlide} />
+            {!isTitleSlide && <SlideDescription className="mb-3 sm:mb-4 md:mb-5" />}
             {!isTitleSlide && <EnhancedContent />}
           </div>
 
@@ -1559,6 +1582,7 @@ export default function SlideRenderer({
           )}
 
           <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-3 sm:mb-4 md:mb-6 max-w-4xl" align="center" />
+          {!isTitleSlide && <SlideDescription className="mb-3 sm:mb-4 md:mb-5" align="center" />}
 
           <div className="max-w-2xl w-full text-left mt-2 sm:mt-3 md:mt-4">
             <EnhancedContent compact />
@@ -1595,6 +1619,7 @@ export default function SlideRenderer({
               <div className={`w-10 sm:w-12 md:w-16 h-0.5 sm:h-1 bg-gradient-to-r ${colors.accentLine} to-transparent mb-3 sm:mb-4 md:mb-6`} />
             </div>
             <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl mb-4 sm:mb-6 md:mb-8" />
+            {!isTitleSlide && <SlideDescription className="mb-3 sm:mb-4 md:mb-5" />}
             <EnhancedContent />
           </div>
 
@@ -4680,6 +4705,7 @@ export default function SlideRenderer({
         <div className="relative h-full flex flex-col justify-center p-12">
           <div className="mb-10">
             <Title className="text-4xl md:text-5xl font-black uppercase tracking-tight text-center" align="center" />
+            {!isTitleSlide && <SlideDescription className="mt-4 text-center" align="center" />}
           </div>
 
           {bulletPoints.length > 0 && (

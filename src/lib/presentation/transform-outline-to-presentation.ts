@@ -31,6 +31,8 @@ export interface TransformedSlide {
   }>;
   // Intro text before bullets/sections
   introText?: string;
+  // Slide description - simple 2-line description that appears between title and content
+  slideDescription?: string;
   // Speaker notes - detailed explanations for the presenter
   speakerNotes?: string[];
   // Layout hint based on content structure
@@ -43,18 +45,20 @@ export interface TransformOptions {
   textDensity?: "minimal" | "concise" | "detailed" | "extensive";
 }
 
-const SYSTEM_PROMPT = `You are an expert presentation content writer. Your task is to transform outline bullet points into presentation-ready content with CONCISE slide bullets and DETAILED speaker notes.
+const SYSTEM_PROMPT = `You are an expert presentation content writer. Your task is to transform outline bullet points into presentation-ready content with WELL-CRAFTED, DETAILED slide bullets and DETAILED speaker notes.
 
 CRITICAL RULE: NEVER change slide titles. Keep them EXACTLY as provided. Only transform the content.
 
 TRANSFORMATION RULES:
 1. KEEP TITLES UNCHANGED - use the exact original title provided
-2. CREATE TWO VERSIONS OF EACH BULLET:
-   - "bulletPoints": Short, skimmable slide text (5-15 words each) - what appears on the slide
-   - "speakerNotes": Detailed explanations (1-3 sentences each) - what the presenter reads
-3. The slide bullets should be scannable in 3-5 seconds
-4. The speaker notes should contain the full context, examples, and details
-5. ADD context and flow - include introductory sentences where appropriate
+2. EXPLAIN ALL BULLETS: Every single bullet point from the outline MUST be transformed into a well-crafted, detailed bullet. Do not skip or omit any outline bullets.
+3. EXPAND AND ELABORATE: Each generated bullet should be MORE detailed than the corresponding outline bullet. Add context, examples, implications, causes, effects, or specific details. Make the content richer and more explanatory.
+4. VISUAL EQUALITY: All bullet points should have visually similar length (approximately equal word count) so they look balanced on the slide. Maximum 30 words per bullet.
+5. CREATE TWO VERSIONS OF EACH BULLET:
+   - "bulletPoints": Well-crafted slide text (max 30 words each, visually equal length) - what appears on the slide
+   - "speakerNotes": Even more detailed explanations (1-3 sentences each) - what the presenter reads
+6. ADD SLIDE DESCRIPTION (OPTIONAL): Only include a slideDescription when it genuinely adds value. It should be a natural, flowing description or gateway point that introduces the slide content. Do NOT use phrases like "this slide" or "in this slide" - just write naturally as if describing the topic. Maximum 2 lines. If not needed, omit it entirely.
+7. The speaker notes should contain the full context, examples, and details
 
 OUTPUT FORMAT (JSON):
 For each slide, return:
@@ -63,15 +67,17 @@ For each slide, return:
   "title": "EXACT original title - DO NOT MODIFY",
   "subtitle": "For title slides only - enhanced subtitle",
   "tagline": "For title slides only - a compelling one-liner",
+  "slideDescription": "OPTIONAL - natural 1-2 line description/gateway point (omit if not needed, max 2 lines)",
   "introText": "Optional intro paragraph before bullets/sections (1-2 sentences)",
-  "bulletPoints": ["Concise bullet 1 (5-15 words)", "Concise bullet 2", ...] OR null if using sections,
+  "bulletPoints": ["Well-crafted bullet 1 (max 30 words, visually equal length)", "Well-crafted bullet 2", ...] OR null if using sections,
   "speakerNotes": ["Detailed note for bullet 1 (1-3 sentences)", "Detailed note for bullet 2", ...],
   "sections": [{"heading": "Section Title", "description": "Brief description"}] OR null if using bullets,
   "suggestedLayout": "bullets" | "sections" | "two-column" | "three-cards"
 }
 
 BULLET POINT GUIDELINES:
-- Slide bullets: Short, punchy, action-oriented (5-15 words)
+- Slide bullets: Maximum 30 words each, visually equal length, well-crafted with expanded detail
+- Ensure ALL outline bullets are transformed - none should be skipped
 - Speaker notes: Full explanation with context, examples, data, implications
 
 LAYOUT GUIDELINES:
@@ -84,7 +90,7 @@ WRITING STYLE:
 - Professional but engaging
 - Active voice preferred
 - Concrete and specific over vague
-- Slide text is scannable; speaker notes are comprehensive`;
+- Slide bullets are well-crafted and detailed; speaker notes are comprehensive`;
 
 /**
  * Call OpenAI API
@@ -108,7 +114,7 @@ async function callOpenAI(prompt: string): Promise<string> {
         { role: "user", content: prompt },
       ],
       temperature: 0.7,
-      max_tokens: 4000,
+      max_tokens: 6000,
     }),
   });
 
@@ -140,7 +146,7 @@ async function callGemini(prompt: string): Promise<string> {
       contents: [{ parts: [{ text: SYSTEM_PROMPT + "\n\n" + prompt }] }],
       generationConfig: {
         temperature: 0.7,
-        maxOutputTokens: 2048,
+        maxOutputTokens: 4096,
       },
     }),
   });
@@ -221,7 +227,7 @@ async function transformSlideContent(
     };
   }
 
-  // Text density affects SPEAKER NOTES detail level, not slide bullets (those are always concise)
+  // Text density affects SPEAKER NOTES detail level
   const notesDetailGuidance = {
     minimal: "Speaker notes: 1 brief sentence per bullet with key facts only",
     concise: "Speaker notes: 1-2 sentences per bullet with context and key details",
@@ -229,7 +235,7 @@ async function transformSlideContent(
     extensive: "Speaker notes: Full paragraphs with examples, data, and comprehensive context"
   };
 
-  const prompt = `Transform this outline slide into presentation-ready content with CONCISE slide bullets and DETAILED speaker notes.
+  const prompt = `Transform this outline slide into presentation-ready content with WELL-CRAFTED, DETAILED slide bullets and DETAILED speaker notes.
 
 SLIDE ${slideIndex + 1} of ${totalSlides}:
 Type: ${slide.type}
@@ -237,10 +243,18 @@ Original Title (DO NOT CHANGE): ${slide.title}
 ${slide.subtitle ? `Subtitle: ${slide.subtitle}` : ""}
 ${slide.bulletPoints ? `Bullet Points:\n${slide.bulletPoints.map((b, i) => `${i + 1}. ${b}`).join("\n")}` : ""}
 
+CRITICAL REQUIREMENTS:
+- Transform ALL ${slide.bulletPoints?.length || 0} outline bullets - do not skip or omit any
+- Each generated bullet must be well-crafted and detailed, expanding on the outline with context, examples, implications
+- Maximum 30 words per bullet
+- All bullets should have visually similar length (approximately equal word count) for visual balance
+- EXPAND and ELABORATE on the outline bullets - add context, examples, implications, causes, effects, or specific details
+- Make the generated content MORE detailed and explanatory than the outline
+
 REQUIREMENTS:
 - Tone: ${options.tone || "professional"}
 - Language: ${options.language || "English"}
-- Slide bullets: ALWAYS concise (5-15 words each) regardless of density setting
+- Slide bullets: Maximum 30 words each, visually equal length, well-crafted with expanded detail
 - ${notesDetailGuidance[options.textDensity || "concise"]}
 
 CRITICAL: The "title" field in your response MUST be exactly: "${slide.title}"
@@ -253,9 +267,11 @@ For this TITLE slide:
 ` : `
 For this CONTENT slide:
 - Keep the title EXACTLY as provided: "${slide.title}"
-- Create CONCISE bulletPoints (5-15 words each) - what shows on the slide
+- slideDescription (OPTIONAL): Only include if it genuinely adds value. Write a natural, flowing description or gateway point that introduces the slide content. Do NOT use phrases like "this slide" or "in this slide" - just write naturally as if describing the topic. Maximum 2 lines. If not needed, omit it entirely.
+- Create DETAILED bulletPoints (max 30 words each, visually equal length) - transform ALL ${slide.bulletPoints?.length || 0} outline bullets, expanding each with more detail
 - Create DETAILED speakerNotes (1+ sentences each) - what the presenter reads
 - The speakerNotes array must have the same length as bulletPoints (one note per bullet)
+- Ensure ALL outline bullets are transformed - none should be skipped
 - Decide if content works better as bullets OR titled sections
 - If using sections, each section gets a heading and brief description
 - Add an intro sentence if it helps set context
