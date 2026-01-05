@@ -167,6 +167,7 @@ export function StepsLayoutRenderer({
 }
 
 // Style 1: Pyramid Steps - Sharp triangle with gaps between sections, text staggered diagonally
+// Pyramid sections sized to match text content height
 function PyramidSteps({
   items,
   themeStyles,
@@ -196,9 +197,59 @@ function PyramidSteps({
 }) {
   const itemCount = items.length;
   const pyramidWidth = 280;
-  const sectionHeight = 80; // Height of each section
   const gap = 15; // Visible gap between sections
-  const totalHeight = itemCount * sectionHeight + (itemCount - 1) * gap;
+  const minSectionHeight = 50; // Minimum height per section
+
+  // Refs to measure text content heights
+  const contentRefs = React.useRef<(HTMLDivElement | null)[]>([]);
+  const [sectionHeights, setSectionHeights] = React.useState<number[]>(() => 
+    items.map(() => minSectionHeight)
+  );
+  const hasInitialized = React.useRef(false);
+
+  // Measure content heights once after initial render
+  React.useLayoutEffect(() => {
+    if (hasInitialized.current) return;
+    
+    const newHeights = contentRefs.current.map((ref) => {
+      if (ref) {
+        const height = ref.offsetHeight;
+        return Math.max(height, minSectionHeight);
+      }
+      return minSectionHeight;
+    });
+    
+    hasInitialized.current = true;
+    setSectionHeights(newHeights);
+  }, []);
+
+  // Reset when items change
+  React.useEffect(() => {
+    hasInitialized.current = false;
+  }, [items.length]);
+
+  // Calculate cumulative Y positions based on measured heights
+  const getYPositions = () => {
+    const positions: { topY: number; bottomY: number; height: number }[] = [];
+    let currentY = 0;
+
+    for (let i = 0; i < itemCount; i++) {
+      const height = sectionHeights[i] || minSectionHeight;
+      positions.push({
+        topY: currentY,
+        bottomY: currentY + height,
+        height,
+      });
+      currentY += height + gap;
+    }
+    return positions;
+  };
+
+  const yPositions = getYPositions();
+  const totalHeight =
+    yPositions.length > 0
+      ? (yPositions[yPositions.length - 1]?.bottomY ?? 0)
+      : minSectionHeight;
 
   return (
     <div className={`flex gap-6 ${className}`}>
@@ -208,21 +259,22 @@ function PyramidSteps({
           width={pyramidWidth}
           height={totalHeight}
           viewBox={`0 0 ${pyramidWidth} ${totalHeight}`}
+          style={{ overflow: "visible" }}
         >
           {items.map((_, index) => {
-            // Calculate Y positions with gaps between sections
-            const topY = index * (sectionHeight + gap);
-            const bottomY = topY + sectionHeight;
-            
+            const pos = yPositions[index];
+            if (!pos) return null;
+
+            const { topY, bottomY, height } = pos;
+
             // Calculate width at each Y position for sharp triangle
-            // The pyramid expands from a point at top to full width at bottom
             const getWidthAtY = (y: number) => {
               return (y / totalHeight) * pyramidWidth;
             };
-            
+
             const topWidth = getWidthAtY(topY);
             const bottomWidth = getWidthAtY(bottomY);
-            
+
             const centerX = pyramidWidth / 2;
             const topLeftX = centerX - topWidth / 2;
             const topRightX = centerX + topWidth / 2;
@@ -241,7 +293,7 @@ function PyramidSteps({
                   />
                   <text
                     x={centerX}
-                    y={sectionHeight * 0.65}
+                    y={height * 0.65}
                     textAnchor="middle"
                     dominantBaseline="middle"
                     className="text-xl"
@@ -265,7 +317,7 @@ function PyramidSteps({
                 />
                 <text
                   x={centerX}
-                  y={topY + sectionHeight / 2}
+                  y={topY + height / 2}
                   textAnchor="middle"
                   dominantBaseline="middle"
                   className="text-xl"
@@ -280,21 +332,157 @@ function PyramidSteps({
         </svg>
       </div>
 
-      {/* Content on right - staggered diagonally to align with pyramid right edge */}
-      <div className="flex-1 flex flex-col">
+      {/* Content on right - text drives the height */}
+      <div className="flex-1 flex flex-col" style={{ gap: `${gap}px` }}>
         {items.map((item, index) => {
-          // Calculate left padding to create diagonal stagger effect
-          // Text aligns with the right edge of each pyramid section
-          const staggerPadding = index * 40; // Increase padding as we go down
-          
+          const staggerPadding = index * 40;
+
           return (
             <div
               key={index}
+              ref={(el) => {
+                contentRefs.current[index] = el;
+              }}
               className="flex flex-col justify-center"
               style={{
-                height: `${sectionHeight + gap}px`,
+                minHeight: `${minSectionHeight}px`,
                 paddingLeft: `${staggerPadding}px`,
               }}
+            >
+              {item.label &&
+                (onStartEditLabel ? (
+                  <EditableText
+                    value={item.label}
+                    isEditing={
+                      isEditing &&
+                      editingText?.field === `content-label-${index}`
+                    }
+                    onStartEdit={() => onStartEditLabel(index)}
+                    onChange={(val) => onUpdateLabel?.(index, val)}
+                    onFinish={onFinishEditing || (() => {})}
+                    className="text-lg font-semibold mb-1"
+                    style={{ color: themeStyles.titleColor }}
+                    isOwner={isOwner}
+                    isHovered={isHovered}
+                  />
+                ) : (
+                  <h3
+                    className="text-lg font-semibold mb-1"
+                    style={{ color: themeStyles.titleColor }}
+                  >
+                    {item.label}
+                  </h3>
+                ))}
+              {onStartEditText ? (
+                <EditableText
+                  value={item.text}
+                  isEditing={
+                    isEditing && editingText?.field === `content-text-${index}`
+                  }
+                  onStartEdit={() => onStartEditText(index)}
+                  onChange={(val) => onUpdateText?.(index, val)}
+                  onFinish={onFinishEditing || (() => {})}
+                  className="text-sm leading-relaxed"
+                  style={{ color: themeStyles.bodyColor }}
+                  isOwner={isOwner}
+                  isHovered={isHovered}
+                />
+              ) : (
+                <p
+                  className="text-sm leading-relaxed"
+                  style={{ color: themeStyles.bodyColor }}
+                >
+                  {item.text}
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// Style 2: Arrow Steps - Thick downward arrows, staggered to the right
+// Uses fixed heights for consistent layout
+function ArrowSteps({
+  items,
+  themeStyles,
+  className,
+  isEditing = false,
+  editingText = null,
+  onStartEditLabel,
+  onStartEditText,
+  onUpdateLabel,
+  onUpdateText,
+  onFinishEditing,
+  isOwner = false,
+  isHovered = false,
+}: {
+  items: StepContentItem[];
+  themeStyles: ThemeStyles;
+  className: string;
+  isEditing?: boolean;
+  editingText?: { field: string; bulletIndex?: number } | null;
+  onStartEditLabel?: (index: number) => void;
+  onStartEditText?: (index: number) => void;
+  onUpdateLabel?: (index: number, value: string) => void;
+  onUpdateText?: (index: number, value: string) => void;
+  onFinishEditing?: () => void;
+  isOwner?: boolean;
+  isHovered?: boolean;
+}) {
+  const rowHeight = 70; // Fixed row height
+
+  // Each arrow is offset more to the right (staggered effect)
+  const getLeftPadding = (index: number) => {
+    return index * 35;
+  };
+
+  // Arrow dimensions - fixed size
+  const arrowWidth = 50;
+  const arrowHeight = rowHeight;
+  const bodyWidth = 30;
+  const headHeight = 25;
+
+  return (
+    <div className={`flex flex-col gap-3 ${className}`}>
+      {items.map((item, index) => {
+        return (
+          <div
+            key={index}
+            className="flex items-stretch gap-5"
+            style={{ 
+              paddingLeft: `${getLeftPadding(index)}px`,
+              minHeight: `${rowHeight}px`,
+            }}
+          >
+            {/* Thick arrow pointing down - fixed size */}
+            <div className="flex-shrink-0 flex items-center">
+              <svg 
+                width={arrowWidth} 
+                height={arrowHeight} 
+                viewBox={`0 0 ${arrowWidth} ${arrowHeight}`} 
+                fill="none"
+                style={{ overflow: 'visible' }}
+              >
+                <rect 
+                  x={(arrowWidth - bodyWidth) / 2} 
+                  y="0" 
+                  width={bodyWidth} 
+                  height={arrowHeight - headHeight} 
+                  fill={themeStyles.shapeBgColor} 
+                />
+                <polygon 
+                  points={`${arrowWidth / 2},${arrowHeight} 0,${arrowHeight - headHeight} ${arrowWidth},${arrowHeight - headHeight}`} 
+                  fill={themeStyles.shapeBgColor} 
+                />
+              </svg>
+            </div>
+
+            {/* Content */}
+            <div 
+              className="flex-1 flex flex-col justify-center py-2"
             >
               {item.label && (
                 onStartEditLabel ? (
@@ -333,120 +521,9 @@ function PyramidSteps({
                 </p>
               )}
             </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// Style 2: Arrow Steps - Thick downward arrows, staggered to the right
-function ArrowSteps({
-  items,
-  themeStyles,
-  className,
-  isEditing = false,
-  editingText = null,
-  onStartEditLabel,
-  onStartEditText,
-  onUpdateLabel,
-  onUpdateText,
-  onFinishEditing,
-  isOwner = false,
-  isHovered = false,
-}: {
-  items: StepContentItem[];
-  themeStyles: ThemeStyles;
-  className: string;
-  isEditing?: boolean;
-  editingText?: { field: string; bulletIndex?: number } | null;
-  onStartEditLabel?: (index: number) => void;
-  onStartEditText?: (index: number) => void;
-  onUpdateLabel?: (index: number, value: string) => void;
-  onUpdateText?: (index: number, value: string) => void;
-  onFinishEditing?: () => void;
-  isOwner?: boolean;
-  isHovered?: boolean;
-}) {
-  // Each arrow is offset more to the right (staggered effect)
-  const getLeftPadding = (index: number) => {
-    return index * 35; // 35px offset per step for more visible stagger
-  };
-
-  // Arrow dimensions - much thicker and taller
-  const arrowWidth = 50;
-  const arrowHeight = 85;
-  const bodyWidth = 30; // Thick body
-  const headHeight = 25; // Arrow head portion
-
-  return (
-    <div className={`flex flex-col gap-3 ${className}`}>
-      {items.map((item, index) => (
-        <div
-          key={index}
-          className="flex items-start gap-5"
-          style={{ paddingLeft: `${getLeftPadding(index)}px` }}
-        >
-          {/* Thick arrow pointing down */}
-          <div className="flex-shrink-0">
-            <svg width={arrowWidth} height={arrowHeight} viewBox={`0 0 ${arrowWidth} ${arrowHeight}`} fill="none">
-              {/* Arrow body (thick rectangle) */}
-              <rect 
-                x={(arrowWidth - bodyWidth) / 2} 
-                y="0" 
-                width={bodyWidth} 
-                height={arrowHeight - headHeight} 
-                fill={themeStyles.shapeBgColor} 
-              />
-              {/* Arrow head (wide triangle pointing down) */}
-              <polygon 
-                points={`${arrowWidth / 2},${arrowHeight} 0,${arrowHeight - headHeight} ${arrowWidth},${arrowHeight - headHeight}`} 
-                fill={themeStyles.shapeBgColor} 
-              />
-            </svg>
           </div>
-
-          {/* Content */}
-          <div className="flex-1 pt-2">
-            {item.label && (
-              onStartEditLabel ? (
-                <EditableText
-                  value={item.label}
-                  isEditing={isEditing && editingText?.field === `content-label-${index}`}
-                  onStartEdit={() => onStartEditLabel(index)}
-                  onChange={(val) => onUpdateLabel?.(index, val)}
-                  onFinish={onFinishEditing || (() => {})}
-                  className="text-lg font-semibold mb-1"
-                  style={{ color: themeStyles.titleColor }}
-                  isOwner={isOwner}
-                  isHovered={isHovered}
-                />
-              ) : (
-                <h3 className="text-lg font-semibold mb-1" style={{ color: themeStyles.titleColor }}>
-                  {item.label}
-                </h3>
-              )
-            )}
-            {onStartEditText ? (
-              <EditableText
-                value={item.text}
-                isEditing={isEditing && editingText?.field === `content-text-${index}`}
-                onStartEdit={() => onStartEditText(index)}
-                onChange={(val) => onUpdateText?.(index, val)}
-                onFinish={onFinishEditing || (() => {})}
-                className="text-sm leading-relaxed"
-                style={{ color: themeStyles.bodyColor }}
-                isOwner={isOwner}
-                isHovered={isHovered}
-              />
-            ) : (
-              <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
-                {item.text}
-              </p>
-            )}
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

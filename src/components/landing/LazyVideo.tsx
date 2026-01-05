@@ -90,8 +90,7 @@ export function LazyVideo({
           aria-label={title}
           onLoadedData={() => setIsLoaded(true)}
         >
-          {/* Empty captions track for accessibility - decorative video */}
-          <track kind="captions" src="" label="No captions available" default />
+          {/* Decorative video - no captions needed */}
         </video>
       )}
     </div>
