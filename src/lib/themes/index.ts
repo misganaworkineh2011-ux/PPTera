@@ -64,6 +64,12 @@ import { frostTheme } from "./frost";
 import { sakuraTheme } from "./sakura";
 import { midnightTheme } from "./midnight";
 import { terracottaTheme } from "./terracotta";
+import { animeDreamscapeTheme } from "./anime-dreamscape";
+import { hackerTerminalTheme } from "./hacker-terminal";
+import { cyberpunkNeonTheme } from "./cyberpunk-neon";
+import { dnaBlueprintTheme } from "./dna-blueprint";
+import { sunsetGradientTheme } from "./sunset-gradient";
+import { auroraBorealisTechTheme } from "./aurora-borealis-tech";
 
 // Re-export themes for direct imports
 export {
@@ -77,6 +83,12 @@ export {
   sakuraTheme,
   midnightTheme,
   terracottaTheme,
+  animeDreamscapeTheme,
+  hackerTerminalTheme,
+  cyberpunkNeonTheme,
+  dnaBlueprintTheme,
+  sunsetGradientTheme,
+  auroraBorealisTechTheme,
 };
 
 // All themes array
@@ -91,6 +103,12 @@ export const themes = [
   sakuraTheme,
   midnightTheme,
   terracottaTheme,
+  animeDreamscapeTheme,
+  hackerTerminalTheme,
+  cyberpunkNeonTheme,
+  dnaBlueprintTheme,
+  sunsetGradientTheme,
+  auroraBorealisTechTheme,
 ];
 
 // Helper functions

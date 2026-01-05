@@ -22,28 +22,26 @@ export async function GET(request: NextRequest) {
       take,
     });
 
-    // Get all presentations for this user to count which ones came from each outline
-    const presentations = await db.presentation.findMany({
+    // Get presentation counts per outline using the proper outlineId column
+    // This is much more efficient than parsing JSON content
+    const presentationCounts = await db.presentation.groupBy({
+      by: ['outlineId'],
       where: {
         userId: user.id,
+        outlineId: {
+          not: null,
+        },
       },
-      select: {
-        content: true,
+      _count: {
+        id: true,
       },
     });
 
-    // Count presentations per outline
+    // Build a map of outlineId -> count
     const presentationCountByOutline = new Map<string, number>();
-    console.log("[outlines/recent] Processing", presentations.length, "presentations");
-    
-    for (const pres of presentations) {
-      const content = pres.content as { outlineId?: string } | null;
-      // Handle both null and empty string cases
-      const outlineId = content?.outlineId && content.outlineId.trim() ? content.outlineId : null;
-      console.log("[outlines/recent] Presentation content outlineId:", outlineId);
-      if (outlineId) {
-        const count = presentationCountByOutline.get(outlineId) || 0;
-        presentationCountByOutline.set(outlineId, count + 1);
+    for (const item of presentationCounts) {
+      if (item.outlineId) {
+        presentationCountByOutline.set(item.outlineId, item._count.id);
       }
     }
     

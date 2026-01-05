@@ -44,8 +44,16 @@ export {
   getThemeById,
   getDefaultTheme,
   // Individual themes
-  corporateClean,
-  elegantNoir,
+  sproutTheme,
+  corporateCleanTheme,
+  nebulaTheme,
+  auroraTheme,
+  obsidianTheme,
+  emberTheme,
+  frostTheme,
+  sakuraTheme,
+  midnightTheme,
+  terracottaTheme,
 } from "./themes/index";
 
 // Re-export theme provider

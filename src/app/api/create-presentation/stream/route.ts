@@ -58,6 +58,8 @@ interface PresentationSlide {
   }>;
   // New: intro text before content
   introText?: string;
+  // New: slide description - simple 2-line description between title and content
+  slideDescription?: string;
   // New: tagline for title slides
   tagline?: string;
   chart?: null;
@@ -276,6 +278,7 @@ export async function POST(request: Request) {
             title: transformedSlide.title,
             subtitle: transformedSlide.subtitle,
             tagline: transformedSlide.tagline,
+            slideDescription: transformedSlide.slideDescription,
             introText: transformedSlide.introText,
             bulletPoints: transformedSlide.bulletPoints,
             speakerNotes: transformedSlide.speakerNotes, // Detailed notes for presenter
@@ -311,6 +314,10 @@ export async function POST(request: Request) {
           
           if (transformedSlide.subtitle) {
             sendEvent(controller, "slideContent", { slideIndex, field: "subtitle", value: transformedSlide.subtitle });
+          }
+
+          if (transformedSlide.slideDescription) {
+            sendEvent(controller, "slideContent", { slideIndex, field: "slideDescription", value: transformedSlide.slideDescription });
           }
 
           if (transformedSlide.introText) {

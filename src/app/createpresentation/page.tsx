@@ -23,7 +23,7 @@ export default async function CreatePresentationPage({ searchParams }: PageProps
   const maxSlides = getMaxSlides(user?.subscriptionPlan);
   const userCredits = user?.credits ?? 0;
 
-  // Fetch only the first 3 completed outlines for initial display with presentation count
+  // Fetch only the first 3 completed outlines for initial display
   const outlines = await db.outline.findMany({
     where: {
       userId: user.id,
@@ -34,6 +34,31 @@ export default async function CreatePresentationPage({ searchParams }: PageProps
     },
     take: 3, // Only fetch 3 initially, more will be loaded on "See More" click
   });
+
+  // Get presentation counts for these outlines using the outlineId column
+  const outlineIds = outlines.map(o => o.id);
+  const presentationCounts = outlineIds.length > 0 
+    ? await db.presentation.groupBy({
+        by: ['outlineId'],
+        where: {
+          userId: user.id,
+          outlineId: {
+            in: outlineIds,
+          },
+        },
+        _count: {
+          id: true,
+        },
+      })
+    : [];
+
+  // Build a map of outlineId -> count
+  const presentationCountByOutline = new Map<string, number>();
+  for (const item of presentationCounts) {
+    if (item.outlineId) {
+      presentationCountByOutline.set(item.outlineId, item._count.id);
+    }
+  }
 
   // Extract title from metadata and include presentation count
   const recentOutlines = outlines.map((outline) => {
@@ -48,7 +73,7 @@ export default async function CreatePresentationPage({ searchParams }: PageProps
       id: outline.id,
       title: metadata.topic || "Untitled Presentation",
       createdAt: outline.createdAt.toISOString(),
-      presentationCount: 0,
+      presentationCount: presentationCountByOutline.get(outline.id) || 0,
     };
   });
 
