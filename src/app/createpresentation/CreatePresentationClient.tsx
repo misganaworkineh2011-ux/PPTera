@@ -1428,7 +1428,7 @@ export default function CreatePresentationClient({
                   <span className="text-slate-300">•</span>
                   <span className="flex items-center gap-1">
                     <span className="text-slate-500">Credits:</span>
-                    <strong className="text-[#06b6d4]">{streamState.creditsRemaining ?? "—"}</strong>
+                    <strong className="text-[#06b6d4]">{streamState.creditsRemaining ?? userCredits}</strong>
                   </span>
                 </div>
                 <button

@@ -137,6 +137,7 @@ export async function POST(request: Request) {
           title: presentationTitle,
           description: metadata.topic,
           thumbnailUrl: null,
+          outlineId: validOutlineId, // Store outlineId as a proper column
           content: {
             theme,
             themeConfig: themeConfig || null,
@@ -145,7 +146,6 @@ export async function POST(request: Request) {
             textDensity,
             metadata,
             createdFrom: "outline",
-            outlineId: validOutlineId, // Store outlineId in content JSON (null if empty)
             // Store slides for streaming processing
             pendingSlides: slides,
             streamingComplete: false,
@@ -344,6 +344,7 @@ export async function POST(request: Request) {
         title: presentationTitle,
         description: metadata.topic,
         thumbnailUrl,
+        outlineId: validOutlineIdNonStreaming, // Store outlineId as a proper column
         content: {
           theme: theme,
           themeConfig: themeConfig || null,
@@ -351,7 +352,6 @@ export async function POST(request: Request) {
           textDensity: textDensity,
           metadata: metadata,
           createdFrom: "outline",
-          outlineId: validOutlineIdNonStreaming, // Store outlineId in content JSON (null if empty)
         },
         slides: presentationSlides,
         userId: user.id,

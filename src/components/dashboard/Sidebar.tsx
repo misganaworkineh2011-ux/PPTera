@@ -115,21 +115,22 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
               </h3>
               <div className="space-y-1">
                 {group.items.map((item) => {
-                  const isActive = pathname === item.href || (item.href === "/" && pathname === "/dashboard");
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      prefetch={false}
-                      onClick={() => onCloseMobile?.()}
-                      className={cn(
-                        "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-semibold transition-all",
-                        isActive
-                          ? "bg-[#e0f2fe] text-[#06b6d4] shadow-sm dark:bg-zinc-800 dark:text-white"
-                          : "text-slate-700 hover:bg-slate-50 hover:text-[#1e3a8a] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white",
-                        isCollapsed && "lg:justify-center lg:px-2"
-                      )}
-                    >
+                  // For presentations link (href="/"), consider active if on "/" or "/dashboard"
+                  const isActive = item.href === "/"
+                    ? pathname === "/" || pathname === "/dashboard"
+                    : pathname === item.href;
+                  
+                  const itemClasses = cn(
+                    "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-semibold transition-all",
+                    isActive
+                      ? "bg-[#e0f2fe] text-[#06b6d4] shadow-sm dark:bg-zinc-800 dark:text-white"
+                      : "text-slate-700 hover:bg-slate-50 hover:text-[#1e3a8a] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white",
+                    isCollapsed && "lg:justify-center lg:px-2",
+                    isActive && "cursor-default"
+                  );
+
+                  const content = (
+                    <>
                       <item.icon
                         size={17}
                         className={cn(
@@ -150,6 +151,28 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
                           isCollapsed && "lg:hidden"
                         )} />
                       )}
+                    </>
+                  );
+
+                  // If active, render as div to prevent any navigation
+                  if (isActive) {
+                    return (
+                      <div key={item.href} className={itemClasses}>
+                        {content}
+                      </div>
+                    );
+                  }
+
+                  // If not active, render as Link for navigation
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      prefetch={false}
+                      onClick={() => onCloseMobile?.()}
+                      className={itemClasses}
+                    >
+                      {content}
                     </Link>
                   );
                 })}
