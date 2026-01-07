@@ -11,6 +11,48 @@ import { toast } from "sonner";
 import { getPresentationUrl } from "~/lib/utils";
 import ShareModal from "~/components/presentation/ShareModal";
 
+// Shimmer effect for skeleton loading
+function Shimmer() {
+  return (
+    <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+  );
+}
+
+// Single skeleton card component for inline rendering
+function SkeletonCard({ index }: { index: number }) {
+  return (
+    <div
+      className="flex flex-col overflow-hidden rounded-md border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 animate-in fade-in duration-300"
+      style={{ animationDelay: `${index * 50}ms`, animationFillMode: "backwards" }}
+    >
+      <div className="aspect-[16/9] w-full bg-slate-200 dark:bg-neutral-800 relative overflow-hidden">
+        <Shimmer />
+      </div>
+      <div className="p-3 space-y-2.5">
+        <div className="h-4 w-4/5 bg-slate-200 dark:bg-neutral-800 rounded relative overflow-hidden">
+          <Shimmer />
+        </div>
+        <div className="h-3 w-2/3 bg-slate-200 dark:bg-neutral-800 rounded relative overflow-hidden">
+          <Shimmer />
+        </div>
+        <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-neutral-800">
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-neutral-800 relative overflow-hidden">
+              <Shimmer />
+            </div>
+            <div className="h-2.5 w-16 bg-slate-200 dark:bg-neutral-800 rounded relative overflow-hidden">
+              <Shimmer />
+            </div>
+          </div>
+          <div className="w-6 h-6 rounded bg-slate-200 dark:bg-neutral-800 relative overflow-hidden">
+            <Shimmer />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Infinite Scroll Trigger Component with Intersection Observer
 function InfiniteScrollTrigger({ 
   onLoadMore, 
@@ -71,37 +113,17 @@ function InfiniteScrollTrigger({
     }
   }, [isLoading]);
 
-  // Don't render anything if no remaining items
+  // Don't render anything if no remaining items and not loading
   if (remainingCount <= 0 && !isLoading) {
     return null;
   }
 
   return (
-    <div ref={triggerRef} className="py-6">
-      {isLoading ? (
-        <div className="flex flex-col items-center gap-4">
-          {/* Modern loading animation */}
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              {/* Outer ring */}
-              <div className="w-10 h-10 rounded-full border-2 border-slate-200 dark:border-neutral-800" />
-              {/* Spinning gradient ring */}
-              <div className="absolute inset-0 w-10 h-10 rounded-full border-2 border-transparent border-t-neutral-600 border-r-neutral-400 dark:border-t-white dark:border-r-neutral-400 animate-spin" />
-            </div>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-neutral-400">
-            <span>Loading more presentations</span>
-            <span className="flex gap-1">
-              <span className="w-1.5 h-1.5 bg-[#1e3a8a] dark:bg-white rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-              <span className="w-1.5 h-1.5 bg-[#06b6d4] dark:bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-              <span className="w-1.5 h-1.5 bg-[#1e3a8a] dark:bg-white rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-            </span>
-          </div>
-        </div>
-      ) : remainingCount > 0 ? (
+    <div ref={triggerRef} className="col-span-full">
+      {!isLoading && remainingCount > 0 && (
         <button 
           onClick={onLoadMore}
-          className="flex flex-col items-center gap-2 text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-white transition-colors cursor-pointer group w-full"
+          className="flex flex-col items-center gap-2 text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-white transition-colors cursor-pointer group w-full py-6"
         >
           <div className="flex items-center gap-1.5">
             <div className="w-8 h-[2px] bg-gradient-to-r from-transparent via-slate-300 to-transparent dark:via-slate-600 rounded-full group-hover:via-slate-400" />
@@ -109,7 +131,7 @@ function InfiniteScrollTrigger({
             <div className="w-8 h-[2px] bg-gradient-to-r from-transparent via-slate-300 to-transparent dark:via-slate-600 rounded-full group-hover:via-slate-400" />
           </div>
         </button>
-      ) : null}
+      )}
     </div>
   );
 }
@@ -144,9 +166,10 @@ interface DashboardContentProps {
 type ViewMode = "grid" | "list";
 type FilterMode = "all" | "favorites" | "public" | "private";
 
-export default function DashboardContent({ presentations: initialPresentations, userName, searchQuery = "", pagination, onLoadMore, isLoadingMore }: DashboardContentProps) {
+export default function DashboardContent({ presentations: propPresentations, userName, searchQuery = "", pagination, onLoadMore, isLoadingMore }: DashboardContentProps) {
   const { user } = useUser();
-  const [presentations, setPresentations] = useState(initialPresentations);
+  // Local state for optimistic updates only - synced from props
+  const [localPresentations, setLocalPresentations] = useState(propPresentations);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [filterMode, setFilterMode] = useState<FilterMode>("all");
   const [showFilterMenu, setShowFilterMenu] = useState(false);
@@ -160,6 +183,49 @@ export default function DashboardContent({ presentations: initialPresentations, 
   const [showDeleteDialog, setShowDeleteDialog] = useState<string | null>(null);
   const { language } = useLanguage();
   const t = dashboardTranslations[language] || dashboardTranslations.en;
+  
+  // Track which presentation IDs have been rendered (shouldn't animate)
+  const renderedIdsRef = useRef<Set<string>>(new Set(propPresentations.map(p => p.id)));
+  
+  // Track the count of items before load more (for animation index calculation)
+  const prevCountRef = useRef(propPresentations.length);
+  
+  // Track if this is the first render to disable all animations on initial load
+  const isFirstRenderRef = useRef(true);
+  
+  // After first render, mark it as done
+  useEffect(() => {
+    // Small delay to ensure SSR content is painted before enabling animations
+    const timer = setTimeout(() => {
+      isFirstRenderRef.current = false;
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Sync local state when props change and track new items for animation
+  useEffect(() => {
+    // Calculate which items are new (for staggered animation)
+    const newIds = propPresentations
+      .filter(p => !renderedIdsRef.current.has(p.id))
+      .map(p => p.id);
+    
+    // Update the previous count for next load
+    prevCountRef.current = renderedIdsRef.current.size;
+    
+    // Mark new items as rendered after animation completes
+    if (newIds.length > 0) {
+      const animationDuration = newIds.length * 50 + 300; // stagger + duration
+      setTimeout(() => {
+        newIds.forEach(id => renderedIdsRef.current.add(id));
+      }, animationDuration);
+    }
+    
+    setLocalPresentations(propPresentations);
+  }, [propPresentations]);
+  
+  // Use local state for display (allows optimistic updates)
+  const presentations = localPresentations;
+  const setPresentations = setLocalPresentations;
 
   // OPTIMIZATION: Optimistic update helpers
   const optimisticUpdate = useCallback(<T extends Partial<Presentation>>(
@@ -544,12 +610,23 @@ export default function DashboardContent({ presentations: initialPresentations, 
           </div>
         ) : viewMode === "grid" ? (
           <div className="grid gap-3 sm:gap-4 grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-            {filteredPresentations.map((pres, index) => (
+            {filteredPresentations.map((pres, index) => {
+              // Only animate cards that were loaded after initial render (via "load more")
+              const isNewCard = !isFirstRenderRef.current && !renderedIdsRef.current.has(pres.id);
+              // Calculate animation index relative to new items only (not overall index)
+              const newItemIndex = isNewCard ? index - prevCountRef.current : 0;
+              const animationClass = isNewCard ? "animate-in fade-in slide-in-from-bottom-4 duration-500" : "";
+              const animationStyle = isNewCard ? { 
+                animationDelay: `${Math.max(0, newItemIndex) * 75}ms`, 
+                animationFillMode: "backwards" as const 
+              } : {};
+              
+              return (
               <a
                 key={pres.id}
                 href={getPresentationUrl(pres.id, pres.title)}
-                className="group relative flex flex-col overflow-hidden rounded-md border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-lg hover:shadow-[#06b6d4]/10 cursor-pointer animate-in fade-in slide-in-from-bottom-2 duration-300"
-                style={{ animationDelay: `${Math.min(index * 50, 400)}ms`, animationFillMode: "backwards" }}
+                className={`group relative flex flex-col overflow-hidden rounded-md border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-lg hover:shadow-[#06b6d4]/10 cursor-pointer ${animationClass}`}
+                style={animationStyle}
               >
                 {/* Thumbnail */}
                 <div className="aspect-[16/9] w-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-neutral-800 dark:to-neutral-900 relative overflow-hidden">
@@ -562,11 +639,13 @@ export default function DashboardContent({ presentations: initialPresentations, 
                   <div className="absolute inset-0 bg-gradient-to-br from-black/5 to-black/10 group-hover:from-black/10 group-hover:to-black/15 transition-colors" />
                   {/* Favorite Icon - Clickable */}
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
                       handleMenuAction("favorite", pres.id);
                     }}
+                    onMouseDown={(e) => e.stopPropagation()}
                     className={`absolute top-1.5 right-1.5 sm:top-2 sm:right-2 p-1.5 rounded-full backdrop-blur-sm transition-all ${pres.isPinned
                         ? "bg-yellow-400/90 hover:bg-yellow-500"
                         : "bg-black/30 hover:bg-black/50"
@@ -652,16 +731,40 @@ export default function DashboardContent({ presentations: initialPresentations, 
                   </div>
                 </div>
               </a>
+            );
+            })}
+            {/* Inline skeleton cards when loading more */}
+            {isLoadingMore && Array.from({ length: Math.min(pagination?.total ? pagination.total - presentations.length : 12, 12) }).map((_, i) => (
+              <SkeletonCard key={`skeleton-${i}`} index={i} />
             ))}
+            {/* Infinite scroll trigger inside grid */}
+            {onLoadMore && (pagination?.hasMore || isLoadingMore) && (
+              <InfiniteScrollTrigger 
+                onLoadMore={onLoadMore} 
+                isLoading={isLoadingMore || false}
+                remainingCount={pagination ? pagination.total - presentations.length : 0}
+              />
+            )}
           </div>
         ) : (
           <div className="space-y-2">
-            {filteredPresentations.map((pres, index) => (
+            {filteredPresentations.map((pres, index) => {
+              // Only animate cards that were loaded after initial render (via "load more")
+              const isNewCard = !isFirstRenderRef.current && !renderedIdsRef.current.has(pres.id);
+              // Calculate animation index relative to new items only
+              const newItemIndex = isNewCard ? index - prevCountRef.current : 0;
+              const animationClass = isNewCard ? "animate-in fade-in slide-in-from-left-4 duration-500" : "";
+              const animationStyle = isNewCard ? { 
+                animationDelay: `${Math.max(0, newItemIndex) * 75}ms`, 
+                animationFillMode: "backwards" as const 
+              } : {};
+              
+              return (
               <a
                 key={pres.id}
                 href={getPresentationUrl(pres.id, pres.title)}
-                className="group flex items-center gap-2 sm:gap-4 rounded-md border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-2 sm:p-3 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-md cursor-pointer animate-in fade-in slide-in-from-left-2 duration-300"
-                style={{ animationDelay: `${Math.min(index * 30, 300)}ms`, animationFillMode: "backwards" }}
+                className={`group flex items-center gap-2 sm:gap-4 rounded-md border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-2 sm:p-3 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-md cursor-pointer ${animationClass}`}
+                style={animationStyle}
               >
                 {/* Thumbnail */}
                 <div className="w-14 h-10 sm:w-20 sm:h-14 flex-shrink-0 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-neutral-800 dark:to-neutral-900 rounded relative overflow-hidden">
@@ -681,11 +784,13 @@ export default function DashboardContent({ presentations: initialPresentations, 
                     </h3>
                     {/* Favorite Icon - Clickable */}
                     <button
+                      type="button"
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         handleMenuAction("favorite", pres.id);
                       }}
+                      onMouseDown={(e) => e.stopPropagation()}
                       className={`p-1 rounded-full transition-all flex-shrink-0 ${pres.isPinned
                           ? "bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/30"
                           : "hover:bg-slate-100 dark:hover:bg-neutral-800"
@@ -744,19 +849,11 @@ export default function DashboardContent({ presentations: initialPresentations, 
                   </button>
                 </div>
               </a>
-            ))}
+            );
+            })}
           </div>
         )}
       </div>
-
-      {/* Infinite Scroll Trigger & Loading */}
-      {onLoadMore && (pagination?.hasMore || isLoadingMore) && (
-        <InfiniteScrollTrigger 
-          onLoadMore={onLoadMore} 
-          isLoading={isLoadingMore || false}
-          remainingCount={pagination ? pagination.total - presentations.length : 0}
-        />
-      )}
 
       {/* Rename Dialog */}
       {showRenameDialog && (

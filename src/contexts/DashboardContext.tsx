@@ -101,25 +101,31 @@ export function DashboardProvider({ children, initialUser, initialPresentations 
   const mountedRef = useRef(true);
 
   // Load more presentations (pagination)
+  // Uses pagination.offset which is set by the wrapper based on SSR data
   const loadMorePresentations = useCallback(async () => {
     if (!pagination?.hasMore || isLoadingMore) return;
     
     setIsLoadingMore(true);
     try {
-      // Use current presentations length as offset since SSR might have loaded more than the API limit
-      const currentOffset = presentations.length;
+      // Use pagination offset (set by wrapper from SSR data count)
+      const currentOffset = pagination.offset;
       const response = await fetch(`/api/dashboard/init?presentationOffset=${currentOffset}&presentationLimit=12&themes=false&activity=false`);
       
       if (response.ok) {
         const data = await response.json();
         if (mountedRef.current) {
-          // Append new presentations
-          setPresentations(prev => [...prev, ...data.presentations]);
-          // Update pagination with new offset
-          setPagination({
-            ...data.pagination,
-            offset: currentOffset + data.presentations.length,
+          // Append new presentations to existing ones
+          setPresentations(prev => {
+            // If prev is empty, this is first load more - data.presentations are the new ones
+            // If prev has items, append to them
+            return [...prev, ...data.presentations];
           });
+          // Update pagination with new offset
+          setPagination(prev => prev ? {
+            ...prev,
+            offset: currentOffset + data.presentations.length,
+            hasMore: data.pagination.hasMore,
+          } : null);
         }
       }
     } catch (error) {
@@ -129,7 +135,7 @@ export function DashboardProvider({ children, initialUser, initialPresentations 
         setIsLoadingMore(false);
       }
     }
-  }, [pagination, isLoadingMore, presentations.length]);
+  }, [pagination, isLoadingMore]);
 
   // Combined dashboard initialization - single API call
   const refreshDashboard = useCallback(async () => {

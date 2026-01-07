@@ -41,7 +41,6 @@ export async function GET(request: Request) {
       getCachedPresentations(authUser.id, {
         limit: presentationLimit,
         offset: presentationOffset,
-        includeSlides: false,
       }),
 
       // Total presentation count for pagination (cached)

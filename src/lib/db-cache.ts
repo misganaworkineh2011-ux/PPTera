@@ -5,7 +5,6 @@
 
 import { serverCache, SERVER_CACHE_TTL, cachedQuery } from './server-cache';
 import { db } from '~/server/db';
-import type { Prisma } from '@prisma/client';
 
 /**
  * Get user with caching
@@ -32,6 +31,7 @@ export async function getCachedUser(userId: string) {
 
 /**
  * Get user presentations with caching and pagination
+ * Uses raw SQL to get slide count without fetching full JSON blob
  */
 export async function getCachedPresentations(
   userId: string,
@@ -47,25 +47,64 @@ export async function getCachedPresentations(
   return cachedQuery(
     key,
     2 * 60 * 1000, // 2 minutes - presentations change frequently
-    () => db.presentation.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' },
-      take: limit,
-      skip: offset,
-      select: {
-        id: true,
-        title: true,
-        isPublic: true,
-        isPinned: true,
-        createdAt: true,
-        updatedAt: true,
-        shareToken: true,
-        slides: includeSlides,
-        _count: includeSlides ? undefined : {
-          select: { slides: true }
-        }
+    async () => {
+      if (includeSlides) {
+        // When slides are needed, fetch everything
+        const presentations = await db.presentation.findMany({
+          where: { userId },
+          orderBy: { createdAt: 'desc' },
+          take: limit,
+          skip: offset,
+          select: {
+            id: true,
+            title: true,
+            isPublic: true,
+            isPinned: true,
+            createdAt: true,
+            updatedAt: true,
+            shareToken: true,
+            thumbnailUrl: true,
+            slides: true,
+          }
+        });
+        return presentations.map(p => ({
+          ...p,
+          slideCount: Array.isArray(p.slides) ? p.slides.length : 0
+        }));
       }
-    })
+      
+      // Use raw SQL to get slide count without fetching the JSON blob
+      // jsonb_array_length is much faster than fetching + counting in JS
+      const presentations = await db.$queryRaw<Array<{
+        id: string;
+        title: string;
+        isPublic: boolean;
+        isPinned: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        shareToken: string | null;
+        thumbnailUrl: string | null;
+        slideCount: number;
+      }>>`
+        SELECT 
+          id,
+          title,
+          "isPublic",
+          "isPinned",
+          "createdAt",
+          "updatedAt",
+          "shareToken",
+          "thumbnailUrl",
+          COALESCE(jsonb_array_length(slides), 0)::int as "slideCount"
+        FROM presentation
+        WHERE "userId" = ${userId}
+        ORDER BY "createdAt" DESC
+        LIMIT ${limit}
+        OFFSET ${offset}
+      `;
+      
+      return presentations;
+    }
   );
 }
 
@@ -181,7 +220,6 @@ export async function getCachedPresentation(presentationId: string) {
     () => db.presentation.findUnique({
       where: { id: presentationId },
       include: {
-        slides: true,
         user: {
           select: {
             id: true,
