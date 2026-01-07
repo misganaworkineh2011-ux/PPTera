@@ -273,10 +273,13 @@ MAIN TOPIC/THEME: "${description}" - This is the core topic the user requested. 
 CRITICAL REQUIREMENTS:
 1. TITLE slide:
    - "type": "title"
-   - "title": Use the user's input EXACTLY as provided (only fix grammar/typos if needed). Then optionally add a brief clarifying phrase after it to hint at the presentation's direction.
-     - PRESERVE the user's exact wording — do not rephrase or rewrite
-     - Only fix obvious grammar mistakes or typos
-     - You may append a short phrase to expand scope (e.g., "User Input: A Guide to Modern Approaches")
+   - "title": Extract the CORE TOPIC from the user's input and create a professional, compelling title.
+     - IMPORTANT: Users often phrase requests as commands like "Make a presentation about X", "Create slides on Y", "I need a deck about Z"
+     - STRIP command phrases: Remove phrases like "make a presentation about", "create a presentation on", "I want slides about", "build a deck on", etc.
+     - EXTRACT the actual topic: From "Make a presentation about Ethiopia vs Egypt" → title should be "Ethiopia vs Egypt" (optionally with a subtitle phrase)
+     - PRESERVE the topic's exact wording — only fix grammar/typos if needed
+     - You may append a short clarifying phrase to expand scope (e.g., "Ethiopia vs Egypt: A Historical Comparison")
+     - The title should be what would appear on a professional presentation cover, NOT a command
    - "subtitle": A short, compelling tagline expanding the title
 
 2. CONTENT slides (${contentSlides} slides):
@@ -286,7 +289,12 @@ Each slide MUST include (IN THIS ORDER):
    - "semanticIntent": core meaning label (free-form, e.g., "process", "comparison", "framework")
    - "visualStrategy": { primary, pattern, emphasis } describing visual expression
    - "contentLayoutHint": Category suggestion from: "boxes", "bullets", "sequence", "steps", "quotes", "circles", or "numbers" based on content analysis
-   - "bulletPoints": 2–6 bullets:
+   - "bulletPoints": Use your judgment to determine the optimal number of bullets for each slide:
+     * IDEAL: 3 bullets is the sweet spot for most slides — clean, focused, memorable
+     * ACCEPTABLE: 2, 4, or 5 bullets ONLY when the content genuinely requires it
+     * MAXIMUM: 6 bullets (use sparingly, only for comprehensive lists)
+     * MINIMUM: 2 bullets (use for high-impact, focused slides)
+     * BE SMART: Let the content dictate the count — don't pad with filler or cut essential points
      * FORBIDDEN FORMAT — NEVER USE: "Label: explanation" pattern (colon after a short label)
        ✗ WRONG: "Combatting Tilt: Utilize brief timeouts..."
        ✗ WRONG: "Pre-Game Visualization: Mentally rehearse..."
@@ -298,7 +306,6 @@ Each slide MUST include (IN THIS ORDER):
        ✓ RIGHT: "Recognize physical and mental signs of frustration before they escalate."
      * Write flowing sentences that start directly with the action or insight — NO labels, NO prefixes
      * LENGTH: 25 words max per bullet
-     * Count variety: 2-6 bullets per slide, favor 3-4 for teaching content
 
 3. Narrative structure:
    - FIRST (opening):
@@ -491,7 +498,7 @@ Return ONLY a valid JSON object in this exact structure:
           ],
           response_format: { type: "json_object" },
           temperature: 1,
-          max_tokens: 4000,
+          max_tokens: 16000,
           stream: true,
         });
 
@@ -509,7 +516,7 @@ Return ONLY a valid JSON object in this exact structure:
           model: "gemini-flash-latest",
           generationConfig: {
             temperature: 1,
-            maxOutputTokens: 8192,
+            maxOutputTokens: 16000,
             responseMimeType: "application/json",
           },
         });
