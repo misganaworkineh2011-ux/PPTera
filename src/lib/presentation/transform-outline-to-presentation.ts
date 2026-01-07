@@ -62,12 +62,7 @@ TRANSFORMATION RULES:
 5. CREATE TWO VERSIONS OF EACH BULLET:
    - "bulletPoints": Well-crafted slide text (max 30 words each, visually equal length) - what appears on the slide
    - "speakerNotes": Even more detailed explanations (1-3 sentences each) - what the presenter reads
-6. ADD SLIDE DESCRIPTION (OPTIONAL): Only include a slideDescription when it genuinely adds value. Write it as a natural, flowing description that introduces what the slide covers. Write it as if you're directly describing the topic itself, NOT describing the slide. 
-   - BAD: "This slide highlights...", "This slide covers...", "In this slide we will...", "This slide explains..."
-   - GOOD: "Understanding the core principles...", "Exploring the key factors...", "The foundation of modern approaches..."
-   - Just describe the topic naturally. Maximum 2 lines. If not needed, omit it entirely.
-7. The speaker notes should contain the full context, examples, and details
-
+   
 OUTPUT FORMAT (JSON):
 For each slide, return:
 {
@@ -75,8 +70,7 @@ For each slide, return:
   "title": "EXACT original title - DO NOT MODIFY",
   "subtitle": "For title slides only - enhanced subtitle",
   "tagline": "For title slides only - a compelling one-liner",
-  "slideDescription": "OPTIONAL - natural 1-2 line description/gateway point (omit if not needed, max 2 lines)",
-  "introText": "Optional intro paragraph before bullets/sections (1-2 sentences)",
+  "slideDescription": "OPTIONAL - brief 1-2 sentence factual statement between title and content (omit if not needed)",
   "bulletPoints": ["Well-crafted bullet 1 (max 30 words, visually equal length)", "Well-crafted bullet 2", ...] OR null if using sections,
   "speakerNotes": ["Detailed note for bullet 1 (1-3 sentences)", "Detailed note for bullet 2", ...],
   "sections": [{"heading": "Section Title", "description": "Brief description"}] OR null if using bullets,
@@ -249,17 +243,27 @@ For this TITLE slide:
 ` : `
 For this CONTENT slide:
 - Keep the title EXACTLY as provided: "${slide.title}"
-- slideDescription (OPTIONAL): Only include if it genuinely adds value. Write it as a natural description of the topic itself, NOT a description of the slide. 
-   - NEVER use: "This slide highlights", "This slide covers", "In this slide", "This slide explains", "We will explore", "Let's look at"
-   - INSTEAD write directly about the topic: "Understanding the core principles...", "Exploring key factors...", "The foundation of..."
-   - Write as if describing the subject matter directly. Maximum 2 lines. If not needed, omit it entirely.
+- slideDescription (OPTIONAL): A brief 1-2 sentence factual statement about the topic that appears BETWEEN the title and content.
+   - Only include if it genuinely adds value
+   - Write DIRECT FACTUAL STATEMENTS about the subject matter itself
+   - FORBIDDEN PATTERNS - NEVER START WITH:
+     * "Exploring..." / "Understanding..." / "Examining..." / "Discovering..."
+     * "The foundation of..." / "The key to..." / "The essence of..."
+     * "This slide..." / "In this section..." / "Let's look at..."
+     * "Research shows..." / "Studies indicate..." (unless citing specific data)
+     * Any gerund (-ing) phrases that describe the act of learning
+   - CORRECT APPROACH - Write as if stating facts in an encyclopedia:
+     * "The Nile River spans 6,650 kilometers across northeastern Africa."
+     * "Climate change affects global temperatures through greenhouse gas emissions."
+     * "Effective leadership requires clear communication and decisive action."
+   - The description should read like a Wikipedia opening sentence - direct, factual, informative
+   - Maximum 2 sentences. If not needed, omit it entirely (set to null or don't include)
 - Create DETAILED bulletPoints (max 30 words each, visually equal length) - transform ALL ${slide.bulletPoints?.length || 0} outline bullets, expanding each with more detail
 - Create DETAILED speakerNotes (1+ sentences each) - what the presenter reads
 - The speakerNotes array must have the same length as bulletPoints (one note per bullet)
 - Ensure ALL outline bullets are transformed - none should be skipped
 - Decide if content works better as bullets OR titled sections
 - If using sections, each section gets a heading and brief description
-- Add an intro sentence if it helps set context
 `}
 
 Return ONLY valid JSON matching the format specified. No markdown, no explanation.`;
