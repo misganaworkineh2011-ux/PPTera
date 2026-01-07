@@ -7,9 +7,17 @@ export type {
   ThemeFonts,
   ThemeDesign,
   ThemeSlideStyles,
+  ThemeSlideShape,
+  SlideShapeType,
   ThemeCardBox,
   ThemeGradients,
   ThemeCSSVariables,
+} from "./types";
+
+// Re-export slide shape utilities
+export {
+  DEFAULT_SLIDE_SHAPES,
+  getSlideShapeStyles,
 } from "./types";
 
 // Re-export base design system
@@ -54,7 +62,6 @@ export {
 } from "./cloudinary";
 
 // Import themes
-import { sproutTheme } from "./sprout";
 import { corporateCleanTheme } from "./corporate-clean";
 import { nebulaTheme } from "./nebula";
 import { auroraTheme } from "./aurora";
@@ -70,10 +77,17 @@ import { cyberpunkNeonTheme } from "./cyberpunk-neon";
 import { dnaBlueprintTheme } from "./dna-blueprint";
 import { sunsetGradientTheme } from "./sunset-gradient";
 import { auroraBorealisTechTheme } from "./aurora-borealis-tech";
+import { sageGardenTheme } from "./sage-garden";
+import { blackGoldLuxuryTheme } from "./black-gold-luxury";
+import { lavenderDreamTheme } from "./lavender-dream";
+import { paperCraftTheme } from "./paper-craft";
+import { skyBlueTheme } from "./sky-blue";
+import { coastalBreezeTheme } from "./coastal-breeze";
+import { neonMatrixTheme } from "./neon-matrix";
+import { midnightBorderTheme } from "./midnight-border";
 
 // Re-export themes for direct imports
 export {
-  sproutTheme,
   corporateCleanTheme,
   nebulaTheme,
   auroraTheme,
@@ -89,35 +103,50 @@ export {
   dnaBlueprintTheme,
   sunsetGradientTheme,
   auroraBorealisTechTheme,
+  sageGardenTheme,
+  blackGoldLuxuryTheme,
+  lavenderDreamTheme,
+  paperCraftTheme,
+  skyBlueTheme,
+  coastalBreezeTheme,
+  neonMatrixTheme,
+  midnightBorderTheme,
 };
 
-// All themes array
+// All themes array - shuffled for variety
 export const themes = [
-  sproutTheme,
+  blackGoldLuxuryTheme,
   corporateCleanTheme,
-  nebulaTheme,
-  auroraTheme,
-  obsidianTheme,
-  emberTheme,
-  frostTheme,
-  sakuraTheme,
-  midnightTheme,
-  terracottaTheme,
-  animeDreamscapeTheme,
-  hackerTerminalTheme,
-  cyberpunkNeonTheme,
-  dnaBlueprintTheme,
   sunsetGradientTheme,
+  obsidianTheme,
+  sageGardenTheme,
+  cyberpunkNeonTheme,
+  frostTheme,
+  midnightBorderTheme,
+  nebulaTheme,
+  paperCraftTheme,
+  hackerTerminalTheme,
+  coastalBreezeTheme,
+  auroraTheme,
+  lavenderDreamTheme,
+  emberTheme,
+  neonMatrixTheme,
+  sakuraTheme,
+  dnaBlueprintTheme,
+  terracottaTheme,
+  skyBlueTheme,
+  midnightTheme,
+  animeDreamscapeTheme,
   auroraBorealisTechTheme,
 ];
 
 // Helper functions
 export const getThemeById = (id: string) => {
-  return themes.find((theme) => theme.id === id) ?? sproutTheme;
+  return themes.find((theme) => theme.id === id) ?? corporateCleanTheme;
 };
 
 export const getDefaultTheme = () => {
-  return sproutTheme;
+  return corporateCleanTheme;
 };
 
 // Re-export custom theme utilities for convenience

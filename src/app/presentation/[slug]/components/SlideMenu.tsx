@@ -19,6 +19,8 @@ import {
   BarChart3,
 } from "lucide-react";
 import { type LayoutType } from "~/lib/slide-layouts";
+import type { Theme } from "~/lib/themes";
+import { getThemeType } from "./types";
 
 // ============================================================================
 // TYPES
@@ -52,6 +54,7 @@ interface SlideMenuProps {
   hasChart?: boolean;
   slideContent?: SlideContent;
   speakerNotes?: string[];
+  theme?: Theme;
   onChangeLayout: () => void;
   onChangeContentLayout?: () => void;
   onDuplicate: () => void;
@@ -72,6 +75,56 @@ interface SlideMenuProps {
 
 type ActivePanel = "none" | "more" | "styling" | "ai";
 
+// Theme colors helper
+interface ThemeColors {
+  bg: string;
+  border: string;
+  text: string;
+  textMuted: string;
+  surface: string;
+  hoverBg: string;
+  divider: string;
+}
+
+function getThemeColors(theme?: Theme): ThemeColors {
+  if (!theme) {
+    return {
+      bg: "#ffffff",
+      border: "rgba(226, 232, 240, 0.8)",
+      text: "#334155",
+      textMuted: "#94a3b8",
+      surface: "#f1f5f9",
+      hoverBg: "#f1f5f9",
+      divider: "#f1f5f9",
+    };
+  }
+  
+  const themeType = getThemeType(theme);
+  const isLight = themeType === "light" || themeType === "corporate";
+  
+  if (isLight) {
+    return {
+      bg: "#ffffff",
+      border: "rgba(226, 232, 240, 0.8)",
+      text: "#334155",
+      textMuted: "#94a3b8",
+      surface: "#f1f5f9",
+      hoverBg: "#f1f5f9",
+      divider: "#f1f5f9",
+    };
+  }
+  
+  return {
+    bg: theme.pageBackground || theme.colors.background,
+    border: theme.colors.border,
+    text: theme.colors.text,
+    textMuted: theme.colors.textMuted,
+    surface: theme.colors.surface,
+    hoverBg: theme.colors.surfaceHover || theme.colors.surface,
+    divider: theme.colors.border,
+  };
+}
+
 // ============================================================================
 // PANEL COMPONENTS
 // ============================================================================
@@ -79,6 +132,7 @@ type ActivePanel = "none" | "more" | "styling" | "ai";
 interface MorePanelProps {
   index: number;
   totalSlides: number;
+  colors: ThemeColors;
   onDuplicate: () => void;
   onAddSlide: () => void;
   onMoveUp: () => void;
@@ -91,6 +145,7 @@ interface MorePanelProps {
 function MorePanel({
   index,
   totalSlides,
+  colors,
   onDuplicate,
   onAddSlide,
   onMoveUp,
@@ -100,40 +155,52 @@ function MorePanel({
   onClose,
 }: MorePanelProps) {
   return (
-    <div className="bg-white rounded-xl shadow-2xl border border-slate-200/80 p-2 min-w-[180px]">
+    <div 
+      className="rounded-xl shadow-2xl p-2 min-w-[180px]"
+      style={{ 
+        background: colors.bg,
+        border: `1px solid ${colors.border}`,
+      }}
+    >
       <div className="space-y-0.5">
         <MenuButton
           icon={<Copy size={15} />}
           label="Duplicate"
+          colors={colors}
           onClick={() => { onDuplicate(); onClose(); }}
         />
         <MenuButton
           icon={<PlusCircle size={15} />}
           label="Add slide below"
+          colors={colors}
           onClick={() => { onAddSlide(); onClose(); }}
         />
         <MenuButton
           icon={<Link2 size={15} />}
           label="Copy link"
+          colors={colors}
           onClick={() => { onCopyLink(); onClose(); }}
         />
-        <div className="h-px bg-slate-100 my-1.5" />
+        <div className="h-px my-1.5" style={{ backgroundColor: colors.divider }} />
         <MenuButton
           icon={<MoveUp size={15} />}
           label="Move up"
+          colors={colors}
           onClick={onMoveUp}
           disabled={index === 0}
         />
         <MenuButton
           icon={<MoveDown size={15} />}
           label="Move down"
+          colors={colors}
           onClick={onMoveDown}
           disabled={index === totalSlides - 1}
         />
-        <div className="h-px bg-slate-100 my-1.5" />
+        <div className="h-px my-1.5" style={{ backgroundColor: colors.divider }} />
         <MenuButton
           icon={<Trash2 size={15} />}
           label="Delete"
+          colors={colors}
           onClick={() => { onDelete(); onClose(); }}
           disabled={totalSlides <= 1}
           danger
@@ -146,12 +213,14 @@ function MorePanel({
 function MenuButton({
   icon,
   label,
+  colors,
   onClick,
   disabled,
   danger,
 }: {
   icon: React.ReactNode;
   label: string;
+  colors: ThemeColors;
   onClick: () => void;
   disabled?: boolean;
   danger?: boolean;
@@ -164,12 +233,19 @@ function MenuButton({
       }}
       disabled={disabled}
       className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-colors ${
-        disabled
-          ? "opacity-40 cursor-not-allowed text-slate-400"
-          : danger
-            ? "text-red-600 hover:bg-red-50"
-            : "text-slate-700 hover:bg-slate-100"
+        disabled ? "opacity-40 cursor-not-allowed" : ""
       }`}
+      style={{
+        color: disabled ? colors.textMuted : danger ? "#dc2626" : colors.text,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.backgroundColor = danger ? "rgba(254, 226, 226, 0.5)" : colors.hoverBg;
+        }
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = "transparent";
+      }}
     >
       {icon}
       <span>{label}</span>
@@ -181,6 +257,7 @@ interface StylingPanelProps {
   imageCount: number;
   hasChart?: boolean;
   slideType?: "title" | "content";
+  colors: ThemeColors;
   onChangeLayout: () => void;
   onChangeContentLayout?: () => void;
   onAddImage: () => void;
@@ -193,6 +270,7 @@ function StylingPanel({
   imageCount,
   hasChart,
   slideType,
+  colors,
   onChangeLayout,
   onChangeContentLayout,
   onAddImage,
@@ -209,12 +287,19 @@ function StylingPanel({
   const showContentLayout = slideType !== "title" && onChangeContentLayout;
 
   return (
-    <div className="bg-white rounded-xl shadow-2xl border border-slate-200/80 p-2 min-w-[200px]">
+    <div 
+      className="rounded-xl shadow-2xl p-2 min-w-[200px]"
+      style={{ 
+        background: colors.bg,
+        border: `1px solid ${colors.border}`,
+      }}
+    >
       <div className="space-y-0.5">
         {showChangeLayout && (
           <MenuButton
             icon={<LayoutGrid size={15} />}
             label="Slide layout"
+            colors={colors}
             onClick={handleAction(onChangeLayout)}
           />
         )}
@@ -222,18 +307,21 @@ function StylingPanel({
           <MenuButton
             icon={<LayoutGrid size={15} />}
             label="Content layout"
+            colors={colors}
             onClick={handleAction(onChangeContentLayout)}
           />
         )}
         <MenuButton
           icon={<ImagePlus size={15} />}
           label={imageCount > 0 ? `Images (${imageCount})` : "Add image"}
+          colors={colors}
           onClick={handleAction(onAddImage)}
         />
         {onAddChart && (
           <MenuButton
             icon={<BarChart3 size={15} />}
             label={hasChart ? "Edit chart" : "Add chart"}
+            colors={colors}
             onClick={handleAction(onAddChart)}
           />
         )}
@@ -241,6 +329,7 @@ function StylingPanel({
           <MenuButton
             icon={<Trash2 size={15} />}
             label="Remove chart"
+            colors={colors}
             onClick={handleAction(onRemoveChart)}
             danger
           />
@@ -252,11 +341,13 @@ function StylingPanel({
 
 function AIPanel({
   slideContent,
+  colors,
   onAIEdit,
   onClose,
   onLoadingChange,
 }: {
   slideContent?: SlideContent;
+  colors: ThemeColors;
   onAIEdit?: (editedSlide: SlideContent) => void;
   onClose: () => void;
   onLoadingChange?: (isLoading: boolean) => void;
@@ -325,7 +416,11 @@ function AIPanel({
 
   return (
     <div
-      className="bg-white rounded-xl shadow-2xl border border-slate-200/80 p-3 w-[320px]"
+      className="rounded-xl shadow-2xl p-3 w-[320px]"
+      style={{ 
+        background: colors.bg,
+        border: `1px solid ${colors.border}`,
+      }}
       onKeyDown={(e) => e.stopPropagation()}
       onKeyUp={(e) => e.stopPropagation()}
     >
@@ -334,8 +429,8 @@ function AIPanel({
           <Sparkles size={14} className="text-white" />
         </div>
         <div>
-          <p className="text-sm font-semibold text-slate-800">Edit with AI</p>
-          <p className="text-[11px] text-slate-400">2 credits per edit</p>
+          <p className="text-sm font-semibold" style={{ color: colors.text }}>Edit with AI</p>
+          <p className="text-[11px]" style={{ color: colors.textMuted }}>2 credits per edit</p>
         </div>
       </div>
 
@@ -353,7 +448,12 @@ function AIPanel({
           onKeyDown={handleKeyDown}
           onKeyUp={(e) => e.stopPropagation()}
           placeholder="How would you like to edit this slide?"
-          className="w-full px-3 py-2.5 pr-10 border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 disabled:opacity-50 disabled:bg-slate-50 placeholder:text-slate-400"
+          className="w-full px-3 py-2.5 pr-10 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-violet-500/20 disabled:opacity-50"
+          style={{ 
+            backgroundColor: colors.surface,
+            color: colors.text,
+            border: `1px solid ${colors.border}`,
+          }}
           rows={2}
           disabled={isLoading}
         />
@@ -376,7 +476,11 @@ function AIPanel({
             key={suggestion}
             onClick={() => setPrompt(suggestion)}
             disabled={isLoading}
-            className="px-2.5 py-1 text-xs text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors disabled:opacity-50"
+            className="px-2.5 py-1 text-xs rounded-full transition-colors disabled:opacity-50"
+            style={{ 
+              backgroundColor: colors.surface,
+              color: colors.textMuted,
+            }}
           >
             {suggestion}
           </button>
@@ -396,6 +500,7 @@ export function SlideMenu({
   imageCount,
   hasChart,
   slideContent,
+  theme,
   onChangeLayout,
   onChangeContentLayout,
   onDuplicate,
@@ -413,6 +518,9 @@ export function SlideMenu({
   const [panelPosition, setPanelPosition] = useState({ top: 0, left: 0 });
   const toolbarRef = useRef<HTMLDivElement>(null);
   const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
+  
+  // Get theme colors
+  const colors = getThemeColors(theme);
 
   useEffect(() => {
     setPortalContainer(document.body);
@@ -464,6 +572,7 @@ export function SlideMenu({
             <MorePanel
               index={index}
               totalSlides={totalSlides}
+              colors={colors}
               onDuplicate={onDuplicate}
               onAddSlide={onAddSlide}
               onMoveUp={onMoveUp}
@@ -479,6 +588,7 @@ export function SlideMenu({
               imageCount={imageCount}
               hasChart={hasChart}
               slideType={slideContent?.type}
+              colors={colors}
               onChangeLayout={onChangeLayout}
               onChangeContentLayout={onChangeContentLayout}
               onAddImage={onAddImage}
@@ -491,6 +601,7 @@ export function SlideMenu({
           return (
             <AIPanel
               slideContent={slideContent}
+              colors={colors}
               onAIEdit={onAIEdit}
               onClose={closePanel}
               onLoadingChange={onAIEditingChange}

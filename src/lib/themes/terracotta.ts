@@ -107,6 +107,13 @@ export const terracottaTheme: Theme = {
     },
   },
 
+  // Slide shape - rounded with earthy warmth
+  slideShape: {
+    type: "rounded",
+    borderRadius: "10px",
+    shadow: "medium",
+  },
+
   cardBox: {
     background: "#ffffff",
     borderColor: "#e8ddd4",

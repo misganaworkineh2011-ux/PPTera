@@ -119,6 +119,13 @@ export const emberTheme: Theme = {
     },
   },
 
+  // Slide shape - rounded with warm glow
+  slideShape: {
+    type: "rounded",
+    borderRadius: "12px",
+    shadow: "deep",
+  },
+
   // Card/Box styling (used for slide backgrounds)
   cardBox: {
     background: "#2d201a",

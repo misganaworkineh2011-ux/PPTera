@@ -107,6 +107,13 @@ export const midnightTheme: Theme = {
     },
   },
 
+  // Slide shape - rounded with medium shadow
+  slideShape: {
+    type: "rounded",
+    borderRadius: "10px",
+    shadow: "medium",
+  },
+
   cardBox: {
     background: "#1e293b",
     borderColor: "#475569",

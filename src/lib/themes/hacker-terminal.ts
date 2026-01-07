@@ -106,6 +106,18 @@ export const hackerTerminalTheme: Theme = {
     },
   },
 
+  // Slide shape - sharp terminal edges
+  slideShape: {
+    type: "sharp",
+    borderRadius: "0px",
+    shadow: "none",
+    border: {
+      width: "1px",
+      color: "#003300",
+      style: "solid",
+    },
+  },
+
   cardBox: {
     background: "#1a1a1a",
     borderColor: "#003300",

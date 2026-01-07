@@ -106,6 +106,13 @@ export const cyberpunkNeonTheme: Theme = {
     },
   },
 
+  // Slide shape - sharp with neon glow
+  slideShape: {
+    type: "sharp",
+    borderRadius: "4px",
+    shadow: "deep",
+  },
+
   cardBox: {
     background: "#1a1a2e",
     borderColor: "#5a3399",

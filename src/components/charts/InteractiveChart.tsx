@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useId } from "react";
 import { type ChartData, type ChartDataPoint, type ChartConfig, getChartColor, formatChartValue, COLOR_SCHEMES } from "~/lib/charts/types";
 import { type Theme } from "~/lib/themes";
 
@@ -331,6 +331,9 @@ function LineChart({ data, config, colors, maxValue, compact, hoveredIndex, setH
 
 // ============ AREA CHART ============
 function AreaChart({ data, config, colors, maxValue, compact, hoveredIndex, setHoveredIndex, getPointColor }: BaseProps) {
+  // Use stable ID for gradient to avoid hydration mismatch
+  const stableId = useId();
+  
   // Bigger dimensions for non-compact (presentation) mode
   const width = compact ? 320 : 420;
   const height = compact ? 70 : 140;
@@ -374,7 +377,7 @@ function AreaChart({ data, config, colors, maxValue, compact, hoveredIndex, setH
 
   const linePath = config.lineSmooth !== false ? createSmoothPath(points) : points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
   const areaPath = linePath + ` L ${points[points.length - 1]?.x} ${pad.t + ch} L ${points[0]?.x} ${pad.t + ch} Z`;
-  const gradientId = `area-grad-${lineColor.replace("#", "")}-${Math.random().toString(36).substr(2, 9)}`;
+  const gradientId = `area-grad-${stableId.replace(/:/g, "")}`;
 
   return (
     <div className="w-full">

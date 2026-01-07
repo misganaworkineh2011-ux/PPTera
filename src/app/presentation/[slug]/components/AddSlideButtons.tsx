@@ -3,14 +3,17 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Plus, Sparkles, Send, Loader2, X, Image, LayoutGrid } from "lucide-react";
+import type { Theme } from "~/lib/themes";
+import { getThemeType } from "./types";
 
 interface AddSlideButtonsProps {
   onAddSlide: () => void;
   onAddAISlide: (prompt: string) => Promise<void>;
   presentationContext?: string;
+  theme?: Theme;
 }
 
-export function AddSlideButtons({ onAddSlide, onAddAISlide, presentationContext }: AddSlideButtonsProps) {
+export function AddSlideButtons({ onAddSlide, onAddAISlide, presentationContext, theme }: AddSlideButtonsProps) {
   const [showAIPanel, setShowAIPanel] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -19,6 +22,17 @@ export function AddSlideButtons({ onAddSlide, onAddAISlide, presentationContext 
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Theme-aware styling
+  const themeType = theme ? getThemeType(theme) : "light";
+  const isLight = themeType === "light" || themeType === "corporate";
+  
+  // Theme-aware colors for the panel
+  const panelBg = theme?.pageBackground || (isLight ? "#ffffff" : theme?.colors.background || "#18181b");
+  const panelBorder = isLight ? "#e2e8f0" : theme?.colors.border || "#3f3f46";
+  const textColor = isLight ? "#1e293b" : theme?.colors.text || "#fafafa";
+  const mutedColor = isLight ? "#94a3b8" : theme?.colors.textMuted || "#a1a1aa";
+  const surfaceColor = isLight ? "#f1f5f9" : theme?.colors.surface || "#27272a";
 
   // Calculate panel position when opening
   const openAIPanel = () => {
@@ -119,11 +133,13 @@ export function AddSlideButtons({ onAddSlide, onAddAISlide, presentationContext 
         createPortal(
           <div
             ref={panelRef}
-            className="fixed z-[99999] bg-white rounded-xl shadow-2xl border border-slate-200 ring-1 ring-black/5 p-4 w-[340px]"
+            className="fixed z-[99999] rounded-xl shadow-2xl ring-1 ring-black/5 p-4 w-[340px]"
             style={{
               top: panelPosition.top,
               left: panelPosition.left,
               transform: "translateX(-50%)",
+              background: panelBg,
+              border: `1px solid ${panelBorder}`,
             }}
             onKeyDown={(e) => e.stopPropagation()}
             onKeyUp={(e) => e.stopPropagation()}
@@ -136,26 +152,30 @@ export function AddSlideButtons({ onAddSlide, onAddAISlide, presentationContext 
                   <Sparkles size={16} className="text-white" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-slate-800">Generate Slide with AI</p>
-                  <p className="text-xs text-slate-400">4 credits per slide</p>
+                  <p className="text-sm font-semibold" style={{ color: textColor }}>Generate Slide with AI</p>
+                  <p className="text-xs" style={{ color: mutedColor }}>4 credits per slide</p>
                 </div>
               </div>
               <button
                 onClick={() => !isLoading && setShowAIPanel(false)}
                 disabled={isLoading}
-                className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors disabled:opacity-50"
+                className="w-7 h-7 flex items-center justify-center rounded-lg transition-colors disabled:opacity-50"
+                style={{ color: mutedColor }}
               >
                 <X size={16} />
               </button>
             </div>
 
             {/* Features hint */}
-            <div className="flex items-center gap-3 mb-3 px-2 py-1.5 bg-slate-50 rounded-lg">
-              <div className="flex items-center gap-1 text-xs text-slate-500">
+            <div 
+              className="flex items-center gap-3 mb-3 px-2 py-1.5 rounded-lg"
+              style={{ backgroundColor: surfaceColor }}
+            >
+              <div className="flex items-center gap-1 text-xs" style={{ color: mutedColor }}>
                 <Image size={12} />
                 <span>Pexels images</span>
               </div>
-              <div className="flex items-center gap-1 text-xs text-slate-500">
+              <div className="flex items-center gap-1 text-xs" style={{ color: mutedColor }}>
                 <LayoutGrid size={12} />
                 <span>Smart layout</span>
               </div>
@@ -181,7 +201,12 @@ export function AddSlideButtons({ onAddSlide, onAddAISlide, presentationContext 
                   }
                 }}
                 placeholder="Describe the slide you want to create..."
-                className="w-full px-3 py-2.5 pr-11 border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 disabled:opacity-50 disabled:bg-slate-50 placeholder:text-slate-400"
+                className="w-full px-3 py-2.5 pr-11 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-violet-500/20 disabled:opacity-50"
+                style={{ 
+                  backgroundColor: surfaceColor,
+                  color: textColor,
+                  border: `1px solid ${panelBorder}`,
+                }}
                 rows={3}
                 disabled={isLoading}
               />
@@ -205,14 +230,18 @@ export function AddSlideButtons({ onAddSlide, onAddAISlide, presentationContext 
                   key={suggestion}
                   onClick={() => setPrompt(suggestion)}
                   disabled={isLoading}
-                  className="px-2.5 py-1 text-xs text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors disabled:opacity-50"
+                  className="px-2.5 py-1 text-xs rounded-full transition-colors disabled:opacity-50"
+                  style={{ 
+                    backgroundColor: surfaceColor,
+                    color: mutedColor,
+                  }}
                 >
                   {suggestion}
                 </button>
               ))}
             </div>
 
-            <p className="text-[11px] text-slate-400 mt-3 text-center">
+            <p className="text-[11px] mt-3 text-center" style={{ color: mutedColor }}>
               Press Enter to generate • Includes image from Pexels
             </p>
           </div>,

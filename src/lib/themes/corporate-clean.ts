@@ -121,6 +121,13 @@ export const corporateCleanTheme: Theme = {
     },
   },
 
+  // Slide shape styling - sharp edges for corporate look
+  slideShape: {
+    type: "sharp",
+    borderRadius: "0px",
+    shadow: "subtle",
+  },
+
   // Card/Box styling (used for slide backgrounds)
   cardBox: {
     background: "#f8f9fc",           // Soft blue-white - slide background color

@@ -66,6 +66,7 @@ export default function TextToolbar({
   const [showHighlightMenu, setShowHighlightMenu] = useState(false);
   const [showHeadingMenu, setShowHeadingMenu] = useState(false);
   const [showListMenu, setShowListMenu] = useState(false);
+  const [showAlignMenu, setShowAlignMenu] = useState(false);
 
   const isDark = theme === "dark";
   const bgClass = isDark ? "bg-slate-800" : "bg-white";
@@ -192,16 +193,51 @@ export default function TextToolbar({
 
       <Divider />
 
-      {/* Alignment */}
-      <ToolbarButton onClick={() => onAlign("left")} active={activeFormats.alignment === "left"} title="Align Left">
-        <AlignLeft size={16} />
-      </ToolbarButton>
-      <ToolbarButton onClick={() => onAlign("center")} active={activeFormats.alignment === "center"} title="Align Center">
-        <AlignCenter size={16} />
-      </ToolbarButton>
-      <ToolbarButton onClick={() => onAlign("right")} active={activeFormats.alignment === "right"} title="Align Right">
-        <AlignRight size={16} />
-      </ToolbarButton>
+      {/* Alignment dropdown */}
+      <div className="relative">
+        <button
+          onClick={() => setShowAlignMenu(!showAlignMenu)}
+          className={`flex items-center gap-1 p-2 rounded-lg ${textClass} ${hoverClass}`}
+          title="Text Alignment"
+        >
+          {activeFormats.alignment === "center" ? (
+            <AlignCenter size={16} />
+          ) : activeFormats.alignment === "right" ? (
+            <AlignRight size={16} />
+          ) : (
+            <AlignLeft size={16} />
+          )}
+          <ChevronDown size={12} />
+        </button>
+        {showAlignMenu && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setShowAlignMenu(false)} />
+            <div className={`absolute top-full left-0 mt-1 ${bgClass} ${borderClass} border rounded-lg shadow-lg z-50 py-1 min-w-[130px]`}>
+              <button
+                onClick={() => { onAlign("left"); setShowAlignMenu(false); }}
+                className={`flex items-center gap-2 w-full px-3 py-2 ${activeFormats.alignment === "left" ? activeClass : `${textClass} ${hoverClass}`}`}
+              >
+                <AlignLeft size={16} />
+                Align Left
+              </button>
+              <button
+                onClick={() => { onAlign("center"); setShowAlignMenu(false); }}
+                className={`flex items-center gap-2 w-full px-3 py-2 ${activeFormats.alignment === "center" ? activeClass : `${textClass} ${hoverClass}`}`}
+              >
+                <AlignCenter size={16} />
+                Center
+              </button>
+              <button
+                onClick={() => { onAlign("right"); setShowAlignMenu(false); }}
+                className={`flex items-center gap-2 w-full px-3 py-2 ${activeFormats.alignment === "right" ? activeClass : `${textClass} ${hoverClass}`}`}
+              >
+                <AlignRight size={16} />
+                Align Right
+              </button>
+            </div>
+          </>
+        )}
+      </div>
 
       <Divider />
 

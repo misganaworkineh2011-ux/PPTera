@@ -14,7 +14,7 @@ import {
   type ContentLayoutStyle,
 } from "~/lib/presentation";
 import type { ContentLayoutCategory } from "~/lib/layouts/content";
-import type { SlideLayoutType, ImageSize } from "~/lib/layouts/slide";
+import type { SlideLayoutType, ImageSize, ImageShape } from "~/lib/layouts/slide";
 import type { SlideImage as OutlineSlideImage } from "~/lib/dashboard/hooks/useOutlineStream";
 import { generateSlug } from "~/lib/utils";
 
@@ -84,6 +84,8 @@ interface PresentationSlide {
   slideLayout?: SlideLayoutType;
   // Image size for slide layout
   imageSize?: ImageSize;
+  // Image shape for slide layout (rectangle, arc, rounded, wave)
+  imageShape?: ImageShape;
   // Legacy layout for renderer compatibility
   layout?: string;
   contentLayout?: string; // Specific layout style (e.g., "box-style-1", "sequence-style-2", "steps-pyramid")
@@ -299,6 +301,7 @@ export async function POST(request: Request) {
             // New canonical slide layout system
             slideLayout: layoutPlan.slideLayout,
             imageSize: layoutPlan.imageSize,
+            imageShape: layoutPlan.imageShape,
             // Legacy layout for renderer compatibility
             layout: layoutPlan.legacyLayout,
             // Content layout from planner

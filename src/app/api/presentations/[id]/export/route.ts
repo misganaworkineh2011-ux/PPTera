@@ -110,7 +110,7 @@ async function exportPresentation(
   const addWatermark = !isPaidPlan;
 
   const themeId =
-    (presentation.content as { theme?: string })?.theme || "sprout";
+    (presentation.content as { theme?: string })?.theme || "corporate-clean";
   let theme = getDefaultTheme();
 
   if (isCustomThemeId(themeId)) {

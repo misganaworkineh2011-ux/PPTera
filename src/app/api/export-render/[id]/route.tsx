@@ -68,7 +68,7 @@ export async function GET(
     }
 
     // Get theme
-    const themeId = (presentation.content as { theme?: string })?.theme || "sprout";
+    const themeId = (presentation.content as { theme?: string })?.theme || "corporate-clean";
     let theme = getDefaultTheme();
 
     if (isCustomThemeId(themeId)) {

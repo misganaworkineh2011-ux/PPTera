@@ -31,11 +31,11 @@ export function getThemeBackgroundPath(themeId: string): string {
  * Get slide background URL (no transformations - let browser handle sizing)
  * Just pass the theme ID - it automatically finds the background image
  *
- * @param themeId - Theme identifier (e.g., "sprout")
+ * @param themeId - Theme identifier (e.g., "nebula")
  *
  * @example
- * getSlideBackgroundUrl("sprout")
- * // => "https://res.cloudinary.com/dyycugwup/image/upload/pptmaster/themes/sprout/background"
+ * getSlideBackgroundUrl("nebula")
+ * // => "https://res.cloudinary.com/dyycugwup/image/upload/pptmaster/themes/nebula/background"
  */
 export function getSlideBackgroundUrl(themeId: string): string {
   const publicId = getThemeBackgroundPath(themeId);

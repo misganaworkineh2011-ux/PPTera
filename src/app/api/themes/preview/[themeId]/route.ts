@@ -4,10 +4,10 @@ import React from "react";
 
 // Theme colors for preview
 const THEME_COLORS: Record<string, { title: string; body: string; accent: string }> = {
-  sprout: {
-    title: "#006747",
-    body: "#4b4a4a",
-    accent: "#006747",
+  "corporate-clean": {
+    title: "#0d0d1a",
+    body: "#6b7280",
+    accent: "#4f46e5",
   },
 };
 

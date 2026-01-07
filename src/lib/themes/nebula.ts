@@ -120,6 +120,13 @@ export const nebulaTheme: Theme = {
     },
   },
 
+  // Slide shape - soft rounded with deep cosmic shadow
+  slideShape: {
+    type: "soft",
+    borderRadius: "16px",
+    shadow: "deep",
+  },
+
   // Card/Box styling (used for slide backgrounds)
   cardBox: {
     background: "#1a1a35",

@@ -12,6 +12,7 @@ import type { QuotesLayoutType } from "~/lib/layouts/content/quotes";
 import type { CircleLayoutType } from "~/lib/layouts/content/circles";
 import type { ImageLayoutType, ImageContentItem } from "~/lib/layouts/content/images";
 import type { ContentLayoutCategory } from "~/lib/layouts/content";
+import { getImageShapeClipPath, type ImageShape } from "~/lib/layouts/slide";
 import EditableText from "./EditableText";
 import TransformedContentRenderer from "./TransformedContent";
 import BoxLayoutRenderer from "./BoxLayoutRenderer";
@@ -257,6 +258,9 @@ export default function SlideRenderer({
   const bulletPoints = slide.bulletPoints || [];
   const canEdit = isOwner && !isFullscreen;
   const themeType = getThemeType(theme);
+  
+  // Get image shape from slide (default to arc for backward compatibility)
+  const imageShape: ImageShape = slide.imageShape || "arc";
   
   // Determine layout - if slide has chart but no image, use chart layout
   // Auto-detect chart slides and use chart-right layout by default
@@ -746,7 +750,7 @@ export default function SlideRenderer({
   // Check if this is a custom theme
   const isCustomTheme = theme.id.startsWith("custom-");
   
-  // Check if theme has cardBox defined (for slide backgrounds like sprout theme)
+  // Check if theme has cardBox defined (for slide backgrounds)
   const hasCardBox = !!theme.cardBox?.background;
 
   // For custom themes, generate the background gradient class dynamically
@@ -762,7 +766,7 @@ export default function SlideRenderer({
     textMuted: theme.colors.textMuted,
   };
 
-  // Slide background style - uses cardBox.background if available (for themes like sprout)
+  // Slide background style - uses cardBox.background if available
   // This makes slides appear as "cards" on top of the page background image
   // Added transparency so background image shows through nicely
   const customBgStyle: React.CSSProperties = hasCardBox 
@@ -1399,7 +1403,7 @@ export default function SlideRenderer({
             {!isTitleSlide && <EnhancedContent />}
           </div>
 
-          {/* Image Area - Edge-to-edge with arc clip-path on desktop, rectangular on mobile */}
+          {/* Image Area - Edge-to-edge with shape clip-path on desktop, rectangular on mobile */}
           {hasImage && firstImage && (
             <div 
               className="w-full sm:w-[40%] relative overflow-hidden flex-shrink-0 min-h-[200px] sm:min-h-0 slide-clip-left"
@@ -1419,7 +1423,7 @@ export default function SlideRenderer({
         <style jsx>{`
           .slide-clip-left { clip-path: none; }
           @media (min-width: 640px) {
-            .slide-clip-left { clip-path: polygon(50px 0, 100% 0, 100% 100%, 50px 100%, 0 50%); }
+            .slide-clip-left { clip-path: ${getImageShapeClipPath(imageShape, "right")}; }
           }
         `}</style>
       </div>
@@ -1440,7 +1444,7 @@ export default function SlideRenderer({
         <SlideIndicator position="top-right" />
 
         <div className="relative h-full flex flex-col-reverse sm:flex-row items-stretch">
-          {/* Image Area - Edge-to-edge with arc clip-path on desktop, rectangular on mobile */}
+          {/* Image Area - Edge-to-edge with shape clip-path on desktop, rectangular on mobile */}
           {hasImage && firstImage && (
             <div 
               className="w-full sm:w-[40%] relative overflow-hidden flex-shrink-0 min-h-[200px] sm:min-h-0 slide-clip-right"
@@ -1466,7 +1470,7 @@ export default function SlideRenderer({
         <style jsx>{`
           .slide-clip-right { clip-path: none; }
           @media (min-width: 640px) {
-            .slide-clip-right { clip-path: polygon(0 0, calc(100% - 50px) 0, 100% 50%, calc(100% - 50px) 100%, 0 100%); }
+            .slide-clip-right { clip-path: ${getImageShapeClipPath(imageShape, "left")}; }
           }
         `}</style>
       </div>
@@ -1485,7 +1489,7 @@ export default function SlideRenderer({
 
         <SlideIndicator position="top-left" />
 
-        {/* Image Area - Top with arc clip-path on desktop, rectangular on mobile */}
+        {/* Image Area - Top with shape clip-path on desktop, rectangular on mobile */}
         {hasImage && firstImage && (
           <div 
             className="w-full relative overflow-hidden flex-shrink-0 z-10 slide-clip-top"
@@ -1519,15 +1523,15 @@ export default function SlideRenderer({
         <style jsx>{`
           .slide-clip-top { clip-path: none; }
           @media (min-width: 640px) {
-            .slide-clip-top { clip-path: polygon(0 0, 100% 0, 100% calc(100% - 40px), 50% 100%, 0 calc(100% - 40px)); }
+            .slide-clip-top { clip-path: ${getImageShapeClipPath(imageShape, "top")}; }
           }
         `}</style>
       </div>
     );
   }
 
-  // LAYOUT: Image Bottom - Image at bottom with arc clip-path, content above
-  // Uses arc clip-path for smooth edge effect (desktop only, rectangular on mobile)
+  // LAYOUT: Image Bottom - Image at bottom with shape clip-path, content above
+  // Uses shape clip-path for edge effect (desktop only, rectangular on mobile)
   if (layout === "image-bottom") {
     const firstImage = allImages[0];
     const imageHeight = "300px"; // Fixed medium height for top/bottom images
@@ -1553,7 +1557,7 @@ export default function SlideRenderer({
           )}
         </div>
 
-        {/* Image Area - Bottom with arc clip-path on desktop, rectangular on mobile */}
+        {/* Image Area - Bottom with shape clip-path on desktop, rectangular on mobile */}
         {hasImage && firstImage && (
           <div 
             className="w-full relative overflow-hidden flex-shrink-0 z-10 slide-clip-bottom"
@@ -1572,7 +1576,7 @@ export default function SlideRenderer({
         <style jsx>{`
           .slide-clip-bottom { clip-path: none; }
           @media (min-width: 640px) {
-            .slide-clip-bottom { clip-path: polygon(0 40px, 50% 0, 100% 40px, 100% 100%, 0 100%); }
+            .slide-clip-bottom { clip-path: ${getImageShapeClipPath(imageShape, "bottom")}; }
           }
         `}</style>
       </div>

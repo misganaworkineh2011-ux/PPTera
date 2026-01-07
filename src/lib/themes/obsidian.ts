@@ -119,6 +119,13 @@ export const obsidianTheme: Theme = {
     },
   },
 
+  // Slide shape - sharp edges for minimal dark aesthetic
+  slideShape: {
+    type: "sharp",
+    borderRadius: "0px",
+    shadow: "medium",
+  },
+
   // Card/Box styling (used for slide backgrounds)
   cardBox: {
     background: "#1c1c22",
