@@ -6,8 +6,8 @@ import { InsightsPageClient } from "./InsightsPageClient";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Insights & Blog",
-  description: "Discover expert tips and best practices for creating stunning AI presentations with PPTMaster (PPT Master). Learn design principles and techniques.",
+  title: "Insights & Blog | PPTMaster – Presentation Design Tips & Guides",
+  description: "Discover expert tips and best practices for creating stunning AI presentations with PPTMaster (PPT Master). Learn design principles, presentation techniques, and PowerPoint best practices.",
   keywords: "pptmaster,ppt master,ai powerpoint generator,presentation tips,powerpoint design,slide design,presentation best practices,ai presentation tool,powerpoint templates,presentation maker,design guides,presentation techniques,visual storytelling,presentation software",
   openGraph: {
     title: "Insights & Blog | PPTMaster – Presentation Tips",
@@ -31,6 +31,14 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: "https://www.pptmaster.app/insights",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
   },
 };
 
