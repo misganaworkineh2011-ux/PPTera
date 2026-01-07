@@ -1083,7 +1083,61 @@ export default function PresentationViewer({
     const slide = slidesData[slideIndex];
     if (slide) {
       const newSlides = [...slidesData];
-      newSlides[slideIndex] = { ...slide, bulletPoints: [...(slide.bulletPoints || []), "New point"] };
+      const hasContentLayout = !!slide.contentLayout;
+      
+      // Determine the primary data source for content layouts
+      // Priority: sections > transformedContent.items > bulletPoints
+      const hasSections = slide.sections && slide.sections.length > 0;
+      const hasTransformedContent = slide.transformedContent?.items && slide.transformedContent.items.length > 0;
+      
+      let newBulletPoints = [...(slide.bulletPoints || [])];
+      let newSections = slide.sections ? [...slide.sections] : undefined;
+      let newTransformedContent = slide.transformedContent ? { ...slide.transformedContent } : undefined;
+      
+      if (hasContentLayout) {
+        // For content layouts, add to the appropriate data source
+        if (hasSections) {
+          // Add to sections (primary source)
+          newSections = [...slide.sections!, { heading: "New Point", description: "Add description here" }];
+          // Also sync to bulletPoints for consistency
+          newBulletPoints = [...newBulletPoints, "New Point: Add description here"];
+        } else if (hasTransformedContent) {
+          // Add to transformedContent.items
+          newTransformedContent = {
+            ...slide.transformedContent!,
+            items: [...slide.transformedContent!.items!, { label: "New Point", text: "Add description here" }]
+          };
+          // Also sync to bulletPoints for consistency
+          newBulletPoints = [...newBulletPoints, "New Point: Add description here"];
+        } else {
+          // No sections or transformedContent - create sections from bulletPoints + new point
+          const existingBullets = slide.bulletPoints || [];
+          newSections = existingBullets.map((bullet) => {
+            const colonIndex = bullet.indexOf(":");
+            if (colonIndex > 0 && colonIndex < 50) {
+              const label = bullet.substring(0, colonIndex).trim();
+              const text = bullet.substring(colonIndex + 1).trim();
+              if (label && text) {
+                return { heading: label, description: text };
+              }
+            }
+            return { heading: bullet, description: bullet };
+          });
+          // Add the new point
+          newSections.push({ heading: "New Point", description: "Add description here" });
+          newBulletPoints = [...newBulletPoints, "New Point: Add description here"];
+        }
+      } else {
+        // No content layout - just add to bulletPoints
+        newBulletPoints = [...newBulletPoints, "New point"];
+      }
+      
+      newSlides[slideIndex] = { 
+        ...slide, 
+        bulletPoints: newBulletPoints,
+        sections: newSections,
+        transformedContent: newTransformedContent,
+      };
       updateSlidesWithSave(newSlides);
     }
   };

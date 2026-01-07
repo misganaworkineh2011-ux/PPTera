@@ -1170,6 +1170,15 @@ export default function SlideRenderer({
         <ContentWrapper>
           <div className={compact ? "space-y-3" : "space-y-4"}>
             {renderContentLayout()}
+            {/* Add point button for content layouts */}
+            {canEdit && isHovered && (
+              <button 
+                onClick={() => onAddBullet(index)} 
+                className={`mt-4 flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}
+              >
+                <Plus size={14} /> Add point
+              </button>
+            )}
             {/* Render chart if present */}
             {slide.chart && (
               <div className="mt-4">
