@@ -30,6 +30,7 @@ interface BoxLayoutRendererProps {
   onUpdateLabel?: (index: number, value: string) => void;
   onUpdateText?: (index: number, value: string) => void;
   onFinishEditing?: () => void;
+  onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
 }
@@ -50,6 +51,7 @@ export default function BoxLayoutRenderer({
   onUpdateLabel,
   onUpdateText,
   onFinishEditing,
+  onDeleteItem,
   isOwner = false,
   isHovered = false,
 }: BoxLayoutRendererProps & { hasImage?: boolean }) {
@@ -64,7 +66,7 @@ export default function BoxLayoutRenderer({
 
   // Style-specific rendering
   const renderBox = (item: BoxContentItem, index: number) => {
-    const commonClasses = "flex flex-col h-full w-full transition-all duration-200 hover:shadow-lg relative overflow-hidden";
+    const commonClasses = "flex flex-col h-full w-full transition-all duration-200 hover:shadow-lg relative";
     
     switch (layout.id) {
       case "box-style-1": // Side Accent
@@ -91,6 +93,7 @@ export default function BoxLayoutRenderer({
                   onStartEdit={() => onStartEditLabel(index)}
                   onChange={(val) => onUpdateLabel?.(index, val)}
                   onFinish={onFinishEditing || (() => {})}
+                  onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                   className="font-serif mb-3"
                   style={{
                     color: baseStyles.titleColor,
@@ -122,6 +125,7 @@ export default function BoxLayoutRenderer({
                 onStartEdit={() => onStartEditText(index)}
                 onChange={(val) => onUpdateText?.(index, val)}
                 onFinish={onFinishEditing || (() => {})}
+                onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                 style={{
                   color: baseStyles.bodyColor,
                   fontSize: compact ? "1rem" : "1.1rem",
@@ -170,6 +174,7 @@ export default function BoxLayoutRenderer({
                   onStartEdit={() => onStartEditLabel(index)}
                   onChange={(val) => onUpdateLabel?.(index, val)}
                   onFinish={onFinishEditing || (() => {})}
+                  onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                   className="font-serif mb-3"
                   style={{
                     color: baseStyles.titleColor,
@@ -201,6 +206,7 @@ export default function BoxLayoutRenderer({
                 onStartEdit={() => onStartEditText(index)}
                 onChange={(val) => onUpdateText?.(index, val)}
                 onFinish={onFinishEditing || (() => {})}
+                onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                 style={{
                   color: baseStyles.bodyColor,
                   fontSize: compact ? "1rem" : "1.1rem",
@@ -266,6 +272,7 @@ export default function BoxLayoutRenderer({
                   onStartEdit={() => onStartEditLabel(index)}
                   onChange={(val) => onUpdateLabel?.(index, val)}
                   onFinish={onFinishEditing || (() => {})}
+                  onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                   className="font-serif mb-3"
                   style={{
                     color: baseStyles.titleColor,
@@ -297,6 +304,7 @@ export default function BoxLayoutRenderer({
                 onStartEdit={() => onStartEditText(index)}
                 onChange={(val) => onUpdateText?.(index, val)}
                 onFinish={onFinishEditing || (() => {})}
+                onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                 style={{
                   color: baseStyles.bodyColor,
                   fontSize: compact ? "1rem" : "1.1rem",
@@ -379,6 +387,7 @@ export default function BoxLayoutRenderer({
                   onStartEdit={() => onStartEditLabel(index)}
                   onChange={(val) => onUpdateLabel?.(index, val)}
                   onFinish={onFinishEditing || (() => {})}
+                  onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                   className="font-serif mb-3 mt-4"
                   style={{
                     color: baseStyles.titleColor,
@@ -409,6 +418,7 @@ export default function BoxLayoutRenderer({
                   onStartEdit={() => onStartEditText(index)}
                   onChange={(val) => onUpdateText?.(index, val)}
                   onFinish={onFinishEditing || (() => {})}
+                  onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                   style={{
                     color: baseStyles.bodyColor,
                     fontSize: compact ? "1rem" : "1.1rem",

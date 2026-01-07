@@ -69,6 +69,7 @@ interface QuotesLayoutRendererProps {
   onUpdateLabel?: (index: number, value: string) => void;
   onUpdateText?: (index: number, value: string) => void;
   onFinishEditing?: () => void;
+  onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
 }
@@ -88,6 +89,7 @@ export function QuotesLayoutRenderer({
   onUpdateLabel,
   onUpdateText,
   onFinishEditing,
+  onDeleteItem,
   isOwner = false,
   isHovered = false,
 }: QuotesLayoutRendererProps & { hasImage?: boolean }) {
@@ -108,6 +110,7 @@ export function QuotesLayoutRenderer({
         onUpdateLabel={onUpdateLabel}
         onUpdateText={onUpdateText}
         onFinishEditing={onFinishEditing}
+        onDeleteItem={onDeleteItem}
         isOwner={isOwner}
         isHovered={isHovered}
       />
@@ -127,6 +130,7 @@ export function QuotesLayoutRenderer({
       onUpdateLabel={onUpdateLabel}
       onUpdateText={onUpdateText}
       onFinishEditing={onFinishEditing}
+      onDeleteItem={onDeleteItem}
       isOwner={isOwner}
       isHovered={isHovered}
     />
@@ -160,6 +164,7 @@ function BubbleQuotes({
   onUpdateLabel,
   onUpdateText,
   onFinishEditing,
+  onDeleteItem,
   isOwner = false,
   isHovered = false,
 }: {
@@ -174,6 +179,7 @@ function BubbleQuotes({
   onUpdateLabel?: (index: number, value: string) => void;
   onUpdateText?: (index: number, value: string) => void;
   onFinishEditing?: () => void;
+  onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
 }) {
@@ -217,6 +223,7 @@ function BubbleQuotes({
                       onStartEdit={() => onStartEditLabel(index)}
                       onChange={(val) => onUpdateLabel?.(index, val)}
                       onFinish={onFinishEditing || (() => {})}
+                      onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                       className="text-lg font-bold mb-1 text-white opacity-90"
                       isOwner={isOwner}
                       isHovered={isHovered}
@@ -236,6 +243,7 @@ function BubbleQuotes({
                     onStartEdit={() => onStartEditText(index)}
                     onChange={(val) => onUpdateText?.(index, val)}
                     onFinish={onFinishEditing || (() => {})}
+                    onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                     className="text-base leading-relaxed font-medium"
                     isOwner={isOwner}
                     isHovered={isHovered}
@@ -292,6 +300,7 @@ function MarksQuotes({
   onUpdateLabel,
   onUpdateText,
   onFinishEditing,
+  onDeleteItem,
   isOwner = false,
   isHovered = false,
 }: {
@@ -306,6 +315,7 @@ function MarksQuotes({
   onUpdateLabel?: (index: number, value: string) => void;
   onUpdateText?: (index: number, value: string) => void;
   onFinishEditing?: () => void;
+  onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
 }) {
@@ -349,6 +359,7 @@ function MarksQuotes({
                     onStartEdit={() => onStartEditLabel(index)}
                     onChange={(val) => onUpdateLabel?.(index, val)}
                     onFinish={onFinishEditing || (() => {})}
+                    onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                     className="text-lg font-bold mb-3"
                     style={{ color: themeStyles.titleColor }}
                     isOwner={isOwner}
@@ -372,6 +383,7 @@ function MarksQuotes({
                   onStartEdit={() => onStartEditText(index)}
                   onChange={(val) => onUpdateText?.(index, val)}
                   onFinish={onFinishEditing || (() => {})}
+                  onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                   className="text-base leading-relaxed italic flex-1"
                   style={{ color: themeStyles.bodyColor }}
                   isOwner={isOwner}

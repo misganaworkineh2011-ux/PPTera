@@ -76,6 +76,7 @@ interface BulletLayoutRendererProps {
   onUpdateLabel?: (index: number, value: string) => void;
   onUpdateText?: (index: number, value: string) => void;
   onFinishEditing?: () => void;
+  onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
 }
@@ -94,6 +95,7 @@ export function BulletLayoutRenderer({
   onUpdateLabel,
   onUpdateText,
   onFinishEditing,
+  onDeleteItem,
   isOwner = false,
   isHovered = false,
 }: BulletLayoutRendererProps) {
@@ -116,6 +118,7 @@ export function BulletLayoutRenderer({
         onUpdateLabel={onUpdateLabel}
         onUpdateText={onUpdateText}
         onFinishEditing={onFinishEditing}
+        onDeleteItem={onDeleteItem}
         isOwner={isOwner}
         isHovered={isHovered}
       />
@@ -138,6 +141,7 @@ export function BulletLayoutRenderer({
         onUpdateLabel={onUpdateLabel}
         onUpdateText={onUpdateText}
         onFinishEditing={onFinishEditing}
+        onDeleteItem={onDeleteItem}
         isOwner={isOwner}
         isHovered={isHovered}
       />
@@ -160,6 +164,7 @@ export function BulletLayoutRenderer({
         onUpdateLabel={onUpdateLabel}
         onUpdateText={onUpdateText}
         onFinishEditing={onFinishEditing}
+        onDeleteItem={onDeleteItem}
         isOwner={isOwner}
         isHovered={isHovered}
       />
@@ -180,6 +185,7 @@ export function BulletLayoutRenderer({
       onUpdateLabel={onUpdateLabel}
       onUpdateText={onUpdateText}
       onFinishEditing={onFinishEditing}
+      onDeleteItem={onDeleteItem}
       isOwner={isOwner}
       isHovered={isHovered}
     />
@@ -211,6 +217,7 @@ function CardBullets({
   onUpdateLabel,
   onUpdateText,
   onFinishEditing,
+  onDeleteItem,
   isOwner = false,
   isHovered = false,
 }: {
@@ -226,6 +233,7 @@ function CardBullets({
   onUpdateLabel?: (index: number, value: string) => void;
   onUpdateText?: (index: number, value: string) => void;
   onFinishEditing?: () => void;
+  onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
 }) {
@@ -251,6 +259,7 @@ function CardBullets({
               onUpdateLabel={onUpdateLabel}
               onUpdateText={onUpdateText}
               onFinishEditing={onFinishEditing}
+              onDeleteItem={onDeleteItem}
               isOwner={isOwner}
               isHovered={isHovered}
             />
@@ -270,6 +279,7 @@ function CardBullets({
             onUpdateLabel={onUpdateLabel}
             onUpdateText={onUpdateText}
             onFinishEditing={onFinishEditing}
+            onDeleteItem={onDeleteItem}
             isOwner={isOwner}
             isHovered={isHovered}
           />
@@ -299,6 +309,7 @@ function CardBullets({
           onUpdateLabel={onUpdateLabel}
           onUpdateText={onUpdateText}
           onFinishEditing={onFinishEditing}
+          onDeleteItem={onDeleteItem}
           isOwner={isOwner}
           isHovered={isHovered}
         />
@@ -320,6 +331,7 @@ function BulletCard({
   onUpdateLabel,
   onUpdateText,
   onFinishEditing,
+  onDeleteItem,
   isOwner = false,
   isHovered = false,
 }: {
@@ -334,6 +346,7 @@ function BulletCard({
   onUpdateLabel?: (index: number, value: string) => void;
   onUpdateText?: (index: number, value: string) => void;
   onFinishEditing?: () => void;
+  onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
 }) {
@@ -372,6 +385,7 @@ function BulletCard({
                 onStartEdit={() => onStartEditLabel(index)}
                 onChange={(val) => onUpdateLabel?.(index, val)}
                 onFinish={onFinishEditing || (() => {})}
+                onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                 className="text-lg font-semibold mb-2"
                 style={{ color: themeStyles.titleColor }}
                 isOwner={isOwner}
@@ -390,6 +404,7 @@ function BulletCard({
               onStartEdit={() => onStartEditText(index)}
               onChange={(val) => onUpdateText?.(index, val)}
               onFinish={onFinishEditing || (() => {})}
+              onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
               className="text-sm leading-relaxed"
               style={{ color: themeStyles.bodyColor }}
               isOwner={isOwner}
@@ -420,6 +435,7 @@ function SimpleBullets({
   onUpdateLabel,
   onUpdateText,
   onFinishEditing,
+  onDeleteItem,
   isOwner = false,
   isHovered = false,
 }: {
@@ -435,6 +451,7 @@ function SimpleBullets({
   onUpdateLabel?: (index: number, value: string) => void;
   onUpdateText?: (index: number, value: string) => void;
   onFinishEditing?: () => void;
+  onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
 }) {
@@ -457,6 +474,7 @@ function SimpleBullets({
               onUpdateLabel={onUpdateLabel}
               onUpdateText={onUpdateText}
               onFinishEditing={onFinishEditing}
+              onDeleteItem={onDeleteItem}
               isOwner={isOwner}
               isHovered={isHovered}
             />
@@ -475,6 +493,7 @@ function SimpleBullets({
             onUpdateLabel={onUpdateLabel}
             onUpdateText={onUpdateText}
             onFinishEditing={onFinishEditing}
+            onDeleteItem={onDeleteItem}
             isOwner={isOwner}
             isHovered={isHovered}
           />
@@ -506,6 +525,7 @@ function SimpleBullets({
           onUpdateLabel={onUpdateLabel}
           onUpdateText={onUpdateText}
           onFinishEditing={onFinishEditing}
+          onDeleteItem={onDeleteItem}
           isOwner={isOwner}
           isHovered={isHovered}
         />
@@ -526,6 +546,7 @@ function SimpleBulletItem({
   onUpdateLabel,
   onUpdateText,
   onFinishEditing,
+  onDeleteItem,
   isOwner = false,
   isHovered = false,
 }: {
@@ -539,6 +560,7 @@ function SimpleBulletItem({
   onUpdateLabel?: (index: number, value: string) => void;
   onUpdateText?: (index: number, value: string) => void;
   onFinishEditing?: () => void;
+  onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
 }) {
@@ -561,6 +583,7 @@ function SimpleBulletItem({
               onStartEdit={() => onStartEditLabel(index)}
               onChange={(val) => onUpdateLabel?.(index, val)}
               onFinish={onFinishEditing || (() => {})}
+              onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
               className="text-lg font-semibold mb-1"
               style={{ color: themeStyles.titleColor }}
               isOwner={isOwner}
@@ -579,6 +602,7 @@ function SimpleBulletItem({
             onStartEdit={() => onStartEditText(index)}
             onChange={(val) => onUpdateText?.(index, val)}
             onFinish={onFinishEditing || (() => {})}
+            onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
             className="text-sm leading-relaxed"
             style={{ color: themeStyles.bodyColor }}
             isOwner={isOwner}
@@ -607,6 +631,7 @@ function ArrowBullets({
   onUpdateLabel,
   onUpdateText,
   onFinishEditing,
+  onDeleteItem,
   isOwner = false,
   isHovered = false,
 }: {
@@ -621,6 +646,7 @@ function ArrowBullets({
   onUpdateLabel?: (index: number, value: string) => void;
   onUpdateText?: (index: number, value: string) => void;
   onFinishEditing?: () => void;
+  onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
 }) {
@@ -650,6 +676,7 @@ function ArrowBullets({
                   onStartEdit={() => onStartEditLabel(idx)}
                   onChange={(val) => onUpdateLabel?.(idx, val)}
                   onFinish={onFinishEditing || (() => {})}
+                  onDelete={onDeleteItem ? () => onDeleteItem(idx) : undefined}
                   className="text-base font-semibold mb-1"
                   style={{ color: themeStyles.titleColor }}
                   isOwner={isOwner}
@@ -668,6 +695,7 @@ function ArrowBullets({
                 onStartEdit={() => onStartEditText(idx)}
                 onChange={(val) => onUpdateText?.(idx, val)}
                 onFinish={onFinishEditing || (() => {})}
+                onDelete={onDeleteItem ? () => onDeleteItem(idx) : undefined}
                 className="text-sm leading-relaxed"
                 style={{ color: themeStyles.bodyColor }}
                 isOwner={isOwner}

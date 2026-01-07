@@ -66,6 +66,7 @@ interface StepsLayoutRendererProps {
   onUpdateLabel?: (index: number, value: string) => void;
   onUpdateText?: (index: number, value: string) => void;
   onFinishEditing?: () => void;
+  onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
 }
@@ -84,6 +85,7 @@ export function StepsLayoutRenderer({
   onUpdateLabel,
   onUpdateText,
   onFinishEditing,
+  onDeleteItem,
   isOwner = false,
   isHovered = false,
 }: StepsLayoutRendererProps) {
@@ -103,6 +105,7 @@ export function StepsLayoutRenderer({
         onUpdateLabel={onUpdateLabel}
         onUpdateText={onUpdateText}
         onFinishEditing={onFinishEditing}
+        onDeleteItem={onDeleteItem}
         isOwner={isOwner}
         isHovered={isHovered}
       />
@@ -122,6 +125,7 @@ export function StepsLayoutRenderer({
         onUpdateLabel={onUpdateLabel}
         onUpdateText={onUpdateText}
         onFinishEditing={onFinishEditing}
+        onDeleteItem={onDeleteItem}
         isOwner={isOwner}
         isHovered={isHovered}
       />
@@ -142,6 +146,7 @@ export function StepsLayoutRenderer({
         onUpdateLabel={onUpdateLabel}
         onUpdateText={onUpdateText}
         onFinishEditing={onFinishEditing}
+        onDeleteItem={onDeleteItem}
         isOwner={isOwner}
         isHovered={isHovered}
       />
@@ -160,6 +165,7 @@ export function StepsLayoutRenderer({
       onUpdateLabel={onUpdateLabel}
       onUpdateText={onUpdateText}
       onFinishEditing={onFinishEditing}
+      onDeleteItem={onDeleteItem}
       isOwner={isOwner}
       isHovered={isHovered}
     />
@@ -179,6 +185,7 @@ function PyramidSteps({
   onUpdateLabel,
   onUpdateText,
   onFinishEditing,
+  onDeleteItem,
   isOwner = false,
   isHovered = false,
 }: {
@@ -192,6 +199,7 @@ function PyramidSteps({
   onUpdateLabel?: (index: number, value: string) => void;
   onUpdateText?: (index: number, value: string) => void;
   onFinishEditing?: () => void;
+  onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
 }) {
@@ -360,6 +368,7 @@ function PyramidSteps({
                     onStartEdit={() => onStartEditLabel(index)}
                     onChange={(val) => onUpdateLabel?.(index, val)}
                     onFinish={onFinishEditing || (() => {})}
+                    onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                     className="text-lg font-semibold mb-1"
                     style={{ color: themeStyles.titleColor }}
                     isOwner={isOwner}
@@ -382,6 +391,7 @@ function PyramidSteps({
                   onStartEdit={() => onStartEditText(index)}
                   onChange={(val) => onUpdateText?.(index, val)}
                   onFinish={onFinishEditing || (() => {})}
+                  onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                   className="text-sm leading-relaxed"
                   style={{ color: themeStyles.bodyColor }}
                   isOwner={isOwner}
@@ -416,6 +426,7 @@ function ArrowSteps({
   onUpdateLabel,
   onUpdateText,
   onFinishEditing,
+  onDeleteItem,
   isOwner = false,
   isHovered = false,
 }: {
@@ -429,6 +440,7 @@ function ArrowSteps({
   onUpdateLabel?: (index: number, value: string) => void;
   onUpdateText?: (index: number, value: string) => void;
   onFinishEditing?: () => void;
+  onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
 }) {
@@ -522,6 +534,7 @@ function ArrowSteps({
                     onStartEdit={() => onStartEditLabel(index)}
                     onChange={(val) => onUpdateLabel?.(index, val)}
                     onFinish={onFinishEditing || (() => {})}
+                    onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                     className="text-lg font-semibold mb-1"
                     style={{ color: themeStyles.titleColor }}
                     isOwner={isOwner}
@@ -540,6 +553,7 @@ function ArrowSteps({
                   onStartEdit={() => onStartEditText(index)}
                   onChange={(val) => onUpdateText?.(index, val)}
                   onFinish={onFinishEditing || (() => {})}
+                  onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                   className="text-sm leading-relaxed"
                   style={{ color: themeStyles.bodyColor }}
                   isOwner={isOwner}
@@ -571,6 +585,7 @@ function CardSteps({
   onUpdateLabel,
   onUpdateText,
   onFinishEditing,
+  onDeleteItem,
   isOwner = false,
   isHovered = false,
 }: {
@@ -585,6 +600,7 @@ function CardSteps({
   onUpdateLabel?: (index: number, value: string) => void;
   onUpdateText?: (index: number, value: string) => void;
   onFinishEditing?: () => void;
+  onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
 }) {
@@ -652,6 +668,7 @@ function CardSteps({
                   onStartEdit={() => onStartEditLabel(index)}
                   onChange={(val) => onUpdateLabel?.(index, val)}
                   onFinish={onFinishEditing || (() => {})}
+                  onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                   className="text-base font-semibold mb-2"
                   style={{ color: themeStyles.titleColor }}
                   isOwner={isOwner}
@@ -670,6 +687,7 @@ function CardSteps({
                 onStartEdit={() => onStartEditText(index)}
                 onChange={(val) => onUpdateText?.(index, val)}
                 onFinish={onFinishEditing || (() => {})}
+                onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                 className="text-sm leading-relaxed"
                 style={{ color: themeStyles.bodyColor }}
                 isOwner={isOwner}
@@ -711,6 +729,7 @@ function CardSteps({
                 onStartEdit={() => onStartEditLabel(index)}
                 onChange={(val) => onUpdateLabel?.(index, val)}
                 onFinish={onFinishEditing || (() => {})}
+                onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                 className="text-base font-semibold mb-2"
                 style={{ color: themeStyles.titleColor }}
                 isOwner={isOwner}
@@ -729,6 +748,7 @@ function CardSteps({
               onStartEdit={() => onStartEditText(index)}
               onChange={(val) => onUpdateText?.(index, val)}
               onFinish={onFinishEditing || (() => {})}
+              onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
               className="text-sm leading-relaxed"
               style={{ color: themeStyles.bodyColor }}
               isOwner={isOwner}
@@ -757,6 +777,7 @@ function BarSteps({
   onUpdateLabel,
   onUpdateText,
   onFinishEditing,
+  onDeleteItem,
   isOwner = false,
   isHovered = false,
 }: {
@@ -770,6 +791,7 @@ function BarSteps({
   onUpdateLabel?: (index: number, value: string) => void;
   onUpdateText?: (index: number, value: string) => void;
   onFinishEditing?: () => void;
+  onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
 }) {
@@ -854,6 +876,7 @@ function BarSteps({
                   onStartEdit={() => onStartEditLabel(index)}
                   onChange={(val) => onUpdateLabel?.(index, val)}
                   onFinish={onFinishEditing || (() => {})}
+                  onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                   className="text-base font-semibold mb-1"
                   style={{ color: themeStyles.accentColor }}
                   isOwner={isOwner}
@@ -875,6 +898,7 @@ function BarSteps({
                 onStartEdit={() => onStartEditText(index)}
                 onChange={(val) => onUpdateText?.(index, val)}
                 onFinish={onFinishEditing || (() => {})}
+                onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                 className="text-sm leading-relaxed"
                 style={{ color: themeStyles.bodyColor }}
                 isOwner={isOwner}

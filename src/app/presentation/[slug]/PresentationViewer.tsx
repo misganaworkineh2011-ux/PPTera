@@ -960,6 +960,8 @@ export default function PresentationViewer({
         "image-background": "image-background",
         "image-full": "full-image",
         "no-image": "grid-3-col",
+        "chart-left": "chart-left",
+        "chart-right": "chart-right",
       };
       const mappedLayout = layoutMap[slideLayoutId] || "left-content";
       newSlides[slideIndex] = { 
@@ -1089,7 +1091,28 @@ export default function PresentationViewer({
     const slide = slidesData[slideIndex];
     if (slide) {
       const newSlides = [...slidesData];
-      newSlides[slideIndex] = { ...slide, bulletPoints: (slide.bulletPoints || []).filter((_, i) => i !== bulletIndex) };
+      const newBulletPoints = (slide.bulletPoints || []).filter((_, i) => i !== bulletIndex);
+      
+      // Also update sections if they exist (for content layouts)
+      const newSections = slide.sections ? slide.sections.filter((_, i) => i !== bulletIndex) : undefined;
+      
+      // Also update transformedContent if it exists
+      const newTransformedContent = slide.transformedContent?.items 
+        ? { ...slide.transformedContent, items: slide.transformedContent.items.filter((_, i) => i !== bulletIndex) }
+        : undefined;
+      
+      // If all content is deleted, clear the content layout too
+      const shouldClearLayout = newBulletPoints.length === 0 && 
+        (!newSections || newSections.length === 0) && 
+        (!newTransformedContent?.items || newTransformedContent.items.length === 0);
+      
+      newSlides[slideIndex] = { 
+        ...slide, 
+        bulletPoints: newBulletPoints,
+        sections: newSections,
+        transformedContent: newTransformedContent,
+        contentLayout: shouldClearLayout ? undefined : slide.contentLayout,
+      };
       updateSlidesWithSave(newSlides);
     }
   };

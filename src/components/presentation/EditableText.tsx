@@ -698,7 +698,7 @@ export default function EditableText({
       <div
         key="static-container"
         ref={containerRef}
-        className="relative"
+        className="relative group/editable"
         onMouseEnter={() => isOwner && setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -714,26 +714,25 @@ export default function EditableText({
           } : undefined}
           dangerouslySetInnerHTML={{ __html: value }}
         />
-        {isOwner && isHovered && (
-          <div className="absolute -right-10 top-1/2 -translate-y-1/2 flex flex-col gap-1 z-30">
+        {/* Show edit/delete icons only when hovering over THIS element and onDelete is provided */}
+        {isOwner && onDelete && isHovered && (
+          <div className="absolute top-0 right-0 flex gap-1 z-30">
             <button
               type="button"
-              onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onStartEdit(); }}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onStartEdit(); }}
               title="Edit"
-              className="p-1.5 rounded-lg bg-white shadow-lg hover:bg-slate-50 transition-colors"
+              className="p-1 rounded bg-white/95 shadow-md hover:bg-blue-50 transition-colors border border-slate-200/50"
             >
-              <Type size={14} className="text-slate-700" />
+              <Type size={12} className="text-slate-600" />
             </button>
-            {onDelete && (
-              <button
-                type="button"
-                onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(); }}
-                title="Delete"
-                className="p-1.5 rounded-lg bg-white shadow-lg hover:bg-red-50 transition-colors"
-              >
-                <Trash2 size={14} className="text-red-500" />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(); }}
+              title="Delete"
+              className="p-1 rounded bg-white/95 shadow-md hover:bg-red-50 transition-colors border border-slate-200/50"
+            >
+              <Trash2 size={12} className="text-red-500" />
+            </button>
           </div>
         )}
       </div>

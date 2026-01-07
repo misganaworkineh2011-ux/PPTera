@@ -1050,6 +1050,7 @@ export default function SlideRenderer({
           onUpdateLabel: canEdit ? handleUpdateLabel : undefined,
           onUpdateText: canEdit ? handleUpdateText : undefined,
           onFinishEditing,
+          onDeleteItem: canEdit ? (itemIndex: number) => onDeleteBullet(index, itemIndex) : undefined,
           isOwner: canEdit,
           isHovered,
         };
@@ -1140,6 +1141,7 @@ export default function SlideRenderer({
                 theme={theme}
                 accentColor={accentColor}
                 isNarrowSpace={isNarrowSpace}
+                {...editingProps}
               />
             );
           

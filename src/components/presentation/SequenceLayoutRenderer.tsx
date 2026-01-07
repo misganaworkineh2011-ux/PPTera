@@ -29,6 +29,7 @@ interface SequenceLayoutRendererProps {
   onUpdateLabel?: (index: number, value: string) => void;
   onUpdateText?: (index: number, value: string) => void;
   onFinishEditing?: () => void;
+  onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
 }
@@ -48,6 +49,7 @@ export default function SequenceLayoutRenderer({
   onUpdateLabel,
   onUpdateText,
   onFinishEditing,
+  onDeleteItem,
   isOwner = false,
   isHovered = false,
 }: SequenceLayoutRendererProps) {
@@ -111,6 +113,7 @@ export default function SequenceLayoutRenderer({
               onStartEdit={() => onStartEditLabel(index)}
               onChange={(val) => onUpdateLabel?.(index, val)}
               onFinish={onFinishEditing || (() => {})}
+              onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
               className="font-serif mb-2"
               style={{
                 color: baseStyles.textColor,
@@ -143,6 +146,7 @@ export default function SequenceLayoutRenderer({
             onStartEdit={() => onStartEditText(index)}
             onChange={(val) => onUpdateText?.(index, val)}
             onFinish={onFinishEditing || (() => {})}
+            onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
             style={{
               color: baseStyles.dimColor,
               fontSize: compact ? "0.85rem" : "0.95rem",
