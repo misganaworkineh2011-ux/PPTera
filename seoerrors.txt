@@ -1,0 +1,36 @@
+17
+10/8/25
+10/19/25
+10/30/25
+11/10/25
+11/21/25
+12/2/25
+12/13/25
+12/24/25
+30
+20
+10
+0
+Examples
+
+URL	Last crawled
+https://www.pptmaster.app/community
+Dec 19, 2025
+https://www.pptmaster.app/inspiration/cmjd09c640000vbaofvczs50s
+Dec 19, 2025
+https://www.pptmaster.app/inspiration/cmjd09c650001vbao5jxjykqu
+Dec 19, 2025
+https://www.pptmaster.app/inspiration/cmjd09c660009vbaovk7d6mmt
+Dec 19, 2025
+https://www.pptmaster.app/inspiration/cmjd09c650003vbaouhf6amee
+Dec 19, 2025
+https://www.pptmaster.app/insights/minimalism-vs-maximalism-presentation-design-style
+Dec 19, 2025
+https://www.pptmaster.app/inspiration/cmjd09c650004vbaov7d8c7fg
+Dec 19, 2025
+https://www.pptmaster.app/inspiration/cmjd09c660006vbaopm8gonba
+Dec 19, 2025
+https://www.pptmaster.app/inspiration/cmjd09c650002vbaoa5c5ebxn
+Dec 19, 2025
+https://www.pptmaster.app/inspiration/cmjd09c660007vbaoozhqyssp
+Dec 19, 2025

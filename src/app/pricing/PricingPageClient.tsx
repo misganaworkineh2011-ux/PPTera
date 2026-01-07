@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CheckCircle2, Loader2, AlertCircle, Plus, Zap, ChevronDown } from "lucide-react";
+import { Loader2, AlertCircle, Plus, Zap, ChevronDown } from "lucide-react";
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
 import { cn } from "~/lib/utils";
@@ -52,6 +52,26 @@ function PriceError() {
   );
 }
 
+// Helper to get price from Polar products
+function getPriceFromProducts(products: PolarProduct[], key: string): { monthly: number; yearly: number; yearlyTotal: number } | null {
+  const product = products.find(p => p.key === key);
+  if (!product) return null;
+  
+  const monthlyPrice = product.monthly?.priceAmount ? product.monthly.priceAmount / 100 : null;
+  const yearlyPrice = product.yearly?.priceAmount ? product.yearly.priceAmount / 100 : null;
+  
+  if (monthlyPrice === null && yearlyPrice === null) return null;
+  
+  // For yearly, calculate monthly equivalent (yearly price / 12)
+  const yearlyMonthly = yearlyPrice ? Math.round(yearlyPrice / 12) : monthlyPrice;
+  
+  return {
+    monthly: monthlyPrice ?? yearlyMonthly ?? 0,
+    yearly: yearlyMonthly ?? monthlyPrice ?? 0,
+    yearlyTotal: yearlyPrice ?? (monthlyPrice ? monthlyPrice * 12 : 0),
+  };
+}
+
 export function PricingPageClient({ currentLang }: PricingPageClientProps) {
   const [isAnnual, setIsAnnual] = useState(true);
   const [products, setProducts] = useState<PolarProduct[]>([]);
@@ -65,6 +85,12 @@ export function PricingPageClient({ currentLang }: PricingPageClientProps) {
   const { isSignedIn, user } = useUser();
   const router = useRouter();
   const t = getTranslations(currentLang);
+
+  // Reset loading state when component mounts (handles back navigation)
+  useEffect(() => {
+    setCheckoutLoadingId(null);
+    setTopupLoadingId(null);
+  }, []);
 
   useEffect(() => {
     async function loadProducts() {
@@ -193,149 +219,188 @@ export function PricingPageClient({ currentLang }: PricingPageClientProps) {
           </div>
 
           {/* Pricing Cards */}
-          <div className="grid gap-4 md:grid-cols-4 max-w-7xl mx-auto items-stretch">
+          <div className="grid gap-3 md:grid-cols-4 max-w-6xl mx-auto items-stretch">
               {/* Free Plan Card */}
-              <div className="relative rounded-md border border-slate-200 bg-white hover:border-[#06b6d4] transition-all flex flex-col h-full mt-4">
-                <div className="absolute -top-2.5 right-3 bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-1 rounded">
+              <div className="relative rounded-lg border border-slate-200 bg-white hover:border-[#06b6d4] transition-all flex flex-col h-full mt-4">
+                <div className="absolute -top-2.5 right-3 bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded">
                   {t.noCreditCard || "NO CREDIT CARD"}
                 </div>
-                <div className="p-6 flex flex-col h-full">
-                  <h3 className="text-xl font-bold mb-1">{t.free || "Free"}</h3>
-                  <p className="text-sm text-slate-500 h-12">{t.getStartedWithPPT || "Get started with PPT Master"}</p>
-                  <div className="h-16 flex flex-col justify-center">
+                <div className="p-4 flex flex-col h-full">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="text-[#06b6d4] text-sm">✦</span>
+                    <h3 className="text-lg font-bold">{t.free || "Free"}</h3>
+                  </div>
+                  <p className="text-xs text-slate-500 mb-3">{t.getStartedWithPPT || "Get started with PPT Master"}</p>
+                  <div className="mb-3">
                     <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-extrabold">$0</span>
-                      <span className="text-sm text-slate-500">{t.freeForever || "/forever"}</span>
+                      <span className="text-2xl font-bold">$0</span>
+                      <span className="text-xs text-slate-500">{t.freeForever || "/forever"}</span>
                     </div>
                   </div>
-                  <button onClick={() => router.push(isSignedIn ? "/" : "/sign-up")} className="w-full rounded py-2.5 px-4 font-semibold text-sm mb-4 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90">
-                    {isSignedIn ? t.goToDashboard : t.signUpFree}
-                  </button>
-                  <ul className="space-y-2.5 text-sm flex-grow">
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.createUpTo10Cards || "Create up to 10 cards per prompt"}</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.creditsAtSignup || "200 credits at signup"}</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.simplePresentations || "Simple presentations and images"}</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.exportFormatsAll || "Export to PDF, PPTX, PNG & Google Slides"}</span></li>
+                  <div className="mt-auto mb-4">
+                    <button onClick={() => router.push(isSignedIn ? "/" : "/sign-up")} className="w-full rounded-md py-2 px-3 font-medium text-sm bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90">
+                      {isSignedIn ? t.goToDashboard : t.signUpFree}
+                    </button>
+                  </div>
+                  <p className="text-xs text-slate-500 mb-2 font-medium">{t.freeIncludes || "Free includes:"}</p>
+                  <ul className="space-y-1.5 text-xs flex-grow">
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.createUpTo10Cards}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.simplePresentations}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.importFromPdfPptx || "Import from PDF & PPTX"}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.exportFormatsAll}</span></li>
                   </ul>
                 </div>
               </div>
 
               {/* Plus Plan */}
-              <div className="relative rounded-md border border-slate-200 bg-white hover:border-[#06b6d4] transition-all flex flex-col h-full mt-4">
-                <div className="p-6 flex flex-col h-full">
-                  <h3 className="text-xl font-bold mb-1">Plus</h3>
-                  <p className="text-sm text-slate-500 h-12">{t.forExtraAIPower || "For extra AI power"}</p>
-                  <div className="h-16 flex flex-col justify-center" data-testid="price-display-plus">
+              {(() => {
+                const plusPrices = getPriceFromProducts(products, 'plus');
+                return (
+              <div className="relative rounded-lg border border-slate-200 bg-white hover:border-[#06b6d4] transition-all flex flex-col h-full mt-4">
+                <div className="p-4 flex flex-col h-full">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="text-[#06b6d4] text-sm">✦</span>
+                    <h3 className="text-lg font-bold">Plus</h3>
+                  </div>
+                  <p className="text-xs text-slate-500 mb-3">{t.forExtraAIPower || "Unlimited AI creations"}</p>
+                  <div className="mb-3" data-testid="price-display-plus">
                     {loading ? (
-                      <PriceSkeleton />
-                    ) : error ? (
+                      <PriceSkeleton className="h-6 w-12" />
+                    ) : error || !plusPrices ? (
                       <PriceError />
                     ) : isAnnual ? (
                       <>
                         <div className="flex items-baseline gap-1">
-                          <span className="text-3xl font-extrabold" data-testid="price-value-plus">$8</span>
-                          <span className="text-sm text-slate-500">/ {t.monthly?.toLowerCase() || "month"}</span>
+                          <span className="text-2xl font-bold" data-testid="price-value-plus">${plusPrices.yearly}</span>
+                          <span className="text-xs text-slate-500">/ {t.monthly?.toLowerCase() || "month"}</span>
                         </div>
-                        <p className="text-xs text-slate-400 mt-0.5">$96 {t.annualBilling || "billed annually"}</p>
+                        <p className="text-xs text-slate-400">${plusPrices.yearlyTotal} {t.annualBilling || "billed annually"}</p>
                       </>
                     ) : (
                       <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-extrabold" data-testid="price-value-plus">$10</span>
-                        <span className="text-sm text-slate-500">/ {t.monthly?.toLowerCase() || "month"}</span>
+                        <span className="text-2xl font-bold" data-testid="price-value-plus">${plusPrices.monthly}</span>
+                        <span className="text-xs text-slate-500">/ {t.monthly?.toLowerCase() || "month"}</span>
                       </div>
                     )}
                   </div>
-                  <button onClick={() => handleSubscribe('plus')} disabled={!!checkoutLoadingId} className="w-full rounded py-2.5 px-4 font-semibold text-sm mb-4 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90 disabled:opacity-50">
-                    {checkoutLoadingId === 'plus' ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : t.getStartedBtn}
-                  </button>
-                  <p className="text-sm text-slate-500 mb-2 font-semibold">{t.everythingInFree || "Everything in Free, and:"}</p>
-                  <ul className="space-y-2.5 text-sm flex-grow">
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.monthlyCredits1000 || "1,000 monthly credits"}</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.removeBranding || "Remove branding"}</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.advancedAIImageModels || "Advanced AI image models"}</span></li>
+                  <div className="mt-auto mb-4">
+                    <button onClick={() => handleSubscribe('plus')} disabled={!!checkoutLoadingId} className="w-full rounded-md py-2 px-3 font-medium text-sm bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90 disabled:opacity-50">
+                      {checkoutLoadingId === 'plus' ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : t.getStartedBtn}
+                    </button>
+                  </div>
+                  <p className="text-xs text-slate-500 mb-2 font-medium">{t.everythingInFree || "Everything in Free, and:"}</p>
+                  <ul className="space-y-1.5 text-xs flex-grow">
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.createUpTo20Cards || "Create up to 20 cards per prompt"}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.monthlyCredits1000}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.removeBranding}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.advancedAIImageModels}</span></li>
                   </ul>
                 </div>
               </div>
+                );
+              })()}
 
               {/* Pro Plan - Most Popular */}
-              <div className="relative rounded-md border-2 border-[#06b6d4] bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-lg flex flex-col h-full mt-4">
-                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap">{t.mostPopular?.toUpperCase() || "MOST POPULAR"}</div>
-                <div className="p-6 flex flex-col h-full">
-                  <h3 className="text-xl font-bold mb-1">Pro</h3>
-                  <p className="text-sm text-white/80 h-12">{t.forPremiumAI || "For premium AI and customization"}</p>
-                  <div className="h-16 flex flex-col justify-center" data-testid="price-display-pro">
+              {(() => {
+                const proPrices = getPriceFromProducts(products, 'pro');
+                return (
+              <div className="relative rounded-lg border-2 border-[#06b6d4] bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-lg flex flex-col h-full mt-4">
+                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg whitespace-nowrap">{t.mostPopular?.toUpperCase() || "MOST POPULAR"}</div>
+                <div className="p-4 flex flex-col h-full">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="text-white text-sm">✦</span>
+                    <h3 className="text-lg font-bold">Pro</h3>
+                  </div>
+                  <p className="text-xs text-white/70 mb-3">{t.forPremiumAI || "For premium AI and customization"}</p>
+                  <div className="mb-3" data-testid="price-display-pro">
                     {loading ? (
-                      <PriceSkeleton className="bg-white/30" />
-                    ) : error ? (
+                      <PriceSkeleton className="bg-white/30 h-6 w-12" />
+                    ) : error || !proPrices ? (
                       <div className="flex items-center gap-1 text-white/80" data-testid="price-error">
                         <AlertCircle className="h-4 w-4" />
-                        <span className="text-sm">Price unavailable</span>
+                        <span className="text-xs">Price unavailable</span>
                       </div>
                     ) : isAnnual ? (
                       <>
                         <div className="flex items-baseline gap-1">
-                          <span className="text-3xl font-extrabold" data-testid="price-value-pro">$18</span>
-                          <span className="text-sm text-white/70">/ {t.monthly?.toLowerCase() || "month"}</span>
+                          <span className="text-2xl font-bold" data-testid="price-value-pro">${proPrices.yearly}</span>
+                          <span className="text-xs text-white/60">/ {t.monthly?.toLowerCase() || "month"}</span>
                         </div>
-                        <p className="text-xs text-white/60 mt-0.5">$216 {t.annualBilling || "billed annually"}</p>
+                        <p className="text-xs text-white/50">${proPrices.yearlyTotal} {t.annualBilling || "billed annually"}</p>
                       </>
                     ) : (
                       <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-extrabold" data-testid="price-value-pro">$25</span>
-                        <span className="text-sm text-white/70">/ {t.monthly?.toLowerCase() || "month"}</span>
+                        <span className="text-2xl font-bold" data-testid="price-value-pro">${proPrices.monthly}</span>
+                        <span className="text-xs text-white/60">/ {t.monthly?.toLowerCase() || "month"}</span>
                       </div>
                     )}
                   </div>
-                  <button onClick={() => handleSubscribe('pro')} disabled={!!checkoutLoadingId} className="w-full rounded py-2.5 px-4 font-semibold text-sm mb-4 bg-white text-[#1e3a8a] hover:bg-slate-100 disabled:opacity-50">
-                    {checkoutLoadingId === 'pro' ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : t.getStartedBtn}
-                  </button>
-                  <p className="text-sm text-white/80 mb-2 font-semibold">{t.everythingInPlus || "Everything in Plus, and:"}</p>
-                  <ul className="space-y-2.5 text-sm flex-grow">
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-white mt-0.5" /><span className="text-white/90">{t.monthlyCredits4000 || "4,000 monthly credits"}</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-white mt-0.5" /><span className="text-white/90">{t.premiumAIImageModels || "Premium AI image models"}</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-white mt-0.5" /><span className="text-white/90">{t.customBrandingFonts || "Custom branding & fonts"}</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-white mt-0.5" /><span className="text-white/90">{t.apiAccess || "API access"}</span></li>
+                  <div className="mt-auto mb-4">
+                    <button onClick={() => handleSubscribe('pro')} disabled={!!checkoutLoadingId} className="w-full rounded-md py-2 px-3 font-medium text-sm bg-white text-[#1e3a8a] hover:bg-slate-100 disabled:opacity-50">
+                      {checkoutLoadingId === 'pro' ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : t.getStartedBtn}
+                    </button>
+                  </div>
+                  <p className="text-xs text-white/70 mb-2 font-medium">{t.everythingInPlus || "Everything in Plus, and:"}</p>
+                  <ul className="space-y-1.5 text-xs flex-grow">
+                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.createUpTo60Cards || "Create up to 60 cards per prompt"}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.monthlyCredits4000}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.premiumAIImageModels}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.customBrandingFonts}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.detailedAnalytics || "Detailed analytics & advanced sharing"}</span></li>
                   </ul>
                 </div>
               </div>
+                );
+              })()}
 
               {/* Ultra Plan */}
-              <div className="relative rounded-md border border-slate-200 bg-white hover:border-[#06b6d4] transition-all flex flex-col h-full mt-4">
-                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap">{t.introductoryPrice?.toUpperCase() || "INTRODUCTORY PRICE"}</div>
-                <div className="p-6 flex flex-col h-full">
-                  <h3 className="text-xl font-bold mb-1">Ultra</h3>
-                  <p className="text-sm text-slate-500 h-12">{t.for20xMoreAI || "For 20× more AI usage"}</p>
-                  <div className="h-16 flex flex-col justify-center" data-testid="price-display-ultra">
+              {(() => {
+                const ultraPrices = getPriceFromProducts(products, 'ultra');
+                return (
+              <div className="relative rounded-lg border border-slate-200 bg-white hover:border-[#06b6d4] transition-all flex flex-col h-full mt-4">
+                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg whitespace-nowrap">{t.introductoryPrice?.toUpperCase() || "INTRODUCTORY PRICE"}</div>
+                <div className="p-4 flex flex-col h-full">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="text-[#06b6d4] text-sm">✦</span>
+                    <h3 className="text-lg font-bold">Ultra</h3>
+                  </div>
+                  <p className="text-xs text-slate-500 mb-3">{t.for20xMoreAI || "For 20× more AI usage"}</p>
+                  <div className="mb-3" data-testid="price-display-ultra">
                     {loading ? (
-                      <PriceSkeleton />
-                    ) : error ? (
+                      <PriceSkeleton className="h-6 w-12" />
+                    ) : error || !ultraPrices ? (
                       <PriceError />
                     ) : isAnnual ? (
                       <>
                         <div className="flex items-baseline gap-1">
-                          <span className="text-3xl font-extrabold" data-testid="price-value-ultra">$90</span>
-                          <span className="text-sm text-slate-500">/ {t.monthly?.toLowerCase() || "month"}</span>
+                          <span className="text-2xl font-bold" data-testid="price-value-ultra">${ultraPrices.yearly}</span>
+                          <span className="text-xs text-slate-500">/ {t.monthly?.toLowerCase() || "month"}</span>
                         </div>
-                        <p className="text-xs text-slate-400 mt-0.5">$1,080 {t.annualBilling || "billed annually"}</p>
+                        <p className="text-xs text-slate-400">${ultraPrices.yearlyTotal.toLocaleString()} {t.annualBilling || "billed annually"}</p>
                       </>
                     ) : (
                       <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-extrabold" data-testid="price-value-ultra">$100</span>
-                        <span className="text-sm text-slate-500">/ {t.monthly?.toLowerCase() || "month"}</span>
+                        <span className="text-2xl font-bold" data-testid="price-value-ultra">${ultraPrices.monthly}</span>
+                        <span className="text-xs text-slate-500">/ {t.monthly?.toLowerCase() || "month"}</span>
                       </div>
                     )}
                   </div>
-                  <button onClick={() => handleSubscribe('ultra')} disabled={!!checkoutLoadingId} className="w-full rounded py-2.5 px-4 font-semibold text-sm mb-4 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90 disabled:opacity-50">
-                    {checkoutLoadingId === 'ultra' ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : t.getStartedBtn}
-                  </button>
-                  <p className="text-sm text-slate-500 mb-2 font-semibold">{t.everythingInPro || "Everything in Pro, and:"}</p>
-                  <ul className="space-y-2.5 text-sm flex-grow">
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.monthlyCredits20000 || "20,000 monthly credits"}</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.mostAdvancedAIModels || "Most advanced AI models"}</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.earlyAccessFeatures || "Early access to new features"}</span></li>
+                  <div className="mt-auto mb-4">
+                    <button onClick={() => handleSubscribe('ultra')} disabled={!!checkoutLoadingId} className="w-full rounded-md py-2 px-3 font-medium text-sm bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90 disabled:opacity-50">
+                      {checkoutLoadingId === 'ultra' ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : t.getStartedBtn}
+                    </button>
+                  </div>
+                  <p className="text-xs text-slate-500 mb-2 font-medium">{t.everythingInPro || "Everything in Pro, and:"}</p>
+                  <ul className="space-y-1.5 text-xs flex-grow">
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.createUpTo75Cards || "Create up to 75 cards per prompt"}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.monthlyCredits20000}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.mostAdvancedAIModels}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.earlyAccessFeatures}</span></li>
                   </ul>
                 </div>
               </div>
+                );
+              })()}
             </div>
 
           {/* Top-up Cards - Only show for subscribed users */}
