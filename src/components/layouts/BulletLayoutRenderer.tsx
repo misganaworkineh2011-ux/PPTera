@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { Check, ChevronRight } from "lucide-react";
+import React, { useState, useRef } from "react";
+import { Check, ChevronRight, GripVertical } from "lucide-react";
 import type { BulletLayoutType, BulletContentItem } from "~/lib/layouts/content/bullets";
 import { calculateBulletGridDimensions } from "~/lib/layouts/content/bullets";
 import EditableText from "~/components/presentation/EditableText";
@@ -77,6 +77,7 @@ interface BulletLayoutRendererProps {
   onUpdateText?: (index: number, value: string) => void;
   onFinishEditing?: () => void;
   onDeleteItem?: (index: number) => void;
+  onReorderItems?: (fromIndex: number, toIndex: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
 }
@@ -96,11 +97,69 @@ export function BulletLayoutRenderer({
   onUpdateText,
   onFinishEditing,
   onDeleteItem,
+  onReorderItems,
   isOwner = false,
   isHovered = false,
 }: BulletLayoutRendererProps) {
   const displayItems = items.slice(0, 8);
   const themeStyles = getThemeStyles(theme, accentColor);
+  
+  // Drag state
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  
+  const handleDragStart = (e: React.DragEvent, idx: number) => {
+    if (!isOwner || !onReorderItems) return;
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", idx.toString());
+    setDraggedIndex(idx);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    if (!isOwner || !onReorderItems || draggedIndex === null) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (idx !== draggedIndex) {
+      setDragOverIndex(idx);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, toIdx: number) => {
+    if (!isOwner || !onReorderItems) return;
+    e.preventDefault();
+    const fromIdx = parseInt(e.dataTransfer.getData("text/plain"), 10);
+    if (!isNaN(fromIdx) && fromIdx !== toIdx) {
+      onReorderItems(fromIdx, toIdx);
+    }
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+  
+  const canDrag = isOwner && onReorderItems && items.length > 1;
+  
+  const dragProps = (idx: number) => canDrag ? {
+    draggable: true,
+    onDragStart: (e: React.DragEvent) => handleDragStart(e, idx),
+    onDragEnd: handleDragEnd,
+    onDragOver: (e: React.DragEvent) => handleDragOver(e, idx),
+    onDragLeave: handleDragLeave,
+    onDrop: (e: React.DragEvent) => handleDrop(e, idx),
+  } : {};
+  
+  const getDragClasses = (idx: number) => {
+    const isDragging = draggedIndex === idx;
+    const isDragOver = dragOverIndex === idx;
+    return `${isDragging ? "opacity-50" : ""} ${isDragOver ? "ring-2 ring-blue-500 ring-offset-2" : ""}`;
+  };
 
   // Style 1: Cards with filled circle bullets, grid layout
   if (layoutId === "bullet-style-1") {
@@ -121,6 +180,9 @@ export function BulletLayoutRenderer({
         onDeleteItem={onDeleteItem}
         isOwner={isOwner}
         isHovered={isHovered}
+        canDrag={canDrag}
+        dragProps={dragProps}
+        getDragClasses={getDragClasses}
       />
     );
   }
@@ -144,6 +206,9 @@ export function BulletLayoutRenderer({
         onDeleteItem={onDeleteItem}
         isOwner={isOwner}
         isHovered={isHovered}
+        canDrag={canDrag}
+        dragProps={dragProps}
+        getDragClasses={getDragClasses}
       />
     );
   }
@@ -167,6 +232,9 @@ export function BulletLayoutRenderer({
         onDeleteItem={onDeleteItem}
         isOwner={isOwner}
         isHovered={isHovered}
+        canDrag={canDrag}
+        dragProps={dragProps}
+        getDragClasses={getDragClasses}
       />
     );
   }
@@ -188,6 +256,9 @@ export function BulletLayoutRenderer({
       onDeleteItem={onDeleteItem}
       isOwner={isOwner}
       isHovered={isHovered}
+      canDrag={canDrag}
+      dragProps={dragProps}
+      getDragClasses={getDragClasses}
     />
   );
 }
@@ -220,6 +291,9 @@ function CardBullets({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
+  canDrag = false,
+  dragProps,
+  getDragClasses,
 }: {
   items: BulletContentItem[];
   themeStyles: ThemeStyles;
@@ -236,6 +310,9 @@ function CardBullets({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
+  canDrag?: boolean;
+  dragProps?: (idx: number) => Record<string, unknown>;
+  getDragClasses?: (idx: number) => string;
 }) {
   const { columns, specialLayout } = calculateBulletGridDimensions(items.length, isNarrowSpace);
 
@@ -262,6 +339,9 @@ function CardBullets({
               onDeleteItem={onDeleteItem}
               isOwner={isOwner}
               isHovered={isHovered}
+              canDrag={canDrag}
+              dragProps={dragProps}
+              getDragClasses={getDragClasses}
             />
           ))}
         </div>
@@ -282,6 +362,9 @@ function CardBullets({
             onDeleteItem={onDeleteItem}
             isOwner={isOwner}
             isHovered={isHovered}
+            canDrag={canDrag}
+            dragProps={dragProps}
+            getDragClasses={getDragClasses}
           />
         </div>
       </div>
@@ -312,6 +395,9 @@ function CardBullets({
           onDeleteItem={onDeleteItem}
           isOwner={isOwner}
           isHovered={isHovered}
+          canDrag={canDrag}
+          dragProps={dragProps}
+          getDragClasses={getDragClasses}
         />
       ))}
     </div>
@@ -334,6 +420,9 @@ function BulletCard({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
+  canDrag = false,
+  dragProps,
+  getDragClasses,
 }: {
   item: BulletContentItem;
   index: number;
@@ -349,15 +438,32 @@ function BulletCard({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
+  canDrag?: boolean;
+  dragProps?: (idx: number) => Record<string, unknown>;
+  getDragClasses?: (idx: number) => string;
 }) {
+  const dragClasses = getDragClasses ? getDragClasses(index) : "";
+  const props = dragProps ? dragProps(index) : {};
+  
   return (
     <div
-      className="rounded-2xl p-5"
+      className={`rounded-2xl p-5 relative group/drag-item ${dragClasses}`}
       style={{
         backgroundColor: themeStyles.cardBgColor,
         border: `1px solid ${themeStyles.cardBorderColor}`,
+        cursor: canDrag ? "grab" : "default",
       }}
+      {...props}
     >
+      {/* Drag handle */}
+      {canDrag && (
+        <div 
+          className="absolute -left-5 top-1/2 -translate-y-1/2 opacity-0 group-hover/drag-item:opacity-60 transition-opacity cursor-grab z-20"
+          title="Drag to reorder"
+        >
+          <GripVertical size={14} className="text-current" />
+        </div>
+      )}
       <div className="flex items-start gap-3">
         {/* Bullet */}
         <div className="flex-shrink-0 mt-1">
@@ -438,6 +544,9 @@ function SimpleBullets({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
+  canDrag = false,
+  dragProps,
+  getDragClasses,
 }: {
   items: BulletContentItem[];
   themeStyles: ThemeStyles;
@@ -454,6 +563,9 @@ function SimpleBullets({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
+  canDrag?: boolean;
+  dragProps?: (idx: number) => Record<string, unknown>;
+  getDragClasses?: (idx: number) => string;
 }) {
   // For 3 items: 2 columns on top row, 1 on bottom
   if (items.length === 3 && !isNarrowSpace) {
@@ -477,6 +589,9 @@ function SimpleBullets({
               onDeleteItem={onDeleteItem}
               isOwner={isOwner}
               isHovered={isHovered}
+              canDrag={canDrag}
+              dragProps={dragProps}
+              getDragClasses={getDragClasses}
             />
           ))}
         </div>
@@ -496,6 +611,9 @@ function SimpleBullets({
             onDeleteItem={onDeleteItem}
             isOwner={isOwner}
             isHovered={isHovered}
+            canDrag={canDrag}
+            dragProps={dragProps}
+            getDragClasses={getDragClasses}
           />
         </div>
       </div>
@@ -528,6 +646,9 @@ function SimpleBullets({
           onDeleteItem={onDeleteItem}
           isOwner={isOwner}
           isHovered={isHovered}
+          canDrag={canDrag}
+          dragProps={dragProps}
+          getDragClasses={getDragClasses}
         />
       ))}
     </div>
@@ -549,6 +670,9 @@ function SimpleBulletItem({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
+  canDrag = false,
+  dragProps,
+  getDragClasses,
 }: {
   item: BulletContentItem;
   index: number;
@@ -563,9 +687,28 @@ function SimpleBulletItem({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
+  canDrag?: boolean;
+  dragProps?: (idx: number) => Record<string, unknown>;
+  getDragClasses?: (idx: number) => string;
 }) {
+  const dragClasses = getDragClasses ? getDragClasses(index) : "";
+  const props = dragProps ? dragProps(index) : {};
+  
   return (
-    <div className="flex items-start gap-3">
+    <div 
+      className={`flex items-start gap-3 relative group/drag-item ${dragClasses}`}
+      style={{ cursor: canDrag ? "grab" : "default" }}
+      {...props}
+    >
+      {/* Drag handle */}
+      {canDrag && (
+        <div 
+          className="absolute -left-5 top-1/2 -translate-y-1/2 opacity-0 group-hover/drag-item:opacity-60 transition-opacity cursor-grab z-20"
+          title="Drag to reorder"
+        >
+          <GripVertical size={14} className="text-current" />
+        </div>
+      )}
       {/* Bullet */}
       <div className="flex-shrink-0 mt-2">
         <div
@@ -634,6 +777,9 @@ function ArrowBullets({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
+  canDrag = false,
+  dragProps,
+  getDragClasses,
 }: {
   items: BulletContentItem[];
   themeStyles: ThemeStyles;
@@ -649,6 +795,9 @@ function ArrowBullets({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
+  canDrag?: boolean;
+  dragProps?: (idx: number) => Record<string, unknown>;
+  getDragClasses?: (idx: number) => string;
 }) {
   // Vertical list layout
   const columns = isNarrowSpace ? 1 : items.length <= 4 ? 1 : 2;
@@ -660,55 +809,74 @@ function ArrowBullets({
         gridTemplateColumns: `repeat(${columns}, 1fr)`,
       }}
     >
-      {items.map((item, idx) => (
-        <div key={idx} className="flex items-start gap-3">
-          {/* Arrow bullet */}
-          <div className="flex-shrink-0 mt-1">
-            <ChevronRight size={18} style={{ color: themeStyles.accentColor }} strokeWidth={2.5} />
-          </div>
-          {/* Content */}
-          <div className="flex-1">
-            {item.label && (
-              onStartEditLabel ? (
+      {items.map((item, idx) => {
+        const dragClasses = getDragClasses ? getDragClasses(idx) : "";
+        const props = dragProps ? dragProps(idx) : {};
+        
+        return (
+          <div 
+            key={idx} 
+            className={`flex items-start gap-3 relative group/drag-item ${dragClasses}`}
+            style={{ cursor: canDrag ? "grab" : "default" }}
+            {...props}
+          >
+            {/* Drag handle */}
+            {canDrag && (
+              <div 
+                className="absolute -left-5 top-1/2 -translate-y-1/2 opacity-0 group-hover/drag-item:opacity-60 transition-opacity cursor-grab z-20"
+                title="Drag to reorder"
+              >
+                <GripVertical size={14} className="text-current" />
+              </div>
+            )}
+            {/* Arrow bullet */}
+            <div className="flex-shrink-0 mt-1">
+              <ChevronRight size={18} style={{ color: themeStyles.accentColor }} strokeWidth={2.5} />
+            </div>
+            {/* Content */}
+            <div className="flex-1">
+              {item.label && (
+                onStartEditLabel ? (
+                  <EditableText
+                    value={item.label}
+                    isEditing={isEditing && editingText?.field === `content-label-${idx}`}
+                    onStartEdit={() => onStartEditLabel(idx)}
+                    onChange={(val) => onUpdateLabel?.(idx, val)}
+                    onFinish={onFinishEditing || (() => {})}
+                    onDelete={onDeleteItem ? () => onDeleteItem(idx) : undefined}
+                    className="text-base font-semibold mb-1"
+                    style={{ color: themeStyles.titleColor }}
+                    isOwner={isOwner}
+                    isHovered={isHovered}
+                  />
+                ) : (
+                  <h3 className="text-base font-semibold mb-1" style={{ color: themeStyles.titleColor }}>
+                    {item.label}
+                  </h3>
+                )
+              )}
+              {onStartEditText ? (
                 <EditableText
-                  value={item.label}
-                  isEditing={isEditing && editingText?.field === `content-label-${idx}`}
-                  onStartEdit={() => onStartEditLabel(idx)}
-                  onChange={(val) => onUpdateLabel?.(idx, val)}
+                  value={item.text}
+                  isEditing={isEditing && editingText?.field === `content-text-${idx}`}
+                  onStartEdit={() => onStartEditText(idx)}
+                  onChange={(val) => onUpdateText?.(idx, val)}
                   onFinish={onFinishEditing || (() => {})}
                   onDelete={onDeleteItem ? () => onDeleteItem(idx) : undefined}
-                  className="text-base font-semibold mb-1"
-                  style={{ color: themeStyles.titleColor }}
+                  className="text-sm leading-relaxed"
+                  style={{ color: themeStyles.bodyColor }}
                   isOwner={isOwner}
                   isHovered={isHovered}
                 />
               ) : (
-                <h3 className="text-base font-semibold mb-1" style={{ color: themeStyles.titleColor }}>
-                  {item.label}
-                </h3>
-              )
-            )}
-            {onStartEditText ? (
-              <EditableText
-                value={item.text}
-                isEditing={isEditing && editingText?.field === `content-text-${idx}`}
-                onStartEdit={() => onStartEditText(idx)}
-                onChange={(val) => onUpdateText?.(idx, val)}
-                onFinish={onFinishEditing || (() => {})}
-                onDelete={onDeleteItem ? () => onDeleteItem(idx) : undefined}
-                className="text-sm leading-relaxed"
-                style={{ color: themeStyles.bodyColor }}
-                isOwner={isOwner}
-                isHovered={isHovered}
-              />
-            ) : (
-              <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
-                {item.text}
-              </p>
-            )}
+                <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
+                  {item.text}
+                </p>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

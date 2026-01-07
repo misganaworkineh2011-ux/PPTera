@@ -3,11 +3,13 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { X, Check, Crop, Circle, Square, Hexagon, Move, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import type { ImageBlock } from "./types";
+import type { Theme } from "~/lib/themes";
 
 interface ImageEditorProps {
   block: ImageBlock;
   onSave: (block: ImageBlock) => void;
   onCancel: () => void;
+  theme?: Theme;
 }
 
 type MaskType = "none" | "circle" | "rounded" | "blob" | "hexagon";
@@ -19,7 +21,18 @@ interface CropArea {
   height: number;
 }
 
-export default function ImageEditor({ block, onSave, onCancel }: ImageEditorProps) {
+// Helper to determine if a color is dark
+function isColorDark(hexColor: string): boolean {
+  if (!hexColor || !hexColor.startsWith("#")) return true;
+  const hex = hexColor.replace("#", "");
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance < 0.5;
+}
+
+export default function ImageEditor({ block, onSave, onCancel, theme }: ImageEditorProps) {
   const [activeTab, setActiveTab] = useState<"crop" | "mask" | "adjust">("crop");
   const [mask, setMask] = useState<MaskType>(block.mask || "none");
   const [cropArea, setCropArea] = useState<CropArea>(block.crop || { x: 0, y: 0, width: 100, height: 100 });
@@ -136,22 +149,50 @@ export default function ImageEditor({ block, onSave, onCancel }: ImageEditorProp
     }
   };
 
+  // Theme-aware colors
+  const isDark = theme ? isColorDark(theme.colors.background) : false;
+  const colors = {
+    bg: theme?.colors.background || "#ffffff",
+    surface: theme?.colors.surface || "#f8fafc",
+    border: theme?.colors.border || "#e2e8f0",
+    text: theme?.colors.text || "#0f172a",
+    textMuted: theme?.colors.textMuted || "#64748b",
+    primary: theme?.colors.primary || "#0891b2",
+    accent: theme?.colors.accent || "#06b6d4",
+  };
+
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div 
+        className="rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
+        style={{ 
+          background: colors.bg,
+          border: `1px solid ${colors.border}`,
+        }}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-          <h2 className="text-lg font-bold text-slate-900">Edit Image</h2>
-          <div className="flex items-center gap-2">
+        <div 
+          className="flex items-center justify-between px-6 py-4"
+          style={{ borderBottom: `1px solid ${colors.border}` }}
+        >
+          <h2 className="text-lg font-bold" style={{ color: colors.text }}>Edit Image</h2>
+          <div className="flex items-center gap-3">
             <button
               onClick={onCancel}
-              className="px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+              className="px-4 py-2 rounded-lg transition-colors"
+              style={{ 
+                color: colors.textMuted,
+                backgroundColor: "transparent",
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.surface}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-600 text-white hover:bg-cyan-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium transition-colors hover:opacity-90"
+              style={{ backgroundColor: colors.primary }}
             >
               <Check size={18} />
               Save
@@ -160,36 +201,39 @@ export default function ImageEditor({ block, onSave, onCancel }: ImageEditorProp
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 px-6 pt-4 border-b border-slate-200">
+        <div className="flex gap-1 px-6 pt-4" style={{ borderBottom: `1px solid ${colors.border}` }}>
           <button
             onClick={() => setActiveTab("crop")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors ${
-              activeTab === "crop"
-                ? "bg-slate-100 text-slate-900 border-b-2 border-cyan-500"
-                : "text-slate-500 hover:text-slate-700"
-            }`}
+            className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors"
+            style={{
+              backgroundColor: activeTab === "crop" ? colors.surface : "transparent",
+              color: activeTab === "crop" ? colors.text : colors.textMuted,
+              borderBottom: activeTab === "crop" ? `2px solid ${colors.primary}` : "2px solid transparent",
+            }}
           >
             <Crop size={18} />
             Crop
           </button>
           <button
             onClick={() => setActiveTab("mask")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors ${
-              activeTab === "mask"
-                ? "bg-slate-100 text-slate-900 border-b-2 border-cyan-500"
-                : "text-slate-500 hover:text-slate-700"
-            }`}
+            className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors"
+            style={{
+              backgroundColor: activeTab === "mask" ? colors.surface : "transparent",
+              color: activeTab === "mask" ? colors.text : colors.textMuted,
+              borderBottom: activeTab === "mask" ? `2px solid ${colors.primary}` : "2px solid transparent",
+            }}
           >
             <Circle size={18} />
             Mask
           </button>
           <button
             onClick={() => setActiveTab("adjust")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors ${
-              activeTab === "adjust"
-                ? "bg-slate-100 text-slate-900 border-b-2 border-cyan-500"
-                : "text-slate-500 hover:text-slate-700"
-            }`}
+            className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors"
+            style={{
+              backgroundColor: activeTab === "adjust" ? colors.surface : "transparent",
+              color: activeTab === "adjust" ? colors.text : colors.textMuted,
+              borderBottom: activeTab === "adjust" ? `2px solid ${colors.primary}` : "2px solid transparent",
+            }}
           >
             <ZoomIn size={18} />
             Adjust
@@ -203,7 +247,8 @@ export default function ImageEditor({ block, onSave, onCancel }: ImageEditorProp
             <div className="flex-1">
               <div
                 ref={containerRef}
-                className="relative aspect-video bg-slate-100 rounded-xl overflow-hidden"
+                className="relative aspect-video rounded-xl overflow-hidden"
+                style={{ backgroundColor: colors.surface }}
               >
                 <img
                   ref={imageRef}
@@ -269,45 +314,65 @@ export default function ImageEditor({ block, onSave, onCancel }: ImageEditorProp
             <div className="w-64 space-y-6">
               {activeTab === "crop" && (
                 <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-slate-700">Crop Area</h3>
-                  <p className="text-xs text-slate-500">
+                  <h3 className="text-sm font-semibold" style={{ color: colors.text }}>Crop Area</h3>
+                  <p className="text-xs" style={{ color: colors.textMuted }}>
                     Drag the corners or the center to adjust the crop area.
                   </p>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs text-slate-500">X Position</label>
+                      <label className="text-xs" style={{ color: colors.textMuted }}>X Position</label>
                       <input
                         type="number"
                         value={Math.round(cropArea.x)}
                         onChange={(e) => setCropArea(prev => ({ ...prev, x: Number(e.target.value) }))}
-                        className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm"
+                        className="w-full px-3 py-2 rounded-lg text-sm"
+                        style={{ 
+                          backgroundColor: colors.surface, 
+                          border: `1px solid ${colors.border}`,
+                          color: colors.text,
+                        }}
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-slate-500">Y Position</label>
+                      <label className="text-xs" style={{ color: colors.textMuted }}>Y Position</label>
                       <input
                         type="number"
                         value={Math.round(cropArea.y)}
                         onChange={(e) => setCropArea(prev => ({ ...prev, y: Number(e.target.value) }))}
-                        className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm"
+                        className="w-full px-3 py-2 rounded-lg text-sm"
+                        style={{ 
+                          backgroundColor: colors.surface, 
+                          border: `1px solid ${colors.border}`,
+                          color: colors.text,
+                        }}
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-slate-500">Width %</label>
+                      <label className="text-xs" style={{ color: colors.textMuted }}>Width %</label>
                       <input
                         type="number"
                         value={Math.round(cropArea.width)}
                         onChange={(e) => setCropArea(prev => ({ ...prev, width: Number(e.target.value) }))}
-                        className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm"
+                        className="w-full px-3 py-2 rounded-lg text-sm"
+                        style={{ 
+                          backgroundColor: colors.surface, 
+                          border: `1px solid ${colors.border}`,
+                          color: colors.text,
+                        }}
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-slate-500">Height %</label>
+                      <label className="text-xs" style={{ color: colors.textMuted }}>Height %</label>
                       <input
                         type="number"
                         value={Math.round(cropArea.height)}
                         onChange={(e) => setCropArea(prev => ({ ...prev, height: Number(e.target.value) }))}
-                        className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm"
+                        className="w-full px-3 py-2 rounded-lg text-sm"
+                        style={{ 
+                          backgroundColor: colors.surface, 
+                          border: `1px solid ${colors.border}`,
+                          color: colors.text,
+                        }}
                       />
                     </div>
                   </div>
@@ -316,17 +381,18 @@ export default function ImageEditor({ block, onSave, onCancel }: ImageEditorProp
 
               {activeTab === "mask" && (
                 <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-slate-700">Shape Mask</h3>
+                  <h3 className="text-sm font-semibold" style={{ color: colors.text }}>Shape Mask</h3>
                   <div className="grid grid-cols-3 gap-2">
                     {maskOptions.map((option) => (
                       <button
                         key={option.type}
                         onClick={() => setMask(option.type)}
-                        className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-colors ${
-                          mask === option.type
-                            ? "border-cyan-500 bg-cyan-50 text-cyan-700"
-                            : "border-slate-200 hover:border-slate-300 text-slate-600"
-                        }`}
+                        className="flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-colors"
+                        style={{
+                          borderColor: mask === option.type ? colors.primary : colors.border,
+                          backgroundColor: mask === option.type ? `${colors.primary}15` : "transparent",
+                          color: mask === option.type ? colors.primary : colors.textMuted,
+                        }}
                       >
                         {option.icon}
                         <span className="text-xs">{option.label}</span>
@@ -339,10 +405,11 @@ export default function ImageEditor({ block, onSave, onCancel }: ImageEditorProp
               {activeTab === "adjust" && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-slate-700">Adjustments</h3>
+                    <h3 className="text-sm font-semibold" style={{ color: colors.text }}>Adjustments</h3>
                     <button
                       onClick={resetFilters}
-                      className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700"
+                      className="flex items-center gap-1 text-xs transition-colors hover:opacity-80"
+                      style={{ color: colors.textMuted }}
                     >
                       <RotateCcw size={12} />
                       Reset
@@ -351,7 +418,7 @@ export default function ImageEditor({ block, onSave, onCancel }: ImageEditorProp
                   
                   <div className="space-y-4">
                     <div>
-                      <div className="flex justify-between text-xs text-slate-600 mb-1">
+                      <div className="flex justify-between text-xs mb-1" style={{ color: colors.textMuted }}>
                         <span>Brightness</span>
                         <span>{brightness}%</span>
                       </div>
@@ -361,12 +428,13 @@ export default function ImageEditor({ block, onSave, onCancel }: ImageEditorProp
                         max="200"
                         value={brightness}
                         onChange={(e) => setBrightness(Number(e.target.value))}
-                        className="w-full accent-cyan-500"
+                        className="w-full"
+                        style={{ accentColor: colors.primary }}
                       />
                     </div>
                     
                     <div>
-                      <div className="flex justify-between text-xs text-slate-600 mb-1">
+                      <div className="flex justify-between text-xs mb-1" style={{ color: colors.textMuted }}>
                         <span>Contrast</span>
                         <span>{contrast}%</span>
                       </div>
@@ -376,12 +444,13 @@ export default function ImageEditor({ block, onSave, onCancel }: ImageEditorProp
                         max="200"
                         value={contrast}
                         onChange={(e) => setContrast(Number(e.target.value))}
-                        className="w-full accent-cyan-500"
+                        className="w-full"
+                        style={{ accentColor: colors.primary }}
                       />
                     </div>
                     
                     <div>
-                      <div className="flex justify-between text-xs text-slate-600 mb-1">
+                      <div className="flex justify-between text-xs mb-1" style={{ color: colors.textMuted }}>
                         <span>Saturation</span>
                         <span>{saturation}%</span>
                       </div>
@@ -391,23 +460,24 @@ export default function ImageEditor({ block, onSave, onCancel }: ImageEditorProp
                         max="200"
                         value={saturation}
                         onChange={(e) => setSaturation(Number(e.target.value))}
-                        className="w-full accent-cyan-500"
+                        className="w-full"
+                        style={{ accentColor: colors.primary }}
                       />
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-slate-200">
-                    <h4 className="text-xs font-semibold text-slate-600 mb-2">Object Fit</h4>
+                  <div className="pt-4" style={{ borderTop: `1px solid ${colors.border}` }}>
+                    <h4 className="text-xs font-semibold mb-2" style={{ color: colors.textMuted }}>Object Fit</h4>
                     <div className="flex gap-2">
                       {(["cover", "contain", "fill"] as const).map((fit) => (
                         <button
                           key={fit}
                           onClick={() => setObjectFit(fit)}
-                          className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium capitalize transition-colors ${
-                            objectFit === fit
-                              ? "bg-cyan-100 text-cyan-700"
-                              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                          }`}
+                          className="flex-1 px-3 py-2 rounded-lg text-xs font-medium capitalize transition-colors"
+                          style={{
+                            backgroundColor: objectFit === fit ? `${colors.primary}20` : colors.surface,
+                            color: objectFit === fit ? colors.primary : colors.textMuted,
+                          }}
                         >
                           {fit}
                         </button>

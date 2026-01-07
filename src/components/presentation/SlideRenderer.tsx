@@ -25,6 +25,7 @@ import { ImageLayoutRenderer } from "~/components/layouts/ImageLayoutRenderer";
 import ContentLayoutSelector from "./ContentLayoutSelector";
 import ChartRenderer from "./ChartRenderer";
 import ImageHoverToolbar from "./ImageHoverToolbar";
+import ImageDragZones from "./ImageDragZones";
 
 // Helper to determine layout category from layout style ID
 function getLayoutCategory(layoutId: string): ContentLayoutCategory {
@@ -57,6 +58,7 @@ interface SlideRendererProps {
   onDeleteBullet: (slideIndex: number, bulletIndex: number) => void;
   onDeleteTitle?: (slideIndex: number) => void;
   onDeleteSubtitle?: (slideIndex: number) => void;
+  onReorderContent?: (slideIndex: number, fromIndex: number, toIndex: number) => void;
   onChangeContentLayout?: (slideIndex: number, layoutId: BoxLayoutType) => void;
   onOpenContentLayoutPanel?: () => void;
   onUpdateChart?: (slideIndex: number, chart: SlideChartData) => void;
@@ -205,8 +207,10 @@ function getLayoutVariant(index: number, themeType: ThemeType, slideLayout?: str
       "image-top": "image-top",
       "image-bottom": "image-bottom",
       // SlideLayoutType mappings (canonical image position system)
-      "image-left": "left-content",
-      "image-right": "right-content",
+      // image-left = image on LEFT side, content on right → use right-content layout
+      // image-right = image on RIGHT side, content on left → use left-content layout
+      "image-left": "right-content",
+      "image-right": "left-content",
       "no-image": "centered",
       "image-full": "full-image",
       // Title slide variants
@@ -256,12 +260,13 @@ function getSlideImages(slide: SlideData) {
 export default function SlideRenderer({
   slide, index, totalSlides, theme, isOwner, isFullscreen, isHovered, isEditing,
   editingText, showPageNumber = true, onStartEditing, onUpdateContent, onFinishEditing, onAddBullet, onDeleteBullet,
-  onDeleteTitle, onDeleteSubtitle, onChangeContentLayout, onOpenContentLayoutPanel, onUpdateChart,
+  onDeleteTitle, onDeleteSubtitle, onReorderContent, onChangeContentLayout, onOpenContentLayoutPanel, onUpdateChart,
   onOpenImageModal, onRemoveImage, onChangeImageShape, onChangeImagePosition, onReorderImages,
 }: SlideRendererProps) {
   const [showContentLayoutSelector, setShowContentLayoutSelector] = useState(false);
   const [contentHovered, setContentHovered] = useState(false);
   const [hoveredImageIndex, setHoveredImageIndex] = useState<number | null>(null);
+  const [isDraggingImage, setIsDraggingImage] = useState(false);
   
   const allImages = getSlideImages(slide);
   const hasImage = allImages.length > 0;
@@ -1068,6 +1073,7 @@ export default function SlideRenderer({
           onUpdateText: canEdit ? handleUpdateText : undefined,
           onFinishEditing,
           onDeleteItem: canEdit ? (itemIndex: number) => onDeleteBullet(index, itemIndex) : undefined,
+          onReorderItems: canEdit && onReorderContent ? (fromIdx: number, toIdx: number) => onReorderContent(index, fromIdx, toIdx) : undefined,
           isOwner: canEdit,
           isHovered,
         };
@@ -1466,10 +1472,18 @@ export default function SlideRenderer({
                 src={firstImage.url} 
                 alt={firstImage.alt || slide.title} 
                 className="w-full h-full object-cover"
-                style={{ display: "block", minHeight: "100%" }}
+                style={{ display: "block", minHeight: "100%", cursor: canEdit && onChangeImagePosition ? "grab" : "default" }}
+                draggable={canEdit && !!onChangeImagePosition}
+                onDragStart={(e) => {
+                  if (!canEdit || !onChangeImagePosition) return;
+                  e.dataTransfer.effectAllowed = "move";
+                  e.dataTransfer.setData("text/plain", "image-drag");
+                  setIsDraggingImage(true);
+                }}
+                onDragEnd={() => setIsDraggingImage(false)}
               />
               {/* Image Hover Toolbar */}
-              {canEdit && hoveredImageIndex === 0 && onOpenImageModal && onRemoveImage && onChangeImageShape && (
+              {canEdit && hoveredImageIndex === 0 && onOpenImageModal && onRemoveImage && onChangeImageShape && !isDraggingImage && (
                 <ImageHoverToolbar
                   slideIndex={index}
                   imageIndex={0}
@@ -1490,6 +1504,18 @@ export default function SlideRenderer({
           )}
           {slide.image?.source === "placeholder" && <div className="w-full sm:w-[40%] p-4 sm:p-8"><Placeholder /></div>}
         </div>
+        {/* Image Drag Zones - shown when dragging image */}
+        {isDraggingImage && onChangeImagePosition && (
+          <ImageDragZones
+            isVisible={isDraggingImage}
+            currentPosition="right"
+            onDropPosition={(position) => {
+              onChangeImagePosition(index, position);
+              setIsDraggingImage(false);
+            }}
+            theme={isThemeDark ? "dark" : "light"}
+          />
+        )}
         <div className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${colors.borderLine} to-transparent`} />
         <style jsx>{`
           .slide-clip-left { clip-path: none; }
@@ -1527,10 +1553,18 @@ export default function SlideRenderer({
                 src={firstImage.url} 
                 alt={firstImage.alt || slide.title} 
                 className="w-full h-full object-cover"
-                style={{ display: "block", minHeight: "100%" }}
+                style={{ display: "block", minHeight: "100%", cursor: canEdit && onChangeImagePosition ? "grab" : "default" }}
+                draggable={canEdit && !!onChangeImagePosition}
+                onDragStart={(e) => {
+                  if (!canEdit || !onChangeImagePosition) return;
+                  e.dataTransfer.effectAllowed = "move";
+                  e.dataTransfer.setData("text/plain", "image-drag");
+                  setIsDraggingImage(true);
+                }}
+                onDragEnd={() => setIsDraggingImage(false)}
               />
               {/* Image Hover Toolbar */}
-              {canEdit && hoveredImageIndex === 0 && onOpenImageModal && onRemoveImage && onChangeImageShape && (
+              {canEdit && hoveredImageIndex === 0 && onOpenImageModal && onRemoveImage && onChangeImageShape && !isDraggingImage && (
                 <ImageHoverToolbar
                   slideIndex={index}
                   imageIndex={0}
@@ -1557,6 +1591,18 @@ export default function SlideRenderer({
             {!isTitleSlide && <EnhancedContent />}
           </div>
         </div>
+        {/* Image Drag Zones - shown when dragging image */}
+        {isDraggingImage && onChangeImagePosition && (
+          <ImageDragZones
+            isVisible={isDraggingImage}
+            currentPosition="left"
+            onDropPosition={(position) => {
+              onChangeImagePosition(index, position);
+              setIsDraggingImage(false);
+            }}
+            theme={isThemeDark ? "dark" : "light"}
+          />
+        )}
         <div className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${colors.borderLine} to-transparent`} />
         <style jsx>{`
           .slide-clip-right { clip-path: none; }
@@ -1593,9 +1639,18 @@ export default function SlideRenderer({
               src={firstImage.url} 
               alt={firstImage.alt || slide.title} 
               className="w-full h-full object-cover"
+              style={{ cursor: canEdit && onChangeImagePosition ? "grab" : "default" }}
+              draggable={canEdit && !!onChangeImagePosition}
+              onDragStart={(e) => {
+                if (!canEdit || !onChangeImagePosition) return;
+                e.dataTransfer.effectAllowed = "move";
+                e.dataTransfer.setData("text/plain", "image-drag");
+                setIsDraggingImage(true);
+              }}
+              onDragEnd={() => setIsDraggingImage(false)}
             />
             {/* Image Hover Toolbar */}
-            {canEdit && hoveredImageIndex === 0 && onOpenImageModal && onRemoveImage && onChangeImageShape && (
+            {canEdit && hoveredImageIndex === 0 && onOpenImageModal && onRemoveImage && onChangeImageShape && !isDraggingImage && (
               <ImageHoverToolbar
                 slideIndex={index}
                 imageIndex={0}
@@ -1630,6 +1685,18 @@ export default function SlideRenderer({
           )}
         </div>
         
+        {/* Image Drag Zones - shown when dragging image */}
+        {isDraggingImage && onChangeImagePosition && (
+          <ImageDragZones
+            isVisible={isDraggingImage}
+            currentPosition="top"
+            onDropPosition={(position) => {
+              onChangeImagePosition(index, position);
+              setIsDraggingImage(false);
+            }}
+            theme={isThemeDark ? "dark" : "light"}
+          />
+        )}
         <div className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${colors.borderLine} to-transparent`} />
         <style jsx>{`
           .slide-clip-top { clip-path: none; }
@@ -1681,9 +1748,18 @@ export default function SlideRenderer({
               src={firstImage.url} 
               alt={firstImage.alt || slide.title} 
               className="w-full h-full object-cover"
+              style={{ cursor: canEdit && onChangeImagePosition ? "grab" : "default" }}
+              draggable={canEdit && !!onChangeImagePosition}
+              onDragStart={(e) => {
+                if (!canEdit || !onChangeImagePosition) return;
+                e.dataTransfer.effectAllowed = "move";
+                e.dataTransfer.setData("text/plain", "image-drag");
+                setIsDraggingImage(true);
+              }}
+              onDragEnd={() => setIsDraggingImage(false)}
             />
             {/* Image Hover Toolbar */}
-            {canEdit && hoveredImageIndex === 0 && onOpenImageModal && onRemoveImage && onChangeImageShape && (
+            {canEdit && hoveredImageIndex === 0 && onOpenImageModal && onRemoveImage && onChangeImageShape && !isDraggingImage && (
               <ImageHoverToolbar
                 slideIndex={index}
                 imageIndex={0}
@@ -1703,6 +1779,18 @@ export default function SlideRenderer({
           </div>
         )}
         
+        {/* Image Drag Zones - shown when dragging image */}
+        {isDraggingImage && onChangeImagePosition && (
+          <ImageDragZones
+            isVisible={isDraggingImage}
+            currentPosition="bottom"
+            onDropPosition={(position) => {
+              onChangeImagePosition(index, position);
+              setIsDraggingImage(false);
+            }}
+            theme={isThemeDark ? "dark" : "light"}
+          />
+        )}
         <div className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${colors.borderLine} to-transparent`} />
         <style jsx>{`
           .slide-clip-bottom { clip-path: none; }

@@ -1196,6 +1196,48 @@ export default function PresentationViewer({
     }
   };
 
+  const reorderContent = (slideIndex: number, fromIndex: number, toIndex: number) => {
+    const slide = slidesData[slideIndex];
+    if (!slide) return;
+    
+    const newSlides = [...slidesData];
+    
+    // Reorder bullet points
+    if (slide.bulletPoints && slide.bulletPoints.length > 0) {
+      const newBulletPoints = [...slide.bulletPoints];
+      const [removed] = newBulletPoints.splice(fromIndex, 1);
+      if (removed !== undefined) {
+        newBulletPoints.splice(toIndex, 0, removed);
+      }
+      newSlides[slideIndex] = { ...slide, bulletPoints: newBulletPoints };
+    }
+    
+    // Reorder sections if they exist
+    if (slide.sections && slide.sections.length > 0) {
+      const newSections = [...slide.sections];
+      const [removed] = newSections.splice(fromIndex, 1);
+      if (removed !== undefined) {
+        newSections.splice(toIndex, 0, removed);
+      }
+      newSlides[slideIndex] = { ...newSlides[slideIndex]!, sections: newSections };
+    }
+    
+    // Reorder transformedContent if it exists
+    if (slide.transformedContent?.items && slide.transformedContent.items.length > 0) {
+      const newItems = [...slide.transformedContent.items];
+      const [removed] = newItems.splice(fromIndex, 1);
+      if (removed !== undefined) {
+        newItems.splice(toIndex, 0, removed);
+      }
+      newSlides[slideIndex] = { 
+        ...newSlides[slideIndex]!, 
+        transformedContent: { ...slide.transformedContent, items: newItems } 
+      };
+    }
+    
+    updateSlidesWithSave(newSlides);
+  };
+
   const startEditing = (slideIndex: number, field: string, bulletIndex?: number) => {
     setEditingText({ slideIndex, field, bulletIndex });
   };
@@ -1304,28 +1346,9 @@ export default function PresentationViewer({
   if (streamingStatus === "loading") {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center max-w-md px-6">
-          {/* Spinner Animation */}
-          <div className="relative w-24 h-24 mx-auto mb-8">
-            {/* Outer Ring */}
-            <div className="absolute inset-0 border-4 border-slate-200 rounded-full"></div>
-
-            {/* Spinning Gradient Ring */}
-            <div className="absolute inset-0 border-4 border-transparent border-t-[#1e3a8a] border-r-[#06b6d4] rounded-full animate-spin"></div>
-
-            {/* Inner Pulsing Circle */}
-            <div className="absolute inset-3 bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] rounded-full animate-pulse"></div>
-          </div>
-
-          {/* Loading Text */}
-          <div className="space-y-2 mb-6">
-            <h2 className="text-xl font-bold text-slate-900">Loading...</h2>
-            <div className="flex gap-1 justify-center">
-              <div className="h-2 w-2 bg-[#1e3a8a] rounded-full animate-bounce"></div>
-              <div className="h-2 w-2 bg-[#06b6d4] rounded-full animate-bounce [animation-delay:100ms]"></div>
-              <div className="h-2 w-2 bg-[#1e3a8a] rounded-full animate-bounce [animation-delay:200ms]"></div>
-            </div>
-          </div>
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-slate-200 border-t-slate-600 rounded-full animate-spin mx-auto mb-3"></div>
+          <p className="text-sm text-slate-600">Loading...</p>
         </div>
       </div>
     );
@@ -1336,20 +1359,9 @@ export default function PresentationViewer({
     if (streamingStatus === "streaming" && slides.length === 0) {
       return (
         <div className="min-h-screen bg-white flex items-center justify-center">
-          <div className="text-center max-w-md px-6">
-            <div className="relative w-24 h-24 mx-auto mb-8">
-              <div className="absolute inset-0 border-4 border-slate-200 rounded-full"></div>
-              <div className="absolute inset-0 border-4 border-transparent border-t-[#1e3a8a] border-r-[#06b6d4] rounded-full animate-spin"></div>
-              <div className="absolute inset-3 bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] rounded-full animate-pulse"></div>
-            </div>
-            <div className="space-y-2 mb-6">
-              <h2 className="text-xl font-bold text-slate-900">Generating slides...</h2>
-              <div className="flex gap-1 justify-center">
-                <div className="h-2 w-2 bg-[#1e3a8a] rounded-full animate-bounce"></div>
-                <div className="h-2 w-2 bg-[#06b6d4] rounded-full animate-bounce [animation-delay:100ms]"></div>
-                <div className="h-2 w-2 bg-[#1e3a8a] rounded-full animate-bounce [animation-delay:200ms]"></div>
-              </div>
-            </div>
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-slate-200 border-t-slate-600 rounded-full animate-spin mx-auto mb-3"></div>
+            <p className="text-sm text-slate-600">Generating slides...</p>
           </div>
         </div>
       );
@@ -1670,6 +1682,7 @@ export default function PresentationViewer({
             onDeleteBullet={deleteBulletPoint}
             onDeleteTitle={deleteTitle}
             onDeleteSubtitle={deleteSubtitle}
+            onReorderContent={reorderContent}
             onChangeContentLayout={changeContentLayout}
             onOpenContentLayoutPanel={() => { setActiveSlideIndex(index); setShowContentLayoutPanel(true); }}
             onOpenImageModal={openImageModal}
@@ -2212,6 +2225,7 @@ export default function PresentationViewer({
             editingIndex={editingImageIndex}
             isLoading={isLoadingImage}
             theme={theme}
+            presentationId={presentation.id}
             onUrlChange={setImageUrl}
             onAddImage={() => addSlideImage(showImageModal, imageUrl)}
             onUpdateImage={(idx) => updateSlideImage(showImageModal, idx, imageUrl)}
@@ -2223,6 +2237,9 @@ export default function PresentationViewer({
             onOpenWysiwygEditor={(idx) => {
               setShowImageModal(null);
               setShowImageEditor({ slideIndex: showImageModal, imageIndex: idx });
+            }}
+            onAddGeneratedImage={(url) => {
+              addSlideImage(showImageModal, url);
             }}
           />
         )}
@@ -2292,6 +2309,7 @@ export default function PresentationViewer({
           return (
             <ImageEditor
               block={imageBlock}
+              theme={theme}
               onSave={(updatedBlock) => {
                 // Update the image in the slide
                 const newSlides = [...slidesData];

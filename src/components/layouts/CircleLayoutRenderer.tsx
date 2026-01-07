@@ -75,6 +75,7 @@ interface CircleLayoutRendererProps {
   onUpdateText?: (index: number, value: string) => void;
   onFinishEditing?: () => void;
   onDeleteItem?: (index: number) => void;
+  onReorderItems?: (fromIndex: number, toIndex: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
 }
