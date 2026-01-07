@@ -3,7 +3,14 @@
 import { createPortal } from "react-dom";
 import { X, Lock, Sparkles, ArrowRight } from "lucide-react";
 import { cn } from "~/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+type PolarProduct = {
+  key: string;
+  name: string;
+  monthly: { priceAmount: number } | null;
+  yearly: { priceAmount: number } | null;
+};
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -19,20 +26,20 @@ const PLAN_INFO = {
   plus: {
     name: 'Plus',
     color: 'from-blue-500 to-cyan-500',
-    features: ['20 cards per prompt', '1,000 monthly credits', 'Remove branding', 'Advanced AI models'],
-    price: { monthly: '$10', yearly: '$8' },
+    features: ['1,000 monthly credits', '20 cards per prompt', 'Remove PPTMaster branding', 'Advanced AI models'],
+    includesText: null,
   },
   pro: {
     name: 'Pro',
     color: 'from-purple-500 to-pink-500',
-    features: ['60 cards per prompt', '4,000 monthly credits', 'Custom themes & branding', 'Analytics & API access'],
-    price: { monthly: '$25', yearly: '$18' },
+    features: ['4,000 monthly credits', '60 cards per prompt', 'Premium AI image models', 'Custom branding & fonts', 'Detailed analytics & advanced sharing'],
+    includesText: 'Everything in Plus, and:',
   },
   ultra: {
     name: 'Ultra',
     color: 'from-orange-500 to-red-500',
-    features: ['75 cards per prompt', '20,000 monthly credits', 'Most advanced AI models', '100 custom domains'],
-    price: { monthly: '$100', yearly: '$90' },
+    features: ['20,000 monthly credits', '75 cards per prompt', 'Most advanced AI models (text, image, video)', 'Early access to new features'],
+    includesText: 'Everything in Pro, and:',
   },
 };
 
@@ -46,11 +53,37 @@ export default function UpgradeModal({
   onOpenPricing,
 }: UpgradeModalProps) {
   const [isNavigating, setIsNavigating] = useState(false);
+  const [products, setProducts] = useState<PolarProduct[]>([]);
+  const [loadingPrices, setLoadingPrices] = useState(false);
+  
+  // Reset navigation state when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setIsNavigating(false);
+    }
+  }, [isOpen]);
+  
+  // Fetch prices when modal opens
+  useEffect(() => {
+    if (isOpen && products.length === 0) {
+      setLoadingPrices(true);
+      fetch("/api/polar/products")
+        .then(res => res.json())
+        .then(data => setProducts(data))
+        .catch(console.error)
+        .finally(() => setLoadingPrices(false));
+    }
+  }, [isOpen, products.length]);
   
   if (!isOpen || typeof window === 'undefined') return null;
 
   const planInfo = PLAN_INFO[requiredPlan];
   const currentPlanLower = currentPlan?.toLowerCase();
+  
+  // Get dynamic price from Polar
+  const product = products.find(p => p.key === requiredPlan);
+  const yearlyPrice = product?.yearly?.priceAmount ? product.yearly.priceAmount / 100 : null;
+  const yearlyMonthly = yearlyPrice ? Math.round(yearlyPrice / 12) : null;
 
   const handleUpgrade = () => {
     setIsNavigating(true);
@@ -117,16 +150,25 @@ export default function UpgradeModal({
                 {planInfo.name} Plan
               </h3>
               <div className="text-right">
-                <div className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {planInfo.price.yearly}
-                  <span className="text-sm font-normal text-slate-500 dark:text-neutral-400">/mo</span>
-                </div>
-                <div className="text-xs text-slate-500 dark:text-neutral-500">
-                  billed annually
-                </div>
+                {loadingPrices ? (
+                  <div className="h-8 w-16 bg-slate-200 dark:bg-neutral-700 animate-pulse rounded" />
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                      ${yearlyMonthly ?? '—'}
+                      <span className="text-sm font-normal text-slate-500 dark:text-neutral-400">/mo</span>
+                    </div>
+                    <div className="text-xs text-slate-500 dark:text-neutral-500">
+                      billed annually
+                    </div>
+                  </>
+                )}
               </div>
             </div>
             
+            {planInfo.includesText && (
+              <p className="text-xs text-slate-500 dark:text-neutral-400 font-semibold mb-2">{planInfo.includesText}</p>
+            )}
             <ul className="space-y-2">
               {planInfo.features.map((feat, idx) => (
                 <li key={idx} className="flex items-start gap-2 text-sm text-slate-600 dark:text-neutral-300">

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { X, CheckCircle2, Loader2, AlertCircle, Zap, Plus, Sparkles } from "lucide-react";
+import { X, Loader2, AlertCircle, Zap, Plus, Sparkles } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
@@ -46,6 +46,14 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
 
   // Check if user is a paid subscriber
   const isPaidUser = currentPlan && currentPlan.toLowerCase() !== 'free';
+
+  // Reset loading state when modal opens (handles back navigation)
+  useEffect(() => {
+    if (isOpen) {
+      setCheckoutLoadingId(null);
+      setTopupLoadingId(null);
+    }
+  }, [isOpen]);
 
   // Fetch products when modal opens
   useEffect(() => {
@@ -140,11 +148,6 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
       alert(err.message || "Failed to start checkout");
       setTopupLoadingId(null);
     }
-  };
-
-  const getFeatures = (desc?: string) => {
-    if (!desc) return [];
-    return desc.split('\n').filter(line => line.trim().startsWith('•')).map(line => line.replace('•', '').trim());
   };
 
   // Don't render anything on server or if not open
@@ -250,7 +253,7 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
                   </button>
                 </div>
               ) : (
-                <div className="grid gap-4 md:grid-cols-3">
+                <div className="grid gap-3 md:grid-cols-3">
                   {products.map((product) => {
                     const priceData = isAnnual ? product.yearly : product.monthly;
                     const activePrice = priceData || product.monthly || product.yearly;
@@ -266,7 +269,7 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
                         return [
                           'Create up to 20 cards per prompt',
                           '1,000 monthly credits',
-                          'Remove Gamma branding',
+                          'Remove PPTMaster branding',
                           'Advanced AI image models',
                         ];
                       } else if (key === 'pro') {
@@ -276,16 +279,12 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
                           'Premium AI image models',
                           'Custom branding & fonts',
                           'Detailed analytics & advanced sharing',
-                          'Publish up to 10 custom domains',
-                          'API access',
-                          'Workspace templates',
                         ];
                       } else if (key === 'ultra') {
                         return [
                           'Create up to 75 cards per prompt',
                           '20,000 monthly credits',
                           'Access to the most advanced AI models (text, image, video)',
-                          'Publish up to 100 custom domains',
                           'Early access to new features',
                         ];
                       }
@@ -293,12 +292,17 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
                     };
 
                     const features = getPlanFeatures(product.key);
+                    
+                    // Get dynamic prices from Polar
+                    const monthlyPrice = product.monthly?.priceAmount ? product.monthly.priceAmount / 100 : null;
+                    const yearlyPrice = product.yearly?.priceAmount ? product.yearly.priceAmount / 100 : null;
+                    const yearlyMonthly = yearlyPrice ? Math.round(yearlyPrice / 12) : monthlyPrice;
 
                     return (
                       <div
                         key={product.key}
                         className={cn(
-                          "relative rounded-md p-5 border transition-all duration-300 flex flex-col h-full",
+                          "relative rounded-lg p-4 border transition-all duration-300 flex flex-col h-full",
                           isHighlighted
                             ? "bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white border-transparent shadow-xl scale-[1.02]"
                             : "bg-white dark:bg-neutral-800 text-slate-900 dark:text-white border-slate-200 dark:border-neutral-700 hover:border-[#06b6d4]",
@@ -306,91 +310,90 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
                         )}
                       >
                         {isHighlighted && (
-                          <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap">
+                          <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-lg whitespace-nowrap">
                             MOST POPULAR
                           </div>
                         )}
                         {isUltra && !isCurrentPlan && (
-                          <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap">
+                          <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-lg whitespace-nowrap">
                             INTRODUCTORY PRICE
                           </div>
                         )}
                         {isCurrentPlan && (
-                          <div className="absolute -top-2.5 right-4 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg">
+                          <div className="absolute -top-2.5 right-4 bg-green-500 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-lg">
                             CURRENT
                           </div>
                         )}
 
                         <div className={cn(isHighlighted || (isUltra && !isCurrentPlan) ? "pt-1" : "")}>
-                          <h3 className="text-lg font-bold mb-1">{product.name}</h3>
-                          <p className={cn("text-xs mb-4 line-clamp-2", isHighlighted ? "text-white/80" : "text-slate-500 dark:text-neutral-400")}>
-                            {product.key === 'plus' ? 'For extra AI power and removing Gamma branding' :
-                             product.key === 'pro' ? 'For premium AI models, API, and more customization' :
-                             product.key === 'ultra' ? 'For 20× more AI usage and unlocking access to the most advanced models' :
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <span className={cn("text-sm", isHighlighted ? "text-white" : "text-[#06b6d4]")}>✦</span>
+                            <h3 className="text-lg font-bold">{product.name}</h3>
+                          </div>
+                          <p className={cn("text-xs mb-3", isHighlighted ? "text-white/70" : "text-slate-500 dark:text-neutral-400")}>
+                            {product.key === 'plus' ? 'Unlimited AI creations' :
+                             product.key === 'pro' ? 'For premium AI and customization' :
+                             product.key === 'ultra' ? 'For 20× more AI usage' :
                              product.description?.split('\n')[0] || "Unlock your potential."}
                           </p>
 
-                          <div className="mb-4">
+                          <div className="mb-3">
                             {isAnnual ? (
                               <>
                                 <div className="flex items-baseline gap-1">
-                                  <span className="text-2xl font-extrabold">
-                                    {product.key === 'plus' ? '$8' : product.key === 'pro' ? '$18' : product.key === 'ultra' ? '$90' : activePrice.displayPrice.split('/')[0]}
+                                  <span className="text-2xl font-bold">
+                                    ${yearlyMonthly ?? 0}
                                   </span>
-                                  <span className={cn("text-xs", isHighlighted ? "text-white/70" : "text-slate-500 dark:text-neutral-500")}>/ seat / month</span>
+                                  <span className={cn("text-xs", isHighlighted ? "text-white/60" : "text-slate-500 dark:text-neutral-500")}>/ seat / month</span>
                                 </div>
-                                <p className={cn("text-[10px] mt-0.5", isHighlighted ? "text-white/60" : "text-slate-400 dark:text-neutral-500")}>
-                                  {product.key === 'plus' ? '$96 per seat, billed annually' :
-                                   product.key === 'pro' ? '$216 per seat, billed annually' :
-                                   product.key === 'ultra' ? '$1,080 per seat, billed annually' :
-                                   `Billed annually`}
+                                <p className={cn("text-xs", isHighlighted ? "text-white/50" : "text-slate-400 dark:text-neutral-500")}>
+                                  ${yearlyPrice?.toLocaleString() ?? 0} per seat, billed annually
                                 </p>
                               </>
                             ) : (
                               <div className="flex items-baseline gap-1">
-                                <span className="text-2xl font-extrabold">
-                                  {product.key === 'plus' ? '$10' : product.key === 'pro' ? '$25' : product.key === 'ultra' ? '$100' : activePrice.displayPrice.split('/')[0]}
+                                <span className="text-2xl font-bold">
+                                  ${monthlyPrice ?? 0}
                                 </span>
-                                <span className={cn("text-xs", isHighlighted ? "text-white/70" : "text-slate-500 dark:text-neutral-500")}>/ seat / month</span>
+                                <span className={cn("text-xs", isHighlighted ? "text-white/60" : "text-slate-500 dark:text-neutral-500")}>/ seat / month</span>
                               </div>
                             )}
                           </div>
 
-                          <button
-                            onClick={() => handleSubscribe(product.key)}
-                            disabled={!!checkoutLoadingId || isCurrentPlan}
-                            className={cn(
-                              "w-full rounded py-2 px-4 font-semibold text-xs mb-4 transition-all disabled:opacity-70 disabled:cursor-not-allowed",
-                              isHighlighted
-                                ? "bg-white text-[#1e3a8a] hover:bg-slate-100"
-                                : "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90",
-                              isCurrentPlan && "!bg-green-500 !text-white"
-                            )}
-                          >
-                            {checkoutLoadingId === product.key ? (
-                              <Loader2 className="h-3.5 w-3.5 animate-spin mx-auto" />
-                            ) : isCurrentPlan ? (
-                              "Current Plan"
-                            ) : (
-                              "Get Started"
-                            )}
-                          </button>
+                          <div className="mt-auto mb-4">
+                            <button
+                              onClick={() => handleSubscribe(product.key)}
+                              disabled={!!checkoutLoadingId || isCurrentPlan}
+                              className={cn(
+                                "w-full rounded-md py-2 px-3 font-medium text-sm transition-all disabled:opacity-70 disabled:cursor-not-allowed",
+                                isHighlighted
+                                  ? "bg-white text-[#1e3a8a] hover:bg-slate-100"
+                                  : "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90",
+                                isCurrentPlan && "!bg-green-500 !text-white"
+                              )}
+                            >
+                              {checkoutLoadingId === product.key ? (
+                                <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+                              ) : isCurrentPlan ? (
+                                "Current Plan"
+                              ) : (
+                                "Get Started"
+                              )}
+                            </button>
+                          </div>
 
                           {product.key !== 'plus' && (
-                            <p className={cn("text-[10px] mb-2 font-semibold", isHighlighted ? "text-white/80" : "text-slate-500 dark:text-neutral-400")}>
+                            <p className={cn("text-xs mb-2 font-medium", isHighlighted ? "text-white/70" : "text-slate-500 dark:text-neutral-400")}>
                               Everything in {product.key === 'pro' ? 'Plus' : 'Pro'}, and:
                             </p>
                           )}
 
-                          <ul className="space-y-2.5 flex-1 text-xs">
+                          <ul className="space-y-1.5 flex-1 text-xs">
                             {features.map((feature, idx) => (
                               <li key={idx} className="flex items-start gap-1.5">
-                                <CheckCircle2 className={cn("h-3.5 w-3.5 shrink-0 mt-0.5", isHighlighted ? "text-white" : "text-[#06b6d4]")} />
+                                <span className={cn("text-xs", isHighlighted ? "text-white" : "text-[#06b6d4]")}>✓</span>
                                 <span className={cn(isHighlighted ? "text-white/90" : "text-slate-600 dark:text-neutral-300")}>
                                   {feature}
-                                  {feature.includes('Workspace templates') && (
-                                    <span className={cn("text-[10px] ml-1 px-1 rounded", isHighlighted ? "bg-white/20" : "bg-slate-200 dark:bg-neutral-700")}>Beta</span>
-                                  )}
                                 </span>
                               </li>
                             ))}

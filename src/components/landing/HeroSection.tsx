@@ -258,7 +258,7 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
       opacity,
       zIndex,
       filter: `blur(${distanceFromCenter * 0.6}px)`,
-      transition: "all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
+      transition: "all 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)",
     };
   };
 
@@ -288,7 +288,7 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
       transform: `translateX(${x}px) scale(${scale})`,
       opacity,
       zIndex,
-      transition: isMobileDragging ? "none" : "all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
+      transition: isMobileDragging ? "none" : "all 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)",
     };
   };
 
