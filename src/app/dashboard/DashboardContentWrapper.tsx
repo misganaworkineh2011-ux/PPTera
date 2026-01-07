@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useStickyContext } from "~/components/dashboard/DashboardLayout";
 import { useDashboard } from "~/contexts/DashboardContext";
 import DashboardContent from "./DashboardContent";
@@ -24,37 +24,36 @@ interface DashboardContentWrapperProps {
 
 export default function DashboardContentWrapper({ presentations: initialPresentations, userName, totalCount }: DashboardContentWrapperProps) {
   const { searchQuery } = useStickyContext();
-  const { presentations, setPresentations, pagination, setPagination, loadMorePresentations, isLoadingMore } = useDashboard();
+  const { presentations: additionalPresentations, pagination, setPagination, loadMorePresentations, isLoadingMore } = useDashboard();
+  
+  // Track if pagination has been set to avoid re-setting on every render
+  const paginationSetRef = useRef(false);
 
-  // Sync SSR data to context on every render where SSR data is available
-  // This ensures fresh data is always used when navigating back to dashboard
+  // Set pagination only once on mount
   useEffect(() => {
-    if (initialPresentations.length > 0) {
-      // Always sync SSR data - it's the source of truth from the server
-      setPresentations(initialPresentations as unknown as typeof presentations);
-      
-      // Set pagination based on SSR data
+    if (!paginationSetRef.current && initialPresentations.length > 0) {
       const hasMore = initialPresentations.length < totalCount;
-      
       setPagination({
         total: totalCount,
         limit: 12,
         offset: initialPresentations.length,
         hasMore,
       });
+      paginationSetRef.current = true;
     }
-  }, [initialPresentations, totalCount, setPresentations, setPagination]);
+  }, [initialPresentations.length, totalCount, setPagination]);
 
-  // Determine which presentations to display
-  // Use context if it has more items (from load more), otherwise use SSR
+  // Combine SSR presentations with any additional ones loaded via "load more"
+  // SSR data is always the base, additional presentations are appended
   const displayPresentations = useMemo(() => {
-    // If context has more presentations than SSR (user loaded more), use context
-    if (presentations.length > initialPresentations.length) {
-      return presentations;
+    if (additionalPresentations.length > 0) {
+      // Combine SSR data with loaded more data, avoiding duplicates
+      const ssrIds = new Set(initialPresentations.map(p => p.id));
+      const newPresentations = additionalPresentations.filter(p => !ssrIds.has(p.id));
+      return [...initialPresentations, ...newPresentations];
     }
-    // Otherwise use SSR data (fresh from server)
     return initialPresentations;
-  }, [presentations, initialPresentations]);
+  }, [additionalPresentations, initialPresentations]);
 
   // Calculate remaining count properly
   const remainingCount = pagination 

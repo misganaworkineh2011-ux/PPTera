@@ -32,6 +32,26 @@ interface PricingPageClientProps {
   currentLang: Language;
 }
 
+// Inline skeleton component for price display
+function PriceSkeleton({ className = "" }: { className?: string }) {
+  return (
+    <div 
+      className={cn("h-8 w-16 bg-slate-200 animate-pulse rounded", className)}
+      data-testid="price-skeleton"
+    />
+  );
+}
+
+// Error indicator for price display
+function PriceError() {
+  return (
+    <div className="flex items-center gap-1 text-red-500" data-testid="price-error">
+      <AlertCircle className="h-4 w-4" />
+      <span className="text-xs">Price unavailable</span>
+    </div>
+  );
+}
+
 export function PricingPageClient({ currentLang }: PricingPageClientProps) {
   const [isAnnual, setIsAnnual] = useState(true);
   const [products, setProducts] = useState<PolarProduct[]>([]);
@@ -173,148 +193,150 @@ export function PricingPageClient({ currentLang }: PricingPageClientProps) {
           </div>
 
           {/* Pricing Cards */}
-          {loading ? (
-            <div className="flex justify-center py-20">
-              <Loader2 className="h-8 w-8 animate-spin text-[#06b6d4]" />
-            </div>
-          ) : error ? (
-            <div className="flex justify-center py-20">
-              <div className="flex items-center gap-2 text-red-500 bg-red-50 px-4 py-2 rounded-lg">
-                <AlertCircle className="h-5 w-5" />
-                <span>{error}</span>
-              </div>
-            </div>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-4 max-w-7xl mx-auto">
+          <div className="grid gap-4 md:grid-cols-4 max-w-7xl mx-auto items-stretch">
               {/* Free Plan Card */}
-              <div className="relative rounded-md border border-slate-200 bg-white hover:border-[#06b6d4] transition-all flex flex-col h-full">
-                <div className="absolute top-3 right-3 bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-1 rounded">
+              <div className="relative rounded-md border border-slate-200 bg-white hover:border-[#06b6d4] transition-all flex flex-col h-full mt-4">
+                <div className="absolute -top-2.5 right-3 bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-1 rounded">
                   {t.noCreditCard || "NO CREDIT CARD"}
                 </div>
-                <div className="p-5">
-                  <h3 className="text-lg font-bold mb-1">{t.free || "Free"}</h3>
-                  <p className="text-xs text-slate-500 mb-4">{t.getStartedWithPPT || "Get started with PPT Master"}</p>
-                  <div className="mb-4">
+                <div className="p-6 flex flex-col h-full">
+                  <h3 className="text-xl font-bold mb-1">{t.free || "Free"}</h3>
+                  <p className="text-sm text-slate-500 h-12">{t.getStartedWithPPT || "Get started with PPT Master"}</p>
+                  <div className="h-16 flex flex-col justify-center">
                     <div className="flex items-baseline gap-1">
-                      <span className="text-2xl font-extrabold">$0</span>
-                      <span className="text-xs text-slate-500">{t.freeForever || "/forever"}</span>
+                      <span className="text-3xl font-extrabold">$0</span>
+                      <span className="text-sm text-slate-500">{t.freeForever || "/forever"}</span>
                     </div>
                   </div>
-                  <button onClick={() => router.push(isSignedIn ? "/" : "/sign-up")} className="w-full rounded py-2 px-4 font-semibold text-xs mb-4 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90">
+                  <button onClick={() => router.push(isSignedIn ? "/" : "/sign-up")} className="w-full rounded py-2.5 px-4 font-semibold text-sm mb-4 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90">
                     {isSignedIn ? t.goToDashboard : t.signUpFree}
                   </button>
-                  <ul className="space-y-2.5 text-xs">
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.createUpTo10Cards || "Create up to 10 cards per prompt"}</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.creditsAtSignup || "200 credits at signup"}</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.simplePresentations || "Simple presentations and images"}</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.exportFormatsAll || "Export to PDF, PPTX, PNG & Google Slides"}</span></li>
+                  <ul className="space-y-2.5 text-sm flex-grow">
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.createUpTo10Cards || "Create up to 10 cards per prompt"}</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.creditsAtSignup || "200 credits at signup"}</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.simplePresentations || "Simple presentations and images"}</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.exportFormatsAll || "Export to PDF, PPTX, PNG & Google Slides"}</span></li>
                   </ul>
                 </div>
               </div>
 
               {/* Plus Plan */}
-              <div className="relative rounded-md border border-slate-200 bg-white hover:border-[#06b6d4] transition-all flex flex-col h-full">
-                <div className="p-5">
-                  <h3 className="text-lg font-bold mb-1">Plus</h3>
-                  <p className="text-xs text-slate-500 mb-4">{t.forExtraAIPower || "For extra AI power"}</p>
-                  <div className="mb-4">
-                    {isAnnual ? (
+              <div className="relative rounded-md border border-slate-200 bg-white hover:border-[#06b6d4] transition-all flex flex-col h-full mt-4">
+                <div className="p-6 flex flex-col h-full">
+                  <h3 className="text-xl font-bold mb-1">Plus</h3>
+                  <p className="text-sm text-slate-500 h-12">{t.forExtraAIPower || "For extra AI power"}</p>
+                  <div className="h-16 flex flex-col justify-center" data-testid="price-display-plus">
+                    {loading ? (
+                      <PriceSkeleton />
+                    ) : error ? (
+                      <PriceError />
+                    ) : isAnnual ? (
                       <>
                         <div className="flex items-baseline gap-1">
-                          <span className="text-2xl font-extrabold">$8</span>
-                          <span className="text-xs text-slate-500">/ {t.monthly?.toLowerCase() || "month"}</span>
+                          <span className="text-3xl font-extrabold" data-testid="price-value-plus">$8</span>
+                          <span className="text-sm text-slate-500">/ {t.monthly?.toLowerCase() || "month"}</span>
                         </div>
-                        <p className="text-[10px] text-slate-400 mt-0.5">$96 {t.annualBilling || "billed annually"}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">$96 {t.annualBilling || "billed annually"}</p>
                       </>
                     ) : (
                       <div className="flex items-baseline gap-1">
-                        <span className="text-2xl font-extrabold">$10</span>
-                        <span className="text-xs text-slate-500">/ {t.monthly?.toLowerCase() || "month"}</span>
+                        <span className="text-3xl font-extrabold" data-testid="price-value-plus">$10</span>
+                        <span className="text-sm text-slate-500">/ {t.monthly?.toLowerCase() || "month"}</span>
                       </div>
                     )}
                   </div>
-                  <button onClick={() => handleSubscribe('plus')} disabled={!!checkoutLoadingId} className="w-full rounded py-2 px-4 font-semibold text-xs mb-4 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90 disabled:opacity-50">
-                    {checkoutLoadingId === 'plus' ? <Loader2 className="h-3.5 w-3.5 animate-spin mx-auto" /> : t.getStartedBtn}
+                  <button onClick={() => handleSubscribe('plus')} disabled={!!checkoutLoadingId} className="w-full rounded py-2.5 px-4 font-semibold text-sm mb-4 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90 disabled:opacity-50">
+                    {checkoutLoadingId === 'plus' ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : t.getStartedBtn}
                   </button>
-                  <p className="text-[12px] text-slate-500 mb-2 font-semibold">{t.everythingInFree || "Everything in Free, and:"}</p>
-                  <ul className="space-y-2.5 text-xs">
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.monthlyCredits1000 || "1,000 monthly credits"}</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.removeBranding || "Remove branding"}</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.advancedAIImageModels || "Advanced AI image models"}</span></li>
+                  <p className="text-sm text-slate-500 mb-2 font-semibold">{t.everythingInFree || "Everything in Free, and:"}</p>
+                  <ul className="space-y-2.5 text-sm flex-grow">
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.monthlyCredits1000 || "1,000 monthly credits"}</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.removeBranding || "Remove branding"}</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.advancedAIImageModels || "Advanced AI image models"}</span></li>
                   </ul>
                 </div>
               </div>
 
               {/* Pro Plan - Most Popular */}
-              <div className="relative rounded-md border-2 border-[#06b6d4] bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-lg scale-105 flex flex-col h-full">
+              <div className="relative rounded-md border-2 border-[#06b6d4] bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-lg flex flex-col h-full mt-4">
                 <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap">{t.mostPopular?.toUpperCase() || "MOST POPULAR"}</div>
-                <div className="p-5 pt-6">
-                  <h3 className="text-lg font-bold mb-1">Pro</h3>
-                  <p className="text-xs text-white/80 mb-4">{t.forPremiumAI || "For premium AI and customization"}</p>
-                  <div className="mb-4">
-                    {isAnnual ? (
+                <div className="p-6 flex flex-col h-full">
+                  <h3 className="text-xl font-bold mb-1">Pro</h3>
+                  <p className="text-sm text-white/80 h-12">{t.forPremiumAI || "For premium AI and customization"}</p>
+                  <div className="h-16 flex flex-col justify-center" data-testid="price-display-pro">
+                    {loading ? (
+                      <PriceSkeleton className="bg-white/30" />
+                    ) : error ? (
+                      <div className="flex items-center gap-1 text-white/80" data-testid="price-error">
+                        <AlertCircle className="h-4 w-4" />
+                        <span className="text-sm">Price unavailable</span>
+                      </div>
+                    ) : isAnnual ? (
                       <>
                         <div className="flex items-baseline gap-1">
-                          <span className="text-2xl font-extrabold">$18</span>
-                          <span className="text-xs text-white/70">/ {t.monthly?.toLowerCase() || "month"}</span>
+                          <span className="text-3xl font-extrabold" data-testid="price-value-pro">$18</span>
+                          <span className="text-sm text-white/70">/ {t.monthly?.toLowerCase() || "month"}</span>
                         </div>
-                        <p className="text-[10px] text-white/60 mt-0.5">$216 {t.annualBilling || "billed annually"}</p>
+                        <p className="text-xs text-white/60 mt-0.5">$216 {t.annualBilling || "billed annually"}</p>
                       </>
                     ) : (
                       <div className="flex items-baseline gap-1">
-                        <span className="text-2xl font-extrabold">$25</span>
-                        <span className="text-xs text-white/70">/ {t.monthly?.toLowerCase() || "month"}</span>
+                        <span className="text-3xl font-extrabold" data-testid="price-value-pro">$25</span>
+                        <span className="text-sm text-white/70">/ {t.monthly?.toLowerCase() || "month"}</span>
                       </div>
                     )}
                   </div>
-                  <button onClick={() => handleSubscribe('pro')} disabled={!!checkoutLoadingId} className="w-full rounded py-2 px-4 font-semibold text-xs mb-4 bg-white text-[#1e3a8a] hover:bg-slate-100 disabled:opacity-50">
-                    {checkoutLoadingId === 'pro' ? <Loader2 className="h-3.5 w-3.5 animate-spin mx-auto" /> : t.getStartedBtn}
+                  <button onClick={() => handleSubscribe('pro')} disabled={!!checkoutLoadingId} className="w-full rounded py-2.5 px-4 font-semibold text-sm mb-4 bg-white text-[#1e3a8a] hover:bg-slate-100 disabled:opacity-50">
+                    {checkoutLoadingId === 'pro' ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : t.getStartedBtn}
                   </button>
-                  <p className="text-[12px] text-white/80 mb-2 font-semibold">{t.everythingInPlus || "Everything in Plus, and:"}</p>
-                  <ul className="space-y-2.5 text-xs">
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-white mt-0.5" /><span className="text-white/90">{t.monthlyCredits4000 || "4,000 monthly credits"}</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-white mt-0.5" /><span className="text-white/90">{t.premiumAIImageModels || "Premium AI image models"}</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-white mt-0.5" /><span className="text-white/90">{t.customBrandingFonts || "Custom branding & fonts"}</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-white mt-0.5" /><span className="text-white/90">{t.apiAccess || "API access"}</span></li>
+                  <p className="text-sm text-white/80 mb-2 font-semibold">{t.everythingInPlus || "Everything in Plus, and:"}</p>
+                  <ul className="space-y-2.5 text-sm flex-grow">
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-white mt-0.5" /><span className="text-white/90">{t.monthlyCredits4000 || "4,000 monthly credits"}</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-white mt-0.5" /><span className="text-white/90">{t.premiumAIImageModels || "Premium AI image models"}</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-white mt-0.5" /><span className="text-white/90">{t.customBrandingFonts || "Custom branding & fonts"}</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-white mt-0.5" /><span className="text-white/90">{t.apiAccess || "API access"}</span></li>
                   </ul>
                 </div>
               </div>
 
               {/* Ultra Plan */}
-              <div className="relative rounded-md border border-slate-200 bg-white hover:border-[#06b6d4] transition-all flex flex-col h-full">
+              <div className="relative rounded-md border border-slate-200 bg-white hover:border-[#06b6d4] transition-all flex flex-col h-full mt-4">
                 <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap">{t.introductoryPrice?.toUpperCase() || "INTRODUCTORY PRICE"}</div>
-                <div className="p-5 pt-6">
-                  <h3 className="text-lg font-bold mb-1">Ultra</h3>
-                  <p className="text-xs text-slate-500 mb-4">{t.for20xMoreAI || "For 20× more AI usage"}</p>
-                  <div className="mb-4">
-                    {isAnnual ? (
+                <div className="p-6 flex flex-col h-full">
+                  <h3 className="text-xl font-bold mb-1">Ultra</h3>
+                  <p className="text-sm text-slate-500 h-12">{t.for20xMoreAI || "For 20× more AI usage"}</p>
+                  <div className="h-16 flex flex-col justify-center" data-testid="price-display-ultra">
+                    {loading ? (
+                      <PriceSkeleton />
+                    ) : error ? (
+                      <PriceError />
+                    ) : isAnnual ? (
                       <>
                         <div className="flex items-baseline gap-1">
-                          <span className="text-2xl font-extrabold">$90</span>
-                          <span className="text-xs text-slate-500">/ {t.monthly?.toLowerCase() || "month"}</span>
+                          <span className="text-3xl font-extrabold" data-testid="price-value-ultra">$90</span>
+                          <span className="text-sm text-slate-500">/ {t.monthly?.toLowerCase() || "month"}</span>
                         </div>
-                        <p className="text-[10px] text-slate-400 mt-0.5">$1,080 {t.annualBilling || "billed annually"}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">$1,080 {t.annualBilling || "billed annually"}</p>
                       </>
                     ) : (
                       <div className="flex items-baseline gap-1">
-                        <span className="text-2xl font-extrabold">$100</span>
-                        <span className="text-xs text-slate-500">/ {t.monthly?.toLowerCase() || "month"}</span>
+                        <span className="text-3xl font-extrabold" data-testid="price-value-ultra">$100</span>
+                        <span className="text-sm text-slate-500">/ {t.monthly?.toLowerCase() || "month"}</span>
                       </div>
                     )}
                   </div>
-                  <button onClick={() => handleSubscribe('ultra')} disabled={!!checkoutLoadingId} className="w-full rounded py-2 px-4 font-semibold text-xs mb-4 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90 disabled:opacity-50">
-                    {checkoutLoadingId === 'ultra' ? <Loader2 className="h-3.5 w-3.5 animate-spin mx-auto" /> : t.getStartedBtn}
+                  <button onClick={() => handleSubscribe('ultra')} disabled={!!checkoutLoadingId} className="w-full rounded py-2.5 px-4 font-semibold text-sm mb-4 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90 disabled:opacity-50">
+                    {checkoutLoadingId === 'ultra' ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : t.getStartedBtn}
                   </button>
-                  <p className="text-[12px] text-slate-500 mb-2 font-semibold">{t.everythingInPro || "Everything in Pro, and:"}</p>
-                  <ul className="space-y-2.5 text-xs">
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.monthlyCredits20000 || "20,000 monthly credits"}</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.mostAdvancedAIModels || "Most advanced AI models"}</span></li>
-                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.earlyAccessFeatures || "Early access to new features"}</span></li>
+                  <p className="text-sm text-slate-500 mb-2 font-semibold">{t.everythingInPro || "Everything in Pro, and:"}</p>
+                  <ul className="space-y-2.5 text-sm flex-grow">
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.monthlyCredits20000 || "20,000 monthly credits"}</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.mostAdvancedAIModels || "Most advanced AI models"}</span></li>
+                    <li className="flex items-start gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0 text-[#06b6d4] mt-0.5" /><span className="text-slate-600">{t.earlyAccessFeatures || "Early access to new features"}</span></li>
                   </ul>
                 </div>
               </div>
             </div>
-          )}
 
           {/* Top-up Cards - Only show for subscribed users */}
           {hasSubscription && (

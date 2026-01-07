@@ -13,7 +13,9 @@
     "dev": "next dev",
     "postinstall": "prisma generate",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "test": "vitest --run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@adobe/pdfservices-node-sdk": "^4.1.0",

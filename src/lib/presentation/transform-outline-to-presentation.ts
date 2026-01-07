@@ -8,6 +8,11 @@
  */
 
 import { env } from "~/env.js";
+import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
+const gemini = env.GEMINI_API_KEY ? new GoogleGenerativeAI(env.GEMINI_API_KEY) : null;
 
 export interface OutlineSlide {
   type: "title" | "content";
@@ -57,7 +62,10 @@ TRANSFORMATION RULES:
 5. CREATE TWO VERSIONS OF EACH BULLET:
    - "bulletPoints": Well-crafted slide text (max 30 words each, visually equal length) - what appears on the slide
    - "speakerNotes": Even more detailed explanations (1-3 sentences each) - what the presenter reads
-6. ADD SLIDE DESCRIPTION (OPTIONAL): Only include a slideDescription when it genuinely adds value. It should be a natural, flowing description or gateway point that introduces the slide content. Do NOT use phrases like "this slide" or "in this slide" - just write naturally as if describing the topic. Maximum 2 lines. If not needed, omit it entirely.
+6. ADD SLIDE DESCRIPTION (OPTIONAL): Only include a slideDescription when it genuinely adds value. Write it as a natural, flowing description that introduces what the slide covers. Write it as if you're directly describing the topic itself, NOT describing the slide. 
+   - BAD: "This slide highlights...", "This slide covers...", "In this slide we will...", "This slide explains..."
+   - GOOD: "Understanding the core principles...", "Exploring the key factors...", "The foundation of modern approaches..."
+   - Just describe the topic naturally. Maximum 2 lines. If not needed, omit it entirely.
 7. The speaker notes should contain the full context, examples, and details
 
 OUTPUT FORMAT (JSON):
@@ -93,72 +101,46 @@ WRITING STYLE:
 - Slide bullets are well-crafted and detailed; speaker notes are comprehensive`;
 
 /**
- * Call OpenAI API
+ * Call OpenAI API (using OpenAI SDK - same as outline generation)
  */
 async function callOpenAI(prompt: string): Promise<string> {
-  const apiKey = env.OPENAI_API_KEY;
-  if (!apiKey) {
+  if (!env.OPENAI_API_KEY) {
     throw new Error("OPENAI_API_KEY not configured");
   }
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-4o",
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: prompt },
-      ],
-      temperature: 0.7,
-      max_tokens: 6000,
-    }),
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o", // Same model as outline generation
+    messages: [
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "user", content: prompt },
+    ],
+    temperature: 0.7,
+    max_tokens: 8192, // Increased from 6000 to prevent content cutoff
   });
 
-  if (!response.ok) {
-    const errorBody = await response.text();
-    console.error(`[transform-outline] OpenAI API error: ${response.status}`, errorBody);
-    throw new Error(`OpenAI API error: ${response.status}`);
-  }
-
-  const data = await response.json();
-  return data?.choices?.[0]?.message?.content || "";
+  return completion.choices[0]?.message?.content || "";
 }
 
 /**
- * Call Gemini API (fallback)
+ * Call Gemini API (fallback - using GoogleGenerativeAI SDK - same as outline generation)
  */
 async function callGemini(prompt: string): Promise<string> {
-  const apiKey = env.GEMINI_API_KEY;
-  if (!apiKey) {
+  if (!gemini) {
     throw new Error("GEMINI_API_KEY not configured");
   }
 
-  const apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
-  
-  const response = await fetch(`${apiUrl}?key=${apiKey}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: SYSTEM_PROMPT + "\n\n" + prompt }] }],
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 4096,
-      },
-    }),
+  const model = gemini.getGenerativeModel({ 
+    model: "gemini-flash-latest", // Same model as outline generation
+    generationConfig: {
+      temperature: 0.7,
+      maxOutputTokens: 8192, // Increased to prevent content cutoff
+    },
   });
 
-  if (!response.ok) {
-    const errorBody = await response.text();
-    console.error(`[transform-outline] Gemini API error: ${response.status}`, errorBody);
-    throw new Error(`Gemini API error: ${response.status}`);
-  }
+  const result = await model.generateContent(SYSTEM_PROMPT + "\n\n" + prompt);
+  const response = await result.response;
 
-  const data = await response.json();
-  return data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  return response.text() || "";
 }
 
 /**
@@ -267,7 +249,10 @@ For this TITLE slide:
 ` : `
 For this CONTENT slide:
 - Keep the title EXACTLY as provided: "${slide.title}"
-- slideDescription (OPTIONAL): Only include if it genuinely adds value. Write a natural, flowing description or gateway point that introduces the slide content. Do NOT use phrases like "this slide" or "in this slide" - just write naturally as if describing the topic. Maximum 2 lines. If not needed, omit it entirely.
+- slideDescription (OPTIONAL): Only include if it genuinely adds value. Write it as a natural description of the topic itself, NOT a description of the slide. 
+   - NEVER use: "This slide highlights", "This slide covers", "In this slide", "This slide explains", "We will explore", "Let's look at"
+   - INSTEAD write directly about the topic: "Understanding the core principles...", "Exploring key factors...", "The foundation of..."
+   - Write as if describing the subject matter directly. Maximum 2 lines. If not needed, omit it entirely.
 - Create DETAILED bulletPoints (max 30 words each, visually equal length) - transform ALL ${slide.bulletPoints?.length || 0} outline bullets, expanding each with more detail
 - Create DETAILED speakerNotes (1+ sentences each) - what the presenter reads
 - The speakerNotes array must have the same length as bulletPoints (one note per bullet)

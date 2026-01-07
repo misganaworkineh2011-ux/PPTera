@@ -17,6 +17,17 @@ import type { StepsLayoutType } from "~/lib/layouts/content/steps";
 import type { QuotesLayoutType } from "~/lib/layouts/content/quotes";
 import type { CircleLayoutType } from "~/lib/layouts/content/circles";
 import type { ImageLayoutType } from "~/lib/layouts/content/images";
+import { analyzeContent, type ContentAnalysis } from "./content-analyzer";
+import { selectBestLayout, type MatchingInput } from "./layout-matcher";
+import { contentTypeToCategory } from "./content-types";
+import { suggestLayoutWithLLM, type LLMLayoutSuggestion } from "./llm-layout-suggester";
+import {
+  isLayoutStyleCompatibleWithImage,
+  isLayoutCategoryCompatibleWithImage,
+  getImageCompatibleStyles,
+  getAlternativeCompatibleCategories,
+  shouldRemoveImageForLayout,
+} from "./layout-image-rules";
 
 // Combined content layout style type
 export type ContentLayoutStyle = 
@@ -40,6 +51,12 @@ export interface PlannerInput {
   contentLayoutHint?: string; // hint from outline (e.g., "boxes", "sequence")
   slideIndex: number;
   totalSlides: number;
+  // New: Content analysis results
+  contentAnalysis?: ContentAnalysis;
+  bulletPoints?: string[]; // For content analysis
+  title?: string; // Slide title for LLM suggestion
+  // New: LLM layout suggestion (optional, will be fetched if not provided)
+  llmSuggestion?: LLMLayoutSuggestion | null;
 }
 
 // Output from the planner
@@ -182,6 +199,7 @@ function resolveCategory(hint?: string): ContentLayoutCategory {
 /**
  * Check if a category is safe with a given slide layout
  * Returns false if the combination would look ugly
+ * Enhanced with more safety rules
  */
 function isSafeCombination(
   category: ContentLayoutCategory,
@@ -209,6 +227,31 @@ function isSafeCombination(
     return false;
   }
   
+  // Rule 4: Sequence layouts with many items in narrow space
+  if (isNarrow && bulletCount >= 6 && category === "sequence") {
+    return false;
+  }
+  
+  // Rule 5: Quotes with many items (quotes work best with 1-3 items)
+  if (bulletCount > 4 && category === "quotes") {
+    return false;
+  }
+  
+  // Rule 6: Numbers/statistics with very few items (need at least 2)
+  if (bulletCount < 2 && category === "numbers") {
+    return false;
+  }
+  
+  // Rule 7: Circles need at least 3 items
+  if (bulletCount < 3 && category === "circles") {
+    return false;
+  }
+  
+  // Rule 8: Steps need at least 3 items
+  if (bulletCount < 3 && category === "steps") {
+    return false;
+  }
+  
   return true;
 }
 
@@ -231,72 +274,243 @@ function planTitleSlide(input: PlannerInput): PlannerOutput {
 
 /**
  * Main planner function - chooses layout for a content slide
+ * Uses LLM suggestion as primary method, scenario matching as secondary
  */
-function planContentSlide(input: PlannerInput): PlannerOutput {
+async function planContentSlide(input: PlannerInput): Promise<PlannerOutput> {
   const density = classifyDensity(input);
-  const category = resolveCategory(input.contentLayoutHint);
   
-  // Start with preferred image placement based on user preference (Option B)
-  // Default to left/right, adapt content layout instead of moving image
+  // Step 1: Analyze content if not already done
+  let contentAnalysis = input.contentAnalysis;
+  if (!contentAnalysis && input.bulletPoints) {
+    contentAnalysis = analyzeContent(
+      input.bulletPoints,
+      input.semanticIntent,
+      input.visualStrategyPattern
+    );
+  }
+  
+  // Step 2: Start with image placement (alternate left/right)
   let slideLayout: SlideLayoutType = input.hasImage ? "image-right" : "no-image";
   let imageSize: ImageSize = "medium";
-  let finalCategory = category;
-  let rasterizeForPptx = false;
   
-  // Alternate left/right based on slide index for visual variety
   if (input.hasImage) {
     slideLayout = input.slideIndex % 2 === 0 ? "image-right" : "image-left";
   }
   
-  // Apply fallback ladder based on density and safety
+  // Step 3: Get LLM layout suggestion (PRIMARY METHOD)
+  let llmSuggestion = input.llmSuggestion;
+  if (!llmSuggestion && contentAnalysis && input.bulletPoints && input.title) {
+    // Fetch LLM suggestion if not provided
+    try {
+      llmSuggestion = await suggestLayoutWithLLM(
+        input.title,
+        input.bulletPoints,
+        contentAnalysis,
+        input.semanticIntent,
+        input.visualStrategyPattern,
+        input.hasImage,
+        slideLayout === "image-left" || slideLayout === "image-right"
+      );
+    } catch (error) {
+      console.warn("[layout-planner] LLM suggestion failed, using scenario matching:", error);
+    }
+  }
+
+  // Step 4: Use intelligent scenario matching (SECONDARY METHOD)
+  let finalCategory: ContentLayoutCategory = "boxes"; // Default fallback
+  let recommendedStyle: ContentLayoutStyle | undefined;
+  let matchConfidence: "high" | "medium" | "low" = "low";
+  
+  // Prioritize LLM suggestion if available and high confidence
+  if (llmSuggestion && llmSuggestion.confidence === "high") {
+    finalCategory = llmSuggestion.category;
+    recommendedStyle = llmSuggestion.specificType;
+    matchConfidence = "high";
+    console.log(`[layout-planner] Using LLM suggestion: ${finalCategory}/${recommendedStyle} (${llmSuggestion.reasoning})`);
+  } else if (contentAnalysis) {
+    // Fall back to scenario matching
+    const matchingInput: MatchingInput = {
+      analysis: contentAnalysis,
+      bulletCount: input.bulletCount,
+      avgBulletLength: input.avgBulletLength,
+      maxBulletLength: input.maxBulletLength,
+      density,
+      semanticIntent: input.semanticIntent,
+      visualStrategy: input.visualStrategyPattern,
+      hasImage: input.hasImage,
+      contentLayoutHint: input.contentLayoutHint,
+    };
+    
+    const bestMatch = selectBestLayout(matchingInput, slideLayout);
+    finalCategory = bestMatch.category;
+    recommendedStyle = bestMatch.recommendedStyle;
+    matchConfidence = bestMatch.confidence;
+    
+    // If LLM suggestion exists but wasn't high confidence, consider it
+    if (llmSuggestion && llmSuggestion.confidence === "medium" && bestMatch.confidence === "low") {
+      finalCategory = llmSuggestion.category;
+      recommendedStyle = llmSuggestion.specificType;
+      matchConfidence = "medium";
+      console.log(`[layout-planner] Using LLM suggestion (medium confidence): ${finalCategory}/${recommendedStyle}`);
+    }
+  } else {
+    // Fallback to hint-based if no analysis available
+    finalCategory = resolveCategory(input.contentLayoutHint);
+  }
+  
+  let rasterizeForPptx = false;
+  
+  // Step 5: Apply safety checks and fallbacks
   if (input.hasImage) {
     const isNarrow = slideLayout === "image-left" || slideLayout === "image-right";
     
     // Check if current combination is safe
     if (!isSafeCombination(finalCategory, slideLayout, input.bulletCount)) {
-      // Fallback 1: Switch to simpler content layout (bullets)
-      if (density === "high" || !isSafeCombination(finalCategory, slideLayout, input.bulletCount)) {
+      // Fallback 1: Try to find a safe category from content type
+      if (contentAnalysis) {
+        const altCategory = contentTypeToCategory(contentAnalysis.contentType);
+        if (altCategory !== finalCategory && isSafeCombination(altCategory, slideLayout, input.bulletCount)) {
+          finalCategory = altCategory;
+        } else {
+          // Fallback 2: Switch to simpler content layout (bullets)
+          finalCategory = "bullets";
+        }
+      } else {
         finalCategory = "bullets";
       }
       
-      // Fallback 2: Check again with bullets
+      // Fallback 3: Check again with new category
       if (!isSafeCombination(finalCategory, slideLayout, input.bulletCount)) {
-        // Fallback 3: Switch to top/bottom image
+        // Fallback 4: Switch to top/bottom image
         slideLayout = "image-top";
         imageSize = "small";
       }
       
-      // Fallback 4: Remove image if still unsafe
+      // Fallback 5: Remove image if still unsafe
       if (!isSafeCombination(finalCategory, slideLayout, input.bulletCount)) {
         slideLayout = "no-image";
       }
     }
     
-    // High density with side image: force bullets (Option B preference)
-    if (density === "high" && isNarrow) {
+    // High density with side image: prefer bullets if confidence is low
+    if (density === "high" && isNarrow && matchConfidence === "low") {
       finalCategory = "bullets";
     }
     
-    // Circle layouts prefer no-image or top image
+    // Note: Circle layouts are now handled by image-layout compatibility rules
+    // They will automatically remove images if incompatible
     if (finalCategory === "circles") {
-      if (isNarrow) {
-        slideLayout = "image-top";
-        imageSize = "small";
-      }
       rasterizeForPptx = true; // Circle layouts are complex for PPTX
     }
   }
   
-  // Determine if space is narrow (affects content layout rendering)
+  // Step 6: Determine if space is narrow
   const isNarrowSpace = slideLayout === "image-left" || slideLayout === "image-right";
   
-  // Select appropriate style based on space and density
+  // Step 7: Select specific style variant
   let contentLayout: ContentLayoutStyle;
-  if (isNarrowSpace) {
+  if (recommendedStyle && (matchConfidence === "high" || matchConfidence === "medium")) {
+    // Use recommended style if high/medium confidence (from LLM or scenario matching)
+    contentLayout = recommendedStyle;
+  } else if (isNarrowSpace) {
+    // Use narrow space style
     contentLayout = getNarrowSpaceStyle(finalCategory, input.bulletCount);
   } else {
+    // Use random style for variety
     contentLayout = getRandomStyle(finalCategory);
   }
+
+  // Step 8: Check image-layout compatibility and enforce rules
+  if (input.hasImage && slideLayout !== "no-image") {
+    // Check if the selected layout style is compatible with images
+    const isCompatible = isLayoutStyleCompatibleWithImage(
+      contentLayout,
+      finalCategory,
+      true
+    );
+
+    if (!isCompatible) {
+      // Layout is incompatible with images - we have two options:
+      // 1. Remove the image (preferred for circles, quotes)
+      // 2. Change to a compatible layout category
+      
+      if (IMAGE_INCOMPATIBLE_LAYOUTS.has(finalCategory)) {
+        // Category is completely incompatible - remove image
+        console.log(
+          `[layout-planner] Layout category "${finalCategory}" is incompatible with images, removing image`
+        );
+        slideLayout = "no-image";
+        imageSize = "medium"; // Reset size
+      } else {
+        // Category is conditionally incompatible - try compatible styles first
+        const availableStyles = LAYOUT_STYLES[finalCategory] || [];
+        const compatibleStyles = getImageCompatibleStyles(
+          finalCategory,
+          availableStyles,
+          true
+        );
+
+        if (compatibleStyles.length > 0) {
+          // Switch to a compatible style within the same category
+          contentLayout = compatibleStyles[0] as ContentLayoutStyle;
+          console.log(
+            `[layout-planner] Switched to compatible style "${contentLayout}" for category "${finalCategory}"`
+          );
+        } else {
+          // No compatible styles in this category - try alternative categories
+          const alternatives = getAlternativeCompatibleCategories(finalCategory, true);
+          if (alternatives.length > 0) {
+            // Switch to a compatible category (prefer boxes or bullets)
+            const newCategory =
+              alternatives.find((cat) => cat === "boxes" || cat === "bullets") ||
+              alternatives[0]!;
+            finalCategory = newCategory;
+            const newStyles = LAYOUT_STYLES[newCategory] || [];
+            contentLayout = getImageCompatibleStyles(newCategory, newStyles, true)[0] as ContentLayoutStyle;
+            console.log(
+              `[layout-planner] Switched to compatible category "${newCategory}" with style "${contentLayout}"`
+            );
+          } else {
+            // No compatible categories - remove image
+            console.log(
+              `[layout-planner] No compatible layouts found, removing image`
+            );
+            slideLayout = "no-image";
+            imageSize = "medium";
+          }
+        }
+      }
+    } else {
+      // Layout is compatible, but verify the specific style is also compatible
+      const styleCompatible = isLayoutStyleCompatibleWithImage(
+        contentLayout,
+        finalCategory,
+        true
+      );
+      if (!styleCompatible) {
+        // Style is incompatible - find a compatible style in the same category
+        const availableStyles = LAYOUT_STYLES[finalCategory] || [];
+        const compatibleStyles = getImageCompatibleStyles(
+          finalCategory,
+          availableStyles,
+          true
+        );
+        if (compatibleStyles.length > 0) {
+          contentLayout = compatibleStyles[0] as ContentLayoutStyle;
+          console.log(
+            `[layout-planner] Switched to compatible style "${contentLayout}"`
+          );
+        } else {
+          // No compatible styles - remove image
+          slideLayout = "no-image";
+          imageSize = "medium";
+        }
+      }
+    }
+  }
+
+  // Recalculate narrow space after potential layout changes
+  const finalIsNarrowSpace = slideLayout === "image-left" || slideLayout === "image-right";
   
   // Map to legacy layout string
   const legacyLayout = SLIDE_LAYOUT_TO_LEGACY[slideLayout] || "centered";
@@ -307,7 +521,7 @@ function planContentSlide(input: PlannerInput): PlannerOutput {
     contentLayoutCategory: finalCategory,
     contentLayout,
     legacyLayout,
-    isNarrowSpace,
+    isNarrowSpace: finalIsNarrowSpace,
     rasterizeForPptx,
   };
 }
@@ -315,24 +529,24 @@ function planContentSlide(input: PlannerInput): PlannerOutput {
 /**
  * Plan layout for a single slide
  */
-export function planSlideLayout(input: PlannerInput): PlannerOutput {
+export async function planSlideLayout(input: PlannerInput): Promise<PlannerOutput> {
   if (input.type === "title") {
     return planTitleSlide(input);
   }
-  return planContentSlide(input);
+  return await planContentSlide(input);
 }
 
 /**
  * Plan layouts for all slides with deck-level variety
  */
-export function planDeckLayouts(inputs: PlannerInput[]): PlannerOutput[] {
+export async function planDeckLayouts(inputs: PlannerInput[]): Promise<PlannerOutput[]> {
   const outputs: PlannerOutput[] = [];
   let lastCategory: ContentLayoutCategory | null = null;
   let consecutiveSameCategory = 0;
   
   for (let i = 0; i < inputs.length; i++) {
     const input = inputs[i]!;
-    let output = planSlideLayout(input);
+    let output = await planSlideLayout(input);
     
     // Deck-level variety: avoid too many consecutive same layouts
     if (output.contentLayoutCategory === lastCategory) {
@@ -344,7 +558,7 @@ export function planDeckLayouts(inputs: PlannerInput[]): PlannerOutput[] {
         const alternates: ContentLayoutCategory[] = ["bullets", "boxes", "sequence"];
         for (const alt of alternates) {
           if (alt !== lastCategory && isSafeCombination(alt, output.slideLayout, input.bulletCount)) {
-            output = planSlideLayout({ ...input, contentLayoutHint: alt });
+            output = await planSlideLayout({ ...input, contentLayoutHint: alt });
             break;
           }
         }
@@ -362,10 +576,12 @@ export function planDeckLayouts(inputs: PlannerInput[]): PlannerOutput[] {
 
 /**
  * Extract planner input from a slide
+ * Now includes content analysis for intelligent layout selection
  */
 export function extractPlannerInput(
   slide: {
     type: "title" | "content";
+    title?: string;
     bulletPoints?: string[];
     semanticIntent?: string;
     visualStrategy?: { pattern?: string };
@@ -377,7 +593,17 @@ export function extractPlannerInput(
   totalSlides: number
 ): PlannerInput {
   const bullets = slide.bulletPoints || [];
-  const bulletLengths = bullets.map(b => b.split(/\s+/).length);
+  const bulletLengths = bullets.map(b => b.split(/\s+/).filter(Boolean).length);
+  
+  // Perform content analysis for content slides
+  let contentAnalysis: ContentAnalysis | undefined;
+  if (slide.type === "content" && bullets.length > 0) {
+    contentAnalysis = analyzeContent(
+      bullets,
+      slide.semanticIntent,
+      slide.visualStrategy?.pattern
+    );
+  }
   
   return {
     type: slide.type,
@@ -396,6 +622,10 @@ export function extractPlannerInput(
     contentLayoutHint: slide.contentLayoutHint,
     slideIndex,
     totalSlides,
+    // New: Include content analysis, bullet points, and title
+    contentAnalysis,
+    bulletPoints: bullets,
+    title: slide.title,
   };
 }
 

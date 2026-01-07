@@ -180,7 +180,10 @@ export async function generateImageFromSpec(
     };
   }
 
-  if (!imageSpec.promptHint) {
+  // Prefer aiPromptHint for AI generation, fallback to legacy promptHint
+  const promptHint = imageSpec.aiPromptHint || imageSpec.promptHint;
+  
+  if (!promptHint) {
     return {
       url: "",
       alt: "Image placeholder",
@@ -189,7 +192,7 @@ export async function generateImageFromSpec(
     };
   }
 
-  return generateGeminiImage(imageSpec.promptHint, imageSpec.style, modelId);
+  return generateGeminiImage(promptHint, imageSpec.style, modelId);
 }
 
 /**

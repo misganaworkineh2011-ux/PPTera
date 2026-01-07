@@ -27,7 +27,9 @@ interface StoredSlide {
     image: {
       required: boolean;
       style?: string | null;
-      promptHint?: string | null;
+      promptHint?: string | null; // Legacy
+      pexelsPromptHint?: string | null;
+      aiPromptHint?: string | null;
     };
     chart?: {
       type: string;
@@ -38,7 +40,9 @@ interface StoredSlide {
   image?: {
     required: boolean;
     style?: string | null;
-    promptHint?: string | null;
+    promptHint?: string | null; // Legacy
+    pexelsPromptHint?: string | null;
+    aiPromptHint?: string | null;
   };
   // Content layout hint (e.g., "boxes", "bullets", "sequence")
   contentLayoutHint?: string;

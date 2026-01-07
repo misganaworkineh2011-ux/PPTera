@@ -1552,7 +1552,7 @@ export default function PresentationViewer({
     const isCurrentlyStreaming = streamingStatus === "streaming";
 
     return (
-      <div className="w-full mx-auto space-y-4 sm:space-y-8 md:space-y-12 pb-12 px-3 sm:px-4" style={{ maxWidth: "1109.33px" }}>
+      <div className="w-full mx-auto space-y-4 sm:space-y-8 md:space-y-12 pb-12 px-3 sm:px-4" style={{ maxWidth: "1209.33px" }}>
         {slides.map((slide, index) => {
           const isTitle = slide.type === "title";
           const isSlideStreaming = isCurrentlyStreaming && streamingSlideIndex === index;
@@ -1566,7 +1566,7 @@ export default function PresentationViewer({
               id={`slide-${index}`}
               className={`w-full rounded-md sm:rounded-lg shadow-xl sm:shadow-2xl overflow-hidden scroll-mt-20 ring-1 ${ui.ring} ${isNewSlide ? "animate-fade-in" : ""} ${isSlideStreaming || isAiEditing ? "ring-2" : ""} relative`}
               style={{
-                ...(isMobile ? { minHeight: "280px", maxWidth: "100%" } : { width: "1109.33px", maxWidth: "100%", height: "auto", minHeight: "400px" }),
+                ...(isMobile ? { minHeight: "280px", maxWidth: "100%" } : { width: "1209.33px", maxWidth: "100%", height: "auto", minHeight: "400px" }),
                 ...(isSlideStreaming || isAiEditing ? { boxShadow: `0 0 20px ${theme.colors.primary}40` } : {}),
               }}
             >
@@ -1583,7 +1583,7 @@ export default function PresentationViewer({
               id={`slide-${index}`}
               className={`rounded-md sm:rounded-lg shadow-xl sm:shadow-2xl overflow-hidden scroll-mt-20 ring-1 ${ui.ring} ${isNewSlide ? "animate-fade-in" : ""} ${isSlideStreaming || isAiEditing ? "ring-2" : ""} relative`}
               style={{
-                width: isMobile ? "100%" : "1109.33px",
+                width: isMobile ? "100%" : "1209.33px",
                 maxWidth: "100%",
                 height: "auto",
                 ...(isSlideStreaming || isAiEditing ? { boxShadow: `0 0 20px ${theme.colors.primary}40` } : {}),
@@ -1926,10 +1926,10 @@ export default function PresentationViewer({
                   theme={theme}
                 />
               )}
-              <div className="mx-auto" style={{ maxWidth: "1200px" }}>{renderScrollableView()}</div>
+              <div className="mx-auto" style={{ maxWidth: "1300px" }}>{renderScrollableView()}</div>
             </>
           ) : (
-            <div className={`flex gap-6 ${isFullscreen || isPublicView || isPresenting ? "h-screen w-screen" : "mx-auto"} overflow-x-hidden`} style={!isFullscreen && !isPublicView && !isPresenting ? { maxWidth: "1700px" } : {}}>
+            <div className={`flex gap-6 ${isFullscreen || isPublicView || isPresenting ? "h-screen w-screen" : "mx-auto"} overflow-x-hidden`} style={!isFullscreen && !isPublicView && !isPresenting ? { maxWidth: "1800px" } : {}}>
               {showThumbnails && !isFullscreen && !isPublicView && !isPresenting && viewMode === "slides" && (
                 <ThumbnailSidebar
                   slides={slides}
