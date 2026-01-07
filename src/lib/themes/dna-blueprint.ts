@@ -106,6 +106,13 @@ export const dnaBlueprintTheme: Theme = {
     },
   },
 
+  // Slide shape - rounded scientific look
+  slideShape: {
+    type: "rounded",
+    borderRadius: "8px",
+    shadow: "medium",
+  },
+
   cardBox: {
     background: "#142d35",
     borderColor: "#2a6575",

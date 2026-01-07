@@ -107,6 +107,13 @@ export const frostTheme: Theme = {
     },
   },
 
+  // Slide shape - rounded with subtle shadow for clean look
+  slideShape: {
+    type: "rounded",
+    borderRadius: "8px",
+    shadow: "subtle",
+  },
+
   cardBox: {
     background: "#ffffff",
     borderColor: "#e2e8f0",

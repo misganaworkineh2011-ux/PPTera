@@ -43,7 +43,7 @@ function ExportSlideContent({ params }: ExportSlidePageProps) {
         }
 
         // Resolve theme
-        const resolvedThemeId = themeId || data.themeId || "sprout";
+        const resolvedThemeId = themeId || data.themeId || "corporate-clean";
         const customThemeData = data.customTheme;
 
         if (resolvedThemeId.startsWith("custom-")) {

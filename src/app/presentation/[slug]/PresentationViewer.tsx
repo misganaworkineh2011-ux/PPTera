@@ -8,10 +8,10 @@ import {
   Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
-import { getThemeById, getDefaultTheme, type Theme } from "~/lib/themes";
+import { getThemeById, getDefaultTheme, type Theme, getSlideShapeStyles } from "~/lib/themes";
 import { isCustomThemeId, getCustomThemeDbId, convertCustomThemeToTheme } from "~/lib/custom-theme-utils";
 import { type LayoutType } from "~/lib/slide-layouts";
-import { type SlideLayoutType, type ImageSize } from "~/lib/layouts/slide";
+import { type SlideLayoutType, type ImageSize, type ImageShape } from "~/lib/layouts/slide";
 import {
   type SlideData,
   type PresentationData,
@@ -946,7 +946,7 @@ export default function PresentationViewer({
     updateSlidesWithSave(newSlides);
   };
 
-  const changeSlideLayout = (slideIndex: number, slideLayoutId: SlideLayoutType, imageSize: ImageSize) => {
+  const changeSlideLayout = (slideIndex: number, slideLayoutId: SlideLayoutType, imageSize: ImageSize, imageShape: ImageShape) => {
     const newSlides = [...slidesData];
     const existingSlide = newSlides[slideIndex];
     if (existingSlide) {
@@ -960,6 +960,8 @@ export default function PresentationViewer({
         "image-background": "image-background",
         "image-full": "full-image",
         "no-image": "grid-3-col",
+        "chart-left": "chart-left",
+        "chart-right": "chart-right",
       };
       const mappedLayout = layoutMap[slideLayoutId] || "left-content";
       newSlides[slideIndex] = { 
@@ -967,6 +969,7 @@ export default function PresentationViewer({
         layout: mappedLayout as LayoutType,
         slideLayout: slideLayoutId,
         imageSize: imageSize,
+        imageShape: imageShape,
       };
       updateSlidesWithSave(newSlides);
     }
@@ -1080,7 +1083,61 @@ export default function PresentationViewer({
     const slide = slidesData[slideIndex];
     if (slide) {
       const newSlides = [...slidesData];
-      newSlides[slideIndex] = { ...slide, bulletPoints: [...(slide.bulletPoints || []), "New point"] };
+      const hasContentLayout = !!slide.contentLayout;
+      
+      // Determine the primary data source for content layouts
+      // Priority: sections > transformedContent.items > bulletPoints
+      const hasSections = slide.sections && slide.sections.length > 0;
+      const hasTransformedContent = slide.transformedContent?.items && slide.transformedContent.items.length > 0;
+      
+      let newBulletPoints = [...(slide.bulletPoints || [])];
+      let newSections = slide.sections ? [...slide.sections] : undefined;
+      let newTransformedContent = slide.transformedContent ? { ...slide.transformedContent } : undefined;
+      
+      if (hasContentLayout) {
+        // For content layouts, add to the appropriate data source
+        if (hasSections) {
+          // Add to sections (primary source)
+          newSections = [...slide.sections!, { heading: "New Point", description: "Add description here" }];
+          // Also sync to bulletPoints for consistency
+          newBulletPoints = [...newBulletPoints, "New Point: Add description here"];
+        } else if (hasTransformedContent) {
+          // Add to transformedContent.items
+          newTransformedContent = {
+            ...slide.transformedContent!,
+            items: [...slide.transformedContent!.items!, { label: "New Point", text: "Add description here" }]
+          };
+          // Also sync to bulletPoints for consistency
+          newBulletPoints = [...newBulletPoints, "New Point: Add description here"];
+        } else {
+          // No sections or transformedContent - create sections from bulletPoints + new point
+          const existingBullets = slide.bulletPoints || [];
+          newSections = existingBullets.map((bullet) => {
+            const colonIndex = bullet.indexOf(":");
+            if (colonIndex > 0 && colonIndex < 50) {
+              const label = bullet.substring(0, colonIndex).trim();
+              const text = bullet.substring(colonIndex + 1).trim();
+              if (label && text) {
+                return { heading: label, description: text };
+              }
+            }
+            return { heading: bullet, description: bullet };
+          });
+          // Add the new point
+          newSections.push({ heading: "New Point", description: "Add description here" });
+          newBulletPoints = [...newBulletPoints, "New Point: Add description here"];
+        }
+      } else {
+        // No content layout - just add to bulletPoints
+        newBulletPoints = [...newBulletPoints, "New point"];
+      }
+      
+      newSlides[slideIndex] = { 
+        ...slide, 
+        bulletPoints: newBulletPoints,
+        sections: newSections,
+        transformedContent: newTransformedContent,
+      };
       updateSlidesWithSave(newSlides);
     }
   };
@@ -1089,7 +1146,28 @@ export default function PresentationViewer({
     const slide = slidesData[slideIndex];
     if (slide) {
       const newSlides = [...slidesData];
-      newSlides[slideIndex] = { ...slide, bulletPoints: (slide.bulletPoints || []).filter((_, i) => i !== bulletIndex) };
+      const newBulletPoints = (slide.bulletPoints || []).filter((_, i) => i !== bulletIndex);
+      
+      // Also update sections if they exist (for content layouts)
+      const newSections = slide.sections ? slide.sections.filter((_, i) => i !== bulletIndex) : undefined;
+      
+      // Also update transformedContent if it exists
+      const newTransformedContent = slide.transformedContent?.items 
+        ? { ...slide.transformedContent, items: slide.transformedContent.items.filter((_, i) => i !== bulletIndex) }
+        : undefined;
+      
+      // If all content is deleted, clear the content layout too
+      const shouldClearLayout = newBulletPoints.length === 0 && 
+        (!newSections || newSections.length === 0) && 
+        (!newTransformedContent?.items || newTransformedContent.items.length === 0);
+      
+      newSlides[slideIndex] = { 
+        ...slide, 
+        bulletPoints: newBulletPoints,
+        sections: newSections,
+        transformedContent: newTransformedContent,
+        contentLayout: shouldClearLayout ? undefined : slide.contentLayout,
+      };
       updateSlidesWithSave(newSlides);
     }
   };
@@ -1398,6 +1476,7 @@ export default function PresentationViewer({
             index={index}
             totalSlides={slides.length}
             imageCount={getSlideImages(slide).length}
+            theme={theme}
             slideContent={{
               type: slide.type,
               title: slide.title,
@@ -1470,6 +1549,7 @@ export default function PresentationViewer({
             <SlideNoteButton
               slideIndex={index}
               speakerNotes={slide.speakerNotes}
+              theme={theme}
               onAddNote={(note) => {
                 const newSlides = [...slidesData];
                 const existingSlide = newSlides[index];
@@ -1550,6 +1630,7 @@ export default function PresentationViewer({
   const renderScrollableView = () => {
     const ui = getUIColors(getThemeType(theme));
     const isCurrentlyStreaming = streamingStatus === "streaming";
+    const slideShapeStyles = getSlideShapeStyles(theme.slideShape);
 
     return (
       <div className="w-full mx-auto space-y-4 sm:space-y-8 md:space-y-12 pb-12 px-3 sm:px-4" style={{ maxWidth: "1209.33px" }}>
@@ -1564,10 +1645,11 @@ export default function PresentationViewer({
             // Default title slide layout - use simple min-height container
             <div
               id={`slide-${index}`}
-              className={`w-full rounded-md sm:rounded-lg shadow-xl sm:shadow-2xl overflow-hidden scroll-mt-20 ring-1 ${ui.ring} ${isNewSlide ? "animate-fade-in" : ""} ${isSlideStreaming || isAiEditing ? "ring-2" : ""} relative`}
+              className={`w-full overflow-hidden scroll-mt-20 ring-1 ${ui.ring} ${isNewSlide ? "animate-fade-in" : ""} ${isSlideStreaming || isAiEditing ? "ring-2" : ""} relative`}
               style={{
                 ...(isMobile ? { minHeight: "280px", maxWidth: "100%" } : { width: "1209.33px", maxWidth: "100%", height: "auto", minHeight: "400px" }),
                 ...(isSlideStreaming || isAiEditing ? { boxShadow: `0 0 20px ${theme.colors.primary}40` } : {}),
+                ...slideShapeStyles,
               }}
             >
               {isAiEditing && (
@@ -1581,12 +1663,13 @@ export default function PresentationViewer({
           ) : (
             <div
               id={`slide-${index}`}
-              className={`rounded-md sm:rounded-lg shadow-xl sm:shadow-2xl overflow-hidden scroll-mt-20 ring-1 ${ui.ring} ${isNewSlide ? "animate-fade-in" : ""} ${isSlideStreaming || isAiEditing ? "ring-2" : ""} relative`}
+              className={`overflow-hidden scroll-mt-20 ring-1 ${ui.ring} ${isNewSlide ? "animate-fade-in" : ""} ${isSlideStreaming || isAiEditing ? "ring-2" : ""} relative`}
               style={{
                 width: isMobile ? "100%" : "1209.33px",
                 maxWidth: "100%",
                 height: "auto",
                 ...(isSlideStreaming || isAiEditing ? { boxShadow: `0 0 20px ${theme.colors.primary}40` } : {}),
+                ...slideShapeStyles,
               }}
             >
               {isAiEditing && (
@@ -1609,6 +1692,7 @@ export default function PresentationViewer({
                   onAddSlide={() => addSlideAt(index)}
                   onAddAISlide={(prompt) => handleAddAISlide(index, prompt)}
                   presentationContext={presentation.title}
+                  theme={theme}
                 />
               )}
             </div>
@@ -1621,6 +1705,7 @@ export default function PresentationViewer({
             onAddSlide={() => addSlideAt(slides.length - 1)}
             onAddAISlide={(prompt) => handleAddAISlide(slides.length - 1, prompt)}
             presentationContext={presentation.title}
+            theme={theme}
           />
         )}
 
@@ -1911,6 +1996,8 @@ export default function PresentationViewer({
           style={{
             ...(showContentLayoutPanel ? { marginRight: `${CONTENT_LAYOUT_PANEL_WIDTH}px` } : {}),
             ...(showThumbnails && !isPublicView && !isMobile && !isFullscreen && !isPresenting ? { marginLeft: '176px' } : {}),
+            // Apply page background to scrollable area for themes with cardBox (dark themes)
+            ...(theme.pageBackground ? { background: theme.pageBackground } : {}),
           }}
         >
         <div className={`${isFullscreen || isPresenting ? "" : "px-0 sm:px-2 md:px-4 py-4 sm:py-8"} max-w-full ${showContentLayoutPanel ? 'pb-20' : ''}`}>
@@ -2050,12 +2137,13 @@ export default function PresentationViewer({
             currentSlideLayout={slides[activeSlideIndex]?.slideLayout || "image-right"}
             currentContentLayout={slides[activeSlideIndex]?.contentLayout || "box-style-1"}
             currentImageSize={slides[activeSlideIndex]?.imageSize || "medium"}
+            currentImageShape={slides[activeSlideIndex]?.imageShape || "arc"}
             contentItems={slides[activeSlideIndex]?.bulletPoints?.map((bp, i) => ({
               label: `Point ${i + 1}`,
-              text: typeof bp === "string" ? bp : (bp as { text?: string }).text || "",
+              text: typeof bp === "string" ? bp : ((bp as { text?: string } | null)?.text ?? ""),
             })) || []}
             theme={theme}
-            onSelectSlideLayout={(layoutId, imageSize) => changeSlideLayout(activeSlideIndex, layoutId, imageSize)}
+            onSelectSlideLayout={(layoutId, imageSize, imageShape) => changeSlideLayout(activeSlideIndex, layoutId, imageSize, imageShape)}
             onOpenContentLayoutPanel={() => setShowContentLayoutPanel(true)}
             onClose={() => setShowLayoutModal(false)} 
           />

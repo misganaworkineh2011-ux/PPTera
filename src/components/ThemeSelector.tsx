@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { X, Search, Check, Sparkles } from "lucide-react";
-import { themes, getThemeById, type Theme } from "~/lib/themes";
+import { themes, getThemeById, type Theme, getSlideShapeStyles } from "~/lib/themes";
 import { Button } from "~/components/ui/Button";
 
 // Convert custom theme from DB to Theme format
@@ -276,6 +276,7 @@ export default function ThemeSelector({
                 const isSelected = theme.id === previewThemeId;
                 const hasBackgroundImage = !!theme.previewBackgroundImage || !!theme.backgroundImage;
                 const bgImageUrl = theme.previewBackgroundImage || theme.backgroundImage;
+                const slideShapeStyles = getSlideShapeStyles(theme.slideShape);
                 return (
                   <button
                     key={theme.id}
@@ -286,10 +287,10 @@ export default function ThemeSelector({
                         : "border-slate-200 hover:border-slate-300"
                     }`}
                   >
-                    {/* Theme Preview Card */}
-                    <div className="p-3">
+                    {/* Theme Preview Card - outer container */}
+                    <div className="p-2">
                       <div
-                        className="aspect-[1.6/1] w-full rounded-md shadow-sm relative overflow-hidden"
+                        className="aspect-[1.6/1] w-full relative rounded-md overflow-hidden"
                         style={{
                           backgroundColor: theme.preview.titleBg,
                           backgroundImage: hasBackgroundImage
@@ -303,14 +304,16 @@ export default function ThemeSelector({
                         {hasBackgroundImage && (
                           <div
                             className="absolute inset-0"
-                            style={{ background: "rgba(0,0,0,0.25)" }}
+                            style={{ 
+                              background: "rgba(0,0,0,0.25)",
+                            }}
                           />
                         )}
                         
-                        {/* Content box centered on background with inline preview */}
+                        {/* Content box centered on background - SHAPE APPLIED HERE */}
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div 
-                            className={`rounded-lg backdrop-blur-sm transition-all duration-300 flex flex-col justify-center px-3 py-2 overflow-hidden ${
+                            className={`backdrop-blur-sm transition-all duration-300 flex flex-col justify-center px-3 py-2 overflow-hidden ${
                               hasBackgroundImage ? "w-[70%] h-[65%]" : "w-[85%] h-[80%]"
                             }`}
                             style={{
@@ -318,7 +321,7 @@ export default function ThemeSelector({
                                 ? `${theme.cardBox?.background || theme.colors.background}e8`
                                 : theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
                               border: theme.cardBox?.borderColor ? `1px solid ${theme.cardBox.borderColor}` : "none",
-                              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+                              ...slideShapeStyles,
                             }}
                           >
                             {/* Inline text preview */}
@@ -440,14 +443,14 @@ export default function ThemeSelector({
             <div className="relative z-10 flex flex-col gap-3 w-full max-w-md" style={{ perspective: "1200px" }}>
               {/* Slide 1 - Title Slide */}
               <div
-                className="w-full aspect-[16/9] rounded-lg shadow-xl overflow-hidden"
+                className="w-full aspect-[16/9] overflow-hidden"
                 style={{
                   transform: "rotateX(3deg)",
                   transformStyle: "preserve-3d",
                   background: previewTheme.slideStyles.title.background,
                   backgroundImage: previewTheme.slideStyles.title.pattern || "none",
                   border: `1px solid ${previewTheme.colors.border}`,
-                  boxShadow: previewTheme.design.shadows.medium,
+                  ...getSlideShapeStyles(previewTheme.slideShape),
                 }}
               >
                 <div 
@@ -481,13 +484,13 @@ export default function ThemeSelector({
 
               {/* Slide 2 - Content Slide */}
               <div
-                className="w-full aspect-[16/9] rounded-lg shadow-xl overflow-hidden"
+                className="w-full aspect-[16/9] overflow-hidden"
                 style={{
                   transform: "rotateX(0deg)",
                   transformStyle: "preserve-3d",
                   background: previewTheme.slideStyles.content.background,
                   border: `1px solid ${previewTheme.colors.border}`,
-                  boxShadow: previewTheme.design.shadows.large,
+                  ...getSlideShapeStyles(previewTheme.slideShape),
                 }}
               >
                 <div className="p-4 h-full flex flex-col">
@@ -527,13 +530,13 @@ export default function ThemeSelector({
 
               {/* Slide 3 - Features Slide */}
               <div
-                className="w-full aspect-[16/9] rounded-lg shadow-xl overflow-hidden"
+                className="w-full aspect-[16/9] overflow-hidden"
                 style={{
                   transform: "rotateX(-3deg)",
                   transformStyle: "preserve-3d",
                   background: previewTheme.slideStyles.content.background,
                   border: `1px solid ${previewTheme.colors.border}`,
-                  boxShadow: previewTheme.design.shadows.medium,
+                  ...getSlideShapeStyles(previewTheme.slideShape),
                 }}
               >
                 <div className="p-4 h-full flex flex-col">

@@ -19,8 +19,6 @@ import {
   Highlighter,
   Palette,
   ChevronDown,
-  Undo,
-  Redo,
   RemoveFormatting,
   Sparkles,
   Wand2,
@@ -157,7 +155,7 @@ interface FloatingToolbarProps {
 }
 
 function FloatingToolbar({ position, onCommand, onAIAction }: FloatingToolbarProps) {
-  const [activeMenu, setActiveMenu] = useState<"heading" | "color" | "highlight" | "ai" | null>(null);
+  const [activeMenu, setActiveMenu] = useState<"heading" | "color" | "highlight" | "align" | "ai" | null>(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const [isAILoading, setIsAILoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
@@ -174,7 +172,7 @@ function FloatingToolbar({ position, onCommand, onAIAction }: FloatingToolbarPro
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const toggleMenu = (menu: "heading" | "color" | "highlight" | "ai") => {
+  const toggleMenu = (menu: "heading" | "color" | "highlight" | "align" | "ai") => {
     if (activeMenu === menu) {
       setActiveMenu(null);
       return;
@@ -320,9 +318,43 @@ function FloatingToolbar({ position, onCommand, onAIAction }: FloatingToolbarPro
 
       <ToolbarDivider />
 
-      <ToolbarButton onClick={() => onCommand("justifyLeft")} title="Left"><AlignLeft size={15} /></ToolbarButton>
-      <ToolbarButton onClick={() => onCommand("justifyCenter")} title="Center"><AlignCenter size={15} /></ToolbarButton>
-      <ToolbarButton onClick={() => onCommand("justifyRight")} title="Right"><AlignRight size={15} /></ToolbarButton>
+      {/* Alignment dropdown */}
+      <button
+        ref={(el) => { buttonRefs.current["align"] = el; }}
+        type="button"
+        onMouseDown={(e) => { e.preventDefault(); toggleMenu("align"); }}
+        className="flex items-center gap-0.5 p-1.5 rounded hover:bg-slate-100 text-slate-600"
+        title="Text Alignment"
+      >
+        <AlignLeft size={15} />
+        <ChevronDown size={10} />
+      </button>
+
+      {activeMenu === "align" && renderDropdown(
+        <div className="min-w-[100px]">
+          <button
+            type="button"
+            onMouseDown={(e) => { e.preventDefault(); onCommand("justifyLeft"); setActiveMenu(null); }}
+            className="w-full flex items-center gap-2 px-3 py-1.5 hover:bg-slate-100 text-slate-700 text-sm rounded"
+          >
+            <AlignLeft size={14} /> Left
+          </button>
+          <button
+            type="button"
+            onMouseDown={(e) => { e.preventDefault(); onCommand("justifyCenter"); setActiveMenu(null); }}
+            className="w-full flex items-center gap-2 px-3 py-1.5 hover:bg-slate-100 text-slate-700 text-sm rounded"
+          >
+            <AlignCenter size={14} /> Center
+          </button>
+          <button
+            type="button"
+            onMouseDown={(e) => { e.preventDefault(); onCommand("justifyRight"); setActiveMenu(null); }}
+            className="w-full flex items-center gap-2 px-3 py-1.5 hover:bg-slate-100 text-slate-700 text-sm rounded"
+          >
+            <AlignRight size={14} /> Right
+          </button>
+        </div>
+      )}
 
       <ToolbarDivider />
 
@@ -352,11 +384,6 @@ function FloatingToolbar({ position, onCommand, onAIAction }: FloatingToolbarPro
           ))}
         </div>
       )}
-
-      <ToolbarDivider />
-
-      <ToolbarButton onClick={() => onCommand("undo")} title="Undo"><Undo size={15} /></ToolbarButton>
-      <ToolbarButton onClick={() => onCommand("redo")} title="Redo"><Redo size={15} /></ToolbarButton>
 
       <ToolbarDivider />
 
@@ -698,7 +725,7 @@ export default function EditableText({
       <div
         key="static-container"
         ref={containerRef}
-        className="relative"
+        className="relative group/editable"
         onMouseEnter={() => isOwner && setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -714,26 +741,25 @@ export default function EditableText({
           } : undefined}
           dangerouslySetInnerHTML={{ __html: value }}
         />
-        {isOwner && isHovered && (
-          <div className="absolute -right-10 top-1/2 -translate-y-1/2 flex flex-col gap-1 z-30">
+        {/* Show edit/delete icons only when hovering over THIS element and onDelete is provided */}
+        {isOwner && onDelete && isHovered && (
+          <div className="absolute top-0 right-0 flex gap-1 z-30">
             <button
               type="button"
-              onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onStartEdit(); }}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onStartEdit(); }}
               title="Edit"
-              className="p-1.5 rounded-lg bg-white shadow-lg hover:bg-slate-50 transition-colors"
+              className="p-1 rounded bg-white/95 shadow-md hover:bg-blue-50 transition-colors border border-slate-200/50"
             >
-              <Type size={14} className="text-slate-700" />
+              <Type size={12} className="text-slate-600" />
             </button>
-            {onDelete && (
-              <button
-                type="button"
-                onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(); }}
-                title="Delete"
-                className="p-1.5 rounded-lg bg-white shadow-lg hover:bg-red-50 transition-colors"
-              >
-                <Trash2 size={14} className="text-red-500" />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(); }}
+              title="Delete"
+              className="p-1 rounded bg-white/95 shadow-md hover:bg-red-50 transition-colors border border-slate-200/50"
+            >
+              <Trash2 size={12} className="text-red-500" />
+            </button>
           </div>
         )}
       </div>

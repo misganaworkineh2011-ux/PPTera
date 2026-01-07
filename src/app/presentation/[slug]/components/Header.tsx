@@ -131,7 +131,11 @@ export function Header({
 
   return (
     <header
-      className={`backdrop-blur-md border-b px-3 sm:px-4 py-2 sticky top-0 z-50 ${ui.headerBg}`}
+      className="backdrop-blur-md border-b px-3 sm:px-4 py-2 sticky top-0 z-50"
+      style={{
+        backgroundColor: `${theme.colors.background}e6`, // e6 = 90% opacity
+        borderColor: theme.colors.border,
+      }}
     >
       <div className="flex items-center justify-between gap-2">
         {/* Left section - Back & Title */}
@@ -284,8 +288,11 @@ export function Header({
 
             {showPresentMenu && (
               <div
-                className={`absolute right-0 top-full mt-2 w-72 rounded-xl shadow-2xl border backdrop-blur-md z-50 overflow-hidden ${ui.headerBg}`}
-                style={{ borderColor: themeType === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)" }}
+                className="absolute right-0 top-full mt-2 w-72 rounded-xl shadow-2xl border backdrop-blur-md z-50 overflow-hidden"
+                style={{ 
+                  backgroundColor: `${theme.colors.background}f5`, // f5 = 96% opacity
+                  borderColor: theme.colors.border,
+                }}
               >
                 {/* Start presenting section */}
                 <div className={`px-4 py-3 border-b ${themeType === "dark" ? "border-white/10" : "border-black/10"}`}>
@@ -370,8 +377,11 @@ export function Header({
 
             {showMoreMenu && (
               <div
-                className={`absolute right-0 top-full mt-2 w-64 rounded-xl shadow-2xl border backdrop-blur-md z-50 overflow-hidden ${ui.headerBg}`}
-                style={{ borderColor: themeType === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)" }}
+                className="absolute right-0 top-full mt-2 w-64 rounded-xl shadow-2xl border backdrop-blur-md z-50 overflow-hidden"
+                style={{ 
+                  backgroundColor: `${theme.colors.background}f5`, // f5 = 96% opacity
+                  borderColor: theme.colors.border,
+                }}
               >
                 {/* Title info section */}
                 <div className={`px-4 py-3 border-b ${themeType === "dark" ? "border-white/10" : "border-black/10"}`}>

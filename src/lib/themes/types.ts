@@ -1,6 +1,8 @@
 // Theme type definitions
 // Combines base structural tokens with theme-specific tokens
 
+import type React from "react";
+
 // ============================================================================
 // THEME COLOR TOKENS (what changes per theme)
 // ============================================================================
@@ -112,6 +114,80 @@ export interface ThemeSlideStyles {
 }
 
 // ============================================================================
+// THEME SLIDE SHAPE STYLES (for slide container appearance)
+// ============================================================================
+export type SlideShapeType = "sharp" | "rounded" | "soft";
+
+export interface ThemeSlideShape {
+  // Shape type: sharp (0 radius), rounded (subtle), soft (more rounded)
+  type: SlideShapeType;
+  // Border radius for the slide container
+  borderRadius: string;
+  // Shadow style: none, subtle, medium, deep, solid (hard offset shadow)
+  shadow: "none" | "subtle" | "medium" | "deep" | "solid";
+  // Solid shadow color (used when shadow is "solid")
+  solidShadowColor?: string;
+  // Border style
+  border?: {
+    width: string;
+    color: string;
+    style: "solid" | "none";
+  };
+}
+
+// Default slide shapes for different styles
+export const DEFAULT_SLIDE_SHAPES: Record<SlideShapeType, ThemeSlideShape> = {
+  sharp: {
+    type: "sharp",
+    borderRadius: "0px",
+    shadow: "medium",
+  },
+  rounded: {
+    type: "rounded",
+    borderRadius: "8px",
+    shadow: "medium",
+  },
+  soft: {
+    type: "soft",
+    borderRadius: "16px",
+    shadow: "deep",
+  },
+};
+
+// Helper to get slide shape CSS styles
+export function getSlideShapeStyles(shape?: ThemeSlideShape): React.CSSProperties {
+  const defaultShape = DEFAULT_SLIDE_SHAPES.rounded;
+  const s = shape || defaultShape;
+  
+  const shadowMap: Record<string, string> = {
+    none: "none",
+    subtle: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)",
+    medium: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)",
+    // Deep shadow fixed to bottom-right position
+    deep: "8px 12px 24px rgba(0, 0, 0, 0.25), 4px 6px 12px rgba(0, 0, 0, 0.15)",
+    // Solid shadow - hard offset with no blur (color set separately)
+    solid: "none", // Will be overridden below if solidShadowColor is set
+  };
+  
+  // For solid shadow, use the solidShadowColor or default to a pink/accent color
+  let boxShadow = shadowMap[s.shadow] || shadowMap.medium;
+  if (s.shadow === "solid") {
+    const solidColor = s.solidShadowColor || "#f0abfc"; // Default pink if not specified
+    boxShadow = `8px 8px 0px 0px ${solidColor}`;
+  }
+  
+  return {
+    borderRadius: s.borderRadius,
+    boxShadow,
+    ...(s.border && s.border.style !== "none" ? {
+      borderWidth: s.border.width,
+      borderColor: s.border.color,
+      borderStyle: s.border.style,
+    } : {}),
+  };
+}
+
+// ============================================================================
 // THEME CARD/BOX STYLES
 // ============================================================================
 export interface ThemeCardBox {
@@ -159,6 +235,9 @@ export interface Theme {
   fonts: ThemeFonts;
   design: ThemeDesign;
   slideStyles: ThemeSlideStyles;
+  
+  // Slide shape styling (container appearance)
+  slideShape?: ThemeSlideShape;
   
   // Card/Box styling (for slide backgrounds)
   cardBox: ThemeCardBox;

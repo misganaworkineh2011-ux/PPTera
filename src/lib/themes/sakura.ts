@@ -107,6 +107,13 @@ export const sakuraTheme: Theme = {
     },
   },
 
+  // Slide shape - soft rounded for delicate aesthetic
+  slideShape: {
+    type: "soft",
+    borderRadius: "16px",
+    shadow: "subtle",
+  },
+
   cardBox: {
     background: "#ffffff",
     borderColor: "#f5e6e0",

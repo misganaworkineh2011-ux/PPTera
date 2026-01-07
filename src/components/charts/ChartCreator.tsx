@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BarChart3, PieChart, LineChart, TrendingUp, Target, Filter, Plus, Trash2, Palette, Eye, Save, Table, Activity, Gauge } from "lucide-react";
+import { BarChart3, PieChart, LineChart, TrendingUp, Target, Filter, Plus, Trash2, Palette, Eye, Save, Table, Activity, Gauge, BarChartHorizontal, CircleDot, ArrowDownWideNarrow } from "lucide-react";
 import { type ChartData, type ChartDataPoint, type ChartType, type ChartConfig, CHART_TEMPLATES, COLOR_SCHEMES, getChartColor } from "~/lib/charts/types";
 import InteractiveChart from "./InteractiveChart";
 import { type Theme } from "~/lib/themes";
@@ -16,15 +16,15 @@ interface ChartCreatorProps {
 
 const CHART_TYPES: { type: ChartType; label: string; icon: React.ReactNode }[] = [
   { type: "bar", label: "Bar", icon: <BarChart3 size={16} /> },
-  { type: "horizontal-bar", label: "H-Bar", icon: <BarChart3 size={16} className="rotate-90" /> },
+  { type: "horizontal-bar", label: "H-Bar", icon: <BarChartHorizontal size={16} /> },
   { type: "line", label: "Line", icon: <LineChart size={16} /> },
   { type: "area", label: "Area", icon: <Activity size={16} /> },
   { type: "pie", label: "Pie", icon: <PieChart size={16} /> },
-  { type: "donut", label: "Donut", icon: <PieChart size={16} /> },
-  { type: "comparison", label: "Compare", icon: <Target size={16} /> },
-  { type: "kpi", label: "KPI", icon: <TrendingUp size={16} /> },
+  { type: "donut", label: "Donut", icon: <CircleDot size={16} /> },
+  { type: "comparison", label: "Compare", icon: <ArrowDownWideNarrow size={16} /> },
+  { type: "kpi", label: "KPI", icon: <Gauge size={16} /> },
   { type: "funnel", label: "Funnel", icon: <Filter size={16} /> },
-  { type: "progress", label: "Progress", icon: <Activity size={16} /> },
+  { type: "progress", label: "Progress", icon: <Target size={16} /> },
   { type: "gauge", label: "Gauge", icon: <Gauge size={16} /> },
   { type: "radar", label: "Radar", icon: <Target size={16} /> },
   { type: "table", label: "Table", icon: <Table size={16} /> },

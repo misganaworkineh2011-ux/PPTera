@@ -119,6 +119,13 @@ export const auroraTheme: Theme = {
     },
   },
 
+  // Slide shape - soft rounded with deep glow
+  slideShape: {
+    type: "soft",
+    borderRadius: "14px",
+    shadow: "deep",
+  },
+
   // Card/Box styling (used for slide backgrounds)
   cardBox: {
     background: "#162035",

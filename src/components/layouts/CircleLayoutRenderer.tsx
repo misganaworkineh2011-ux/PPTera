@@ -74,6 +74,7 @@ interface CircleLayoutRendererProps {
   onUpdateLabel?: (index: number, value: string) => void;
   onUpdateText?: (index: number, value: string) => void;
   onFinishEditing?: () => void;
+  onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
 }
@@ -91,6 +92,7 @@ export function CircleLayoutRenderer({
   onUpdateLabel,
   onUpdateText,
   onFinishEditing,
+  onDeleteItem,
   isOwner = false,
   isHovered = false,
 }: CircleLayoutRendererProps) {
@@ -110,6 +112,7 @@ export function CircleLayoutRenderer({
         onUpdateLabel={onUpdateLabel}
         onUpdateText={onUpdateText}
         onFinishEditing={onFinishEditing}
+        onDeleteItem={onDeleteItem}
         isOwner={isOwner}
         isHovered={isHovered}
       />
@@ -128,6 +131,7 @@ export function CircleLayoutRenderer({
       onUpdateLabel={onUpdateLabel}
       onUpdateText={onUpdateText}
       onFinishEditing={onFinishEditing}
+      onDeleteItem={onDeleteItem}
       isOwner={isOwner}
       isHovered={isHovered}
     />
@@ -146,6 +150,7 @@ function ArcLayout({
   onUpdateLabel,
   onUpdateText,
   onFinishEditing,
+  onDeleteItem,
   isOwner = false,
   isHovered = false,
 }: {
@@ -159,6 +164,7 @@ function ArcLayout({
   onUpdateLabel?: (index: number, value: string) => void;
   onUpdateText?: (index: number, value: string) => void;
   onFinishEditing?: () => void;
+  onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
 }) {
@@ -231,6 +237,7 @@ function ArcLayout({
                     onStartEdit={() => onStartEditLabel(index)}
                     onChange={(val) => onUpdateLabel?.(index, val)}
                     onFinish={onFinishEditing || (() => {})}
+                    onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                     className="font-semibold mb-1 leading-tight"
                     style={{ fontSize: labelSize, color: themeStyles.titleColor }}
                     isOwner={isOwner}
@@ -253,6 +260,7 @@ function ArcLayout({
                   onStartEdit={() => onStartEditText(index)}
                   onChange={(val) => onUpdateText?.(index, val)}
                   onFinish={onFinishEditing || (() => {})}
+                  onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                   className="leading-snug"
                   style={{ fontSize, color: themeStyles.bodyColor }}
                   isOwner={isOwner}
@@ -345,6 +353,7 @@ function RingLayout({
   onUpdateLabel,
   onUpdateText,
   onFinishEditing,
+  onDeleteItem,
   isOwner = false,
   isHovered = false,
 }: {
@@ -358,6 +367,7 @@ function RingLayout({
   onUpdateLabel?: (index: number, value: string) => void;
   onUpdateText?: (index: number, value: string) => void;
   onFinishEditing?: () => void;
+  onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
 }) {
@@ -455,6 +465,7 @@ function RingLayout({
                     onStartEdit={() => onStartEditLabel(index)}
                     onChange={(val) => onUpdateLabel?.(index, val)}
                     onFinish={onFinishEditing || (() => {})}
+                    onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                     className="text-sm font-semibold mb-1"
                     style={{ color: themeStyles.titleColor }}
                     isOwner={isOwner}
@@ -477,6 +488,7 @@ function RingLayout({
                   onStartEdit={() => onStartEditText(index)}
                   onChange={(val) => onUpdateText?.(index, val)}
                   onFinish={onFinishEditing || (() => {})}
+                  onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                   className="text-xs leading-relaxed line-clamp-2"
                   style={{ color: themeStyles.bodyColor }}
                   isOwner={isOwner}
@@ -526,6 +538,7 @@ function RingLayout({
                     onStartEdit={() => onStartEditLabel(actualIndex)}
                     onChange={(val) => onUpdateLabel?.(actualIndex, val)}
                     onFinish={onFinishEditing || (() => {})}
+                    onDelete={onDeleteItem ? () => onDeleteItem(actualIndex) : undefined}
                     className="text-base font-semibold mb-1"
                     style={{ color: themeStyles.titleColor }}
                     isOwner={isOwner}
@@ -549,6 +562,7 @@ function RingLayout({
                   onStartEdit={() => onStartEditText(actualIndex)}
                   onChange={(val) => onUpdateText?.(actualIndex, val)}
                   onFinish={onFinishEditing || (() => {})}
+                  onDelete={onDeleteItem ? () => onDeleteItem(actualIndex) : undefined}
                   className="text-sm leading-relaxed"
                   style={{ color: themeStyles.bodyColor }}
                   isOwner={isOwner}
@@ -646,6 +660,7 @@ function RingLayout({
                     onStartEdit={() => onStartEditLabel(actualIndex)}
                     onChange={(val) => onUpdateLabel?.(actualIndex, val)}
                     onFinish={onFinishEditing || (() => {})}
+                    onDelete={onDeleteItem ? () => onDeleteItem(actualIndex) : undefined}
                     className="text-base font-semibold mb-1"
                     style={{ color: themeStyles.titleColor }}
                     isOwner={isOwner}
@@ -669,6 +684,7 @@ function RingLayout({
                   onStartEdit={() => onStartEditText(actualIndex)}
                   onChange={(val) => onUpdateText?.(actualIndex, val)}
                   onFinish={onFinishEditing || (() => {})}
+                  onDelete={onDeleteItem ? () => onDeleteItem(actualIndex) : undefined}
                   className="text-sm leading-relaxed"
                   style={{ color: themeStyles.bodyColor }}
                   isOwner={isOwner}

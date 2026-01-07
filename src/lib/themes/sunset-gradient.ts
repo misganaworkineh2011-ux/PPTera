@@ -106,6 +106,13 @@ export const sunsetGradientTheme: Theme = {
     },
   },
 
+  // Slide shape - soft rounded with warm glow
+  slideShape: {
+    type: "soft",
+    borderRadius: "18px",
+    shadow: "deep",
+  },
+
   cardBox: {
     background: "#2e1a32",
     borderColor: "#6a3870",

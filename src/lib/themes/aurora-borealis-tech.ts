@@ -106,6 +106,13 @@ export const auroraBorealisTechTheme: Theme = {
     },
   },
 
+  // Slide shape - rounded with aurora glow
+  slideShape: {
+    type: "rounded",
+    borderRadius: "12px",
+    shadow: "deep",
+  },
+
   cardBox: {
     background: "#142642",
     borderColor: "#2a5080",

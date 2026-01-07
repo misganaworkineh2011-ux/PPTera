@@ -34,6 +34,14 @@ export function ThumbnailSidebar({
   const ui = getUIColors(themeType);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const isLight = themeType === "light" || themeType === "corporate";
+  
+  // Theme-aware background styles
+  const bgStyle = theme.pageBackground 
+    ? { background: theme.pageBackground }
+    : {};
+  const bgClass = theme.pageBackground 
+    ? "" 
+    : isLight ? "bg-slate-50" : "bg-zinc-900/95";
 
   // For list view: sidebar shrinks to content and centers vertically
   // For grid view: sidebar is full height
@@ -41,35 +49,33 @@ export function ThumbnailSidebar({
     return (
       <div className="w-44 shrink-0 fixed left-0 top-[56px] h-[calc(100vh-56px)] flex items-center">
         <aside
-          className={`w-full mx-2 px-2 py-3 rounded-xl border shadow-lg ${
-            isLight ? "bg-white border-slate-200" : "bg-zinc-900 border-zinc-700"
-          }`}
+          className={`w-full mx-2 px-2 py-3 rounded-xl border shadow-lg ${bgClass}`}
+          style={{
+            ...bgStyle,
+            borderColor: isLight ? "#e2e8f0" : theme.colors.border || "#3f3f46",
+          }}
         >
           {/* Header with toggle */}
           <div className="flex items-center justify-between mb-3">
             <div
-              className={`flex items-center rounded-full p-0.5 ${
-                isLight ? "bg-slate-200/80" : "bg-zinc-800"
-              }`}
+              className="flex items-center rounded-full p-0.5"
+              style={{ backgroundColor: isLight ? "rgba(226, 232, 240, 0.8)" : theme.colors.surface || "#27272a" }}
             >
               <button
                 onClick={() => setViewMode("grid")}
-                className={`p-1.5 rounded-full transition-all ${
-                  isLight
-                    ? "text-slate-500 hover:text-slate-700"
-                    : "text-zinc-400 hover:text-zinc-200"
-                }`}
+                className="p-1.5 rounded-full transition-all"
+                style={{ color: isLight ? "#64748b" : theme.colors.textMuted || "#a1a1aa" }}
                 title="Grid view"
               >
                 <LayoutGrid size={14} />
               </button>
               <button
                 onClick={() => setViewMode("list")}
-                className={`p-1.5 rounded-full transition-all ${
-                  isLight
-                    ? "bg-white shadow-sm text-blue-600"
-                    : "bg-zinc-700 text-white shadow-sm"
-                }`}
+                className="p-1.5 rounded-full transition-all shadow-sm"
+                style={{ 
+                  backgroundColor: isLight ? "#ffffff" : theme.colors.surfaceHover || "#3f3f46",
+                  color: isLight ? "#2563eb" : "#ffffff"
+                }}
                 title="List view"
               >
                 <List size={14} />
@@ -77,11 +83,8 @@ export function ThumbnailSidebar({
             </div>
             <button
               onClick={onClose}
-              className={`p-1.5 rounded-lg transition-colors ${
-                isLight
-                  ? "text-slate-400 hover:text-slate-600 hover:bg-slate-200"
-                  : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800"
-              }`}
+              className="p-1.5 rounded-lg transition-colors"
+              style={{ color: isLight ? "#94a3b8" : theme.colors.textMuted || "#71717a" }}
             >
               <X size={16} />
             </button>
@@ -96,31 +99,22 @@ export function ThumbnailSidebar({
                 className="w-full flex items-center gap-1.5"
               >
                 <div
-                  className={`w-5 h-5 shrink-0 flex items-center justify-center rounded text-[10px] font-semibold transition-colors ${
-                    currentSlide === index
-                      ? "text-white"
-                      : isLight
-                        ? "bg-slate-200 text-slate-600"
-                        : "bg-zinc-800 text-zinc-400"
-                  }`}
+                  className="w-5 h-5 shrink-0 flex items-center justify-center rounded text-[10px] font-semibold transition-colors"
                   style={
                     currentSlide === index
-                      ? { backgroundColor: theme.colors.primary }
-                      : {}
+                      ? { backgroundColor: theme.colors.primary, color: "#ffffff" }
+                      : { backgroundColor: isLight ? "#e2e8f0" : theme.colors.surface || "#27272a", color: isLight ? "#475569" : theme.colors.textMuted || "#a1a1aa" }
                   }
                 >
                   {index + 1}
                 </div>
                 <div
-                  className={`flex-1 text-left py-1 px-1.5 rounded text-xs truncate transition-colors ${
+                  className="flex-1 text-left py-1 px-1.5 rounded text-xs truncate transition-colors"
+                  style={
                     currentSlide === index
-                      ? isLight
-                        ? "bg-blue-50 text-blue-700"
-                        : "bg-zinc-800 text-white"
-                      : isLight
-                        ? "hover:bg-slate-100 text-slate-700"
-                        : "hover:bg-zinc-800 text-zinc-300"
-                  }`}
+                      ? { backgroundColor: isLight ? "#eff6ff" : theme.colors.surface || "#27272a", color: isLight ? "#1d4ed8" : "#ffffff" }
+                      : { color: isLight ? "#334155" : theme.colors.text || "#d4d4d8" }
+                  }
                 >
                   {slide.title || slide.subtitle || `Slide ${index + 1}`}
                 </div>
@@ -135,36 +129,34 @@ export function ThumbnailSidebar({
   // Grid view - full height sidebar
   return (
     <aside
-      className={`w-44 shrink-0 h-[calc(100vh-56px)] fixed left-0 top-[56px] flex flex-col border-r ${
-        isLight ? "bg-slate-50 border-slate-200" : "bg-zinc-900/95 border-zinc-800"
-      }`}
+      className={`w-44 shrink-0 h-[calc(100vh-56px)] fixed left-0 top-[56px] flex flex-col border-r ${bgClass}`}
+      style={{
+        ...bgStyle,
+        borderColor: isLight ? "#e2e8f0" : theme.colors.border || "#27272a",
+      }}
     >
       {/* Header with toggle */}
       <div className="p-2">
         <div className="flex items-center justify-between">
           <div
-            className={`flex items-center rounded-full p-0.5 ${
-              isLight ? "bg-slate-200/80" : "bg-zinc-800"
-            }`}
+            className="flex items-center rounded-full p-0.5"
+            style={{ backgroundColor: isLight ? "rgba(226, 232, 240, 0.8)" : theme.colors.surface || "#27272a" }}
           >
             <button
               onClick={() => setViewMode("grid")}
-              className={`p-1.5 rounded-full transition-all ${
-                isLight
-                  ? "bg-white shadow-sm text-blue-600"
-                  : "bg-zinc-700 text-white shadow-sm"
-              }`}
+              className="p-1.5 rounded-full transition-all shadow-sm"
+              style={{ 
+                backgroundColor: isLight ? "#ffffff" : theme.colors.surfaceHover || "#3f3f46",
+                color: isLight ? "#2563eb" : "#ffffff"
+              }}
               title="Grid view"
             >
               <LayoutGrid size={14} />
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`p-1.5 rounded-full transition-all ${
-                isLight
-                  ? "text-slate-500 hover:text-slate-700"
-                  : "text-zinc-400 hover:text-zinc-200"
-              }`}
+              className="p-1.5 rounded-full transition-all"
+              style={{ color: isLight ? "#64748b" : theme.colors.textMuted || "#a1a1aa" }}
               title="List view"
             >
               <List size={14} />
@@ -172,11 +164,8 @@ export function ThumbnailSidebar({
           </div>
           <button
             onClick={onClose}
-            className={`p-1.5 rounded-lg transition-colors ${
-              isLight
-                ? "text-slate-400 hover:text-slate-600 hover:bg-slate-200"
-                : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800"
-            }`}
+            className="p-1.5 rounded-lg transition-colors"
+            style={{ color: isLight ? "#94a3b8" : theme.colors.textMuted || "#71717a" }}
           >
             <X size={16} />
           </button>
@@ -194,25 +183,22 @@ export function ThumbnailSidebar({
             className="w-full group relative"
           >
             <div
-              className={`aspect-video overflow-hidden rounded transition-all duration-200 ring-1 hover:ring-2 hover:shadow-sm ${
-                currentSlide === index
-                  ? "ring-2 shadow-md"
-                  : isLight
-                    ? "ring-slate-200 hover:ring-slate-300"
-                    : "ring-zinc-700 hover:ring-zinc-600"
-              }`}
-              style={
-                currentSlide === index
-                  ? { boxShadow: `0 0 0 2px ${theme.colors.primary}` }
-                  : {}
-              }
+              className="aspect-video overflow-hidden rounded transition-all duration-200 ring-1 hover:ring-2 hover:shadow-sm"
+              style={{
+                boxShadow: currentSlide === index ? `0 0 0 2px ${theme.colors.primary}` : undefined,
+                ["--tw-ring-color" as string]: currentSlide === index 
+                  ? theme.colors.primary 
+                  : isLight ? "#e2e8f0" : theme.colors.border || "#3f3f46",
+              }}
             >
               {renderSlide(slide, index, false)}
             </div>
             <div
-              className={`absolute bottom-1 left-1 px-1 py-0.5 rounded text-[8px] font-semibold ${
-                isLight ? "bg-white/90 text-slate-700" : "bg-black/70 text-white"
-              }`}
+              className="absolute bottom-1 left-1 px-1 py-0.5 rounded text-[8px] font-semibold"
+              style={{ 
+                backgroundColor: isLight ? "rgba(255, 255, 255, 0.9)" : "rgba(0, 0, 0, 0.7)",
+                color: isLight ? "#334155" : "#ffffff"
+              }}
             >
               {index + 1}
             </div>

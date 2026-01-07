@@ -106,6 +106,14 @@ export const animeDreamscapeTheme: Theme = {
     },
   },
 
+  // Slide shape styling - soft rounded with solid pink shadow for dreamy look
+  slideShape: {
+    type: "soft",
+    borderRadius: "20px",
+    shadow: "solid",
+    solidShadowColor: "#f472b6", // Pink accent color
+  },
+
   cardBox: {
     background: "#163545",
     borderColor: "#2a6580",

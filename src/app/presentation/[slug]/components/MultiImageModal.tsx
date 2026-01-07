@@ -40,10 +40,27 @@ export function MultiImageModal({
   onOpenWysiwygEditor,
 }: MultiImageModalProps) {
   const themeType = getThemeType(theme);
-  const isDark = themeType !== "light" && themeType !== "corporate";
+  const isDark = themeType !== "light" && themeType !== "corporate" && themeType !== "custom-light";
   const isEditing = editingIndex !== null;
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  // Theme-aware colors
+  const colors = isDark ? {
+    bg: theme.pageBackground || theme.colors.background,
+    surface: theme.colors.surface,
+    border: theme.colors.border,
+    text: theme.colors.text,
+    textMuted: theme.colors.textMuted,
+    hoverBg: theme.colors.surfaceHover || "rgba(255,255,255,0.1)",
+  } : {
+    bg: "#ffffff",
+    surface: "#f8fafc",
+    border: "#e2e8f0",
+    text: "#0f172a",
+    textMuted: "#64748b",
+    hoverBg: "#f1f5f9",
+  };
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedIndex(index);
@@ -83,20 +100,33 @@ export function MultiImageModal({
       onClick={onClose}
     >
       <div
-        className={`w-full max-w-2xl rounded-2xl shadow-2xl ${isDark ? "bg-zinc-900 border border-zinc-700" : "bg-white border border-slate-200"}`}
+        className="w-full max-w-2xl rounded-2xl shadow-2xl"
+        style={{
+          background: colors.bg,
+          border: `1px solid ${colors.border}`,
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <div
-          className={`flex items-center justify-between p-4 border-b ${isDark ? "border-zinc-700" : "border-slate-200"}`}
+          className="flex items-center justify-between p-4"
+          style={{ borderBottom: `1px solid ${colors.border}` }}
         >
           <h3
-            className={`text-lg font-semibold ${isDark ? "text-white" : "text-slate-900"}`}
+            className="text-lg font-semibold"
+            style={{ color: colors.text }}
           >
             Manage Images {images.length > 0 && `(${images.length})`}
           </h3>
           <button
             onClick={onClose}
-            className={`p-1 rounded-lg transition-colors ${isDark ? "hover:bg-zinc-800 text-zinc-400" : "hover:bg-slate-100 text-slate-500"}`}
+            className="p-1 rounded-lg transition-colors"
+            style={{ color: colors.textMuted }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = colors.hoverBg;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+            }}
           >
             <X size={20} />
           </button>
@@ -107,7 +137,8 @@ export function MultiImageModal({
           {images.length > 0 && (
             <div>
               <label
-                className={`block text-sm font-medium mb-2 ${isDark ? "text-zinc-300" : "text-slate-700"}`}
+                className="block text-sm font-medium mb-2"
+                style={{ color: colors.text }}
               >
                 Current Images{" "}
                 <span className="text-xs font-normal opacity-70">
@@ -124,16 +155,14 @@ export function MultiImageModal({
                     onDragLeave={handleDragLeave}
                     onDrop={(e) => handleDrop(e, idx)}
                     onDragEnd={handleDragEnd}
-                    className={`relative group rounded-lg overflow-hidden border cursor-grab active:cursor-grabbing transition-all ${
+                    className={`relative group rounded-lg overflow-hidden cursor-grab active:cursor-grabbing transition-all ${
                       editingIndex === idx ? "ring-2" : ""
                     } ${draggedIndex === idx ? "opacity-50 scale-95" : ""} ${
                       dragOverIndex === idx ? "ring-2 ring-cyan-500 scale-105" : ""
-                    } ${isDark ? "border-zinc-700" : "border-slate-200"}`}
-                    style={
-                      editingIndex === idx
-                        ? { borderColor: theme.colors.primary }
-                        : {}
-                    }
+                    }`}
+                    style={{
+                      border: `1px solid ${editingIndex === idx ? theme.colors.primary : colors.border}`,
+                    }}
                   >
                     <div className="aspect-video">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -169,7 +198,11 @@ export function MultiImageModal({
                       </button>
                     </div>
                     <div
-                      className={`absolute bottom-1 left-1 px-1.5 py-0.5 rounded text-xs font-medium ${isDark ? "bg-black/60 text-white" : "bg-white/80 text-slate-700"}`}
+                      className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded text-xs font-medium"
+                      style={{
+                        backgroundColor: isDark ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.8)",
+                        color: isDark ? "#ffffff" : colors.text,
+                      }}
                     >
                       {idx + 1}
                     </div>
@@ -181,10 +214,15 @@ export function MultiImageModal({
 
           {/* Add/Edit image form */}
           <div
-            className={`p-4 rounded-lg border ${isDark ? "border-zinc-700 bg-zinc-800/50" : "border-slate-200 bg-slate-50"}`}
+            className="p-4 rounded-lg"
+            style={{
+              backgroundColor: colors.surface,
+              border: `1px solid ${colors.border}`,
+            }}
           >
             <label
-              className={`block text-sm font-medium mb-2 ${isDark ? "text-zinc-300" : "text-slate-700"}`}
+              className="block text-sm font-medium mb-2"
+              style={{ color: colors.text }}
             >
               {isEditing
                 ? `Edit Image ${editingIndex! + 1}`
@@ -195,24 +233,30 @@ export function MultiImageModal({
               value={imageUrl}
               onChange={(e) => onUrlChange(e.target.value)}
               placeholder="https://example.com/image.jpg"
-              className={`w-full px-4 py-3 rounded-lg border transition-colors ${
-                isDark
-                  ? "bg-zinc-800 border-zinc-600 text-white placeholder-zinc-500 focus:border-amber-500"
-                  : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:border-cyan-500"
-              } focus:outline-none focus:ring-2 focus:ring-opacity-20`}
-              style={
-                { ["--tw-ring-color" as string]: theme.colors.primary } as React.CSSProperties
-              }
+              className="w-full px-4 py-3 rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-opacity-20"
+              style={{
+                backgroundColor: isDark ? theme.colors.background : "#ffffff",
+                borderColor: colors.border,
+                color: colors.text,
+                ["--tw-ring-color" as string]: theme.colors.primary,
+              } as React.CSSProperties}
             />
             <p
-              className={`mt-2 text-xs ${isDark ? "text-zinc-500" : "text-slate-500"}`}
+              className="mt-2 text-xs"
+              style={{ color: colors.textMuted }}
             >
               Paste a direct link to an image (JPG, PNG, WebP). Add multiple
               images for gallery layouts.
             </p>
 
             {imageUrl && (
-              <div className={`mt-3 aspect-video rounded-lg overflow-hidden border border-dashed max-w-xs ${isDark ? "bg-zinc-800 border-zinc-600" : "bg-slate-100 border-slate-300"}`}>
+              <div 
+                className="mt-3 aspect-video rounded-lg overflow-hidden border border-dashed max-w-xs"
+                style={{
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                }}
+              >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={imageUrl}
@@ -243,7 +287,14 @@ export function MultiImageModal({
                   </button>
                   <button
                     onClick={onCancelEdit}
-                    className={`px-4 py-2 rounded-lg transition-colors ${isDark ? "text-zinc-400 hover:bg-zinc-700" : "text-slate-600 hover:bg-slate-200"}`}
+                    className="px-4 py-2 rounded-lg transition-colors"
+                    style={{ color: colors.textMuted }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = colors.hoverBg;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                    }}
                   >
                     Cancel
                   </button>
@@ -268,11 +319,19 @@ export function MultiImageModal({
         </div>
 
         <div
-          className={`flex items-center justify-end p-4 border-t ${isDark ? "border-zinc-700" : "border-slate-200"}`}
+          className="flex items-center justify-end p-4"
+          style={{ borderTop: `1px solid ${colors.border}` }}
         >
           <button
             onClick={onClose}
-            className={`px-4 py-2 rounded-lg transition-colors ${isDark ? "text-zinc-400 hover:bg-zinc-800" : "text-slate-600 hover:bg-slate-100"}`}
+            className="px-4 py-2 rounded-lg transition-colors"
+            style={{ color: colors.textMuted }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = colors.hoverBg;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+            }}
           >
             Done
           </button>

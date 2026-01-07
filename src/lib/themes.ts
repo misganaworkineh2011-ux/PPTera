@@ -8,9 +8,14 @@ export {
   type ThemeFonts,
   type ThemeDesign,
   type ThemeSlideStyles,
+  type ThemeSlideShape,
+  type SlideShapeType,
   type ThemeCardBox,
   type ThemeGradients,
   type ThemeCSSVariables,
+  // Slide shape utilities
+  DEFAULT_SLIDE_SHAPES,
+  getSlideShapeStyles,
   // Base design system
   baseDesignSystem,
   spacing,
@@ -44,7 +49,6 @@ export {
   getThemeById,
   getDefaultTheme,
   // Individual themes
-  sproutTheme,
   corporateCleanTheme,
   nebulaTheme,
   auroraTheme,

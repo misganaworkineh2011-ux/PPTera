@@ -8,7 +8,7 @@
  * - Fallback ladder to avoid ugly combinations
  */
 
-import type { SlideLayoutType, ImageSize } from "~/lib/layouts/slide";
+import type { SlideLayoutType, ImageSize, ImageShape } from "~/lib/layouts/slide";
 import type { ContentLayoutCategory } from "~/lib/layouts/content";
 import type { BoxLayoutType } from "~/lib/layouts/content/boxes";
 import type { SequenceLayoutType } from "~/lib/layouts/content/sequence";
@@ -63,6 +63,7 @@ export interface PlannerInput {
 export interface PlannerOutput {
   slideLayout: SlideLayoutType;
   imageSize: ImageSize;
+  imageShape: ImageShape; // Shape of the image edge (rectangle, arc, rounded, wave)
   contentLayoutCategory: ContentLayoutCategory;
   contentLayout: ContentLayoutStyle;
   // For renderer compatibility
@@ -70,6 +71,24 @@ export interface PlannerOutput {
   // Flags
   isNarrowSpace: boolean; // true when image is left/right (content area is narrow)
   rasterizeForPptx?: boolean; // mark complex layouts for rasterization in PPTX export
+}
+
+// Available image shapes for variety
+const IMAGE_SHAPES: ImageShape[] = ["rectangle", "arc", "rounded", "wave"];
+
+/**
+ * Select an image shape for variety
+ * Uses slide index to create visual variety across the deck
+ */
+function selectImageShape(slideIndex: number): ImageShape {
+  // Cycle through shapes for variety, with arc as most common
+  const shapeWeights: ImageShape[] = [
+    "arc", "arc", "arc",      // 3x weight for arc (default/most common)
+    "rounded", "rounded",     // 2x weight for rounded
+    "wave",                   // 1x weight for wave
+    "rectangle",              // 1x weight for rectangle
+  ];
+  return shapeWeights[slideIndex % shapeWeights.length]!;
 }
 
 // Density classification
@@ -265,6 +284,7 @@ function planTitleSlide(input: PlannerInput): PlannerOutput {
   return {
     slideLayout: input.hasImage ? slideLayout : "no-image",
     imageSize: "medium",
+    imageShape: selectImageShape(input.slideIndex),
     contentLayoutCategory: "boxes",
     contentLayout: "box-style-1",
     legacyLayout: input.hasImage ? SLIDE_LAYOUT_TO_LEGACY[slideLayout] : "title-centered",
@@ -518,6 +538,7 @@ async function planContentSlide(input: PlannerInput): Promise<PlannerOutput> {
   return {
     slideLayout,
     imageSize,
+    imageShape: selectImageShape(input.slideIndex),
     contentLayoutCategory: finalCategory,
     contentLayout,
     legacyLayout,

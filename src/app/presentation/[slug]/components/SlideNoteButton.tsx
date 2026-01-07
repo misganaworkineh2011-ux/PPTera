@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { StickyNote, Send, X } from "lucide-react";
+import type { Theme } from "~/lib/themes";
+import { getThemeType } from "./types";
 
 interface SlideNoteButtonProps {
   slideIndex: number;
@@ -10,6 +12,7 @@ interface SlideNoteButtonProps {
   onAddNote: (note: string) => void;
   onEditNote: (noteIndex: number, note: string) => void;
   onDeleteNote: (noteIndex: number) => void;
+  theme?: Theme;
 }
 
 export function SlideNoteButton({
@@ -18,6 +21,7 @@ export function SlideNoteButton({
   onAddNote,
   onEditNote,
   onDeleteNote,
+  theme,
 }: SlideNoteButtonProps) {
   const [showPanel, setShowPanel] = useState(false);
   const [newNote, setNewNote] = useState("");
@@ -27,6 +31,18 @@ export function SlideNoteButton({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Theme-aware styling
+  const themeType = theme ? getThemeType(theme) : "light";
+  const isLight = themeType === "light" || themeType === "corporate";
+  
+  // Theme-aware colors
+  const panelBg = theme?.pageBackground || (isLight ? "#ffffff" : theme?.colors.background || "#18181b");
+  const panelBorder = isLight ? "#e2e8f0" : theme?.colors.border || "#3f3f46";
+  const textColor = isLight ? "#1e293b" : theme?.colors.text || "#fafafa";
+  const mutedColor = isLight ? "#94a3b8" : theme?.colors.textMuted || "#a1a1aa";
+  const surfaceColor = isLight ? "#fef3c7" : theme?.colors.surface || "#27272a";
+  const surfaceBorder = isLight ? "rgba(251, 191, 36, 0.5)" : theme?.colors.border || "#3f3f46";
 
   // Calculate panel position when opening
   const openPanel = () => {
@@ -114,10 +130,13 @@ export function SlideNoteButton({
         createPortal(
           <div
             ref={panelRef}
-            className="fixed z-[99999] bg-white rounded-xl shadow-2xl border border-slate-200 ring-1 ring-black/5 p-4 w-80 max-h-[420px] overflow-hidden flex flex-col"
+            className="fixed z-[99999] rounded-xl shadow-2xl ring-1 ring-black/5 p-4 w-80 max-h-[420px] overflow-hidden flex flex-col"
             style={{
               top: panelPosition.top,
               left: panelPosition.left,
+              background: panelBg,
+              borderColor: panelBorder,
+              border: `1px solid ${panelBorder}`,
             }}
             onKeyDown={(e) => e.stopPropagation()}
             onKeyUp={(e) => e.stopPropagation()}
@@ -130,13 +149,14 @@ export function SlideNoteButton({
                   <StickyNote size={16} className="text-white" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-slate-800">Speaker Notes</p>
-                  <p className="text-xs text-slate-400">Slide {slideIndex + 1}</p>
+                  <p className="text-sm font-semibold" style={{ color: textColor }}>Speaker Notes</p>
+                  <p className="text-xs" style={{ color: mutedColor }}>Slide {slideIndex + 1}</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowPanel(false)}
-                className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                className="w-7 h-7 flex items-center justify-center rounded-lg transition-colors"
+                style={{ color: mutedColor }}
               >
                 <X size={16} />
               </button>
@@ -148,14 +168,24 @@ export function SlideNoteButton({
                 {speakerNotes.map((note, idx) => (
                   <div
                     key={idx}
-                    className="group p-2.5 bg-amber-50 rounded-lg border border-amber-200/80"
+                    className="group p-2.5 rounded-lg"
+                    style={{ 
+                      backgroundColor: surfaceColor,
+                      border: `1px solid ${surfaceBorder}`,
+                    }}
                   >
                     {editingIndex === idx ? (
                       <div>
                         <textarea
                           value={editingText}
                           onChange={(e) => setEditingText(e.target.value)}
-                          className="w-full px-2.5 py-2 text-sm border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/30 resize-none bg-white"
+                          className="w-full px-2.5 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/30 resize-none"
+                          style={{ 
+                            backgroundColor: isLight ? "#ffffff" : theme?.colors.backgroundAlt || "#27272a",
+                            color: textColor,
+                            borderColor: isLight ? "#fbbf24" : theme?.colors.border || "#3f3f46",
+                            border: `1px solid ${isLight ? "#fbbf24" : theme?.colors.border || "#3f3f46"}`,
+                          }}
                           rows={2}
                           onKeyDown={(e) => {
                             e.stopPropagation();
@@ -166,13 +196,14 @@ export function SlideNoteButton({
                         <div className="flex justify-end gap-1.5 mt-2">
                           <button
                             onClick={cancelEditing}
-                            className="px-2.5 py-1 text-xs text-slate-500 hover:text-slate-700 rounded-md hover:bg-slate-100"
+                            className="px-2.5 py-1 text-xs rounded-md"
+                            style={{ color: mutedColor }}
                           >
                             Cancel
                           </button>
                           <button
                             onClick={handleSaveEdit}
-                            className="px-2.5 py-1 text-xs text-amber-600 hover:text-amber-700 font-medium rounded-md hover:bg-amber-100"
+                            className="px-2.5 py-1 text-xs text-amber-600 hover:text-amber-700 font-medium rounded-md"
                           >
                             Save
                           </button>
@@ -180,19 +211,20 @@ export function SlideNoteButton({
                       </div>
                     ) : (
                       <>
-                        <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
+                        <p className="text-sm whitespace-pre-wrap leading-relaxed" style={{ color: textColor }}>
                           {note}
                         </p>
                         <div className="flex gap-3 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             onClick={() => startEditing(idx, note)}
-                            className="text-xs text-slate-400 hover:text-amber-600 font-medium"
+                            className="text-xs font-medium"
+                            style={{ color: mutedColor }}
                           >
                             Edit
                           </button>
                           <button
                             onClick={() => onDeleteNote(idx)}
-                            className="text-xs text-slate-400 hover:text-red-500 font-medium"
+                            className="text-xs text-red-500 font-medium"
                           >
                             Delete
                           </button>
@@ -215,7 +247,13 @@ export function SlideNoteButton({
                   if (e.key === "Enter" && e.ctrlKey) handleAddNote();
                 }}
                 placeholder="Add a speaker note..."
-                className="w-full px-3 py-2.5 pr-11 border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-400 placeholder:text-slate-400"
+                className="w-full px-3 py-2.5 pr-11 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                style={{ 
+                  backgroundColor: isLight ? "#ffffff" : theme?.colors.surface || "#27272a",
+                  color: textColor,
+                  borderColor: panelBorder,
+                  border: `1px solid ${panelBorder}`,
+                }}
                 rows={2}
               />
               <button
@@ -227,7 +265,7 @@ export function SlideNoteButton({
               </button>
             </div>
 
-            <p className="text-[11px] text-slate-400 mt-2.5 text-center">
+            <p className="text-[11px] mt-2.5 text-center" style={{ color: mutedColor }}>
               Ctrl+Enter to add • Visible in presenter view
             </p>
           </div>,

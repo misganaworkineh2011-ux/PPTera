@@ -1,11 +1,100 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, BarChart3, Sparkles } from "lucide-react";
-import { type ChartData, CHART_TEMPLATES } from "~/lib/charts/types";
+import { X, BarChart3, Sparkles, PieChart, TrendingUp, Activity, Target, Filter, LayoutGrid, Gauge, ArrowDownWideNarrow, BarChart2, BarChartHorizontal, CircleDot, Layers } from "lucide-react";
+import { type ChartData, CHART_TEMPLATES, type ChartType } from "~/lib/charts/types";
 import ChartCreator from "./ChartCreator";
 import InteractiveChart from "./InteractiveChart";
 import { type Theme } from "~/lib/themes";
+
+// Helper to determine if theme is dark
+function isDarkTheme(theme?: Theme): boolean {
+  if (!theme) return false;
+  const themeId = theme.id || "";
+  const darkThemes = ["elegant-noir", "obsidian", "midnight", "nebula", "cyber", "alien", "cosmic", "architectural", "anime", "hacker", "black-gold-luxury", "neon-matrix", "midnight-border"];
+  if (darkThemes.some(t => themeId.includes(t))) return true;
+  // Check by background color luminance
+  const bg = theme.colors?.background || "#ffffff";
+  if (bg.startsWith("#")) {
+    const hex = bg.slice(1);
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance < 0.5;
+  }
+  return false;
+}
+
+// Get theme-aware colors
+function getThemeColors(theme?: Theme) {
+  const isDark = isDarkTheme(theme);
+  if (isDark && theme) {
+    // For dark themes, use solid background color (not gradient) for modal
+    return {
+      bg: theme.colors.background,
+      surface: theme.colors.surface,
+      border: theme.colors.border,
+      text: theme.colors.text,
+      textMuted: theme.colors.textMuted,
+      hoverBg: theme.colors.surfaceHover || "rgba(255,255,255,0.1)",
+      accent: theme.colors.primary || "#06b6d4",
+    };
+  }
+  return {
+    bg: "#ffffff",
+    surface: "#f8fafc",
+    border: "#e2e8f0",
+    text: "#0f172a",
+    textMuted: "#64748b",
+    hoverBg: "#f1f5f9",
+    accent: "#06b6d4",
+  };
+}
+
+// Map chart types to representative icons
+function getChartIcon(type: ChartType, size: number = 20, accentColor: string = "#06b6d4") {
+  const iconProps = { size, style: { color: accentColor } };
+  switch (type) {
+    case "bar":
+    case "stacked-bar":
+    case "grouped-bar":
+      return <BarChart3 {...iconProps} />;
+    case "horizontal-bar":
+      return <BarChartHorizontal {...iconProps} />;
+    case "line":
+      return <TrendingUp {...iconProps} />;
+    case "area":
+      return <Activity {...iconProps} />;
+    case "pie":
+      return <PieChart {...iconProps} />;
+    case "donut":
+      return <CircleDot {...iconProps} />;
+    case "scatter":
+    case "bubble":
+      return <Layers {...iconProps} />;
+    case "radar":
+      return <Target {...iconProps} />;
+    case "gauge":
+      return <Gauge {...iconProps} />;
+    case "funnel":
+      return <Filter {...iconProps} />;
+    case "treemap":
+    case "heatmap":
+      return <LayoutGrid {...iconProps} />;
+    case "waterfall":
+    case "histogram":
+      return <BarChart2 {...iconProps} />;
+    case "comparison":
+      return <ArrowDownWideNarrow {...iconProps} />;
+    case "progress":
+      return <Target {...iconProps} />;
+    case "kpi":
+      return <Gauge {...iconProps} />;
+    default:
+      return <BarChart3 {...iconProps} />;
+  }
+}
 
 interface ChartModalProps {
   isOpen: boolean;
@@ -18,6 +107,8 @@ interface ChartModalProps {
 export default function ChartModal({ isOpen, onClose, onInsert, theme, existingChart }: ChartModalProps) {
   const [mode, setMode] = useState<"templates" | "create">(existingChart ? "create" : "templates");
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const colors = getThemeColors(theme);
+  const isDark = isDarkTheme(theme);
 
   // Reset mode when modal opens
   useEffect(() => {
@@ -68,25 +159,46 @@ export default function ChartModal({ isOpen, onClose, onInsert, theme, existingC
       />
       
       {/* Modal */}
-      <div className="relative w-full max-w-4xl max-h-[90vh] bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl overflow-hidden mx-4">
+      <div 
+        className="relative w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl overflow-hidden mx-4"
+        style={{
+          backgroundColor: colors.bg,
+          border: `1px solid ${colors.border}`,
+        }}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-neutral-800">
+        <div 
+          className="flex items-center justify-between px-6 py-4"
+          style={{ borderBottom: `1px solid ${colors.border}` }}
+        >
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-[#06b6d4]/10 rounded-lg">
-              <BarChart3 size={20} className="text-[#06b6d4]" />
+            <div 
+              className="p-2 rounded-lg"
+              style={{ backgroundColor: `${colors.accent}15` }}
+            >
+              {existingChart ? getChartIcon(existingChart.type) : selectedTemplate ? getChartIcon(CHART_TEMPLATES.find(t => t.id === selectedTemplate)?.type || "bar") : <BarChart3 size={20} style={{ color: colors.accent }} />}
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-800 dark:text-white">
+              <h2 className="text-lg font-bold" style={{ color: colors.text }}>
                 {existingChart ? "Edit Chart" : "Add Chart"}
               </h2>
-              <p className="text-sm text-slate-500 dark:text-neutral-400">
+              <p className="text-sm" style={{ color: colors.textMuted }}>
                 {mode === "templates" ? "Choose a template or create from scratch" : "Customize your chart"}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+            className="p-2 rounded-lg transition-colors"
+            style={{ color: colors.textMuted }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = colors.hoverBg;
+              e.currentTarget.style.color = colors.text;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.color = colors.textMuted;
+            }}
           >
             <X size={20} />
           </button>
@@ -100,7 +212,11 @@ export default function ChartModal({ isOpen, onClose, onInsert, theme, existingC
               <div className="flex gap-3 mb-6">
                 <button
                   onClick={() => setMode("create")}
-                  className="flex-1 flex items-center justify-center gap-2 p-4 bg-gradient-to-br from-[#06b6d4] to-[#0891b2] text-white rounded-xl hover:shadow-lg hover:shadow-[#06b6d4]/25 transition-all"
+                  className="flex-1 flex items-center justify-center gap-2 p-4 text-white rounded-xl hover:shadow-lg transition-all"
+                  style={{ 
+                    background: `linear-gradient(to bottom right, ${colors.accent}, ${colors.accent}dd)`,
+                    boxShadow: `0 4px 14px ${colors.accent}40`,
+                  }}
                 >
                   <Sparkles size={20} />
                   <span className="font-medium">Create from Scratch</span>
@@ -114,7 +230,10 @@ export default function ChartModal({ isOpen, onClose, onInsert, theme, existingC
 
                 return (
                   <div key={category} className="mb-6">
-                    <h3 className="text-sm font-semibold text-slate-700 dark:text-neutral-300 mb-3 capitalize">
+                    <h3 
+                      className="text-sm font-semibold mb-3 capitalize"
+                      style={{ color: colors.text }}
+                    >
                       {category} Charts
                     </h3>
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -122,10 +241,25 @@ export default function ChartModal({ isOpen, onClose, onInsert, theme, existingC
                         <button
                           key={template.id}
                           onClick={() => handleTemplateSelect(template.id)}
-                          className="group p-4 text-left rounded-xl border border-slate-200 dark:border-neutral-700 hover:border-[#06b6d4] hover:shadow-md transition-all bg-white dark:bg-neutral-800/50"
+                          className="group p-4 text-left rounded-xl transition-all"
+                          style={{
+                            backgroundColor: isDark ? colors.surface : "#ffffff",
+                            border: `1px solid ${colors.border}`,
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.borderColor = colors.accent;
+                            e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.borderColor = colors.border;
+                            e.currentTarget.style.boxShadow = "none";
+                          }}
                         >
                           {/* Mini Preview */}
-                          <div className="h-24 mb-3 bg-slate-50 dark:bg-neutral-900 rounded-lg p-2 overflow-hidden">
+                          <div 
+                            className="h-24 mb-3 rounded-lg p-2 overflow-hidden relative"
+                            style={{ backgroundColor: isDark ? colors.bg : colors.surface }}
+                          >
                             <InteractiveChart
                               chart={{
                                 type: template.type,
@@ -136,11 +270,27 @@ export default function ChartModal({ isOpen, onClose, onInsert, theme, existingC
                               compact={true}
                               interactive={false}
                             />
+                            {/* Chart type icon badge */}
+                            <div 
+                              className="absolute top-1 right-1 p-1 rounded shadow-sm"
+                              style={{ backgroundColor: isDark ? `${colors.surface}ee` : "rgba(255,255,255,0.9)" }}
+                            >
+                              {getChartIcon(template.type, 14)}
+                            </div>
                           </div>
-                          <div className="text-sm font-medium text-slate-700 dark:text-neutral-300 group-hover:text-[#06b6d4] transition-colors">
-                            {template.name}
+                          <div className="flex items-center gap-2">
+                            {getChartIcon(template.type, 16)}
+                            <span 
+                              className="text-sm font-medium transition-colors"
+                              style={{ color: colors.text }}
+                            >
+                              {template.name}
+                            </span>
                           </div>
-                          <div className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">
+                          <div 
+                            className="text-xs mt-0.5 ml-6"
+                            style={{ color: colors.textMuted }}
+                          >
                             {template.description}
                           </div>
                         </button>
@@ -159,7 +309,14 @@ export default function ChartModal({ isOpen, onClose, onInsert, theme, existingC
                     setMode("templates");
                     setSelectedTemplate(null);
                   }}
-                  className="mb-4 text-sm text-slate-500 hover:text-[#06b6d4] transition-colors"
+                  className="mb-4 text-sm transition-colors"
+                  style={{ color: colors.textMuted }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = colors.accent;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = colors.textMuted;
+                  }}
                 >
                   ← Back to templates
                 </button>

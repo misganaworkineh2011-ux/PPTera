@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { X, Check, Loader2, Sparkles } from "lucide-react";
-import { themes, type Theme } from "~/lib/themes";
+import { themes, type Theme, getSlideShapeStyles } from "~/lib/themes";
 import { getThemeType } from "./types";
 
 // All theme fonts for preview - loaded when sidebar opens
@@ -42,7 +42,34 @@ export function ThemeSidebar({
 
   // Get theme-aware colors
   const themeType = theme ? getThemeType(theme) : "dark";
-  const isLight = themeType === "light" || themeType === "corporate";
+  const isLight = themeType === "light" || themeType === "corporate" || themeType === "custom-light";
+
+  // Theme-aware colors using actual theme data
+  const colors = isLight ? {
+    bg: "#ffffff",
+    surface: "#f8fafc",
+    border: "#e2e8f0",
+    text: "#0f172a",
+    textMuted: "#64748b",
+    accent: "#3b82f6",
+    hoverBg: "#f1f5f9",
+  } : theme ? {
+    bg: theme.pageBackground || theme.colors.background,
+    surface: theme.colors.surface,
+    border: theme.colors.border,
+    text: theme.colors.text,
+    textMuted: theme.colors.textMuted,
+    accent: theme.colors.primary || "#a78bfa",
+    hoverBg: theme.colors.surfaceHover || "rgba(255,255,255,0.1)",
+  } : {
+    bg: "#18181b",
+    surface: "#27272a",
+    border: "#3f3f46",
+    text: "#fafafa",
+    textMuted: "#a1a1aa",
+    accent: "#a78bfa",
+    hoverBg: "#3f3f46",
+  };
 
   // Load theme fonts when sidebar opens
   useEffect(() => {
@@ -105,23 +132,33 @@ export function ThemeSidebar({
 
       {/* Sidebar */}
       <div 
-        className={`fixed right-0 top-0 h-full w-96 border-l z-50 shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-300 ${
-          isLight ? "bg-white border-slate-200" : "bg-zinc-900 border-zinc-800"
-        }`}
+        className="fixed right-0 top-0 h-full w-96 border-l z-50 shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-300"
+        style={{
+          background: colors.bg,
+          borderColor: colors.border,
+        }}
       >
         {/* Header */}
-        <div className={`flex items-center justify-between p-4 border-b ${isLight ? "border-slate-200" : "border-zinc-800"}`}>
+        <div 
+          className="flex items-center justify-between p-4"
+          style={{ borderBottom: `1px solid ${colors.border}` }}
+        >
           <div className="flex items-center gap-2">
-            <Sparkles size={18} className={isLight ? "text-blue-500" : "text-purple-400"} />
-            <h2 className={`text-lg font-semibold ${isLight ? "text-slate-900" : "text-white"}`}>Themes</h2>
+            <Sparkles size={18} style={{ color: colors.accent }} />
+            <h2 className="text-lg font-semibold" style={{ color: colors.text }}>Themes</h2>
           </div>
           <button
             onClick={onClose}
-            className={`p-1.5 rounded-lg transition-colors ${
-              isLight 
-                ? "hover:bg-slate-100 text-slate-400 hover:text-slate-600" 
-                : "hover:bg-zinc-800 text-zinc-400 hover:text-white"
-            }`}
+            className="p-1.5 rounded-lg transition-colors"
+            style={{ color: colors.textMuted }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = colors.hoverBg;
+              e.currentTarget.style.color = colors.text;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.color = colors.textMuted;
+            }}
           >
             <X size={20} />
           </button>
@@ -131,7 +168,10 @@ export function ThemeSidebar({
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
           {/* Built-in Themes */}
           <div>
-            <h3 className={`text-xs font-medium uppercase tracking-wider mb-3 ${isLight ? "text-slate-500" : "text-zinc-500"}`}>
+            <h3 
+              className="text-xs font-medium uppercase tracking-wider mb-3"
+              style={{ color: colors.textMuted }}
+            >
               Built-in Themes
             </h3>
             <div className="grid grid-cols-2 gap-3">
@@ -142,7 +182,7 @@ export function ThemeSidebar({
                   isSelected={currentThemeId === t.id}
                   isLoading={changingTheme === t.id}
                   onClick={() => handleThemeSelect(t.id)}
-                  isLight={isLight}
+                  colors={colors}
                 />
               ))}
             </div>
@@ -151,7 +191,10 @@ export function ThemeSidebar({
           {/* Custom Themes */}
           {customThemes.length > 0 && (
             <div>
-              <h3 className={`text-xs font-medium uppercase tracking-wider mb-3 ${isLight ? "text-slate-500" : "text-zinc-500"}`}>
+              <h3 
+                className="text-xs font-medium uppercase tracking-wider mb-3"
+                style={{ color: colors.textMuted }}
+              >
                 Your Custom Themes
               </h3>
               <div className="grid grid-cols-2 gap-3">
@@ -162,7 +205,7 @@ export function ThemeSidebar({
                     isSelected={currentThemeId === `custom-${t.id}`}
                     isLoading={changingTheme === `custom-${t.id}`}
                     onClick={() => handleThemeSelect(`custom-${t.id}`)}
-                    isLight={isLight}
+                    colors={colors}
                   />
                 ))}
               </div>
@@ -174,115 +217,123 @@ export function ThemeSidebar({
   );
 }
 
+interface ThemeColors {
+  bg: string;
+  surface: string;
+  border: string;
+  text: string;
+  textMuted: string;
+  accent: string;
+  hoverBg: string;
+}
+
 function ThemeCard({
   theme,
   isSelected,
   isLoading,
   onClick,
-  isLight,
+  colors,
 }: {
   theme: Theme;
   isSelected: boolean;
   isLoading: boolean;
   onClick: () => void;
-  isLight: boolean;
+  colors: ThemeColors;
 }) {
   const hasBackgroundImage = !!theme.previewBackgroundImage || !!theme.backgroundImage;
   const bgImageUrl = theme.previewBackgroundImage || theme.backgroundImage;
+  const slideShapeStyles = getSlideShapeStyles(theme.slideShape);
   
   return (
     <button
       onClick={onClick}
       disabled={isLoading}
-      className={`relative group rounded-lg overflow-hidden transition-all duration-200 text-left ${
-        isSelected
-          ? isLight ? "ring-2 ring-blue-500" : "ring-2 ring-purple-500"
-          : isLight ? "ring-1 ring-slate-200 hover:ring-slate-300" : "ring-1 ring-zinc-700 hover:ring-zinc-600"
-      }`}
+      className="relative group rounded-lg overflow-hidden transition-all duration-200 text-left"
+      style={{
+        boxShadow: isSelected ? `0 0 0 2px ${colors.accent}` : `0 0 0 1px ${colors.border}`,
+      }}
+      onMouseEnter={(e) => {
+        if (!isSelected) {
+          e.currentTarget.style.boxShadow = `0 0 0 1px ${colors.textMuted}`;
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!isSelected) {
+          e.currentTarget.style.boxShadow = `0 0 0 1px ${colors.border}`;
+        }
+      }}
     >
-      {/* Theme Preview */}
-      <div className="p-2">
-        <div
-          className="aspect-[16/10] w-full rounded-md shadow-sm relative overflow-hidden"
-          style={{
-            backgroundColor: theme.preview?.titleBg || theme.colors.background,
-            backgroundImage: hasBackgroundImage
-              ? `url(${bgImageUrl})`
-              : theme.slideStyles?.title?.pattern || "none",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-        >
-          {/* Lighter overlay for background images to show them better */}
-          {hasBackgroundImage && (
-            <div
-              className="absolute inset-0"
-              style={{ background: "rgba(0,0,0,0.25)" }}
-            />
-          )}
+      {/* Theme Preview - fills entire card area */}
+      <div
+        className="aspect-[16/10] w-full relative overflow-hidden"
+        style={{
+          backgroundColor: theme.preview?.titleBg || theme.colors.background,
+          backgroundImage: hasBackgroundImage
+            ? `url(${bgImageUrl})`
+            : theme.slideStyles?.title?.pattern || "none",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        {/* Lighter overlay for background images to show them better */}
+        {hasBackgroundImage && (
+          <div
+            className="absolute inset-0"
+            style={{ 
+              background: "rgba(0,0,0,0.25)",
+            }}
+          />
+        )}
 
-          {/* Content card - smaller for background image themes to show more bg */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div
-              className={`rounded-md backdrop-blur-sm transition-all duration-300 flex flex-col justify-center px-2 py-1.5 overflow-hidden ${
-                hasBackgroundImage ? "w-[70%] h-[60%]" : "w-[85%] h-[75%]"
-              }`}
-              style={{
-                backgroundColor: hasBackgroundImage 
-                  ? `${theme.cardBox?.background || theme.colors.background}e8`
-                  : theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
-                border: theme.cardBox?.borderColor
-                  ? `1px solid ${theme.cardBox.borderColor}`
-                  : "1px solid rgba(255,255,255,0.1)",
-                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
-              }}
+        {/* Content card - smaller for background image themes to show more bg - SHAPE APPLIED HERE */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div
+            className={`backdrop-blur-sm transition-all duration-300 flex flex-col justify-center px-2 py-1.5 overflow-hidden ${
+              hasBackgroundImage ? "w-[70%] h-[60%]" : "w-[85%] h-[75%]"
+            }`}
+            style={{
+              backgroundColor: hasBackgroundImage 
+                ? `${theme.cardBox?.background || theme.colors.background}e8`
+                : theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
+              border: theme.cardBox?.borderColor
+                ? `1px solid ${theme.cardBox.borderColor}`
+                : "1px solid rgba(255,255,255,0.1)",
+              ...slideShapeStyles,
+            }}
+          >
+            {/* Inline text preview */}
+            <div 
+              className="text-[10px] font-bold mb-0.5 truncate"
+              style={{ color: theme.cardBox?.titleColor || theme.colors.heading, fontFamily: theme.fonts?.heading?.family || "inherit" }}
             >
-              {/* Inline text preview */}
-              <div 
-                className="text-[10px] font-bold mb-0.5 truncate"
-                style={{ color: theme.cardBox?.titleColor || theme.colors.heading, fontFamily: theme.fonts?.heading?.family || "inherit" }}
-              >
-                Title
-              </div>
-              <div className="flex items-center gap-0.5 text-[8px]">
-                <span style={{ color: theme.cardBox?.bodyColor || theme.colors.text }}>Body &</span>
-                <span 
-                  className="underline"
-                  style={{ color: theme.cardBox?.accentColor || theme.colors.accent || theme.colors.primary }}
-                >
-                  link
-                </span>
-              </div>
+              Title
             </div>
-          </div>
-
-          {/* Color dots */}
-          <div className="absolute top-1.5 right-1.5 flex gap-0.5">
-            <div
-              className="w-2 h-2 rounded-full border border-white/30 shadow-sm"
-              style={{ backgroundColor: theme.colors?.primary }}
-            />
-            <div
-              className="w-2 h-2 rounded-full border border-white/30 shadow-sm"
-              style={{ backgroundColor: theme.colors?.accent || theme.colors?.secondary }}
-            />
+            <div className="flex items-center gap-0.5 text-[8px]">
+              <span style={{ color: theme.cardBox?.bodyColor || theme.colors.text }}>Body &</span>
+              <span 
+                className="underline"
+                style={{ color: theme.cardBox?.accentColor || theme.colors.accent || theme.colors.primary }}
+              >
+                link
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Theme Name Footer */}
       <div
-        className={`px-2 py-1.5 border-t flex items-center justify-between ${
-          isSelected 
-            ? isLight ? "bg-blue-50 border-blue-200" : "bg-purple-500/10 border-purple-500/30" 
-            : isLight ? "bg-slate-50 border-slate-200" : "bg-zinc-800/50 border-zinc-700"
-        }`}
+        className="px-2 py-1.5 flex items-center justify-between"
+        style={{
+          backgroundColor: isSelected ? `${colors.accent}15` : colors.surface,
+          borderTop: `1px solid ${isSelected ? `${colors.accent}30` : colors.border}`,
+        }}
       >
-        <span className={`text-xs font-medium truncate ${isLight ? "text-slate-700" : "text-zinc-200"}`}>{theme.name}</span>
+        <span className="text-xs font-medium truncate" style={{ color: colors.text }}>{theme.name}</span>
         {isLoading ? (
-          <Loader2 size={12} className={isLight ? "text-blue-500 animate-spin" : "text-purple-400 animate-spin"} />
+          <Loader2 size={12} style={{ color: colors.accent }} className="animate-spin" />
         ) : isSelected ? (
-          <Check size={12} className={isLight ? "text-blue-500" : "text-purple-400"} />
+          <Check size={12} style={{ color: colors.accent }} />
         ) : null}
       </div>
     </button>
@@ -294,96 +345,91 @@ function CustomThemeCard({
   isSelected,
   isLoading,
   onClick,
-  isLight,
+  colors,
 }: {
   theme: CustomTheme;
   isSelected: boolean;
   isLoading: boolean;
   onClick: () => void;
-  isLight: boolean;
+  colors: ThemeColors;
 }) {
   return (
     <button
       onClick={onClick}
       disabled={isLoading}
-      className={`relative group rounded-lg overflow-hidden transition-all duration-200 text-left ${
-        isSelected
-          ? isLight ? "ring-2 ring-blue-500" : "ring-2 ring-purple-500"
-          : isLight ? "ring-1 ring-slate-200 hover:ring-slate-300" : "ring-1 ring-zinc-700 hover:ring-zinc-600"
-      }`}
+      className="relative group rounded-lg overflow-hidden transition-all duration-200 text-left"
+      style={{
+        boxShadow: isSelected ? `0 0 0 2px ${colors.accent}` : `0 0 0 1px ${colors.border}`,
+      }}
+      onMouseEnter={(e) => {
+        if (!isSelected) {
+          e.currentTarget.style.boxShadow = `0 0 0 1px ${colors.textMuted}`;
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!isSelected) {
+          e.currentTarget.style.boxShadow = `0 0 0 1px ${colors.border}`;
+        }
+      }}
     >
-      {/* Theme Preview */}
-      <div className="p-2">
-        <div
-          className="aspect-[16/10] w-full rounded-md shadow-sm relative overflow-hidden"
-          style={{ backgroundColor: theme.colors.background }}
-        >
-          {/* Content card centered */}
-          <div className="absolute inset-0 flex items-center justify-center">
+      {/* Theme Preview - fills entire card area */}
+      <div
+        className="aspect-[16/10] w-full relative overflow-hidden"
+        style={{ backgroundColor: theme.colors.background }}
+      >
+        {/* Content card centered */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div
+            className="rounded-md p-2.5 backdrop-blur-md w-[85%] h-[75%] flex flex-col justify-center"
+            style={{
+              backgroundColor: `${theme.colors.background}ee`,
+              border: `1px solid ${theme.colors.primary}40`,
+            }}
+          >
             <div
-              className="rounded-md p-2.5 backdrop-blur-md w-[85%] h-[75%] flex flex-col justify-center"
-              style={{
-                backgroundColor: `${theme.colors.background}ee`,
-                border: `1px solid ${theme.colors.primary}40`,
-              }}
+              className="text-sm font-bold mb-1 truncate"
+              style={{ color: theme.colors.text }}
             >
-              <div
-                className="text-sm font-bold mb-1 truncate"
-                style={{ color: theme.colors.text }}
+              Title
+            </div>
+            <div
+              className="text-xs font-medium flex items-center gap-1"
+              style={{ color: theme.colors.text }}
+            >
+              Body &{" "}
+              <span
+                className="underline decoration-1 underline-offset-1"
+                style={{
+                  color: theme.colors.accent,
+                  textDecorationColor: theme.colors.accent,
+                }}
               >
-                Title
-              </div>
-              <div
-                className="text-xs font-medium flex items-center gap-1"
-                style={{ color: theme.colors.text }}
-              >
-                Body &{" "}
-                <span
-                  className="underline decoration-1 underline-offset-1"
-                  style={{
-                    color: theme.colors.accent,
-                    textDecorationColor: theme.colors.accent,
-                  }}
-                >
-                  link
-                </span>
-              </div>
+                link
+              </span>
             </div>
           </div>
+        </div>
 
-          {/* Color dots */}
-          <div className="absolute top-1.5 right-1.5 flex gap-0.5">
-            <div
-              className="w-2 h-2 rounded-full border border-white/20"
-              style={{ backgroundColor: theme.colors.primary }}
-            />
-            <div
-              className="w-2 h-2 rounded-full border border-white/20"
-              style={{ backgroundColor: theme.colors.accent }}
-            />
-          </div>
-
-          {/* Custom badge */}
-          <div className="absolute top-1.5 left-1.5 flex items-center gap-0.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 px-1.5 py-0.5">
-            <Sparkles size={8} className="text-white" />
-            <span className="text-[8px] font-bold text-white">Custom</span>
-          </div>
+        {/* Custom badge */}
+        <div className="absolute top-1.5 left-1.5 flex items-center gap-0.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 px-1.5 py-0.5">
+          <Sparkles size={8} className="text-white" />
+          <span className="text-[8px] font-bold text-white">Custom</span>
         </div>
       </div>
 
       {/* Theme Name Footer */}
       <div
-        className={`px-2 py-1.5 border-t flex items-center justify-between ${
-          isSelected 
-            ? isLight ? "bg-blue-50 border-blue-200" : "bg-purple-500/10 border-purple-500/30" 
-            : isLight ? "bg-slate-50 border-slate-200" : "bg-zinc-800/50 border-zinc-700"
-        }`}
+        className="px-2 py-1.5 flex items-center justify-between"
+        style={{
+          backgroundColor: isSelected ? `${colors.accent}15` : colors.surface,
+          borderTop: `1px solid ${isSelected ? `${colors.accent}30` : colors.border}`,
+        }}
       >
-        <span className={`text-xs font-medium truncate ${isLight ? "text-slate-700" : "text-zinc-200"}`}>{theme.name}</span>
+        <span className="text-xs font-medium truncate" style={{ color: colors.text }}>{theme.name}</span>
         {isLoading ? (
-          <Loader2 size={12} className={isLight ? "text-blue-500 animate-spin" : "text-purple-400 animate-spin"} />
+          <Loader2 size={12} style={{ color: colors.accent }} className="animate-spin" />
         ) : isSelected ? (
-          <Check size={12} className={isLight ? "text-blue-500" : "text-purple-400"} />
+          <Check size={12} style={{ color: colors.accent }} />
         ) : null}
       </div>
     </button>

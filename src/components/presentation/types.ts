@@ -11,7 +11,7 @@ import type { BulletLayoutType } from "~/lib/layouts/content/bullets";
 import type { QuotesLayoutType } from "~/lib/layouts/content/quotes";
 import type { ImageLayoutType } from "~/lib/layouts/content/images";
 import type { CircleLayoutType } from "~/lib/layouts/content/circles";
-import type { SlideLayoutType, ImageSize } from "~/lib/layouts/slide";
+import type { SlideLayoutType, ImageSize, ImageShape } from "~/lib/layouts/slide";
 import type { ChartData, ChartConfig } from "~/lib/charts/types";
 
 // Combined content layout type for all categories
@@ -60,6 +60,8 @@ export interface SlideData {
   slideLayout?: SlideLayoutType;
   // Image size for slide layout
   imageSize?: ImageSize;
+  // Image shape for slide layout (rectangle, rounded, circle)
+  imageShape?: ImageShape;
   // Content layout for box arrangements
   contentLayout?: ContentLayoutType;
   // Enhanced content from visual metadata transformations

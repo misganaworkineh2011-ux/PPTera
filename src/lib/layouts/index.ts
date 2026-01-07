@@ -70,4 +70,5 @@ export {
   getBaseStepsStyles,
 } from "./content/steps";
 
-export type { SlideLayoutType, ImageSize, SlideLayoutDefinition } from "./slide";
+export type { SlideLayoutType, ImageSize, ImageShape, SlideLayoutDefinition } from "./slide";
+export { getImageShapeClipPath } from "./slide";

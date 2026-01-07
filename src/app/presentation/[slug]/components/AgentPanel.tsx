@@ -435,22 +435,34 @@ export function AgentPanel({
         progressBorder: "border-slate-200",
       }
     : {
-        bg: "bg-zinc-900",
-        border: "border-zinc-700",
-        text: "text-white",
-        textMuted: "text-zinc-400",
-        inputBg: "bg-zinc-800",
-        inputBorder: "border-zinc-700",
-        hoverBg: "hover:bg-zinc-800",
-        pillBg: "bg-zinc-800",
-        pillHover: "hover:bg-zinc-700",
-        pillText: "text-zinc-300",
-        accentBg: "bg-purple-500/10",
+        bg: "",
+        border: "",
+        text: "",
+        textMuted: "",
+        inputBg: "",
+        inputBorder: "",
+        hoverBg: "",
+        pillBg: "",
+        pillHover: "",
+        pillText: "",
+        accentBg: "",
         accentText: "text-purple-400",
-        accentBorder: "border-purple-500/30",
-        progressBg: "bg-zinc-800",
-        progressBorder: "border-zinc-700",
+        accentBorder: "",
+        progressBg: "",
+        progressBorder: "",
       };
+
+  // Theme-aware inline styles for dark themes
+  const themeStyles = !isLight ? {
+    bg: theme.pageBackground || theme.colors.background,
+    border: theme.colors.border,
+    text: theme.colors.text,
+    textMuted: theme.colors.textMuted,
+    inputBg: theme.colors.surface,
+    pillBg: theme.colors.surface,
+    accentBg: `${theme.colors.primary}15`,
+    accentBorder: `${theme.colors.primary}40`,
+  } : null;
 
   return (
     <>
@@ -459,18 +471,31 @@ export function AgentPanel({
 
       {/* Panel */}
       <div
-        className={`fixed top-16 right-4 w-[420px] max-w-[calc(100vw-2rem)] rounded-2xl shadow-2xl border z-50 ${colors.bg} ${colors.border}`}
+        className={`fixed top-16 right-4 w-[420px] max-w-[calc(100vw-2rem)] rounded-2xl shadow-2xl border z-50 ${isLight ? colors.bg : ""}`}
+        style={themeStyles ? {
+          background: themeStyles.bg,
+          borderColor: themeStyles.border,
+        } : {}}
       >
         {/* Header */}
         <div
-          className={`flex items-center justify-between p-4 border-b ${colors.border}`}
+          className={`flex items-center justify-between p-4 border-b ${isLight ? colors.border : ""}`}
+          style={themeStyles ? { borderColor: themeStyles.border } : {}}
         >
           <div className="flex items-center gap-2">
-            <div className={`p-1.5 rounded-lg ${colors.accentBg}`}>
-              <Sparkles size={18} className={colors.accentText} />
+            <div 
+              className={`p-1.5 rounded-lg ${isLight ? colors.accentBg : ""}`}
+              style={themeStyles ? { backgroundColor: themeStyles.accentBg } : {}}
+            >
+              <Sparkles size={18} className={colors.accentText} style={themeStyles ? { color: theme.colors.primary } : {}} />
             </div>
             <div>
-              <h3 className={`font-semibold ${colors.text}`}>Edit all cards</h3>
+              <h3 
+                className={`font-semibold ${isLight ? colors.text : ""}`}
+                style={themeStyles ? { color: themeStyles.text } : {}}
+              >
+                Edit all cards
+              </h3>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -484,14 +509,16 @@ export function AgentPanel({
             )}
             {credits !== null && (
               <span
-                className={`text-sm ${credits <= 5 ? "text-amber-500 font-medium" : colors.textMuted}`}
+                className={`text-sm ${credits <= 5 ? "text-amber-500 font-medium" : isLight ? colors.textMuted : ""}`}
+                style={themeStyles && credits > 5 ? { color: themeStyles.textMuted } : {}}
               >
                 {credits <= 0 ? "You're out of credits" : `${credits} credits`}
               </span>
             )}
             <button
               onClick={onClose}
-              className={`p-1.5 rounded-lg transition-colors ${colors.hoverBg} ${colors.textMuted}`}
+              className={`p-1.5 rounded-lg transition-colors ${isLight ? colors.hoverBg : ""} ${isLight ? colors.textMuted : ""}`}
+              style={themeStyles ? { color: themeStyles.textMuted } : {}}
             >
               <X size={18} />
             </button>
@@ -503,24 +530,38 @@ export function AgentPanel({
           {/* Minimal status indicator - just shows when editing */}
           {isLoading && slideProgress.length > 0 && (
             <div
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg ${colors.accentBg} ${colors.accentBorder} border`}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg ${isLight ? `${colors.accentBg} ${colors.accentBorder} border` : "border"}`}
+              style={themeStyles ? { 
+                backgroundColor: themeStyles.accentBg, 
+                borderColor: themeStyles.accentBorder 
+              } : {}}
             >
               <Loader2 size={14} className="animate-spin text-blue-500" />
-              <span className={`text-sm ${colors.text}`}>
+              <span 
+                className={`text-sm ${isLight ? colors.text : ""}`}
+                style={themeStyles ? { color: themeStyles.text } : {}}
+              >
                 Updating slides... ({slideProgress.filter(p => p.status === "complete").length}/{slideProgress.length})
               </span>
             </div>
           )}
 
           {/* Scope selector */}
-          <div className={`flex items-center gap-2 p-1 rounded-lg ${colors.pillBg}`}>
+          <div 
+            className={`flex items-center gap-2 p-1 rounded-lg ${isLight ? colors.pillBg : ""}`}
+            style={themeStyles ? { backgroundColor: themeStyles.pillBg } : {}}
+          >
             <button
               onClick={() => setEditScope("all")}
               className={`flex-1 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 editScope === "all"
-                  ? `${colors.bg} shadow-sm ${colors.text}`
-                  : `${colors.textMuted} ${colors.pillHover}`
+                  ? `shadow-sm ${isLight ? `${colors.bg} ${colors.text}` : ""}`
+                  : `${isLight ? `${colors.textMuted} ${colors.pillHover}` : ""}`
               }`}
+              style={themeStyles ? {
+                backgroundColor: editScope === "all" ? themeStyles.bg : "transparent",
+                color: editScope === "all" ? themeStyles.text : themeStyles.textMuted,
+              } : {}}
             >
               All slides
             </button>
@@ -528,9 +569,13 @@ export function AgentPanel({
               onClick={() => setEditScope("current")}
               className={`flex-1 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 editScope === "current"
-                  ? `${colors.bg} shadow-sm ${colors.text}`
-                  : `${colors.textMuted} ${colors.pillHover}`
+                  ? `shadow-sm ${isLight ? `${colors.bg} ${colors.text}` : ""}`
+                  : `${isLight ? `${colors.textMuted} ${colors.pillHover}` : ""}`
               }`}
+              style={themeStyles ? {
+                backgroundColor: editScope === "current" ? themeStyles.bg : "transparent",
+                color: editScope === "current" ? themeStyles.text : themeStyles.textMuted,
+              } : {}}
             >
               Current slide ({currentSlideIndex + 1})
             </button>
@@ -538,7 +583,11 @@ export function AgentPanel({
 
           {/* Input area */}
           <div
-            className={`relative rounded-xl border ${colors.inputBorder} ${colors.inputBg}`}
+            className={`relative rounded-xl border ${isLight ? `${colors.inputBorder} ${colors.inputBg}` : ""}`}
+            style={themeStyles ? { 
+              backgroundColor: themeStyles.inputBg, 
+              borderColor: themeStyles.border 
+            } : {}}
             onKeyDown={(e) => e.stopPropagation()}
           >
             <textarea
@@ -553,13 +602,15 @@ export function AgentPanel({
                 }
               }}
               placeholder="Ask me to edit, create, or style anything"
-              className={`w-full px-4 py-3 bg-transparent resize-none focus:outline-none ${colors.text} placeholder:${colors.textMuted}`}
+              className={`w-full px-4 py-3 bg-transparent resize-none focus:outline-none ${isLight ? colors.text : ""}`}
+              style={themeStyles ? { color: themeStyles.text } : {}}
               rows={2}
               disabled={isLoading}
             />
             <div className="flex items-center justify-between px-3 pb-3">
               <button
-                className={`p-1.5 rounded-lg ${colors.hoverBg} ${colors.textMuted}`}
+                className={`p-1.5 rounded-lg ${isLight ? `${colors.hoverBg} ${colors.textMuted}` : ""}`}
+                style={themeStyles ? { color: themeStyles.textMuted } : {}}
               >
                 <span className="text-lg">+</span>
               </button>
@@ -569,8 +620,12 @@ export function AgentPanel({
                 className={`p-2 rounded-lg transition-colors ${
                   prompt.trim() && !isLoading
                     ? "bg-zinc-800 text-white hover:bg-zinc-700"
-                    : `${colors.pillBg} ${colors.textMuted} cursor-not-allowed`
+                    : `${isLight ? `${colors.pillBg} ${colors.textMuted}` : ""} cursor-not-allowed`
                 }`}
+                style={themeStyles && (!prompt.trim() || isLoading) ? { 
+                  backgroundColor: themeStyles.pillBg, 
+                  color: themeStyles.textMuted 
+                } : {}}
               >
                 {isLoading ? (
                   <Loader2 size={16} className="animate-spin" />
@@ -592,7 +647,8 @@ export function AgentPanel({
           {!isLoading && (
             <div className="space-y-3">
               <h4
-                className={`text-xs font-medium uppercase tracking-wider ${colors.textMuted}`}
+                className={`text-xs font-medium uppercase tracking-wider ${isLight ? colors.textMuted : ""}`}
+                style={themeStyles ? { color: themeStyles.textMuted } : {}}
               >
                 Writing
               </h4>
@@ -604,7 +660,11 @@ export function AgentPanel({
                       key={action.id}
                       onClick={() => handleQuickAction(action)}
                       disabled={isLoading}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-colors ${colors.pillBg} ${colors.pillText} ${colors.pillHover} disabled:opacity-50`}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-colors disabled:opacity-50 ${isLight ? `${colors.pillBg} ${colors.pillText} ${colors.pillHover}` : ""}`}
+                      style={themeStyles ? { 
+                        backgroundColor: themeStyles.pillBg, 
+                        color: themeStyles.text 
+                      } : {}}
                     >
                       {action.icon}
                       {action.label}
@@ -613,7 +673,8 @@ export function AgentPanel({
               </div>
 
               <h4
-                className={`text-xs font-medium uppercase tracking-wider ${colors.textMuted} pt-2`}
+                className={`text-xs font-medium uppercase tracking-wider pt-2 ${isLight ? colors.textMuted : ""}`}
+                style={themeStyles ? { color: themeStyles.textMuted } : {}}
               >
                 Content
               </h4>
@@ -625,7 +686,11 @@ export function AgentPanel({
                       key={action.id}
                       onClick={() => handleQuickAction(action)}
                       disabled={isLoading}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-colors ${colors.pillBg} ${colors.pillText} ${colors.pillHover} disabled:opacity-50`}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-colors disabled:opacity-50 ${isLight ? `${colors.pillBg} ${colors.pillText} ${colors.pillHover}` : ""}`}
+                      style={themeStyles ? { 
+                        backgroundColor: themeStyles.pillBg, 
+                        color: themeStyles.text 
+                      } : {}}
                     >
                       {action.icon}
                       {action.label}

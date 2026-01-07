@@ -37,7 +37,7 @@ export async function GET(
 
     // Get theme ID
     const themeId =
-      (presentation.content as { theme?: string })?.theme || "sprout";
+      (presentation.content as { theme?: string })?.theme || "corporate-clean";
 
     // Get custom theme data if applicable
     let customTheme = null;

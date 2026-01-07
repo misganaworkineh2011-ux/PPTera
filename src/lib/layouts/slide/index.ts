@@ -15,6 +15,72 @@ export type SlideLayoutType =
 
 export type ImageSize = "small" | "medium" | "large" | "full";
 
+export type ImageShape = "rectangle" | "arc" | "rounded" | "wave";
+
+// Helper to get CSS clip-path for image shapes based on image position
+// The clip-path is applied to the edge FACING the content
+// e.g., if image is on "right", the clip-path affects the LEFT edge of the image
+export const getImageShapeClipPath = (
+  shape: ImageShape,
+  imagePosition: "left" | "right" | "top" | "bottom"
+): string => {
+  if (shape === "rectangle") {
+    return "none"; // No clip-path, straight edges
+  }
+
+  if (shape === "arc") {
+    // Arc/curve effect on the edge facing content
+    switch (imagePosition) {
+      // Image on left → clip the RIGHT edge (facing content)
+      case "left":
+        return "polygon(0 0, calc(100% - 50px) 0, 100% 50%, calc(100% - 50px) 100%, 0 100%)";
+      // Image on right → clip the LEFT edge (facing content)
+      case "right":
+        return "polygon(50px 0, 100% 0, 100% 100%, 50px 100%, 0 50%)";
+      // Image on top → clip the BOTTOM edge (facing content)
+      case "top":
+        return "polygon(0 0, 100% 0, 100% calc(100% - 40px), 50% 100%, 0 calc(100% - 40px))";
+      // Image on bottom → clip the TOP edge (facing content)
+      case "bottom":
+        return "polygon(0 40px, 50% 0, 100% 40px, 100% 100%, 0 100%)";
+    }
+  }
+
+  if (shape === "rounded") {
+    // Smooth rounded curve on the edge facing content
+    switch (imagePosition) {
+      case "left":
+        // Rounded right edge (facing content) - using border-radius style curve
+        return "polygon(0 0, calc(100% - 40px) 0, calc(100% - 20px) 10%, 100% 30%, 100% 70%, calc(100% - 20px) 90%, calc(100% - 40px) 100%, 0 100%)";
+      case "right":
+        // Rounded left edge (facing content)
+        return "polygon(40px 0, 100% 0, 100% 100%, 40px 100%, 20px 90%, 0 70%, 0 30%, 20px 10%)";
+      case "top":
+        // Rounded bottom edge (facing content)
+        return "polygon(0 0, 100% 0, 100% calc(100% - 40px), 90% calc(100% - 20px), 70% 100%, 30% 100%, 10% calc(100% - 20px), 0 calc(100% - 40px))";
+      case "bottom":
+        // Rounded top edge (facing content)
+        return "polygon(0 40px, 10% 20px, 30% 0, 70% 0, 90% 20px, 100% 40px, 100% 100%, 0 100%)";
+    }
+  }
+
+  if (shape === "wave") {
+    // Wavy edge effect on the edge facing content
+    switch (imagePosition) {
+      case "left":
+        return "polygon(0 0, 90% 0, 100% 25%, 90% 50%, 100% 75%, 90% 100%, 0 100%)";
+      case "right":
+        return "polygon(10% 0, 100% 0, 100% 100%, 10% 100%, 0 75%, 10% 50%, 0 25%)";
+      case "top":
+        return "polygon(0 0, 100% 0, 100% 90%, 75% 100%, 50% 90%, 25% 100%, 0 90%)";
+      case "bottom":
+        return "polygon(0 10%, 25% 0, 50% 10%, 75% 0, 100% 10%, 100% 100%, 0 100%)";
+    }
+  }
+
+  return "none";
+};
+
 export interface SlideLayoutDefinition {
   id: SlideLayoutType;
   name: string;
@@ -44,8 +110,8 @@ export interface SlideLayoutDefinition {
 export const slideLayouts: SlideLayoutDefinition[] = [
   {
     id: "image-left",
-    name: "Image Left",
-    description: "Image on left edge with inward arc on right side",
+    name: "Image Right",
+    description: "Image on right side, content on left",
     imagePosition: "left",
     sizes: {
       small: 30,
@@ -63,8 +129,8 @@ export const slideLayouts: SlideLayoutDefinition[] = [
   },
   {
     id: "image-right",
-    name: "Image Right",
-    description: "Image on right edge with inward arc on left side",
+    name: "Image Left",
+    description: "Image on left side, content on right",
     imagePosition: "right",
     sizes: {
       small: 30,

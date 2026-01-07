@@ -324,6 +324,10 @@ export default function ContentLayoutPanel({
   const themeType = getThemeType(theme);
   const isLight = themeType === "light" || themeType === "corporate" || themeType === "custom-light";
   
+  // Use theme's pageBackground for dark themes
+  const panelBg = theme.pageBackground || (isLight ? "#ffffff" : theme.colors.background);
+  const headerBg = isLight ? "#f8fafc" : theme.colors.surface;
+  
   const colors = isLight ? {
     bg: "#ffffff",
     headerBg: "#f8fafc",
@@ -336,16 +340,16 @@ export default function ContentLayoutPanel({
     currentBg: "rgba(6, 182, 212, 0.05)",
     infoBg: "#f8fafc",
   } : {
-    bg: "#18181b",
-    headerBg: "#27272a",
-    border: "#3f3f46",
-    text: "#fafafa",
-    textMuted: "#a1a1aa",
-    accent: "#a78bfa",
-    hoverBg: "#27272a",
-    categoryBg: "rgba(39, 39, 42, 0.5)",
-    currentBg: "rgba(167, 139, 250, 0.1)",
-    infoBg: "#27272a",
+    bg: panelBg,
+    headerBg: headerBg,
+    border: theme.colors.border,
+    text: theme.colors.text,
+    textMuted: theme.colors.textMuted,
+    accent: theme.colors.primary || "#a78bfa",
+    hoverBg: theme.colors.surfaceHover || "#27272a",
+    categoryBg: theme.colors.surface || "rgba(39, 39, 42, 0.5)",
+    currentBg: `${theme.colors.primary || "#a78bfa"}15`,
+    infoBg: theme.colors.surface || "#27272a",
   };
 
   if (!isOpen) return null;
@@ -360,7 +364,7 @@ export default function ContentLayoutPanel({
           width: `${CONTENT_LAYOUT_PANEL_WIDTH}px`,
           top: `${HEADER_HEIGHT}px`,
           height: `calc(100vh - ${HEADER_HEIGHT}px)`,
-          backgroundColor: colors.bg,
+          background: colors.bg,
           borderLeft: `1px solid ${colors.border}`,
         }}
       >
