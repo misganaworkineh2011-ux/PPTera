@@ -12,7 +12,7 @@ import type { QuotesLayoutType } from "~/lib/layouts/content/quotes";
 import type { CircleLayoutType } from "~/lib/layouts/content/circles";
 import type { ImageLayoutType, ImageContentItem } from "~/lib/layouts/content/images";
 import type { ContentLayoutCategory } from "~/lib/layouts/content";
-import { getImageShapeClipPath, type ImageShape } from "~/lib/layouts/slide";
+import { getImageShapeClipPath, type ImageShape, type SlideLayoutType } from "~/lib/layouts/slide";
 import EditableText from "./EditableText";
 import TransformedContentRenderer from "./TransformedContent";
 import BoxLayoutRenderer from "./BoxLayoutRenderer";
@@ -24,6 +24,7 @@ import { CircleLayoutRenderer } from "~/components/layouts/CircleLayoutRenderer"
 import { ImageLayoutRenderer } from "~/components/layouts/ImageLayoutRenderer";
 import ContentLayoutSelector from "./ContentLayoutSelector";
 import ChartRenderer from "./ChartRenderer";
+import ImageHoverToolbar from "./ImageHoverToolbar";
 
 // Helper to determine layout category from layout style ID
 function getLayoutCategory(layoutId: string): ContentLayoutCategory {
@@ -54,9 +55,17 @@ interface SlideRendererProps {
   onFinishEditing: () => void;
   onAddBullet: (slideIndex: number) => void;
   onDeleteBullet: (slideIndex: number, bulletIndex: number) => void;
+  onDeleteTitle?: (slideIndex: number) => void;
+  onDeleteSubtitle?: (slideIndex: number) => void;
   onChangeContentLayout?: (slideIndex: number, layoutId: BoxLayoutType) => void;
   onOpenContentLayoutPanel?: () => void;
   onUpdateChart?: (slideIndex: number, chart: SlideChartData) => void;
+  // Image manipulation callbacks
+  onOpenImageModal?: (slideIndex: number, imageIndex?: number) => void;
+  onRemoveImage?: (slideIndex: number, imageIndex: number) => void;
+  onChangeImageShape?: (slideIndex: number, shape: ImageShape) => void;
+  onChangeImagePosition?: (slideIndex: number, position: SlideLayoutType) => void;
+  onReorderImages?: (slideIndex: number, fromIndex: number, toIndex: number) => void;
 }
 
 type LayoutVariant = "left-content" | "right-content" | "image-top" | "image-bottom" | "centered" | "split-diagonal" | "image-focus" | "minimal-left" | "cards-grid" | "quote-style" | "timeline" | "diagonal-cut" | "circle-focus" | "wave-layout" | "hexagon-frame" | "glass-cards" | "aurora-glow" | "diamond-frame" | "ember-cards" | "molten-split" | "arch-frame" | "botanical-cards" | "elegant-split" | "glitch-frame" | "neon-grid" | "holo-cards" | "scan-frame" | "bio-cards" | "transmission-split" | "clean-frame" | "pro-cards" | "executive-split" | "nebula-float" | "orbital-rings" | "starfield-cards" | "cosmic-portal" | "galaxy-split" | "celestial-frame" | "mono-brutalist" | "geometric-slice" | "contrast-blocks" | "angular-frame" | "stripe-accent" | "bold-stack" | "cloud-float" | "sakura-cards" | "dreamy-split" | "soft-bubble" | "twilight-frame" | "pastel-stack" | "terminal-window" | "matrix-cards" | "code-block" | "shell-prompt" | "cyber-grid" | "hack-split" | "grid-2-col" | "grid-3-col" | "grid-4-card" | "cards-2" | "cards-3" | "comparison" | "stats-grid" | "full-image" | "image-background" | "centered-image" | "feature-showcase" | "chart-left" | "chart-right";
@@ -247,10 +256,12 @@ function getSlideImages(slide: SlideData) {
 export default function SlideRenderer({
   slide, index, totalSlides, theme, isOwner, isFullscreen, isHovered, isEditing,
   editingText, showPageNumber = true, onStartEditing, onUpdateContent, onFinishEditing, onAddBullet, onDeleteBullet,
-  onChangeContentLayout, onOpenContentLayoutPanel, onUpdateChart,
+  onDeleteTitle, onDeleteSubtitle, onChangeContentLayout, onOpenContentLayoutPanel, onUpdateChart,
+  onOpenImageModal, onRemoveImage, onChangeImageShape, onChangeImagePosition, onReorderImages,
 }: SlideRendererProps) {
   const [showContentLayoutSelector, setShowContentLayoutSelector] = useState(false);
   const [contentHovered, setContentHovered] = useState(false);
+  const [hoveredImageIndex, setHoveredImageIndex] = useState<number | null>(null);
   
   const allImages = getSlideImages(slide);
   const hasImage = allImages.length > 0;
@@ -827,6 +838,7 @@ export default function SlideRenderer({
         onStartEdit={() => onStartEditing(index, "title")}
         onChange={(val) => onUpdateContent(index, "title", val)}
         onFinish={onFinishEditing}
+        onDelete={onDeleteTitle ? () => onDeleteTitle(index) : undefined}
         className={`font-bold leading-tight ${className}`}
         style={{
           fontFamily: theme.fonts.heading.family,
@@ -845,6 +857,7 @@ export default function SlideRenderer({
           onStartEdit={() => onStartEditing(index, "subtitle")}
           onChange={(val) => onUpdateContent(index, "subtitle", val)}
           onFinish={onFinishEditing}
+          onDelete={onDeleteSubtitle ? () => onDeleteSubtitle(index) : undefined}
           className="opacity-80"
           style={{
             fontFamily: theme.fonts.body.family,
@@ -1145,6 +1158,7 @@ export default function SlideRenderer({
                 theme={theme}
                 accentColor={accentColor}
                 isNarrowSpace={isNarrowSpace}
+                onChangeImage={onOpenImageModal ? (itemIndex) => onOpenImageModal(index, itemIndex) : undefined}
                 {...editingProps}
               />
             );
@@ -1219,19 +1233,47 @@ export default function SlideRenderer({
     );
   };
 
+  // Helper to determine if theme is dark for toolbar
+  const isThemeDark = ["dark", "sunset", "ocean", "aurora", "ember", "midnight", "cyber", "alien", "cosmic", "architectural", "hacker", "custom-dark"].includes(themeType);
+
   // Single image block (uses first image)
   const ImageBlock = ({ className = "", size = "large", imageIndex = 0 }: { className?: string; size?: "small" | "medium" | "large"; imageIndex?: number }) => {
     const img = allImages[imageIndex];
     if (!img) return null;
     const sizeClass = size === "small" ? "max-h-[50%]" : size === "medium" ? "max-h-[70%]" : "max-h-[85%]";
+    const isImageHovered = hoveredImageIndex === imageIndex;
+    
     return (
-      <div className={`relative ${sizeClass} ${className}`}>
+      <div 
+        className={`relative ${sizeClass} ${className}`}
+        onMouseEnter={() => canEdit && setHoveredImageIndex(imageIndex)}
+        onMouseLeave={() => setHoveredImageIndex(null)}
+      >
         <div className={`absolute inset-0 bg-gradient-to-br ${colors.accentBorder} rounded-lg`} />
         <div className={`absolute inset-[1px] ${colors.surface} rounded-lg overflow-hidden`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={img.url} alt={img.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
           <div className={`absolute inset-0 bg-gradient-to-t ${colors.overlay} via-transparent to-transparent`} />
         </div>
+        
+        {/* Image Hover Toolbar */}
+        {canEdit && isImageHovered && onOpenImageModal && onRemoveImage && onChangeImageShape && (
+          <ImageHoverToolbar
+            slideIndex={index}
+            imageIndex={imageIndex}
+            currentShape={imageShape}
+            currentPosition={slide.slideLayout?.replace("image-", "") as "left" | "right" | "top" | "bottom" | undefined}
+            onChangeImage={() => onOpenImageModal(index, imageIndex)}
+            onRemoveImage={() => onRemoveImage(index, imageIndex)}
+            onChangeShape={(shape) => onChangeImageShape(index, shape)}
+            onChangePosition={onChangeImagePosition ? (position) => onChangeImagePosition(index, position) : undefined}
+            onMoveImage={hasMultipleImages && onReorderImages ? (direction) => {
+              const newIndex = direction === "left" ? Math.max(0, imageIndex - 1) : Math.min(allImages.length - 1, imageIndex + 1);
+              if (newIndex !== imageIndex) onReorderImages(index, imageIndex, newIndex);
+            } : undefined}
+            theme={isThemeDark ? "dark" : "light"}
+          />
+        )}
       </div>
     );
   };
@@ -1416,6 +1458,8 @@ export default function SlideRenderer({
           {hasImage && firstImage && (
             <div 
               className="w-full sm:w-[40%] relative overflow-hidden flex-shrink-0 min-h-[200px] sm:min-h-0 slide-clip-left"
+              onMouseEnter={() => canEdit && setHoveredImageIndex(0)}
+              onMouseLeave={() => setHoveredImageIndex(null)}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
@@ -1424,6 +1468,24 @@ export default function SlideRenderer({
                 className="w-full h-full object-cover"
                 style={{ display: "block", minHeight: "100%" }}
               />
+              {/* Image Hover Toolbar */}
+              {canEdit && hoveredImageIndex === 0 && onOpenImageModal && onRemoveImage && onChangeImageShape && (
+                <ImageHoverToolbar
+                  slideIndex={index}
+                  imageIndex={0}
+                  currentShape={imageShape}
+                  currentPosition="right"
+                  onChangeImage={() => onOpenImageModal(index, 0)}
+                  onRemoveImage={() => onRemoveImage(index, 0)}
+                  onChangeShape={(shape) => onChangeImageShape(index, shape)}
+                  onChangePosition={onChangeImagePosition ? (position) => onChangeImagePosition(index, position) : undefined}
+                  onMoveImage={hasMultipleImages && onReorderImages ? (direction) => {
+                    const newIndex = direction === "left" ? Math.max(0, -1) : Math.min(allImages.length - 1, 1);
+                    if (newIndex !== 0) onReorderImages(index, 0, newIndex);
+                  } : undefined}
+                  theme={isThemeDark ? "dark" : "light"}
+                />
+              )}
             </div>
           )}
           {slide.image?.source === "placeholder" && <div className="w-full sm:w-[40%] p-4 sm:p-8"><Placeholder /></div>}
@@ -1457,6 +1519,8 @@ export default function SlideRenderer({
           {hasImage && firstImage && (
             <div 
               className="w-full sm:w-[40%] relative overflow-hidden flex-shrink-0 min-h-[200px] sm:min-h-0 slide-clip-right"
+              onMouseEnter={() => canEdit && setHoveredImageIndex(0)}
+              onMouseLeave={() => setHoveredImageIndex(null)}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
@@ -1465,6 +1529,24 @@ export default function SlideRenderer({
                 className="w-full h-full object-cover"
                 style={{ display: "block", minHeight: "100%" }}
               />
+              {/* Image Hover Toolbar */}
+              {canEdit && hoveredImageIndex === 0 && onOpenImageModal && onRemoveImage && onChangeImageShape && (
+                <ImageHoverToolbar
+                  slideIndex={index}
+                  imageIndex={0}
+                  currentShape={imageShape}
+                  currentPosition="left"
+                  onChangeImage={() => onOpenImageModal(index, 0)}
+                  onRemoveImage={() => onRemoveImage(index, 0)}
+                  onChangeShape={(shape) => onChangeImageShape(index, shape)}
+                  onChangePosition={onChangeImagePosition ? (position) => onChangeImagePosition(index, position) : undefined}
+                  onMoveImage={hasMultipleImages && onReorderImages ? (direction) => {
+                    const newIndex = direction === "left" ? Math.max(0, -1) : Math.min(allImages.length - 1, 1);
+                    if (newIndex !== 0) onReorderImages(index, 0, newIndex);
+                  } : undefined}
+                  theme={isThemeDark ? "dark" : "light"}
+                />
+              )}
             </div>
           )}
           {slide.image?.source === "placeholder" && <div className="w-full sm:w-[40%] p-4 sm:p-8"><Placeholder /></div>}
@@ -1503,6 +1585,8 @@ export default function SlideRenderer({
           <div 
             className="w-full relative overflow-hidden flex-shrink-0 z-10 slide-clip-top"
             style={{ height: imageHeight }}
+            onMouseEnter={() => canEdit && setHoveredImageIndex(0)}
+            onMouseLeave={() => setHoveredImageIndex(null)}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
@@ -1510,6 +1594,24 @@ export default function SlideRenderer({
               alt={firstImage.alt || slide.title} 
               className="w-full h-full object-cover"
             />
+            {/* Image Hover Toolbar */}
+            {canEdit && hoveredImageIndex === 0 && onOpenImageModal && onRemoveImage && onChangeImageShape && (
+              <ImageHoverToolbar
+                slideIndex={index}
+                imageIndex={0}
+                currentShape={imageShape}
+                currentPosition="top"
+                onChangeImage={() => onOpenImageModal(index, 0)}
+                onRemoveImage={() => onRemoveImage(index, 0)}
+                onChangeShape={(shape) => onChangeImageShape(index, shape)}
+                onChangePosition={onChangeImagePosition ? (position) => onChangeImagePosition(index, position) : undefined}
+                onMoveImage={hasMultipleImages && onReorderImages ? (direction) => {
+                  const newIndex = direction === "left" ? Math.max(0, -1) : Math.min(allImages.length - 1, 1);
+                  if (newIndex !== 0) onReorderImages(index, 0, newIndex);
+                } : undefined}
+                theme={isThemeDark ? "dark" : "light"}
+              />
+            )}
           </div>
         )}
 
@@ -1571,6 +1673,8 @@ export default function SlideRenderer({
           <div 
             className="w-full relative overflow-hidden flex-shrink-0 z-10 slide-clip-bottom"
             style={{ height: imageHeight }}
+            onMouseEnter={() => canEdit && setHoveredImageIndex(0)}
+            onMouseLeave={() => setHoveredImageIndex(null)}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
@@ -1578,6 +1682,24 @@ export default function SlideRenderer({
               alt={firstImage.alt || slide.title} 
               className="w-full h-full object-cover"
             />
+            {/* Image Hover Toolbar */}
+            {canEdit && hoveredImageIndex === 0 && onOpenImageModal && onRemoveImage && onChangeImageShape && (
+              <ImageHoverToolbar
+                slideIndex={index}
+                imageIndex={0}
+                currentShape={imageShape}
+                currentPosition="bottom"
+                onChangeImage={() => onOpenImageModal(index, 0)}
+                onRemoveImage={() => onRemoveImage(index, 0)}
+                onChangeShape={(shape) => onChangeImageShape(index, shape)}
+                onChangePosition={onChangeImagePosition ? (position) => onChangeImagePosition(index, position) : undefined}
+                onMoveImage={hasMultipleImages && onReorderImages ? (direction) => {
+                  const newIndex = direction === "left" ? Math.max(0, -1) : Math.min(allImages.length - 1, 1);
+                  if (newIndex !== 0) onReorderImages(index, 0, newIndex);
+                } : undefined}
+                theme={isThemeDark ? "dark" : "light"}
+              />
+            )}
           </div>
         )}
         

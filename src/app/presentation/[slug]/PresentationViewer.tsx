@@ -1172,6 +1172,30 @@ export default function PresentationViewer({
     }
   };
 
+  const deleteTitle = (slideIndex: number) => {
+    const slide = slidesData[slideIndex];
+    if (slide) {
+      const newSlides = [...slidesData];
+      newSlides[slideIndex] = { 
+        ...slide, 
+        title: "",
+      };
+      updateSlidesWithSave(newSlides);
+    }
+  };
+
+  const deleteSubtitle = (slideIndex: number) => {
+    const slide = slidesData[slideIndex];
+    if (slide) {
+      const newSlides = [...slidesData];
+      newSlides[slideIndex] = { 
+        ...slide, 
+        subtitle: "",
+      };
+      updateSlidesWithSave(newSlides);
+    }
+  };
+
   const startEditing = (slideIndex: number, field: string, bulletIndex?: number) => {
     setEditingText({ slideIndex, field, bulletIndex });
   };
@@ -1247,6 +1271,31 @@ export default function PresentationViewer({
       }
     }
     setEditingImageIndex(null);
+  };
+
+  const changeImageShape = (slideIndex: number, shape: ImageShape) => {
+    const slide = slidesData[slideIndex];
+    if (slide) {
+      const newSlides = [...slidesData];
+      newSlides[slideIndex] = { ...slide, imageShape: shape };
+      updateSlidesWithSave(newSlides);
+    }
+  };
+
+  const changeImagePosition = (slideIndex: number, position: SlideLayoutType) => {
+    const slide = slidesData[slideIndex];
+    if (slide) {
+      const newSlides = [...slidesData];
+      newSlides[slideIndex] = { ...slide, slideLayout: position };
+      updateSlidesWithSave(newSlides);
+    }
+  };
+
+  const openImageModal = (slideIndex: number, imageIndex?: number) => {
+    setShowImageModal(slideIndex);
+    if (imageIndex !== undefined) {
+      setEditingImageIndex(imageIndex);
+    }
   };
 
   const currentSlideData = slides[currentSlide];
@@ -1619,8 +1668,15 @@ export default function PresentationViewer({
             onFinishEditing={() => setEditingText(null)}
             onAddBullet={addBulletPoint}
             onDeleteBullet={deleteBulletPoint}
+            onDeleteTitle={deleteTitle}
+            onDeleteSubtitle={deleteSubtitle}
             onChangeContentLayout={changeContentLayout}
             onOpenContentLayoutPanel={() => { setActiveSlideIndex(index); setShowContentLayoutPanel(true); }}
+            onOpenImageModal={openImageModal}
+            onRemoveImage={removeSlideImage}
+            onChangeImageShape={changeImageShape}
+            onChangeImagePosition={changeImagePosition}
+            onReorderImages={reorderSlideImages}
           />
         )}
       </div>

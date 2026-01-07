@@ -52,6 +52,7 @@ interface ImageLayoutRendererProps {
   onUpdateText?: (index: number, value: string) => void;
   onFinishEditing?: () => void;
   onDeleteItem?: (index: number) => void;
+  onChangeImage?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
 }
@@ -71,6 +72,7 @@ export function ImageLayoutRenderer({
   onUpdateText,
   onFinishEditing,
   onDeleteItem,
+  onChangeImage,
   isOwner = false,
   isHovered = false,
 }: ImageLayoutRendererProps) {
@@ -88,17 +90,24 @@ export function ImageLayoutRenderer({
         {displayItems.map((item, idx) => (
           <div key={idx} className="flex items-start gap-4">
             <div
-              className="flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden"
+              className={`flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden relative group ${isOwner && isHovered ? "cursor-pointer" : ""}`}
               style={{
                 backgroundColor: item.image ? undefined : `${themeStyles.accentColor}15`,
                 border: item.image ? "none" : `1px dashed ${themeStyles.accentColor}40`,
               }}
+              onClick={() => isOwner && isHovered && onChangeImage?.(idx)}
             >
               {item.image ? (
                 <img src={item.image} alt={item.label || ""} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <ImageIcon size={24} style={{ color: `${themeStyles.accentColor}50` }} />
+                </div>
+              )}
+              {/* Hover overlay for changing image */}
+              {isOwner && isHovered && onChangeImage && (
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <ImageIcon size={20} className="text-white" />
                 </div>
               )}
             </div>
@@ -158,18 +167,25 @@ export function ImageLayoutRenderer({
         {displayItems.map((item, idx) => (
           <div key={idx} className="flex flex-col">
             <div
-              className="w-full aspect-square rounded-2xl overflow-hidden mb-4"
+              className={`w-full aspect-square rounded-2xl overflow-hidden mb-4 relative group ${isOwner && isHovered ? "cursor-pointer" : ""}`}
               style={{
                 backgroundColor: item.image ? undefined : `${themeStyles.accentColor}15`,
                 border: item.image ? "none" : `1px dashed ${themeStyles.accentColor}40`,
                 maxWidth: "180px",
               }}
+              onClick={() => isOwner && isHovered && onChangeImage?.(idx)}
             >
               {item.image ? (
                 <img src={item.image} alt={item.label || ""} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <ImageIcon size={40} style={{ color: `${themeStyles.accentColor}50` }} />
+                </div>
+              )}
+              {/* Hover overlay for changing image */}
+              {isOwner && isHovered && onChangeImage && (
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <ImageIcon size={28} className="text-white" />
                 </div>
               )}
             </div>
@@ -229,17 +245,24 @@ export function ImageLayoutRenderer({
         {displayItems.map((item, idx) => (
           <div key={idx} className="flex flex-col items-center text-center">
             <div
-              className="w-40 h-40 rounded-full overflow-hidden mb-4 flex-shrink-0"
+              className={`w-40 h-40 rounded-full overflow-hidden mb-4 flex-shrink-0 relative group ${isOwner && isHovered ? "cursor-pointer" : ""}`}
               style={{
                 backgroundColor: item.image ? undefined : `${themeStyles.accentColor}15`,
                 border: item.image ? "none" : `1px dashed ${themeStyles.accentColor}40`,
               }}
+              onClick={() => isOwner && isHovered && onChangeImage?.(idx)}
             >
               {item.image ? (
                 <img src={item.image} alt={item.label || ""} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <ImageIcon size={48} style={{ color: `${themeStyles.accentColor}50` }} />
+                </div>
+              )}
+              {/* Hover overlay for changing image */}
+              {isOwner && isHovered && onChangeImage && (
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
+                  <ImageIcon size={32} className="text-white" />
                 </div>
               )}
             </div>
@@ -298,19 +321,26 @@ export function ImageLayoutRenderer({
       {displayItems.map((item, idx) => (
         <div key={idx} className="flex flex-col items-center text-center">
           <div
-            className="w-full rounded-2xl overflow-hidden mb-4"
+            className={`w-full rounded-2xl overflow-hidden mb-4 relative group ${isOwner && isHovered ? "cursor-pointer" : ""}`}
             style={{
               aspectRatio: "4/3",
               maxWidth: "280px",
               backgroundColor: item.image ? undefined : `${themeStyles.accentColor}15`,
               border: item.image ? "none" : `1px dashed ${themeStyles.accentColor}40`,
             }}
+            onClick={() => isOwner && isHovered && onChangeImage?.(idx)}
           >
             {item.image ? (
               <img src={item.image} alt={item.label || ""} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <ImageIcon size={48} style={{ color: `${themeStyles.accentColor}50` }} />
+              </div>
+            )}
+            {/* Hover overlay for changing image */}
+            {isOwner && isHovered && onChangeImage && (
+              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-2xl">
+                <ImageIcon size={32} className="text-white" />
               </div>
             )}
           </div>
