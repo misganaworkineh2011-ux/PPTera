@@ -29,6 +29,19 @@ export interface SlideImage {
   photographer?: string;
   photographerUrl?: string;
   source: string;
+  // Image editing properties
+  filter?: {
+    brightness?: number;
+    contrast?: number;
+    saturation?: number;
+  };
+  crop?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  objectFit?: "cover" | "contain" | "fill" | "none";
 }
 
 // Re-export ChartData for use in slides - this ensures type compatibility

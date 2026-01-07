@@ -74,6 +74,8 @@ interface QuotesLayoutRendererProps {
   onReorderItems?: (fromIndex: number, toIndex: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
+  /** When true, disables hover effects globally (e.g., when any text is being edited) */
+  disableHover?: boolean;
 }
 
 export function QuotesLayoutRenderer({
@@ -95,6 +97,7 @@ export function QuotesLayoutRenderer({
   onReorderItems,
   isOwner = false,
   isHovered = false,
+  disableHover = false,
 }: QuotesLayoutRendererProps & { hasImage?: boolean }) {
   const displayItems = items.slice(0, 6);
   const themeStyles = getThemeStyles(theme, accentColor);
@@ -173,6 +176,7 @@ export function QuotesLayoutRenderer({
         onDeleteItem={onDeleteItem}
         isOwner={isOwner}
         isHovered={isHovered}
+                disableHover={disableHover}
         canDrag={canDrag}
         dragProps={dragProps}
         getDragClasses={getDragClasses}
@@ -196,6 +200,7 @@ export function QuotesLayoutRenderer({
       onDeleteItem={onDeleteItem}
       isOwner={isOwner}
       isHovered={isHovered}
+                disableHover={disableHover}
       canDrag={canDrag}
       dragProps={dragProps}
       getDragClasses={getDragClasses}
@@ -233,6 +238,7 @@ function BubbleQuotes({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
+  disableHover = false,
   canDrag = false,
   dragProps,
   getDragClasses,
@@ -251,6 +257,7 @@ function BubbleQuotes({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
+  disableHover?: boolean;
   canDrag?: boolean;
   dragProps?: (idx: number) => Record<string, unknown>;
   getDragClasses?: (idx: number) => string;
@@ -317,6 +324,7 @@ function BubbleQuotes({
                         className="text-lg font-bold mb-1 text-white opacity-90"
                         isOwner={isOwner}
                         isHovered={isHovered}
+                disableHover={disableHover}
                       />
                     ) : (
                       <h3 className="text-lg font-bold mb-1 text-white opacity-90">
@@ -337,6 +345,7 @@ function BubbleQuotes({
                       className="text-base leading-relaxed font-medium"
                       isOwner={isOwner}
                       isHovered={isHovered}
+                disableHover={disableHover}
                     />
                   ) : (
                     <p className="text-base leading-relaxed font-medium">
@@ -394,6 +403,7 @@ function MarksQuotes({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
+  disableHover = false,
   canDrag = false,
   dragProps,
   getDragClasses,
@@ -412,6 +422,7 @@ function MarksQuotes({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
+  disableHover?: boolean;
   canDrag?: boolean;
   dragProps?: (idx: number) => Record<string, unknown>;
   getDragClasses?: (idx: number) => string;
@@ -479,6 +490,7 @@ function MarksQuotes({
                       style={{ color: themeStyles.titleColor }}
                       isOwner={isOwner}
                       isHovered={isHovered}
+                disableHover={disableHover}
                     />
                   ) : (
                     <h3
@@ -503,6 +515,7 @@ function MarksQuotes({
                     style={{ color: themeStyles.bodyColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
+                disableHover={disableHover}
                   />
                 ) : (
                   <p

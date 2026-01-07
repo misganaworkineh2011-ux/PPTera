@@ -7,12 +7,15 @@ import type { Theme } from "~/lib/themes";
 import type { SlideImage } from "~/components/presentation/types";
 import { CREDIT_COSTS } from "~/lib/credits";
 
-// AI Image model options with credit costs
+// AI Image model options with credit costs - matches CreatePresentationClient
 const AI_IMAGE_MODELS = [
+  { id: "gemini-2.5-flash-image", name: "Nano Banana (Gemini 2.5 Flash)", quality: "standard", model: "gemini-2.5-flash-image", credits: CREDIT_COSTS.GEMINI_IMAGEN },
+  { id: "gemini-3-pro-image-preview", name: "Nano Banana Pro (Gemini 3 Pro)", quality: "hd", model: "gemini-3-pro-image-preview", credits: CREDIT_COSTS.GEMINI_IMAGEN_HD },
+  { id: "imagen-4.0-generate-001", name: "Imagen 4", quality: "standard", model: "imagen-4.0-generate-001", credits: CREDIT_COSTS.GEMINI_IMAGEN },
+  { id: "imagen-4.0-ultra-generate-001", name: "Imagen 4 Ultra", quality: "hd", model: "imagen-4.0-ultra-generate-001", credits: CREDIT_COSTS.IMAGE_HD },
+  { id: "imagen-4.0-fast-generate-001", name: "Imagen 4 Fast", quality: "standard", model: "imagen-4.0-fast-generate-001", credits: CREDIT_COSTS.GEMINI_IMAGEN },
   { id: "openai-standard", name: "DALL-E 3", quality: "standard", model: "openai", credits: CREDIT_COSTS.IMAGE_BASIC },
   { id: "openai-hd", name: "DALL-E 3 HD", quality: "hd", model: "openai", credits: CREDIT_COSTS.IMAGE_HD },
-  { id: "gemini-standard", name: "Gemini Imagen", quality: "standard", model: "gemini", credits: CREDIT_COSTS.GEMINI_IMAGEN },
-  { id: "gemini-hd", name: "Gemini Imagen HD", quality: "hd", model: "gemini", credits: CREDIT_COSTS.GEMINI_IMAGEN_HD },
 ];
 
 type AIImageModel = typeof AI_IMAGE_MODELS[number];

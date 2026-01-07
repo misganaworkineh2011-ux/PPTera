@@ -8,6 +8,42 @@ import { slideLayouts, type LayoutType } from "~/lib/slide-layouts";
 
 const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
 
+// All available content layout types for the AI to use
+const CONTENT_LAYOUTS = {
+  boxes: [
+    "box-style-1", "box-style-2", "box-style-3", "box-style-4", "box-style-5",
+    "box-style-6", "box-style-7", "box-style-8", "box-style-9", "box-style-10"
+  ],
+  steps: [
+    "steps-horizontal", "steps-vertical", "steps-numbered", "steps-timeline",
+    "steps-zigzag", "steps-circular"
+  ],
+  bullets: [
+    "bullet-simple", "bullet-icons", "bullet-cards", "bullet-columns",
+    "bullet-highlight", "bullet-numbered"
+  ],
+  quotes: [
+    "quote-centered", "quote-large", "quote-card", "quote-minimal",
+    "quote-testimonial"
+  ],
+  circles: [
+    "circle-radial", "circle-orbit", "circle-arc", "circle-connected",
+    "circle-venn"
+  ],
+  sequence: [
+    "sequence-flow", "sequence-timeline", "sequence-process", "sequence-journey"
+  ]
+};
+
+// Slide layout types (image positioning)
+const SLIDE_LAYOUTS = [
+  "image-left", "image-right", "image-top", "image-bottom",
+  "image-background", "image-full", "no-image"
+];
+
+// Image sizes
+const IMAGE_SIZES = ["small", "medium", "large", "full"];
+
 interface SlideImage {
   url: string;
   alt: string;
@@ -27,6 +63,7 @@ interface SlideContent {
   layout?: LayoutType;
   slideLayout?: string;
   imageSize?: string;
+  contentLayout?: string;
   image?: SlideImage | null;
   images?: SlideImage[];
   imageSearch?: string;
@@ -110,7 +147,7 @@ export async function POST(req: Request) {
           // Send start event
           sendEvent("start", { totalSlides: slides.length, creditsRemaining, creditCost: totalCreditCost });
 
-          const systemPrompt = `You are an expert presentation editor. Your job is to COMPLETELY and PRECISELY edit presentations based on user instructions.
+          const systemPrompt = `You are an expert presentation editor and designer. Your job is to COMPLETELY and PRECISELY edit presentations based on user instructions.
 
 ## PRESENTATION CONTEXT:
 Title: ${presentationTitle}
@@ -118,6 +155,36 @@ Total Slides: ${slides.length}
 
 ## CURRENT CONTENT:
 ${context}
+
+## AVAILABLE LAYOUTS:
+
+### Content Layouts (contentLayout field):
+These control how content items are displayed on a slide.
+
+**Box Cards** (best for 3-6 items with labels):
+${CONTENT_LAYOUTS.boxes.join(", ")}
+
+**Steps & Process** (best for sequential content, 3-6 steps):
+${CONTENT_LAYOUTS.steps.join(", ")}
+
+**Bullet Points** (best for simple lists, 3-8 items):
+${CONTENT_LAYOUTS.bullets.join(", ")}
+
+**Quotes & Testimonials** (best for 1-3 quotes):
+${CONTENT_LAYOUTS.quotes.join(", ")}
+
+**Circular Layouts** (best for 3-6 interconnected concepts):
+${CONTENT_LAYOUTS.circles.join(", ")}
+
+**Sequence & Timeline** (best for 3-6 chronological items):
+${CONTENT_LAYOUTS.sequence.join(", ")}
+
+### Slide Layouts (slideLayout field):
+These control image positioning on the slide.
+${SLIDE_LAYOUTS.join(", ")}
+
+### Image Sizes (imageSize field):
+${IMAGE_SIZES.join(", ")}
 
 ## CRITICAL EDITING RULES:
 
@@ -136,6 +203,12 @@ ${context}
 ### When user mentions specific slides (e.g., "slide 3", "page 5"):
 1. Only edit those specific slides
 2. Keep all other slides EXACTLY as they are
+
+### When user asks about LAYOUTS:
+1. You can change contentLayout to any of the available content layouts listed above
+2. You can change slideLayout to control image positioning
+3. You can change imageSize to control image size
+4. Match the layout to the content type (e.g., use steps layouts for processes, quotes layouts for testimonials)
 
 ## SLIDE TYPES:
 1. "title" slides (slide 1): Contains title, subtitle, tagline. CAN have images via imageSearch.
@@ -164,7 +237,10 @@ For CONTENT slides (ALWAYS use bulletPoints for content):
   "type": "content",
   "title": "New Slide Title",
   "bulletPoints": ["Label 1: Description text here", "Label 2: Another description", "Label 3: More content"],
-  "imageSearch": "relevant search term for new topic"
+  "imageSearch": "relevant search term for new topic",
+  "contentLayout": "box-style-1",
+  "slideLayout": "image-right",
+  "imageSize": "medium"
 }
 
 ## IMAGE SEARCH GUIDELINES:
@@ -178,7 +254,9 @@ For CONTENT slides (ALWAYS use bulletPoints for content):
 3. When changing topics, EVERY slide must have NEW content - no old topic references
 4. Content slides MUST have bulletPoints array
 5. When changing topics, ALWAYS include imageSearch for content slides
-6. NO HTML tags`;
+6. NO HTML tags
+7. Use appropriate contentLayout based on content type
+8. Keep content concise - slides should be scannable, not walls of text`;
 
           const completion = await openai.chat.completions.create({
             model: "gpt-4o-mini",
@@ -325,6 +403,7 @@ CRITICAL INSTRUCTIONS:
               mergedSlide.layout = aiSlide.layout || originalSlide.layout;
               mergedSlide.slideLayout = aiSlide.slideLayout || originalSlide.slideLayout;
               mergedSlide.imageSize = aiSlide.imageSize || originalSlide.imageSize;
+              mergedSlide.contentLayout = aiSlide.contentLayout || originalSlide.contentLayout;
 
               // Validate and apply layout
               if (mergedSlide.layout) {
@@ -342,6 +421,19 @@ CRITICAL INSTRUCTIONS:
               const validImageSizes = ["small", "medium", "large", "full"];
               if (mergedSlide.imageSize && !validImageSizes.includes(mergedSlide.imageSize)) {
                 delete mergedSlide.imageSize;
+              }
+
+              // Validate contentLayout
+              const allContentLayouts = [
+                ...CONTENT_LAYOUTS.boxes,
+                ...CONTENT_LAYOUTS.steps,
+                ...CONTENT_LAYOUTS.bullets,
+                ...CONTENT_LAYOUTS.quotes,
+                ...CONTENT_LAYOUTS.circles,
+                ...CONTENT_LAYOUTS.sequence,
+              ];
+              if (mergedSlide.contentLayout && !allContentLayouts.includes(mergedSlide.contentLayout)) {
+                delete mergedSlide.contentLayout;
               }
 
               // Handle image search (only for content slides)

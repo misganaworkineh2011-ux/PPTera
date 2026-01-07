@@ -78,6 +78,8 @@ interface CircleLayoutRendererProps {
   onReorderItems?: (fromIndex: number, toIndex: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
+  /** When true, disables hover effects globally (e.g., when any text is being edited) */
+  disableHover?: boolean;
 }
 
 export function CircleLayoutRenderer({
@@ -96,6 +98,7 @@ export function CircleLayoutRenderer({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
+  disableHover = false,
 }: CircleLayoutRendererProps) {
   const displayItems = items.slice(0, 8);
   const themeStyles = getThemeStyles(theme, accentColor);
@@ -116,6 +119,7 @@ export function CircleLayoutRenderer({
         onDeleteItem={onDeleteItem}
         isOwner={isOwner}
         isHovered={isHovered}
+                disableHover={disableHover}
       />
     );
   }
@@ -135,6 +139,7 @@ export function CircleLayoutRenderer({
       onDeleteItem={onDeleteItem}
       isOwner={isOwner}
       isHovered={isHovered}
+                disableHover={disableHover}
     />
   );
 }
@@ -154,6 +159,7 @@ function ArcLayout({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
+  disableHover = false,
 }: {
   items: CircleContentItem[];
   themeStyles: ThemeStyles;
@@ -168,6 +174,7 @@ function ArcLayout({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
+  disableHover?: boolean;
 }) {
   const itemCount = items.length;
 
@@ -243,6 +250,7 @@ function ArcLayout({
                     style={{ fontSize: labelSize, color: themeStyles.titleColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
+                disableHover={disableHover}
                   />
                 ) : (
                   <h3
@@ -266,6 +274,7 @@ function ArcLayout({
                   style={{ fontSize, color: themeStyles.bodyColor }}
                   isOwner={isOwner}
                   isHovered={isHovered}
+                disableHover={disableHover}
                 />
               ) : (
                 <p className="leading-snug" style={{ fontSize, color: themeStyles.bodyColor }}>
@@ -357,6 +366,7 @@ function RingLayout({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
+  disableHover = false,
 }: {
   items: CircleContentItem[];
   themeStyles: ThemeStyles;
@@ -371,6 +381,7 @@ function RingLayout({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
+  disableHover?: boolean;
 }) {
   const itemCount = items.length;
 
@@ -471,6 +482,7 @@ function RingLayout({
                     style={{ color: themeStyles.titleColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
+                disableHover={disableHover}
                   />
                 ) : (
                   <h3
@@ -494,6 +506,7 @@ function RingLayout({
                   style={{ color: themeStyles.bodyColor }}
                   isOwner={isOwner}
                   isHovered={isHovered}
+                disableHover={disableHover}
                 />
               ) : (
                 <p
@@ -544,6 +557,7 @@ function RingLayout({
                     style={{ color: themeStyles.titleColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
+                disableHover={disableHover}
                   />
                 ) : (
                   <h3
@@ -568,6 +582,7 @@ function RingLayout({
                   style={{ color: themeStyles.bodyColor }}
                   isOwner={isOwner}
                   isHovered={isHovered}
+                disableHover={disableHover}
                 />
               ) : (
                 <p
@@ -666,6 +681,7 @@ function RingLayout({
                     style={{ color: themeStyles.titleColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
+                disableHover={disableHover}
                   />
                 ) : (
                   <h3
@@ -690,6 +706,7 @@ function RingLayout({
                   style={{ color: themeStyles.bodyColor }}
                   isOwner={isOwner}
                   isHovered={isHovered}
+                disableHover={disableHover}
                 />
               ) : (
                 <p

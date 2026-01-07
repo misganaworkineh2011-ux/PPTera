@@ -208,6 +208,8 @@ export default function PresentationViewer({
 
   const [slidesData, setSlidesData] = useState<SlideData[]>(presentation.slides);
   const [activeSlideIndex, setActiveSlideIndex] = useState<number | null>(null);
+  // Track the last hovered slide for the AI agent panel
+  const [lastHoveredSlideIndex, setLastHoveredSlideIndex] = useState<number>(0);
   const [showLayoutModal, setShowLayoutModal] = useState(false);
   const [showContentLayoutPanel, setShowContentLayoutPanel] = useState(false);
   const [editingText, setEditingText] = useState<EditingState | null>(null);
@@ -864,6 +866,13 @@ export default function PresentationViewer({
   const nextSlide = useCallback(() => goToSlide(currentSlide + 1), [currentSlide, goToSlide]);
   const prevSlide = useCallback(() => goToSlide(currentSlide - 1), [currentSlide, goToSlide]);
 
+  // Update lastHoveredSlideIndex when a slide is hovered
+  useEffect(() => {
+    if (activeSlideIndex !== null) {
+      setLastHoveredSlideIndex(activeSlideIndex);
+    }
+  }, [activeSlideIndex]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Handle undo/redo even when editing text
@@ -878,7 +887,15 @@ export default function PresentationViewer({
         return;
       }
 
-      if (editingText) return;
+      // Don't intercept keys when user is typing in input/textarea or contenteditable
+      const target = e.target as HTMLElement;
+      const isTyping = target.tagName === "INPUT" || 
+                       target.tagName === "TEXTAREA" || 
+                       target.isContentEditable ||
+                       target.closest('[contenteditable="true"]');
+      
+      if (editingText || isTyping) return;
+      
       if (e.key === "ArrowRight" || e.key === " ") {
         e.preventDefault();
         nextSlide();
@@ -935,13 +952,20 @@ export default function PresentationViewer({
     const existingSlide = newSlides[slideIndex];
     if (!existingSlide) return;
     const slide: SlideData = { ...existingSlide };
-    if (field === "title") slide.title = value;
-    else if (field === "subtitle") slide.subtitle = value;
-    else if (field === "bullet" && bulletIndex !== undefined) {
+    
+    // Handle all field types
+    if (field === "title") {
+      slide.title = value;
+    } else if (field === "subtitle") {
+      slide.subtitle = value;
+    } else if (field === "slideDescription") {
+      slide.slideDescription = value;
+    } else if (field === "bullet" && bulletIndex !== undefined) {
       const bullets = [...(slide.bulletPoints || [])];
       bullets[bulletIndex] = value;
       slide.bulletPoints = bullets;
     }
+    
     newSlides[slideIndex] = slide;
     updateSlidesWithSave(newSlides);
   };
@@ -1239,6 +1263,8 @@ export default function PresentationViewer({
   };
 
   const startEditing = (slideIndex: number, field: string, bulletIndex?: number) => {
+    // Set active slide to the one being edited, so only it shows hover effects
+    setActiveSlideIndex(slideIndex);
     setEditingText({ slideIndex, field, bulletIndex });
   };
 
@@ -1487,8 +1513,25 @@ export default function PresentationViewer({
       <div
         className="w-full h-full relative overflow-hidden transition-all duration-500 group slide-content-container"
         style={!hasImage ? backgroundStyle : undefined}
-        onMouseEnter={() => canEdit && !isFullscreen && !isPublicView && !isPresenting && setActiveSlideIndex(index)}
-        onMouseLeave={() => !isEditing && !showContentLayoutPanel && setActiveSlideIndex(null)}
+        onMouseEnter={() => canEdit && !isFullscreen && !isPublicView && !isPresenting && !editingText && setActiveSlideIndex(index)}
+        onMouseLeave={(e) => {
+          // Don't clear activeSlideIndex if:
+          // 1. User is editing text
+          // 2. Content layout panel is open
+          // 3. There's an active text selection (user might be using WYSIWYG toolbar)
+          // 4. Mouse is moving to a child element (toolbar, etc.)
+          const relatedTarget = e.relatedTarget as HTMLElement | null;
+          const isMovingToToolbar = relatedTarget?.closest('[data-toolbar]') || 
+                                    relatedTarget?.closest('.text-toolbar') ||
+                                    relatedTarget?.closest('[role="toolbar"]');
+          
+          const selection = window.getSelection();
+          const hasActiveSelection = selection && !selection.isCollapsed && selection.toString().trim().length > 0;
+          
+          if (!isEditing && !showContentLayoutPanel && !hasActiveSelection && !isMovingToToolbar) {
+            setActiveSlideIndex(null);
+          }
+        }}
       >
         {/* Full cover background image for title slides (only when no custom slideLayout) */}
         {isTitle && !slide.slideLayout && hasImage && slide.image?.url && (
@@ -1658,6 +1701,7 @@ export default function PresentationViewer({
             isEditing={isEditing ?? false}
             editingText={editingText}
             showPageNumber={showPageNumbers}
+            globalEditingActive={!!editingText}
             onStartEditing={startEditing}
             onUpdateContent={updateSlideContent}
             onFinishEditing={() => setEditingText(null)}
@@ -1675,6 +1719,7 @@ export default function PresentationViewer({
             isEditing={isEditing ?? false}
             editingText={editingText}
             showPageNumber={showPageNumbers}
+            globalEditingActive={!!editingText}
             onStartEditing={startEditing}
             onUpdateContent={updateSlideContent}
             onFinishEditing={() => setEditingText(null)}
@@ -2304,6 +2349,9 @@ export default function PresentationViewer({
             type: "image",
             url: image.url,
             alt: image.alt || slide?.title || "Image",
+            filter: image.filter,
+            crop: image.crop,
+            objectFit: image.objectFit,
           };
 
           return (
@@ -2311,21 +2359,58 @@ export default function PresentationViewer({
               block={imageBlock}
               theme={theme}
               onSave={(updatedBlock) => {
-                // Update the image in the slide
+                // Update the image in the slide with all editing properties
                 const newSlides = [...slidesData];
                 const slideToUpdate = newSlides[showImageEditor.slideIndex];
                 if (slideToUpdate) {
-                  const currentImages = [...getSlideImages(slideToUpdate)];
-                  currentImages[showImageEditor.imageIndex] = {
+                  // Create the updated image object
+                  const updatedImage = {
                     url: updatedBlock.url,
                     alt: updatedBlock.alt,
-                    source: "edited",
+                    source: "edited" as const,
+                    filter: updatedBlock.filter,
+                    crop: updatedBlock.crop,
+                    objectFit: updatedBlock.objectFit,
+                    // Preserve photographer info if it exists
+                    photographer: image.photographer,
+                    photographerUrl: image.photographerUrl,
                   };
-                  newSlides[showImageEditor.slideIndex] = {
-                    ...slideToUpdate,
-                    images: currentImages,
-                    image: currentImages[0] || null,
-                  };
+
+                  // Get all current images
+                  const allImages = getSlideImages(slideToUpdate);
+                  
+                  // Check if we're editing the primary image (slide.image)
+                  const isPrimaryImage = showImageEditor.imageIndex === 0 && 
+                    slideToUpdate.image?.url === image.url;
+                  
+                  if (isPrimaryImage) {
+                    // Update the primary image directly
+                    newSlides[showImageEditor.slideIndex] = {
+                      ...slideToUpdate,
+                      image: updatedImage,
+                      // Also update in images array if it exists there
+                      images: slideToUpdate.images?.map((img, idx) => 
+                        img.url === image.url ? updatedImage : img
+                      ),
+                    };
+                  } else {
+                    // Update in the images array
+                    const updatedImages = [...(slideToUpdate.images || [])];
+                    // Find the correct index in the images array
+                    const imagesArrayIndex = slideToUpdate.image?.url === allImages[0]?.url 
+                      ? showImageEditor.imageIndex - 1 
+                      : showImageEditor.imageIndex;
+                    
+                    if (imagesArrayIndex >= 0 && imagesArrayIndex < updatedImages.length) {
+                      updatedImages[imagesArrayIndex] = updatedImage;
+                    }
+                    
+                    newSlides[showImageEditor.slideIndex] = {
+                      ...slideToUpdate,
+                      images: updatedImages,
+                    };
+                  }
+                  
                   updateSlidesWithSave(newSlides);
                 }
                 setShowImageEditor(null);
@@ -2352,7 +2437,7 @@ export default function PresentationViewer({
           onClose={() => setShowAgentPanel(false)}
           theme={theme}
           slides={slidesData}
-          currentSlideIndex={currentSlide}
+          currentSlideIndex={lastHoveredSlideIndex}
           presentationTitle={presentation.title}
           presentationId={presentation.id}
           onUpdateSlide={(index, slide) => {

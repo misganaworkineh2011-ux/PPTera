@@ -282,11 +282,13 @@ export default function CreatePresentationClient({
     imageLicensing: "all-images" as "all-images" | "free-to-use" | "free-commercial",
     // Default AI image model ("Nano Banana" - Gemini 2.5 Flash Image)
     imageModel: "gemini-2.5-flash-image" as
-      | "gemini-3-pro-image-preview"
       | "gemini-2.5-flash-image"
+      | "gemini-3-pro-image-preview"
       | "imagen-4.0-generate-001"
       | "imagen-4.0-ultra-generate-001"
-      | "imagen-4.0-fast-generate-001",
+      | "imagen-4.0-fast-generate-001"
+      | "openai"
+      | "openai-hd",
   });
 
   const [lastDescription, setLastDescription] = useState(
@@ -1344,6 +1346,12 @@ export default function CreatePresentationClient({
                             <option value="imagen-4.0-fast-generate-001">
                               Imagen 4 Fast
                             </option>
+                            <option value="openai">
+                              DALL-E 3
+                            </option>
+                            <option value="openai-hd">
+                              DALL-E 3 HD
+                            </option>
                           </select>
                           <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
                             <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1463,14 +1471,14 @@ export default function CreatePresentationClient({
         selectedThemeId={formData.theme}
         onSelectTheme={(themeId) => {
           handleChange("theme", themeId);
-          // Update quick-select themes: add new theme and keep the most recent one
+          // Update quick-select themes: add new theme to front and keep 6 themes
           setQuickSelectThemes((prev) => {
             // If theme is already in the list, move it to the front
             if (prev.includes(themeId)) {
-              return [themeId, ...prev.filter(id => id !== themeId)].slice(0, 2);
+              return [themeId, ...prev.filter(id => id !== themeId)].slice(0, 6);
             }
-            // Otherwise, add it to the front and keep only 2 themes
-            return [themeId, prev[0]!].slice(0, 2);
+            // Otherwise, add it to the front and keep 6 themes
+            return [themeId, ...prev].slice(0, 6);
           });
         }}
       />

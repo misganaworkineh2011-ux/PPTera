@@ -51,6 +51,8 @@ interface SlideRendererProps {
   isEditing: boolean;
   editingText: EditingState | null;
   showPageNumber?: boolean;
+  /** When true, disables all hover effects (e.g., when text is being edited on any slide) */
+  globalEditingActive?: boolean;
   onStartEditing: (slideIndex: number, field: string, bulletIndex?: number) => void;
   onUpdateContent: (slideIndex: number, field: string, value: string, bulletIndex?: number) => void;
   onFinishEditing: () => void;
@@ -83,6 +85,81 @@ function isColorDark(hexColor: string): boolean {
   const b = parseInt(hex.substring(4, 6), 16);
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
   return luminance < 0.5;
+}
+
+// Helper to generate image styles from SlideImage properties
+import type { SlideImage } from "./types";
+
+function getImageStyle(image: SlideImage): React.CSSProperties {
+  const style: React.CSSProperties = {};
+  
+  // Apply filter (brightness, contrast, saturation)
+  if (image.filter) {
+    const filters: string[] = [];
+    if (image.filter.brightness !== undefined && image.filter.brightness !== 100) {
+      filters.push(`brightness(${image.filter.brightness}%)`);
+    }
+    if (image.filter.contrast !== undefined && image.filter.contrast !== 100) {
+      filters.push(`contrast(${image.filter.contrast}%)`);
+    }
+    if (image.filter.saturation !== undefined && image.filter.saturation !== 100) {
+      filters.push(`saturate(${image.filter.saturation}%)`);
+    }
+    if (filters.length > 0) {
+      style.filter = filters.join(" ");
+    }
+  }
+  
+  // Apply object fit
+  if (image.objectFit && image.objectFit !== "cover") {
+    style.objectFit = image.objectFit;
+  }
+  
+  // Apply crop (using object-position and transform)
+  if (image.crop && (image.crop.x !== 0 || image.crop.y !== 0 || image.crop.width !== 100 || image.crop.height !== 100)) {
+    // Calculate the scale and position to show only the cropped area
+    const scaleX = 100 / image.crop.width;
+    const scaleY = 100 / image.crop.height;
+    const scale = Math.max(scaleX, scaleY);
+    
+    // Position the image so the crop area is visible
+    const offsetX = -image.crop.x * scale;
+    const offsetY = -image.crop.y * scale;
+    
+    style.transform = `scale(${scale})`;
+    style.transformOrigin = "top left";
+    style.marginLeft = `${offsetX}%`;
+    style.marginTop = `${offsetY}%`;
+  }
+  
+  return style;
+}
+
+// Helper component to render slide images with editing styles applied
+interface SlideImageProps {
+  image: SlideImage;
+  alt: string;
+  className?: string;
+  style?: React.CSSProperties;
+  draggable?: boolean;
+  onDragStart?: (e: React.DragEvent<HTMLImageElement>) => void;
+  onDragEnd?: (e: React.DragEvent<HTMLImageElement>) => void;
+}
+
+function SlideImg({ image, alt, className = "", style = {}, draggable, onDragStart, onDragEnd }: SlideImageProps) {
+  const imageStyles = getImageStyle(image);
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img 
+      src={image.url} 
+      alt={alt} 
+      className={className}
+      style={{ ...style, ...imageStyles }}
+      draggable={draggable}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+    />
+  );
 }
 
 function getThemeType(theme: Theme): ThemeType {
@@ -259,7 +336,7 @@ function getSlideImages(slide: SlideData) {
 
 export default function SlideRenderer({
   slide, index, totalSlides, theme, isOwner, isFullscreen, isHovered, isEditing,
-  editingText, showPageNumber = true, onStartEditing, onUpdateContent, onFinishEditing, onAddBullet, onDeleteBullet,
+  editingText, showPageNumber = true, globalEditingActive = false, onStartEditing, onUpdateContent, onFinishEditing, onAddBullet, onDeleteBullet,
   onDeleteTitle, onDeleteSubtitle, onReorderContent, onChangeContentLayout, onOpenContentLayoutPanel, onUpdateChart,
   onOpenImageModal, onRemoveImage, onChangeImageShape, onChangeImagePosition, onReorderImages,
 }: SlideRendererProps) {
@@ -267,6 +344,9 @@ export default function SlideRenderer({
   const [contentHovered, setContentHovered] = useState(false);
   const [hoveredImageIndex, setHoveredImageIndex] = useState<number | null>(null);
   const [isDraggingImage, setIsDraggingImage] = useState(false);
+  
+  // Disable hover effects when any text is being edited globally
+  const disableHover = globalEditingActive;
   
   const allImages = getSlideImages(slide);
   const hasImage = allImages.length > 0;
@@ -371,7 +451,12 @@ export default function SlideRenderer({
   
   const boxContentItems = getBoxContentItems();
   // Always use contentLayout if it's set, regardless of content type
-  const showBoxLayout = !!slide.contentLayout && boxContentItems.length > 0;
+  // For image layouts, allow showing even without bullet points if there are images
+  const layoutCategory = slide.contentLayout ? getLayoutCategory(slide.contentLayout) : null;
+  const showBoxLayout = !!slide.contentLayout && (
+    boxContentItems.length > 0 || 
+    (layoutCategory === "images" && allImages.length > 0)
+  );
 
   // Theme-aware colors for all three themes
   const colorMap = {
@@ -830,7 +915,7 @@ export default function SlideRenderer({
           textAlign: align,
         }}
         isOwner={canEdit}
-        isHovered={isHovered}
+        disableHover={disableHover}
       />
     );
   };
@@ -853,7 +938,7 @@ export default function SlideRenderer({
           fontSize: showSubtitle && isTitleSlide ? "clamp(1.5rem, 4vw + 0.5rem, 4rem)" : "clamp(0.875rem, 2.5vw + 0.25rem, 2.5rem)"
         }}
         isOwner={canEdit}
-        isHovered={isHovered}
+        disableHover={disableHover}
       />
       {showSubtitle && slide.subtitle && (
         <EditableText
@@ -871,7 +956,7 @@ export default function SlideRenderer({
             fontSize: "clamp(0.875rem, 1.5vw + 0.25rem, 1.5rem)"
           }}
           isOwner={canEdit}
-          isHovered={isHovered}
+          disableHover={disableHover}
         />
       )}
     </div>
@@ -917,7 +1002,7 @@ export default function SlideRenderer({
                     className={`font-semibold ${compact ? "text-sm mb-0.5" : "text-base mb-1"}`}
                     style={{ color: colors.text, fontFamily: theme.fonts.heading.family }}
                     isOwner={canEdit}
-                    isHovered={isHovered}
+                    disableHover={disableHover}
                   />
                   <EditableText
                     value={item.text}
@@ -932,7 +1017,7 @@ export default function SlideRenderer({
                       fontSize: compact ? "clamp(0.75rem, 1.2vw + 0.15rem, 0.9rem)" : "clamp(0.875rem, 1.4vw + 0.15rem, 1rem)"
                     }}
                     isOwner={canEdit}
-                    isHovered={isHovered}
+                    disableHover={disableHover}
                     onDelete={() => onDeleteBullet(index, i)}
                   />
                 </div>
@@ -951,14 +1036,14 @@ export default function SlideRenderer({
                     fontSize: compact ? "clamp(0.75rem, 1.2vw + 0.15rem, 1rem)" : "clamp(0.875rem, 1.5vw + 0.2rem, 1.125rem)"
                   }}
                   isOwner={canEdit}
-                  isHovered={isHovered}
+                  disableHover={disableHover}
                   onDelete={() => onDeleteBullet(index, i)}
                 />
               )}
             </div>
           </div>
         ))}
-        {canEdit && isHovered && (
+        {canEdit && isHovered && !disableHover && (
           <button
             onClick={() => onAddBullet(index)}
             className={`flex items-center gap-1 sm:gap-2 ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors ml-4 sm:ml-5`}
@@ -973,7 +1058,7 @@ export default function SlideRenderer({
 
   // Change Layout button that appears on hover
   const ChangeLayoutButton = () => {
-    if (!canEdit || !hasBoxContent || !isHovered || !contentHovered) return null;
+    if (!canEdit || !hasBoxContent || !isHovered || !contentHovered || disableHover) return null;
     
     return (
       <button
@@ -1005,7 +1090,7 @@ export default function SlideRenderer({
     const ContentWrapper = ({ children }: { children: React.ReactNode }) => (
       <div
         className="relative"
-        onMouseEnter={() => setContentHovered(true)}
+        onMouseEnter={() => !disableHover && setContentHovered(true)}
         onMouseLeave={() => setContentHovered(false)}
       >
         <ChangeLayoutButton />
@@ -1075,7 +1160,8 @@ export default function SlideRenderer({
           onDeleteItem: canEdit ? (itemIndex: number) => onDeleteBullet(index, itemIndex) : undefined,
           onReorderItems: canEdit && onReorderContent ? (fromIdx: number, toIdx: number) => onReorderContent(index, fromIdx, toIdx) : undefined,
           isOwner: canEdit,
-          isHovered,
+          isHovered: isHovered && !disableHover,
+          disableHover,
         };
         
         switch (layoutCategory) {
@@ -1142,11 +1228,14 @@ export default function SlideRenderer({
           
           case "images":
             // Map images to ImageContentItem format - combine slide images with content items
-            const imageContentItems: ImageContentItem[] = boxContentItems.map((item, index) => ({
-              label: item.label,
-              text: item.text,
-              image: allImages[index]?.url, // Map slide images to content items
-            }));
+            const imageContentItems: ImageContentItem[] = boxContentItems.length > 0 
+              ? boxContentItems.map((item, idx) => ({
+                  label: item.label,
+                  text: item.text,
+                  image: allImages[idx]?.url, // Map slide images to content items
+                }))
+              : []; // Start with empty array if no content items
+            
             // If we have more images than content items, add them
             if (allImages.length > boxContentItems.length) {
               for (let i = boxContentItems.length; i < allImages.length; i++) {
@@ -1157,6 +1246,12 @@ export default function SlideRenderer({
                 });
               }
             }
+            
+            // Don't render if no items
+            if (imageContentItems.length === 0) {
+              return null;
+            }
+            
             return (
               <ImageLayoutRenderer
                 layoutId={slide.contentLayout as ImageLayoutType}
@@ -1191,14 +1286,16 @@ export default function SlideRenderer({
           <div className={compact ? "space-y-3" : "space-y-4"}>
             {renderContentLayout()}
             {/* Add point button for content layouts */}
-            {canEdit && isHovered && (
-              <button 
-                onClick={() => onAddBullet(index)} 
+            {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" 
+                onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} 
                 className={`mt-4 flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}
               >
                 <Plus size={14} /> Add point
               </button>
-            )}
+          </div>
+        )}
             {/* Render chart if present */}
             {slide.chart && (
               <div className="mt-4">
@@ -1252,18 +1349,17 @@ export default function SlideRenderer({
     return (
       <div 
         className={`relative ${sizeClass} ${className}`}
-        onMouseEnter={() => canEdit && setHoveredImageIndex(imageIndex)}
+        onMouseEnter={() => canEdit && !isEditing && !disableHover && setHoveredImageIndex(imageIndex)}
         onMouseLeave={() => setHoveredImageIndex(null)}
       >
         <div className={`absolute inset-0 bg-gradient-to-br ${colors.accentBorder} rounded-lg`} />
         <div className={`absolute inset-[1px] ${colors.surface} rounded-lg overflow-hidden`}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={img.url} alt={img.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
+          <SlideImg image={img} alt={img.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
           <div className={`absolute inset-0 bg-gradient-to-t ${colors.overlay} via-transparent to-transparent`} />
         </div>
         
         {/* Image Hover Toolbar */}
-        {canEdit && isImageHovered && onOpenImageModal && onRemoveImage && onChangeImageShape && (
+        {canEdit && isImageHovered && !isEditing && onOpenImageModal && onRemoveImage && onChangeImageShape && (
           <ImageHoverToolbar
             slideIndex={index}
             imageIndex={imageIndex}
@@ -1301,8 +1397,7 @@ export default function SlideRenderer({
             <div key={idx} className="flex-1 relative rounded-lg overflow-hidden" style={{ aspectRatio: "4/3" }}>
               <div className={`absolute inset-0 bg-gradient-to-br ${colors.accentBorder} rounded-lg`} />
               <div className={`absolute inset-[1px] ${colors.surface} rounded-lg overflow-hidden`}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={img.url} alt={img.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
+                <SlideImg image={img} alt={img.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
               </div>
             </div>
           ))}
@@ -1326,8 +1421,7 @@ export default function SlideRenderer({
                 zIndex: allImages.length - idx,
               }}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={img.url} alt={img.alt || slide.title} className="w-full h-full object-cover" />
+              <SlideImg image={img} alt={img.alt || slide.title} className="w-full h-full object-cover" />
             </div>
           ))}
         </div>
@@ -1342,8 +1436,7 @@ export default function SlideRenderer({
           <div key={idx} className="relative rounded-lg overflow-hidden" style={{ aspectRatio: allImages.length <= 2 ? "16/9" : "4/3" }}>
             <div className={`absolute inset-0 bg-gradient-to-br ${colors.accentBorder} rounded-lg`} />
             <div className={`absolute inset-[1px] ${colors.surface} rounded-lg overflow-hidden`}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={img.url} alt={img.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
+              <SlideImg image={img} alt={img.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
             </div>
           </div>
         ))}
@@ -1464,12 +1557,11 @@ export default function SlideRenderer({
           {hasImage && firstImage && (
             <div 
               className="w-full sm:w-[40%] relative overflow-hidden flex-shrink-0 min-h-[200px] sm:min-h-0 slide-clip-left"
-              onMouseEnter={() => canEdit && setHoveredImageIndex(0)}
+              onMouseEnter={() => canEdit && !isEditing && !disableHover && setHoveredImageIndex(0)}
               onMouseLeave={() => setHoveredImageIndex(null)}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img 
-                src={firstImage.url} 
+              <SlideImg 
+                image={firstImage}
                 alt={firstImage.alt || slide.title} 
                 className="w-full h-full object-cover"
                 style={{ display: "block", minHeight: "100%", cursor: canEdit && onChangeImagePosition ? "grab" : "default" }}
@@ -1483,7 +1575,7 @@ export default function SlideRenderer({
                 onDragEnd={() => setIsDraggingImage(false)}
               />
               {/* Image Hover Toolbar */}
-              {canEdit && hoveredImageIndex === 0 && onOpenImageModal && onRemoveImage && onChangeImageShape && !isDraggingImage && (
+              {canEdit && hoveredImageIndex === 0 && !isEditing && onOpenImageModal && onRemoveImage && onChangeImageShape && !isDraggingImage && (
                 <ImageHoverToolbar
                   slideIndex={index}
                   imageIndex={0}
@@ -1545,12 +1637,11 @@ export default function SlideRenderer({
           {hasImage && firstImage && (
             <div 
               className="w-full sm:w-[40%] relative overflow-hidden flex-shrink-0 min-h-[200px] sm:min-h-0 slide-clip-right"
-              onMouseEnter={() => canEdit && setHoveredImageIndex(0)}
+              onMouseEnter={() => canEdit && !isEditing && !disableHover && setHoveredImageIndex(0)}
               onMouseLeave={() => setHoveredImageIndex(null)}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img 
-                src={firstImage.url} 
+              <SlideImg 
+                image={firstImage}
                 alt={firstImage.alt || slide.title} 
                 className="w-full h-full object-cover"
                 style={{ display: "block", minHeight: "100%", cursor: canEdit && onChangeImagePosition ? "grab" : "default" }}
@@ -1564,7 +1655,7 @@ export default function SlideRenderer({
                 onDragEnd={() => setIsDraggingImage(false)}
               />
               {/* Image Hover Toolbar */}
-              {canEdit && hoveredImageIndex === 0 && onOpenImageModal && onRemoveImage && onChangeImageShape && !isDraggingImage && (
+              {canEdit && hoveredImageIndex === 0 && !isEditing && onOpenImageModal && onRemoveImage && onChangeImageShape && !isDraggingImage && (
                 <ImageHoverToolbar
                   slideIndex={index}
                   imageIndex={0}
@@ -1631,12 +1722,11 @@ export default function SlideRenderer({
           <div 
             className="w-full relative overflow-hidden flex-shrink-0 z-10 slide-clip-top"
             style={{ height: imageHeight }}
-            onMouseEnter={() => canEdit && setHoveredImageIndex(0)}
+            onMouseEnter={() => canEdit && !isEditing && !disableHover && setHoveredImageIndex(0)}
             onMouseLeave={() => setHoveredImageIndex(null)}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
-              src={firstImage.url} 
+            <SlideImg 
+              image={firstImage}
               alt={firstImage.alt || slide.title} 
               className="w-full h-full object-cover"
               style={{ cursor: canEdit && onChangeImagePosition ? "grab" : "default" }}
@@ -1650,7 +1740,7 @@ export default function SlideRenderer({
               onDragEnd={() => setIsDraggingImage(false)}
             />
             {/* Image Hover Toolbar */}
-            {canEdit && hoveredImageIndex === 0 && onOpenImageModal && onRemoveImage && onChangeImageShape && !isDraggingImage && (
+            {canEdit && hoveredImageIndex === 0 && !isEditing && onOpenImageModal && onRemoveImage && onChangeImageShape && !isDraggingImage && (
               <ImageHoverToolbar
                 slideIndex={index}
                 imageIndex={0}
@@ -1740,12 +1830,11 @@ export default function SlideRenderer({
           <div 
             className="w-full relative overflow-hidden flex-shrink-0 z-10 slide-clip-bottom"
             style={{ height: imageHeight }}
-            onMouseEnter={() => canEdit && setHoveredImageIndex(0)}
+            onMouseEnter={() => canEdit && !isEditing && !disableHover && setHoveredImageIndex(0)}
             onMouseLeave={() => setHoveredImageIndex(null)}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
-              src={firstImage.url} 
+            <SlideImg 
+              image={firstImage}
               alt={firstImage.alt || slide.title} 
               className="w-full h-full object-cover"
               style={{ cursor: canEdit && onChangeImagePosition ? "grab" : "default" }}
@@ -1759,7 +1848,7 @@ export default function SlideRenderer({
               onDragEnd={() => setIsDraggingImage(false)}
             />
             {/* Image Hover Toolbar */}
-            {canEdit && hoveredImageIndex === 0 && onOpenImageModal && onRemoveImage && onChangeImageShape && !isDraggingImage && (
+            {canEdit && hoveredImageIndex === 0 && !isEditing && onOpenImageModal && onRemoveImage && onChangeImageShape && !isDraggingImage && (
               <ImageHoverToolbar
                 slideIndex={index}
                 imageIndex={0}
@@ -1845,8 +1934,7 @@ export default function SlideRenderer({
 
         {hasImage && firstImage && (
           <div className="absolute inset-0 clip-diagonal hidden sm:block">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={firstImage.url} alt={firstImage.alt || slide.title} className={`absolute inset-0 w-full h-full object-cover ${themeType === "light" ? "opacity-20" : "opacity-30"}`} />
+            <SlideImg image={firstImage} alt={firstImage.alt || slide.title} className={`absolute inset-0 w-full h-full object-cover ${themeType === "light" ? "opacity-20" : "opacity-30"}`} />
             <div className={`absolute inset-0 ${colors.imgOverlay}`} />
           </div>
         )}
@@ -1892,8 +1980,7 @@ export default function SlideRenderer({
       <div className="h-full relative overflow-hidden">
         {hasImage && firstImage ? (
           <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={firstImage.url} alt={firstImage.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
+            <SlideImg image={firstImage} alt={firstImage.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
             <div className={`absolute inset-0 ${colors.fullOverlay}`} />
             <div className={`absolute inset-0 ${colors.sideOverlay}`} />
           </>
@@ -1923,8 +2010,7 @@ export default function SlideRenderer({
           <div className="absolute top-4 right-4 flex gap-2">
             {allImages.slice(1, 4).map((img, idx) => (
               <div key={idx} className="w-16 h-12 rounded-lg overflow-hidden border-2 border-white/30 shadow-lg">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={img.url} alt={img.alt || ""} className="w-full h-full object-cover" />
+                <SlideImg image={img} alt={img.alt || ""} className="w-full h-full object-cover" />
               </div>
             ))}
           </div>
@@ -2034,7 +2120,7 @@ export default function SlideRenderer({
                         className="text-sm sm:text-base leading-relaxed"
                         style={{ fontFamily: theme.fonts.body.family, color: "#39ff14" }}
                         isOwner={canEdit}
-                        isHovered={isHovered}
+                        disableHover={disableHover}
                         onDelete={() => onDeleteBullet(index, i)}
                       />
                     </div>
@@ -2043,11 +2129,13 @@ export default function SlideRenderer({
               </div>
             )}
 
-            {canEdit && isHovered && (
-              <button onClick={() => onAddBullet(index)} className="mt-4 sm:mt-6 flex items-center gap-2 text-xs sm:text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
+            {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className="mt-4 sm:mt-6 flex items-center gap-2 text-xs sm:text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
                 <Plus size={12} className="sm:w-[14px] sm:h-[14px]" /> Add module
               </button>
-            )}
+          </div>
+        )}
           </div>
         </div>
       );
@@ -2080,7 +2168,7 @@ export default function SlideRenderer({
                     className="flex-1 text-sm sm:text-base leading-relaxed"
                     style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
                     isOwner={canEdit}
-                    isHovered={isHovered}
+                    disableHover={disableHover}
                     onDelete={() => onDeleteBullet(index, i)}
                   />
                 </div>
@@ -2088,11 +2176,13 @@ export default function SlideRenderer({
             ))}
           </div>
 
-          {canEdit && isHovered && (
-            <button onClick={() => onAddBullet(index)} className={`mt-3 sm:mt-4 flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+          {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className={`mt-3 sm:mt-4 flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
               <Plus size={12} className="sm:w-[14px] sm:h-[14px]" /> Add card
             </button>
-          )}
+          </div>
+        )}
         </div>
       </div>
     );
@@ -2130,7 +2220,7 @@ export default function SlideRenderer({
                       className="flex-1 text-sm sm:text-base leading-relaxed"
                       style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
                       isOwner={canEdit}
-                      isHovered={isHovered}
+                      disableHover={disableHover}
                       onDelete={() => onDeleteBullet(index, i)}
                     />
                   </div>
@@ -2153,7 +2243,7 @@ export default function SlideRenderer({
                       className="flex-1 text-sm sm:text-base leading-relaxed"
                       style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
                       isOwner={canEdit}
-                      isHovered={isHovered}
+                      disableHover={disableHover}
                       onDelete={() => onDeleteBullet(index, midPoint + i)}
                     />
                   </div>
@@ -2162,11 +2252,13 @@ export default function SlideRenderer({
             </div>
           </div>
 
-          {canEdit && isHovered && (
-            <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+          {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className={`mt-4 flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
               <Plus size={14} /> Add point
             </button>
-          )}
+          </div>
+        )}
         </div>
       </div>
     );
@@ -2189,11 +2281,13 @@ export default function SlideRenderer({
             <EnhancedContent />
           </div>
 
-          {canEdit && isHovered && (
-            <button onClick={() => onAddBullet(index)} className={`mt-4 mx-auto flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+          {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className={`mt-4 mx-auto flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
               <Plus size={14} /> Add point
             </button>
-          )}
+          </div>
+        )}
         </div>
       </div>
     );
@@ -2229,14 +2323,14 @@ export default function SlideRenderer({
                   className="text-sm sm:text-base leading-relaxed"
                   style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
                   isOwner={canEdit}
-                  isHovered={isHovered}
+                  disableHover={disableHover}
                   onDelete={() => onDeleteBullet(index, i)}
                 />
               </div>
             ))}
           </div>
 
-          {canEdit && isHovered && bulletPoints.length < 4 && (
+          {canEdit && isHovered && !disableHover && bulletPoints.length < 4 && (
             <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
               <Plus size={14} /> Add card
             </button>
@@ -2274,14 +2368,14 @@ export default function SlideRenderer({
                   className="text-base sm:text-lg leading-relaxed flex-1"
                   style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
                   isOwner={canEdit}
-                  isHovered={isHovered}
+                  disableHover={disableHover}
                   onDelete={() => onDeleteBullet(index, i)}
                 />
               </div>
             ))}
           </div>
 
-          {canEdit && isHovered && bulletPoints.length < 2 && (
+          {canEdit && isHovered && !disableHover && bulletPoints.length < 2 && (
             <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
               <Plus size={14} /> Add card
             </button>
@@ -2318,14 +2412,14 @@ export default function SlideRenderer({
                   className="text-sm sm:text-base leading-relaxed"
                   style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
                   isOwner={canEdit}
-                  isHovered={isHovered}
+                  disableHover={disableHover}
                   onDelete={() => onDeleteBullet(index, i)}
                 />
               </div>
             ))}
           </div>
 
-          {canEdit && isHovered && bulletPoints.length < 3 && (
+          {canEdit && isHovered && !disableHover && bulletPoints.length < 3 && (
             <button onClick={() => onAddBullet(index)} className={`mt-4 mx-auto flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
               <Plus size={14} /> Add card
             </button>
@@ -2369,7 +2463,7 @@ export default function SlideRenderer({
                       className="flex-1 text-sm sm:text-base"
                       style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
                       isOwner={canEdit}
-                      isHovered={isHovered}
+                      disableHover={disableHover}
                       onDelete={() => onDeleteBullet(index, i)}
                     />
                   </div>
@@ -2395,7 +2489,7 @@ export default function SlideRenderer({
                       className="flex-1 text-sm sm:text-base"
                       style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
                       isOwner={canEdit}
-                      isHovered={isHovered}
+                      disableHover={disableHover}
                       onDelete={() => onDeleteBullet(index, midPoint + i)}
                     />
                   </div>
@@ -2404,11 +2498,13 @@ export default function SlideRenderer({
             </div>
           </div>
 
-          {canEdit && isHovered && (
-            <button onClick={() => onAddBullet(index)} className={`mt-4 mx-auto flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+          {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className={`mt-4 mx-auto flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
               <Plus size={14} /> Add item
             </button>
-          )}
+          </div>
+        )}
         </div>
       </div>
     );
@@ -2441,18 +2537,20 @@ export default function SlideRenderer({
                   className="text-xs sm:text-sm uppercase tracking-wider"
                   style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
                   isOwner={canEdit}
-                  isHovered={isHovered}
+                  disableHover={disableHover}
                   onDelete={() => onDeleteBullet(index, i)}
                 />
               </div>
             ))}
           </div>
 
-          {canEdit && isHovered && (
-            <button onClick={() => onAddBullet(index)} className={`mt-4 mx-auto flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+          {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className={`mt-4 mx-auto flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
               <Plus size={14} /> Add stat
             </button>
-          )}
+          </div>
+        )}
         </div>
       </div>
     );
@@ -2467,8 +2565,7 @@ export default function SlideRenderer({
         {/* Full background image - only image, no content */}
         {hasImage && firstImage && (
           <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={firstImage.url} alt={firstImage.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
+            <SlideImg image={firstImage} alt={firstImage.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
           </>
         )}
         {!hasImage && (
@@ -2500,8 +2597,7 @@ export default function SlideRenderer({
         {/* Background image with overlay */}
         {hasImage && firstImage && (
           <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={firstImage.url} alt={firstImage.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
+            <SlideImg image={firstImage} alt={firstImage.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
             <div className={`absolute inset-0 ${colors.fullOverlay}`} />
           </>
         )}
@@ -2527,7 +2623,7 @@ export default function SlideRenderer({
             </div>
           )}
 
-          {canEdit && isHovered && !isTitleSlide && (
+          {canEdit && isHovered && !disableHover && !isTitleSlide && (
             <button 
               onClick={() => onAddBullet(index)} 
               className={`mt-6 flex items-center gap-2 text-sm sm:text-base ${hasImage ? "text-white/80 hover:text-white" : `${colors.indicatorMuted} ${colors.hoverAccent}`} transition-colors`}
@@ -2557,8 +2653,7 @@ export default function SlideRenderer({
           {hasImage && firstImage && (
             <div className="flex justify-center mb-4 sm:mb-6">
               <div className="w-full max-w-md sm:max-w-lg md:max-w-xl h-40 sm:h-48 md:h-56 rounded-xl overflow-hidden shadow-lg">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={firstImage.url} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
+                <SlideImg image={firstImage} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
               </div>
             </div>
           )}
@@ -2581,7 +2676,7 @@ export default function SlideRenderer({
                       className="flex-1 text-sm sm:text-base leading-relaxed"
                       style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
                       isOwner={canEdit}
-                      isHovered={isHovered}
+                      disableHover={disableHover}
                       onDelete={() => onDeleteBullet(index, i)}
                     />
                   </div>
@@ -2590,11 +2685,13 @@ export default function SlideRenderer({
             </div>
           )}
 
-          {canEdit && isHovered && (
-            <button onClick={() => onAddBullet(index)} className={`mt-4 mx-auto flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+          {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className={`mt-4 mx-auto flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
               <Plus size={14} /> Add card
             </button>
-          )}
+          </div>
+        )}
         </div>
       </div>
     );
@@ -2613,8 +2710,7 @@ export default function SlideRenderer({
           {/* Image header section */}
           {hasImage && firstImage && (
             <div className="relative h-1/3 sm:h-2/5 shrink-0">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={firstImage.url} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
+              <SlideImg image={firstImage} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
               <div className={`absolute inset-0 ${colors.fullOverlay}`} />
               <div className="absolute inset-0 flex items-center justify-center p-4">
                 <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl text-center" align="center" />
@@ -2646,7 +2742,7 @@ export default function SlideRenderer({
                       className="text-sm sm:text-base leading-relaxed"
                       style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
                       isOwner={canEdit}
-                      isHovered={isHovered}
+                      disableHover={disableHover}
                       onDelete={() => onDeleteBullet(index, i)}
                     />
                   </div>
@@ -2654,11 +2750,13 @@ export default function SlideRenderer({
               </div>
             )}
 
-            {canEdit && isHovered && (
-              <button onClick={() => onAddBullet(index)} className={`mt-4 mx-auto flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+            {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className={`mt-4 mx-auto flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
                 <Plus size={14} /> Add feature
               </button>
-            )}
+          </div>
+        )}
           </div>
         </div>
       </div>
@@ -2695,7 +2793,7 @@ export default function SlideRenderer({
                     className="text-lg"
                     style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
                     isOwner={canEdit}
-                    isHovered={isHovered}
+                    disableHover={disableHover}
                     onDelete={() => onDeleteBullet(index, i)}
                   />
                 ))}
@@ -2711,10 +2809,9 @@ export default function SlideRenderer({
           </div>
         </div>
 
-        {hasImage && (
+        {hasImage && slide.image && (
           <div className="absolute bottom-8 left-8 w-24 h-24 rounded-full overflow-hidden border-2" style={{ borderColor: colors.accent }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={slide.image!.url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <SlideImg image={slide.image} alt="" className="absolute inset-0 w-full h-full object-cover" />
           </div>
         )}
       </div>
@@ -2753,7 +2850,7 @@ export default function SlideRenderer({
                       className="text-base leading-relaxed"
                       style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
                       isOwner={canEdit}
-                      isHovered={isHovered}
+                      disableHover={disableHover}
                       onDelete={() => onDeleteBullet(index, i)}
                     />
                   </div>
@@ -2761,11 +2858,13 @@ export default function SlideRenderer({
               ))}
             </div>
 
-            {canEdit && isHovered && (
-              <button onClick={() => onAddBullet(index)} className={`mt-4 ml-6 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+            {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className={`mt-4 ml-6 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
                 <Plus size={14} /> Add step
               </button>
-            )}
+          </div>
+        )}
           </div>
 
           {hasImage && (
@@ -2788,8 +2887,7 @@ export default function SlideRenderer({
         {/* Diagonal image section */}
         {hasImage && firstImage && (
           <div className="absolute right-0 top-0 bottom-0 w-[55%]" style={{ clipPath: "polygon(20% 0, 100% 0, 100% 100%, 0% 100%)" }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={firstImage.url} alt={firstImage.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
+            <SlideImg image={firstImage} alt={firstImage.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-r from-[#0a1628] via-transparent to-transparent" />
           </div>
         )}
@@ -2854,21 +2952,18 @@ export default function SlideRenderer({
               <div className="relative">
                 {/* Main circular image */}
                 <div className="w-72 h-72 rounded-full overflow-hidden border-4 shadow-2xl relative z-10" style={{ borderColor: colors.accent, boxShadow: `0 0 60px ${colors.accent}30` }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={allImages[0]!.url} alt={allImages[0]!.alt || slide.title} className="w-full h-full object-cover" />
+                  <SlideImg image={allImages[0]!} alt={allImages[0]!.alt || slide.title} className="w-full h-full object-cover" />
                 </div>
 
                 {/* Secondary circular images if multiple */}
                 {hasMultipleImages && allImages[1] && (
                   <div className="absolute -bottom-8 -left-16 w-32 h-32 rounded-full overflow-hidden border-2 shadow-xl z-20" style={{ borderColor: `${colors.accent}80` }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={allImages[1].url} alt={allImages[1].alt || ""} className="w-full h-full object-cover" />
+                    <SlideImg image={allImages[1]} alt={allImages[1].alt || ""} className="w-full h-full object-cover" />
                   </div>
                 )}
                 {allImages.length > 2 && allImages[2] && (
                   <div className="absolute -top-4 -right-12 w-24 h-24 rounded-full overflow-hidden border-2 shadow-xl z-20" style={{ borderColor: `${colors.accent}60` }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={allImages[2].url} alt={allImages[2].alt || ""} className="w-full h-full object-cover" />
+                    <SlideImg image={allImages[2]} alt={allImages[2].alt || ""} className="w-full h-full object-cover" />
                   </div>
                 )}
 
@@ -2931,8 +3026,7 @@ export default function SlideRenderer({
               <div className="w-[45%] relative">
                 <div className="rounded-3xl overflow-hidden shadow-2xl border" style={{ borderColor: `${colors.accent}30` }}>
                   <div className="aspect-video">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={allImages[0]!.url} alt={allImages[0]!.alt || slide.title} className="w-full h-full object-cover" />
+                    <SlideImg image={allImages[0]!} alt={allImages[0]!.alt || slide.title} className="w-full h-full object-cover" />
                   </div>
                 </div>
                 {/* Glow effect */}
@@ -2959,7 +3053,7 @@ export default function SlideRenderer({
                       className="flex-1 text-base leading-relaxed"
                       style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
                       isOwner={canEdit}
-                      isHovered={isHovered}
+                      disableHover={disableHover}
                       onDelete={() => onDeleteBullet(index, i)}
                     />
                   </div>
@@ -2968,7 +3062,7 @@ export default function SlideRenderer({
             </div>
           )}
 
-          {canEdit && isHovered && bulletPoints.length > 0 && (
+          {canEdit && isHovered && !disableHover && bulletPoints.length > 0 && (
             <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
               <Plus size={14} /> Add card
             </button>
@@ -3022,8 +3116,7 @@ export default function SlideRenderer({
 
                 {/* Hexagonal image container */}
                 <div className="relative w-72 h-80 overflow-hidden" style={{ clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)" }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={firstImage.url} alt={firstImage.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
+                  <SlideImg image={firstImage} alt={firstImage.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-purple-900/40 to-transparent" />
                 </div>
 
@@ -3042,8 +3135,7 @@ export default function SlideRenderer({
                 {/* Secondary smaller hexagon if multiple images */}
                 {hasMultipleImages && allImages[1] && (
                   <div className="absolute -bottom-8 -left-12 w-24 h-28 overflow-hidden shadow-xl" style={{ clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)" }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={allImages[1].url} alt={allImages[1].alt || ""} className="w-full h-full object-cover" />
+                    <SlideImg image={allImages[1]} alt={allImages[1].alt || ""} className="w-full h-full object-cover" />
                   </div>
                 )}
               </div>
@@ -3102,7 +3194,7 @@ export default function SlideRenderer({
                       className="flex-1 text-base leading-relaxed"
                       style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
                       isOwner={canEdit}
-                      isHovered={isHovered}
+                      disableHover={disableHover}
                       onDelete={() => onDeleteBullet(index, i)}
                     />
                   </div>
@@ -3111,19 +3203,20 @@ export default function SlideRenderer({
             </div>
           )}
 
-          {canEdit && isHovered && (
-            <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+          {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
               <Plus size={14} /> Add card
             </button>
-          )}
+          </div>
+        )}
         </div>
 
         {/* Image in corner glass frame */}
         {hasImage && (
           <div className="absolute bottom-8 right-8 w-56 h-40 backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-2 shadow-2xl">
             <div className="w-full h-full rounded-xl overflow-hidden">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={allImages[0]!.url} alt={allImages[0]!.alt || slide.title} className="w-full h-full object-cover" />
+              <SlideImg image={allImages[0]!} alt={allImages[0]!.alt || slide.title} className="w-full h-full object-cover" />
             </div>
           </div>
         )}
@@ -3141,8 +3234,7 @@ export default function SlideRenderer({
         {/* Full aurora effect background */}
         {hasImage && firstImage ? (
           <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={firstImage.url} alt={firstImage.alt || slide.title} className="absolute inset-0 w-full h-full object-cover opacity-40" />
+            <SlideImg image={firstImage} alt={firstImage.alt || slide.title} className="absolute inset-0 w-full h-full object-cover opacity-40" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0f0a1a] via-[#0f0a1a]/80 to-[#0f0a1a]/60" />
           </>
         ) : null}
@@ -3193,7 +3285,7 @@ export default function SlideRenderer({
                       className="text-base leading-relaxed"
                       style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
                       isOwner={canEdit}
-                      isHovered={isHovered}
+                      disableHover={disableHover}
                       onDelete={() => onDeleteBullet(index, i)}
                     />
                   </div>
@@ -3202,11 +3294,13 @@ export default function SlideRenderer({
             </div>
           )}
 
-          {canEdit && isHovered && (
-            <button onClick={() => onAddBullet(index)} className={`mt-6 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+          {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className={`mt-6 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
               <Plus size={14} /> Add point
             </button>
-          )}
+          </div>
+        )}
         </div>
 
         {/* Bottom aurora glow */}
@@ -3262,8 +3356,7 @@ export default function SlideRenderer({
 
                 {/* Diamond image container */}
                 <div className="relative w-72 h-72 overflow-hidden rotate-45 shadow-2xl" style={{ borderRadius: "24px" }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={firstImage.url} alt={firstImage.alt || slide.title} className="absolute inset-0 w-[141%] h-[141%] object-cover -rotate-45 scale-100" style={{ top: "-20%", left: "-20%" }} />
+                  <SlideImg image={firstImage} alt={firstImage.alt || slide.title} className="absolute inset-0 w-[141%] h-[141%] object-cover -rotate-45 scale-100" style={{ top: "-20%", left: "-20%" }} />
                   <div className="absolute inset-0 bg-gradient-to-t from-red-900/50 to-transparent -rotate-45" />
                 </div>
 
@@ -3273,8 +3366,7 @@ export default function SlideRenderer({
                 {/* Secondary smaller diamond if multiple images */}
                 {hasMultipleImages && allImages[1] && (
                   <div className="absolute -bottom-12 -left-8 w-20 h-20 overflow-hidden rotate-45 shadow-xl" style={{ borderRadius: "12px" }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={allImages[1].url} alt={allImages[1].alt || ""} className="w-[141%] h-[141%] object-cover -rotate-45" style={{ marginTop: "-20%", marginLeft: "-20%" }} />
+                    <SlideImg image={allImages[1]} alt={allImages[1].alt || ""} className="w-[141%] h-[141%] object-cover -rotate-45" style={{ marginTop: "-20%", marginLeft: "-20%" }} />
                   </div>
                 )}
               </div>
@@ -3337,7 +3429,7 @@ export default function SlideRenderer({
                         className="flex-1 text-base leading-relaxed"
                         style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
                         isOwner={canEdit}
-                        isHovered={isHovered}
+                        disableHover={disableHover}
                         onDelete={() => onDeleteBullet(index, i)}
                       />
                     </div>
@@ -3347,11 +3439,13 @@ export default function SlideRenderer({
             </div>
           )}
 
-          {canEdit && isHovered && (
-            <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+          {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
               <Plus size={14} /> Add card
             </button>
-          )}
+          </div>
+        )}
         </div>
 
         {/* Image in corner with ember frame */}
@@ -3359,8 +3453,7 @@ export default function SlideRenderer({
           <div className="absolute bottom-8 right-8 w-52 h-36">
             <div className="absolute -inset-1 bg-gradient-to-br from-red-500/30 to-orange-500/20 rounded-xl blur" />
             <div className="relative w-full h-full rounded-xl overflow-hidden border border-red-500/30">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={allImages[0]!.url} alt={allImages[0]!.alt || slide.title} className="w-full h-full object-cover" />
+              <SlideImg image={allImages[0]!} alt={allImages[0]!.alt || slide.title} className="w-full h-full object-cover" />
             </div>
           </div>
         )}
@@ -3410,16 +3503,14 @@ export default function SlideRenderer({
 
                 {/* Image with irregular border */}
                 <div className="relative w-full h-full rounded-2xl overflow-hidden border-2 border-red-500/30 shadow-2xl" style={{ boxShadow: "0 0 40px rgba(239, 68, 68, 0.3)" }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={firstImage.url} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
+                  <SlideImg image={firstImage} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#1a0a0a]/60 via-transparent to-transparent" />
                 </div>
 
                 {/* Secondary image overlay */}
                 {hasMultipleImages && allImages[1] && (
                   <div className="absolute -bottom-6 -left-6 w-28 h-20 rounded-xl overflow-hidden border border-orange-500/40 shadow-xl">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={allImages[1].url} alt={allImages[1].alt || ""} className="w-full h-full object-cover" />
+                    <SlideImg image={allImages[1]} alt={allImages[1].alt || ""} className="w-full h-full object-cover" />
                   </div>
                 )}
               </div>
@@ -3490,8 +3581,7 @@ export default function SlideRenderer({
 
                 {/* Arch image container */}
                 <div className="relative w-64 h-80 overflow-hidden shadow-2xl" style={{ borderRadius: "50% 50% 8px 8px / 40% 40% 8px 8px" }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={firstImage.url} alt={firstImage.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
+                  <SlideImg image={firstImage} alt={firstImage.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0c0a1d]/60 to-transparent" />
                 </div>
 
@@ -3501,8 +3591,7 @@ export default function SlideRenderer({
                 {/* Secondary smaller arch if multiple images */}
                 {hasMultipleImages && allImages[1] && (
                   <div className="absolute -bottom-4 -left-12 w-20 h-28 overflow-hidden shadow-xl border border-indigo-500/30" style={{ borderRadius: "50% 50% 4px 4px / 40% 40% 4px 4px" }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={allImages[1].url} alt={allImages[1].alt || ""} className="w-full h-full object-cover" />
+                    <SlideImg image={allImages[1]} alt={allImages[1].alt || ""} className="w-full h-full object-cover" />
                   </div>
                 )}
               </div>
@@ -3581,7 +3670,7 @@ export default function SlideRenderer({
                         className="flex-1 text-base leading-relaxed"
                         style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
                         isOwner={canEdit}
-                        isHovered={isHovered}
+                        disableHover={disableHover}
                         onDelete={() => onDeleteBullet(index, i)}
                       />
                     </div>
@@ -3591,11 +3680,13 @@ export default function SlideRenderer({
             </div>
           )}
 
-          {canEdit && isHovered && (
-            <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+          {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
               <Plus size={14} /> Add card
             </button>
-          )}
+          </div>
+        )}
         </div>
 
         {/* Image in elegant frame */}
@@ -3603,8 +3694,7 @@ export default function SlideRenderer({
           <div className="absolute bottom-8 right-8 w-48 h-32">
             <div className="absolute -inset-1 bg-gradient-to-br from-pink-400/20 to-indigo-500/15 rounded-2xl blur" />
             <div className="relative w-full h-full rounded-2xl overflow-hidden border border-pink-400/25">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={allImages[0]!.url} alt={allImages[0]!.alt || slide.title} className="w-full h-full object-cover" />
+              <SlideImg image={allImages[0]!} alt={allImages[0]!.alt || slide.title} className="w-full h-full object-cover" />
             </div>
           </div>
         )}
@@ -3655,16 +3745,14 @@ export default function SlideRenderer({
 
                 {/* Image with elegant rounded corners */}
                 <div className="relative w-full h-full rounded-3xl overflow-hidden border border-pink-400/25 shadow-2xl" style={{ boxShadow: "0 0 50px rgba(232, 121, 169, 0.2)" }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={firstImage.url} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
+                  <SlideImg image={firstImage} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0c0a1d]/50 via-transparent to-transparent" />
                 </div>
 
                 {/* Secondary image */}
                 {hasMultipleImages && allImages[1] && (
                   <div className="absolute -bottom-4 -left-4 w-24 h-16 rounded-xl overflow-hidden border border-indigo-500/30 shadow-xl">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={allImages[1].url} alt={allImages[1].alt || ""} className="w-full h-full object-cover" />
+                    <SlideImg image={allImages[1]} alt={allImages[1].alt || ""} className="w-full h-full object-cover" />
                   </div>
                 )}
               </div>
@@ -3730,21 +3818,18 @@ export default function SlideRenderer({
                 {/* Glitch offset layers */}
                 <div className="absolute inset-0 translate-x-1 -translate-y-0.5 opacity-50">
                   <div className="w-64 h-72 rounded-lg overflow-hidden">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={firstImage.url} alt="" className="w-full h-full object-cover" style={{ filter: "hue-rotate(90deg)" }} />
+                    <SlideImg image={firstImage} alt="" className="w-full h-full object-cover" style={{ filter: "hue-rotate(90deg)" }} />
                   </div>
                 </div>
                 <div className="absolute inset-0 -translate-x-1 translate-y-0.5 opacity-50">
                   <div className="w-64 h-72 rounded-lg overflow-hidden">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={firstImage.url} alt="" className="w-full h-full object-cover" style={{ filter: "hue-rotate(-90deg)" }} />
+                    <SlideImg image={firstImage} alt="" className="w-full h-full object-cover" style={{ filter: "hue-rotate(-90deg)" }} />
                   </div>
                 </div>
 
                 {/* Main image */}
                 <div className="relative w-64 h-72 rounded-lg overflow-hidden border-2 border-cyan-400/50 shadow-2xl" style={{ boxShadow: "0 0 30px rgba(0,255,255,0.4), 0 0 60px rgba(255,0,255,0.2)" }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={firstImage.url} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
+                  <SlideImg image={firstImage} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f]/70 to-transparent" />
                 </div>
 
@@ -3816,7 +3901,7 @@ export default function SlideRenderer({
                         className="flex-1 text-base leading-relaxed"
                         style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
                         isOwner={canEdit}
-                        isHovered={isHovered}
+                        disableHover={disableHover}
                         onDelete={() => onDeleteBullet(index, i)}
                       />
                     </div>
@@ -3826,11 +3911,13 @@ export default function SlideRenderer({
             </div>
           )}
 
-          {canEdit && isHovered && (
-            <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+          {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
               <Plus size={14} /> Add card
             </button>
-          )}
+          </div>
+        )}
         </div>
 
         {/* Image with neon frame */}
@@ -3838,7 +3925,7 @@ export default function SlideRenderer({
           <div className="absolute bottom-8 right-8 w-48 h-32">
             <div className="relative w-full h-full rounded-lg overflow-hidden border border-cyan-400/40" style={{ boxShadow: "0 0 20px rgba(0,255,255,0.3)" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={allImages[0]!.url} alt={allImages[0]!.alt || slide.title} className="w-full h-full object-cover" />
+              <SlideImg image={allImages[0]!} alt={allImages[0]!.alt || slide.title} className="w-full h-full object-cover" />
             </div>
           </div>
         )}
@@ -3892,7 +3979,7 @@ export default function SlideRenderer({
                           className="flex-1 text-base leading-relaxed"
                           style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
                           isOwner={canEdit}
-                          isHovered={isHovered}
+                          disableHover={disableHover}
                           onDelete={() => onDeleteBullet(index, i)}
                         />
                       </div>
@@ -3902,11 +3989,13 @@ export default function SlideRenderer({
               </div>
             )}
 
-            {canEdit && isHovered && (
-              <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+            {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
                 <Plus size={14} /> Add point
               </button>
-            )}
+          </div>
+        )}
           </div>
 
           {/* Holographic image frame */}
@@ -3918,8 +4007,7 @@ export default function SlideRenderer({
 
                 {/* Image */}
                 <div className="relative w-full h-full rounded-xl overflow-hidden border border-cyan-400/30" style={{ boxShadow: "0 0 30px rgba(0,255,255,0.3), 0 0 60px rgba(255,0,255,0.2)" }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={firstImage.url} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
+                  <SlideImg image={firstImage} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f]/60 to-transparent" />
 
                   {/* Holographic overlay */}
@@ -3989,7 +4077,7 @@ export default function SlideRenderer({
                       className="flex-1 text-lg leading-relaxed"
                       style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
                       isOwner={canEdit}
-                      isHovered={isHovered}
+                      disableHover={disableHover}
                       onDelete={() => onDeleteBullet(index, i)}
                     />
                   </div>
@@ -3997,11 +4085,13 @@ export default function SlideRenderer({
               </div>
             )}
 
-            {canEdit && isHovered && (
-              <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+            {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
                 <Plus size={14} /> Add point
               </button>
-            )}
+          </div>
+        )}
           </div>
 
           {/* Scan frame image */}
@@ -4013,8 +4103,7 @@ export default function SlideRenderer({
 
                 {/* Frame with scanning corners */}
                 <div className="relative w-full h-full rounded-xl overflow-hidden border-2 border-lime-400/40" style={{ boxShadow: "0 0 40px rgba(163,255,0,0.3), inset 0 0 30px rgba(163,255,0,0.1)" }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={firstImage.url} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
+                  <SlideImg image={firstImage} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
                   <div className={`absolute inset-0 ${colors.fullOverlay}`} />
 
                   {/* Scanning line animation */}
@@ -4083,7 +4172,7 @@ export default function SlideRenderer({
                         className="flex-1 text-base leading-relaxed"
                         style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
                         isOwner={canEdit}
-                        isHovered={isHovered}
+                        disableHover={disableHover}
                         onDelete={() => onDeleteBullet(index, i)}
                       />
                     </div>
@@ -4093,11 +4182,13 @@ export default function SlideRenderer({
             </div>
           )}
 
-          {canEdit && isHovered && (
-            <button onClick={() => onAddBullet(index)} className={`mt-6 mx-auto flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+          {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className={`mt-6 mx-auto flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
               <Plus size={14} /> Add card
             </button>
-          )}
+          </div>
+        )}
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-lime-400/40 to-transparent" />
@@ -4134,8 +4225,7 @@ export default function SlideRenderer({
                 <div className="absolute -inset-4 rounded-xl bg-gradient-to-r from-lime-400/15 via-emerald-400/20 to-lime-400/15 blur-2xl" />
 
                 <div className="relative w-full h-full rounded-xl overflow-hidden border border-lime-400/30" style={{ boxShadow: "0 0 50px rgba(163,255,0,0.25)" }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={firstImage.url} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
+                  <SlideImg image={firstImage} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
                   <div className={`absolute inset-0 ${colors.fullOverlay}`} />
 
                   {/* Transmission overlay */}
@@ -4177,7 +4267,7 @@ export default function SlideRenderer({
                       className="flex-1 text-lg leading-relaxed"
                       style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
                       isOwner={canEdit}
-                      isHovered={isHovered}
+                      disableHover={disableHover}
                       onDelete={() => onDeleteBullet(index, i)}
                     />
                   </div>
@@ -4185,11 +4275,13 @@ export default function SlideRenderer({
               </div>
             )}
 
-            {canEdit && isHovered && (
-              <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+            {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
                 <Plus size={14} /> Add point
               </button>
-            )}
+          </div>
+        )}
           </div>
         </div>
 
@@ -4222,7 +4314,7 @@ export default function SlideRenderer({
           <div className={`${hasImage ? "w-[55%]" : "w-full"} flex flex-col py-4 sm:py-6`}>
             <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-3 sm:mb-4 md:mb-5" />
             <EnhancedContent compact={false} />
-            {canEdit && isHovered && !slide.contentLayout && (
+            {canEdit && isHovered && !disableHover && !slide.contentLayout && (
               <button onClick={() => onAddBullet(index)} className={`mt-3 flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`} style={{ fontFamily: "'DM Sans', sans-serif" }}>
                 <Plus size={14} /> Add point
               </button>
@@ -4234,8 +4326,7 @@ export default function SlideRenderer({
             <div className="w-[45%] flex items-center justify-center p-2 sm:p-4 md:p-6">
               <div className="relative w-full aspect-[4/3]">
                 <div className="relative w-full h-full rounded-xl overflow-hidden border border-slate-200/60 shadow-xl shadow-slate-900/10">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={firstImage.url} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
+                  <SlideImg image={firstImage} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent pointer-events-none" />
                 </div>
                 {/* Premium corner accent */}
@@ -4273,7 +4364,7 @@ export default function SlideRenderer({
             <EnhancedContent compact={false} />
           </div>
 
-          {canEdit && isHovered && !slide.contentLayout && (
+          {canEdit && isHovered && !disableHover && !slide.contentLayout && (
             <button onClick={() => onAddBullet(index)} className={`mt-4 mx-auto flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors shrink-0`} style={{ fontFamily: "'DM Sans', sans-serif" }}>
               <Plus size={14} /> Add card
             </button>
@@ -4307,8 +4398,7 @@ export default function SlideRenderer({
             <div className="w-[42%] flex items-center justify-center p-2 sm:p-4 md:p-6">
               <div className="relative w-full aspect-[4/3]">
                 <div className="relative w-full h-full rounded-xl overflow-hidden shadow-2xl shadow-slate-900/15 border border-slate-200/50">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={firstImage.url} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
+                  <SlideImg image={firstImage} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-white/15 to-transparent pointer-events-none" />
                 </div>
                 {/* Premium accent line */}
@@ -4328,7 +4418,7 @@ export default function SlideRenderer({
 
             <EnhancedContent compact={false} />
 
-            {canEdit && isHovered && !slide.contentLayout && (
+            {canEdit && isHovered && !disableHover && !slide.contentLayout && (
               <button onClick={() => onAddBullet(index)} className={`mt-2 sm:mt-3 flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors shrink-0`} style={{ fontFamily: "'DM Sans', sans-serif" }}>
                 <Plus size={14} /> Add point
               </button>
@@ -4406,16 +4496,18 @@ export default function SlideRenderer({
                           className="flex-1 text-lg leading-relaxed"
                           style={{ fontFamily: theme.fonts.body.family, color: "#c4b5fd" }}
                           isOwner={canEdit}
-                          isHovered={isHovered}
+                          disableHover={disableHover}
                           onDelete={() => onDeleteBullet(index, i)}
                         />
                       </div>
                     ))}
-                    {canEdit && isHovered && (
-                      <button onClick={() => onAddBullet(index)} className="flex items-center gap-2 text-sm text-violet-400/60 hover:text-violet-400 transition-colors ml-14">
+                    {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className="flex items-center gap-2 text-sm text-violet-400/60 hover:text-violet-400 transition-colors ml-14">
                         <Plus size={14} /> Add point
                       </button>
-                    )}
+          </div>
+        )}
                   </div>
                 )}
               </div>
@@ -4468,16 +4560,18 @@ export default function SlideRenderer({
                         className="flex-1 text-lg leading-relaxed"
                         style={{ fontFamily: theme.fonts.body.family, color: "#c4b5fd" }}
                         isOwner={canEdit}
-                        isHovered={isHovered}
+                        disableHover={disableHover}
                         onDelete={() => onDeleteBullet(index, i)}
                       />
                     </div>
                   ))}
-                  {canEdit && isHovered && (
-                    <button onClick={() => onAddBullet(index)} className="flex items-center gap-2 text-sm text-violet-400/60 hover:text-violet-400 transition-colors ml-7">
+                  {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className="flex items-center gap-2 text-sm text-violet-400/60 hover:text-violet-400 transition-colors ml-7">
                       <Plus size={14} /> Add point
                     </button>
-                  )}
+          </div>
+        )}
                 </div>
               )}
             </div>
@@ -4493,8 +4587,7 @@ export default function SlideRenderer({
                 <div className="absolute -inset-4 border-2 border-violet-500/30 rounded-full" />
                 {/* Image */}
                 <div className="relative w-72 h-72 rounded-full overflow-hidden border-4 border-[#120a1f]/80">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={firstImage.url} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
+                  <SlideImg image={firstImage} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0a0612]/60 to-transparent" />
                 </div>
               </div>
@@ -4544,7 +4637,7 @@ export default function SlideRenderer({
                         className="flex-1 text-base leading-relaxed"
                         style={{ fontFamily: theme.fonts.body.family, color: "#c4b5fd" }}
                         isOwner={canEdit}
-                        isHovered={isHovered}
+                        disableHover={disableHover}
                         onDelete={() => onDeleteBullet(index, i)}
                       />
                     </div>
@@ -4554,11 +4647,13 @@ export default function SlideRenderer({
             </div>
           )}
 
-          {canEdit && isHovered && (
-            <button onClick={() => onAddBullet(index)} className="mt-6 mx-auto flex items-center gap-2 text-sm text-violet-400/60 hover:text-violet-400 transition-colors">
+          {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className="mt-6 mx-auto flex items-center gap-2 text-sm text-violet-400/60 hover:text-violet-400 transition-colors">
               <Plus size={14} /> Add card
             </button>
-          )}
+          </div>
+        )}
         </div>
       </div>
     );
@@ -4610,16 +4705,18 @@ export default function SlideRenderer({
                       className="flex-1 text-lg leading-relaxed"
                       style={{ fontFamily: theme.fonts.body.family, color: "#c4b5fd" }}
                       isOwner={canEdit}
-                      isHovered={isHovered}
+                      disableHover={disableHover}
                       onDelete={() => onDeleteBullet(index, i)}
                     />
                   </div>
                 ))}
-                {canEdit && isHovered && (
-                  <button onClick={() => onAddBullet(index)} className="flex items-center gap-2 text-sm text-violet-400/60 hover:text-violet-400 transition-colors ml-10">
+                {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className="flex items-center gap-2 text-sm text-violet-400/60 hover:text-violet-400 transition-colors ml-10">
                     <Plus size={14} /> Add point
                   </button>
-                )}
+          </div>
+        )}
               </div>
             )}
           </div>
@@ -4630,8 +4727,7 @@ export default function SlideRenderer({
               <div className="relative w-64 h-64">
                 <div className="absolute -inset-4 bg-gradient-to-r from-violet-500/30 to-fuchsia-500/30 rounded-full blur-2xl" />
                 <div className="relative w-full h-full rounded-full overflow-hidden border-2 border-violet-500/40">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={firstImage.url} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
+                  <SlideImg image={firstImage} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
                 </div>
               </div>
             </div>
@@ -4685,16 +4781,18 @@ export default function SlideRenderer({
                         className="flex-1 text-lg leading-relaxed pl-2"
                         style={{ fontFamily: theme.fonts.body.family, color: "#c4b5fd" }}
                         isOwner={canEdit}
-                        isHovered={isHovered}
+                        disableHover={disableHover}
                         onDelete={() => onDeleteBullet(index, i)}
                       />
                     </div>
                   ))}
-                  {canEdit && isHovered && (
-                    <button onClick={() => onAddBullet(index)} className="flex items-center gap-2 text-sm text-violet-400/60 hover:text-violet-400 transition-colors ml-4">
+                  {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className="flex items-center gap-2 text-sm text-violet-400/60 hover:text-violet-400 transition-colors ml-4">
                       <Plus size={14} /> Add point
                     </button>
-                  )}
+          </div>
+        )}
                 </div>
               )}
             </div>
@@ -4706,8 +4804,7 @@ export default function SlideRenderer({
               <div className="relative w-full max-w-md">
                 <div className="absolute -inset-4 bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 rounded-2xl blur-xl" />
                 <div className="relative rounded-2xl overflow-hidden border border-violet-500/30" style={{ aspectRatio: "4/3" }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={firstImage.url} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
+                  <SlideImg image={firstImage} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0a0612]/60 to-transparent" />
                 </div>
               </div>
@@ -4767,18 +4864,20 @@ export default function SlideRenderer({
                       className="text-lg leading-relaxed"
                       style={{ fontFamily: theme.fonts.body.family, color: "#c4b5fd" }}
                       isOwner={canEdit}
-                      isHovered={isHovered}
+                      disableHover={disableHover}
                       onDelete={() => onDeleteBullet(index, i)}
                     />
                     <div className="w-8 h-px bg-gradient-to-l from-transparent to-violet-500/50" />
                   </div>
                 ))}
               </div>
-              {canEdit && isHovered && (
-                <button onClick={() => onAddBullet(index)} className="mt-6 flex items-center gap-2 text-sm text-violet-400/60 hover:text-violet-400 transition-colors mx-auto">
+              {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className="mt-6 flex items-center gap-2 text-sm text-violet-400/60 hover:text-violet-400 transition-colors mx-auto">
                   <Plus size={14} /> Add point
                 </button>
-              )}
+          </div>
+        )}
             </div>
           )}
 
@@ -4839,16 +4938,18 @@ export default function SlideRenderer({
                       className="flex-1 text-lg leading-relaxed"
                       style={{ fontFamily: theme.fonts.body.family, color: "#a3a3a3" }}
                       isOwner={canEdit}
-                      isHovered={isHovered}
+                      disableHover={disableHover}
                       onDelete={() => onDeleteBullet(index, i)}
                     />
                   </div>
                 ))}
-                {canEdit && isHovered && (
-                  <button onClick={() => onAddBullet(index)} className="flex items-center gap-2 text-sm text-neutral-500 hover:text-white transition-colors ml-8">
+                {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className="flex items-center gap-2 text-sm text-neutral-500 hover:text-white transition-colors ml-8">
                     <Plus size={14} /> Add point
                   </button>
-                )}
+          </div>
+        )}
               </div>
             )}
           </div>
@@ -4902,16 +5003,18 @@ export default function SlideRenderer({
                       className="flex-1 text-lg leading-relaxed"
                       style={{ fontFamily: theme.fonts.body.family, color: "#a3a3a3" }}
                       isOwner={canEdit}
-                      isHovered={isHovered}
+                      disableHover={disableHover}
                       onDelete={() => onDeleteBullet(index, i)}
                     />
                   </div>
                 ))}
-                {canEdit && isHovered && (
-                  <button onClick={() => onAddBullet(index)} className="flex items-center gap-2 text-sm text-neutral-500 hover:text-white transition-colors ml-8">
+                {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className="flex items-center gap-2 text-sm text-neutral-500 hover:text-white transition-colors ml-8">
                     <Plus size={14} /> Add point
                   </button>
-                )}
+          </div>
+        )}
               </div>
             )}
           </div>
@@ -4921,8 +5024,7 @@ export default function SlideRenderer({
               <div className="relative w-full max-w-md">
                 <div className="absolute -inset-2 border border-white/20" />
                 <div className="relative overflow-hidden" style={{ aspectRatio: "4/3" }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={firstImage.url} alt={firstImage.alt || slide.title} className="w-full h-full object-cover grayscale" />
+                  <SlideImg image={firstImage} alt={firstImage.alt || slide.title} className="w-full h-full object-cover grayscale" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 </div>
               </div>
@@ -4967,7 +5069,7 @@ export default function SlideRenderer({
                     className="text-base leading-relaxed font-medium"
                     style={{ fontFamily: theme.fonts.body.family, color: i % 2 === 0 ? "#0a0a0a" : "#ffffff" }}
                     isOwner={canEdit}
-                    isHovered={isHovered}
+                    disableHover={disableHover}
                     onDelete={() => onDeleteBullet(index, i)}
                   />
                 </div>
@@ -4975,11 +5077,13 @@ export default function SlideRenderer({
             </div>
           )}
 
-          {canEdit && isHovered && (
-            <button onClick={() => onAddBullet(index)} className="mt-6 mx-auto flex items-center gap-2 text-sm text-neutral-500 hover:text-white transition-colors">
+          {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className="mt-6 mx-auto flex items-center gap-2 text-sm text-neutral-500 hover:text-white transition-colors">
               <Plus size={14} /> Add block
             </button>
-          )}
+          </div>
+        )}
         </div>
       </div>
     );
@@ -5038,16 +5142,18 @@ export default function SlideRenderer({
                     className="text-lg leading-relaxed"
                     style={{ fontFamily: theme.fonts.body.family, color: "#a3a3a3" }}
                     isOwner={canEdit}
-                    isHovered={isHovered}
+                    disableHover={disableHover}
                     onDelete={() => onDeleteBullet(index, i)}
                   />
                 </div>
               ))}
-              {canEdit && isHovered && (
-                <button onClick={() => onAddBullet(index)} className="mt-4 flex items-center gap-2 text-sm text-neutral-500 hover:text-white transition-colors mx-auto">
+              {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className="mt-4 flex items-center gap-2 text-sm text-neutral-500 hover:text-white transition-colors mx-auto">
                   <Plus size={14} /> Add point
                 </button>
-              )}
+          </div>
+        )}
             </div>
           )}
         </div>
@@ -5094,16 +5200,18 @@ export default function SlideRenderer({
                       className="flex-1 text-lg leading-relaxed"
                       style={{ fontFamily: theme.fonts.body.family, color: "#a3a3a3" }}
                       isOwner={canEdit}
-                      isHovered={isHovered}
+                      disableHover={disableHover}
                       onDelete={() => onDeleteBullet(index, i)}
                     />
                   </div>
                 ))}
-                {canEdit && isHovered && (
-                  <button onClick={() => onAddBullet(index)} className="flex items-center gap-2 text-sm text-neutral-500 hover:text-white transition-colors ml-7">
+                {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className="flex items-center gap-2 text-sm text-neutral-500 hover:text-white transition-colors ml-7">
                     <Plus size={14} /> Add point
                   </button>
-                )}
+          </div>
+        )}
               </div>
             )}
           </div>
@@ -5113,8 +5221,7 @@ export default function SlideRenderer({
               <div className="relative w-full max-w-sm">
                 <div className="absolute -top-3 -left-3 w-full h-full border-2 border-white" />
                 <div className="relative overflow-hidden" style={{ aspectRatio: "3/4" }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={firstImage.url} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
+                  <SlideImg image={firstImage} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
                 </div>
               </div>
             </div>
@@ -5159,7 +5266,7 @@ export default function SlideRenderer({
                       className="flex-1 text-xl leading-relaxed font-medium"
                       style={{ fontFamily: theme.fonts.body.family, color: "#d4d4d4" }}
                       isOwner={canEdit}
-                      isHovered={isHovered}
+                      disableHover={disableHover}
                       onDelete={() => onDeleteBullet(index, i)}
                     />
                   </div>
@@ -5168,11 +5275,13 @@ export default function SlideRenderer({
               </div>
             )}
 
-            {canEdit && isHovered && (
-              <button onClick={() => onAddBullet(index)} className="mt-4 flex items-center gap-2 text-sm text-neutral-500 hover:text-white transition-colors">
+            {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className="mt-4 flex items-center gap-2 text-sm text-neutral-500 hover:text-white transition-colors">
                 <Plus size={14} /> Add item
               </button>
-            )}
+          </div>
+        )}
           </div>
         </div>
       </div>
@@ -5227,16 +5336,18 @@ export default function SlideRenderer({
                           className="flex-1 text-lg leading-relaxed"
                           style={{ fontFamily: theme.fonts.body.family, color: "#d8b4fe" }}
                           isOwner={canEdit}
-                          isHovered={isHovered}
+                          disableHover={disableHover}
                           onDelete={() => onDeleteBullet(index, i)}
                         />
                       </div>
                     ))}
-                    {canEdit && isHovered && (
-                      <button onClick={() => onAddBullet(index)} className="flex items-center gap-2 text-sm text-fuchsia-400/60 hover:text-fuchsia-400 transition-colors ml-7">
+                    {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className="flex items-center gap-2 text-sm text-fuchsia-400/60 hover:text-fuchsia-400 transition-colors ml-7">
                         <Plus size={14} /> Add point
                       </button>
-                    )}
+          </div>
+        )}
                   </div>
                 )}
               </div>
@@ -5289,7 +5400,7 @@ export default function SlideRenderer({
                         className="flex-1 text-base leading-relaxed"
                         style={{ fontFamily: theme.fonts.body.family, color: "#d8b4fe" }}
                         isOwner={canEdit}
-                        isHovered={isHovered}
+                        disableHover={disableHover}
                         onDelete={() => onDeleteBullet(index, i)}
                       />
                     </div>
@@ -5299,11 +5410,13 @@ export default function SlideRenderer({
             </div>
           )}
 
-          {canEdit && isHovered && (
-            <button onClick={() => onAddBullet(index)} className="mt-6 mx-auto flex items-center gap-2 text-sm text-fuchsia-400/60 hover:text-fuchsia-400 transition-colors">
+          {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className="mt-6 mx-auto flex items-center gap-2 text-sm text-fuchsia-400/60 hover:text-fuchsia-400 transition-colors">
               <Plus size={14} /> Add card
             </button>
-          )}
+          </div>
+        )}
         </div>
       </div>
     );
@@ -5348,16 +5461,18 @@ export default function SlideRenderer({
                       className="flex-1 text-lg leading-relaxed"
                       style={{ fontFamily: theme.fonts.body.family, color: "#d8b4fe" }}
                       isOwner={canEdit}
-                      isHovered={isHovered}
+                      disableHover={disableHover}
                       onDelete={() => onDeleteBullet(index, i)}
                     />
                   </div>
                 ))}
-                {canEdit && isHovered && (
-                  <button onClick={() => onAddBullet(index)} className="flex items-center gap-2 text-sm text-fuchsia-400/60 hover:text-fuchsia-400 transition-colors ml-10">
+                {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className="flex items-center gap-2 text-sm text-fuchsia-400/60 hover:text-fuchsia-400 transition-colors ml-10">
                     <Plus size={14} /> Add point
                   </button>
-                )}
+          </div>
+        )}
               </div>
             )}
           </div>
@@ -5367,8 +5482,7 @@ export default function SlideRenderer({
               <div className="relative w-full max-w-sm">
                 <div className="absolute -inset-3 bg-gradient-to-r from-fuchsia-500/30 to-pink-400/30 rounded-3xl blur-xl" />
                 <div className="relative rounded-3xl overflow-hidden border-2 border-fuchsia-500/30" style={{ aspectRatio: "3/4" }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={firstImage.url} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
+                  <SlideImg image={firstImage} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#1a1625]/60 to-transparent" />
                 </div>
               </div>
@@ -5414,7 +5528,7 @@ export default function SlideRenderer({
                       className="text-base"
                       style={{ fontFamily: theme.fonts.body.family, color: "#d8b4fe" }}
                       isOwner={canEdit}
-                      isHovered={isHovered}
+                      disableHover={disableHover}
                       onDelete={() => onDeleteBullet(index, i)}
                     />
                   </div>
@@ -5423,11 +5537,13 @@ export default function SlideRenderer({
             </div>
           )}
 
-          {canEdit && isHovered && (
-            <button onClick={() => onAddBullet(index)} className="mt-6 flex items-center gap-2 text-sm text-fuchsia-400/60 hover:text-fuchsia-400 transition-colors">
+          {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className="mt-6 flex items-center gap-2 text-sm text-fuchsia-400/60 hover:text-fuchsia-400 transition-colors">
               <Plus size={14} /> Add bubble
             </button>
-          )}
+          </div>
+        )}
         </div>
       </div>
     );
@@ -5478,17 +5594,19 @@ export default function SlideRenderer({
                     className="text-lg leading-relaxed"
                     style={{ fontFamily: theme.fonts.body.family, color: "#d8b4fe" }}
                     isOwner={canEdit}
-                    isHovered={isHovered}
+                    disableHover={disableHover}
                     onDelete={() => onDeleteBullet(index, i)}
                   />
                   <div className="w-1.5 h-1.5 rounded-full bg-pink-400/60" />
                 </div>
               ))}
-              {canEdit && isHovered && (
-                <button onClick={() => onAddBullet(index)} className="mt-4 flex items-center gap-2 text-sm text-fuchsia-400/60 hover:text-fuchsia-400 transition-colors mx-auto">
+              {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className="mt-4 flex items-center gap-2 text-sm text-fuchsia-400/60 hover:text-fuchsia-400 transition-colors mx-auto">
                   <Plus size={14} /> Add point
                 </button>
-              )}
+          </div>
+        )}
             </div>
           )}
         </div>
@@ -5535,7 +5653,7 @@ export default function SlideRenderer({
                         className="flex-1 text-lg leading-relaxed"
                         style={{ fontFamily: theme.fonts.body.family, color: "#d8b4fe" }}
                         isOwner={canEdit}
-                        isHovered={isHovered}
+                        disableHover={disableHover}
                         onDelete={() => onDeleteBullet(index, i)}
                       />
                     </div>
@@ -5544,11 +5662,13 @@ export default function SlideRenderer({
               </div>
             )}
 
-            {canEdit && isHovered && (
-              <button onClick={() => onAddBullet(index)} className="mt-4 flex items-center gap-2 text-sm text-fuchsia-400/60 hover:text-fuchsia-400 transition-colors mx-auto">
+            {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className="mt-4 flex items-center gap-2 text-sm text-fuchsia-400/60 hover:text-fuchsia-400 transition-colors mx-auto">
                 <Plus size={14} /> Add item
               </button>
-            )}
+          </div>
+        )}
           </div>
         </div>
       </div>
@@ -5600,7 +5720,7 @@ export default function SlideRenderer({
                       className="flex-1 text-sm sm:text-base md:text-lg leading-relaxed font-mono"
                       style={{ fontFamily: theme.fonts.body.family, color: "#39ff14" }}
                       isOwner={canEdit}
-                      isHovered={isHovered}
+                      disableHover={disableHover}
                       onDelete={() => onDeleteBullet(index, i)}
                     />
                   </div>
@@ -5608,11 +5728,13 @@ export default function SlideRenderer({
               </div>
             )}
 
-            {canEdit && isHovered && (
-              <button onClick={() => onAddBullet(index)} className="mt-3 sm:mt-4 flex items-center gap-2 text-xs sm:text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
+            {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className="mt-3 sm:mt-4 flex items-center gap-2 text-xs sm:text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
                 <Plus size={12} className="sm:w-[14px] sm:h-[14px]" /> Add entry
               </button>
-            )}
+          </div>
+        )}
 
             <div className="mt-4 sm:mt-6 md:mt-8 flex items-center gap-2">
               <span className="text-[#00ff41]/60 font-mono text-xs sm:text-sm">$</span>
@@ -5670,7 +5792,7 @@ export default function SlideRenderer({
                       className="text-sm sm:text-base leading-relaxed"
                       style={{ fontFamily: theme.fonts.body.family, color: "#39ff14" }}
                       isOwner={canEdit}
-                      isHovered={isHovered}
+                      disableHover={disableHover}
                       onDelete={() => onDeleteBullet(index, i)}
                     />
                   </div>
@@ -5679,11 +5801,13 @@ export default function SlideRenderer({
             </div>
           )}
 
-          {canEdit && isHovered && (
-            <button onClick={() => onAddBullet(index)} className="mt-4 sm:mt-6 flex items-center gap-2 text-xs sm:text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
+          {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className="mt-4 sm:mt-6 flex items-center gap-2 text-xs sm:text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
               <Plus size={12} className="sm:w-[14px] sm:h-[14px]" /> Add module
             </button>
-          )}
+          </div>
+        )}
         </div>
       </div>
     );
@@ -5744,7 +5868,7 @@ export default function SlideRenderer({
                             className="flex-1 text-sm sm:text-base leading-relaxed"
                             style={{ fontFamily: theme.fonts.body.family, color: "#39ff14" }}
                             isOwner={canEdit}
-                            isHovered={isHovered}
+                            disableHover={disableHover}
                             onDelete={() => onDeleteBullet(index, i)}
                           />
                         </div>
@@ -5752,11 +5876,13 @@ export default function SlideRenderer({
                     </div>
                   )}
 
-                  {canEdit && isHovered && (
-                    <button onClick={() => onAddBullet(index)} className="mt-3 sm:mt-4 flex items-center gap-2 text-xs sm:text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
+                  {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className="mt-3 sm:mt-4 flex items-center gap-2 text-xs sm:text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
                       <Plus size={12} className="sm:w-[14px] sm:h-[14px]" /> Add line
                     </button>
-                  )}
+          </div>
+        )}
                 </div>
               </div>
             </div>
@@ -5809,7 +5935,7 @@ export default function SlideRenderer({
                         className="flex-1 text-sm sm:text-base md:text-lg leading-relaxed"
                         style={{ fontFamily: theme.fonts.body.family, color: "#39ff14" }}
                         isOwner={canEdit}
-                        isHovered={isHovered}
+                        disableHover={disableHover}
                         onDelete={() => onDeleteBullet(index, i)}
                       />
                     </div>
@@ -5818,11 +5944,13 @@ export default function SlideRenderer({
               )}
             </div>
 
-            {canEdit && isHovered && (
-              <button onClick={() => onAddBullet(index)} className="mt-4 sm:mt-6 ml-2 sm:ml-3 md:ml-4 flex items-center gap-2 text-xs sm:text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
+            {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className="mt-4 sm:mt-6 ml-2 sm:ml-3 md:ml-4 flex items-center gap-2 text-xs sm:text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
                 <Plus size={12} className="sm:w-[14px] sm:h-[14px]" /> Add command
               </button>
-            )}
+          </div>
+        )}
 
             {/* Blinking cursor */}
             <div className="mt-4 sm:mt-6 md:mt-8 flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm md:text-base">
@@ -5900,18 +6028,20 @@ export default function SlideRenderer({
                       className="text-sm sm:text-base leading-relaxed"
                       style={{ fontFamily: theme.fonts.body.family, color: "#39ff14" }}
                       isOwner={canEdit}
-                      isHovered={isHovered}
+                      disableHover={disableHover}
                       onDelete={() => onDeleteBullet(index, i)}
                     />
                   </div>
                 </div>
               ))}
 
-              {canEdit && isHovered && (
-                <button onClick={() => onAddBullet(index)} className="flex items-center gap-2 text-xs sm:text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
+              {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className="flex items-center gap-2 text-xs sm:text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
                   <Plus size={12} className="sm:w-[14px] sm:h-[14px]" /> Add node
                 </button>
-              )}
+          </div>
+        )}
             </div>
           </div>
         </div>
@@ -5966,7 +6096,7 @@ export default function SlideRenderer({
                       className="flex-1 text-sm sm:text-base md:text-lg leading-relaxed"
                       style={{ fontFamily: theme.fonts.body.family, color: "#39ff14" }}
                       isOwner={canEdit}
-                      isHovered={isHovered}
+                      disableHover={disableHover}
                       onDelete={() => onDeleteBullet(index, i)}
                     />
                   </div>
@@ -5974,11 +6104,13 @@ export default function SlideRenderer({
               </div>
             )}
 
-            {canEdit && isHovered && (
-              <button onClick={() => onAddBullet(index)} className="mt-4 sm:mt-6 flex items-center gap-2 text-xs sm:text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
+            {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered && !disableHover ? "opacity-100" : "opacity-0"} ${isHovered && !disableHover ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className="mt-4 sm:mt-6 flex items-center gap-2 text-xs sm:text-sm text-[#00ff41]/60 hover:text-[#00ff41] transition-colors">
                 <Plus size={12} className="sm:w-[14px] sm:h-[14px]" /> Add data
               </button>
-            )}
+          </div>
+        )}
           </div>
 
           {/* Right side - Image or decorative (hidden on mobile) */}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { X, Check, Crop, Circle, Square, Hexagon, Move, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
+import { Check, Crop, ZoomIn, RotateCcw } from "lucide-react";
 import type { ImageBlock } from "./types";
 import type { Theme } from "~/lib/themes";
 
@@ -11,8 +11,6 @@ interface ImageEditorProps {
   onCancel: () => void;
   theme?: Theme;
 }
-
-type MaskType = "none" | "circle" | "rounded" | "blob" | "hexagon";
 
 interface CropArea {
   x: number;
@@ -33,8 +31,7 @@ function isColorDark(hexColor: string): boolean {
 }
 
 export default function ImageEditor({ block, onSave, onCancel, theme }: ImageEditorProps) {
-  const [activeTab, setActiveTab] = useState<"crop" | "mask" | "adjust">("crop");
-  const [mask, setMask] = useState<MaskType>(block.mask || "none");
+  const [activeTab, setActiveTab] = useState<"crop" | "adjust">("crop");
   const [cropArea, setCropArea] = useState<CropArea>(block.crop || { x: 0, y: 0, width: 100, height: 100 });
   const [brightness, setBrightness] = useState(block.filter?.brightness || 100);
   const [contrast, setContrast] = useState(block.filter?.contrast || 100);
@@ -108,7 +105,6 @@ export default function ImageEditor({ block, onSave, onCancel, theme }: ImageEdi
   const handleSave = () => {
     const updatedBlock: ImageBlock = {
       ...block,
-      mask,
       crop: cropArea,
       filter: {
         brightness,
@@ -126,27 +122,9 @@ export default function ImageEditor({ block, onSave, onCancel, theme }: ImageEdi
     setSaturation(100);
   };
 
-  const maskOptions: { type: MaskType; label: string; icon: React.ReactNode }[] = [
-    { type: "none", label: "None", icon: <Square size={20} /> },
-    { type: "rounded", label: "Rounded", icon: <Square size={20} className="rounded" /> },
-    { type: "circle", label: "Circle", icon: <Circle size={20} /> },
-    { type: "hexagon", label: "Hexagon", icon: <Hexagon size={20} /> },
-    { type: "blob", label: "Blob", icon: <div className="w-5 h-5 bg-current rounded-[30%_70%_70%_30%/30%_30%_70%_70%]" /> },
-  ];
-
   const imageStyle: React.CSSProperties = {
     filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`,
     objectFit,
-  };
-
-  const getMaskClass = (m: MaskType) => {
-    switch (m) {
-      case "circle": return "rounded-full";
-      case "rounded": return "rounded-2xl";
-      case "blob": return "rounded-[30%_70%_70%_30%/30%_30%_70%_70%]";
-      case "hexagon": return "clip-path-hexagon";
-      default: return "";
-    }
   };
 
   // Theme-aware colors
@@ -215,18 +193,6 @@ export default function ImageEditor({ block, onSave, onCancel, theme }: ImageEdi
             Crop
           </button>
           <button
-            onClick={() => setActiveTab("mask")}
-            className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors"
-            style={{
-              backgroundColor: activeTab === "mask" ? colors.surface : "transparent",
-              color: activeTab === "mask" ? colors.text : colors.textMuted,
-              borderBottom: activeTab === "mask" ? `2px solid ${colors.primary}` : "2px solid transparent",
-            }}
-          >
-            <Circle size={18} />
-            Mask
-          </button>
-          <button
             onClick={() => setActiveTab("adjust")}
             className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors"
             style={{
@@ -254,7 +220,7 @@ export default function ImageEditor({ block, onSave, onCancel, theme }: ImageEdi
                   ref={imageRef}
                   src={block.url}
                   alt={block.alt}
-                  className={`w-full h-full ${getMaskClass(mask)}`}
+                  className="w-full h-full"
                   style={imageStyle}
                 />
                 
@@ -375,29 +341,6 @@ export default function ImageEditor({ block, onSave, onCancel, theme }: ImageEdi
                         }}
                       />
                     </div>
-                  </div>
-                </div>
-              )}
-
-              {activeTab === "mask" && (
-                <div className="space-y-4">
-                  <h3 className="text-sm font-semibold" style={{ color: colors.text }}>Shape Mask</h3>
-                  <div className="grid grid-cols-3 gap-2">
-                    {maskOptions.map((option) => (
-                      <button
-                        key={option.type}
-                        onClick={() => setMask(option.type)}
-                        className="flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-colors"
-                        style={{
-                          borderColor: mask === option.type ? colors.primary : colors.border,
-                          backgroundColor: mask === option.type ? `${colors.primary}15` : "transparent",
-                          color: mask === option.type ? colors.primary : colors.textMuted,
-                        }}
-                      >
-                        {option.icon}
-                        <span className="text-xs">{option.label}</span>
-                      </button>
-                    ))}
                   </div>
                 </div>
               )}

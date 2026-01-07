@@ -23,23 +23,63 @@ interface AIImageGeneratorProps {
   subscriptionPlan?: string | null;
 }
 
-type ImageModel = "openai" | "gemini";
+type ImageModel =
+  | "gemini-2.5-flash-image"
+  | "gemini-3-pro-image-preview"
+  | "imagen-4.0-generate-001"
+  | "imagen-4.0-ultra-generate-001"
+  | "imagen-4.0-fast-generate-001"
+  | "openai"
+  | "openai-hd";
 type ImageQuality = "standard" | "hd";
 type ImageSize = "1024x1024" | "1792x1024" | "1024x1792";
 type ImageStyle = "vivid" | "natural";
 
-const MODEL_INFO = {
+const MODEL_INFO: Record<
+  ImageModel,
+  { name: string; description: string; standardCredits: number; hdCredits: number }
+> = {
+  "gemini-2.5-flash-image": {
+    name: "Nano Banana (Gemini 2.5 Flash)",
+    description: "Fast, efficient generation",
+    standardCredits: CREDIT_COSTS.GEMINI_IMAGEN,
+    hdCredits: CREDIT_COSTS.GEMINI_IMAGEN_HD,
+  },
+  "gemini-3-pro-image-preview": {
+    name: "Nano Banana Pro (Gemini 3 Pro)",
+    description: "Higher quality Gemini images",
+    standardCredits: CREDIT_COSTS.GEMINI_IMAGEN,
+    hdCredits: CREDIT_COSTS.GEMINI_IMAGEN_HD,
+  },
+  "imagen-4.0-generate-001": {
+    name: "Imagen 4",
+    description: "Google's latest image model",
+    standardCredits: CREDIT_COSTS.GEMINI_IMAGEN,
+    hdCredits: CREDIT_COSTS.GEMINI_IMAGEN_HD,
+  },
+  "imagen-4.0-ultra-generate-001": {
+    name: "Imagen 4 Ultra",
+    description: "Highest quality Imagen",
+    standardCredits: CREDIT_COSTS.IMAGE_HD,
+    hdCredits: CREDIT_COSTS.IMAGE_HD,
+  },
+  "imagen-4.0-fast-generate-001": {
+    name: "Imagen 4 Fast",
+    description: "Quick generation, good quality",
+    standardCredits: CREDIT_COSTS.GEMINI_IMAGEN,
+    hdCredits: CREDIT_COSTS.GEMINI_IMAGEN,
+  },
   openai: {
-    name: "OpenAI DALL-E 3",
+    name: "DALL-E 3",
     description: "High quality, creative images",
     standardCredits: CREDIT_COSTS.IMAGE_BASIC,
     hdCredits: CREDIT_COSTS.IMAGE_HD,
   },
-  gemini: {
-    name: "Google Gemini Imagen",
-    description: "Fast, efficient generation",
-    standardCredits: CREDIT_COSTS.GEMINI_IMAGEN,
-    hdCredits: CREDIT_COSTS.GEMINI_IMAGEN_HD,
+  "openai-hd": {
+    name: "DALL-E 3 HD",
+    description: "Highest quality OpenAI images",
+    standardCredits: CREDIT_COSTS.IMAGE_HD,
+    hdCredits: CREDIT_COSTS.IMAGE_HD,
   },
 };
 
@@ -51,7 +91,7 @@ export default function AIImageGenerator({
   subscriptionPlan,
 }: AIImageGeneratorProps) {
   const [prompt, setPrompt] = useState("");
-  const [model, setModel] = useState<ImageModel>("openai");
+  const [model, setModel] = useState<ImageModel>("gemini-2.5-flash-image");
   const [quality, setQuality] = useState<ImageQuality>("standard");
   const [size, setSize] = useState<ImageSize>("1024x1024");
   const [style, setStyle] = useState<ImageStyle>("vivid");
@@ -194,7 +234,7 @@ export default function AIImageGenerator({
             AI Model
           </label>
           <div className="grid grid-cols-2 gap-3">
-            {(Object.keys(MODEL_INFO) as ImageModel[]).map((m) => (
+            {(Object.keys(MODEL_INFO) as ImageModel[]).slice(0, 4).map((m) => (
               <button
                 key={m}
                 onClick={() => setModel(m)}
@@ -209,9 +249,7 @@ export default function AIImageGenerator({
                   <span className="text-sm font-semibold text-slate-900 dark:text-white">
                     {MODEL_INFO[m].name}
                   </span>
-                  {model === m && (
-                    <div className="w-2 h-2 rounded-full bg-[#06b6d4]" />
-                  )}
+                  {model === m && <div className="w-2 h-2 rounded-full bg-[#06b6d4]" />}
                 </div>
                 <p className="text-xs text-slate-500 dark:text-neutral-400">
                   {MODEL_INFO[m].description}
@@ -222,12 +260,38 @@ export default function AIImageGenerator({
               </button>
             ))}
           </div>
+          {/* Fifth model in full width */}
+          {(Object.keys(MODEL_INFO) as ImageModel[]).slice(4).map((m) => (
+            <button
+              key={m}
+              onClick={() => setModel(m)}
+              className={cn(
+                "w-full mt-2 p-3 rounded-xl border-2 text-left transition",
+                model === m
+                  ? "border-[#06b6d4] bg-[#06b6d4]/5"
+                  : "border-slate-200 dark:border-neutral-800 hover:border-slate-300"
+              )}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-sm font-semibold text-slate-900 dark:text-white">
+                  {MODEL_INFO[m].name}
+                </span>
+                {model === m && <div className="w-2 h-2 rounded-full bg-[#06b6d4]" />}
+              </div>
+              <p className="text-xs text-slate-500 dark:text-neutral-400">
+                {MODEL_INFO[m].description}
+              </p>
+              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                {MODEL_INFO[m].standardCredits}-{MODEL_INFO[m].hdCredits} credits
+              </p>
+            </button>
+          ))}
         </div>
       )}
 
       {/* Options */}
       {!compact && (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           {/* Quality */}
           <div>
             <label className="block text-xs font-medium text-slate-500 dark:text-neutral-400 mb-1.5">
@@ -265,51 +329,21 @@ export default function AIImageGenerator({
             <label className="block text-xs font-medium text-slate-500 dark:text-neutral-400 mb-1.5">
               Size
             </label>
-            <select
-              value={size}
-              onChange={(e) => setSize(e.target.value as ImageSize)}
-              className="w-full px-3 py-2 rounded-lg text-xs bg-slate-100 dark:bg-neutral-800 border-0 text-slate-700 dark:text-slate-300"
-            >
-              {sizeOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label} ({opt.aspect})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Style (OpenAI only) */}
-          <div>
-            <label className="block text-xs font-medium text-slate-500 dark:text-neutral-400 mb-1.5">
-              Style {model !== "openai" && <span className="text-slate-400">(OpenAI only)</span>}
-            </label>
             <div className="flex gap-2">
-              <button
-                onClick={() => setStyle("vivid")}
-                disabled={model !== "openai"}
-                className={cn(
-                  "flex-1 px-3 py-2 rounded-lg text-xs font-medium transition",
-                  style === "vivid" && model === "openai"
-                    ? "bg-[#06b6d4] text-white"
-                    : "bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300",
-                  model !== "openai" && "opacity-50 cursor-not-allowed"
-                )}
-              >
-                Vivid
-              </button>
-              <button
-                onClick={() => setStyle("natural")}
-                disabled={model !== "openai"}
-                className={cn(
-                  "flex-1 px-3 py-2 rounded-lg text-xs font-medium transition",
-                  style === "natural" && model === "openai"
-                    ? "bg-[#06b6d4] text-white"
-                    : "bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300",
-                  model !== "openai" && "opacity-50 cursor-not-allowed"
-                )}
-              >
-                Natural
-              </button>
+              {sizeOptions.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setSize(opt.value)}
+                  className={cn(
+                    "flex-1 px-3 py-2 rounded-lg text-xs font-medium transition",
+                    size === opt.value
+                      ? "bg-[#06b6d4] text-white"
+                      : "bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                  )}
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
           </div>
         </div>

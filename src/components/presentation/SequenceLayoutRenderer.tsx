@@ -32,6 +32,8 @@ interface SequenceLayoutRendererProps {
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
+  /** When true, disables hover effects globally (e.g., when any text is being edited) */
+  disableHover?: boolean;
 }
 
 export default function SequenceLayoutRenderer({
@@ -52,6 +54,7 @@ export default function SequenceLayoutRenderer({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
+  disableHover = false,
 }: SequenceLayoutRendererProps) {
   const layout = layoutId
     ? getSequenceLayoutById(layoutId) || getRecommendedSequenceLayout(items.length, isNarrowSpace)
@@ -124,6 +127,7 @@ export default function SequenceLayoutRenderer({
               }}
               isOwner={isOwner}
               isHovered={isHovered}
+              disableHover={disableHover}
             />
           ) : (
             <h3
@@ -156,6 +160,7 @@ export default function SequenceLayoutRenderer({
             }}
             isOwner={isOwner}
             isHovered={isHovered}
+              disableHover={disableHover}
           />
         ) : (
           <p
