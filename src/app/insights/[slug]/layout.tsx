@@ -1,109 +1,81 @@
 import type { Metadata } from "next";
 import { db } from "~/server/db";
-import { Breadcrumbs } from "~/components/Breadcrumbs";
+import { notFound } from "next/navigation";
 
-export async function generateMetadata({
-  params,
-}: {
+type Props = {
   params: { slug: string };
-}): Promise<Metadata> {
+  children: React.ReactNode;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const post = await db.insightPost.findUnique({
-      where: { slug: params.slug },
+      where: { slug: params.slug, isPublished: true },
+      select: {
+        title: true,
+        excerpt: true,
+        coverImage: true,
+        category: true,
+        tags: true,
+        author: true,
+        publishedAt: true,
+        updatedAt: true,
+      },
     });
 
     if (!post) {
       return {
-        title: "Post Not Found | PPTMaster Insights",
-        description: "The article you're looking for could not be found.",
+        title: "Article Not Found",
+        description: "The requested article could not be found.",
       };
     }
 
-    const title = `${post.title} | PPT Master Insights`;
+    const title = `${post.title} | PPTMaster Insights`;
     const description = post.excerpt;
-    const imageUrl = post.coverImage || "https://www.pptmaster.app/og-image.jpeg";
     const url = `https://www.pptmaster.app/insights/${params.slug}`;
 
     return {
       title,
       description,
+      alternates: {
+        canonical: url,
+      },
       openGraph: {
-        title: post.title,
+        title,
         description,
         url,
-        siteName: "PPT Master - AI PowerPoint Generator",
+        type: "article",
         images: [
           {
-            url: imageUrl,
+            url: post.coverImage || "/og-image.jpeg",
             width: 1200,
             height: 630,
             alt: post.title,
           },
         ],
-        type: "article",
-        publishedTime: post.publishedAt?.toISOString(),
+        publishedTime: post.publishedAt?.toISOString() || post.updatedAt.toISOString(),
         modifiedTime: post.updatedAt.toISOString(),
         authors: [post.author],
-        tags: post.tags,
-        locale: "en_US",
+        tags: [post.category, ...post.tags],
       },
       twitter: {
         card: "summary_large_image",
-        title: post.title,
+        title,
         description,
-        images: [imageUrl],
-        creator: "@pptmaster",
-        site: "@pptmaster",
+        images: [post.coverImage || "/og-image.jpeg"],
       },
-      keywords: [
-        ...post.tags,
-        post.category,
-        "ppt master",
-        "ai powerpoint generator",
-        "presentation design",
-        "powerpoint tips",
-        "ai presentations",
-        "presentation maker",
-        "slide design",
-        "powerpoint templates",
-        "presentation software",
-        "ai presentation tool",
-      ],
-      alternates: {
-        canonical: url,
-      },
-      robots: {
-        index: true,
-        follow: true,
-        googleBot: {
-          index: true,
-          follow: true,
-          "max-video-preview": -1,
-          "max-image-preview": "large",
-          "max-snippet": -1,
-        },
-      },
+      keywords: [post.category, ...post.tags, "presentation design", "PPTMaster", "insights", "tips"].join(", "),
       authors: [{ name: post.author }],
-      category: post.category,
     };
   } catch (error) {
     console.error("Error generating metadata:", error);
     return {
-      title: "Insights | PPT Master",
-      description: "Learn from experts about creating better PowerPoint presentations.",
+      title: "Insights | PPTMaster",
+      description: "Presentation design insights and tips from PPTMaster",
     };
   }
 }
 
-export default function InsightPostLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <>
-      <Breadcrumbs />
-      {children}
-    </>
-  );
+export default function InsightPostLayout({ children }: Props) {
+  return <>{children}</>;
 }
