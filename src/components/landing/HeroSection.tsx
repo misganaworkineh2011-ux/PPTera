@@ -34,11 +34,11 @@ const TOTAL_MOBILE_CARD_WIDTH = MOBILE_CARD_WIDTH + MOBILE_CARD_GAP;
 // Cloudinary video URLs - optimized with f_auto for best format, q_auto for quality
 // Replace these with your own Cloudinary video URLs when ready
 const CLOUDINARY_VIDEOS = [
-  "https://res.cloudinary.com/demo/video/upload/f_auto,q_auto/docs/walking_talking",
-  "https://res.cloudinary.com/demo/video/upload/f_auto,q_auto/samples/sea-turtle",
-  "https://res.cloudinary.com/demo/video/upload/f_auto,q_auto/samples/elephants",
-  "https://res.cloudinary.com/demo/video/upload/f_auto,q_auto/dog",
-  "https://res.cloudinary.com/demo/video/upload/f_auto,q_auto/samples/cld-sample-video",
+  "https://res.cloudinary.com/di76ibrro/video/upload/v1767877805/2026-01-08_05-07-50_online-video-cutter.com_yggzut.mp4",
+  "https://res.cloudinary.com/di76ibrro/video/upload/v1767878128/2026-01-08_05-13-43_online-video-cutter.com_dymw7x.mp4",
+  "https://res.cloudinary.com/di76ibrro/video/upload/v1767878458/2026-01-08_05-18-55_online-video-cutter.com_q4onv0.mp4",
+  "https://res.cloudinary.com/di76ibrro/video/upload/v1767879225/2026-01-08_05-27-57_online-video-cutter.com_bwcnuh.mp4",
+  "https://res.cloudinary.com/di76ibrro/video/upload/v1767877229/2026-01-0804-48-10online-video-cutter.com1-ezgif_iclikm.mp4",
 ];
 
 export function HeroSection({ t, currentLang }: HeroSectionProps) {
@@ -262,14 +262,6 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
     };
   };
 
-  // Check if a card is the center card (should play video)
-  const isCenterCard = (virtualIndex: number) => {
-    const baseOffset = -activeIndex * TOTAL_CARD_HEIGHT;
-    const currentOffset = baseOffset + dragOffset;
-    const y = virtualIndex * TOTAL_CARD_HEIGHT + currentOffset;
-    return Math.abs(y) < TOTAL_CARD_HEIGHT * 0.3;
-  };
-
   // Mobile horizontal card style
   const getMobileCardStyle = (virtualIndex: number) => {
     const baseOffset = -activeIndex * TOTAL_MOBILE_CARD_WIDTH;
@@ -290,14 +282,6 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
       zIndex,
       transition: isMobileDragging ? "none" : "all 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)",
     };
-  };
-
-  // Check if a card is center for mobile
-  const isMobileCenterCard = (virtualIndex: number) => {
-    const baseOffset = -activeIndex * TOTAL_MOBILE_CARD_WIDTH;
-    const currentOffset = baseOffset + mobileDragOffset;
-    const x = virtualIndex * TOTAL_MOBILE_CARD_WIDTH + currentOffset;
-    return Math.abs(x) < TOTAL_MOBILE_CARD_WIDTH * 0.3;
   };
 
   const handleIndicatorClick = (idx: number) => {
@@ -467,15 +451,16 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
             >
               {/* Cards Container */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="relative w-[320px] sm:w-[360px] md:w-[380px]" style={{ height: CARD_HEIGHT }}>
+                <div className="relative w-[350px]" style={{ height: CARD_HEIGHT }}>
                   {visibleCards.map((card) => {
                     return (
                       <div
                         key={card.key}
-                        className="absolute left-0 right-0 mx-auto px-4"
+                        className="absolute left-0 right-0 mx-auto"
                         style={{
                           ...getCardStyle(card.virtualIndex),
                           height: CARD_HEIGHT,
+                          width: 350,
                           top: "50%",
                           marginTop: -CARD_HEIGHT / 2,
                         }}

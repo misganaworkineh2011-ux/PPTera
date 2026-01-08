@@ -19,7 +19,7 @@ function getLocalizedPath(path: string, lang: Language): string {
 }
 
 // Cloudinary demo video URL - replace with your own when ready
-const FEATURE_DEMO_VIDEO = "https://res.cloudinary.com/demo/video/upload/f_auto,q_auto/docs/walking_talking";
+const FEATURE_DEMO_VIDEO = "https://res.cloudinary.com/di76ibrro/video/upload/v1767877229/2026-01-0804-48-10online-video-cutter.com1-ezgif_iclikm.mp4";
 
 // Presentation images for the inspiration cards - optimized with auto format and quality
 const INSPIRATION_IMAGES = [
