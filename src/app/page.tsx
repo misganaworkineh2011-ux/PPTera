@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 import { db } from "~/server/db";
 import { LandingPageClient } from "~/app/LandingPageClient";
 import DashboardLayout from "~/components/dashboard/DashboardLayout";
@@ -43,9 +44,13 @@ async function PresentationsGrid({
 
 // Dashboard content for logged-in users
 async function DashboardContent({ userId }: { userId: string }) {
+  // Use requireAuth to ensure user exists in database (creates if missing)
+  const { requireAuth } = await import("~/lib/clerk-server");
+  const authUser = await requireAuth();
+  
   // Fetch user data
   const user = await db.user.findUnique({
-    where: { clerkId: userId },
+    where: { id: authUser.id },
     select: {
       id: true,
       name: true,
@@ -57,9 +62,9 @@ async function DashboardContent({ userId }: { userId: string }) {
   });
 
   if (!user) {
-    // User exists in Clerk but not in DB yet - show landing page
-    // The webhook or next request will create the user
-    return <LandingPageServer />;
+    // This should never happen since requireAuth creates the user
+    // But if it does, redirect to dashboard which will handle it properly
+    redirect("/dashboard");
   }
 
   const initialUser = {
