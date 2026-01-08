@@ -3,707 +3,757 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("Starting database seed...");
+  console.log("Starting community seed...");
 
-  await prisma.inspirationGallery.deleteMany({});
+  // Seed Community Posts - natural, casual discussions
+  const communityPosts = [
+    // Show & Tell
+    {
+      title: "finally got my pitch deck done after procrastinating for 2 weeks",
+      content: `ok so i've been putting off this investor pitch forever and finally sat down to do it last night. used the dark theme (forgot the name, the one with the gradient) and honestly it came out way better than expected.
 
-  console.log("Cleared existing data");
+the AI suggested some layouts i never would have thought of. like instead of just bullet points for our traction slide, it made these little boxes with icons? looks way more legit now.
 
-  // Seed Inspiration Gallery - 14 items with NEW Cloudinary images
-  const inspirationItems = await prisma.inspirationGallery.createMany({
-    data: [
-      {
-        title: "Elegant Noir Business Presentation",
-        description:
-          "Sophisticated dark theme perfect for executive presentations and corporate pitches",
-        imageUrl:
-          "https://res.cloudinary.com/di76ibrro/image/upload/v1766151444/pptmaster_business_nnjnqx.png",
-        category: "business",
-        tags: ["elegant", "dark", "corporate", "professional"],
-        likes: 342,
-        views: 2150,
-        authorName: "Marcus Rodriguez",
-        isPublic: true,
-        isFeatured: true,
+anyone else find themselves procrastinating on presentations until the last minute? just me? 😅`,
+      category: "show-tell",
+      authorName: "jake_m",
+      likes: 89,
+      views: 1240,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "made a presentation for my kid's science fair lol",
+      content: `my daughter needed help with her volcano project presentation and i figured why not try this out. she's 10 so we went with something colorful.
+
+she was SO excited when she saw the slides. kept saying "dad this looks like a real scientist made it" which honestly made my day.
+
+the teacher actually asked her what software she used haha. proud dad moment right there.
+
+anyone else using this for non-work stuff?`,
+      category: "show-tell",
+      authorName: "DadOfThree",
+      likes: 234,
+      views: 2890,
+      isPinned: true,
+      isApproved: true,
+    },
+    {
+      title: "quarterly review went surprisingly well",
+      content: `just wanted to share a small win. my quarterly business review usually takes me like 4 hours to put together and i always dread it.
+
+this time i just dumped my notes in and let it generate something. spent maybe 45 mins total tweaking things. my manager actually complimented the design which has literally never happened before.
+
+nothing groundbreaking but felt good to not stress about it for once`,
+      category: "show-tell",
+      authorName: "sarah_k",
+      likes: 156,
+      views: 1890,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "used the hacker theme for a dev meetup talk",
+      content: `gave a talk at our local JS meetup about async patterns. used that terminal/hacker looking theme and people were asking about it during the break.
+
+the green on black aesthetic just hits different for tech talks you know? felt very on brand.
+
+only complaint is i wish i could customize the font more but whatever, still looked cool`,
+      category: "show-tell",
+      authorName: "codeMonkey42",
+      likes: 178,
+      views: 2340,
+      isPinned: false,
+      isApproved: true,
+    },
+
+    // Tips & Tricks
+    {
+      title: "tip: you can edit multiple slides at once with the chat thing",
+      content: `not sure if everyone knows this but if you open that side panel and type something like "make all the bullet points shorter" it actually does it across your whole deck
+
+saved me so much time when my boss said everything was "too wordy" (his favorite feedback lol)
+
+also works for stuff like "add more visuals" or "make it more casual"`,
+      category: "tips",
+      authorName: "productivity_nerd",
+      likes: 312,
+      views: 4560,
+      isPinned: true,
+      isApproved: true,
+    },
+    {
+      title: "keyboard shortcuts i found by accident",
+      content: `been using this for a few weeks and just discovered some shortcuts:
+
+- arrow keys move between slides (obvious but i was clicking like a dummy)
+- escape saves your text edits (was losing changes before i figured this out)
+- double click to edit text
+
+probably obvious to most people but sharing in case anyone else was struggling like me`,
+      category: "tips",
+      authorName: "newbie_here",
+      likes: 145,
+      views: 1890,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "for anyone doing data heavy presentations",
+      content: `figured out that if you describe your data in plain english it generates better charts than if you try to be super specific
+
+like instead of "create a bar chart with Q1 at 45%, Q2 at 52%..." just say "show quarterly growth trending upward" and then edit the numbers after
+
+the AI seems to pick better chart types this way too`,
+      category: "tips",
+      authorName: "DataDan",
+      likes: 198,
+      views: 2670,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "export tip for anyone presenting on old projectors",
+      content: `learned this the hard way - if you're presenting somewhere with an old projector, export to PDF instead of using the web version
+
+the colors render more consistently and you don't have to worry about wifi issues
+
+also test your slides on a white wall if you can, some of the darker themes don't show up great on cheap projectors`,
+      category: "tips",
+      authorName: "conference_veteran",
+      likes: 87,
+      views: 1230,
+      isPinned: false,
+      isApproved: true,
+    },
+
+    // General Discussion
+    {
+      title: "what theme do you use for client presentations?",
+      content: `curious what everyone uses for client-facing stuff. i've been defaulting to the corporate one but it feels a bit boring?
+
+my clients are mostly in finance so i don't want anything too wild but also don't want to put them to sleep
+
+what's your go-to?`,
+      category: "discussion",
+      authorName: "freelancer_life",
+      likes: 67,
+      views: 1450,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "how long do your presentations usually take to make?",
+      content: `trying to figure out if i'm slow or what. a typical 15 slide deck takes me about an hour including writing the content and tweaking the design.
+
+is that normal? faster? slower?
+
+before i was spending like 3-4 hours in powerpoint so this is already way better but curious what others experience`,
+      category: "discussion",
+      authorName: "time_tracker",
+      likes: 134,
+      views: 2340,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "anyone else get anxious before presenting?",
+      content: `this might be off topic but figured this community might relate. i get super nervous before any presentation even when my slides look good.
+
+having nice looking slides helps a bit because at least i'm not embarrassed by the design but the nerves are still there.
+
+any tips for the actual presenting part? how do you calm down before going on?`,
+      category: "discussion",
+      authorName: "anxious_presenter",
+      likes: 289,
+      views: 3450,
+      isPinned: true,
+      isApproved: true,
+    },
+    {
+      title: "do you show your slides to anyone before presenting?",
+      content: `wondering if people do practice runs or get feedback before important presentations
+
+i usually just wing it but thinking maybe i should be more careful for bigger stuff
+
+do you have a review process or just trust yourself?`,
+      category: "discussion",
+      authorName: "solo_worker",
+      likes: 78,
+      views: 1120,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "presentations for remote meetings vs in person",
+      content: `noticed my slides need to be different for zoom calls vs presenting in a room
+
+for zoom i make text bigger and use more contrast since people are on small screens
+
+anyone else adjust their approach based on how they're presenting?`,
+      category: "discussion",
+      authorName: "remote_worker",
+      likes: 156,
+      views: 1890,
+      isPinned: false,
+      isApproved: true,
+    },
+
+    // Feature Requests
+    {
+      title: "would love real-time collaboration",
+      content: `working on a deck with my coworker and we have to take turns which is annoying. would be cool if we could both edit at the same time like google docs
+
+not sure how hard that is to build but putting it out there`,
+      category: "feature-request",
+      authorName: "team_player",
+      likes: 345,
+      views: 4230,
+      isPinned: true,
+      isApproved: true,
+    },
+    {
+      title: "more chart options please",
+      content: `the basic charts are fine but i really need waterfall charts for financial presentations. also gantt charts would be amazing for project updates.
+
+anyone else need more chart variety?`,
+      category: "feature-request",
+      authorName: "finance_guy",
+      likes: 234,
+      views: 2890,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "presenter mode with timer?",
+      content: `would be super helpful to have a timer visible while presenting. i always go over my allotted time and having a countdown would help me pace myself.
+
+also seeing my notes without the audience seeing them would be clutch`,
+      category: "feature-request",
+      authorName: "over_talker",
+      likes: 189,
+      views: 2340,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "custom fonts would be nice",
+      content: `my company has a brand font we're supposed to use for everything. would be great if i could upload it or at least have more font options.
+
+not a dealbreaker but would make my brand team happy`,
+      category: "feature-request",
+      authorName: "brand_police",
+      likes: 123,
+      views: 1560,
+      isPinned: false,
+      isApproved: true,
+    },
+
+    // More casual posts
+    {
+      title: "just venting: my boss keeps changing requirements",
+      content: `made a deck, boss said make it shorter. made it shorter, now it's "missing context". added context, now it's "too long" again.
+
+at least i can iterate quickly now but man... anyone else deal with this?`,
+      category: "discussion",
+      authorName: "frustrated_employee",
+      likes: 456,
+      views: 5670,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "wedding speech presentation was a hit",
+      content: `best man at my buddy's wedding last weekend. made a slideshow of embarrassing photos with captions. everyone loved it, bride was crying laughing.
+
+never thought i'd use a presentation tool for something like this but here we are`,
+      category: "show-tell",
+      authorName: "best_man_dan",
+      likes: 567,
+      views: 6780,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "teacher here - students actually paying attention now",
+      content: `high school history teacher. my old powerpoints were basically walls of text and the kids would zone out immediately.
+
+started using this and the visual variety keeps them more engaged. or at least they're better at pretending to pay attention lol
+
+any other teachers here?`,
+      category: "show-tell",
+      authorName: "history_teacher",
+      likes: 234,
+      views: 3120,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "how do you handle last minute changes?",
+      content: `got asked to add 3 slides 20 minutes before a meeting today. used to be a nightmare but the AI thing actually made it manageable.
+
+still stressful but at least the new slides matched the existing ones
+
+what's your worst last minute change story?`,
+      category: "discussion",
+      authorName: "always_rushed",
+      likes: 178,
+      views: 2340,
+      isPinned: false,
+      isApproved: true,
+    },
+
+    // 22 MORE POSTS
+
+    // Show & Tell
+    {
+      title: "nonprofit board presentation - they actually approved our budget",
+      content: `volunteer for a local animal shelter and had to present our annual budget to the board. usually these meetings are painful and they nitpick everything.
+
+this time the slides looked so professional they barely questioned anything. one board member said "you really stepped up the presentation quality"
+
+little do they know i spent like 30 mins on it lol`,
+      category: "show-tell",
+      authorName: "shelter_volunteer",
+      likes: 145,
+      views: 1890,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "my thesis defense slides are done!!",
+      content: `PhD student here. just finished my dissertation defense slides after months of procrastinating. 47 slides covering 5 years of research.
+
+the hardest part was making complex data visualizations look clean. ended up describing what i wanted and the AI figured out decent layouts.
+
+defense is next week. wish me luck 🤞`,
+      category: "show-tell",
+      authorName: "phd_survivor",
+      likes: 312,
+      views: 4120,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "sales deck that actually closed a deal",
+      content: `been in sales for 8 years and honestly never cared much about slide design. figured the pitch mattered more than how it looked.
+
+tried making a nicer deck for a big prospect and... we closed. obviously can't say it was just the slides but the client specifically mentioned our "polished presentation"
+
+maybe design does matter after all`,
+      category: "show-tell",
+      authorName: "sales_convert",
+      likes: 234,
+      views: 3450,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "made slides for my grandma's 80th birthday party",
+      content: `put together a photo slideshow for my grandma's birthday. old family photos, memories, that kind of thing.
+
+she doesn't understand technology at all but kept saying how "fancy" it looked. my mom cried. worth every minute.
+
+sometimes it's not about work presentations you know?`,
+      category: "show-tell",
+      authorName: "family_first",
+      likes: 456,
+      views: 5670,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "startup demo day went better than expected",
+      content: `just did our accelerator demo day. 3 minutes to pitch to a room of investors.
+
+practiced like crazy but the slides really helped tell the story. got 4 follow-up meeting requests which is apparently good for our batch.
+
+the visual flow from problem → solution → traction → ask felt natural. investors could follow along without getting lost`,
+      category: "show-tell",
+      authorName: "founder_grind",
+      likes: 289,
+      views: 3890,
+      isPinned: false,
+      isApproved: true,
+    },
+
+    // Tips & Tricks
+    {
+      title: "the 3 second rule for slides",
+      content: `something i learned from a speaking coach: if someone can't understand your slide in 3 seconds, it's too complicated.
+
+been applying this to everything i make now. one main point per slide, minimal text, clear visual.
+
+the AI actually helps with this because it doesn't let you cram too much onto one slide`,
+      category: "tips",
+      authorName: "speaking_coach_fan",
+      likes: 267,
+      views: 3560,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "how i organize my presentation workflow",
+      content: `my process that works pretty well:
+
+1. brain dump all my points in a doc first
+2. group them into logical sections
+3. paste into the generator
+4. review and tweak
+5. practice once out loud
+
+step 5 is where i catch most issues. things that look good on screen sometimes sound weird when you say them`,
+      category: "tips",
+      authorName: "process_person",
+      likes: 189,
+      views: 2340,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "dark mode themes work better for evening presentations",
+      content: `random observation: when presenting after 5pm or in dimly lit rooms, the darker themes are way easier on everyone's eyes.
+
+bright white backgrounds at 7pm in a conference room = everyone squinting
+
+switched to using darker themes for any late day meetings and people seem more engaged`,
+      category: "tips",
+      authorName: "night_owl_presenter",
+      likes: 134,
+      views: 1780,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "backup your presentations people",
+      content: `learned this the hard way. was about to present and my laptop decided to update. couldn't access anything for 20 minutes.
+
+now i always:
+- export a PDF backup
+- email it to myself
+- have it on my phone just in case
+
+paranoid? maybe. but never getting caught like that again`,
+      category: "tips",
+      authorName: "backup_believer",
+      likes: 345,
+      views: 4230,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "use the image search for placeholder images then replace later",
+      content: `quick tip: when drafting, just use the built-in image search to get something close to what you want. don't spend forever finding the perfect image.
+
+once the structure is done, then go back and swap in better images if needed.
+
+perfectionism early on kills productivity`,
+      category: "tips",
+      authorName: "efficiency_expert",
+      likes: 156,
+      views: 2120,
+      isPinned: false,
+      isApproved: true,
+    },
+
+    // General Discussion
+    {
+      title: "how many slides is too many?",
+      content: `got feedback that my 25 slide deck was "too long" but i felt like i needed all of them to tell the story.
+
+is there a rule of thumb? i've heard 1 slide per minute of talking but that seems arbitrary.
+
+what do you all aim for?`,
+      category: "discussion",
+      authorName: "slide_counter",
+      likes: 123,
+      views: 1890,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "do you memorize your presentations or use notes?",
+      content: `always wondered how other people handle this. i used to try memorizing everything but would freeze if i forgot a line.
+
+now i use bullet point notes and just talk naturally. feels less polished but more authentic?
+
+what's your approach?`,
+      category: "discussion",
+      authorName: "memory_struggles",
+      likes: 198,
+      views: 2670,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "presenting to executives vs regular teams",
+      content: `noticed i need completely different approaches for C-suite vs my regular team meetings.
+
+executives want: bottom line first, minimal detail, clear asks
+teams want: context, process, discussion
+
+anyone else adjust their style based on audience level?`,
+      category: "discussion",
+      authorName: "corporate_chameleon",
+      likes: 234,
+      views: 3120,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "what do you do when someone interrupts your presentation?",
+      content: `had a meeting yesterday where someone kept asking questions mid-slide. totally threw off my flow.
+
+do you:
+a) answer immediately and risk going off track
+b) say "let's hold questions till the end"
+c) something else?
+
+still figuring out how to handle this gracefully`,
+      category: "discussion",
+      authorName: "interrupted_presenter",
+      likes: 167,
+      views: 2340,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "imposter syndrome when presenting",
+      content: `does anyone else feel like a fraud when presenting? like everyone in the room knows more than you and they're just waiting for you to mess up?
+
+logically i know this isn't true but the feeling is real. especially with senior people in the room.
+
+how do you deal with this?`,
+      category: "discussion",
+      authorName: "imposter_feelings",
+      likes: 389,
+      views: 4890,
+      isPinned: true,
+      isApproved: true,
+    },
+
+    // Feature Requests
+    {
+      title: "version history would be amazing",
+      content: `made a bunch of changes to a deck and then realized the original was better. had to start over.
+
+would love to be able to see previous versions and restore them. like how google docs does it.
+
+anyone else want this?`,
+      category: "feature-request",
+      authorName: "version_wanter",
+      likes: 278,
+      views: 3450,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "mobile app for quick edits?",
+      content: `sometimes i need to fix a typo or small thing when i'm not at my computer. would be nice to have a mobile app for quick edits.
+
+doesn't need full functionality, just basic text editing and maybe reordering slides`,
+      category: "feature-request",
+      authorName: "mobile_user",
+      likes: 198,
+      views: 2670,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "templates for specific industries",
+      content: `would be cool to have starting templates for different industries. like a "healthcare presentation" or "real estate pitch" template.
+
+not just themes but actual slide structures that make sense for those use cases.
+
+would save a lot of time figuring out what slides to include`,
+      category: "feature-request",
+      authorName: "template_wisher",
+      likes: 156,
+      views: 2120,
+      isPinned: false,
+      isApproved: true,
+    },
+
+    // More casual/relatable posts
+    {
+      title: "accidentally shared the wrong version to a client",
+      content: `sent a client the draft version with all my notes like "ADD BETTER STATS HERE" and "FIX THIS UGLY SLIDE"
+
+they were... confused. had to quickly send the real version and pretend it was a "technical glitch"
+
+please tell me i'm not the only one who's done something like this`,
+      category: "discussion",
+      authorName: "embarrassed_sender",
+      likes: 567,
+      views: 7890,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "the wifi always dies right before presenting",
+      content: `is it just me or does wifi have a sixth sense for when you're about to present? works fine all day then the moment you share your screen... nothing.
+
+now i always download/export before important meetings. trust no wifi.`,
+      category: "discussion",
+      authorName: "wifi_victim",
+      likes: 423,
+      views: 5670,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "coworker keeps using comic sans in presentations",
+      content: `not sure if this is the right place to vent but my coworker insists on using comic sans for "personality"
+
+i've tried suggesting other fonts but they're committed. our team presentations look... interesting.
+
+how do you handle design disagreements with colleagues?`,
+      category: "discussion",
+      authorName: "font_snob",
+      likes: 345,
+      views: 4560,
+      isPinned: false,
+      isApproved: true,
+    },
+    {
+      title: "finally understand why design matters",
+      content: `used to think spending time on presentation design was a waste. content is king right?
+
+but after seeing the difference in how people respond to well-designed vs ugly slides... i get it now.
+
+people literally pay more attention when things look good. who knew.`,
+      category: "discussion",
+      authorName: "design_convert",
+      likes: 234,
+      views: 3120,
+      isPinned: false,
+      isApproved: true,
+    },
+  ];
+
+  // Create posts
+  const createdPosts: { id: string; title: string }[] = [];
+
+  for (const post of communityPosts) {
+    const createdPost = await prisma.communityPost.create({
+      data: {
+        ...post,
+        createdAt: new Date(
+          Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000
+        ),
       },
-      {
-        title: "Arctic Frost Minimal Design",
-        description:
-          "Clean and minimalist light theme ideal for modern startups and tech companies",
-        imageUrl:
-          "https://res.cloudinary.com/di76ibrro/image/upload/v1766151567/arctic_frost_pptmaster_jm2g28.png",
-        category: "business",
-        tags: ["minimal", "light", "modern", "startup"],
-        likes: 289,
-        views: 1890,
-        authorName: "Sophia Williams",
-        isPublic: true,
-        isFeatured: true,
-      },
-      {
-        title: "Sunset Gradient Creative Deck",
-        description:
-          "Vibrant gradient theme perfect for creative agencies and design portfolios",
-        imageUrl:
-          "https://res.cloudinary.com/di76ibrro/image/upload/v1766151668/sunset_pptmaster_ktz0ij.png",
-        category: "creative",
-        tags: ["gradient", "creative", "colorful", "design"],
-        likes: 412,
-        views: 2680,
-        authorName: "Isabella Chen",
-        isPublic: true,
-        isFeatured: true,
-      },
-      {
-        title: "Ocean Depths Data Visualization",
-        description:
-          "Professional blue theme optimized for data-driven presentations and analytics",
-        imageUrl:
-          "https://res.cloudinary.com/di76ibrro/image/upload/v1766151759/ocean_pptmaster_firmv1.png",
-        category: "data",
-        tags: ["data", "analytics", "professional", "blue"],
-        likes: 267,
-        views: 1720,
-        authorName: "Daniel Kim",
-        isPublic: true,
-        isFeatured: false,
-      },
-      {
-        title: "Aurora Borealis Tech Presentation",
-        description:
-          "Dynamic theme with northern lights aesthetics for technology and innovation talks",
-        imageUrl:
-          "https://res.cloudinary.com/di76ibrro/image/upload/v1766151827/aestetics_pptmaster_rymd3m.png",
-        category: "technology",
-        tags: ["tech", "innovation", "dynamic", "modern"],
-        likes: 398,
-        views: 2340,
-        authorName: "Olivia Thompson",
-        isPublic: true,
-        isFeatured: true,
-      },
-      {
-        title: "Ember Forge Startup Pitch",
-        description:
-          "Energetic warm theme designed for startup pitches and fundraising decks",
-        imageUrl:
-          "https://res.cloudinary.com/di76ibrro/image/upload/v1766151912/Ember_pptmaster_iw5jax.png",
-        category: "startup",
-        tags: ["startup", "pitch", "energetic", "warm"],
-        likes: 445,
-        views: 3120,
-        authorName: "Ethan Martinez",
-        isPublic: true,
-        isFeatured: true,
-      },
-      {
-        title: "Midnight Garden Nature Theme",
-        description:
-          "Organic dark theme perfect for environmental and sustainability presentations",
-        imageUrl:
-          "https://res.cloudinary.com/di76ibrro/image/upload/v1766155051/Screenshot_2025-12-19_063703_d9geba.png",
-        category: "environment",
-        tags: ["nature", "sustainability", "organic", "dark"],
-        likes: 234,
-        views: 1560,
-        authorName: "Ava Johnson",
-        isPublic: true,
-        isFeatured: false,
-      },
-      {
-        title: "Cyber Neon Tech Conference",
-        description:
-          "Futuristic neon theme ideal for tech conferences and cybersecurity talks",
-        imageUrl:
-          "https://res.cloudinary.com/di76ibrro/image/upload/v1766152376/cyberpunk_pptmaster_nqny1d.png",
-        category: "technology",
-        tags: ["cyber", "neon", "futuristic", "tech"],
-        likes: 521,
-        views: 3890,
-        authorName: "Noah Anderson",
-        isPublic: true,
-        isFeatured: true,
-      },
-      {
-        title: "Alien Tech Sci-Fi Presentation",
-        description:
-          "Unique extraterrestrial theme for innovative product launches and sci-fi content",
-        imageUrl:
-          "https://res.cloudinary.com/di76ibrro/image/upload/v1766152111/alien_pptmaster_ldo5wm.png",
-        category: "creative",
-        tags: ["sci-fi", "innovative", "unique", "futuristic"],
-        likes: 367,
-        views: 2240,
-        authorName: "Mia Davis",
-        isPublic: true,
-        isFeatured: false,
-      },
-      {
-        title: "Corporate Clean Business Report",
-        description:
-          "Professional corporate theme for quarterly reports and board presentations",
-        imageUrl:
-          "https://res.cloudinary.com/di76ibrro/image/upload/v1766152472/corporate_pptmaster_gcvo7p.png",
-        category: "business",
-        tags: ["corporate", "professional", "clean", "business"],
-        likes: 298,
-        views: 1980,
-        authorName: "Liam Wilson",
-        isPublic: true,
-        isFeatured: false,
-      },
-      {
-        title: "Hacker Terminal Developer Deck",
-        description:
-          "Code-inspired terminal theme perfect for developer conferences and tech talks",
-        imageUrl:
-          "https://res.cloudinary.com/di76ibrro/image/upload/v1766151237/pptmasterHacking_uccgma.png",
-        category: "technology",
-        tags: ["developer", "code", "terminal", "tech"],
-        likes: 589,
-        views: 4120,
-        authorName: "Emma Garcia",
-        isPublic: true,
-        isFeatured: true,
-      },
-      {
-        title: "Architectural Mono Design Portfolio",
-        description:
-          "Minimalist monochrome theme for architecture and design portfolios",
-        imageUrl:
-          "https://res.cloudinary.com/di76ibrro/image/upload/v1766152567/Architectural_pptmaster_a18ccs.png",
-        category: "design",
-        tags: ["architecture", "minimal", "monochrome", "portfolio"],
-        likes: 312,
-        views: 2050,
-        authorName: "Charlotte Brown",
-        isPublic: true,
-        isFeatured: false,
-      },
-      {
-        title: "Cosmic Voyage Space Exploration",
-        description:
-          "Space-themed presentation for astronomy, science, and exploration topics",
-        imageUrl:
-          "https://res.cloudinary.com/di76ibrro/image/upload/v1766152672/Screenshot_2025-12-19_055737_hhnqpt.png",
-        category: "science",
-        tags: ["space", "science", "astronomy", "exploration"],
-        likes: 456,
-        views: 2890,
-        authorName: "James Taylor",
-        isPublic: true,
-        isFeatured: false,
-      },
-      {
-        title: "Anime Dreamscape Creative Showcase",
-        description:
-          "Vibrant anime-inspired theme for creative showcases and entertainment content",
-        imageUrl:
-          "https://res.cloudinary.com/di76ibrro/image/upload/v1766152753/anime_pptmaster_iiz00a.png",
-        category: "creative",
-        tags: ["anime", "creative", "vibrant", "entertainment"],
-        likes: 678,
-        views: 4560,
-        authorName: "Amelia White",
-        isPublic: true,
-        isFeatured: true,
-      },
-    ],
-  });
-
-  console.log(`Created ${inspirationItems.count} inspiration items`);
-
-  // Clear existing blog posts
-  await prisma.insightPost.deleteMany({});
-  console.log("Cleared existing blog posts");
-
-  // Seed 4 Design Blog Posts
-  const blogPosts = await prisma.insightPost.createMany({
-    data: [
-      {
-        title: "The Evolution of Presentation Design: From Static Slides to AI-Powered Creativity",
-        slug: "evolution-of-presentation-design-ai-powered",
-        excerpt: "Discover how AI powerpoint generator tools are revolutionizing the way designers create stunning presentations, making professional design accessible to everyone.",
-        content: `# The Evolution of Presentation Design: From Static Slides to AI-Powered Creativity
-
-The world of presentation design has undergone a remarkable transformation over the past decade. What once required hours of manual work and advanced design skills can now be accomplished in minutes with the help of modern technology.
-
-## The Traditional Design Challenge
-
-Creating compelling presentations has always been a time-consuming process. Designers would spend hours selecting color palettes, arranging layouts, and ensuring visual consistency across dozens of slides. For non-designers, the challenge was even greater—resulting in presentations that often looked unprofessional or cluttered.
-
-## Enter the AI Powerpoint Generator Era
-
-Today's **ai powerpoint generator** tools have democratized professional design. These intelligent systems understand design principles, color theory, and visual hierarchy, applying them automatically to create stunning presentations. Whether you're a startup founder pitching to investors or a teacher preparing educational content, AI-powered tools level the playing field.
-
-## What Makes Modern PPT Master Tools Different?
-
-The latest generation of **ppt master** platforms goes beyond simple templates. They offer:
-
-- **Intelligent Layout Suggestions**: AI analyzes your content and recommends the most effective visual structure
-- **Dynamic Color Schemes**: Automatically generated palettes that match your brand or topic
-- **Smart Content Adaptation**: Text and images are automatically sized and positioned for optimal readability
-- **Real-time Collaboration**: Multiple team members can work together seamlessly
-
-## Design Principles That Never Change
-
-While technology evolves, fundamental design principles remain constant:
-
-1. **Clarity Over Complexity**: Less is often more in presentation design
-2. **Visual Hierarchy**: Guide your audience's attention deliberately
-3. **Consistency**: Maintain uniform styling throughout your deck
-4. **Whitespace**: Give your content room to breathe
-
-## The Future of Presentation Design
-
-As AI continues to advance, we can expect even more sophisticated features. Imagine presentations that adapt in real-time based on audience engagement, or AI that suggests content improvements based on your speaking style. The future is bright for anyone who needs to communicate ideas visually.
-
-## Conclusion
-
-The combination of human creativity and AI assistance represents the sweet spot in modern presentation design. Tools that act as a **ppt master** don't replace designers—they empower everyone to create professional-quality work. Whether you're using an **ai powerpoint generator** or traditional software, understanding design fundamentals will always give you an edge.
-
-The question is no longer whether you can create beautiful presentations, but rather how quickly you can bring your ideas to life.`,
-        coverImage: "https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=1200&h=630&fit=crop&q=80",
-        category: "Design Trends",
-        tags: ["AI", "Design", "Presentation", "Technology", "Innovation"],
-        author: "Sarah Mitchell",
-        authorImage: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&q=80",
-        readTime: 8,
-        views: 1247,
-        likes: 89,
-        isPublished: true,
-        isFeatured: true,
-        publishedAt: new Date("2024-12-15"),
-      },
-      {
-        title: "Mastering Visual Storytelling: Design Techniques That Captivate Audiences",
-        slug: "mastering-visual-storytelling-design-techniques",
-        excerpt: "Learn the art of visual storytelling and how modern ppt master tools help you craft narratives that resonate with your audience on a deeper level.",
-        content: `# Mastering Visual Storytelling: Design Techniques That Captivate Audiences
-
-Great presentations don't just inform—they tell stories that resonate emotionally with audiences. Visual storytelling is the bridge between data and human connection, and mastering it can transform your presentations from forgettable to unforgettable.
-
-## The Psychology Behind Visual Stories
-
-Our brains process visual information 60,000 times faster than text. When you combine compelling visuals with a strong narrative structure, you create an experience that sticks with your audience long after the presentation ends.
-
-## Building Your Visual Narrative
-
-### 1. Start With a Clear Arc
-
-Every great story has a beginning, middle, and end. Your presentation should follow a similar structure:
-
-- **Opening**: Hook your audience with a compelling question or statement
-- **Development**: Build tension or interest through your main points
-- **Resolution**: Provide solutions or conclusions that satisfy the journey
-
-### 2. Use Visual Metaphors
-
-Metaphors help audiences understand complex concepts quickly. Instead of explaining abstract ideas with bullet points, show them through imagery. Modern **ai powerpoint generator** tools can suggest relevant visuals based on your content, making this process faster than ever.
-
-## Color Psychology in Design
-
-Colors evoke emotions and set the tone for your entire presentation:
-
-- **Blue**: Trust, professionalism, stability
-- **Red**: Energy, urgency, passion
-- **Green**: Growth, harmony, freshness
-- **Purple**: Creativity, luxury, wisdom
-- **Orange**: Enthusiasm, warmth, confidence
-
-A skilled **ppt master** understands how to leverage these associations to reinforce their message. Whether you're pitching a startup or presenting quarterly results, your color choices should align with your narrative goals.
-
-## The Power of Data Visualization
-
-Numbers tell stories too, but only when presented effectively. Transform raw data into compelling visuals:
-
-- Use charts that match your data type (line graphs for trends, pie charts for proportions)
-- Highlight key insights with contrasting colors
-- Animate data reveals to build suspense
-- Keep visualizations simple and focused
-
-## Typography as a Design Element
-
-Font choices communicate personality and professionalism. Pair fonts strategically:
-
-- **Serif fonts** (like Times New Roman) convey tradition and reliability
-- **Sans-serif fonts** (like Helvetica) feel modern and clean
-- **Display fonts** add personality but should be used sparingly
-
-## Leveraging Modern Tools
-
-Today's **ai powerpoint generator** platforms understand these principles and apply them automatically. They analyze your content, suggest appropriate visuals, and ensure design consistency—allowing you to focus on your story rather than technical details.
-
-## Creating Emotional Connections
-
-The most memorable presentations create emotional resonance:
-
-- Use human faces in your imagery (we're hardwired to connect with faces)
-- Include personal anecdotes or case studies
-- Show the human impact of your ideas
-- Use contrast to emphasize important moments
-
-## Practical Exercise
-
-Take your next presentation and ask yourself:
-
-1. What emotion do I want my audience to feel?
-2. What's the one thing I want them to remember?
-3. How can visuals reinforce my core message?
-
-## Conclusion
-
-Visual storytelling isn't about making pretty slides—it's about creating experiences that move people to action. Whether you're using advanced **ppt master** techniques or simple design principles, the goal remains the same: connect with your audience on a human level.
-
-The tools have evolved, but the fundamental truth remains: stories change minds, and visuals make stories unforgettable.`,
-        coverImage: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1200&h=630&fit=crop&q=80",
-        category: "Design Techniques",
-        tags: ["Storytelling", "Visual Design", "Presentation Skills", "Communication", "Design Psychology"],
-        author: "Marcus Chen",
-        authorImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&q=80",
-        readTime: 10,
-        views: 2134,
-        likes: 156,
-        isPublished: true,
-        isFeatured: true,
-        publishedAt: new Date("2024-12-10"),
-      },
-      {
-        title: "Minimalism vs. Maximalism: Finding Your Presentation Design Style",
-        slug: "minimalism-vs-maximalism-presentation-design-style",
-        excerpt: "Explore the spectrum between minimalist and maximalist design approaches, and discover how ai powerpoint generator tools adapt to both aesthetics.",
-        content: `# Minimalism vs. Maximalism: Finding Your Presentation Design Style
-
-In the world of presentation design, two philosophies dominate: minimalism and maximalism. Both have their place, and understanding when to use each approach can dramatically improve your communication effectiveness.
-
-## The Minimalist Approach
-
-### Less is More
-
-Minimalist design strips away everything unnecessary, leaving only the essential elements. This approach:
-
-- Creates focus by eliminating distractions
-- Conveys sophistication and professionalism
-- Works exceptionally well for data-heavy presentations
-- Allows your message to take center stage
-
-### When to Go Minimal
-
-Choose minimalism when:
-- Presenting to executive audiences
-- Dealing with complex data or technical content
-- Your brand identity is clean and modern
-- You want to emphasize clarity over creativity
-
-Modern **ppt master** tools excel at creating minimalist designs, automatically applying generous whitespace and clean typography that lets your content breathe.
-
-## The Maximalist Approach
-
-### More is More
-
-Maximalist design embraces abundance—rich colors, layered textures, and bold visual elements. This style:
-
-- Creates memorable, distinctive presentations
-- Expresses creativity and personality
-- Engages audiences through visual excitement
-- Works well for creative industries and brand storytelling
-
-### When to Go Maximal
-
-Choose maximalism when:
-- Presenting creative work or artistic concepts
-- Your audience expects entertainment alongside information
-- Building brand identity for lifestyle or creative brands
-- You want to make a bold, unforgettable impression
-
-## The Spectrum Between
-
-Most effective presentations don't live at the extremes—they find a sweet spot that serves their specific purpose. An **ai powerpoint generator** can help you explore this spectrum, offering variations that range from austere to abundant.
-
-## Finding Your Style
-
-### Consider Your Context
-
-1. **Industry Norms**: Tech startups might lean minimal, while fashion brands embrace maximalism
-2. **Audience Expectations**: Know what resonates with your specific viewers
-3. **Content Type**: Data presentations often benefit from minimalism, while creative pitches can go bold
-4. **Brand Identity**: Your design should align with your overall brand aesthetic
-
-### Hybrid Approaches
-
-The most sophisticated presentations often blend both philosophies:
-
-- **Minimal structure with maximal accents**: Clean layouts with bold color moments
-- **Maximal visuals with minimal text**: Rich imagery paired with concise copy
-- **Progressive revelation**: Start minimal, build to maximal climax
-
-## Design Elements to Consider
-
-### Typography
-
-- **Minimalist**: One or two clean fonts, generous spacing
-- **Maximalist**: Multiple font weights, decorative elements, varied sizes
-
-### Color
-
-- **Minimalist**: Monochromatic or limited palette (2-3 colors)
-- **Maximalist**: Rich, varied palette with bold contrasts
-
-### Imagery
-
-- **Minimalist**: Selective, high-quality images with purpose
-- **Maximalist**: Layered visuals, patterns, textures, and overlays
-
-### Layout
-
-- **Minimalist**: Grid-based, symmetrical, predictable
-- **Maximalist**: Dynamic, asymmetrical, surprising
-
-## Tools for Both Approaches
-
-Whether you prefer minimal or maximal, modern **ppt master** platforms support both aesthetics. The key is understanding the principles behind each approach so you can guide the tools effectively.
-
-An **ai powerpoint generator** can create variations across the spectrum, allowing you to experiment and find what works best for your specific needs.
-
-## Case Studies
-
-### Minimalist Success: Apple Keynotes
-
-Apple's presentations are masterclasses in minimalism—simple slides with large images and minimal text. This approach puts focus entirely on the product and the presenter.
-
-### Maximalist Success: Creative Agency Pitches
-
-Design agencies often use rich, layered presentations that showcase their creative capabilities while presenting ideas. The presentation itself becomes a demonstration of their skills.
-
-## Making Your Choice
-
-Ask yourself:
-
-1. What's the primary goal of this presentation?
-2. Who is my audience, and what do they expect?
-3. What does my brand identity suggest?
-4. What feels authentic to my message?
-
-## Conclusion
-
-There's no universally "correct" design style—only the right style for your specific situation. Whether you embrace minimalism's clarity or maximalism's energy, the key is intentionality. Every design choice should serve your message and resonate with your audience.
-
-The beauty of modern design tools is that they empower you to explore both ends of the spectrum quickly, helping you discover your authentic presentation voice.`,
-        coverImage: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=1200&h=630&fit=crop&q=80",
-        category: "Design Philosophy",
-        tags: ["Minimalism", "Maximalism", "Design Theory", "Style Guide", "Visual Identity"],
-        author: "Elena Rodriguez",
-        authorImage: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&q=80",
-        readTime: 9,
-        views: 1876,
-        likes: 142,
-        isPublished: true,
-        isFeatured: true,
-        publishedAt: new Date("2024-12-08"),
-      },
-      {
-        title: "The Science of Slide Design: Evidence-Based Techniques for Better Presentations",
-        slug: "science-of-slide-design-evidence-based-techniques",
-        excerpt: "Dive into research-backed design principles that make presentations more effective, and learn how ppt master tools implement these scientific insights.",
-        content: `# The Science of Slide Design: Evidence-Based Techniques for Better Presentations
-
-Effective presentation design isn't just about aesthetics—it's rooted in cognitive science and psychology. Understanding how our brains process visual information can transform your slides from merely attractive to genuinely effective.
-
-## Cognitive Load Theory
-
-### The Three Types of Cognitive Load
-
-1. **Intrinsic Load**: The inherent difficulty of your content
-2. **Extraneous Load**: Unnecessary mental effort caused by poor design
-3. **Germane Load**: Productive mental effort that aids learning
-
-Good design minimizes extraneous load while supporting germane load. This is where **ai powerpoint generator** tools shine—they automatically apply principles that reduce cognitive friction.
-
-## The Picture Superiority Effect
-
-Research shows that people remember images better than words. After three days, people retain:
-
-- **10% of information** heard
-- **65% of information** paired with relevant images
-
-### Practical Application
-
-- Replace bullet points with relevant visuals whenever possible
-- Use icons to represent concepts
-- Include diagrams that illustrate relationships
-- Choose images that reinforce rather than decorate
-
-A skilled **ppt master** knows that every visual element should serve a purpose, not just fill space.
-
-## The Multimedia Principle
-
-People learn better from words and pictures than from words alone. However, there's a catch: the images must be relevant and well-integrated.
-
-### What Works
-
-- Diagrams with integrated labels
-- Process flows with explanatory text
-- Before/after comparisons
-- Annotated screenshots
-
-### What Doesn't Work
-
-- Decorative clipart that adds no meaning
-- Stock photos that don't relate to content
-- Overly complex diagrams that confuse rather than clarify
-
-## The Modality Effect
-
-When presenting, spoken words paired with visuals are more effective than written text on slides. This is why reading slides verbatim is so ineffective—it creates redundancy that actually impairs learning.
-
-### Design Implications
-
-- Keep text minimal on slides
-- Use visuals to support your spoken narrative
-- Avoid full sentences when possible
-- Let your voice provide the details
-
-## Color and Contrast Science
-
-### The Von Restorff Effect
-
-Items that stand out are more memorable. Use contrast strategically to highlight key information:
-
-- **High contrast** for important elements (dark text on light backgrounds)
-- **Color contrast** to draw attention to critical data
-- **Size contrast** to establish hierarchy
-
-### Color Associations
-
-Colors trigger psychological responses:
-
-- **Warm colors** (red, orange) increase arousal and attention
-- **Cool colors** (blue, green) promote calm and trust
-- **High saturation** creates energy and excitement
-- **Low saturation** feels sophisticated and professional
-
-Modern **ai powerpoint generator** platforms understand these principles and apply them automatically, selecting color schemes that support your message's emotional tone.
-
-## The Serial Position Effect
-
-People remember the first and last items in a sequence best. This has major implications for slide order:
-
-### Primacy Effect
-
-Your opening slides are crucial. Use them to:
-- Establish credibility
-- Hook attention
-- Frame the narrative
-
-### Recency Effect
-
-Your closing slides are equally important:
-- Summarize key takeaways
-- End with a strong call to action
-- Leave a memorable final impression
-
-## Gestalt Principles in Slide Design
-
-Our brains naturally organize visual information according to specific patterns:
-
-### Proximity
-
-Elements close together are perceived as related. Group related information visually.
-
-### Similarity
-
-Similar elements are perceived as belonging together. Use consistent styling for related content.
-
-### Continuity
-
-Our eyes follow lines and curves. Use this to guide attention through your slides.
-
-### Closure
-
-We mentally complete incomplete shapes. This can create engaging, sophisticated designs.
-
-## The Spacing Effect
-
-Information is better retained when learning is distributed over time. For presentations:
-
-- Break complex topics across multiple slides
-- Use progressive disclosure to reveal information gradually
-- Include recap slides to reinforce key points
-- Space similar concepts throughout your deck
-
-## Evidence-Based Typography
-
-### Readability Research
-
-Studies show that:
-
-- **Sans-serif fonts** are easier to read on screens
-- **Font size** should be at least 24pt for body text
-- **Line length** should be 50-75 characters maximum
-- **Line spacing** of 1.5x improves readability by 20%
-
-### Font Psychology
-
-Different typefaces convey different messages:
-
-- **Serif fonts**: Traditional, trustworthy, established
-- **Sans-serif fonts**: Modern, clean, approachable
-- **Script fonts**: Elegant, personal, creative (use sparingly)
-
-## The Testing Effect
-
-People learn better when they actively retrieve information. In presentations:
-
-- Ask questions that prompt thinking
-- Include interactive elements when possible
-- Use polls or quizzes to engage audiences
-- Create moments for reflection
-
-## Applying the Science
-
-### Checklist for Evidence-Based Design
-
-✓ Does each visual serve a clear purpose?
-✓ Is text minimal and easy to read?
-✓ Are colors used strategically, not decoratively?
-✓ Is information chunked into digestible pieces?
-✓ Does the design reduce cognitive load?
-✓ Are key messages emphasized through contrast?
-
-## The Role of AI in Scientific Design
-
-Modern **ppt master** tools incorporate these research findings into their algorithms. An **ai powerpoint generator** doesn't just make slides look good—it applies cognitive science principles to make them more effective.
-
-These tools analyze your content and automatically:
-- Optimize text-to-visual ratios
-- Apply appropriate color psychology
-- Structure information to minimize cognitive load
-- Suggest layouts that support learning
-
-## Conclusion
-
-Great presentation design isn't subjective—it's grounded in how humans process information. By applying these evidence-based principles, you create presentations that don't just look professional but actually work better.
-
-Whether you're designing manually or using an **ai powerpoint generator**, understanding the science behind effective slides gives you a significant advantage. Your audience may not consciously notice these principles at work, but their brains will—and that's what matters.
-
-The future of presentation design lies in the intersection of human creativity and scientific understanding, supported by tools that make best practices accessible to everyone.`,
-        coverImage: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1200&h=630&fit=crop&q=80",
-        category: "Design Science",
-        tags: ["Cognitive Science", "Psychology", "Research", "Best Practices", "Learning Design"],
-        author: "Dr. James Patterson",
-        authorImage: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&q=80",
-        readTime: 12,
-        views: 3421,
-        likes: 267,
-        isPublished: true,
-        isFeatured: true,
-        publishedAt: new Date("2024-12-05"),
-      },
-    ],
-  });
-
-  console.log(`Created ${blogPosts.count} design blog posts`);
-  console.log("Database seed completed successfully!");
+    });
+    createdPosts.push({ id: createdPost.id, title: createdPost.title });
+  }
+
+  console.log(`Created ${createdPosts.length} community posts`);
+
+  // Natural, casual comments
+  const commentTemplates = [
+    { content: "same here, thought i was the only one", authorName: "lurker99" },
+    { content: "this helped a lot thanks", authorName: "grateful_user" },
+    { content: "lol relatable", authorName: "been_there" },
+    { content: "saving this for later", authorName: "bookmark_queen" },
+    {
+      content: "tried this and it actually works",
+      authorName: "skeptic_converted",
+    },
+    { content: "wish i knew this earlier", authorName: "late_learner" },
+    { content: "great tip!", authorName: "simple_simon" },
+    {
+      content: "my experience exactly",
+      authorName: "kindred_spirit",
+    },
+    {
+      content: "following this thread",
+      authorName: "curious_cat",
+    },
+    {
+      content: "can confirm this works",
+      authorName: "verified_user",
+    },
+    {
+      content: "needed to hear this today",
+      authorName: "rough_day",
+    },
+    { content: "underrated tip right here", authorName: "tip_collector" },
+    { content: "this community is so helpful", authorName: "newbie_2024" },
+    { content: "adding my +1 for this feature", authorName: "feature_voter" },
+    { content: "yes please!", authorName: "enthusiastic_one" },
+    {
+      content: "been asking for this forever",
+      authorName: "patient_waiter",
+    },
+    { content: "would use this daily", authorName: "power_user" },
+    { content: "take my upvote", authorName: "upvote_giver" },
+    {
+      content: "this is the way",
+      authorName: "mando_fan",
+    },
+    { content: "facts", authorName: "truth_teller" },
+    {
+      content: "i do the same thing lol",
+      authorName: "twin_behavior",
+    },
+    {
+      content: "wait this is genius",
+      authorName: "mind_blown",
+    },
+    {
+      content: "why didnt i think of this",
+      authorName: "facepalm_moment",
+    },
+    { content: "sharing with my team", authorName: "team_sharer" },
+    {
+      content: "this should be pinned",
+      authorName: "pin_suggester",
+    },
+    {
+      content: "came here to say this",
+      authorName: "great_minds",
+    },
+    { content: "100%", authorName: "agreeable_andy" },
+    {
+      content: "finally someone said it",
+      authorName: "relieved_reader",
+    },
+    {
+      content: "bookmarked",
+      authorName: "organized_olivia",
+    },
+    { content: "thanks for sharing!", authorName: "polite_pete" },
+  ];
+
+  // Add 2-4 comments to each post
+  let totalComments = 0;
+  for (const post of createdPosts) {
+    const numComments = Math.floor(Math.random() * 3) + 2;
+    const shuffledComments = [...commentTemplates].sort(
+      () => Math.random() - 0.5
+    );
+
+    for (let i = 0; i < numComments; i++) {
+      const comment = shuffledComments[i];
+      if (comment) {
+        await prisma.communityComment.create({
+          data: {
+            postId: post.id,
+            content: comment.content,
+            authorName: comment.authorName,
+            likes: Math.floor(Math.random() * 30),
+            isApproved: true,
+            createdAt: new Date(
+              Date.now() - Math.random() * 20 * 24 * 60 * 60 * 1000
+            ),
+          },
+        });
+        totalComments++;
+      }
+    }
+  }
+
+  console.log(`Created ${totalComments} community comments`);
+  console.log("Community seed completed!");
 }
 
 main()

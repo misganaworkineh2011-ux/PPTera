@@ -86,5 +86,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error("Error fetching insight posts for sitemap:", error);
   }
 
-  return [...i18nUrls, ...staticPages, ...inspirationPages, ...insightPages];
+  // Fetch community posts for dynamic URLs
+  let communityPages: MetadataRoute.Sitemap = [];
+  try {
+    const communityPosts = await db.communityPost.findMany({
+      where: { isApproved: true },
+      select: {
+        id: true,
+        updatedAt: true,
+      },
+      orderBy: { updatedAt: "desc" },
+    });
+
+    communityPages = communityPosts.map((post) => ({
+      url: `${baseUrl}/community/${post.id}`,
+      lastModified: post.updatedAt,
+      changeFrequency: "weekly" as const,
+      priority: 0.5,
+    }));
+  } catch (error) {
+    console.error("Error fetching community posts for sitemap:", error);
+  }
+
+  return [
+    ...i18nUrls,
+    ...staticPages,
+    ...inspirationPages,
+    ...insightPages,
+    ...communityPages,
+  ];
 }

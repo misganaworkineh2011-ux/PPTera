@@ -7,6 +7,7 @@ import { Users, MessageSquare, Plus, ThumbsUp, Eye } from "lucide-react";
 import { useState, useEffect } from "react";
 import { LoadingButton } from "~/components/LoadingButton";
 import { toast } from "sonner";
+import Link from "next/link";
 
 interface CommunityPost {
   id: string;
@@ -32,9 +33,13 @@ export default function CommunityPageClient({ currentLang = "en" }: CommunityPag
   const t = getTranslations(currentLang);
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [offset, setOffset] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const LIMIT = 10;
   
   const [newPost, setNewPost] = useState({
     title: "",
@@ -45,23 +50,44 @@ export default function CommunityPageClient({ currentLang = "en" }: CommunityPag
   });
 
   useEffect(() => {
-    fetchPosts();
+    // Reset and fetch when category changes
+    setPosts([]);
+    setOffset(0);
+    fetchPosts(0, true);
   }, [selectedCategory]);
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (currentOffset: number, isInitial = false) => {
     try {
-      setLoading(true);
+      if (isInitial) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+      
       const url = selectedCategory === "all"
-        ? "/api/community/posts?limit=20"
-        : `/api/community/posts?category=${selectedCategory}&limit=20`;
+        ? `/api/community/posts?limit=${LIMIT}&offset=${currentOffset}`
+        : `/api/community/posts?category=${selectedCategory}&limit=${LIMIT}&offset=${currentOffset}`;
       const response = await fetch(url);
       const data = await response.json();
-      setPosts(data.posts || []);
+      
+      if (isInitial) {
+        setPosts(data.posts || []);
+      } else {
+        setPosts(prev => [...prev, ...(data.posts || [])]);
+      }
+      setHasMore(data.hasMore || false);
     } catch (error) {
       console.error("Failed to fetch posts:", error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
+  };
+
+  const handleLoadMore = () => {
+    const newOffset = offset + LIMIT;
+    setOffset(newOffset);
+    fetchPosts(newOffset, false);
   };
 
   const handleSubmitPost = async (e: React.FormEvent) => {
@@ -296,9 +322,10 @@ export default function CommunityPageClient({ currentLang = "en" }: CommunityPag
           ) : (
             <div className="space-y-4">
               {posts.map((post) => (
-                <div
+                <Link
                   key={post.id}
-                  className="rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-lg transition-all"
+                  href={`/community/${post.id}`}
+                  className="block rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-lg transition-all"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
@@ -313,7 +340,7 @@ export default function CommunityPageClient({ currentLang = "en" }: CommunityPag
                           {new Date(post.createdAt).toLocaleDateString()}
                         </span>
                       </div>
-                      <h3 className="text-xl font-bold text-slate-900 mb-2 hover:text-[#06b6d4] transition-colors cursor-pointer">
+                      <h3 className="text-xl font-bold text-slate-900 mb-2 hover:text-[#06b6d4] transition-colors">
                         {post.title}
                       </h3>
                       <p className="text-slate-600 line-clamp-2">{post.content}</p>
@@ -333,8 +360,28 @@ export default function CommunityPageClient({ currentLang = "en" }: CommunityPag
                       {post.comments.length} {t.comments || "comments"}
                     </span>
                   </div>
-                </div>
+                </Link>
               ))}
+            </div>
+          )}
+
+          {/* Load More Button */}
+          {!loading && hasMore && (
+            <div className="text-center mt-8">
+              <button
+                onClick={handleLoadMore}
+                disabled={loadingMore}
+                className="px-8 py-3 rounded-full border-2 border-[#06b6d4] text-[#06b6d4] font-semibold hover:bg-[#06b6d4] hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loadingMore ? (
+                  <span className="flex items-center gap-2">
+                    <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"></span>
+                    {t.loading || "Loading..."}
+                  </span>
+                ) : (
+                  t.loadMore || "Load More"
+                )}
+              </button>
             </div>
           )}
         </div>
