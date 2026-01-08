@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/server/db";
+import { sendNewsletterWelcome } from "~/lib/email";
 
 // POST - Subscribe to newsletter
 export async function POST(req: NextRequest) {
@@ -42,6 +43,12 @@ export async function POST(req: NextRequest) {
             unsubscribedAt: null,
           },
         });
+        
+        // Send welcome email for reactivation
+        sendNewsletterWelcome(email).catch((err) => {
+          console.error("Failed to send newsletter welcome email:", err);
+        });
+        
         return NextResponse.json({
           success: true,
           message: "Subscription reactivated!",
@@ -54,7 +61,10 @@ export async function POST(req: NextRequest) {
       data: { email },
     });
 
-    // TODO: Send welcome email
+    // Send welcome email (don't block on failure)
+    sendNewsletterWelcome(email).catch((err) => {
+      console.error("Failed to send newsletter welcome email:", err);
+    });
 
     return NextResponse.json({
       success: true,

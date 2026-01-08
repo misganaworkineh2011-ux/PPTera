@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/server/db";
+import { sendJobApplicationConfirmation, sendJobApplicationNotification } from "~/lib/email";
 
 // POST - Submit job application
 export async function POST(req: NextRequest) {
@@ -51,8 +52,23 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // TODO: Send confirmation email to applicant
-    // TODO: Notify HR team
+    // Send confirmation email to applicant (don't block on failure)
+    sendJobApplicationConfirmation(email, name, job.title).catch((err) => {
+      console.error("Failed to send job application confirmation:", err);
+    });
+
+    // Notify admin/HR team (don't block on failure)
+    sendJobApplicationNotification(
+      name,
+      email,
+      job.title,
+      resume,
+      coverLetter,
+      linkedIn,
+      portfolio
+    ).catch((err) => {
+      console.error("Failed to send job application notification:", err);
+    });
 
     return NextResponse.json(
       {
