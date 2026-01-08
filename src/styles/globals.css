@@ -238,3 +238,67 @@
     animation: chart-fade-in 0.5s ease-out forwards;
   }
 }
+
+/* ============================================================================
+   EDITING MODE: Disable ALL hover effects and interactions during text editing
+   ============================================================================ */
+
+/* Disable pointer events on ALL slide elements when editing */
+.slide-content-container:has([contenteditable="true"]:focus) *:not([contenteditable="true"]):not([contenteditable="true"] *):not([data-toolbar="true"]):not([data-toolbar="true"] *) {
+  pointer-events: none !important;
+}
+
+/* Re-enable pointer events ONLY for the editor and toolbar */
+.slide-content-container [contenteditable="true"],
+.slide-content-container [contenteditable="true"] *,
+[data-toolbar="true"],
+[data-toolbar="true"] * {
+  pointer-events: auto !important;
+}
+
+/* Hide ALL hover-triggered elements during editing */
+.slide-content-container:has([contenteditable="true"]:focus) .group-hover\:opacity-100,
+.slide-content-container:has([contenteditable="true"]:focus) .hover\:opacity-100,
+.slide-content-container:has([contenteditable="true"]:focus) .group-hover\:block,
+.slide-content-container:has([contenteditable="true"]:focus) .hover\:block,
+.slide-content-container:has([contenteditable="true"]:focus) .group-hover\:flex,
+.slide-content-container:has([contenteditable="true"]:focus) .hover\:flex {
+  opacity: 0 !important;
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Prevent hover state changes on images */
+.slide-content-container:has([contenteditable="true"]:focus) img:hover,
+.slide-content-container:has([contenteditable="true"]:focus) .group:hover img {
+  transform: none !important;
+  filter: none !important;
+}
+
+/* Hide image hover toolbars during editing */
+.slide-content-container:has([contenteditable="true"]:focus) [class*="ImageHoverToolbar"],
+.slide-content-container:has([contenteditable="true"]:focus) [class*="image-hover"],
+.slide-content-container:has([contenteditable="true"]:focus) button[title*="Edit"],
+.slide-content-container:has([contenteditable="true"]:focus) button[title*="Delete"]:not([contenteditable="true"] button) {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Disable hover effects on all buttons except editor buttons */
+.slide-content-container:has([contenteditable="true"]:focus) button:not([contenteditable="true"] button):not([data-toolbar="true"] button):hover {
+  background-color: inherit !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Prevent any transitions during editing to avoid flicker */
+.slide-content-container:has([contenteditable="true"]:focus) *:not([contenteditable="true"]):not([contenteditable="true"] *) {
+  transition: none !important;
+}
+
+/* Ensure editor is always on top */
+[contenteditable="true"]:focus {
+  position: relative;
+  z-index: 100 !important;
+}

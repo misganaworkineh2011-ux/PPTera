@@ -80,8 +80,6 @@ interface BulletLayoutRendererProps {
   onReorderItems?: (fromIndex: number, toIndex: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
-  /** When true, disables hover effects globally (e.g., when any text is being edited) */
-  disableHover?: boolean;
 }
 
 export function BulletLayoutRenderer({
@@ -102,7 +100,6 @@ export function BulletLayoutRenderer({
   onReorderItems,
   isOwner = false,
   isHovered = false,
-  disableHover = false,
 }: BulletLayoutRendererProps) {
   const displayItems = items.slice(0, 8);
   const themeStyles = getThemeStyles(theme, accentColor);
@@ -183,7 +180,6 @@ export function BulletLayoutRenderer({
         onDeleteItem={onDeleteItem}
         isOwner={isOwner}
         isHovered={isHovered}
-              disableHover={disableHover}
         canDrag={canDrag}
         dragProps={dragProps}
         getDragClasses={getDragClasses}
@@ -210,7 +206,6 @@ export function BulletLayoutRenderer({
         onDeleteItem={onDeleteItem}
         isOwner={isOwner}
         isHovered={isHovered}
-              disableHover={disableHover}
         canDrag={canDrag}
         dragProps={dragProps}
         getDragClasses={getDragClasses}
@@ -237,7 +232,6 @@ export function BulletLayoutRenderer({
         onDeleteItem={onDeleteItem}
         isOwner={isOwner}
         isHovered={isHovered}
-              disableHover={disableHover}
         canDrag={canDrag}
         dragProps={dragProps}
         getDragClasses={getDragClasses}
@@ -262,7 +256,6 @@ export function BulletLayoutRenderer({
       onDeleteItem={onDeleteItem}
       isOwner={isOwner}
       isHovered={isHovered}
-              disableHover={disableHover}
       canDrag={canDrag}
       dragProps={dragProps}
       getDragClasses={getDragClasses}
@@ -298,7 +291,6 @@ function CardBullets({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
-  disableHover = false,
   canDrag = false,
   dragProps,
   getDragClasses,
@@ -318,7 +310,6 @@ function CardBullets({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
-  disableHover?: boolean;
   canDrag?: boolean;
   dragProps?: (idx: number) => Record<string, unknown>;
   getDragClasses?: (idx: number) => string;
@@ -348,7 +339,6 @@ function CardBullets({
               onDeleteItem={onDeleteItem}
               isOwner={isOwner}
               isHovered={isHovered}
-              disableHover={disableHover}
               canDrag={canDrag}
               dragProps={dragProps}
               getDragClasses={getDragClasses}
@@ -372,7 +362,6 @@ function CardBullets({
             onDeleteItem={onDeleteItem}
             isOwner={isOwner}
             isHovered={isHovered}
-              disableHover={disableHover}
             canDrag={canDrag}
             dragProps={dragProps}
             getDragClasses={getDragClasses}
@@ -406,7 +395,6 @@ function CardBullets({
           onDeleteItem={onDeleteItem}
           isOwner={isOwner}
           isHovered={isHovered}
-              disableHover={disableHover}
           canDrag={canDrag}
           dragProps={dragProps}
           getDragClasses={getDragClasses}
@@ -432,7 +420,6 @@ function BulletCard({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
-  disableHover = false,
   canDrag = false,
   dragProps,
   getDragClasses,
@@ -451,7 +438,6 @@ function BulletCard({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
-  disableHover?: boolean;
   canDrag?: boolean;
   dragProps?: (idx: number) => Record<string, unknown>;
   getDragClasses?: (idx: number) => string;
@@ -510,7 +496,6 @@ function BulletCard({
                 style={{ color: themeStyles.titleColor }}
                 isOwner={isOwner}
                 isHovered={isHovered}
-              disableHover={disableHover}
               />
             ) : (
               <h3 className="text-lg font-semibold mb-2" style={{ color: themeStyles.titleColor }}>
@@ -530,7 +515,6 @@ function BulletCard({
               style={{ color: themeStyles.bodyColor }}
               isOwner={isOwner}
               isHovered={isHovered}
-              disableHover={disableHover}
             />
           ) : (
             <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
@@ -560,7 +544,6 @@ function SimpleBullets({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
-  disableHover = false,
   canDrag = false,
   dragProps,
   getDragClasses,
@@ -580,7 +563,6 @@ function SimpleBullets({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
-  disableHover?: boolean;
   canDrag?: boolean;
   dragProps?: (idx: number) => Record<string, unknown>;
   getDragClasses?: (idx: number) => string;
@@ -607,7 +589,6 @@ function SimpleBullets({
               onDeleteItem={onDeleteItem}
               isOwner={isOwner}
               isHovered={isHovered}
-              disableHover={disableHover}
               canDrag={canDrag}
               dragProps={dragProps}
               getDragClasses={getDragClasses}
@@ -630,7 +611,6 @@ function SimpleBullets({
             onDeleteItem={onDeleteItem}
             isOwner={isOwner}
             isHovered={isHovered}
-              disableHover={disableHover}
             canDrag={canDrag}
             dragProps={dragProps}
             getDragClasses={getDragClasses}
@@ -666,7 +646,6 @@ function SimpleBullets({
           onDeleteItem={onDeleteItem}
           isOwner={isOwner}
           isHovered={isHovered}
-              disableHover={disableHover}
           canDrag={canDrag}
           dragProps={dragProps}
           getDragClasses={getDragClasses}
@@ -691,7 +670,6 @@ function SimpleBulletItem({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
-  disableHover = false,
   canDrag = false,
   dragProps,
   getDragClasses,
@@ -709,7 +687,6 @@ function SimpleBulletItem({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
-  disableHover?: boolean;
   canDrag?: boolean;
   dragProps?: (idx: number) => Record<string, unknown>;
   getDragClasses?: (idx: number) => string;
@@ -754,7 +731,6 @@ function SimpleBulletItem({
               style={{ color: themeStyles.titleColor }}
               isOwner={isOwner}
               isHovered={isHovered}
-              disableHover={disableHover}
             />
           ) : (
             <h3 className="text-lg font-semibold mb-1" style={{ color: themeStyles.titleColor }}>
@@ -774,7 +750,6 @@ function SimpleBulletItem({
             style={{ color: themeStyles.bodyColor }}
             isOwner={isOwner}
             isHovered={isHovered}
-              disableHover={disableHover}
           />
         ) : (
           <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
@@ -802,7 +777,6 @@ function ArrowBullets({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
-  disableHover = false,
   canDrag = false,
   dragProps,
   getDragClasses,
@@ -821,7 +795,6 @@ function ArrowBullets({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
-  disableHover?: boolean;
   canDrag?: boolean;
   dragProps?: (idx: number) => Record<string, unknown>;
   getDragClasses?: (idx: number) => string;
@@ -875,7 +848,6 @@ function ArrowBullets({
                     style={{ color: themeStyles.titleColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
-              disableHover={disableHover}
                   />
                 ) : (
                   <h3 className="text-base font-semibold mb-1" style={{ color: themeStyles.titleColor }}>
@@ -895,7 +867,6 @@ function ArrowBullets({
                   style={{ color: themeStyles.bodyColor }}
                   isOwner={isOwner}
                   isHovered={isHovered}
-              disableHover={disableHover}
                 />
               ) : (
                 <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>

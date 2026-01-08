@@ -71,8 +71,6 @@ interface StepsLayoutRendererProps {
   onReorderItems?: (fromIndex: number, toIndex: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
-  /** When true, disables hover effects globally (e.g., when any text is being edited) */
-  disableHover?: boolean;
 }
 
 export function StepsLayoutRenderer({
@@ -93,7 +91,6 @@ export function StepsLayoutRenderer({
   onReorderItems,
   isOwner = false,
   isHovered = false,
-  disableHover = false,
 }: StepsLayoutRendererProps) {
   const displayItems = items.slice(0, 6);
   const themeStyles = getThemeStyles(theme, accentColor);
@@ -161,7 +158,6 @@ export function StepsLayoutRenderer({
         onDeleteItem={onDeleteItem}
         isOwner={isOwner}
         isHovered={isHovered}
-                disableHover={disableHover}
         {...dragProps}
       />
     );
@@ -183,7 +179,6 @@ export function StepsLayoutRenderer({
         onDeleteItem={onDeleteItem}
         isOwner={isOwner}
         isHovered={isHovered}
-                disableHover={disableHover}
         {...dragProps}
       />
     );
@@ -206,7 +201,6 @@ export function StepsLayoutRenderer({
         onDeleteItem={onDeleteItem}
         isOwner={isOwner}
         isHovered={isHovered}
-                disableHover={disableHover}
         {...dragProps}
       />
     );
@@ -227,7 +221,6 @@ export function StepsLayoutRenderer({
       onDeleteItem={onDeleteItem}
       isOwner={isOwner}
       isHovered={isHovered}
-                disableHover={disableHover}
       {...dragProps}
     />
   );
@@ -261,7 +254,6 @@ function PyramidSteps({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
-  disableHover = false,
   draggedIndex,
   dragOverIndex,
   onDragStart,
@@ -284,7 +276,6 @@ function PyramidSteps({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
-  disableHover?: boolean;
 } & DragProps) {
   const itemCount = items.length;
   const pyramidWidth = 280;
@@ -475,7 +466,6 @@ function PyramidSteps({
                       style={{ color: themeStyles.titleColor }}
                       isOwner={isOwner}
                       isHovered={isHovered}
-                disableHover={disableHover}
                     />
                   ) : (
                     <h3
@@ -499,7 +489,6 @@ function PyramidSteps({
                     style={{ color: themeStyles.bodyColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
-                disableHover={disableHover}
                   />
                 ) : (
                   <p
@@ -534,7 +523,6 @@ function ArrowSteps({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
-  disableHover = false,
   draggedIndex,
   dragOverIndex,
   onDragStart,
@@ -557,7 +545,6 @@ function ArrowSteps({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
-  disableHover?: boolean;
 } & DragProps) {
   const minRowHeight = 60; // Minimum row height
   const contentRefs = React.useRef<(HTMLDivElement | null)[]>([]);
@@ -672,7 +659,6 @@ function ArrowSteps({
                     style={{ color: themeStyles.titleColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
-                disableHover={disableHover}
                   />
                 ) : (
                   <h3 className="text-lg font-semibold mb-1" style={{ color: themeStyles.titleColor }}>
@@ -692,7 +678,6 @@ function ArrowSteps({
                   style={{ color: themeStyles.bodyColor }}
                   isOwner={isOwner}
                   isHovered={isHovered}
-                disableHover={disableHover}
                 />
               ) : (
                 <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
@@ -723,7 +708,6 @@ function CardSteps({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
-  disableHover = false,
   draggedIndex,
   dragOverIndex,
   onDragStart,
@@ -747,7 +731,6 @@ function CardSteps({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
-  disableHover?: boolean;
 } & DragProps) {
   const itemCount = items.length;
   const baseMinHeight = 120;
@@ -837,7 +820,6 @@ function CardSteps({
                     style={{ color: themeStyles.titleColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
-                disableHover={disableHover}
                   />
                 ) : (
                   <h3 className="text-base font-semibold mb-2" style={{ color: themeStyles.titleColor }}>
@@ -857,7 +839,6 @@ function CardSteps({
                   style={{ color: themeStyles.bodyColor }}
                   isOwner={isOwner}
                   isHovered={isHovered}
-                disableHover={disableHover}
                 />
               ) : (
                 <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
@@ -920,7 +901,6 @@ function CardSteps({
                   style={{ color: themeStyles.titleColor }}
                   isOwner={isOwner}
                   isHovered={isHovered}
-                disableHover={disableHover}
                 />
               ) : (
                 <h3 className="text-base font-semibold mb-2" style={{ color: themeStyles.titleColor }}>
@@ -940,7 +920,6 @@ function CardSteps({
                 style={{ color: themeStyles.bodyColor }}
                 isOwner={isOwner}
                 isHovered={isHovered}
-                disableHover={disableHover}
               />
             ) : (
               <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
@@ -969,7 +948,6 @@ function BarSteps({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
-  disableHover = false,
   draggedIndex,
   dragOverIndex,
   onDragStart,
@@ -992,7 +970,6 @@ function BarSteps({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
-  disableHover?: boolean;
 } & DragProps) {
   const itemCount = items.length;
   const minBarHeight = 60; // Minimum height for bar
@@ -1103,7 +1080,6 @@ function BarSteps({
                     style={{ color: themeStyles.accentColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
-                disableHover={disableHover}
                   />
                 ) : (
                   <h3
@@ -1126,7 +1102,6 @@ function BarSteps({
                   style={{ color: themeStyles.bodyColor }}
                   isOwner={isOwner}
                   isHovered={isHovered}
-                disableHover={disableHover}
                 />
               ) : (
                 <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>

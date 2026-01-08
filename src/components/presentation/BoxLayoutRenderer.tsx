@@ -35,8 +35,6 @@ interface BoxLayoutRendererProps {
   onReorderItems?: (fromIndex: number, toIndex: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
-  /** When true, disables hover effects globally (e.g., when any text is being edited) */
-  disableHover?: boolean;
 }
 
 export default function BoxLayoutRenderer({
@@ -58,7 +56,6 @@ export default function BoxLayoutRenderer({
   onReorderItems,
   isOwner = false,
   isHovered = false,
-  disableHover = false,
 }: BoxLayoutRendererProps & { hasImage?: boolean }) {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -128,7 +125,6 @@ export default function BoxLayoutRenderer({
           }}
           isOwner={isOwner}
           isHovered={isHovered}
-          disableHover={disableHover}
         />
       ) : (
         <h3
@@ -161,7 +157,6 @@ export default function BoxLayoutRenderer({
         }}
         isOwner={isOwner}
         isHovered={isHovered}
-          disableHover={disableHover}
       />
     ) : (
       <p
