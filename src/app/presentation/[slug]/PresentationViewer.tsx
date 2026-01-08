@@ -960,10 +960,44 @@ export default function PresentationViewer({
       slide.subtitle = value;
     } else if (field === "slideDescription") {
       slide.slideDescription = value;
+    } else if (field === "introText") {
+      slide.introText = value;
+    } else if (field === "tagline") {
+      slide.tagline = value;
     } else if (field === "bullet" && bulletIndex !== undefined) {
-      const bullets = [...(slide.bulletPoints || [])];
+      // Initialize bulletPoints from transformedContent if needed
+      let bullets = [...(slide.bulletPoints || [])];
+      
+      // If bulletPoints is empty but transformedContent exists, initialize from it
+      if (bullets.length === 0 && slide.transformedContent?.items) {
+        bullets = slide.transformedContent.items.map(item => 
+          item.label ? `${item.label}: ${item.text}` : item.text
+        );
+      }
+      
+      // Ensure the array is long enough
+      while (bullets.length <= bulletIndex) {
+        bullets.push("");
+      }
+      
       bullets[bulletIndex] = value;
       slide.bulletPoints = bullets;
+      // Clear transformedContent so bulletPoints take precedence in rendering
+      slide.transformedContent = undefined;
+    } else if (field === "sectionHeading" && bulletIndex !== undefined) {
+      // Handle section heading edits
+      const sections = [...(slide.sections || [])];
+      if (sections[bulletIndex]) {
+        sections[bulletIndex] = { ...sections[bulletIndex], heading: value };
+        slide.sections = sections;
+      }
+    } else if (field === "sectionDescription" && bulletIndex !== undefined) {
+      // Handle section description edits
+      const sections = [...(slide.sections || [])];
+      if (sections[bulletIndex]) {
+        sections[bulletIndex] = { ...sections[bulletIndex], description: value };
+        slide.sections = sections;
+      }
     }
     
     newSlides[slideIndex] = slide;
@@ -1520,10 +1554,12 @@ export default function PresentationViewer({
           // 2. Content layout panel is open
           // 3. There's an active text selection (user might be using WYSIWYG toolbar)
           // 4. Mouse is moving to a child element (toolbar, etc.)
-          const relatedTarget = e.relatedTarget as HTMLElement | null;
-          const isMovingToToolbar = relatedTarget?.closest('[data-toolbar]') || 
-                                    relatedTarget?.closest('.text-toolbar') ||
-                                    relatedTarget?.closest('[role="toolbar"]');
+          const relatedTarget = e.relatedTarget;
+          const isMovingToToolbar = (relatedTarget instanceof Element) && (
+            relatedTarget.closest('[data-toolbar]') || 
+            relatedTarget.closest('.text-toolbar') ||
+            relatedTarget.closest('[role="toolbar"]')
+          );
           
           const selection = window.getSelection();
           const hasActiveSelection = selection && !selection.isCollapsed && selection.toString().trim().length > 0;
