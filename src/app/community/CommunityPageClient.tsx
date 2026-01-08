@@ -7,6 +7,7 @@ import { Users, MessageSquare, Plus, ThumbsUp, Eye } from "lucide-react";
 import { useState, useEffect } from "react";
 import { LoadingButton } from "~/components/LoadingButton";
 import { toast } from "sonner";
+import Link from "next/link";
 
 interface CommunityPost {
   id: string;
@@ -296,9 +297,10 @@ export default function CommunityPageClient({ currentLang = "en" }: CommunityPag
           ) : (
             <div className="space-y-4">
               {posts.map((post) => (
-                <div
+                <Link
                   key={post.id}
-                  className="rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-lg transition-all"
+                  href={`/community/${post.id}`}
+                  className="block rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-lg transition-all"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
@@ -313,7 +315,7 @@ export default function CommunityPageClient({ currentLang = "en" }: CommunityPag
                           {new Date(post.createdAt).toLocaleDateString()}
                         </span>
                       </div>
-                      <h3 className="text-xl font-bold text-slate-900 mb-2 hover:text-[#06b6d4] transition-colors cursor-pointer">
+                      <h3 className="text-xl font-bold text-slate-900 mb-2 hover:text-[#06b6d4] transition-colors">
                         {post.title}
                       </h3>
                       <p className="text-slate-600 line-clamp-2">{post.content}</p>
@@ -333,7 +335,7 @@ export default function CommunityPageClient({ currentLang = "en" }: CommunityPag
                       {post.comments.length} {t.comments || "comments"}
                     </span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
