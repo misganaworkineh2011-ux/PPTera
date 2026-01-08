@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useRef } from "react";
+import { GripVertical } from "lucide-react";
 import type { Theme } from "~/lib/themes";
 import type {
   BoxLayout,
@@ -21,8 +23,7 @@ interface BoxLayoutRendererProps {
   compact?: boolean;
   showIcons?: boolean;
   className?: string;
-  isNarrowSpace?: boolean; // true when image is left/right, false when top/bottom
-  // Editing props
+  isNarrowSpace?: boolean;
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
   onStartEditLabel?: (index: number) => void;
@@ -31,6 +32,7 @@ interface BoxLayoutRendererProps {
   onUpdateText?: (index: number, value: string) => void;
   onFinishEditing?: () => void;
   onDeleteItem?: (index: number) => void;
+  onReorderItems?: (fromIndex: number, toIndex: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
 }
@@ -40,10 +42,9 @@ export default function BoxLayoutRenderer({
   items,
   theme,
   compact = false,
-  showIcons = true,
   className = "",
   isNarrowSpace = false,
-  hasImage = false, // New prop to indicate if slide has image
+  hasImage = false,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -52,9 +53,14 @@ export default function BoxLayoutRenderer({
   onUpdateText,
   onFinishEditing,
   onDeleteItem,
+  onReorderItems,
   isOwner = false,
   isHovered = false,
 }: BoxLayoutRendererProps & { hasImage?: boolean }) {
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const dragRefs = useRef<(HTMLDivElement | null)[]>([]);
+
   const layout = layoutId
     ? getBoxLayoutById(layoutId) || getRecommendedBoxLayout(items.length)
     : getRecommendedBoxLayout(items.length);
@@ -64,382 +70,232 @@ export default function BoxLayoutRenderer({
   const gridStyles = getBoxLayoutGridTemplate(items.length, isNarrowSpace, hasImage);
   const baseStyles = getBaseBoxStyles(theme);
 
-  // Style-specific rendering
-  const renderBox = (item: BoxContentItem, index: number) => {
+  const handleDragStart = (e: React.DragEvent, idx: number) => {
+    if (!isOwner || !onReorderItems) return;
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", idx.toString());
+    setDraggedIndex(idx);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    if (!isOwner || !onReorderItems || draggedIndex === null) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (idx !== draggedIndex) {
+      setDragOverIndex(idx);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, toIdx: number) => {
+    if (!isOwner || !onReorderItems) return;
+    e.preventDefault();
+    const fromIdx = parseInt(e.dataTransfer.getData("text/plain"), 10);
+    if (!isNaN(fromIdx) && fromIdx !== toIdx) {
+      onReorderItems(fromIdx, toIdx);
+    }
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const renderBoxContent = (item: BoxContentItem, idx: number) => {
+    const labelElement = item.label && (
+      onStartEditLabel ? (
+        <EditableText
+          value={item.label}
+          isEditing={isEditing && editingText?.field === `content-label-${idx}`}
+          onStartEdit={() => onStartEditLabel(idx)}
+          onChange={(val) => onUpdateLabel?.(idx, val)}
+          onFinish={onFinishEditing || (() => {})}
+          onDelete={onDeleteItem ? () => onDeleteItem(idx) : undefined}
+          className="font-serif mb-3"
+          style={{
+            color: baseStyles.titleColor,
+            fontSize: compact ? "1.1rem" : "1.25rem",
+            textAlign: "center",
+            fontWeight: "600",
+          }}
+          isOwner={isOwner}
+          isHovered={isHovered}
+        />
+      ) : (
+        <h3
+          className="font-serif mb-3"
+          style={{
+            color: baseStyles.titleColor,
+            fontSize: compact ? "1.1rem" : "1.25rem",
+            textAlign: "center",
+            fontWeight: "600",
+          }}
+        >
+          {item.label}
+        </h3>
+      )
+    );
+
+    const textElement = onStartEditText ? (
+      <EditableText
+        value={item.text}
+        isEditing={isEditing && editingText?.field === `content-text-${idx}`}
+        onStartEdit={() => onStartEditText(idx)}
+        onChange={(val) => onUpdateText?.(idx, val)}
+        onFinish={onFinishEditing || (() => {})}
+        onDelete={onDeleteItem ? () => onDeleteItem(idx) : undefined}
+        style={{
+          color: baseStyles.bodyColor,
+          fontSize: compact ? "1rem" : "1.1rem",
+          lineHeight: 1.5,
+          textAlign: "center",
+        }}
+        isOwner={isOwner}
+        isHovered={isHovered}
+      />
+    ) : (
+      <p
+        style={{
+          color: baseStyles.bodyColor,
+          fontSize: compact ? "1rem" : "1.1rem",
+          lineHeight: 1.5,
+          textAlign: "center",
+        }}
+      >
+        {item.text}
+      </p>
+    );
+
+    return { labelElement, textElement };
+  };
+
+  const renderBox = (item: BoxContentItem, idx: number) => {
     const commonClasses = "flex flex-col h-full w-full transition-all duration-200 hover:shadow-lg relative";
+    const isDragging = draggedIndex === idx;
+    const isDragOver = dragOverIndex === idx;
+    const canDrag = isOwner && onReorderItems && items.length > 1;
+    const { labelElement, textElement } = renderBoxContent(item, idx);
+
+    const dragProps = canDrag ? {
+      draggable: true,
+      onDragStart: (e: React.DragEvent) => handleDragStart(e, idx),
+      onDragEnd: handleDragEnd,
+      onDragOver: (e: React.DragEvent) => handleDragOver(e, idx),
+      onDragLeave: handleDragLeave,
+      onDrop: (e: React.DragEvent) => handleDrop(e, idx),
+    } : {};
+
+    const wrapperClasses = `relative group/drag-item h-full ${isDragging ? "opacity-50" : ""} ${isDragOver ? "ring-2 ring-blue-500 ring-offset-2" : ""}`;
+    const wrapperStyle = { cursor: canDrag ? "grab" : "default" };
+
+    const dragHandle = canDrag && (
+      <div 
+        className="absolute -left-5 top-1/2 -translate-y-1/2 opacity-0 group-hover/drag-item:opacity-60 transition-opacity cursor-grab z-20"
+        title="Drag to reorder"
+      >
+        <GripVertical size={14} className="text-current" />
+      </div>
+    );
     
     switch (layout.id) {
-      case "box-style-1": // Side Accent
+      case "box-style-1":
         return (
-          <div
-            key={index}
-            className={commonClasses}
-            style={{
+          <div key={idx} ref={(el) => { dragRefs.current[idx] = el; }} className={wrapperClasses} style={wrapperStyle} {...dragProps}>
+            {dragHandle}
+            <div className={commonClasses} style={{
               backgroundColor: baseStyles.bgColor,
               borderRadius: baseStyles.borderRadius,
               boxShadow: baseStyles.shadow,
               borderLeft: `6px solid ${baseStyles.accentColor}`,
-              paddingTop: compact ? "1.25rem" : "2rem",
-              paddingBottom: compact ? "1.25rem" : "2rem",
-              paddingLeft: compact ? "0.875rem" : "1.25rem",
-              paddingRight: compact ? "0.875rem" : "1.25rem",
-            }}
-          >
-            {item.label && (
-              onStartEditLabel ? (
-                <EditableText
-                  value={item.label}
-                  isEditing={isEditing && editingText?.field === `content-label-${index}`}
-                  onStartEdit={() => onStartEditLabel(index)}
-                  onChange={(val) => onUpdateLabel?.(index, val)}
-                  onFinish={onFinishEditing || (() => {})}
-                  onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                  className="font-serif mb-3"
-                  style={{
-                    color: baseStyles.titleColor,
-                    fontSize: compact ? "1.1rem" : "1.25rem",
-                    textAlign: "center",
-                    fontWeight: "600",
-                  }}
-                  isOwner={isOwner}
-                  isHovered={isHovered}
-                />
-              ) : (
-                <h3
-                  className="font-serif mb-3"
-                  style={{
-                    color: baseStyles.titleColor,
-                    fontSize: compact ? "1.1rem" : "1.25rem",
-                    textAlign: "center",
-                    fontWeight: "600",
-                  }}
-                >
-                  {item.label}
-                </h3>
-              )
-            )}
-            {onStartEditText ? (
-              <EditableText
-                value={item.text}
-                isEditing={isEditing && editingText?.field === `content-text-${index}`}
-                onStartEdit={() => onStartEditText(index)}
-                onChange={(val) => onUpdateText?.(index, val)}
-                onFinish={onFinishEditing || (() => {})}
-                onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                style={{
-                  color: baseStyles.bodyColor,
-                  fontSize: compact ? "1rem" : "1.1rem",
-                  lineHeight: 1.5,
-                  textAlign: "center",
-                }}
-                isOwner={isOwner}
-                isHovered={isHovered}
-              />
-            ) : (
-              <p
-                style={{
-                  color: baseStyles.bodyColor,
-                  fontSize: compact ? "1rem" : "1.1rem",
-                  lineHeight: 1.5,
-                  textAlign: "center",
-                }}
-              >
-                {item.text}
-              </p>
-            )}
-          </div>
-        );
-
-      case "box-style-2": // Minimal
-        return (
-          <div
-            key={index}
-            className={commonClasses}
-            style={{
-              backgroundColor: baseStyles.bgColor,
-              borderRadius: baseStyles.borderRadius,
-              boxShadow: baseStyles.shadow,
-              border: `1px solid ${baseStyles.borderColor}`,
-              paddingTop: compact ? "1.25rem" : "2rem",
-              paddingBottom: compact ? "1.25rem" : "2rem",
-              paddingLeft: compact ? "0.875rem" : "1.25rem",
-              paddingRight: compact ? "0.875rem" : "1.25rem",
-            }}
-          >
-            {item.label && (
-              onStartEditLabel ? (
-                <EditableText
-                  value={item.label}
-                  isEditing={isEditing && editingText?.field === `content-label-${index}`}
-                  onStartEdit={() => onStartEditLabel(index)}
-                  onChange={(val) => onUpdateLabel?.(index, val)}
-                  onFinish={onFinishEditing || (() => {})}
-                  onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                  className="font-serif mb-3"
-                  style={{
-                    color: baseStyles.titleColor,
-                    fontSize: compact ? "1.1rem" : "1.25rem",
-                    textAlign: "center",
-                    fontWeight: "600",
-                  }}
-                  isOwner={isOwner}
-                  isHovered={isHovered}
-                />
-              ) : (
-                <h3
-                  className="font-serif mb-3"
-                  style={{
-                    color: baseStyles.titleColor,
-                    fontSize: compact ? "1.1rem" : "1.25rem",
-                    textAlign: "center",
-                    fontWeight: "600",
-                  }}
-                >
-                  {item.label}
-                </h3>
-              )
-            )}
-            {onStartEditText ? (
-              <EditableText
-                value={item.text}
-                isEditing={isEditing && editingText?.field === `content-text-${index}`}
-                onStartEdit={() => onStartEditText(index)}
-                onChange={(val) => onUpdateText?.(index, val)}
-                onFinish={onFinishEditing || (() => {})}
-                onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                style={{
-                  color: baseStyles.bodyColor,
-                  fontSize: compact ? "1rem" : "1.1rem",
-                  lineHeight: 1.5,
-                  textAlign: "center",
-                }}
-                isOwner={isOwner}
-                isHovered={isHovered}
-              />
-            ) : (
-              <p
-                style={{
-                  color: baseStyles.bodyColor,
-                  fontSize: compact ? "1rem" : "1.1rem",
-                  lineHeight: 1.5,
-                  textAlign: "center",
-                }}
-              >
-                {item.text}
-              </p>
-            )}
-          </div>
-        );
-
-      case "box-style-3": // Icon Focus - has room for icon
-        return (
-          <div
-            key={index}
-            className={commonClasses}
-            style={{
-              backgroundColor: baseStyles.bgColor,
-              borderRadius: baseStyles.borderRadius,
-              boxShadow: baseStyles.shadow,
-              border: `1px solid ${baseStyles.borderColor}`,
-              paddingTop: compact ? "1.25rem" : "2rem",
-              paddingBottom: compact ? "1.25rem" : "2rem",
-              paddingLeft: compact ? "0.875rem" : "1.25rem",
-              paddingRight: compact ? "0.875rem" : "1.25rem",
-            }}
-          >
-            {/* Icon placeholder area - only shows if icon exists */}
-            {item.icon && (
-              <div className="flex justify-center mb-4">
-                <div
-                  className="rounded-full flex items-center justify-center"
-                  style={{
-                    backgroundColor: baseStyles.accentColor,
-                    width: compact ? "36px" : "48px",
-                    height: compact ? "36px" : "48px",
-                    color: "white",
-                    fontSize: compact ? "18px" : "24px",
-                  }}
-                >
-                  {item.icon}
-                </div>
-              </div>
-            )}
-            {item.label && (
-              onStartEditLabel ? (
-                <EditableText
-                  value={item.label}
-                  isEditing={isEditing && editingText?.field === `content-label-${index}`}
-                  onStartEdit={() => onStartEditLabel(index)}
-                  onChange={(val) => onUpdateLabel?.(index, val)}
-                  onFinish={onFinishEditing || (() => {})}
-                  onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                  className="font-serif mb-3"
-                  style={{
-                    color: baseStyles.titleColor,
-                    fontSize: compact ? "1.1rem" : "1.25rem",
-                    textAlign: "center",
-                    fontWeight: "600",
-                  }}
-                  isOwner={isOwner}
-                  isHovered={isHovered}
-                />
-              ) : (
-                <h3
-                  className="font-serif mb-3"
-                  style={{
-                    color: baseStyles.titleColor,
-                    fontSize: compact ? "1.1rem" : "1.25rem",
-                    textAlign: "center",
-                    fontWeight: "600",
-                  }}
-                >
-                  {item.label}
-                </h3>
-              )
-            )}
-            {onStartEditText ? (
-              <EditableText
-                value={item.text}
-                isEditing={isEditing && editingText?.field === `content-text-${index}`}
-                onStartEdit={() => onStartEditText(index)}
-                onChange={(val) => onUpdateText?.(index, val)}
-                onFinish={onFinishEditing || (() => {})}
-                onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                style={{
-                  color: baseStyles.bodyColor,
-                  fontSize: compact ? "1rem" : "1.1rem",
-                  lineHeight: 1.5,
-                  textAlign: "center",
-                }}
-                isOwner={isOwner}
-                isHovered={isHovered}
-              />
-            ) : (
-              <p
-                style={{
-                  color: baseStyles.bodyColor,
-                  fontSize: compact ? "1rem" : "1.1rem",
-                  lineHeight: 1.5,
-                  textAlign: "center",
-                }}
-              >
-                {item.text}
-              </p>
-            )}
-          </div>
-        );
-
-      case "box-style-4": // Header Accent - has room for icon
-        return (
-          <div
-            key={index}
-            className={commonClasses}
-            style={{
-              backgroundColor: baseStyles.bgColor,
-              borderRadius: baseStyles.borderRadius,
-              boxShadow: baseStyles.shadow,
-              border: `1px solid ${baseStyles.borderColor}`,
-              paddingTop: compact ? "2.5rem" : "3rem", // Space reserved for the top overlapping icon
-            }}
-          >
-            {/* Top Accent Bar - always visible as part of design */}
-            <div
-              className="absolute top-0 left-0 right-0"
-              style={{
-                height: "6px",
-                backgroundColor: baseStyles.accentColor,
-              }}
-            />
-            
-            {/* Overlapping Icon placeholder - only shows if icon exists */}
-            {item.icon && (
-              <div 
-                className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-[3px]"
-                style={{
-                  zIndex: 10
-                }}
-              >
-                 <div
-                  className="rounded-full flex items-center justify-center"
-                  style={{
-                    backgroundColor: baseStyles.accentColor,
-                    width: compact ? "36px" : "48px",
-                    height: compact ? "36px" : "48px",
-                    color: "white",
-                    fontSize: compact ? "18px" : "24px",
-                  }}
-                >
-                  {item.icon}
-                </div>
-              </div>
-            )}
-
-            <div style={{ 
-              paddingTop: 0,
-              paddingBottom: compact ? "1.25rem" : "2rem",
-              paddingLeft: compact ? "0.875rem" : "1.25rem",
-              paddingRight: compact ? "0.875rem" : "1.25rem",
+              padding: compact ? "1.25rem 0.875rem" : "2rem 1.25rem",
             }}>
-              {onStartEditLabel ? (
-                <EditableText
-                  value={item.label || ""}
-                  isEditing={isEditing && editingText?.field === `content-label-${index}`}
-                  onStartEdit={() => onStartEditLabel(index)}
-                  onChange={(val) => onUpdateLabel?.(index, val)}
-                  onFinish={onFinishEditing || (() => {})}
-                  onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                  className="font-serif mb-3 mt-4"
-                  style={{
-                    color: baseStyles.titleColor,
-                    fontSize: compact ? "1.1rem" : "1.25rem",
-                    textAlign: "center",
-                    fontWeight: "600",
-                  }}
-                  isOwner={isOwner}
-                  isHovered={isHovered}
-                />
-              ) : (
-                <h3
-                  className="font-serif mb-3 mt-4"
-                  style={{
-                    color: baseStyles.titleColor,
-                    fontSize: compact ? "1.1rem" : "1.25rem",
-                    textAlign: "center",
-                    fontWeight: "600",
-                  }}
-                >
-                  {item.label}
-                </h3>
+              {labelElement}
+              {textElement}
+            </div>
+          </div>
+        );
+
+      case "box-style-2":
+        return (
+          <div key={idx} ref={(el) => { dragRefs.current[idx] = el; }} className={wrapperClasses} style={wrapperStyle} {...dragProps}>
+            {dragHandle}
+            <div className={commonClasses} style={{
+              backgroundColor: baseStyles.bgColor,
+              borderRadius: baseStyles.borderRadius,
+              boxShadow: baseStyles.shadow,
+              border: `1px solid ${baseStyles.borderColor}`,
+              padding: compact ? "1.25rem 0.875rem" : "2rem 1.25rem",
+            }}>
+              {labelElement}
+              {textElement}
+            </div>
+          </div>
+        );
+
+      case "box-style-3":
+        return (
+          <div key={idx} ref={(el) => { dragRefs.current[idx] = el; }} className={wrapperClasses} style={wrapperStyle} {...dragProps}>
+            {dragHandle}
+            <div className={commonClasses} style={{
+              backgroundColor: baseStyles.bgColor,
+              borderRadius: baseStyles.borderRadius,
+              boxShadow: baseStyles.shadow,
+              border: `1px solid ${baseStyles.borderColor}`,
+              padding: compact ? "1.25rem 0.875rem" : "2rem 1.25rem",
+            }}>
+              {item.icon && (
+                <div className="flex justify-center mb-4">
+                  <div className="rounded-full flex items-center justify-center" style={{
+                    backgroundColor: baseStyles.accentColor,
+                    width: compact ? "36px" : "48px",
+                    height: compact ? "36px" : "48px",
+                    color: "white",
+                    fontSize: compact ? "18px" : "24px",
+                  }}>
+                    {item.icon}
+                  </div>
+                </div>
               )}
-              {onStartEditText ? (
-                <EditableText
-                  value={item.text}
-                  isEditing={isEditing && editingText?.field === `content-text-${index}`}
-                  onStartEdit={() => onStartEditText(index)}
-                  onChange={(val) => onUpdateText?.(index, val)}
-                  onFinish={onFinishEditing || (() => {})}
-                  onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                  style={{
-                    color: baseStyles.bodyColor,
-                    fontSize: compact ? "1rem" : "1.1rem",
-                    lineHeight: 1.5,
-                    textAlign: "center",
-                  }}
-                  isOwner={isOwner}
-                  isHovered={isHovered}
-                />
-              ) : (
-                <p
-                  style={{
-                    color: baseStyles.bodyColor,
-                    fontSize: compact ? "1rem" : "1.1rem",
-                    lineHeight: 1.5,
-                    textAlign: "center",
-                  }}
-                >
-                  {item.text}
-                </p>
+              {labelElement}
+              {textElement}
+            </div>
+          </div>
+        );
+
+      case "box-style-4":
+        return (
+          <div key={idx} ref={(el) => { dragRefs.current[idx] = el; }} className={wrapperClasses} style={wrapperStyle} {...dragProps}>
+            {dragHandle}
+            <div className={commonClasses} style={{
+              backgroundColor: baseStyles.bgColor,
+              borderRadius: baseStyles.borderRadius,
+              boxShadow: baseStyles.shadow,
+              border: `1px solid ${baseStyles.borderColor}`,
+              paddingTop: compact ? "2.5rem" : "3rem",
+            }}>
+              <div className="absolute top-0 left-0 right-0" style={{ height: "6px", backgroundColor: baseStyles.accentColor }} />
+              {item.icon && (
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-[3px]" style={{ zIndex: 10 }}>
+                  <div className="rounded-full flex items-center justify-center" style={{
+                    backgroundColor: baseStyles.accentColor,
+                    width: compact ? "36px" : "48px",
+                    height: compact ? "36px" : "48px",
+                    color: "white",
+                    fontSize: compact ? "18px" : "24px",
+                  }}>
+                    {item.icon}
+                  </div>
+                </div>
               )}
+              <div style={{ padding: compact ? "0 0.875rem 1.25rem" : "0 1.25rem 2rem" }}>
+                {labelElement}
+                {textElement}
+              </div>
             </div>
           </div>
         );
@@ -449,61 +305,33 @@ export default function BoxLayoutRenderer({
     }
   };
 
-  // Special handling for 2-1 layout (2 on top, 1 full-width below) - used when image exists
   if (gridStyles.specialLayout === "image-2-1" || gridStyles.specialLayout === "narrow-3") {
-    // Ensure we have exactly 3 items for 2-1 layout
     if (items.length === 3) {
       return (
-        <div
-          className={className}
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gridTemplateRows: "auto auto",
-            gap: gridStyles.gap,
-            width: "100%",
-          }}
-        >
-          {/* First two items on top row */}
-          {items.slice(0, 2).map((item, index) => (
-            <div key={index}>{renderBox(item, index)}</div>
-          ))}
-          {/* Third item spans full width on bottom row */}
-          <div key={2} style={{ gridColumn: "1 / -1" }}>
-            {renderBox(items[2]!, 2)}
-          </div>
+        <div className={className} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "auto auto", gap: gridStyles.gap, width: "100%" }}>
+          {items.slice(0, 2).map((item, idx) => renderBox(item, idx))}
+          <div style={{ gridColumn: "1 / -1" }}>{renderBox(items[2]!, 2)}</div>
         </div>
       );
     }
   }
 
-  // When no image, ensure boxes use full width and content-driven sizing
   const gridStyle: React.CSSProperties = {
     display: "grid",
-    gridTemplateColumns: gridStyles.gridTemplateColumns,
+    gridTemplateColumns: hasImage ? gridStyles.gridTemplateColumns : `repeat(${items.length}, minmax(0, 1fr))`,
     gridTemplateRows: gridStyles.gridTemplateRows,
     gap: gridStyles.gap,
     width: "100%",
   };
 
-  // For content-driven sizing when no image, ensure items can grow/shrink based on content
-  if (!hasImage) {
-    gridStyle.gridAutoFlow = "row";
-    // Use minmax to allow content-driven sizing while ensuring they fit in a row
-    gridStyle.gridTemplateColumns = `repeat(${items.length}, minmax(0, 1fr))`;
-  }
-
   return (
-    <div
-      className={className}
-      style={gridStyle}
-    >
-      {items.map((item, index) => renderBox(item, index))}
+    <div className={className} style={gridStyle}>
+      {items.map((item, idx) => renderBox(item, idx))}
     </div>
   );
 }
 
-// Preview components remain similar but simplified for the 4 styles
+
 export function BoxLayoutPreview({
   layout,
   itemCount = 3,
@@ -520,37 +348,12 @@ export function BoxLayoutPreview({
   const baseStyles = getBaseBoxStyles(theme || {} as Theme);
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: gridStyles.gridTemplateColumns,
-        gridTemplateRows: gridStyles.gridTemplateRows,
-        gap: "4px",
-        padding: "4px",
-        width: "100%",
-        height: "100%",
-      }}
-    >
+    <div style={{ display: "grid", gridTemplateColumns: gridStyles.gridTemplateColumns, gridTemplateRows: gridStyles.gridTemplateRows, gap: "4px", padding: "4px", width: "100%", height: "100%" }}>
       {items.map((_, i) => (
-        <div 
-          key={i} 
-          className="rounded-sm relative overflow-hidden"
-          style={{ 
-            backgroundColor: baseStyles.bgColor,
-            border: `1px solid ${baseStyles.borderColor}`,
-          }} 
-        >
-          {layout.id === "box-style-1" && (
-            <div className="absolute left-0 top-0 bottom-0 w-1" style={{ backgroundColor: baseStyles.accentColor }} />
-          )}
-          {(layout.id === "box-style-3" || layout.id === "box-style-4") && (
-            <div className="flex justify-center mt-1">
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: baseStyles.accentColor }} />
-            </div>
-          )}
-          {layout.id === "box-style-4" && (
-            <div className="absolute top-0 left-0 right-0 h-0.5" style={{ backgroundColor: baseStyles.accentColor }} />
-          )}
+        <div key={i} className="rounded-sm relative overflow-hidden" style={{ backgroundColor: baseStyles.bgColor, border: `1px solid ${baseStyles.borderColor}` }}>
+          {layout.id === "box-style-1" && <div className="absolute left-0 top-0 bottom-0 w-1" style={{ backgroundColor: baseStyles.accentColor }} />}
+          {(layout.id === "box-style-3" || layout.id === "box-style-4") && <div className="flex justify-center mt-1"><div className="w-2 h-2 rounded-full" style={{ backgroundColor: baseStyles.accentColor }} /></div>}
+          {layout.id === "box-style-4" && <div className="absolute top-0 left-0 right-0 h-0.5" style={{ backgroundColor: baseStyles.accentColor }} />}
           <div className="mt-4 mx-auto w-3/4 h-1 bg-slate-300 rounded-sm" />
           <div className="mt-1 mx-auto w-1/2 h-0.5 bg-slate-200 rounded-sm" />
         </div>
@@ -575,45 +378,15 @@ export function BoxLayoutPreviewWithContent({
   const baseStyles = getBaseBoxStyles(theme);
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: gridStyles.gridTemplateColumns,
-        gridTemplateRows: gridStyles.gridTemplateRows,
-        gap: "4px",
-        padding: "4px",
-        width: "100%",
-        height: "100%",
-      }}
-    >
+    <div style={{ display: "grid", gridTemplateColumns: gridStyles.gridTemplateColumns, gridTemplateRows: gridStyles.gridTemplateRows, gap: "4px", padding: "4px", width: "100%", height: "100%" }}>
       {displayItems.map((item, i) => (
-        <div 
-          key={i} 
-          className="rounded-sm relative overflow-hidden flex flex-col items-center p-1"
-          style={{ 
-            backgroundColor: baseStyles.bgColor,
-            border: `1px solid ${baseStyles.borderColor}`,
-          }} 
-        >
-          {layout.id === "box-style-1" && (
-            <div className="absolute left-0 top-0 bottom-0 w-1" style={{ backgroundColor: baseStyles.accentColor }} />
-          )}
-          {layout.id === "box-style-4" && (
-             <div className="absolute top-0 left-0 right-0 h-0.5" style={{ backgroundColor: baseStyles.accentColor }} />
-          )}
-          
+        <div key={i} className="rounded-sm relative overflow-hidden flex flex-col items-center p-1" style={{ backgroundColor: baseStyles.bgColor, border: `1px solid ${baseStyles.borderColor}` }}>
+          {layout.id === "box-style-1" && <div className="absolute left-0 top-0 bottom-0 w-1" style={{ backgroundColor: baseStyles.accentColor }} />}
+          {layout.id === "box-style-4" && <div className="absolute top-0 left-0 right-0 h-0.5" style={{ backgroundColor: baseStyles.accentColor }} />}
           {(layout.id === "box-style-3" || layout.id === "box-style-4") && item.icon && (
-            <div 
-              className="w-3 h-3 rounded-full flex items-center justify-center text-[6px] text-white mb-0.5"
-              style={{ backgroundColor: baseStyles.accentColor }}
-            >
-              {item.icon}
-            </div>
+            <div className="w-3 h-3 rounded-full flex items-center justify-center text-[6px] text-white mb-0.5" style={{ backgroundColor: baseStyles.accentColor }}>{item.icon}</div>
           )}
-          
-          <div className="text-[5px] font-bold truncate w-full text-center" style={{ color: baseStyles.titleColor }}>
-            {item.label}
-          </div>
+          <div className="text-[5px] font-bold truncate w-full text-center" style={{ color: baseStyles.titleColor }}>{item.label}</div>
         </div>
       ))}
     </div>

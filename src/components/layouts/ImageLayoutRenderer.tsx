@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { ImageIcon } from "lucide-react";
+import React, { useState } from "react";
+import { ImageIcon, GripVertical } from "lucide-react";
 import type { ImageLayoutType, ImageContentItem } from "~/lib/layouts/content/images";
 import { calculateImageGridDimensions } from "~/lib/layouts/content/images";
 import type { Theme } from "~/lib/themes";
@@ -52,6 +52,8 @@ interface ImageLayoutRendererProps {
   onUpdateText?: (index: number, value: string) => void;
   onFinishEditing?: () => void;
   onDeleteItem?: (index: number) => void;
+  onChangeImage?: (index: number) => void;
+  onReorderItems?: (fromIndex: number, toIndex: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
 }
@@ -71,12 +73,79 @@ export function ImageLayoutRenderer({
   onUpdateText,
   onFinishEditing,
   onDeleteItem,
+  onChangeImage,
+  onReorderItems,
   isOwner = false,
   isHovered = false,
 }: ImageLayoutRendererProps) {
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
   const displayItems = items.slice(0, 6);
   const { columns } = calculateImageGridDimensions(displayItems.length, isNarrowSpace);
   const themeStyles = getThemeStyles(theme, accentColor);
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", index.toString());
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (draggedIndex !== null && draggedIndex !== index) {
+      setDragOverIndex(index);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, toIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex !== null && draggedIndex !== toIndex && onReorderItems) {
+      onReorderItems(draggedIndex, toIndex);
+    }
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const canDrag = isOwner && isHovered && onReorderItems;
+
+  // Common drag props for each item
+  const getDragProps = (idx: number) => canDrag ? {
+    draggable: true,
+    onDragStart: (e: React.DragEvent) => handleDragStart(e, idx),
+    onDragOver: (e: React.DragEvent) => handleDragOver(e, idx),
+    onDragLeave: handleDragLeave,
+    onDrop: (e: React.DragEvent) => handleDrop(e, idx),
+    onDragEnd: handleDragEnd,
+  } : {};
+
+  const getItemStyle = (idx: number) => ({
+    opacity: draggedIndex === idx ? 0.5 : 1,
+    transform: dragOverIndex === idx ? "scale(1.02)" : "scale(1)",
+    transition: "transform 0.2s, opacity 0.2s",
+    outline: dragOverIndex === idx ? `2px dashed ${themeStyles.accentColor}` : "none",
+    outlineOffset: "4px",
+  });
+
+  // Drag handle component
+  const DragHandle = () => canDrag ? (
+    <div 
+      className="absolute top-2 left-2 p-1 rounded bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing z-10"
+      title="Drag to reorder"
+    >
+      <GripVertical size={14} className="text-white" />
+    </div>
+  ) : null;
 
   // Style 1: Small rounded square left, text right (horizontal layout per item)
   if (layoutId === "image-style-1") {
@@ -86,19 +155,32 @@ export function ImageLayoutRenderer({
         style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}
       >
         {displayItems.map((item, idx) => (
-          <div key={idx} className="flex items-start gap-4">
+          <div 
+            key={idx} 
+            className={`flex items-start gap-4 group relative ${canDrag ? "cursor-grab active:cursor-grabbing" : ""}`}
+            {...getDragProps(idx)}
+            style={getItemStyle(idx)}
+          >
+            <DragHandle />
             <div
-              className="flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden"
+              className={`flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden relative ${isOwner && isHovered ? "cursor-pointer" : ""}`}
               style={{
                 backgroundColor: item.image ? undefined : `${themeStyles.accentColor}15`,
                 border: item.image ? "none" : `1px dashed ${themeStyles.accentColor}40`,
               }}
+              onClick={() => isOwner && isHovered && onChangeImage?.(idx)}
             >
               {item.image ? (
                 <img src={item.image} alt={item.label || ""} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <ImageIcon size={24} style={{ color: `${themeStyles.accentColor}50` }} />
+                </div>
+              )}
+              {/* Hover overlay for changing image */}
+              {isOwner && isHovered && onChangeImage && (
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <ImageIcon size={20} className="text-white" />
                 </div>
               )}
             </div>
@@ -156,20 +238,33 @@ export function ImageLayoutRenderer({
         style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}
       >
         {displayItems.map((item, idx) => (
-          <div key={idx} className="flex flex-col">
+          <div 
+            key={idx} 
+            className={`flex flex-col group relative ${canDrag ? "cursor-grab active:cursor-grabbing" : ""}`}
+            {...getDragProps(idx)}
+            style={getItemStyle(idx)}
+          >
+            <DragHandle />
             <div
-              className="w-full aspect-square rounded-2xl overflow-hidden mb-4"
+              className={`w-full aspect-square rounded-2xl overflow-hidden mb-4 relative ${isOwner && isHovered ? "cursor-pointer" : ""}`}
               style={{
                 backgroundColor: item.image ? undefined : `${themeStyles.accentColor}15`,
                 border: item.image ? "none" : `1px dashed ${themeStyles.accentColor}40`,
                 maxWidth: "180px",
               }}
+              onClick={() => isOwner && isHovered && onChangeImage?.(idx)}
             >
               {item.image ? (
                 <img src={item.image} alt={item.label || ""} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <ImageIcon size={40} style={{ color: `${themeStyles.accentColor}50` }} />
+                </div>
+              )}
+              {/* Hover overlay for changing image */}
+              {isOwner && isHovered && onChangeImage && (
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <ImageIcon size={28} className="text-white" />
                 </div>
               )}
             </div>
@@ -227,19 +322,32 @@ export function ImageLayoutRenderer({
         style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}
       >
         {displayItems.map((item, idx) => (
-          <div key={idx} className="flex flex-col items-center text-center">
+          <div 
+            key={idx} 
+            className={`flex flex-col items-center text-center group relative ${canDrag ? "cursor-grab active:cursor-grabbing" : ""}`}
+            {...getDragProps(idx)}
+            style={getItemStyle(idx)}
+          >
+            <DragHandle />
             <div
-              className="w-40 h-40 rounded-full overflow-hidden mb-4 flex-shrink-0"
+              className={`w-40 h-40 rounded-full overflow-hidden mb-4 flex-shrink-0 relative ${isOwner && isHovered ? "cursor-pointer" : ""}`}
               style={{
                 backgroundColor: item.image ? undefined : `${themeStyles.accentColor}15`,
                 border: item.image ? "none" : `1px dashed ${themeStyles.accentColor}40`,
               }}
+              onClick={() => isOwner && isHovered && onChangeImage?.(idx)}
             >
               {item.image ? (
                 <img src={item.image} alt={item.label || ""} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <ImageIcon size={48} style={{ color: `${themeStyles.accentColor}50` }} />
+                </div>
+              )}
+              {/* Hover overlay for changing image */}
+              {isOwner && isHovered && onChangeImage && (
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
+                  <ImageIcon size={32} className="text-white" />
                 </div>
               )}
             </div>
@@ -296,21 +404,34 @@ export function ImageLayoutRenderer({
       style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}
     >
       {displayItems.map((item, idx) => (
-        <div key={idx} className="flex flex-col items-center text-center">
+        <div 
+          key={idx} 
+          className={`flex flex-col items-center text-center group relative ${canDrag ? "cursor-grab active:cursor-grabbing" : ""}`}
+          {...getDragProps(idx)}
+          style={getItemStyle(idx)}
+        >
+          <DragHandle />
           <div
-            className="w-full rounded-2xl overflow-hidden mb-4"
+            className={`w-full rounded-2xl overflow-hidden mb-4 relative ${isOwner && isHovered ? "cursor-pointer" : ""}`}
             style={{
               aspectRatio: "4/3",
               maxWidth: "280px",
               backgroundColor: item.image ? undefined : `${themeStyles.accentColor}15`,
               border: item.image ? "none" : `1px dashed ${themeStyles.accentColor}40`,
             }}
+            onClick={() => isOwner && isHovered && onChangeImage?.(idx)}
           >
             {item.image ? (
               <img src={item.image} alt={item.label || ""} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <ImageIcon size={48} style={{ color: `${themeStyles.accentColor}50` }} />
+              </div>
+            )}
+            {/* Hover overlay for changing image */}
+            {isOwner && isHovered && onChangeImage && (
+              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-2xl">
+                <ImageIcon size={32} className="text-white" />
               </div>
             )}
           </div>

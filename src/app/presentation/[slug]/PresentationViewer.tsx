@@ -208,6 +208,8 @@ export default function PresentationViewer({
 
   const [slidesData, setSlidesData] = useState<SlideData[]>(presentation.slides);
   const [activeSlideIndex, setActiveSlideIndex] = useState<number | null>(null);
+  // Track the last hovered slide for the AI agent panel
+  const [lastHoveredSlideIndex, setLastHoveredSlideIndex] = useState<number>(0);
   const [showLayoutModal, setShowLayoutModal] = useState(false);
   const [showContentLayoutPanel, setShowContentLayoutPanel] = useState(false);
   const [editingText, setEditingText] = useState<EditingState | null>(null);
@@ -864,6 +866,13 @@ export default function PresentationViewer({
   const nextSlide = useCallback(() => goToSlide(currentSlide + 1), [currentSlide, goToSlide]);
   const prevSlide = useCallback(() => goToSlide(currentSlide - 1), [currentSlide, goToSlide]);
 
+  // Update lastHoveredSlideIndex when a slide is hovered
+  useEffect(() => {
+    if (activeSlideIndex !== null) {
+      setLastHoveredSlideIndex(activeSlideIndex);
+    }
+  }, [activeSlideIndex]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Handle undo/redo even when editing text
@@ -878,7 +887,15 @@ export default function PresentationViewer({
         return;
       }
 
-      if (editingText) return;
+      // Don't intercept keys when user is typing in input/textarea or contenteditable
+      const target = e.target as HTMLElement;
+      const isTyping = target.tagName === "INPUT" || 
+                       target.tagName === "TEXTAREA" || 
+                       target.isContentEditable ||
+                       target.closest('[contenteditable="true"]');
+      
+      if (editingText || isTyping) return;
+      
       if (e.key === "ArrowRight" || e.key === " ") {
         e.preventDefault();
         nextSlide();
@@ -1172,6 +1189,72 @@ export default function PresentationViewer({
     }
   };
 
+  const deleteTitle = (slideIndex: number) => {
+    const slide = slidesData[slideIndex];
+    if (slide) {
+      const newSlides = [...slidesData];
+      newSlides[slideIndex] = { 
+        ...slide, 
+        title: "",
+      };
+      updateSlidesWithSave(newSlides);
+    }
+  };
+
+  const deleteSubtitle = (slideIndex: number) => {
+    const slide = slidesData[slideIndex];
+    if (slide) {
+      const newSlides = [...slidesData];
+      newSlides[slideIndex] = { 
+        ...slide, 
+        subtitle: "",
+      };
+      updateSlidesWithSave(newSlides);
+    }
+  };
+
+  const reorderContent = (slideIndex: number, fromIndex: number, toIndex: number) => {
+    const slide = slidesData[slideIndex];
+    if (!slide) return;
+    
+    const newSlides = [...slidesData];
+    
+    // Reorder bullet points
+    if (slide.bulletPoints && slide.bulletPoints.length > 0) {
+      const newBulletPoints = [...slide.bulletPoints];
+      const [removed] = newBulletPoints.splice(fromIndex, 1);
+      if (removed !== undefined) {
+        newBulletPoints.splice(toIndex, 0, removed);
+      }
+      newSlides[slideIndex] = { ...slide, bulletPoints: newBulletPoints };
+    }
+    
+    // Reorder sections if they exist
+    if (slide.sections && slide.sections.length > 0) {
+      const newSections = [...slide.sections];
+      const [removed] = newSections.splice(fromIndex, 1);
+      if (removed !== undefined) {
+        newSections.splice(toIndex, 0, removed);
+      }
+      newSlides[slideIndex] = { ...newSlides[slideIndex]!, sections: newSections };
+    }
+    
+    // Reorder transformedContent if it exists
+    if (slide.transformedContent?.items && slide.transformedContent.items.length > 0) {
+      const newItems = [...slide.transformedContent.items];
+      const [removed] = newItems.splice(fromIndex, 1);
+      if (removed !== undefined) {
+        newItems.splice(toIndex, 0, removed);
+      }
+      newSlides[slideIndex] = { 
+        ...newSlides[slideIndex]!, 
+        transformedContent: { ...slide.transformedContent, items: newItems } 
+      };
+    }
+    
+    updateSlidesWithSave(newSlides);
+  };
+
   const startEditing = (slideIndex: number, field: string, bulletIndex?: number) => {
     setEditingText({ slideIndex, field, bulletIndex });
   };
@@ -1249,34 +1332,40 @@ export default function PresentationViewer({
     setEditingImageIndex(null);
   };
 
+  const changeImageShape = (slideIndex: number, shape: ImageShape) => {
+    const slide = slidesData[slideIndex];
+    if (slide) {
+      const newSlides = [...slidesData];
+      newSlides[slideIndex] = { ...slide, imageShape: shape };
+      updateSlidesWithSave(newSlides);
+    }
+  };
+
+  const changeImagePosition = (slideIndex: number, position: SlideLayoutType) => {
+    const slide = slidesData[slideIndex];
+    if (slide) {
+      const newSlides = [...slidesData];
+      newSlides[slideIndex] = { ...slide, slideLayout: position };
+      updateSlidesWithSave(newSlides);
+    }
+  };
+
+  const openImageModal = (slideIndex: number, imageIndex?: number) => {
+    setShowImageModal(slideIndex);
+    if (imageIndex !== undefined) {
+      setEditingImageIndex(imageIndex);
+    }
+  };
+
   const currentSlideData = slides[currentSlide];
 
   // Show app's standard loading during initial streaming setup
   if (streamingStatus === "loading") {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center max-w-md px-6">
-          {/* Spinner Animation */}
-          <div className="relative w-24 h-24 mx-auto mb-8">
-            {/* Outer Ring */}
-            <div className="absolute inset-0 border-4 border-slate-200 rounded-full"></div>
-
-            {/* Spinning Gradient Ring */}
-            <div className="absolute inset-0 border-4 border-transparent border-t-[#1e3a8a] border-r-[#06b6d4] rounded-full animate-spin"></div>
-
-            {/* Inner Pulsing Circle */}
-            <div className="absolute inset-3 bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] rounded-full animate-pulse"></div>
-          </div>
-
-          {/* Loading Text */}
-          <div className="space-y-2 mb-6">
-            <h2 className="text-xl font-bold text-slate-900">Loading...</h2>
-            <div className="flex gap-1 justify-center">
-              <div className="h-2 w-2 bg-[#1e3a8a] rounded-full animate-bounce"></div>
-              <div className="h-2 w-2 bg-[#06b6d4] rounded-full animate-bounce [animation-delay:100ms]"></div>
-              <div className="h-2 w-2 bg-[#1e3a8a] rounded-full animate-bounce [animation-delay:200ms]"></div>
-            </div>
-          </div>
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-slate-200 border-t-slate-600 rounded-full animate-spin mx-auto mb-3"></div>
+          <p className="text-sm text-slate-600">Loading...</p>
         </div>
       </div>
     );
@@ -1287,20 +1376,9 @@ export default function PresentationViewer({
     if (streamingStatus === "streaming" && slides.length === 0) {
       return (
         <div className="min-h-screen bg-white flex items-center justify-center">
-          <div className="text-center max-w-md px-6">
-            <div className="relative w-24 h-24 mx-auto mb-8">
-              <div className="absolute inset-0 border-4 border-slate-200 rounded-full"></div>
-              <div className="absolute inset-0 border-4 border-transparent border-t-[#1e3a8a] border-r-[#06b6d4] rounded-full animate-spin"></div>
-              <div className="absolute inset-3 bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] rounded-full animate-pulse"></div>
-            </div>
-            <div className="space-y-2 mb-6">
-              <h2 className="text-xl font-bold text-slate-900">Generating slides...</h2>
-              <div className="flex gap-1 justify-center">
-                <div className="h-2 w-2 bg-[#1e3a8a] rounded-full animate-bounce"></div>
-                <div className="h-2 w-2 bg-[#06b6d4] rounded-full animate-bounce [animation-delay:100ms]"></div>
-                <div className="h-2 w-2 bg-[#1e3a8a] rounded-full animate-bounce [animation-delay:200ms]"></div>
-              </div>
-            </div>
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-slate-200 border-t-slate-600 rounded-full animate-spin mx-auto mb-3"></div>
+            <p className="text-sm text-slate-600">Generating slides...</p>
           </div>
         </div>
       );
@@ -1426,8 +1504,34 @@ export default function PresentationViewer({
       <div
         className="w-full h-full relative overflow-hidden transition-all duration-500 group slide-content-container"
         style={!hasImage ? backgroundStyle : undefined}
-        onMouseEnter={() => canEdit && !isFullscreen && !isPublicView && !isPresenting && setActiveSlideIndex(index)}
-        onMouseLeave={() => !isEditing && !showContentLayoutPanel && setActiveSlideIndex(null)}
+        onMouseEnter={() => {
+          // Don't change activeSlideIndex if user is currently editing ANY text field
+          if (canEdit && !isFullscreen && !isPublicView && !isPresenting && !editingText) {
+            setActiveSlideIndex(index);
+          }
+        }}
+        onMouseLeave={(e) => {
+          // Don't clear activeSlideIndex if:
+          // 1. User is editing text (ANY text field, not just on this slide)
+          // 2. Content layout panel is open
+          // 3. There's an active text selection (user might be using WYSIWYG toolbar)
+          // 4. Mouse is moving to a child element (toolbar, etc.)
+          const relatedTarget = e.relatedTarget as HTMLElement | null;
+          const isMovingToToolbar = relatedTarget?.closest('[data-toolbar]') || 
+                                    relatedTarget?.closest('.text-toolbar') ||
+                                    relatedTarget?.closest('[role="toolbar"]') ||
+                                    relatedTarget?.closest('[contenteditable="true"]');
+          
+          const selection = window.getSelection();
+          const hasActiveSelection = selection && !selection.isCollapsed && selection.toString().trim().length > 0;
+          
+          // Check if ANY text is being edited (not just on this slide)
+          const isAnyTextEditing = editingText !== null;
+          
+          if (!isAnyTextEditing && !showContentLayoutPanel && !hasActiveSelection && !isMovingToToolbar) {
+            setActiveSlideIndex(null);
+          }
+        }}
       >
         {/* Full cover background image for title slides (only when no custom slideLayout) */}
         {isTitle && !slide.slideLayout && hasImage && slide.image?.url && (
@@ -1619,8 +1723,16 @@ export default function PresentationViewer({
             onFinishEditing={() => setEditingText(null)}
             onAddBullet={addBulletPoint}
             onDeleteBullet={deleteBulletPoint}
+            onDeleteTitle={deleteTitle}
+            onDeleteSubtitle={deleteSubtitle}
+            onReorderContent={reorderContent}
             onChangeContentLayout={changeContentLayout}
             onOpenContentLayoutPanel={() => { setActiveSlideIndex(index); setShowContentLayoutPanel(true); }}
+            onOpenImageModal={openImageModal}
+            onRemoveImage={removeSlideImage}
+            onChangeImageShape={changeImageShape}
+            onChangeImagePosition={changeImagePosition}
+            onReorderImages={reorderSlideImages}
           />
         )}
       </div>
@@ -2156,6 +2268,7 @@ export default function PresentationViewer({
             editingIndex={editingImageIndex}
             isLoading={isLoadingImage}
             theme={theme}
+            presentationId={presentation.id}
             onUrlChange={setImageUrl}
             onAddImage={() => addSlideImage(showImageModal, imageUrl)}
             onUpdateImage={(idx) => updateSlideImage(showImageModal, idx, imageUrl)}
@@ -2167,6 +2280,9 @@ export default function PresentationViewer({
             onOpenWysiwygEditor={(idx) => {
               setShowImageModal(null);
               setShowImageEditor({ slideIndex: showImageModal, imageIndex: idx });
+            }}
+            onAddGeneratedImage={(url) => {
+              addSlideImage(showImageModal, url);
             }}
           />
         )}
@@ -2231,27 +2347,68 @@ export default function PresentationViewer({
             type: "image",
             url: image.url,
             alt: image.alt || slide?.title || "Image",
+            filter: image.filter,
+            crop: image.crop,
+            objectFit: image.objectFit,
           };
 
           return (
             <ImageEditor
               block={imageBlock}
+              theme={theme}
               onSave={(updatedBlock) => {
-                // Update the image in the slide
+                // Update the image in the slide with all editing properties
                 const newSlides = [...slidesData];
                 const slideToUpdate = newSlides[showImageEditor.slideIndex];
                 if (slideToUpdate) {
-                  const currentImages = [...getSlideImages(slideToUpdate)];
-                  currentImages[showImageEditor.imageIndex] = {
+                  // Create the updated image object
+                  const updatedImage = {
                     url: updatedBlock.url,
                     alt: updatedBlock.alt,
-                    source: "edited",
+                    source: "edited" as const,
+                    filter: updatedBlock.filter,
+                    crop: updatedBlock.crop,
+                    objectFit: updatedBlock.objectFit,
+                    // Preserve photographer info if it exists
+                    photographer: image.photographer,
+                    photographerUrl: image.photographerUrl,
                   };
-                  newSlides[showImageEditor.slideIndex] = {
-                    ...slideToUpdate,
-                    images: currentImages,
-                    image: currentImages[0] || null,
-                  };
+
+                  // Get all current images
+                  const allImages = getSlideImages(slideToUpdate);
+                  
+                  // Check if we're editing the primary image (slide.image)
+                  const isPrimaryImage = showImageEditor.imageIndex === 0 && 
+                    slideToUpdate.image?.url === image.url;
+                  
+                  if (isPrimaryImage) {
+                    // Update the primary image directly
+                    newSlides[showImageEditor.slideIndex] = {
+                      ...slideToUpdate,
+                      image: updatedImage,
+                      // Also update in images array if it exists there
+                      images: slideToUpdate.images?.map((img, idx) => 
+                        img.url === image.url ? updatedImage : img
+                      ),
+                    };
+                  } else {
+                    // Update in the images array
+                    const updatedImages = [...(slideToUpdate.images || [])];
+                    // Find the correct index in the images array
+                    const imagesArrayIndex = slideToUpdate.image?.url === allImages[0]?.url 
+                      ? showImageEditor.imageIndex - 1 
+                      : showImageEditor.imageIndex;
+                    
+                    if (imagesArrayIndex >= 0 && imagesArrayIndex < updatedImages.length) {
+                      updatedImages[imagesArrayIndex] = updatedImage;
+                    }
+                    
+                    newSlides[showImageEditor.slideIndex] = {
+                      ...slideToUpdate,
+                      images: updatedImages,
+                    };
+                  }
+                  
                   updateSlidesWithSave(newSlides);
                 }
                 setShowImageEditor(null);
@@ -2278,7 +2435,7 @@ export default function PresentationViewer({
           onClose={() => setShowAgentPanel(false)}
           theme={theme}
           slides={slidesData}
-          currentSlideIndex={currentSlide}
+          currentSlideIndex={lastHoveredSlideIndex}
           presentationTitle={presentation.title}
           presentationId={presentation.id}
           onUpdateSlide={(index, slide) => {

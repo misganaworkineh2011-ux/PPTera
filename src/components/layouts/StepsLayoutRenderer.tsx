@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import { GripVertical } from "lucide-react";
 import type { StepsLayoutType, StepContentItem } from "~/lib/layouts/content/steps";
 import EditableText from "~/components/presentation/EditableText";
 import type { Theme } from "~/lib/themes";
@@ -67,6 +68,7 @@ interface StepsLayoutRendererProps {
   onUpdateText?: (index: number, value: string) => void;
   onFinishEditing?: () => void;
   onDeleteItem?: (index: number) => void;
+  onReorderItems?: (fromIndex: number, toIndex: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
 }
@@ -86,11 +88,59 @@ export function StepsLayoutRenderer({
   onUpdateText,
   onFinishEditing,
   onDeleteItem,
+  onReorderItems,
   isOwner = false,
   isHovered = false,
 }: StepsLayoutRendererProps) {
   const displayItems = items.slice(0, 6);
   const themeStyles = getThemeStyles(theme, accentColor);
+  
+  // Drag state
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", index.toString());
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (draggedIndex !== null && draggedIndex !== index) {
+      setDragOverIndex(index);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, toIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex !== null && draggedIndex !== toIndex && onReorderItems) {
+      onReorderItems(draggedIndex, toIndex);
+    }
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const dragProps = {
+    draggedIndex,
+    dragOverIndex,
+    onDragStart: handleDragStart,
+    onDragOver: handleDragOver,
+    onDragLeave: handleDragLeave,
+    onDrop: handleDrop,
+    onDragEnd: handleDragEnd,
+    canDrag: isOwner && !!onReorderItems,
+  };
 
   if (layoutId === "steps-pyramid") {
     return (
@@ -108,6 +158,7 @@ export function StepsLayoutRenderer({
         onDeleteItem={onDeleteItem}
         isOwner={isOwner}
         isHovered={isHovered}
+        {...dragProps}
       />
     );
   }
@@ -128,6 +179,7 @@ export function StepsLayoutRenderer({
         onDeleteItem={onDeleteItem}
         isOwner={isOwner}
         isHovered={isHovered}
+        {...dragProps}
       />
     );
   }
@@ -149,6 +201,7 @@ export function StepsLayoutRenderer({
         onDeleteItem={onDeleteItem}
         isOwner={isOwner}
         isHovered={isHovered}
+        {...dragProps}
       />
     );
   }
@@ -168,8 +221,21 @@ export function StepsLayoutRenderer({
       onDeleteItem={onDeleteItem}
       isOwner={isOwner}
       isHovered={isHovered}
+      {...dragProps}
     />
   );
+}
+
+// Drag props interface for sub-components
+interface DragProps {
+  draggedIndex: number | null;
+  dragOverIndex: number | null;
+  onDragStart: (e: React.DragEvent, index: number) => void;
+  onDragOver: (e: React.DragEvent, index: number) => void;
+  onDragLeave: () => void;
+  onDrop: (e: React.DragEvent, index: number) => void;
+  onDragEnd: () => void;
+  canDrag: boolean;
 }
 
 // Style 1: Pyramid Steps - Sharp triangle with gaps between sections, text staggered diagonally
@@ -188,6 +254,14 @@ function PyramidSteps({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
+  draggedIndex,
+  dragOverIndex,
+  onDragStart,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  onDragEnd,
+  canDrag,
 }: {
   items: StepContentItem[];
   themeStyles: ThemeStyles;
@@ -202,7 +276,7 @@ function PyramidSteps({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
-}) {
+} & DragProps) {
   const itemCount = items.length;
   const pyramidWidth = 280;
   const gap = 15; // Visible gap between sections
@@ -344,6 +418,8 @@ function PyramidSteps({
       <div className="flex-1 flex flex-col" style={{ gap: `${gap}px` }}>
         {items.map((item, index) => {
           const staggerPadding = index * 40;
+          const isDragging = draggedIndex === index;
+          const isDragOver = dragOverIndex === index;
 
           return (
             <div
@@ -351,60 +427,78 @@ function PyramidSteps({
               ref={(el) => {
                 contentRefs.current[index] = el;
               }}
-              className="flex flex-col justify-center"
+              draggable={canDrag}
+              onDragStart={(e) => onDragStart(e, index)}
+              onDragOver={(e) => onDragOver(e, index)}
+              onDragLeave={onDragLeave}
+              onDrop={(e) => onDrop(e, index)}
+              onDragEnd={onDragEnd}
+              className={`flex items-center gap-2 transition-all ${
+                isDragging ? "opacity-50 scale-95" : ""
+              } ${isDragOver ? "ring-2 ring-cyan-500 rounded-lg" : ""} ${
+                canDrag ? "cursor-grab active:cursor-grabbing" : ""
+              }`}
               style={{
                 minHeight: `${minSectionHeight}px`,
                 paddingLeft: `${staggerPadding}px`,
               }}
             >
-              {item.label &&
-                (onStartEditLabel ? (
+              {/* Drag handle */}
+              {canDrag && isHovered && (
+                <div className="flex-shrink-0 opacity-50 hover:opacity-100 transition-opacity">
+                  <GripVertical size={16} style={{ color: themeStyles.bodyColor }} />
+                </div>
+              )}
+              <div className="flex-1 flex flex-col justify-center">
+                {item.label &&
+                  (onStartEditLabel ? (
+                    <EditableText
+                      value={item.label}
+                      isEditing={
+                        isEditing &&
+                        editingText?.field === `content-label-${index}`
+                      }
+                      onStartEdit={() => onStartEditLabel(index)}
+                      onChange={(val) => onUpdateLabel?.(index, val)}
+                      onFinish={onFinishEditing || (() => {})}
+                      onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
+                      className="text-lg font-semibold mb-1"
+                      style={{ color: themeStyles.titleColor }}
+                      isOwner={isOwner}
+                      isHovered={isHovered}
+                    />
+                  ) : (
+                    <h3
+                      className="text-lg font-semibold mb-1"
+                      style={{ color: themeStyles.titleColor }}
+                    >
+                      {item.label}
+                    </h3>
+                  ))}
+                {onStartEditText ? (
                   <EditableText
-                    value={item.label}
+                    value={item.text}
                     isEditing={
-                      isEditing &&
-                      editingText?.field === `content-label-${index}`
+                      isEditing && editingText?.field === `content-text-${index}`
                     }
-                    onStartEdit={() => onStartEditLabel(index)}
-                    onChange={(val) => onUpdateLabel?.(index, val)}
+                    onStartEdit={() => onStartEditText(index)}
+                    onChange={(val) => onUpdateText?.(index, val)}
                     onFinish={onFinishEditing || (() => {})}
                     onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                    className="text-lg font-semibold mb-1"
-                    style={{ color: themeStyles.titleColor }}
+                    className="text-sm leading-relaxed"
+                    style={{ color: themeStyles.bodyColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
                   />
                 ) : (
-                  <h3
-                    className="text-lg font-semibold mb-1"
-                    style={{ color: themeStyles.titleColor }}
+                  <p
+                    className="text-sm leading-relaxed"
+                    style={{ color: themeStyles.bodyColor }}
                   >
-                    {item.label}
-                  </h3>
-                ))}
-              {onStartEditText ? (
-                <EditableText
-                  value={item.text}
-                  isEditing={
-                    isEditing && editingText?.field === `content-text-${index}`
-                  }
-                  onStartEdit={() => onStartEditText(index)}
-                  onChange={(val) => onUpdateText?.(index, val)}
-                  onFinish={onFinishEditing || (() => {})}
-                  onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                  className="text-sm leading-relaxed"
-                  style={{ color: themeStyles.bodyColor }}
-                  isOwner={isOwner}
-                  isHovered={isHovered}
-                />
-              ) : (
-                <p
-                  className="text-sm leading-relaxed"
-                  style={{ color: themeStyles.bodyColor }}
-                >
-                  {item.text}
-                </p>
-              )}
+                    {item.text}
+                  </p>
+                )}
+              </div>
             </div>
           );
         })}
@@ -429,6 +523,14 @@ function ArrowSteps({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
+  draggedIndex,
+  dragOverIndex,
+  onDragStart,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  onDragEnd,
+  canDrag,
 }: {
   items: StepContentItem[];
   themeStyles: ThemeStyles;
@@ -443,7 +545,7 @@ function ArrowSteps({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
-}) {
+} & DragProps) {
   const minRowHeight = 60; // Minimum row height
   const contentRefs = React.useRef<(HTMLDivElement | null)[]>([]);
   const [rowHeights, setRowHeights] = React.useState<number[]>(() => 
@@ -486,16 +588,34 @@ function ArrowSteps({
     <div className={`flex flex-col gap-3 ${className}`}>
       {items.map((item, index) => {
         const arrowHeight = rowHeights[index] || minRowHeight;
+        const isDragging = draggedIndex === index;
+        const isDragOver = dragOverIndex === index;
         
         return (
           <div
             key={index}
-            className="flex items-stretch gap-5"
+            draggable={canDrag}
+            onDragStart={(e) => onDragStart(e, index)}
+            onDragOver={(e) => onDragOver(e, index)}
+            onDragLeave={onDragLeave}
+            onDrop={(e) => onDrop(e, index)}
+            onDragEnd={onDragEnd}
+            className={`flex items-stretch gap-5 transition-all ${
+              isDragging ? "opacity-50 scale-95" : ""
+            } ${isDragOver ? "ring-2 ring-cyan-500 rounded-lg" : ""} ${
+              canDrag ? "cursor-grab active:cursor-grabbing" : ""
+            }`}
             style={{ 
               paddingLeft: `${getLeftPadding(index)}px`,
               minHeight: `${arrowHeight}px`,
             }}
           >
+            {/* Drag handle */}
+            {canDrag && isHovered && (
+              <div className="flex-shrink-0 flex items-center opacity-50 hover:opacity-100 transition-opacity">
+                <GripVertical size={16} style={{ color: themeStyles.bodyColor }} />
+              </div>
+            )}
             {/* Thick arrow pointing down - dynamic size */}
             <div className="flex-shrink-0 flex items-center">
               <svg 
@@ -588,6 +708,14 @@ function CardSteps({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
+  draggedIndex,
+  dragOverIndex,
+  onDragStart,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  onDragEnd,
+  canDrag,
 }: {
   items: StepContentItem[];
   themeStyles: ThemeStyles;
@@ -603,7 +731,7 @@ function CardSteps({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
-}) {
+} & DragProps) {
   const itemCount = items.length;
   const baseMinHeight = 120;
   const baseMaxHeight = 200;
@@ -649,17 +777,117 @@ function CardSteps({
     // Stack vertically in narrow space
     return (
       <div className={`flex flex-col gap-4 ${className}`}>
-        {items.map((item, index) => (
+        {items.map((item, index) => {
+          const isDragging = draggedIndex === index;
+          const isDragOver = dragOverIndex === index;
+          
+          return (
+            <div
+              key={index}
+              draggable={canDrag}
+              onDragStart={(e) => onDragStart(e, index)}
+              onDragOver={(e) => onDragOver(e, index)}
+              onDragLeave={onDragLeave}
+              onDrop={(e) => onDrop(e, index)}
+              onDragEnd={onDragEnd}
+              className={`rounded-xl p-5 transition-all ${
+                isDragging ? "opacity-50 scale-95" : ""
+              } ${isDragOver ? "ring-2 ring-cyan-500" : ""} ${
+                canDrag ? "cursor-grab active:cursor-grabbing" : ""
+              }`}
+              style={{
+                backgroundColor: themeStyles.cardBgColor,
+                border: `1px solid ${themeStyles.cardBorderColor}`,
+                borderLeftWidth: "3px",
+                borderLeftColor: themeStyles.accentColor,
+              }}
+            >
+              {canDrag && isHovered && (
+                <div className="flex justify-end mb-2 opacity-50 hover:opacity-100 transition-opacity">
+                  <GripVertical size={16} style={{ color: themeStyles.bodyColor }} />
+                </div>
+              )}
+              {item.label && (
+                onStartEditLabel ? (
+                  <EditableText
+                    value={item.label}
+                    isEditing={isEditing && editingText?.field === `content-label-${index}`}
+                    onStartEdit={() => onStartEditLabel(index)}
+                    onChange={(val) => onUpdateLabel?.(index, val)}
+                    onFinish={onFinishEditing || (() => {})}
+                    onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
+                    className="text-base font-semibold mb-2"
+                    style={{ color: themeStyles.titleColor }}
+                    isOwner={isOwner}
+                    isHovered={isHovered}
+                  />
+                ) : (
+                  <h3 className="text-base font-semibold mb-2" style={{ color: themeStyles.titleColor }}>
+                    {item.label}
+                  </h3>
+                )
+              )}
+              {onStartEditText ? (
+                <EditableText
+                  value={item.text}
+                  isEditing={isEditing && editingText?.field === `content-text-${index}`}
+                  onStartEdit={() => onStartEditText(index)}
+                  onChange={(val) => onUpdateText?.(index, val)}
+                  onFinish={onFinishEditing || (() => {})}
+                  onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
+                  className="text-sm leading-relaxed"
+                  style={{ color: themeStyles.bodyColor }}
+                  isOwner={isOwner}
+                  isHovered={isHovered}
+                />
+              ) : (
+                <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
+                  {item.text}
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  return (
+    <div className={`flex items-start gap-4 ${className}`}>
+      {items.map((item, index) => {
+        const isDragging = draggedIndex === index;
+        const isDragOver = dragOverIndex === index;
+        
+        return (
           <div
             key={index}
-            className="rounded-xl p-5"
+            ref={(el) => {
+              contentRefs.current[index] = el;
+            }}
+            draggable={canDrag}
+            onDragStart={(e) => onDragStart(e, index)}
+            onDragOver={(e) => onDragOver(e, index)}
+            onDragLeave={onDragLeave}
+            onDrop={(e) => onDrop(e, index)}
+            onDragEnd={onDragEnd}
+            className={`flex-1 rounded-2xl p-6 flex flex-col transition-all ${
+              isDragging ? "opacity-50 scale-95" : ""
+            } ${isDragOver ? "ring-2 ring-cyan-500" : ""} ${
+              canDrag ? "cursor-grab active:cursor-grabbing" : ""
+            }`}
             style={{
               backgroundColor: themeStyles.cardBgColor,
               border: `1px solid ${themeStyles.cardBorderColor}`,
-              borderLeftWidth: "3px",
+              borderLeftWidth: "4px",
               borderLeftColor: themeStyles.accentColor,
+              minHeight: `${getHeight(index)}px`,
             }}
           >
+            {canDrag && isHovered && (
+              <div className="flex justify-end mb-2 opacity-50 hover:opacity-100 transition-opacity">
+                <GripVertical size={16} style={{ color: themeStyles.bodyColor }} />
+              </div>
+            )}
             {item.label && (
               onStartEditLabel ? (
                 <EditableText
@@ -699,68 +927,8 @@ function CardSteps({
               </p>
             )}
           </div>
-        ))}
-      </div>
-    );
-  }
-
-  return (
-    <div className={`flex items-start gap-4 ${className}`}>
-      {items.map((item, index) => (
-        <div
-          key={index}
-          ref={(el) => {
-            contentRefs.current[index] = el;
-          }}
-          className="flex-1 rounded-2xl p-6 flex flex-col"
-          style={{
-            backgroundColor: themeStyles.cardBgColor,
-            border: `1px solid ${themeStyles.cardBorderColor}`,
-            borderLeftWidth: "4px",
-            borderLeftColor: themeStyles.accentColor,
-            minHeight: `${getHeight(index)}px`,
-          }}
-        >
-          {item.label && (
-            onStartEditLabel ? (
-              <EditableText
-                value={item.label}
-                isEditing={isEditing && editingText?.field === `content-label-${index}`}
-                onStartEdit={() => onStartEditLabel(index)}
-                onChange={(val) => onUpdateLabel?.(index, val)}
-                onFinish={onFinishEditing || (() => {})}
-                onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                className="text-base font-semibold mb-2"
-                style={{ color: themeStyles.titleColor }}
-                isOwner={isOwner}
-                isHovered={isHovered}
-              />
-            ) : (
-              <h3 className="text-base font-semibold mb-2" style={{ color: themeStyles.titleColor }}>
-                {item.label}
-              </h3>
-            )
-          )}
-          {onStartEditText ? (
-            <EditableText
-              value={item.text}
-              isEditing={isEditing && editingText?.field === `content-text-${index}`}
-              onStartEdit={() => onStartEditText(index)}
-              onChange={(val) => onUpdateText?.(index, val)}
-              onFinish={onFinishEditing || (() => {})}
-              onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-              className="text-sm leading-relaxed"
-              style={{ color: themeStyles.bodyColor }}
-              isOwner={isOwner}
-              isHovered={isHovered}
-            />
-          ) : (
-            <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
-              {item.text}
-            </p>
-          )}
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -780,6 +948,14 @@ function BarSteps({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
+  draggedIndex,
+  dragOverIndex,
+  onDragStart,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  onDragEnd,
+  canDrag,
 }: {
   items: StepContentItem[];
   themeStyles: ThemeStyles;
@@ -794,7 +970,7 @@ function BarSteps({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
-}) {
+} & DragProps) {
   const itemCount = items.length;
   const minBarHeight = 60; // Minimum height for bar
   const contentRefs = React.useRef<(HTMLDivElement | null)[]>([]);
@@ -839,79 +1015,103 @@ function BarSteps({
 
   return (
     <div className={`flex flex-col gap-4 ${className}`}>
-      {items.map((item, index) => (
-        <div key={index} className="flex items-center gap-5">
-          {/* Number bar - only contains the number, width increases downward, height matches content */}
-          <div
-            className="flex-shrink-0 rounded-xl flex items-center justify-center"
-            style={{
-              backgroundColor: themeStyles.shapeBgColor,
-              border: `1px solid ${themeStyles.shapeBorderColor}`,
-              width: `${getWidth(index)}%`,
-              minWidth: "80px",
-              height: `${getHeight(index)}px`,
-              minHeight: `${minBarHeight}px`,
-            }}
-          >
-            <span
-              className="text-2xl"
-              style={{ color: `${themeStyles.accentColor}70`, fontWeight: 300 }}
-            >
-              {index + 1}
-            </span>
-          </div>
-
-          {/* Content section - OUTSIDE the bar */}
+      {items.map((item, index) => {
+        const isDragging = draggedIndex === index;
+        const isDragOver = dragOverIndex === index;
+        
+        return (
           <div 
-            ref={(el) => {
-              contentRefs.current[index] = el;
-            }}
-            className="flex-1"
+            key={index} 
+            draggable={canDrag}
+            onDragStart={(e) => onDragStart(e, index)}
+            onDragOver={(e) => onDragOver(e, index)}
+            onDragLeave={onDragLeave}
+            onDrop={(e) => onDrop(e, index)}
+            onDragEnd={onDragEnd}
+            className={`flex items-center gap-5 transition-all ${
+              isDragging ? "opacity-50 scale-95" : ""
+            } ${isDragOver ? "ring-2 ring-cyan-500 rounded-lg" : ""} ${
+              canDrag ? "cursor-grab active:cursor-grabbing" : ""
+            }`}
           >
-            {item.label && (
-              onStartEditLabel ? (
+            {/* Drag handle */}
+            {canDrag && isHovered && (
+              <div className="flex-shrink-0 opacity-50 hover:opacity-100 transition-opacity">
+                <GripVertical size={16} style={{ color: themeStyles.bodyColor }} />
+              </div>
+            )}
+            {/* Number bar - only contains the number, width increases downward, height matches content */}
+            <div
+              className="flex-shrink-0 rounded-xl flex items-center justify-center"
+              style={{
+                backgroundColor: themeStyles.shapeBgColor,
+                border: `1px solid ${themeStyles.shapeBorderColor}`,
+                width: `${getWidth(index)}%`,
+                minWidth: "80px",
+                height: `${getHeight(index)}px`,
+                minHeight: `${minBarHeight}px`,
+              }}
+            >
+              <span
+                className="text-2xl"
+                style={{ color: `${themeStyles.accentColor}70`, fontWeight: 300 }}
+              >
+                {index + 1}
+              </span>
+            </div>
+
+            {/* Content section - OUTSIDE the bar */}
+            <div 
+              ref={(el) => {
+                contentRefs.current[index] = el;
+              }}
+              className="flex-1"
+            >
+              {item.label && (
+                onStartEditLabel ? (
+                  <EditableText
+                    value={item.label}
+                    isEditing={isEditing && editingText?.field === `content-label-${index}`}
+                    onStartEdit={() => onStartEditLabel(index)}
+                    onChange={(val) => onUpdateLabel?.(index, val)}
+                    onFinish={onFinishEditing || (() => {})}
+                    onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
+                    className="text-base font-semibold mb-1"
+                    style={{ color: themeStyles.accentColor }}
+                    isOwner={isOwner}
+                    isHovered={isHovered}
+                  />
+                ) : (
+                  <h3
+                    className="text-base font-semibold mb-1"
+                    style={{ color: themeStyles.accentColor }}
+                  >
+                    {item.label}
+                  </h3>
+                )
+              )}
+              {onStartEditText ? (
                 <EditableText
-                  value={item.label}
-                  isEditing={isEditing && editingText?.field === `content-label-${index}`}
-                  onStartEdit={() => onStartEditLabel(index)}
-                  onChange={(val) => onUpdateLabel?.(index, val)}
+                  value={item.text}
+                  isEditing={isEditing && editingText?.field === `content-text-${index}`}
+                  onStartEdit={() => onStartEditText(index)}
+                  onChange={(val) => onUpdateText?.(index, val)}
                   onFinish={onFinishEditing || (() => {})}
                   onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                  className="text-base font-semibold mb-1"
-                  style={{ color: themeStyles.accentColor }}
+                  className="text-sm leading-relaxed"
+                  style={{ color: themeStyles.bodyColor }}
                   isOwner={isOwner}
                   isHovered={isHovered}
                 />
               ) : (
-                <h3
-                  className="text-base font-semibold mb-1"
-                  style={{ color: themeStyles.accentColor }}
-                >
-                  {item.label}
-                </h3>
-              )
-            )}
-            {onStartEditText ? (
-              <EditableText
-                value={item.text}
-                isEditing={isEditing && editingText?.field === `content-text-${index}`}
-                onStartEdit={() => onStartEditText(index)}
-                onChange={(val) => onUpdateText?.(index, val)}
-                onFinish={onFinishEditing || (() => {})}
-                onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                className="text-sm leading-relaxed"
-                style={{ color: themeStyles.bodyColor }}
-                isOwner={isOwner}
-                isHovered={isHovered}
-              />
-            ) : (
-              <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
-                {item.text}
-              </p>
-            )}
+                <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
+                  {item.text}
+                </p>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

@@ -1,10 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { X, ImagePlus, Trash2, CheckCircle2, Loader2, Settings2 } from "lucide-react";
+import { X, ImagePlus, Trash2, CheckCircle2, Loader2, Settings2, Sparkles, Coins } from "lucide-react";
+import { toast } from "sonner";
 import type { Theme } from "~/lib/themes";
 import type { SlideImage } from "~/components/presentation/types";
-import { getThemeType } from "./types";
+import { CREDIT_COSTS } from "~/lib/credits";
+
+// AI Image model options with credit costs - matches CreatePresentationClient
+const AI_IMAGE_MODELS = [
+  { id: "gemini-2.5-flash-image", name: "Nano Banana (Gemini 2.5 Flash)", quality: "standard", model: "gemini-2.5-flash-image", credits: CREDIT_COSTS.GEMINI_IMAGEN },
+  { id: "gemini-3-pro-image-preview", name: "Nano Banana Pro (Gemini 3 Pro)", quality: "hd", model: "gemini-3-pro-image-preview", credits: CREDIT_COSTS.GEMINI_IMAGEN_HD },
+  { id: "imagen-4.0-generate-001", name: "Imagen 4", quality: "standard", model: "imagen-4.0-generate-001", credits: CREDIT_COSTS.GEMINI_IMAGEN },
+  { id: "imagen-4.0-ultra-generate-001", name: "Imagen 4 Ultra", quality: "hd", model: "imagen-4.0-ultra-generate-001", credits: CREDIT_COSTS.IMAGE_HD },
+  { id: "imagen-4.0-fast-generate-001", name: "Imagen 4 Fast", quality: "standard", model: "imagen-4.0-fast-generate-001", credits: CREDIT_COSTS.GEMINI_IMAGEN },
+  { id: "openai-standard", name: "DALL-E 3", quality: "standard", model: "openai", credits: CREDIT_COSTS.IMAGE_BASIC },
+  { id: "openai-hd", name: "DALL-E 3 HD", quality: "hd", model: "openai", credits: CREDIT_COSTS.IMAGE_HD },
+];
+
+type AIImageModel = typeof AI_IMAGE_MODELS[number];
 
 interface MultiImageModalProps {
   images: SlideImage[];
@@ -12,6 +26,7 @@ interface MultiImageModalProps {
   editingIndex: number | null;
   isLoading: boolean;
   theme: Theme;
+  presentationId?: string;
   onUrlChange: (url: string) => void;
   onAddImage: () => void;
   onUpdateImage: (idx: number) => void;
@@ -21,6 +36,7 @@ interface MultiImageModalProps {
   onCancelEdit: () => void;
   onClose: () => void;
   onOpenWysiwygEditor?: (idx: number) => void;
+  onAddGeneratedImage?: (url: string) => void;
 }
 
 export function MultiImageModal({
@@ -29,6 +45,7 @@ export function MultiImageModal({
   editingIndex,
   isLoading,
   theme,
+  presentationId,
   onUrlChange,
   onAddImage,
   onUpdateImage,
@@ -38,28 +55,40 @@ export function MultiImageModal({
   onCancelEdit,
   onClose,
   onOpenWysiwygEditor,
+  onAddGeneratedImage,
 }: MultiImageModalProps) {
-  const themeType = getThemeType(theme);
-  const isDark = themeType !== "light" && themeType !== "corporate" && themeType !== "custom-light";
   const isEditing = editingIndex !== null;
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  
+  // AI Generation state
+  const [activeTab, setActiveTab] = useState<"url" | "ai">("url");
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [selectedModel, setSelectedModel] = useState<AIImageModel>(AI_IMAGE_MODELS[0]!);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedPreview, setGeneratedPreview] = useState<string | null>(null);
 
-  // Theme-aware colors
-  const colors = isDark ? {
+  // Helper to determine if a color is dark
+  const isColorDark = (hexColor: string): boolean => {
+    if (!hexColor || !hexColor.startsWith("#")) return true;
+    const hex = hexColor.replace("#", "");
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance < 0.5;
+  };
+
+  // Theme-aware colors - use theme colors directly for all themes
+  const isDark = isColorDark(theme.colors.background);
+  const colors = {
     bg: theme.pageBackground || theme.colors.background,
     surface: theme.colors.surface,
     border: theme.colors.border,
     text: theme.colors.text,
     textMuted: theme.colors.textMuted,
-    hoverBg: theme.colors.surfaceHover || "rgba(255,255,255,0.1)",
-  } : {
-    bg: "#ffffff",
-    surface: "#f8fafc",
-    border: "#e2e8f0",
-    text: "#0f172a",
-    textMuted: "#64748b",
-    hoverBg: "#f1f5f9",
+    hoverBg: theme.colors.surfaceHover || (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)"),
+    inputBg: isDark ? theme.colors.background : theme.colors.surface,
   };
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
@@ -92,6 +121,75 @@ export function MultiImageModal({
   const handleDragEnd = () => {
     setDraggedIndex(null);
     setDragOverIndex(null);
+  };
+
+  // AI Image generation handler
+  const handleGenerateImage = async () => {
+    if (!aiPrompt.trim()) {
+      toast.error("Please enter a prompt");
+      return;
+    }
+
+    setIsGenerating(true);
+    setGeneratedPreview(null);
+
+    try {
+      const response = await fetch("/api/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: aiPrompt,
+          model: selectedModel.model,
+          quality: selectedModel.quality,
+          presentationId,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          toast.error(`Insufficient credits. Need ${data.required}, have ${data.available}`);
+        } else {
+          toast.error(data.error || "Failed to generate image");
+        }
+        return;
+      }
+
+      // Upload to Cloudinary
+      const cloudinaryResponse = await fetch("/api/images", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url: data.image.url,
+          presentationId,
+        }),
+      });
+
+      const cloudinaryData = await cloudinaryResponse.json();
+      
+      if (cloudinaryResponse.ok && cloudinaryData.url) {
+        setGeneratedPreview(cloudinaryData.url);
+        toast.success(`Image generated! Used ${data.credits.used} credits`);
+      } else {
+        // Use original URL if Cloudinary upload fails
+        setGeneratedPreview(data.image.url);
+        toast.success(`Image generated! Used ${data.credits.used} credits`);
+      }
+    } catch (error) {
+      console.error("Image generation error:", error);
+      toast.error("Failed to generate image");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleUseGeneratedImage = () => {
+    if (generatedPreview && onAddGeneratedImage) {
+      onAddGeneratedImage(generatedPreview);
+      setGeneratedPreview(null);
+      setAiPrompt("");
+    }
   };
 
   return (
@@ -200,8 +298,8 @@ export function MultiImageModal({
                     <div
                       className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded text-xs font-medium"
                       style={{
-                        backgroundColor: isDark ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.8)",
-                        color: isDark ? "#ffffff" : colors.text,
+                        backgroundColor: isDark ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.9)",
+                        color: colors.text,
                       }}
                     >
                       {idx + 1}
@@ -212,7 +310,7 @@ export function MultiImageModal({
             </div>
           )}
 
-          {/* Add/Edit image form */}
+          {/* Add/Edit image form with tabs */}
           <div
             className="p-4 rounded-lg"
             style={{
@@ -220,101 +318,268 @@ export function MultiImageModal({
               border: `1px solid ${colors.border}`,
             }}
           >
-            <label
-              className="block text-sm font-medium mb-2"
-              style={{ color: colors.text }}
-            >
-              {isEditing
-                ? `Edit Image ${editingIndex! + 1}`
-                : "Add New Image"}
-            </label>
-            <input
-              type="url"
-              value={imageUrl}
-              onChange={(e) => onUrlChange(e.target.value)}
-              placeholder="https://example.com/image.jpg"
-              className="w-full px-4 py-3 rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-opacity-20"
-              style={{
-                backgroundColor: isDark ? theme.colors.background : "#ffffff",
-                borderColor: colors.border,
-                color: colors.text,
-                ["--tw-ring-color" as string]: theme.colors.primary,
-              } as React.CSSProperties}
-            />
-            <p
-              className="mt-2 text-xs"
-              style={{ color: colors.textMuted }}
-            >
-              Paste a direct link to an image (JPG, PNG, WebP). Add multiple
-              images for gallery layouts.
-            </p>
-
-            {imageUrl && (
-              <div 
-                className="mt-3 aspect-video rounded-lg overflow-hidden border border-dashed max-w-xs"
-                style={{
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border,
-                }}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={imageUrl}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
+            {/* Tab buttons */}
+            {!isEditing && (
+              <div className="flex gap-2 mb-4">
+                <button
+                  onClick={() => setActiveTab("url")}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeTab === "url" ? "text-white" : ""
+                  }`}
+                  style={{
+                    backgroundColor: activeTab === "url" ? theme.colors.primary : "transparent",
+                    color: activeTab === "url" ? "#ffffff" : colors.textMuted,
+                    border: activeTab === "url" ? "none" : `1px solid ${colors.border}`,
                   }}
-                />
+                >
+                  <ImagePlus size={16} />
+                  URL
+                </button>
+                <button
+                  onClick={() => setActiveTab("ai")}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeTab === "ai" ? "text-white" : ""
+                  }`}
+                  style={{
+                    backgroundColor: activeTab === "ai" ? theme.colors.primary : "transparent",
+                    color: activeTab === "ai" ? "#ffffff" : colors.textMuted,
+                    border: activeTab === "ai" ? "none" : `1px solid ${colors.border}`,
+                  }}
+                >
+                  <Sparkles size={16} />
+                  AI Generate
+                </button>
               </div>
             )}
 
-            <div className="flex items-center gap-2 mt-3">
-              {isEditing ? (
-                <>
-                  <button
-                    onClick={() => onUpdateImage(editingIndex!)}
-                    disabled={!imageUrl || isLoading}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-white transition-colors disabled:opacity-50"
-                    style={{ backgroundColor: theme.colors.primary }}
-                  >
-                    {isLoading ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : (
-                      <CheckCircle2 size={16} />
-                    )}
-                    Update
-                  </button>
-                  <button
-                    onClick={onCancelEdit}
-                    className="px-4 py-2 rounded-lg transition-colors"
-                    style={{ color: colors.textMuted }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = colors.hoverBg;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = "transparent";
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={onAddImage}
-                  disabled={!imageUrl || isLoading}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-white transition-colors disabled:opacity-50"
-                  style={{ backgroundColor: theme.colors.primary }}
+            {/* URL Tab Content */}
+            {(activeTab === "url" || isEditing) && (
+              <>
+                <label
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: colors.text }}
                 >
-                  {isLoading ? (
-                    <Loader2 size={16} className="animate-spin" />
+                  {isEditing
+                    ? `Edit Image ${editingIndex! + 1}`
+                    : "Add from URL"}
+                </label>
+                <input
+                  type="url"
+                  value={imageUrl}
+                  onChange={(e) => onUrlChange(e.target.value)}
+                  placeholder="https://example.com/image.jpg"
+                  className="w-full px-4 py-3 rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-opacity-20"
+                  style={{
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border,
+                    color: colors.text,
+                    ["--tw-ring-color" as string]: theme.colors.primary,
+                  } as React.CSSProperties}
+                />
+                <p
+                  className="mt-2 text-xs"
+                  style={{ color: colors.textMuted }}
+                >
+                  Paste a direct link to an image (JPG, PNG, WebP).
+                </p>
+
+                {imageUrl && (
+                  <div 
+                    className="mt-3 aspect-video rounded-lg overflow-hidden border border-dashed max-w-xs"
+                    style={{
+                      backgroundColor: colors.surface,
+                      borderColor: colors.border,
+                    }}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={imageUrl}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2 mt-3">
+                  {isEditing ? (
+                    <>
+                      <button
+                        onClick={() => onUpdateImage(editingIndex!)}
+                        disabled={!imageUrl || isLoading}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-white transition-colors disabled:opacity-50"
+                        style={{ backgroundColor: theme.colors.primary }}
+                      >
+                        {isLoading ? (
+                          <Loader2 size={16} className="animate-spin" />
+                        ) : (
+                          <CheckCircle2 size={16} />
+                        )}
+                        Update
+                      </button>
+                      <button
+                        onClick={onCancelEdit}
+                        className="px-4 py-2 rounded-lg transition-colors"
+                        style={{ color: colors.textMuted }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = colors.hoverBg;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = "transparent";
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </>
                   ) : (
-                    <ImagePlus size={16} />
+                    <button
+                      onClick={onAddImage}
+                      disabled={!imageUrl || isLoading}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-white transition-colors disabled:opacity-50"
+                      style={{ backgroundColor: theme.colors.primary }}
+                    >
+                      {isLoading ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <ImagePlus size={16} />
+                      )}
+                      Add Image
+                    </button>
                   )}
-                  Add Image
-                </button>
-              )}
-            </div>
+                </div>
+              </>
+            )}
+
+            {/* AI Generation Tab Content */}
+            {activeTab === "ai" && !isEditing && (
+              <>
+                <label
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: colors.text }}
+                >
+                  Generate with AI
+                </label>
+                
+                {/* Model Selection */}
+                <div className="grid grid-cols-2 gap-2 mb-3">
+                  {AI_IMAGE_MODELS.map((model) => (
+                    <button
+                      key={model.id}
+                      onClick={() => setSelectedModel(model)}
+                      className={`p-3 rounded-lg text-left transition-all ${
+                        selectedModel.id === model.id ? "ring-2" : ""
+                      }`}
+                      style={{
+                        backgroundColor: selectedModel.id === model.id 
+                          ? `${theme.colors.primary}20` 
+                          : colors.inputBg,
+                        borderColor: selectedModel.id === model.id 
+                          ? theme.colors.primary 
+                          : colors.border,
+                        border: `1px solid ${selectedModel.id === model.id ? theme.colors.primary : colors.border}`,
+                        ["--tw-ring-color" as string]: theme.colors.primary,
+                      } as React.CSSProperties}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium" style={{ color: colors.text }}>
+                          {model.name}
+                        </span>
+                        <span 
+                          className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full"
+                          style={{ 
+                            backgroundColor: `${theme.colors.primary}20`,
+                            color: theme.colors.primary,
+                          }}
+                        >
+                          <Coins size={12} />
+                          {model.credits}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Prompt Input */}
+                <textarea
+                  value={aiPrompt}
+                  onChange={(e) => setAiPrompt(e.target.value)}
+                  placeholder="Describe the image you want to generate..."
+                  rows={3}
+                  className="w-full px-4 py-3 rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-opacity-20 resize-none"
+                  style={{
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border,
+                    color: colors.text,
+                    ["--tw-ring-color" as string]: theme.colors.primary,
+                  } as React.CSSProperties}
+                />
+
+                {/* Generated Preview */}
+                {generatedPreview && (
+                  <div className="mt-3">
+                    <div 
+                      className="aspect-video rounded-lg overflow-hidden border max-w-xs"
+                      style={{ borderColor: colors.border }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={generatedPreview}
+                        alt="Generated"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex items-center gap-2 mt-3">
+                  {generatedPreview ? (
+                    <>
+                      <button
+                        onClick={handleUseGeneratedImage}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-white transition-colors"
+                        style={{ backgroundColor: theme.colors.primary }}
+                      >
+                        <CheckCircle2 size={16} />
+                        Use Image
+                      </button>
+                      <button
+                        onClick={handleGenerateImage}
+                        disabled={!aiPrompt.trim() || isGenerating}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
+                        style={{ 
+                          color: colors.text,
+                          border: `1px solid ${colors.border}`,
+                        }}
+                      >
+                        {isGenerating ? (
+                          <Loader2 size={16} className="animate-spin" />
+                        ) : (
+                          <Sparkles size={16} />
+                        )}
+                        Regenerate
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={handleGenerateImage}
+                      disabled={!aiPrompt.trim() || isGenerating}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-white transition-colors disabled:opacity-50"
+                      style={{ backgroundColor: theme.colors.primary }}
+                    >
+                      {isGenerating ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <Sparkles size={16} />
+                      )}
+                      Generate ({selectedModel.credits} credits)
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import { GripVertical } from "lucide-react";
 import type {
   QuotesLayoutType,
   QuoteContentItem,
@@ -70,6 +71,7 @@ interface QuotesLayoutRendererProps {
   onUpdateText?: (index: number, value: string) => void;
   onFinishEditing?: () => void;
   onDeleteItem?: (index: number) => void;
+  onReorderItems?: (fromIndex: number, toIndex: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
 }
@@ -90,11 +92,69 @@ export function QuotesLayoutRenderer({
   onUpdateText,
   onFinishEditing,
   onDeleteItem,
+  onReorderItems,
   isOwner = false,
   isHovered = false,
 }: QuotesLayoutRendererProps & { hasImage?: boolean }) {
   const displayItems = items.slice(0, 6);
   const themeStyles = getThemeStyles(theme, accentColor);
+  
+  // Drag state
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  
+  const handleDragStart = (e: React.DragEvent, idx: number) => {
+    if (!isOwner || !onReorderItems) return;
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", idx.toString());
+    setDraggedIndex(idx);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    if (!isOwner || !onReorderItems || draggedIndex === null) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (idx !== draggedIndex) {
+      setDragOverIndex(idx);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, toIdx: number) => {
+    if (!isOwner || !onReorderItems) return;
+    e.preventDefault();
+    const fromIdx = parseInt(e.dataTransfer.getData("text/plain"), 10);
+    if (!isNaN(fromIdx) && fromIdx !== toIdx) {
+      onReorderItems(fromIdx, toIdx);
+    }
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+  
+  const canDrag = isOwner && onReorderItems && items.length > 1;
+  
+  const dragProps = (idx: number) => canDrag ? {
+    draggable: true,
+    onDragStart: (e: React.DragEvent) => handleDragStart(e, idx),
+    onDragEnd: handleDragEnd,
+    onDragOver: (e: React.DragEvent) => handleDragOver(e, idx),
+    onDragLeave: handleDragLeave,
+    onDrop: (e: React.DragEvent) => handleDrop(e, idx),
+  } : {};
+  
+  const getDragClasses = (idx: number) => {
+    const isDragging = draggedIndex === idx;
+    const isDragOver = dragOverIndex === idx;
+    return `${isDragging ? "opacity-50" : ""} ${isDragOver ? "ring-2 ring-blue-500 ring-offset-2" : ""}`;
+  };
 
   if (layoutId === "quote-bubble") {
     return (
@@ -113,6 +173,9 @@ export function QuotesLayoutRenderer({
         onDeleteItem={onDeleteItem}
         isOwner={isOwner}
         isHovered={isHovered}
+        canDrag={canDrag}
+        dragProps={dragProps}
+        getDragClasses={getDragClasses}
       />
     );
   }
@@ -133,6 +196,9 @@ export function QuotesLayoutRenderer({
       onDeleteItem={onDeleteItem}
       isOwner={isOwner}
       isHovered={isHovered}
+      canDrag={canDrag}
+      dragProps={dragProps}
+      getDragClasses={getDragClasses}
     />
   );
 }
@@ -167,6 +233,9 @@ function BubbleQuotes({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
+  canDrag = false,
+  dragProps,
+  getDragClasses,
 }: {
   items: QuoteContentItem[];
   themeStyles: ThemeStyles;
@@ -182,6 +251,9 @@ function BubbleQuotes({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
+  canDrag?: boolean;
+  dragProps?: (idx: number) => Record<string, unknown>;
+  getDragClasses?: (idx: number) => string;
 }) {
   // When no image, use row layout with content-driven sizing
   const containerClass = hasImage
@@ -194,95 +266,114 @@ function BubbleQuotes({
 
   return (
     <div className={containerClass}>
-      {items.map((item, index) => (
-        <div key={index} className={itemClass}>
-          {/* Main Bubble Card */}
-          <div className="relative group filter drop-shadow-md transition-transform hover:-translate-y-1">
-            <div
-              className="relative rounded-2xl p-8"
-              style={{
-                backgroundColor: themeStyles.accentColor, // Solid fill
-                color: "white", // White text
-              }}
-            >
-              {/* Top-left opening quote */}
-              <div className="absolute top-4 left-4 opacity-50">
-                <QuoteIcon className="w-8 h-8 rotate-180" color="white" />
+      {items.map((item, index) => {
+        const dragClasses = getDragClasses ? getDragClasses(index) : "";
+        const props = dragProps ? dragProps(index) : {};
+        
+        return (
+          <div 
+            key={index} 
+            className={`${itemClass} relative group/drag-item ${dragClasses}`}
+            style={{ cursor: canDrag ? "grab" : "default" }}
+            {...props}
+          >
+            {/* Drag handle */}
+            {canDrag && (
+              <div 
+                className="absolute -left-5 top-1/2 -translate-y-1/2 opacity-0 group-hover/drag-item:opacity-60 transition-opacity cursor-grab z-20"
+                title="Drag to reorder"
+              >
+                <GripVertical size={14} className="text-current" />
               </div>
+            )}
+            {/* Main Bubble Card */}
+            <div className="relative group filter drop-shadow-md transition-transform hover:-translate-y-1">
+              <div
+                className="relative rounded-2xl p-8"
+                style={{
+                  backgroundColor: themeStyles.accentColor, // Solid fill
+                  color: "white", // White text
+                }}
+              >
+                {/* Top-left opening quote */}
+                <div className="absolute top-4 left-4 opacity-50">
+                  <QuoteIcon className="w-8 h-8 rotate-180" color="white" />
+                </div>
 
-              {/* Content */}
-              <div className="flex flex-col gap-3 relative z-10 px-4 text-center">
-                {item.label &&
-                  (onStartEditLabel ? (
+                {/* Content */}
+                <div className="flex flex-col gap-3 relative z-10 px-4 text-center">
+                  {item.label &&
+                    (onStartEditLabel ? (
+                      <EditableText
+                        value={item.label}
+                        isEditing={
+                          isEditing &&
+                          editingText?.field === `content-label-${index}`
+                        }
+                        onStartEdit={() => onStartEditLabel(index)}
+                        onChange={(val) => onUpdateLabel?.(index, val)}
+                        onFinish={onFinishEditing || (() => {})}
+                        onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
+                        className="text-lg font-bold mb-1 text-white opacity-90"
+                        isOwner={isOwner}
+                        isHovered={isHovered}
+                      />
+                    ) : (
+                      <h3 className="text-lg font-bold mb-1 text-white opacity-90">
+                        {item.label}
+                      </h3>
+                    ))}
+
+                  {onStartEditText ? (
                     <EditableText
-                      value={item.label}
+                      value={item.text}
                       isEditing={
-                        isEditing &&
-                        editingText?.field === `content-label-${index}`
+                        isEditing && editingText?.field === `content-text-${index}`
                       }
-                      onStartEdit={() => onStartEditLabel(index)}
-                      onChange={(val) => onUpdateLabel?.(index, val)}
+                      onStartEdit={() => onStartEditText(index)}
+                      onChange={(val) => onUpdateText?.(index, val)}
                       onFinish={onFinishEditing || (() => {})}
                       onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                      className="text-lg font-bold mb-1 text-white opacity-90"
+                      className="text-base leading-relaxed font-medium"
                       isOwner={isOwner}
                       isHovered={isHovered}
                     />
                   ) : (
-                    <h3 className="text-lg font-bold mb-1 text-white opacity-90">
-                      {item.label}
-                    </h3>
-                  ))}
+                    <p className="text-base leading-relaxed font-medium">
+                      {item.text}
+                    </p>
+                  )}
 
-                {onStartEditText ? (
-                  <EditableText
-                    value={item.text}
-                    isEditing={
-                      isEditing && editingText?.field === `content-text-${index}`
-                    }
-                    onStartEdit={() => onStartEditText(index)}
-                    onChange={(val) => onUpdateText?.(index, val)}
-                    onFinish={onFinishEditing || (() => {})}
-                    onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                    className="text-base leading-relaxed font-medium"
-                    isOwner={isOwner}
-                    isHovered={isHovered}
-                  />
-                ) : (
-                  <p className="text-base leading-relaxed font-medium">
-                    {item.text}
-                  </p>
-                )}
+                  {item.author && (
+                    <div className="mt-2 border-t border-white/20 pt-2 inline-block mx-auto">
+                      <span className="text-sm font-semibold opacity-90">
+                        {item.author}
+                      </span>
+                    </div>
+                  )}
+                </div>
 
-                {item.author && (
-                  <div className="mt-2 border-t border-white/20 pt-2 inline-block mx-auto">
-                    <span className="text-sm font-semibold opacity-90">
-                      {item.author}
-                    </span>
-                  </div>
-                )}
+                {/* Bottom-right closing quote */}
+                <div className="absolute bottom-4 right-4 opacity-50">
+                  <QuoteIcon className="w-8 h-8" color="white" />
+                </div>
               </div>
 
-              {/* Bottom-right closing quote */}
-              <div className="absolute bottom-4 right-4 opacity-50">
-                <QuoteIcon className="w-8 h-8" color="white" />
-              </div>
+              {/* Seamless Tail - Slightly smaller */}
+              <svg
+                className="absolute -bottom-[28px] left-12 filter drop-shadow-sm"
+                width="35"
+                height="30"
+                viewBox="0 0 50 50"
+                style={{ color: themeStyles.accentColor }}
+              >
+                {/* Triangle tail */}
+                <path d="M0 0 L25 50 L50 0 Z" fill="currentColor" />
+              </svg>
             </div>
-
-            {/* Seamless Tail - Slightly smaller */}
-            <svg
-              className="absolute -bottom-[28px] left-12 filter drop-shadow-sm"
-              width="35"
-              height="30"
-              viewBox="0 0 50 50"
-              style={{ color: themeStyles.accentColor }}
-            >
-              {/* Triangle tail */}
-              <path d="M0 0 L25 50 L50 0 Z" fill="currentColor" />
-            </svg>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -303,6 +394,9 @@ function MarksQuotes({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
+  canDrag = false,
+  dragProps,
+  getDragClasses,
 }: {
   items: QuoteContentItem[];
   themeStyles: ThemeStyles;
@@ -318,6 +412,9 @@ function MarksQuotes({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
+  canDrag?: boolean;
+  dragProps?: (idx: number) => Record<string, unknown>;
+  getDragClasses?: (idx: number) => string;
 }) {
   // When no image, use row layout with content-driven sizing
   const containerClass = hasImage
@@ -330,100 +427,119 @@ function MarksQuotes({
 
   return (
     <div className={containerClass}>
-      {items.map((item, index) => (
-        <div key={index} className={itemClass}>
-          <div
-            className="h-full rounded-xl p-8 pt-10 relative shadow-sm border hover:shadow-md transition-all"
-            style={{
-              backgroundColor: themeStyles.cardBgColor,
-              borderColor: themeStyles.cardBorderColor,
-            }}
+      {items.map((item, index) => {
+        const dragClasses = getDragClasses ? getDragClasses(index) : "";
+        const props = dragProps ? dragProps(index) : {};
+        
+        return (
+          <div 
+            key={index} 
+            className={`${itemClass} relative group/drag-item ${dragClasses}`}
+            style={{ cursor: canDrag ? "grab" : "default" }}
+            {...props}
           >
-            {/* Opening Quote - Top Left, positioned distinctly */}
+            {/* Drag handle */}
+            {canDrag && (
+              <div 
+                className="absolute -left-5 top-1/2 -translate-y-1/2 opacity-0 group-hover/drag-item:opacity-60 transition-opacity cursor-grab z-20"
+                title="Drag to reorder"
+              >
+                <GripVertical size={14} className="text-current" />
+              </div>
+            )}
             <div
-              className="absolute -top-3 left-8 px-2"
-              style={{ color: themeStyles.accentColor, backgroundColor: themeStyles.cardBgColor }}
+              className="h-full rounded-xl p-8 pt-10 relative shadow-sm border hover:shadow-md transition-all"
+              style={{
+                backgroundColor: themeStyles.cardBgColor,
+                borderColor: themeStyles.cardBorderColor,
+              }}
             >
-              <QuoteIcon className="w-6 h-6 rotate-180" />
-            </div>
+              {/* Opening Quote - Top Left, positioned distinctly */}
+              <div
+                className="absolute -top-3 left-8 px-2"
+                style={{ color: themeStyles.accentColor, backgroundColor: themeStyles.cardBgColor }}
+              >
+                <QuoteIcon className="w-6 h-6 rotate-180" />
+              </div>
 
-            <div className="flex flex-col h-full">
-              {item.label &&
-                (onStartEditLabel ? (
+              <div className="flex flex-col h-full">
+                {item.label &&
+                  (onStartEditLabel ? (
+                    <EditableText
+                      value={item.label}
+                      isEditing={
+                        isEditing &&
+                        editingText?.field === `content-label-${index}`
+                      }
+                      onStartEdit={() => onStartEditLabel(index)}
+                      onChange={(val) => onUpdateLabel?.(index, val)}
+                      onFinish={onFinishEditing || (() => {})}
+                      onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
+                      className="text-lg font-bold mb-3"
+                      style={{ color: themeStyles.titleColor }}
+                      isOwner={isOwner}
+                      isHovered={isHovered}
+                    />
+                  ) : (
+                    <h3
+                      className="text-lg font-bold mb-3"
+                      style={{ color: themeStyles.titleColor }}
+                    >
+                      {item.label}
+                    </h3>
+                  ))}
+
+                {onStartEditText ? (
                   <EditableText
-                    value={item.label}
+                    value={item.text}
                     isEditing={
-                      isEditing &&
-                      editingText?.field === `content-label-${index}`
+                      isEditing && editingText?.field === `content-text-${index}`
                     }
-                    onStartEdit={() => onStartEditLabel(index)}
-                    onChange={(val) => onUpdateLabel?.(index, val)}
+                    onStartEdit={() => onStartEditText(index)}
+                    onChange={(val) => onUpdateText?.(index, val)}
                     onFinish={onFinishEditing || (() => {})}
                     onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                    className="text-lg font-bold mb-3"
-                    style={{ color: themeStyles.titleColor }}
+                    className="text-base leading-relaxed italic flex-1"
+                    style={{ color: themeStyles.bodyColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
                   />
                 ) : (
-                  <h3
-                    className="text-lg font-bold mb-3"
-                    style={{ color: themeStyles.titleColor }}
+                  <p
+                    className="text-base leading-relaxed italic flex-1"
+                    style={{ color: themeStyles.bodyColor }}
                   >
-                    {item.label}
-                  </h3>
-                ))}
+                    {item.text}
+                  </p>
+                )}
 
-              {onStartEditText ? (
-                <EditableText
-                  value={item.text}
-                  isEditing={
-                    isEditing && editingText?.field === `content-text-${index}`
-                  }
-                  onStartEdit={() => onStartEditText(index)}
-                  onChange={(val) => onUpdateText?.(index, val)}
-                  onFinish={onFinishEditing || (() => {})}
-                  onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                  className="text-base leading-relaxed italic flex-1"
-                  style={{ color: themeStyles.bodyColor }}
-                  isOwner={isOwner}
-                  isHovered={isHovered}
-                />
-              ) : (
-                <p
-                  className="text-base leading-relaxed italic flex-1"
-                  style={{ color: themeStyles.bodyColor }}
-                >
-                  {item.text}
-                </p>
-              )}
+                {item.author && (
+                  <div className="mt-6 flex items-center justify-end gap-3">
+                    <div
+                      className="h-px w-8"
+                      style={{ backgroundColor: themeStyles.cardBorderColor }}
+                    />
+                    <span
+                      className="text-sm font-bold uppercase tracking-wider"
+                      style={{ color: themeStyles.accentColor }}
+                    >
+                      {item.author}
+                    </span>
+                  </div>
+                )}
+              </div>
 
-              {item.author && (
-                <div className="mt-6 flex items-center justify-end gap-3">
-                  <div
-                    className="h-px w-8"
-                    style={{ backgroundColor: themeStyles.cardBorderColor }}
-                  />
-                  <span
-                    className="text-sm font-bold uppercase tracking-wider"
-                    style={{ color: themeStyles.accentColor }}
-                  >
-                    {item.author}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Closing Quote - Bottom Right, matches top style */}
-            <div
-              className="absolute -bottom-3 right-8 px-2"
-              style={{ color: themeStyles.accentColor, backgroundColor: themeStyles.cardBgColor }}
-            >
-              <QuoteIcon className="w-6 h-6" />
+              {/* Closing Quote - Bottom Right, matches top style */}
+              <div
+                className="absolute -bottom-3 right-8 px-2"
+                style={{ color: themeStyles.accentColor, backgroundColor: themeStyles.cardBgColor }}
+              >
+                <QuoteIcon className="w-6 h-6" />
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

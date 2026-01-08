@@ -17,6 +17,8 @@ interface TitleSlideProps {
   isEditing: boolean;
   editingText: EditingState | null;
   showPageNumber?: boolean;
+  /** When true, disables all hover effects (e.g., when text is being edited on any slide) */
+  globalEditingActive?: boolean;
   onStartEditing: (i: number, f: string, b?: number) => void;
   onUpdateContent: (i: number, f: string, v: string, b?: number) => void;
   onFinishEditing: () => void;
@@ -29,7 +31,7 @@ interface TitleSlideVariantProps {
   theme: Theme;
   hasImage: boolean;
   canEdit: boolean;
-  isHovered: boolean;
+  disableHover: boolean;
   isEditing: boolean;
   editingText: EditingState | null;
   showPageNumber: boolean;
@@ -40,11 +42,12 @@ interface TitleSlideVariantProps {
 
 export function TitleSlide({
   slide, index, totalSlides, theme, hasImage, isOwner, isFullscreen, isHovered, isEditing, editingText, showPageNumber = true,
-  onStartEditing, onUpdateContent, onFinishEditing,
+  globalEditingActive = false, onStartEditing, onUpdateContent, onFinishEditing,
 }: TitleSlideProps) {
   const canEdit = isOwner && !isFullscreen;
   const themeType = getThemeType(theme);
-  const props = { slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing };
+  const disableHover = globalEditingActive;
+  const props = { slide, index, totalSlides, theme, hasImage, canEdit, disableHover, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing };
 
   return (
     <>
@@ -88,7 +91,7 @@ export function TitleSlide({
 }
 
 // ELEGANT NOIR - Sophisticated dark with geometric accents
-function DarkTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function DarkTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, disableHover, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   return (
     <div className="h-full relative overflow-hidden">
       {!hasImage && (
@@ -113,9 +116,9 @@ function DarkTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, i
         )}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[60%] border border-zinc-800/50 rounded-lg pointer-events-none" />
         
-        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="title-slide-heading font-bold mb-4 sm:mb-6 md:mb-8 max-w-5xl leading-tight" style={{ fontFamily: theme.fonts.heading.family, color: "#fafafa", letterSpacing: "-0.03em" }} isOwner={canEdit} isHovered={isHovered} />
+        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="title-slide-heading font-bold mb-4 sm:mb-6 md:mb-8 max-w-5xl leading-tight" style={{ fontFamily: theme.fonts.heading.family, color: "#fafafa", letterSpacing: "-0.03em" }} isOwner={canEdit} disableHover={disableHover} />
         {slide.subtitle && (
-          <EditableText value={slide.subtitle} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="title-slide-subtitle max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#a1a1aa" }} isOwner={canEdit} isHovered={isHovered} />
+          <EditableText value={slide.subtitle} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="title-slide-subtitle max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#a1a1aa" }} isOwner={canEdit} disableHover={disableHover} />
         )}
         
         <div className="flex items-center gap-4 mt-12">
@@ -130,7 +133,7 @@ function DarkTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, i
 }
 
 // ARCTIC FROST - Clean, airy with floating elements
-function LightTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function LightTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, disableHover, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   return (
     <div className="h-full relative overflow-hidden">
       {!hasImage && (
@@ -157,9 +160,9 @@ function LightTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, 
         )}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent rounded-full" />
         
-        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight" style={{ fontFamily: theme.fonts.heading.family, color: "#0f172a", letterSpacing: "-0.03em" }} isOwner={canEdit} isHovered={isHovered} />
+        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight" style={{ fontFamily: theme.fonts.heading.family, color: "#0f172a", letterSpacing: "-0.03em" }} isOwner={canEdit} disableHover={disableHover} />
         {slide.subtitle && (
-          <EditableText value={slide.subtitle} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#64748b" }} isOwner={canEdit} isHovered={isHovered} />
+          <EditableText value={slide.subtitle} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#64748b" }} isOwner={canEdit} disableHover={disableHover} />
         )}
         
         <div className="flex items-center gap-3 mt-12">
@@ -174,7 +177,7 @@ function LightTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, 
 }
 
 // SUNSET GRADIENT - Warm, dramatic with glowing accents
-function SunsetTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function SunsetTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, disableHover, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   return (
     <div className="h-full relative overflow-hidden">
       {!hasImage && (
@@ -200,9 +203,9 @@ function SunsetTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit,
         )}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-32 bg-gradient-to-r from-pink-500/10 via-orange-500/10 to-pink-500/10 blur-2xl rounded-full pointer-events-none" />
         
-        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight relative" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "-0.03em" }} isOwner={canEdit} isHovered={isHovered} />
+        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight relative" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "-0.03em" }} isOwner={canEdit} disableHover={disableHover} />
         {slide.subtitle && (
-          <EditableText value={slide.subtitle} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#f9a8d4" }} isOwner={canEdit} isHovered={isHovered} />
+          <EditableText value={slide.subtitle} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#f9a8d4" }} isOwner={canEdit} disableHover={disableHover} />
         )}
         
         <div className="flex items-center gap-4 mt-12">
@@ -218,7 +221,7 @@ function SunsetTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit,
 
 
 // OCEAN DEPTHS - Deep teal with flowing waves and circular accents
-function OceanTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function OceanTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, disableHover, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   return (
     <div className="h-full relative overflow-hidden">
       {!hasImage && (
@@ -247,9 +250,9 @@ function OceanTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, 
         )}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-40 bg-gradient-to-r from-teal-500/10 via-cyan-500/15 to-teal-500/10 blur-3xl rounded-full pointer-events-none" />
         
-        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight relative" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "-0.02em" }} isOwner={canEdit} isHovered={isHovered} />
+        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight relative" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "-0.02em" }} isOwner={canEdit} disableHover={disableHover} />
         {slide.subtitle && (
-          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#7dd3fc" }} isOwner={canEdit} isHovered={isHovered} />
+          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#7dd3fc" }} isOwner={canEdit} disableHover={disableHover} />
         )}
         
         <div className="flex items-center gap-4 mt-12">
@@ -266,7 +269,7 @@ function OceanTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, 
 }
 
 // AURORA BOREALIS - Magical purple/green with hexagonal frames
-function AuroraTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function AuroraTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, disableHover, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   return (
     <div className="h-full relative overflow-hidden">
       {!hasImage && (
@@ -293,9 +296,9 @@ function AuroraTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit,
         )}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-40 bg-gradient-to-r from-purple-500/10 via-emerald-500/10 to-purple-500/10 blur-3xl rounded-full pointer-events-none" />
         
-        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight relative" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "-0.02em" }} isOwner={canEdit} isHovered={isHovered} />
+        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight relative" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "-0.02em" }} isOwner={canEdit} disableHover={disableHover} />
         {slide.subtitle && (
-          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#c4b5fd" }} isOwner={canEdit} isHovered={isHovered} />
+          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#c4b5fd" }} isOwner={canEdit} disableHover={disableHover} />
         )}
         
         <div className="flex items-center gap-4 mt-12">
@@ -312,7 +315,7 @@ function AuroraTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit,
 }
 
 // EMBER FORGE - Fiery red/orange with diamond frames
-function EmberTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function EmberTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, disableHover, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   return (
     <div className="h-full relative overflow-hidden">
       {!hasImage && (
@@ -340,9 +343,9 @@ function EmberTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, 
         )}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-40 bg-gradient-to-r from-red-500/10 via-orange-500/15 to-red-500/10 blur-3xl rounded-full pointer-events-none" />
         
-        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight relative" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "-0.02em" }} isOwner={canEdit} isHovered={isHovered} />
+        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight relative" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "-0.02em" }} isOwner={canEdit} disableHover={disableHover} />
         {slide.subtitle && (
-          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#fca5a5" }} isOwner={canEdit} isHovered={isHovered} />
+          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#fca5a5" }} isOwner={canEdit} disableHover={disableHover} />
         )}
         
         <div className="flex items-center gap-4 mt-12">
@@ -360,7 +363,7 @@ function EmberTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, 
 
 
 // MIDNIGHT GARDEN - Deep indigo with rose gold accents
-function MidnightTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function MidnightTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, disableHover, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   return (
     <div className="h-full relative overflow-hidden">
       {!hasImage && (
@@ -388,9 +391,9 @@ function MidnightTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdi
         )}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-40 bg-gradient-to-r from-indigo-500/10 via-rose-500/10 to-indigo-500/10 blur-3xl rounded-full pointer-events-none" />
         
-        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight relative" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "-0.02em" }} isOwner={canEdit} isHovered={isHovered} />
+        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight relative" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "-0.02em" }} isOwner={canEdit} disableHover={disableHover} />
         {slide.subtitle && (
-          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#fda4af" }} isOwner={canEdit} isHovered={isHovered} />
+          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#fda4af" }} isOwner={canEdit} disableHover={disableHover} />
         )}
         
         <div className="flex items-center gap-4 mt-12">
@@ -407,7 +410,7 @@ function MidnightTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdi
 }
 
 // CYBER NEON - Futuristic with electric cyan, neon pink, lime green
-function CyberTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function CyberTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, disableHover, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   return (
     <div className="h-full relative overflow-hidden">
       {!hasImage && (
@@ -437,9 +440,9 @@ function CyberTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, 
         )}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-40 bg-gradient-to-r from-cyan-500/10 via-pink-500/10 to-cyan-500/10 blur-3xl rounded-full pointer-events-none" />
         
-        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight relative" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "-0.02em", textShadow: "0 0 30px rgba(34, 211, 238, 0.3)" }} isOwner={canEdit} isHovered={isHovered} />
+        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight relative" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "-0.02em", textShadow: "0 0 30px rgba(34, 211, 238, 0.3)" }} isOwner={canEdit} disableHover={disableHover} />
         {slide.subtitle && (
-          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#67e8f9" }} isOwner={canEdit} isHovered={isHovered} />
+          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#67e8f9" }} isOwner={canEdit} disableHover={disableHover} />
         )}
         
         <div className="flex items-center gap-4 mt-12">
@@ -457,7 +460,7 @@ function CyberTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, 
 
 
 // ALIEN TECH - Extraterrestrial sci-fi with bioluminescent greens and scanning effects
-function AlienTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function AlienTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, disableHover, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   return (
     <div className="h-full relative overflow-hidden">
       {!hasImage && (
@@ -522,9 +525,9 @@ function AlienTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, 
           <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 bg-[#0a0f0a] text-lime-500/40 text-[10px] font-mono uppercase tracking-widest">transmission</div>
         </div>
         
-        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight relative" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "0.02em", textShadow: "0 0 40px rgba(163, 255, 0, 0.3)" }} isOwner={canEdit} isHovered={isHovered} />
+        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight relative" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "0.02em", textShadow: "0 0 40px rgba(163, 255, 0, 0.3)" }} isOwner={canEdit} disableHover={disableHover} />
         {slide.subtitle && (
-          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#a3ff00" }} isOwner={canEdit} isHovered={isHovered} />
+          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#a3ff00" }} isOwner={canEdit} disableHover={disableHover} />
         )}
         
         {/* Bottom decorative element */}
@@ -545,7 +548,7 @@ function AlienTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, 
 
 
 // CORPORATE CLEAN - Premium professional theme with elegant DM Sans typography
-function CorporateTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function CorporateTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, disableHover, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   return (
     <div className="h-full relative overflow-hidden">
       {!hasImage && (
@@ -586,9 +589,9 @@ function CorporateTitleSlide({ slide, index, totalSlides, theme, hasImage, canEd
         {/* Elegant decorative frame */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[60%] border border-slate-200/50 rounded-xl pointer-events-none" />
         
-        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 sm:mb-8 max-w-5xl leading-[1.1] relative" style={{ fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif", color: "#1a202c", letterSpacing: "-0.025em", fontWeight: 700 }} isOwner={canEdit} isHovered={isHovered} />
+        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 sm:mb-8 max-w-5xl leading-[1.1] relative" style={{ fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif", color: "#1a202c", letterSpacing: "-0.025em", fontWeight: 700 }} isOwner={canEdit} disableHover={disableHover} />
         {slide.subtitle && (
-          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-lg sm:text-xl md:text-2xl max-w-3xl leading-relaxed" style={{ fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif", color: "#4a5568", fontWeight: 400 }} isOwner={canEdit} isHovered={isHovered} />
+          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-lg sm:text-xl md:text-2xl max-w-3xl leading-relaxed" style={{ fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif", color: "#4a5568", fontWeight: 400 }} isOwner={canEdit} disableHover={disableHover} />
         )}
         
         {/* Premium bottom decorative element */}
@@ -608,7 +611,7 @@ function CorporateTitleSlide({ slide, index, totalSlides, theme, hasImage, canEd
 }
 
 // COSMIC VOYAGE - Ethereal space theme with image background
-function CosmicTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function CosmicTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, disableHover, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   const bgImage = theme.backgroundImage;
   return (
     <div className="h-full relative overflow-hidden">
@@ -661,9 +664,9 @@ function CosmicTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit,
         {/* Central glow effect */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-40 bg-gradient-to-r from-violet-500/15 via-fuchsia-500/20 to-violet-500/15 blur-3xl rounded-full pointer-events-none" />
         
-        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-light mb-8 max-w-5xl leading-tight relative tracking-wide" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "0.02em" }} isOwner={canEdit} isHovered={isHovered} />
+        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-light mb-8 max-w-5xl leading-tight relative tracking-wide" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "0.02em" }} isOwner={canEdit} disableHover={disableHover} />
         {slide.subtitle && (
-          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#c4b5fd" }} isOwner={canEdit} isHovered={isHovered} />
+          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#c4b5fd" }} isOwner={canEdit} disableHover={disableHover} />
         )}
         
         {/* Bottom decorative element */}
@@ -681,7 +684,7 @@ function CosmicTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit,
 }
 
 // ARCHITECTURAL MONOCHROME - Bold B&W with geometric precision
-function ArchitecturalTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function ArchitecturalTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, disableHover, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   const bgImage = theme.backgroundImage;
   return (
     <div className="h-full relative overflow-hidden">
@@ -725,9 +728,9 @@ function ArchitecturalTitleSlide({ slide, index, totalSlides, theme, hasImage, c
           <div className="w-24 h-px bg-white" />
         </div>
         
-        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-black uppercase tracking-tight mb-8 max-w-5xl leading-none" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "-0.02em" }} isOwner={canEdit} isHovered={isHovered} />
+        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-black uppercase tracking-tight mb-8 max-w-5xl leading-none" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "-0.02em" }} isOwner={canEdit} disableHover={disableHover} />
         {slide.subtitle && (
-          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl font-medium" style={{ fontFamily: theme.fonts.body.family, color: "#a3a3a3" }} isOwner={canEdit} isHovered={isHovered} />
+          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl font-medium" style={{ fontFamily: theme.fonts.body.family, color: "#a3a3a3" }} isOwner={canEdit} disableHover={disableHover} />
         )}
         
         {/* Bottom decorative element */}
@@ -744,7 +747,7 @@ function ArchitecturalTitleSlide({ slide, index, totalSlides, theme, hasImage, c
 }
 
 // ANIME DREAMSCAPE - Soft dreamy anime aesthetic
-function AnimeTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function AnimeTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, disableHover, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   const bgImage = theme.backgroundImage;
   return (
     <div className="h-full relative overflow-hidden">
@@ -787,9 +790,9 @@ function AnimeTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, 
           <div className="w-16 h-px bg-gradient-to-l from-transparent to-fuchsia-500/40" />
         </div>
         
-        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-semibold mb-8 max-w-5xl leading-tight" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "0.01em" }} isOwner={canEdit} isHovered={isHovered} />
+        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-semibold mb-8 max-w-5xl leading-tight" style={{ fontFamily: theme.fonts.heading.family, color: "#ffffff", letterSpacing: "0.01em" }} isOwner={canEdit} disableHover={disableHover} />
         {slide.subtitle && (
-          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#d8b4fe" }} isOwner={canEdit} isHovered={isHovered} />
+          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl" style={{ fontFamily: theme.fonts.body.family, color: "#d8b4fe" }} isOwner={canEdit} disableHover={disableHover} />
         )}
         
         {/* Bottom decorative element */}
@@ -807,7 +810,7 @@ function AnimeTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, 
 }
 
 // HACKER TERMINAL - Cybersecurity/Linux hacker aesthetic with neon green
-function HackerTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, isHovered, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
+function HackerTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit, disableHover, isEditing, editingText, showPageNumber, onStartEditing, onUpdateContent, onFinishEditing }: TitleSlideVariantProps) {
   const bgImage = theme.backgroundImage;
   return (
     <div className="h-full relative overflow-hidden">
@@ -873,9 +876,9 @@ function HackerTitleSlide({ slide, index, totalSlides, theme, hasImage, canEdit,
           <div className="w-16 h-px bg-gradient-to-l from-transparent to-[#00ff41]/50" />
         </div>
         
-        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight" style={{ fontFamily: theme.fonts.heading.family, color: "#00ff41", letterSpacing: "0.02em", textShadow: "0 0 30px rgba(0, 255, 65, 0.4)" }} isOwner={canEdit} isHovered={isHovered} />
+        <EditableText value={slide.title} isEditing={isEditing && editingText?.field === "title"} onStartEdit={() => onStartEditing(index, "title")} onChange={(val) => onUpdateContent(index, "title", val)} onFinish={onFinishEditing} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 max-w-5xl leading-tight" style={{ fontFamily: theme.fonts.heading.family, color: "#00ff41", letterSpacing: "0.02em", textShadow: "0 0 30px rgba(0, 255, 65, 0.4)" }} isOwner={canEdit} disableHover={disableHover} />
         {slide.subtitle && (
-          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl font-mono" style={{ fontFamily: theme.fonts.body.family, color: "#39ff14" }} isOwner={canEdit} isHovered={isHovered} />
+          <EditableText value={slide.subtitle || ""} isEditing={isEditing && editingText?.field === "subtitle"} onStartEdit={() => onStartEditing(index, "subtitle")} onChange={(val) => onUpdateContent(index, "subtitle", val)} onFinish={onFinishEditing} className="text-xl md:text-2xl max-w-3xl font-mono" style={{ fontFamily: theme.fonts.body.family, color: "#39ff14" }} isOwner={canEdit} disableHover={disableHover} />
         )}
         
         {/* Bottom decorative element - command prompt style */}

@@ -18,10 +18,15 @@ export type AIAction =
   | "add-emoji"
   | "translate";
 
+// Helper to count words in text
+function countWords(text: string): number {
+  return text.trim().split(/\s+/).filter(word => word.length > 0).length;
+}
+
 const ACTION_PROMPTS: Record<AIAction, string> = {
   "improve": "You are editing text for a presentation slide. Improve this text to make it clearer, more engaging, and better written while keeping the same meaning. Keep it concise and suitable for a slide. Return only the improved text without any HTML tags or formatting.",
   "shorten": "You are editing text for a presentation slide. Make this text more concise while keeping the key message. Remove unnecessary words. Slides should be brief and impactful. Return only the shortened text without any HTML tags.",
-  "expand": "You are editing text for a presentation slide. Expand this text with more details and context while keeping it relevant and engaging. Keep it suitable for a presentation slide - not too long. Return only the expanded text without any HTML tags.",
+  "expand": "You are editing text for a presentation slide. Expand this text with more details and context while keeping it relevant and engaging. IMPORTANT: The expanded text must NOT exceed twice the original word count. Keep it suitable for a presentation slide. Return only the expanded text without any HTML tags.",
   "professional": "You are editing text for a presentation slide. Rewrite this text in a professional, formal tone suitable for business presentations. Return only the rewritten text without any HTML tags.",
   "casual": "You are editing text for a presentation slide. Rewrite this text in a friendly, casual tone while keeping the message clear. Return only the rewritten text without any HTML tags.",
   "fix-grammar": "You are editing text for a presentation slide. Fix any grammar, spelling, or punctuation errors in this text. Return only the corrected text without any HTML tags.",
@@ -73,12 +78,20 @@ export async function POST(req: Request) {
       );
     }
 
-    const systemPrompt = customPrompt || ACTION_PROMPTS[action];
+    let systemPrompt = customPrompt || ACTION_PROMPTS[action];
     if (!systemPrompt) {
       return NextResponse.json(
         { error: "Invalid action" },
         { status: 400 }
       );
+    }
+
+    // For expand action, add word count constraint
+    const originalWordCount = countWords(text);
+    const maxWordCount = originalWordCount * 2;
+    
+    if (action === "expand") {
+      systemPrompt = `You are editing text for a presentation slide. Expand this text with more details and context while keeping it relevant and engaging. CRITICAL CONSTRAINT: The original text has ${originalWordCount} words. Your expanded text MUST NOT exceed ${maxWordCount} words (2x the original). Keep it suitable for a presentation slide. Return only the expanded text without any HTML tags.`;
     }
 
     const completion = await openai.chat.completions.create({
@@ -90,7 +103,9 @@ export async function POST(req: Request) {
         },
         {
           role: "user",
-          content: text,
+          content: action === "expand" 
+            ? `Expand this text (currently ${originalWordCount} words, max ${maxWordCount} words allowed):\n\n${text}`
+            : text,
         },
       ],
       max_tokens: 1000,

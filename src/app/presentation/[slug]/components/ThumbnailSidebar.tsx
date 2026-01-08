@@ -183,12 +183,13 @@ export function ThumbnailSidebar({
             className="w-full group relative"
           >
             <div
-              className="aspect-video overflow-hidden rounded transition-all duration-200 ring-1 hover:ring-2 hover:shadow-sm"
+              className="aspect-video overflow-hidden rounded ring-1"
               style={{
                 boxShadow: currentSlide === index ? `0 0 0 2px ${theme.colors.primary}` : undefined,
                 ["--tw-ring-color" as string]: currentSlide === index 
                   ? theme.colors.primary 
                   : isLight ? "#e2e8f0" : theme.colors.border || "#3f3f46",
+                willChange: "box-shadow",
               }}
             >
               {renderSlide(slide, index, false)}
