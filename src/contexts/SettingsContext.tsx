@@ -18,7 +18,7 @@ interface SettingsContextType {
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("system");
+  const [theme, setThemeState] = useState<Theme>("light");
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
   const [emailNotifications, setEmailNotificationsState] = useState(true);
   const [collaborationAlerts, setCollaborationAlertsState] = useState(true);
@@ -57,7 +57,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         setThemeState(savedTheme);
         applyTheme(savedTheme);
       } else {
-        applyTheme("system");
+        applyTheme("light");
       }
       
       if (savedEmailNotifications !== null) {
@@ -70,7 +70,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error("Error loading settings:", error);
       // Fallback to defaults
-      applyTheme("system");
+      applyTheme("light");
     }
   }, [applyTheme]);
 
