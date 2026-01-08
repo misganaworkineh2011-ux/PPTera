@@ -1115,6 +1115,17 @@ function SlideRendererComponent({
       };
       
       const handleUpdateLabel = (boxIndex: number, newLabel: string) => {
+        // Check if slide has sections - update those directly
+        if (slide.sections && slide.sections.length > 0 && slide.sections[boxIndex]) {
+          onUpdateContent(index, "sectionHeading", newLabel, boxIndex);
+          return;
+        }
+        
+        // Check if slide has transformedContent - need to update bulletPoints as fallback
+        // since transformedContent is read-only (generated from AI)
+        // Fall through to bullet points update
+        
+        // Update bullet points with label:text format
         const bullet = slide.bulletPoints?.[boxIndex] || "";
         const colonIndex = bullet.indexOf(":");
         let currentText = "";
@@ -1128,6 +1139,17 @@ function SlideRendererComponent({
       };
       
       const handleUpdateText = (boxIndex: number, newText: string) => {
+        // Check if slide has sections - update those directly
+        if (slide.sections && slide.sections.length > 0 && slide.sections[boxIndex]) {
+          onUpdateContent(index, "sectionDescription", newText, boxIndex);
+          return;
+        }
+        
+        // Check if slide has transformedContent - need to update bulletPoints as fallback
+        // since transformedContent is read-only (generated from AI)
+        // Fall through to bullet points update
+        
+        // Update bullet points with label:text format
         const bullet = slide.bulletPoints?.[boxIndex] || "";
         const colonIndex = bullet.indexOf(":");
         let currentLabel = "";

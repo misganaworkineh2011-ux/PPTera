@@ -5,6 +5,8 @@ export const env = createEnv({
   server: {
     DATABASE_URL: z.string().url(),
     CLERK_SECRET_KEY: z.string(),
+    // Webhook secret is optional but highly recommended in production
+    // The webhook handler will log warnings if missing
     CLERK_WEBHOOK_SECRET: z.string().optional(),
     POLAR_ACCESS_TOKEN: z.string(),
     POLAR_ENV: z.enum(["sandbox", "production"]).default("sandbox"),
