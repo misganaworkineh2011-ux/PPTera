@@ -952,20 +952,13 @@ export default function PresentationViewer({
     const existingSlide = newSlides[slideIndex];
     if (!existingSlide) return;
     const slide: SlideData = { ...existingSlide };
-    
-    // Handle all field types
-    if (field === "title") {
-      slide.title = value;
-    } else if (field === "subtitle") {
-      slide.subtitle = value;
-    } else if (field === "slideDescription") {
-      slide.slideDescription = value;
-    } else if (field === "bullet" && bulletIndex !== undefined) {
+    if (field === "title") slide.title = value;
+    else if (field === "subtitle") slide.subtitle = value;
+    else if (field === "bullet" && bulletIndex !== undefined) {
       const bullets = [...(slide.bulletPoints || [])];
       bullets[bulletIndex] = value;
       slide.bulletPoints = bullets;
     }
-    
     newSlides[slideIndex] = slide;
     updateSlidesWithSave(newSlides);
   };
@@ -1263,8 +1256,6 @@ export default function PresentationViewer({
   };
 
   const startEditing = (slideIndex: number, field: string, bulletIndex?: number) => {
-    // Set active slide to the one being edited, so only it shows hover effects
-    setActiveSlideIndex(slideIndex);
     setEditingText({ slideIndex, field, bulletIndex });
   };
 
@@ -1513,22 +1504,31 @@ export default function PresentationViewer({
       <div
         className="w-full h-full relative overflow-hidden transition-all duration-500 group slide-content-container"
         style={!hasImage ? backgroundStyle : undefined}
-        onMouseEnter={() => canEdit && !isFullscreen && !isPublicView && !isPresenting && !editingText && setActiveSlideIndex(index)}
+        onMouseEnter={() => {
+          // Don't change activeSlideIndex if user is currently editing ANY text field
+          if (canEdit && !isFullscreen && !isPublicView && !isPresenting && !editingText) {
+            setActiveSlideIndex(index);
+          }
+        }}
         onMouseLeave={(e) => {
           // Don't clear activeSlideIndex if:
-          // 1. User is editing text
+          // 1. User is editing text (ANY text field, not just on this slide)
           // 2. Content layout panel is open
           // 3. There's an active text selection (user might be using WYSIWYG toolbar)
           // 4. Mouse is moving to a child element (toolbar, etc.)
           const relatedTarget = e.relatedTarget as HTMLElement | null;
           const isMovingToToolbar = relatedTarget?.closest('[data-toolbar]') || 
                                     relatedTarget?.closest('.text-toolbar') ||
-                                    relatedTarget?.closest('[role="toolbar"]');
+                                    relatedTarget?.closest('[role="toolbar"]') ||
+                                    relatedTarget?.closest('[contenteditable="true"]');
           
           const selection = window.getSelection();
           const hasActiveSelection = selection && !selection.isCollapsed && selection.toString().trim().length > 0;
           
-          if (!isEditing && !showContentLayoutPanel && !hasActiveSelection && !isMovingToToolbar) {
+          // Check if ANY text is being edited (not just on this slide)
+          const isAnyTextEditing = editingText !== null;
+          
+          if (!isAnyTextEditing && !showContentLayoutPanel && !hasActiveSelection && !isMovingToToolbar) {
             setActiveSlideIndex(null);
           }
         }}
@@ -1701,7 +1701,6 @@ export default function PresentationViewer({
             isEditing={isEditing ?? false}
             editingText={editingText}
             showPageNumber={showPageNumbers}
-            globalEditingActive={!!editingText}
             onStartEditing={startEditing}
             onUpdateContent={updateSlideContent}
             onFinishEditing={() => setEditingText(null)}
@@ -1719,7 +1718,6 @@ export default function PresentationViewer({
             isEditing={isEditing ?? false}
             editingText={editingText}
             showPageNumber={showPageNumbers}
-            globalEditingActive={!!editingText}
             onStartEditing={startEditing}
             onUpdateContent={updateSlideContent}
             onFinishEditing={() => setEditingText(null)}

@@ -56,8 +56,6 @@ interface ImageLayoutRendererProps {
   onReorderItems?: (fromIndex: number, toIndex: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
-  /** When true, disables hover effects globally (e.g., when any text is being edited) */
-  disableHover?: boolean;
 }
 
 export function ImageLayoutRenderer({
@@ -79,7 +77,6 @@ export function ImageLayoutRenderer({
   onReorderItems,
   isOwner = false,
   isHovered = false,
-  disableHover = false,
 }: ImageLayoutRendererProps) {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -201,7 +198,6 @@ export function ImageLayoutRenderer({
                     style={{ color: themeStyles.titleColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
-                disableHover={disableHover}
                   />
                 ) : (
                   <h3 className="text-base font-semibold mb-1" style={{ color: themeStyles.titleColor }}>
@@ -221,7 +217,6 @@ export function ImageLayoutRenderer({
                   style={{ color: themeStyles.bodyColor }}
                   isOwner={isOwner}
                   isHovered={isHovered}
-                disableHover={disableHover}
                 />
               ) : (
                 <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
@@ -287,7 +282,6 @@ export function ImageLayoutRenderer({
                     style={{ color: themeStyles.titleColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
-                disableHover={disableHover}
                   />
                 ) : (
                   <h3 className="text-lg font-semibold mb-2" style={{ color: themeStyles.titleColor }}>
@@ -307,7 +301,6 @@ export function ImageLayoutRenderer({
                   style={{ color: themeStyles.bodyColor }}
                   isOwner={isOwner}
                   isHovered={isHovered}
-                disableHover={disableHover}
                 />
               ) : (
                 <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
@@ -372,7 +365,6 @@ export function ImageLayoutRenderer({
                     style={{ color: themeStyles.titleColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
-                disableHover={disableHover}
                   />
                 ) : (
                   <h3 className="text-lg font-semibold mb-2" style={{ color: themeStyles.titleColor }}>
@@ -392,7 +384,6 @@ export function ImageLayoutRenderer({
                   style={{ color: themeStyles.bodyColor }}
                   isOwner={isOwner}
                   isHovered={isHovered}
-                disableHover={disableHover}
                 />
               ) : (
                 <p className="text-sm leading-relaxed max-w-[250px]" style={{ color: themeStyles.bodyColor }}>
@@ -458,7 +449,6 @@ export function ImageLayoutRenderer({
                   style={{ color: themeStyles.titleColor }}
                   isOwner={isOwner}
                   isHovered={isHovered}
-                disableHover={disableHover}
                 />
               ) : (
                 <h3 className="text-lg font-semibold mb-2" style={{ color: themeStyles.titleColor }}>
@@ -478,7 +468,6 @@ export function ImageLayoutRenderer({
                 style={{ color: themeStyles.bodyColor }}
                 isOwner={isOwner}
                 isHovered={isHovered}
-                disableHover={disableHover}
               />
             ) : (
               <p className="text-sm leading-relaxed max-w-[280px]" style={{ color: themeStyles.bodyColor }}>

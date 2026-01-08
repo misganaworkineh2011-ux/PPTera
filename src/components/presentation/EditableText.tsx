@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
-import { createPortal, flushSync } from "react-dom";
+import { useEffect, useRef, useState, useCallback, memo } from "react";
+import { createPortal } from "react-dom";
 import {
   Type,
   Trash2,
@@ -46,10 +46,8 @@ interface EditableTextProps {
   className?: string;
   style?: React.CSSProperties;
   isOwner: boolean;
-  isHovered?: boolean; // Deprecated - each EditableText manages its own hover state
   onDelete?: () => void;
-  /** When true, disables hover effects globally (e.g., when any text is being edited) */
-  disableHover?: boolean;
+  isHovered?: boolean; // Added but not used - prevents unmounting on hover changes
 }
 
 interface ToolbarPosition {
@@ -287,87 +285,65 @@ function FloatingToolbar({ position, onCommand, onAIAction }: FloatingToolbarPro
   );
 }
 
-
 // ============================================================================
-// DISPLAY VIEW (Non-editing state)
+// MAIN COMPONENT - Completely Rewritten with Memo
 // ============================================================================
 
-function DisplayView({
-  content,
-  className,
+function EditableTextComponent({
+  value,
+  isEditing,
+  onStartEdit,
+  onChange,
+  onFinish,
+  className = "",
   style,
   isOwner,
-  isHovered,
-  onMouseEnter,
-  onMouseLeave,
-  onStartEdit,
   onDelete,
-}: {
-  content: string;
-  className: string;
-  style?: React.CSSProperties;
-  isOwner: boolean;
-  isHovered: boolean;
-  onMouseEnter: () => void;
-  onMouseLeave: () => void;
-  onStartEdit: () => void;
-  onDelete?: () => void;
-}) {
-  return (
-    <div
-      className="relative group/editable"
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-    >
-      <div
-        className={`${className} ${isOwner && isHovered ? "cursor-text ring-2 ring-white/30 ring-offset-2 ring-offset-transparent rounded" : ""} ${!isOwner ? "pointer-events-none select-none" : ""}`}
-        style={style}
-        onMouseDown={isOwner ? (e) => { e.stopPropagation(); onStartEdit(); } : undefined}
-        dangerouslySetInnerHTML={{ __html: content }}
-      />
-      {isOwner && onDelete && isHovered && (
-        <div className="absolute top-0 right-0 flex gap-1 z-50">
-          <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onStartEdit(); }} title="Edit" className="p-1.5 rounded bg-white shadow-lg hover:bg-blue-50 transition-colors border border-slate-200">
-            <Type size={14} className="text-slate-600" />
-          </button>
-          <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(); }} title="Delete" className="p-1.5 rounded bg-white shadow-lg hover:bg-red-50 transition-colors border border-slate-200">
-            <Trash2 size={14} className="text-red-500" />
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ============================================================================
-// EDITOR VIEW (Editing state)
-// ============================================================================
-
-function EditorView({
-  initialContent,
-  className,
-  style,
-  onSave,
-  onCancel,
-}: {
-  initialContent: string;
-  className: string;
-  style?: React.CSSProperties;
-  onSave: (content: string) => void;
-  onCancel: () => void;
-}) {
+}: EditableTextProps) {
+  // Editor refs
   const editorRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Hover state (using ref to avoid re-renders)
+  const isHoveredRef = useRef(false);
+  const [hoverTrigger, setHoverTrigger] = useState(0);
+  
+  // Toolbar state
   const [showToolbar, setShowToolbar] = useState(false);
   const [toolbarPosition, setToolbarPosition] = useState<ToolbarPosition>({ top: 0, left: 0 });
+  
+  // Content management - track if we've ever edited
+  const [displayContent, setDisplayContent] = useState(value);
+  const savedContentRef = useRef(value);
   const isSavingRef = useRef(false);
-
-  // Initialize editor content on mount
+  const isEditingRef = useRef(isEditing);
+  const hasUnsavedChangesRef = useRef(false);
+  
+  // Track editing state changes
   useEffect(() => {
-    if (editorRef.current) {
-      editorRef.current.innerHTML = initialContent;
+    isEditingRef.current = isEditing;
+  }, [isEditing]);
+  
+  // Sync display content when value prop changes from parent
+  // BUT ONLY if we're not editing AND we don't have unsaved changes
+  useEffect(() => {
+    if (!isEditingRef.current && !hasUnsavedChangesRef.current) {
+      setDisplayContent(value);
+      savedContentRef.current = value;
+    }
+  }, [value]);
+
+  // Initialize editor when entering edit mode
+  useEffect(() => {
+    if (isEditing && editorRef.current) {
+      // Mark that we have unsaved changes while editing
+      hasUnsavedChangesRef.current = true;
+      
+      // Set content
+      editorRef.current.innerHTML = displayContent;
+      
+      // Focus and place cursor at end
       editorRef.current.focus({ preventScroll: true });
-      // Place cursor at end
       const range = document.createRange();
       range.selectNodeContents(editorRef.current);
       range.collapse(false);
@@ -377,78 +353,142 @@ function EditorView({
         sel.addRange(range);
       }
     }
-  }, []); // Only run once on mount
+  }, [isEditing, displayContent]);
 
-  // Get current content from editor
-  const getCurrentContent = useCallback(() => {
-    return editorRef.current?.innerHTML || initialContent;
-  }, [initialContent]);
-
-  // Save and exit
-  const saveAndExit = useCallback(() => {
-    if (isSavingRef.current) return;
-    isSavingRef.current = true;
-    const content = getCurrentContent();
-    setShowToolbar(false);
-    onSave(content);
-  }, [getCurrentContent, onSave]);
-
-  // Handle clicks outside
+  // Track content changes during editing to prevent parent overwrites
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as Element;
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(target) &&
-        !target.closest?.('[data-toolbar="true"]')
-      ) {
-        saveAndExit();
+    if (!isEditing || !editorRef.current) return;
+
+    const handleInput = () => {
+      // Mark that content has changed
+      hasUnsavedChangesRef.current = true;
+      
+      // Update display content in real-time to prevent reversion
+      if (editorRef.current) {
+        const currentContent = editorRef.current.innerHTML;
+        setDisplayContent(currentContent);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [saveAndExit]);
+
+    const editor = editorRef.current;
+    editor.addEventListener('input', handleInput);
+    
+    return () => {
+      editor.removeEventListener('input', handleInput);
+    };
+  }, [isEditing]);
+
+  // Save function
+  const saveContent = useCallback(() => {
+    if (isSavingRef.current || !editorRef.current) return;
+    
+    isSavingRef.current = true;
+    const content = editorRef.current.innerHTML;
+    
+    // Update local state immediately
+    setDisplayContent(content);
+    savedContentRef.current = content;
+    
+    // Clear unsaved changes flag
+    hasUnsavedChangesRef.current = false;
+    
+    // Hide toolbar
+    setShowToolbar(false);
+    
+    // Notify parent
+    onChange(content);
+    onFinish();
+    
+    // Reset saving flag after a short delay
+    setTimeout(() => {
+      isSavingRef.current = false;
+    }, 100);
+  }, [onChange, onFinish]);
+
+  // Handle clicks outside editor
+  useEffect(() => {
+    if (!isEditing) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Element;
+      
+      // Ignore clicks on toolbar or editor
+      if (
+        containerRef.current?.contains(target) ||
+        target.closest('[data-toolbar="true"]') ||
+        target.closest('[contenteditable="true"]')
+      ) {
+        return;
+      }
+      
+      // Save and exit
+      saveContent();
+    };
+
+    // Small delay to avoid immediate trigger
+    const timeoutId = setTimeout(() => {
+      document.addEventListener("mousedown", handleClickOutside);
+    }, 100);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isEditing, saveContent]);
 
   // Toolbar position calculation
   const updateToolbarPosition = useCallback(() => {
     const selection = window.getSelection();
     if (!selection || selection.isCollapsed || !selection.rangeCount) return null;
+    
     const range = selection.getRangeAt(0);
     const rect = range.getBoundingClientRect();
+    
     if (rect.width === 0 || rect.height === 0) return null;
+    
     const centerX = rect.left + rect.width / 2;
     let top = rect.top - TOOLBAR_HEIGHT - TOOLBAR_GAP;
-    if (top < 10) top = rect.bottom + TOOLBAR_GAP;
-    return { top, left: Math.max(200, Math.min(centerX, window.innerWidth - 200)) };
+    
+    // If toolbar would be off-screen at top, show below selection
+    if (top < 10) {
+      top = rect.bottom + TOOLBAR_GAP;
+    }
+    
+    return {
+      top,
+      left: Math.max(200, Math.min(centerX, window.innerWidth - 200))
+    };
   }, []);
 
   // Selection change handler
-  const handleSelectionChange = useCallback(() => {
-    if (!editorRef.current) return;
-    const selection = window.getSelection();
-    if (!selection) return;
-    const isInEditor = editorRef.current.contains(selection.anchorNode);
-    const hasText = !selection.isCollapsed && selection.toString().trim().length > 0;
-    if (isInEditor && hasText) {
-      const pos = updateToolbarPosition();
-      if (pos) {
-        setToolbarPosition(pos);
-        setShowToolbar(true);
-      }
-    } else {
-      setTimeout(() => {
-        const sel = window.getSelection();
-        if (!sel || sel.isCollapsed || sel.toString().trim().length === 0) {
-          setShowToolbar(false);
-        }
-      }, 100);
-    }
-  }, [updateToolbarPosition]);
-
   useEffect(() => {
+    if (!isEditing) return;
+
+    const handleSelectionChange = () => {
+      if (!editorRef.current) return;
+      
+      const selection = window.getSelection();
+      if (!selection) return;
+      
+      // Check if selection is within our editor
+      const isInEditor = editorRef.current.contains(selection.anchorNode);
+      const hasText = !selection.isCollapsed && selection.toString().trim().length > 0;
+      
+      if (isInEditor && hasText) {
+        const pos = updateToolbarPosition();
+        if (pos) {
+          setToolbarPosition(pos);
+          setShowToolbar(true);
+        }
+      } else if (!isInEditor) {
+        // Only hide if selection moved outside editor
+        setShowToolbar(false);
+      }
+    };
+
     document.addEventListener("selectionchange", handleSelectionChange);
     return () => document.removeEventListener("selectionchange", handleSelectionChange);
-  }, [handleSelectionChange]);
+  }, [isEditing, updateToolbarPosition]);
 
   // Command handler
   const handleCommand = useCallback((cmd: string, cmdValue?: string) => {
@@ -473,23 +513,49 @@ function EditorView({
 
   // Key handler
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === "Escape") { saveAndExit(); return; }
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); saveAndExit(); return; }
+    if (e.key === "Escape") {
+      saveContent();
+      return;
+    }
+    
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      saveContent();
+      return;
+    }
+    
+    // Keyboard shortcuts
     if (e.ctrlKey || e.metaKey) {
       switch (e.key.toLowerCase()) {
-        case "b": e.preventDefault(); handleCommand("bold"); break;
-        case "i": e.preventDefault(); handleCommand("italic"); break;
-        case "u": e.preventDefault(); handleCommand("underline"); break;
-        case "k": e.preventDefault(); handleCommand("createLink"); break;
-        case "z": e.preventDefault(); handleCommand(e.shiftKey ? "redo" : "undo"); break;
+        case "b":
+          e.preventDefault();
+          handleCommand("bold");
+          break;
+        case "i":
+          e.preventDefault();
+          handleCommand("italic");
+          break;
+        case "u":
+          e.preventDefault();
+          handleCommand("underline");
+          break;
+        case "k":
+          e.preventDefault();
+          handleCommand("createLink");
+          break;
+        case "z":
+          e.preventDefault();
+          handleCommand(e.shiftKey ? "redo" : "undo");
+          break;
       }
     }
-  }, [saveAndExit, handleCommand]);
+  }, [saveContent, handleCommand]);
 
   // AI handler
   const handleAIAction = useCallback(async (action: AIAction, selectedText: string): Promise<string | null> => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000);
+    
     try {
       const response = await fetch("/api/ai/enhance-text", {
         method: "POST",
@@ -497,11 +563,14 @@ function EditorView({
         body: JSON.stringify({ text: selectedText, action }),
         signal: controller.signal,
       });
+      
       clearTimeout(timeoutId);
+      
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
         throw new Error(error.error || "AI enhancement failed");
       }
+      
       const data = await response.json();
       if (data.success && data.text) return data.text;
       throw new Error("No enhanced text returned");
@@ -514,122 +583,129 @@ function EditorView({
     }
   }, []);
 
+  // Hover handlers (non-re-rendering)
+  const handleMouseEnter = useCallback(() => {
+    if (isOwner && !isEditing) {
+      isHoveredRef.current = true;
+      setHoverTrigger(prev => prev + 1);
+    }
+  }, [isOwner, isEditing]);
+
+  const handleMouseLeave = useCallback(() => {
+    if (!isEditing) {
+      isHoveredRef.current = false;
+      setHoverTrigger(prev => prev + 1);
+    }
+  }, [isEditing]);
+
+  // Render editing mode
+  if (isEditing) {
+    return (
+      <div ref={containerRef} className="relative z-[100]">
+        <div
+          ref={editorRef}
+          contentEditable
+          suppressContentEditableWarning
+          onKeyDown={handleKeyDown}
+          onMouseUp={() => {
+            // Trigger selection check on mouse up
+            setTimeout(() => {
+              const selection = window.getSelection();
+              if (selection && !selection.isCollapsed && editorRef.current?.contains(selection.anchorNode)) {
+                const pos = updateToolbarPosition();
+                if (pos) {
+                  setToolbarPosition(pos);
+                  setShowToolbar(true);
+                }
+              }
+            }, 10);
+          }}
+          className={`${className} outline-none ring-2 ring-blue-500 rounded px-2 py-1 bg-white/95 shadow-lg backdrop-blur-sm`}
+          style={{
+            ...style,
+            minHeight: "1.5em",
+            position: "relative",
+            zIndex: 100,
+          }}
+        />
+        {showToolbar && createPortal(
+          <FloatingToolbar
+            position={toolbarPosition}
+            onCommand={handleCommand}
+            onAIAction={handleAIAction}
+          />,
+          document.body
+        )}
+      </div>
+    );
+  }
+
+  // Render display mode
+  const isHovered = isHoveredRef.current;
+
   return (
-    <div ref={containerRef} className="relative">
+    <div
+      className="relative group/editable"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       <div
-        ref={editorRef}
-        contentEditable
-        suppressContentEditableWarning
-        onKeyDown={handleKeyDown}
-        onMouseUp={handleSelectionChange}
-        className={`${className} outline-none ring-2 ring-cyan-400/60 rounded`}
+        className={`${className} ${isOwner && isHovered ? "cursor-text ring-2 ring-white/30 ring-offset-2 ring-offset-transparent rounded" : ""} ${!isOwner ? "pointer-events-none select-none" : ""}`}
         style={style}
+        onMouseDown={isOwner ? (e) => { e.stopPropagation(); onStartEdit(); } : undefined}
+        dangerouslySetInnerHTML={{ __html: displayContent }}
       />
-      {showToolbar && createPortal(
-        <FloatingToolbar position={toolbarPosition} onCommand={handleCommand} onAIAction={handleAIAction} />,
-        document.body
+      {isOwner && onDelete && isHovered && (
+        <div className="absolute top-0 right-0 flex gap-1 z-50">
+          <button
+            type="button"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onStartEdit(); }}
+            title="Edit"
+            className="p-1.5 rounded bg-white shadow-lg hover:bg-blue-50 transition-colors border border-slate-200"
+          >
+            <Type size={14} className="text-slate-600" />
+          </button>
+          <button
+            type="button"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(); }}
+            title="Delete"
+            className="p-1.5 rounded bg-white shadow-lg hover:bg-red-50 transition-colors border border-slate-200"
+          >
+            <Trash2 size={14} className="text-red-500" />
+          </button>
+        </div>
       )}
     </div>
   );
 }
 
-// ============================================================================
-// MAIN COMPONENT - Clean Architecture
-// Uses separate components for display and editing to avoid state sync issues
-// ============================================================================
-
-export default function EditableText({
-  value,
-  isEditing,
-  onStartEdit,
-  onChange,
-  onFinish,
-  className = "",
-  style,
-  isOwner,
-  onDelete,
-  disableHover = false,
-}: EditableTextProps) {
-  // Each EditableText manages its own hover state independently
-  // This ensures only the specific text being hovered shows edit/delete buttons
-  const [isHovered, setIsHovered] = useState(false);
+// Memoize component with custom comparison to prevent unnecessary re-renders
+// Memoize component with custom comparison to prevent unnecessary re-renders
+// Return TRUE to SKIP re-render, FALSE to allow re-render
+const EditableText = memo(EditableTextComponent, (prevProps, nextProps) => {
+  // ALWAYS ignore isHovered prop changes - it should never cause re-render
   
-  // Local content state - used to show saved content immediately and prevent reverting
-  // This persists the edited content until the parent acknowledges the change
-  const [localContent, setLocalContent] = useState<string | null>(null);
-  
-  // Track if we just saved to prevent immediate clearing
-  const justSavedRef = useRef(false);
-  
-  // Track the previous value to detect actual parent updates
-  const prevValueRef = useRef(value);
-
-  // Effective hover state - disabled when any text is being edited globally
-  const effectiveHover = isHovered && !disableHover;
-
-  // Clear local content only when parent has truly updated with our change
-  useEffect(() => {
-    // If value changed from what it was before
-    if (value !== prevValueRef.current) {
-      prevValueRef.current = value;
-      
-      // If we have local content and the new value matches it, clear local state
-      if (localContent !== null && value === localContent) {
-        setLocalContent(null);
-        justSavedRef.current = false;
-      }
-      // If value changed to something else entirely (external update), also clear local
-      else if (localContent !== null && !justSavedRef.current) {
-        setLocalContent(null);
-      }
-    }
-  }, [value, localContent]);
-
-  // What to display: local content if we have unsaved changes, otherwise prop value
-  const displayContent = localContent ?? value;
-
-  // Handle save from editor
-  const handleSave = useCallback((content: string) => {
-    // Mark that we just saved
-    justSavedRef.current = true;
-    // Use flushSync to ensure local state is set synchronously before parent updates
-    // This prevents the race condition where parent re-renders before local state is set
-    flushSync(() => {
-      setLocalContent(content);
-    });
-    // Notify parent
-    onChange(content);
-    onFinish();
-  }, [onChange, onFinish]);
-
-  // Handle cancel (currently same as save, but could be different)
-  const handleCancel = useCallback(() => {
-    onFinish();
-  }, [onFinish]);
-
-  if (isEditing) {
+  // If currently editing, don't re-render on value changes (prevents reversion)
+  if (nextProps.isEditing) {
+    // Return TRUE (skip re-render) if these props haven't changed
     return (
-      <EditorView
-        initialContent={displayContent}
-        className={className}
-        style={style}
-        onSave={handleSave}
-        onCancel={handleCancel}
-      />
+      prevProps.isEditing === nextProps.isEditing &&
+      prevProps.className === nextProps.className &&
+      prevProps.isOwner === nextProps.isOwner
     );
   }
-
+  
+  // If not editing, only re-render if value or critical props change
+  // Return TRUE (skip re-render) if nothing important changed
   return (
-    <DisplayView
-      content={displayContent}
-      className={className}
-      style={style}
-      isOwner={isOwner}
-      isHovered={effectiveHover}
-      onMouseEnter={() => isOwner && !disableHover && setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onStartEdit={onStartEdit}
-      onDelete={onDelete}
-    />
+    prevProps.value === nextProps.value &&
+    prevProps.isEditing === nextProps.isEditing &&
+    prevProps.className === nextProps.className &&
+    prevProps.isOwner === nextProps.isOwner
+    // Note: isHovered is intentionally NOT checked - we never re-render for hover changes
   );
-}
+});
+
+EditableText.displayName = "EditableText";
+
+export default EditableText;
