@@ -5,8 +5,53 @@ import { db } from "~/server/db";
 import { env } from "~/env";
 import { CREDIT_COSTS } from "~/lib/credits";
 import { serverCache } from "~/lib/server-cache";
+import { generateGeminiImage, type ImageModelId } from "~/lib/presentation/generate-ai-image";
+import { uploadImageFromDataUrl } from "~/lib/uploads/cloudinary";
 
 const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
+
+/**
+ * Upload image URL to Cloudinary (fetches and re-uploads)
+ */
+async function uploadUrlToCloudinary(imageUrl: string, model: string): Promise<string> {
+  // If it's already a Cloudinary URL, return as-is
+  if (imageUrl.includes("cloudinary.com") || imageUrl.includes("res.cloudinary")) {
+    return imageUrl;
+  }
+
+  // If it's a data URL (base64), upload directly
+  if (imageUrl.startsWith("data:")) {
+    const result = await uploadImageFromDataUrl(imageUrl, {
+      folder: "pptmaster/ai-images",
+      tags: ["ai-generated", model, "dashboard"],
+    });
+    return result?.url || imageUrl;
+  }
+
+  // For external URLs (like OpenAI temporary URLs), fetch and re-upload
+  try {
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      console.warn("[Cloudinary] Failed to fetch image URL:", response.status);
+      return imageUrl;
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString("base64");
+    const contentType = response.headers.get("content-type") || "image/png";
+    const dataUrl = `data:${contentType};base64,${base64}`;
+
+    const result = await uploadImageFromDataUrl(dataUrl, {
+      folder: "pptmaster/ai-images",
+      tags: ["ai-generated", model, "dashboard"],
+    });
+
+    return result?.url || imageUrl;
+  } catch (error) {
+    console.error("[Cloudinary] Error uploading URL:", error);
+    return imageUrl;
+  }
+}
 
 export async function POST(req: Request) {
   try {
@@ -62,6 +107,20 @@ export async function POST(req: Request) {
     
     // Map model to credit cost
     const modelCreditMap: Record<string, { standard: number; hd: number }> = {
+      // GPT Image models (new)
+      "gpt-image-1-mini": {
+        standard: CREDIT_COSTS.IMAGE_BASIC,
+        hd: CREDIT_COSTS.IMAGE_BASIC,
+      },
+      "gpt-image-1.5": {
+        standard: CREDIT_COSTS.GPT_IMAGE_DETAILED,
+        hd: CREDIT_COSTS.GPT_IMAGE_DETAILED,
+      },
+      "gpt-image-1": {
+        standard: CREDIT_COSTS.GPT_IMAGE_DETAILED,
+        hd: CREDIT_COSTS.GPT_IMAGE_DETAILED,
+      },
+      // Gemini models
       "gemini-2.5-flash-image": { 
         standard: CREDIT_COSTS.GEMINI_FLASH, 
         hd: CREDIT_COSTS.GEMINI_FLASH_HD 
@@ -70,6 +129,7 @@ export async function POST(req: Request) {
         standard: CREDIT_COSTS.GEMINI_PRO, 
         hd: CREDIT_COSTS.GEMINI_PRO_HD 
       },
+      // Imagen models
       "imagen-4.0-generate-001": { 
         standard: CREDIT_COSTS.IMAGEN_4, 
         hd: CREDIT_COSTS.IMAGEN_4_ULTRA 
@@ -82,6 +142,7 @@ export async function POST(req: Request) {
         standard: CREDIT_COSTS.IMAGEN_4_FAST, 
         hd: CREDIT_COSTS.IMAGEN_4_FAST 
       },
+      // OpenAI DALL-E models
       "openai": { 
         standard: CREDIT_COSTS.DALLE_STANDARD, 
         hd: CREDIT_COSTS.DALLE_HD 
@@ -90,11 +151,11 @@ export async function POST(req: Request) {
         standard: CREDIT_COSTS.DALLE_HD, 
         hd: CREDIT_COSTS.GPT_IMAGE_DETAILED 
       },
+      // Legacy support
       "gpt-image": { 
         standard: CREDIT_COSTS.GPT_IMAGE_DETAILED, 
         hd: CREDIT_COSTS.GPT_IMAGE_DETAILED 
       },
-      // Legacy support
       "gemini": { 
         standard: CREDIT_COSTS.GEMINI_FLASH, 
         hd: CREDIT_COSTS.GEMINI_FLASH_HD 
@@ -132,29 +193,79 @@ export async function POST(req: Request) {
     let imageUrl: string;
     let revisedPrompt: string | undefined;
 
-    if (model === "gemini") {
-      // Gemini Imagen - uses DALL-E 3 with natural style as Gemini's image API
-      // is not yet publicly available. Credit cost is lower for Gemini option.
+    // Check if this is a Google model (Gemini or Imagen)
+    const isGoogleModel = model.startsWith("gemini-") || model.startsWith("imagen-");
+    // Check if this is a GPT Image model (not DALL-E)
+    const isGptImageModel = model.startsWith("gpt-image");
+
+    if (isGoogleModel) {
+      // Use the unified Google image generation function
+      const result = await generateGeminiImage(
+        enhancedPrompt,
+        artStyle,
+        model as ImageModelId,
+        artStyle
+      );
+      
+      if (result.error || !result.url) {
+        throw new Error(result.error || "Failed to generate image with Google AI");
+      }
+      
+      imageUrl = result.url;
+      revisedPrompt = undefined; // Google models don't return revised prompts
+    } else if (isGptImageModel) {
+      // GPT Image models use OpenAI API with different parameters
+      let openaiModel: string;
+      let gptQuality: "low" | "medium" | "high" = "medium";
+      
+      if (model === "gpt-image-1.5") {
+        openaiModel = "gpt-image-1.5";
+        gptQuality = "high";
+      } else if (model === "gpt-image-1") {
+        openaiModel = "gpt-image-1";
+        gptQuality = "high";
+      } else {
+        // gpt-image-1-mini
+        openaiModel = "gpt-image-1-mini";
+        gptQuality = "low";
+      }
+
+      // GPT Image models have different supported sizes than DALL-E
+      // DALL-E: 1024x1024, 1792x1024, 1024x1792
+      // GPT Image: 1024x1024, 1536x1024, 1024x1536, auto
+      const gptSizeMap: Record<string, string> = {
+        "1024x1024": "1024x1024",
+        "1792x1024": "1536x1024", // Landscape: map to closest GPT Image size
+        "1024x1792": "1024x1536", // Portrait: map to closest GPT Image size
+      };
+      const gptSize = gptSizeMap[size] || "1024x1024";
+
       const response = await openai.images.generate({
-        model: "dall-e-3",
+        model: openaiModel,
         prompt: enhancedPrompt,
         n: 1,
-        size: size as "1024x1024" | "1792x1024" | "1024x1792",
-        quality: quality as "standard" | "hd",
-        style: "natural", // Gemini-style: more natural/realistic
-        response_format: "url",
+        size: gptSize as "1024x1024" | "1536x1024" | "1024x1536",
+        quality: gptQuality,
       });
 
-      imageUrl = response.data?.[0]?.url || "";
-      revisedPrompt = response.data?.[0]?.revised_prompt;
+      // GPT Image models may return b64_json or url
+      const imageData = response.data?.[0];
+      if (imageData?.b64_json) {
+        imageUrl = `data:image/png;base64,${imageData.b64_json}`;
+      } else {
+        imageUrl = imageData?.url || "";
+      }
+      revisedPrompt = imageData?.revised_prompt;
     } else {
-      // Generate with OpenAI DALL-E 3
+      // OpenAI DALL-E 3 models
+      const dalleQuality = model === "openai-hd" ? "hd" : (quality as "standard" | "hd");
+      
       const response = await openai.images.generate({
         model: "dall-e-3",
         prompt: enhancedPrompt,
         n: 1,
         size: size as "1024x1024" | "1792x1024" | "1024x1792",
-        quality: quality as "standard" | "hd",
+        quality: dalleQuality,
         style: style as "vivid" | "natural",
         response_format: "url",
       });
@@ -167,6 +278,38 @@ export async function POST(req: Request) {
       throw new Error("No image URL returned");
     }
 
+    // Upload to Cloudinary for permanent storage
+    console.log("[Image Generation] Uploading to Cloudinary...");
+    const cloudinaryUrl = await uploadUrlToCloudinary(imageUrl, model);
+    
+    // Use Cloudinary URL if upload succeeded
+    const finalImageUrl = cloudinaryUrl || imageUrl;
+
+    // Get friendly model name for activity log
+    const modelNames: Record<string, string> = {
+      "gpt-image-1-mini": "GPT Image Mini",
+      "gpt-image-1.5": "GPT Image 1.5",
+      "gpt-image-1": "GPT Image 1",
+      "gemini-2.5-flash-image": "Nano Banana",
+      "gemini-3-pro-image-preview": "Nano Banana Pro",
+      "imagen-4.0-generate-001": "Imagen 4",
+      "imagen-4.0-ultra-generate-001": "Imagen 4 Ultra",
+      "imagen-4.0-fast-generate-001": "Imagen 4 Fast",
+      "openai": "DALL-E 3",
+      "openai-hd": "DALL-E 3 HD",
+    };
+    const modelDisplayName = modelNames[model] || model;
+
+    // Always save image to database for the user's image library
+    const savedImage = await db.image.create({
+      data: {
+        url: finalImageUrl,
+        filename: `ai-${model}-${Date.now()}.png`,
+        userId: user.id,
+        presentationId: presentationId || null,
+      },
+    });
+
     // Deduct credits and log activity in transaction
     const [updatedUser] = await db.$transaction([
       db.user.update({
@@ -177,7 +320,7 @@ export async function POST(req: Request) {
         data: {
           userId: user.id,
           type: "image_generate",
-          description: `Generated ${quality === "hd" ? "HD " : ""}AI image (${model === "gemini" ? "Gemini" : "DALL-E 3"})`,
+          description: `Generated AI image (${modelDisplayName})`,
           presentationId: presentationId || null,
           metadata: {
             creditsUsed: creditCost,
@@ -186,6 +329,7 @@ export async function POST(req: Request) {
             size,
             artStyle,
             promptPreview: prompt.substring(0, 100),
+            imageId: savedImage.id,
           },
         },
       }),
@@ -194,35 +338,24 @@ export async function POST(req: Request) {
     // Invalidate user cache
     serverCache.invalidatePattern(`user-${user.id}`);
 
-    // Optionally save image to database
-    let savedImage = null;
-    if (presentationId) {
-      savedImage = await db.image.create({
-        data: {
-          url: imageUrl,
-          filename: `ai-generated-${Date.now()}.png`,
-          userId: user.id,
-          presentationId,
-        },
-      });
-    }
-
     console.log("[Image Generation] Success:", {
       userId: user.id,
       model,
       creditsUsed: creditCost,
       remainingCredits: updatedUser.credits,
+      imageId: savedImage.id,
+      cloudinaryUrl: finalImageUrl !== imageUrl,
     });
 
     return NextResponse.json({
       success: true,
       image: {
-        url: imageUrl,
+        url: finalImageUrl,
         revisedPrompt,
         model,
         quality,
         size,
-        id: savedImage?.id,
+        id: savedImage.id,
       },
       credits: {
         used: creditCost,

@@ -372,12 +372,16 @@ export async function GET(
   const metadata = content?.metadata as { tone?: string; language?: string } | undefined;
   const imageSource = content?.imageSource as string | undefined;
   const imageModel = content?.imageModel as string | undefined;
+  const imageArtStyle = content?.imageArtStyle as string | undefined;
+  const customArtStyleText = content?.customArtStyleText as string | undefined;
   const textDensity = content?.textDensity as string | undefined;
   const streamingComplete = content?.streamingComplete as boolean | undefined;
 
   console.log("[stream-content] Content parsed:", {
     imageSource,
     imageModel,
+    imageArtStyle,
+    customArtStyleText,
     textDensity,
     streamingComplete,
     hasPendingSlides: !!pendingSlides,
@@ -498,7 +502,7 @@ export async function GET(
                     mapIndex++;
                   }
                 } else if (imageSource === "ai-generated") {
-                  console.log("[stream-content] Generating AI images for batch:", batch.map(b => b.index), "model:", imageModel);
+                  console.log("[stream-content] Generating AI images for batch:", batch.map(b => b.index), "model:", imageModel, "artStyle:", imageArtStyle);
                   const slidesWithMetadata = batch.map(({ slide }) => ({
                     type: slide.type,
                     title: slide.title,
@@ -506,7 +510,16 @@ export async function GET(
                     image: slide.image,
                   }));
 
-                  const generatedImages = await generateAIImages(slidesWithMetadata as Parameters<typeof generateAIImages>[0], imageModel as Parameters<typeof generateAIImages>[1]);
+                  // Determine the effective art style to use
+                  const effectiveArtStyle = imageArtStyle === "custom" && customArtStyleText 
+                    ? customArtStyleText 
+                    : imageArtStyle;
+
+                  const generatedImages = await generateAIImages(
+                    slidesWithMetadata as Parameters<typeof generateAIImages>[0], 
+                    imageModel as Parameters<typeof generateAIImages>[1],
+                    effectiveArtStyle
+                  );
                   console.log("[stream-content] Generated images count:", generatedImages.size);
 
                   let mapIndex = 0;

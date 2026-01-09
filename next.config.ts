@@ -72,6 +72,27 @@ const config: NextConfig = {
         hostname: "oaidalleapiprodscus.blob.core.windows.net",
         pathname: "/**",
       },
+      // Art style preview images
+      {
+        protocol: "https",
+        hostname: "img.freepik.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "static.vecteezy.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "www.sculpteo.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "russell-collection.com",
+        pathname: "/**",
+      },
     ],
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 60,

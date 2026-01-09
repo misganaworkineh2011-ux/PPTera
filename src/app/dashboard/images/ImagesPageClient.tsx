@@ -337,7 +337,7 @@ export default function ImagesPageClient({
                     AI Image Generator
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-neutral-400">
-                    Powered by DALL-E 3
+                    Powered by Google & OpenAI
                   </p>
                 </div>
               </div>
@@ -414,11 +414,16 @@ export default function ImagesPageClient({
             </div>
             <div className="p-6">
               {selectedImage.url ? (
-                <img
-                  src={selectedImage.url}
-                  alt={selectedImage.filename}
-                  className="w-full h-auto max-h-[60vh] object-contain rounded-lg"
-                />
+                <div className="relative w-full max-h-[60vh] aspect-auto">
+                  <Image
+                    src={selectedImage.url}
+                    alt={selectedImage.filename}
+                    width={800}
+                    height={600}
+                    className="w-full h-auto max-h-[60vh] object-contain rounded-lg"
+                    unoptimized={!selectedImage.url.includes('cloudinary.com')}
+                  />
+                </div>
               ) : (
                 <div className="h-64 flex items-center justify-center bg-slate-100 dark:bg-neutral-800 rounded-lg">
                   <ImageIcon className="h-16 w-16 text-slate-300" />

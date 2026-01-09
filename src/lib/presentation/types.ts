@@ -2,10 +2,10 @@
  * Shared types for presentation generation utilities
  */
 
-import type { Slide, VisualStrategy, SlideAssets, SlideChart } from "~/lib/dashboard/hooks/useOutlineStream";
+import type { Slide, VisualStrategy, SlideAssets, SlideChart, SlideImage } from "~/lib/dashboard/hooks/useOutlineStream";
 
 // Re-export for convenience
-export type { Slide, VisualStrategy, SlideAssets, SlideChart };
+export type { Slide, VisualStrategy, SlideAssets, SlideChart, SlideImage };
 
 // Transformed content for presentation slides
 export interface TransformedBulletItem {

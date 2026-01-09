@@ -26,6 +26,7 @@ interface AIImageGeneratorProps {
 }
 
 type ImageModel =
+  | "gpt-image-1-mini"
   | "gemini-2.5-flash-image"
   | "gemini-3-pro-image-preview"
   | "imagen-4.0-generate-001"
@@ -33,7 +34,8 @@ type ImageModel =
   | "imagen-4.0-fast-generate-001"
   | "openai"
   | "openai-hd"
-  | "gpt-image";
+  | "gpt-image-1.5"
+  | "gpt-image-1";
 type ImageQuality = "standard" | "hd";
 type ImageSize = "1024x1024" | "1792x1024" | "1024x1792";
 type ImageStyle = "vivid" | "natural";
@@ -42,6 +44,12 @@ const MODEL_INFO: Record<
   ImageModel,
   { name: string; description: string; standardCredits: number; hdCredits: number }
 > = {
+  "gpt-image-1-mini": {
+    name: "GPT Image Mini",
+    description: "Budget-friendly, fast generation",
+    standardCredits: CREDIT_COSTS.IMAGE_BASIC,
+    hdCredits: CREDIT_COSTS.IMAGE_BASIC,
+  },
   "gemini-2.5-flash-image": {
     name: "Nano Banana",
     description: "Fast, efficient generation",
@@ -84,9 +92,15 @@ const MODEL_INFO: Record<
     standardCredits: CREDIT_COSTS.DALLE_HD,
     hdCredits: CREDIT_COSTS.GPT_IMAGE_DETAILED,
   },
-  "gpt-image": {
-    name: "GPT Image Detailed",
-    description: "Most detailed AI images",
+  "gpt-image-1.5": {
+    name: "GPT Image 1.5",
+    description: "Latest flagship GPT image model",
+    standardCredits: CREDIT_COSTS.GPT_IMAGE_DETAILED,
+    hdCredits: CREDIT_COSTS.GPT_IMAGE_DETAILED,
+  },
+  "gpt-image-1": {
+    name: "GPT Image 1",
+    description: "Previous flagship GPT image model",
     standardCredits: CREDIT_COSTS.GPT_IMAGE_DETAILED,
     hdCredits: CREDIT_COSTS.GPT_IMAGE_DETAILED,
   },
@@ -279,6 +293,7 @@ export default function AIImageGenerator({
                       <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Basic models</span>
                     </div>
                     {[
+                      { id: "gpt-image-1-mini" as ImageModel, name: "GPT Image Mini", credits: CREDIT_COSTS.IMAGE_BASIC },
                       { id: "gemini-2.5-flash-image" as ImageModel, name: "Nano Banana", credits: CREDIT_COSTS.GEMINI_FLASH },
                       { id: "imagen-4.0-fast-generate-001" as ImageModel, name: "Imagen 4 Fast", credits: CREDIT_COSTS.IMAGEN_4_FAST },
                     ].map((m) => (
@@ -408,8 +423,9 @@ export default function AIImageGenerator({
                       <span className="text-[10px] font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-500 px-1.5 py-0.5 rounded-full">ULTRA</span>
                     </div>
                     {[
-                      { id: "gpt-image" as ImageModel, name: "GPT Image Detailed", credits: CREDIT_COSTS.GPT_IMAGE_DETAILED },
                       { id: "imagen-4.0-ultra-generate-001" as ImageModel, name: "Imagen 4 Ultra", credits: CREDIT_COSTS.IMAGEN_4_ULTRA },
+                      { id: "gpt-image-1.5" as ImageModel, name: "GPT Image 1.5", credits: CREDIT_COSTS.GPT_IMAGE_DETAILED },
+                      { id: "gpt-image-1" as ImageModel, name: "GPT Image 1", credits: CREDIT_COSTS.GPT_IMAGE_DETAILED },
                       { id: "openai-hd" as ImageModel, name: "DALL-E 3 HD", credits: CREDIT_COSTS.DALLE_HD },
                     ].map((m) => {
                       const hasAccess = userPlan === "ultra";

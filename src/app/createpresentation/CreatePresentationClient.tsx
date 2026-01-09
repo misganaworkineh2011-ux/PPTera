@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { ArrowLeft, Loader2, GripVertical, Trash2, Edit3, Check, X, Upload, Lock, ChevronDown, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useOutlineStream, type Slide, type OutlineMetadata } from "~/lib/dashboard/hooks/useOutlineStream";
@@ -262,6 +263,12 @@ export default function CreatePresentationClient({
   const hasEnoughCredits = userCredits >= CREDIT_COST_PER_GENERATION;
   const isFreeUser = !subscriptionPlan || subscriptionPlan === 'free';
 
+  // Client-side mount state for SVG noise filter (prevents hydration mismatch)
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // View state: 'form' | 'streaming' | 'completed'
   const [view, setView] = useState<"form" | "streaming" | "completed">(
     existingOutline ? "completed" : "form"
@@ -281,18 +288,26 @@ export default function CreatePresentationClient({
     imageSource: "no-images",
     textDensity: "concise" as "minimal" | "concise" | "detailed" | "extensive",
     imageLicensing: "all-images" as "all-images" | "free-to-use" | "free-commercial",
-    // Default AI image model ("Nano Banana" - Gemini 2.5 Flash Image)
+    // Default AI image model (Gemini 2.5 Flash - "Nano Banana")
     imageModel: "gemini-2.5-flash-image" as
-      | "gemini-2.5-flash-image"
-      | "gemini-3-pro-image-preview"
-      | "imagen-4.0-generate-001"
-      | "imagen-4.0-ultra-generate-001"
-      | "imagen-4.0-fast-generate-001"
-      | "openai"
-      | "openai-hd"
-      | "gpt-image",
+      // Google Gemini models (multimodal)
+      | "gemini-2.5-flash-image"           // ~$0.039/image - Nano Banana
+      | "gemini-3-pro-image-preview"       // ~$0.134/image - Nano Banana Pro
+      // Google Imagen 4 models (dedicated text-to-image)
+      | "imagen-4.0-fast-generate-001"     // $0.02/image - Fast
+      | "imagen-4.0-generate-001"          // $0.04/image - Standard
+      | "imagen-4.0-ultra-generate-001"    // $0.06/image - Ultra
+      // OpenAI GPT Image models
+      | "gpt-image-1.5"                    // Latest flagship
+      | "gpt-image-1"                      // Previous flagship
+      | "gpt-image-1-mini"                 // Budget option
+      // Legacy OpenAI DALL-E
+      | "openai"                           // DALL-E 3 ~$0.04/image
+      | "openai-hd",                       // DALL-E 3 HD ~$0.08/image
     // Image art style (like Gamma)
     imageArtStyle: "photo" as "illustration" | "photo" | "abstract" | "3d" | "line-art" | "custom",
+    // Custom art style text (when imageArtStyle is "custom")
+    customArtStyleText: "",
   });
 
   const [lastDescription, setLastDescription] = useState(
@@ -317,6 +332,17 @@ export default function CreatePresentationClient({
   const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [isCreatingPresentation, setIsCreatingPresentation] = useState(false);
+
+  // Close model dropdown when pressing Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isModelDropdownOpen) {
+        setIsModelDropdownOpen(false);
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isModelDropdownOpen]);
 
   // Track recently selected themes for quick access (6 themes for 3x2 grid)
   // Filter to only include unique theme IDs that exist
@@ -573,6 +599,7 @@ export default function CreatePresentationClient({
         },
         imageModel: formData.imageModel,
         imageArtStyle: formData.imageArtStyle,
+        customArtStyleText: formData.customArtStyleText,
         streaming: true, // Enable Gamma-style streaming
       };
 
@@ -683,23 +710,25 @@ export default function CreatePresentationClient({
       />
 
       {/* Noise/Grain Texture Overlay - using CSS filter for reliable cross-browser support */}
-      <svg className="fixed inset-0 w-full h-full z-[1] pointer-events-none opacity-[0.7]" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <filter id="noiseFilter">
-            <feTurbulence 
-              type="fractalNoise" 
-              baseFrequency="0.9" 
-              numOctaves="5" 
-              stitchTiles="stitch"
-            />
-            <feColorMatrix type="saturate" values="0" />
-            <feComponentTransfer>
-              <feFuncA type="linear" slope="1.5" />
-            </feComponentTransfer>
-          </filter>
-        </defs>
-        <rect width="100%" height="100%" filter="url(#noiseFilter)" />
-      </svg>
+      {isMounted && (
+        <svg className="fixed inset-0 w-full h-full z-[1] pointer-events-none opacity-[0.7]" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="noiseFilter">
+              <feTurbulence 
+                type="fractalNoise" 
+                baseFrequency="0.9" 
+                numOctaves="5" 
+                stitchTiles="stitch"
+              />
+              <feColorMatrix type="saturate" values="0" />
+              <feComponentTransfer>
+                <feFuncA type="linear" slope="1.5" />
+              </feComponentTransfer>
+            </filter>
+          </defs>
+          <rect width="100%" height="100%" filter="url(#noiseFilter)" />
+        </svg>
+      )}
 
       {/* Fixed Header with Back Button */}
       <div className="fixed top-0 left-0 right-0 z-20 px-6 pt-6 pb-4">
@@ -1071,34 +1100,34 @@ export default function CreatePresentationClient({
                         className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
                       >
                         <optgroup label="Business">
-                          <option value="professional">💼 Professional</option>
-                          <option value="formal">🎩 Formal</option>
-                          <option value="corporate">🏢 Corporate</option>
-                          <option value="executive">👔 Executive</option>
+                          <option value="professional"> Professional</option>
+                          <option value="formal">Formal</option>
+                          <option value="corporate"> Corporate</option>
+                          <option value="executive"> Executive</option>
                         </optgroup>
                         <optgroup label="Friendly">
-                          <option value="casual">😊 Casual</option>
-                          <option value="friendly">🤝 Friendly</option>
-                          <option value="conversational">💬 Conversational</option>
-                          <option value="warm">🌟 Warm</option>
+                          <option value="casual">Casual</option>
+                          <option value="friendly"> Friendly</option>
+                          <option value="conversational">Conversational</option>
+                          <option value="warm">Warm</option>
                         </optgroup>
                         <optgroup label="Creative">
-                          <option value="creative">🎨 Creative</option>
-                          <option value="playful">🎮 Playful</option>
-                          <option value="bold">⚡ Bold</option>
-                          <option value="inspirational">✨ Inspirational</option>
+                          <option value="creative"> Creative</option>
+                          <option value="playful">Playful</option>
+                          <option value="bold"> Bold</option>
+                          <option value="inspirational"> Inspirational</option>
                         </optgroup>
                         <optgroup label="Educational">
-                          <option value="educational">📚 Educational</option>
-                          <option value="informative">📖 Informative</option>
-                          <option value="technical">🔧 Technical</option>
-                          <option value="academic">🎓 Academic</option>
+                          <option value="educational"> Educational</option>
+                          <option value="informative"> Informative</option>
+                          <option value="technical"> Technical</option>
+                          <option value="academic"> Academic</option>
                         </optgroup>
                         <optgroup label="Persuasive">
-                          <option value="persuasive">🎯 Persuasive</option>
-                          <option value="confident">💪 Confident</option>
-                          <option value="motivational">🚀 Motivational</option>
-                          <option value="compelling">🔥 Compelling</option>
+                          <option value="persuasive"> Persuasive</option>
+                          <option value="confident"> Confident</option>
+                          <option value="motivational"> Motivational</option>
+                          <option value="compelling"> Compelling</option>
                         </optgroup>
                       </select>
                     </div>
@@ -1474,9 +1503,11 @@ export default function CreatePresentationClient({
                                   {formData.imageModel === "imagen-4.0-fast-generate-001" && "Imagen 4 Fast"}
                                   {formData.imageModel === "imagen-4.0-generate-001" && "Imagen 4"}
                                   {formData.imageModel === "imagen-4.0-ultra-generate-001" && "Imagen 4 Ultra"}
+                                  {formData.imageModel === "gpt-image-1.5" && "GPT Image 1.5"}
+                                  {formData.imageModel === "gpt-image-1" && "GPT Image 1"}
+                                  {formData.imageModel === "gpt-image-1-mini" && "GPT Image Mini"}
                                   {formData.imageModel === "openai" && "DALL-E 3"}
                                   {formData.imageModel === "openai-hd" && "DALL-E 3 HD"}
-                                  {formData.imageModel === "gpt-image" && "GPT Image Detailed"}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
@@ -1486,9 +1517,11 @@ export default function CreatePresentationClient({
                                   {formData.imageModel === "imagen-4.0-fast-generate-001" && CREDIT_COSTS.IMAGEN_4_FAST}
                                   {formData.imageModel === "imagen-4.0-generate-001" && CREDIT_COSTS.IMAGEN_4}
                                   {formData.imageModel === "imagen-4.0-ultra-generate-001" && CREDIT_COSTS.IMAGEN_4_ULTRA}
+                                  {formData.imageModel === "gpt-image-1.5" && CREDIT_COSTS.GPT_IMAGE_DETAILED}
+                                  {formData.imageModel === "gpt-image-1" && CREDIT_COSTS.GPT_IMAGE_DETAILED}
+                                  {formData.imageModel === "gpt-image-1-mini" && CREDIT_COSTS.IMAGE_BASIC}
                                   {formData.imageModel === "openai" && CREDIT_COSTS.DALLE_STANDARD}
-                                  {formData.imageModel === "openai-hd" && CREDIT_COSTS.DALLE_HD}
-                                  {formData.imageModel === "gpt-image" && CREDIT_COSTS.GPT_IMAGE_DETAILED} ✦
+                                  {formData.imageModel === "openai-hd" && CREDIT_COSTS.DALLE_HD} ✦
                                 </span>
                                 <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${isModelDropdownOpen ? "rotate-180" : ""}`} />
                               </div>
@@ -1497,10 +1530,11 @@ export default function CreatePresentationClient({
                             {/* Dropdown Menu - Fixed position to appear above sticky footer */}
                             {isModelDropdownOpen && (
                               <>
-                                {/* Backdrop to close dropdown */}
+                                {/* Backdrop to close dropdown - covers entire screen */}
                                 <div
-                                  className="fixed inset-0 z-[9998]"
+                                  className="fixed inset-0 z-[9998] bg-transparent"
                                   onClick={() => setIsModelDropdownOpen(false)}
+                                  onMouseDown={() => setIsModelDropdownOpen(false)}
                                 />
                                 <div 
                                   className="absolute bottom-full left-0 right-0 mb-1 bg-white rounded-xl border border-slate-200 shadow-2xl z-[9999] max-h-[400px] overflow-y-auto"
@@ -1511,6 +1545,7 @@ export default function CreatePresentationClient({
                                       <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Basic models</span>
                                     </div>
                                     {[
+                                      { id: "gpt-image-1-mini", name: "GPT Image Mini", credits: CREDIT_COSTS.IMAGE_BASIC },
                                       { id: "gemini-2.5-flash-image", name: "Nano Banana", credits: CREDIT_COSTS.GEMINI_FLASH },
                                       { id: "imagen-4.0-fast-generate-001", name: "Imagen 4 Fast", credits: CREDIT_COSTS.IMAGEN_4_FAST },
                                     ].map((model) => (
@@ -1645,8 +1680,9 @@ export default function CreatePresentationClient({
                                       <span className="text-[10px] font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-500 px-1.5 py-0.5 rounded-full">ULTRA</span>
                                     </div>
                                     {[
-                                      { id: "gpt-image", name: "GPT Image Detailed", credits: CREDIT_COSTS.GPT_IMAGE_DETAILED },
                                       { id: "imagen-4.0-ultra-generate-001", name: "Imagen 4 Ultra", credits: CREDIT_COSTS.IMAGEN_4_ULTRA },
+                                      { id: "gpt-image-1.5", name: "GPT Image 1.5", credits: CREDIT_COSTS.GPT_IMAGE_DETAILED },
+                                      { id: "gpt-image-1", name: "GPT Image 1", credits: CREDIT_COSTS.GPT_IMAGE_DETAILED },
                                       { id: "openai-hd", name: "DALL-E 3 HD", credits: CREDIT_COSTS.DALLE_HD },
                                     ].map((model) => {
                                       const userPlan = subscriptionPlan?.toLowerCase() || "free";
@@ -1694,14 +1730,14 @@ export default function CreatePresentationClient({
                           <p className="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">
                             Art Style
                           </p>
-                          <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+                          <div className="flex gap-2 mb-2 overflow-x-auto pb-1">
                             {[
                               { id: "illustration", label: "Illustration", image: "https://img.freepik.com/premium-vector/stylish-woman-wearing-sunglasses-blazer_999679-23054.jpg" },
                               { id: "photo", label: "Photo", image: "https://static.vecteezy.com/vite/assets/photo-masthead-375-BoK_p8LG.webp" },
                               { id: "3d", label: "3D", image: "https://www.sculpteo.com/wp-content/uploads/elementor/thumbs/dice-final-o8x1hxsg7y9mnjtmpd7pzj7cjzv8qseogaahdmgq20.png" },
-                              { id: "line-art", label: "Line Art", image: "https://img.freepik.com/free-vector/abstract-waves-black-white-line-art-decoration-set-wallpaper-wall-art-design_79020-172.jpg?semt=ais_hybrid&w=740&q=80" },
+                              { id: "line-art", label: "Line Art", image: "https://img.freepik.com/free-vector/abstract-waves-black-white-line-art-decoration-set-wallpaper-wall-art-design_79020-172.jpg" },
                               { id: "abstract", label: "Abstract", image: "https://russell-collection.com/wp-content/uploads/2025/04/abstract-art-examples.jpg" },
-                              { id: "custom", label: "Custom", image: "/logo.png", isGrayscale: true },
+                              { id: "custom", label: "Custom", image: "/logo.png", isGrayscale: true, isLocal: true },
                             ].map((style) => (
                               <button
                                 key={style.id}
@@ -1718,10 +1754,14 @@ export default function CreatePresentationClient({
                                     ? "border-[#06b6d4] ring-2 ring-[#06b6d4]/30"
                                     : "border-slate-200 hover:border-slate-300"
                                 }`}>
-                                  <img 
+                                  <Image 
                                     src={style.image} 
                                     alt={style.label}
+                                    width={64}
+                                    height={64}
                                     className={`w-full h-full object-cover ${'isGrayscale' in style && style.isGrayscale ? 'grayscale' : ''}`}
+                                    loading="lazy"
+                                    unoptimized={'isLocal' in style && style.isLocal}
                                   />
                                   {formData.imageArtStyle === style.id && (
                                     <div className="absolute inset-0 bg-[#06b6d4]/20 flex items-end justify-start p-1">
@@ -1735,6 +1775,22 @@ export default function CreatePresentationClient({
                               </button>
                             ))}
                           </div>
+                          
+                          {/* Custom Art Style Text Input */}
+                          {formData.imageArtStyle === "custom" && (
+                            <div className="mb-4">
+                              <input
+                                type="text"
+                                value={formData.customArtStyleText}
+                                onChange={(e) => handleChange("customArtStyleText", e.target.value)}
+                                placeholder="Describe your art style (e.g., watercolor, cyberpunk, minimalist flat design...)"
+                                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
+                              />
+                              <p className="text-[10px] text-slate-500 mt-1">
+                                Be specific! E.g., &quot;vintage oil painting&quot;, &quot;anime style&quot;, &quot;neon cyberpunk&quot;, &quot;watercolor sketch&quot;
+                              </p>
+                            </div>
+                          )}
                         </>
                       ) : (
                         <>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { X, ImagePlus, Trash2, CheckCircle2, Loader2, Settings2, Sparkles, Lock, ChevronDown, Check } from "lucide-react";
 import { toast } from "sonner";
 import type { Theme } from "~/lib/themes";
@@ -11,13 +11,15 @@ import PricingModal from "~/components/dashboard/PricingModal";
 
 // AI Image model options with credit costs - matches CreatePresentationClient
 const AI_IMAGE_MODELS = [
+  { id: "gpt-image-1-mini", name: "GPT Image Mini", quality: "standard", model: "gpt-image-1-mini", credits: CREDIT_COSTS.IMAGE_BASIC, tier: "basic" },
   { id: "gemini-2.5-flash-image", name: "Nano Banana", quality: "standard", model: "gemini-2.5-flash-image", credits: CREDIT_COSTS.GEMINI_FLASH, tier: "basic" },
   { id: "imagen-4.0-fast-generate-001", name: "Imagen 4 Fast", quality: "standard", model: "imagen-4.0-fast-generate-001", credits: CREDIT_COSTS.IMAGEN_4_FAST, tier: "basic" },
   { id: "gemini-3-pro-image-preview", name: "Nano Banana Pro", quality: "hd", model: "gemini-3-pro-image-preview", credits: CREDIT_COSTS.GEMINI_PRO, tier: "plus", isNew: true },
   { id: "imagen-4.0-generate-001", name: "Imagen 4", quality: "standard", model: "imagen-4.0-generate-001", credits: CREDIT_COSTS.IMAGEN_4, tier: "plus" },
   { id: "openai-standard", name: "DALL-E 3", quality: "standard", model: "openai", credits: CREDIT_COSTS.DALLE_STANDARD, tier: "pro" },
-  { id: "gpt-image", name: "GPT Image Detailed", quality: "hd", model: "gpt-image", credits: CREDIT_COSTS.GPT_IMAGE_DETAILED, tier: "ultra" },
   { id: "imagen-4.0-ultra-generate-001", name: "Imagen 4 Ultra", quality: "hd", model: "imagen-4.0-ultra-generate-001", credits: CREDIT_COSTS.IMAGEN_4_ULTRA, tier: "ultra" },
+  { id: "gpt-image-1.5", name: "GPT Image 1.5", quality: "hd", model: "gpt-image-1.5", credits: CREDIT_COSTS.GPT_IMAGE_DETAILED, tier: "ultra" },
+  { id: "gpt-image-1", name: "GPT Image 1", quality: "hd", model: "gpt-image-1", credits: CREDIT_COSTS.GPT_IMAGE_DETAILED, tier: "ultra" },
   { id: "openai-hd", name: "DALL-E 3 HD", quality: "hd", model: "openai", credits: CREDIT_COSTS.DALLE_HD, tier: "ultra" },
 ];
 
