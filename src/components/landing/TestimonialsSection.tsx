@@ -36,9 +36,13 @@ export function TestimonialsSection({ t }: TestimonialsSectionProps) {
                 <span className="text-lg font-medium text-zinc-900">Canvelete</span>
               </div>
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-zinc-200 to-zinc-300 flex items-center justify-center text-2xl font-bold text-zinc-600">
-                  AG
-                </div>
+                <img 
+                  src="https://res.cloudinary.com/di76ibrro/image/upload/v1767963267/images_xeeoky.jpg" 
+                  alt="Amanuel Garomsa"
+                  width={64}
+                  height={64}
+                  className="w-16 h-16 rounded-full object-cover"
+                />
                 <div>
                   <p className="text-xl font-semibold text-zinc-900">Amanuel Garomsa</p>
                   <p className="text-lg text-zinc-500">CEO of Canvelete</p>
