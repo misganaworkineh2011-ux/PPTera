@@ -39,6 +39,8 @@ export function TestimonialsSection({ t }: TestimonialsSectionProps) {
                 <img 
                   src="https://res.cloudinary.com/di76ibrro/image/upload/v1767963267/images_xeeoky.jpg" 
                   alt="Amanuel Garomsa"
+                  width={64}
+                  height={64}
                   className="w-16 h-16 rounded-full object-cover"
                 />
                 <div>
