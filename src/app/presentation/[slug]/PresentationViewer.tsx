@@ -106,6 +106,8 @@ interface PresentationViewerProps {
   isStreaming?: boolean;
   /** Total slides expected when streaming */
   totalSlidesForStreaming?: number;
+  /** User's subscription plan for model access */
+  subscriptionPlan?: string | null;
 }
 
 export default function PresentationViewer({
@@ -117,6 +119,7 @@ export default function PresentationViewer({
   prefetchedCustomTheme,
   isStreaming = false,
   totalSlidesForStreaming = 0,
+  subscriptionPlan,
 }: PresentationViewerProps) {
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -293,15 +296,23 @@ export default function PresentationViewer({
       setStreamingSlideIndex(data.slideIndex);
 
       // ADD the new slide to the array (progressive creation)
+      // Include default layout to prevent visual jumping when slideComplete arrives
       setSlidesData(prev => {
         console.log("[Streaming] Adding slide", data.slideIndex, "to slidesData, current length:", prev.length);
         const newSlides = [...prev];
-        // Add the new slide at the correct index
+        // Add the new slide at the correct index with default layout
+        // This prevents the visual "jump" when slideComplete arrives with the final layout
+        const defaultSlideLayout = data.hasImage 
+          ? (data.slideIndex % 2 === 0 ? "image-right" : "image-left")
+          : "no-image";
         newSlides[data.slideIndex] = {
           type: data.type,
           title: "",
           bulletPoints: [],
           image: data.hasImage ? { url: "", alt: "Loading...", source: "placeholder" } : undefined,
+          // Set default layouts to prevent jumping
+          slideLayout: defaultSlideLayout,
+          contentLayout: "box-style-1",
         };
         return newSlides;
       });
@@ -1529,11 +1540,13 @@ export default function PresentationViewer({
           // 2. Content layout panel is open
           // 3. There's an active text selection (user might be using WYSIWYG toolbar)
           // 4. Mouse is moving to a child element (toolbar, etc.)
-          const relatedTarget = e.relatedTarget as HTMLElement | null;
-          const isMovingToToolbar = relatedTarget?.closest('[data-toolbar]') || 
-                                    relatedTarget?.closest('.text-toolbar') ||
-                                    relatedTarget?.closest('[role="toolbar"]') ||
-                                    relatedTarget?.closest('[contenteditable="true"]');
+          const relatedTarget = e.relatedTarget;
+          const isElement = relatedTarget instanceof Element;
+          const isMovingToToolbar = isElement && (
+                                    relatedTarget.closest('[data-toolbar]') || 
+                                    relatedTarget.closest('.text-toolbar') ||
+                                    relatedTarget.closest('[role="toolbar"]') ||
+                                    relatedTarget.closest('[contenteditable="true"]'));
           
           const selection = window.getSelection();
           const hasActiveSelection = selection && !selection.isCollapsed && selection.toString().trim().length > 0;
@@ -2263,6 +2276,7 @@ export default function PresentationViewer({
             isLoading={isLoadingImage}
             theme={theme}
             presentationId={presentation.id}
+            subscriptionPlan={subscriptionPlan}
             onUrlChange={setImageUrl}
             onAddImage={() => addSlideImage(showImageModal, imageUrl)}
             onUpdateImage={(idx) => updateSlideImage(showImageModal, idx, imageUrl)}

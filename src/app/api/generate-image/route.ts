@@ -31,6 +31,7 @@ export async function POST(req: Request) {
       quality = "standard", // "standard" or "hd"
       size = "1024x1024", // "1024x1024", "1792x1024", "1024x1792"
       style = "vivid", // "vivid" or "natural" (OpenAI only)
+      artStyle = "photo", // "illustration" | "photo" | "abstract" | "3d" | "line-art" | "custom"
       presentationId,
     } = body;
 
@@ -41,13 +42,68 @@ export async function POST(req: Request) {
       );
     }
 
+    // Build enhanced prompt with art style
+    const artStylePrompts: Record<string, string> = {
+      "illustration": "Create a digital illustration style image with artistic brush strokes, vibrant colors, and a hand-drawn aesthetic. The image should look like a professional digital painting or illustration.",
+      "photo": "Create a photorealistic image that looks like a professional photograph with natural lighting, realistic textures, and high detail.",
+      "abstract": "Create an abstract artistic image with geometric shapes, flowing patterns, bold colors, and modern artistic composition. Focus on visual impact rather than literal representation.",
+      "3d": "Create a 3D rendered image with depth, realistic lighting, shadows, and a polished CGI aesthetic. The image should look like a professional 3D render.",
+      "line-art": "Create a minimalist line art style image with clean black lines on white background, simple elegant strokes, and a sketch-like quality. Focus on outlines and contours.",
+      "custom": "", // No style modification for custom
+    };
+
+    const stylePrefix = artStylePrompts[artStyle] || "";
+    const enhancedPrompt = stylePrefix 
+      ? `${stylePrefix}\n\nSubject: ${prompt}`
+      : prompt;
+
     // Determine credit cost based on model and quality
     let creditCost: number;
-    if (model === "gemini") {
-      creditCost = quality === "hd" ? CREDIT_COSTS.GEMINI_IMAGEN_HD : CREDIT_COSTS.GEMINI_IMAGEN;
-    } else {
-      creditCost = quality === "hd" ? CREDIT_COSTS.IMAGE_HD : CREDIT_COSTS.IMAGE_BASIC;
-    }
+    
+    // Map model to credit cost
+    const modelCreditMap: Record<string, { standard: number; hd: number }> = {
+      "gemini-2.5-flash-image": { 
+        standard: CREDIT_COSTS.GEMINI_FLASH, 
+        hd: CREDIT_COSTS.GEMINI_FLASH_HD 
+      },
+      "gemini-3-pro-image-preview": { 
+        standard: CREDIT_COSTS.GEMINI_PRO, 
+        hd: CREDIT_COSTS.GEMINI_PRO_HD 
+      },
+      "imagen-4.0-generate-001": { 
+        standard: CREDIT_COSTS.IMAGEN_4, 
+        hd: CREDIT_COSTS.IMAGEN_4_ULTRA 
+      },
+      "imagen-4.0-ultra-generate-001": { 
+        standard: CREDIT_COSTS.IMAGEN_4_ULTRA, 
+        hd: CREDIT_COSTS.IMAGEN_4_ULTRA 
+      },
+      "imagen-4.0-fast-generate-001": { 
+        standard: CREDIT_COSTS.IMAGEN_4_FAST, 
+        hd: CREDIT_COSTS.IMAGEN_4_FAST 
+      },
+      "openai": { 
+        standard: CREDIT_COSTS.DALLE_STANDARD, 
+        hd: CREDIT_COSTS.DALLE_HD 
+      },
+      "openai-hd": { 
+        standard: CREDIT_COSTS.DALLE_HD, 
+        hd: CREDIT_COSTS.GPT_IMAGE_DETAILED 
+      },
+      "gpt-image": { 
+        standard: CREDIT_COSTS.GPT_IMAGE_DETAILED, 
+        hd: CREDIT_COSTS.GPT_IMAGE_DETAILED 
+      },
+      // Legacy support
+      "gemini": { 
+        standard: CREDIT_COSTS.GEMINI_FLASH, 
+        hd: CREDIT_COSTS.GEMINI_FLASH_HD 
+      },
+    };
+    
+    const defaultCredits = { standard: CREDIT_COSTS.DALLE_STANDARD, hd: CREDIT_COSTS.DALLE_HD };
+    const modelCredits = modelCreditMap[model] ?? defaultCredits;
+    creditCost = quality === "hd" ? modelCredits.hd : modelCredits.standard;
 
     // Check if user has enough credits
     if (user.credits < creditCost) {
@@ -65,6 +121,7 @@ export async function POST(req: Request) {
 
     console.log("[Image Generation] Generating image:", {
       prompt: prompt.substring(0, 50) + "...",
+      artStyle,
       model,
       quality,
       size,
@@ -80,7 +137,7 @@ export async function POST(req: Request) {
       // is not yet publicly available. Credit cost is lower for Gemini option.
       const response = await openai.images.generate({
         model: "dall-e-3",
-        prompt: prompt,
+        prompt: enhancedPrompt,
         n: 1,
         size: size as "1024x1024" | "1792x1024" | "1024x1792",
         quality: quality as "standard" | "hd",
@@ -94,7 +151,7 @@ export async function POST(req: Request) {
       // Generate with OpenAI DALL-E 3
       const response = await openai.images.generate({
         model: "dall-e-3",
-        prompt: prompt,
+        prompt: enhancedPrompt,
         n: 1,
         size: size as "1024x1024" | "1792x1024" | "1024x1792",
         quality: quality as "standard" | "hd",
@@ -127,6 +184,7 @@ export async function POST(req: Request) {
             model,
             quality,
             size,
+            artStyle,
             promptPreview: prompt.substring(0, 100),
           },
         },

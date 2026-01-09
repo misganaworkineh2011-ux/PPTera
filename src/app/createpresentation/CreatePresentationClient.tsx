@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, GripVertical, Trash2, Edit3, Check, X, Upload } from "lucide-react";
+import { ArrowLeft, Loader2, GripVertical, Trash2, Edit3, Check, X, Upload, Lock, ChevronDown, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useOutlineStream, type Slide, type OutlineMetadata } from "~/lib/dashboard/hooks/useOutlineStream";
 import { themes, getThemeById, type Theme } from "~/lib/themes";
@@ -289,7 +289,10 @@ export default function CreatePresentationClient({
       | "imagen-4.0-ultra-generate-001"
       | "imagen-4.0-fast-generate-001"
       | "openai"
-      | "openai-hd",
+      | "openai-hd"
+      | "gpt-image",
+    // Image art style (like Gamma)
+    imageArtStyle: "photo" as "illustration" | "photo" | "abstract" | "3d" | "line-art" | "custom",
   });
 
   const [lastDescription, setLastDescription] = useState(
@@ -312,6 +315,7 @@ export default function CreatePresentationClient({
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
+  const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [isCreatingPresentation, setIsCreatingPresentation] = useState(false);
 
   // Track recently selected themes for quick access (6 themes for 3x2 grid)
@@ -568,6 +572,7 @@ export default function CreatePresentationClient({
           language: formData.language,
         },
         imageModel: formData.imageModel,
+        imageArtStyle: formData.imageArtStyle,
         streaming: true, // Enable Gamma-style streaming
       };
 
@@ -911,11 +916,36 @@ export default function CreatePresentationClient({
                       onChange={(e) => handleChange("tone", e.target.value)}
                       className="flex-1 md:flex-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 disabled:opacity-60 min-w-[120px]"
                     >
-                      <option value="professional">Professional</option>
-                      <option value="casual">Casual</option>
-                      <option value="formal">Formal</option>
-                      <option value="creative">Creative</option>
-                      <option value="friendly">Friendly</option>
+                      <optgroup label="Business">
+                        <option value="professional"> Professional</option>
+                        <option value="formal">Formal</option>
+                        <option value="corporate">Corporate</option>
+                        <option value="executive">Executive</option>
+                      </optgroup>
+                      <optgroup label="Friendly">
+                        <option value="casual">Casual</option>
+                        <option value="friendly">Friendly</option>
+                        <option value="conversational"> Conversational</option>
+                        <option value="warm">Warm</option>
+                      </optgroup>
+                      <optgroup label="Creative">
+                        <option value="creative"> Creative</option>
+                        <option value="playful"> Playful</option>
+                        <option value="bold">Bold</option>
+                        <option value="inspirational">Inspirational</option>
+                      </optgroup>
+                      <optgroup label="Educational">
+                        <option value="educational">Educational</option>
+                        <option value="informative">Informative</option>
+                        <option value="technical">Technical</option>
+                        <option value="academic">Academic</option>
+                      </optgroup>
+                      <optgroup label="Persuasive">
+                        <option value="persuasive">Persuasive</option>
+                        <option value="confident">Confident</option>
+                        <option value="motivational">Motivational</option>
+                        <option value="compelling">Compelling</option>
+                      </optgroup>
                     </select>
                     <select
                       value={formData.language}
@@ -923,11 +953,48 @@ export default function CreatePresentationClient({
                       onChange={(e) => handleChange("language", e.target.value)}
                       className="flex-1 md:flex-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 disabled:opacity-60 min-w-[100px]"
                     >
-                      <option value="english">English</option>
-                      <option value="spanish">Spanish</option>
-                      <option value="french">French</option>
-                      <option value="german">German</option>
-                      <option value="chinese">Chinese</option>
+                      <optgroup label="Popular">
+                        <option value="english">🇺🇸 English</option>
+                        <option value="spanish">🇪🇸 Español</option>
+                        <option value="french">🇫🇷 Français</option>
+                        <option value="german">🇩🇪 Deutsch</option>
+                        <option value="chinese">🇨🇳 中文</option>
+                      </optgroup>
+                      <optgroup label="European">
+                        <option value="portuguese">🇵🇹 Português</option>
+                        <option value="italian">🇮🇹 Italiano</option>
+                        <option value="dutch">🇳🇱 Nederlands</option>
+                        <option value="polish">🇵🇱 Polski</option>
+                        <option value="swedish">🇸🇪 Svenska</option>
+                        <option value="norwegian">🇳🇴 Norsk</option>
+                        <option value="danish">🇩🇰 Dansk</option>
+                        <option value="finnish">🇫🇮 Suomi</option>
+                        <option value="greek">🇬🇷 Ελληνικά</option>
+                        <option value="czech">🇨🇿 Čeština</option>
+                        <option value="romanian">🇷🇴 Română</option>
+                        <option value="hungarian">🇭🇺 Magyar</option>
+                        <option value="ukrainian">🇺🇦 Українська</option>
+                        <option value="russian">🇷🇺 Русский</option>
+                      </optgroup>
+                      <optgroup label="Asian">
+                        <option value="japanese">🇯🇵 日本語</option>
+                        <option value="korean">🇰🇷 한국어</option>
+                        <option value="hindi">🇮🇳 हिन्दी</option>
+                        <option value="thai">🇹🇭 ไทย</option>
+                        <option value="vietnamese">🇻🇳 Tiếng Việt</option>
+                        <option value="indonesian">🇮🇩 Bahasa Indonesia</option>
+                        <option value="malay">🇲🇾 Bahasa Melayu</option>
+                        <option value="tagalog">🇵🇭 Tagalog</option>
+                        <option value="bengali">🇧🇩 বাংলা</option>
+                        <option value="tamil">🇮🇳 தமிழ்</option>
+                      </optgroup>
+                      <optgroup label="Middle East & Africa">
+                        <option value="arabic">🇸🇦 العربية</option>
+                        <option value="hebrew">🇮🇱 עברית</option>
+                        <option value="turkish">🇹🇷 Türkçe</option>
+                        <option value="persian">🇮🇷 فارسی</option>
+                        <option value="swahili">🇰🇪 Kiswahili</option>
+                      </optgroup>
                     </select>
                   </div>
                 )}
@@ -1003,11 +1070,36 @@ export default function CreatePresentationClient({
                         onChange={(e) => handleChange("tone", e.target.value)}
                         className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
                       >
-                        <option value="professional">Professional</option>
-                        <option value="casual">Casual</option>
-                        <option value="formal">Formal</option>
-                        <option value="creative">Creative</option>
-                        <option value="friendly">Friendly</option>
+                        <optgroup label="Business">
+                          <option value="professional">💼 Professional</option>
+                          <option value="formal">🎩 Formal</option>
+                          <option value="corporate">🏢 Corporate</option>
+                          <option value="executive">👔 Executive</option>
+                        </optgroup>
+                        <optgroup label="Friendly">
+                          <option value="casual">😊 Casual</option>
+                          <option value="friendly">🤝 Friendly</option>
+                          <option value="conversational">💬 Conversational</option>
+                          <option value="warm">🌟 Warm</option>
+                        </optgroup>
+                        <optgroup label="Creative">
+                          <option value="creative">🎨 Creative</option>
+                          <option value="playful">🎮 Playful</option>
+                          <option value="bold">⚡ Bold</option>
+                          <option value="inspirational">✨ Inspirational</option>
+                        </optgroup>
+                        <optgroup label="Educational">
+                          <option value="educational">📚 Educational</option>
+                          <option value="informative">📖 Informative</option>
+                          <option value="technical">🔧 Technical</option>
+                          <option value="academic">🎓 Academic</option>
+                        </optgroup>
+                        <optgroup label="Persuasive">
+                          <option value="persuasive">🎯 Persuasive</option>
+                          <option value="confident">💪 Confident</option>
+                          <option value="motivational">🚀 Motivational</option>
+                          <option value="compelling">🔥 Compelling</option>
+                        </optgroup>
                       </select>
                     </div>
 
@@ -1021,18 +1113,48 @@ export default function CreatePresentationClient({
                         onChange={(e) => handleChange("language", e.target.value)}
                         className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
                       >
-                        <option value="english">English</option>
-                        <option value="spanish">Spanish</option>
-                        <option value="french">French</option>
-                        <option value="german">German</option>
-                        <option value="italian">Italian</option>
-                        <option value="portuguese">Portuguese</option>
-                        <option value="chinese">Chinese</option>
-                        <option value="japanese">Japanese</option>
-                        <option value="korean">Korean</option>
-                        <option value="arabic">Arabic</option>
-                        <option value="hindi">Hindi</option>
-                        <option value="russian">Russian</option>
+                        <optgroup label="Popular">
+                          <option value="english">🇺🇸 English</option>
+                          <option value="spanish">🇪🇸 Español</option>
+                          <option value="french">🇫🇷 Français</option>
+                          <option value="german">🇩🇪 Deutsch</option>
+                          <option value="chinese">🇨🇳 中文</option>
+                        </optgroup>
+                        <optgroup label="European">
+                          <option value="portuguese">🇵🇹 Português</option>
+                          <option value="italian">🇮🇹 Italiano</option>
+                          <option value="dutch">🇳🇱 Nederlands</option>
+                          <option value="polish">🇵🇱 Polski</option>
+                          <option value="swedish">🇸🇪 Svenska</option>
+                          <option value="norwegian">🇳🇴 Norsk</option>
+                          <option value="danish">🇩🇰 Dansk</option>
+                          <option value="finnish">🇫🇮 Suomi</option>
+                          <option value="greek">🇬🇷 Ελληνικά</option>
+                          <option value="czech">🇨🇿 Čeština</option>
+                          <option value="romanian">🇷🇴 Română</option>
+                          <option value="hungarian">🇭🇺 Magyar</option>
+                          <option value="ukrainian">🇺🇦 Українська</option>
+                          <option value="russian">🇷🇺 Русский</option>
+                        </optgroup>
+                        <optgroup label="Asian">
+                          <option value="japanese">🇯🇵 日本語</option>
+                          <option value="korean">🇰🇷 한국어</option>
+                          <option value="hindi">🇮🇳 हिन्दी</option>
+                          <option value="thai">🇹🇭 ไทย</option>
+                          <option value="vietnamese">🇻🇳 Tiếng Việt</option>
+                          <option value="indonesian">🇮🇩 Bahasa Indonesia</option>
+                          <option value="malay">🇲🇾 Bahasa Melayu</option>
+                          <option value="tagalog">🇵🇭 Tagalog</option>
+                          <option value="bengali">🇧🇩 বাংলা</option>
+                          <option value="tamil">🇮🇳 தமிழ்</option>
+                        </optgroup>
+                        <optgroup label="Middle East & Africa">
+                          <option value="arabic">🇸🇦 العربية</option>
+                          <option value="hebrew">🇮🇱 עברית</option>
+                          <option value="turkish">🇹🇷 Türkçe</option>
+                          <option value="persian">🇮🇷 فارسی</option>
+                          <option value="swahili">🇰🇪 Kiswahili</option>
+                        </optgroup>
                       </select>
                     </div>
                   </div>
@@ -1136,7 +1258,7 @@ export default function CreatePresentationClient({
 
                 {/* Presentation style box – used when creating slides from this outline */}
                 {isCompleted && (
-                  <div className="mt-6 mb-[60px] rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm px-4 py-4 shadow-sm">
+                  <div className={`mt-6 mb-[60px] rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm px-4 py-4 shadow-sm ${isModelDropdownOpen ? 'relative z-[50]' : ''}`}>
                     {/* Text Content Section */}
                     <div className="mb-6 pb-6 border-b border-slate-200">
                       <div className="flex items-center gap-2 mb-3">
@@ -1332,41 +1454,288 @@ export default function CreatePresentationClient({
                     {/* Second selector: AI model (for AI images) or licensing (for external images) */}
                     <div>
                       {formData.imageSource === "ai-generated" ? (
-                        <div className="relative">
-                          <select
-                            id="imageModel-outline"
-                            value={formData.imageModel}
-                            onChange={(e) => handleChange("imageModel", e.target.value)}
-                            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all appearance-none"
-                          >
-                            <option value="gemini-2.5-flash-image">
-                              Nano Banana (Gemini 2.5 Flash Image)
-                            </option>
-                            <option value="gemini-3-pro-image-preview">
-                              Nano Banana Pro (Gemini 3 Pro Image Preview)
-                            </option>
-                            <option value="imagen-4.0-generate-001">
-                              Imagen 4
-                            </option>
-                            <option value="imagen-4.0-ultra-generate-001">
-                              Imagen 4 Ultra
-                            </option>
-                            <option value="imagen-4.0-fast-generate-001">
-                              Imagen 4 Fast
-                            </option>
-                            <option value="openai">
-                              DALL-E 3
-                            </option>
-                            <option value="openai-hd">
-                              DALL-E 3 HD
-                            </option>
-                          </select>
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                            <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
+                        <>
+                          {/* AI Model Selection - Gamma Style Custom Dropdown */}
+                          <p className="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">
+                            AI image model
+                          </p>
+                          <div className="relative mb-4 z-[100]">
+                            {/* Selected Model Button */}
+                            <button
+                              type="button"
+                              onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
+                              className="w-full flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
+                            >
+                              <div className="flex items-center gap-2">
+                                <Sparkles size={16} className="text-violet-500" />
+                                <span className="font-medium">
+                                  {formData.imageModel === "gemini-2.5-flash-image" && "Nano Banana"}
+                                  {formData.imageModel === "gemini-3-pro-image-preview" && "Nano Banana Pro"}
+                                  {formData.imageModel === "imagen-4.0-fast-generate-001" && "Imagen 4 Fast"}
+                                  {formData.imageModel === "imagen-4.0-generate-001" && "Imagen 4"}
+                                  {formData.imageModel === "imagen-4.0-ultra-generate-001" && "Imagen 4 Ultra"}
+                                  {formData.imageModel === "openai" && "DALL-E 3"}
+                                  {formData.imageModel === "openai-hd" && "DALL-E 3 HD"}
+                                  {formData.imageModel === "gpt-image" && "GPT Image Detailed"}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-slate-500">
+                                  {formData.imageModel === "gemini-2.5-flash-image" && CREDIT_COSTS.GEMINI_FLASH}
+                                  {formData.imageModel === "gemini-3-pro-image-preview" && CREDIT_COSTS.GEMINI_PRO}
+                                  {formData.imageModel === "imagen-4.0-fast-generate-001" && CREDIT_COSTS.IMAGEN_4_FAST}
+                                  {formData.imageModel === "imagen-4.0-generate-001" && CREDIT_COSTS.IMAGEN_4}
+                                  {formData.imageModel === "imagen-4.0-ultra-generate-001" && CREDIT_COSTS.IMAGEN_4_ULTRA}
+                                  {formData.imageModel === "openai" && CREDIT_COSTS.DALLE_STANDARD}
+                                  {formData.imageModel === "openai-hd" && CREDIT_COSTS.DALLE_HD}
+                                  {formData.imageModel === "gpt-image" && CREDIT_COSTS.GPT_IMAGE_DETAILED} ✦
+                                </span>
+                                <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${isModelDropdownOpen ? "rotate-180" : ""}`} />
+                              </div>
+                            </button>
+
+                            {/* Dropdown Menu - Fixed position to appear above sticky footer */}
+                            {isModelDropdownOpen && (
+                              <>
+                                {/* Backdrop to close dropdown */}
+                                <div
+                                  className="fixed inset-0 z-[9998]"
+                                  onClick={() => setIsModelDropdownOpen(false)}
+                                />
+                                <div 
+                                  className="absolute bottom-full left-0 right-0 mb-1 bg-white rounded-xl border border-slate-200 shadow-2xl z-[9999] max-h-[400px] overflow-y-auto"
+                                >
+                                  {/* Basic Models - Free */}
+                                  <div className="p-2 border-b border-slate-100">
+                                    <div className="px-2 py-1.5 mb-1">
+                                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Basic models</span>
+                                    </div>
+                                    {[
+                                      { id: "gemini-2.5-flash-image", name: "Nano Banana", credits: CREDIT_COSTS.GEMINI_FLASH },
+                                      { id: "imagen-4.0-fast-generate-001", name: "Imagen 4 Fast", credits: CREDIT_COSTS.IMAGEN_4_FAST },
+                                    ].map((model) => (
+                                      <button
+                                        key={model.id}
+                                        type="button"
+                                        onClick={() => {
+                                          handleChange("imageModel", model.id);
+                                          setIsModelDropdownOpen(false);
+                                        }}
+                                        className={`w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors ${
+                                          formData.imageModel === model.id
+                                            ? "bg-violet-50"
+                                            : "hover:bg-slate-50"
+                                        }`}
+                                      >
+                                        <div className="flex items-center gap-2.5">
+                                          {formData.imageModel === model.id ? (
+                                            <Check size={16} className="text-violet-600" />
+                                          ) : (
+                                            <Sparkles size={16} className="text-violet-500" />
+                                          )}
+                                          <span className={`text-sm ${formData.imageModel === model.id ? "font-medium text-violet-700" : "text-slate-700"}`}>{model.name}</span>
+                                        </div>
+                                        <span className="text-xs text-slate-400">{model.credits} ✦</span>
+                                      </button>
+                                    ))}
+                                  </div>
+
+                                  {/* Advanced Models - Plus */}
+                                  <div className="p-2 border-b border-slate-100">
+                                    <div className="flex items-center gap-2 px-2 py-1.5 mb-1">
+                                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Advanced models</span>
+                                      <span className="text-[10px] font-semibold text-white bg-blue-500 px-1.5 py-0.5 rounded-full">PLUS</span>
+                                    </div>
+                                    {[
+                                      { id: "gemini-3-pro-image-preview", name: "Nano Banana Pro", credits: CREDIT_COSTS.GEMINI_PRO, isNew: true },
+                                      { id: "imagen-4.0-generate-001", name: "Imagen 4", credits: CREDIT_COSTS.IMAGEN_4 },
+                                    ].map((model) => {
+                                      const userPlan = subscriptionPlan?.toLowerCase() || "free";
+                                      const hasAccess = userPlan === "plus" || userPlan === "pro" || userPlan === "ultra";
+                                      const isLocked = !hasAccess;
+                                      return (
+                                        <button
+                                          key={model.id}
+                                          type="button"
+                                          onClick={() => {
+                                            if (isLocked) {
+                                              setShowCreditWarning(true);
+                                              setIsModelDropdownOpen(false);
+                                              return;
+                                            }
+                                            handleChange("imageModel", model.id);
+                                            setIsModelDropdownOpen(false);
+                                          }}
+                                          className={`w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors ${
+                                            formData.imageModel === model.id
+                                              ? "bg-violet-50"
+                                              : isLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50"
+                                          }`}
+                                        >
+                                          <div className="flex items-center gap-2.5">
+                                            {formData.imageModel === model.id ? (
+                                              <Check size={16} className="text-violet-600" />
+                                            ) : (
+                                              <Sparkles size={16} className="text-violet-500" />
+                                            )}
+                                            <span className={`text-sm ${formData.imageModel === model.id ? "font-medium text-violet-700" : "text-slate-700"}`}>{model.name}</span>
+                                            {model.isNew && (
+                                              <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-full">NEW</span>
+                                            )}
+                                            {isLocked && <Lock size={12} className="text-slate-400 ml-1" />}
+                                          </div>
+                                          <span className="text-xs text-slate-400">{model.credits} ✦</span>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+
+                                  {/* Premium Models - Pro */}
+                                  <div className="p-2 border-b border-slate-100">
+                                    <div className="flex items-center gap-2 px-2 py-1.5 mb-1">
+                                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Premium models</span>
+                                      <span className="text-[10px] font-semibold text-white bg-indigo-600 px-1.5 py-0.5 rounded-full">PRO</span>
+                                    </div>
+                                    {[
+                                      { id: "openai", name: "DALL-E 3", credits: CREDIT_COSTS.DALLE_STANDARD },
+                                    ].map((model) => {
+                                      const userPlan = subscriptionPlan?.toLowerCase() || "free";
+                                      const hasAccess = userPlan === "pro" || userPlan === "ultra";
+                                      const isLocked = !hasAccess;
+                                      return (
+                                        <button
+                                          key={model.id}
+                                          type="button"
+                                          onClick={() => {
+                                            if (isLocked) {
+                                              setShowCreditWarning(true);
+                                              setIsModelDropdownOpen(false);
+                                              return;
+                                            }
+                                            handleChange("imageModel", model.id);
+                                            setIsModelDropdownOpen(false);
+                                          }}
+                                          className={`w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors ${
+                                            formData.imageModel === model.id
+                                              ? "bg-violet-50"
+                                              : isLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50"
+                                          }`}
+                                        >
+                                          <div className="flex items-center gap-2.5">
+                                            {formData.imageModel === model.id ? (
+                                              <Check size={16} className="text-violet-600" />
+                                            ) : (
+                                              <svg className="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.985 5.985 0 0 0-3.998 2.9 6.046 6.046 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.795.795 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646zM2.34 7.896a4.485 4.485 0 0 1 2.366-1.973V11.6a.766.766 0 0 0 .388.676l5.815 3.355-2.02 1.168a.076.076 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.34 7.896zm16.597 3.855l-5.833-3.387L15.119 7.2a.076.076 0 0 1 .071 0l4.83 2.791a4.494 4.494 0 0 1-.676 8.105v-5.678a.79.79 0 0 0-.407-.667zm2.01-3.023l-.141-.085-4.774-2.782a.776.776 0 0 0-.785 0L9.409 9.23V6.897a.066.066 0 0 1 .028-.061l4.83-2.787a4.5 4.5 0 0 1 6.68 4.66zm-12.64 4.135l-2.02-1.164a.08.08 0 0 1-.038-.057V6.075a4.5 4.5 0 0 1 7.375-3.453l-.142.08-4.778 2.758a.795.795 0 0 0-.393.681zm1.097-2.365l2.602-1.5 2.607 1.5v2.999l-2.597 1.5-2.607-1.5z"/>
+                                              </svg>
+                                            )}
+                                            <span className={`text-sm ${formData.imageModel === model.id ? "font-medium text-violet-700" : "text-slate-700"}`}>{model.name}</span>
+                                            {isLocked && <Lock size={12} className="text-slate-400 ml-1" />}
+                                          </div>
+                                          <span className="text-xs text-slate-400">{model.credits} ✦</span>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+
+                                  {/* Ultra Models */}
+                                  <div className="p-2">
+                                    <div className="flex items-center gap-2 px-2 py-1.5 mb-1">
+                                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Ultra models</span>
+                                      <span className="text-[10px] font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-500 px-1.5 py-0.5 rounded-full">ULTRA</span>
+                                    </div>
+                                    {[
+                                      { id: "gpt-image", name: "GPT Image Detailed", credits: CREDIT_COSTS.GPT_IMAGE_DETAILED },
+                                      { id: "imagen-4.0-ultra-generate-001", name: "Imagen 4 Ultra", credits: CREDIT_COSTS.IMAGEN_4_ULTRA },
+                                      { id: "openai-hd", name: "DALL-E 3 HD", credits: CREDIT_COSTS.DALLE_HD },
+                                    ].map((model) => {
+                                      const userPlan = subscriptionPlan?.toLowerCase() || "free";
+                                      const hasAccess = userPlan === "ultra";
+                                      const isLocked = !hasAccess;
+                                      return (
+                                        <button
+                                          key={model.id}
+                                          type="button"
+                                          onClick={() => {
+                                            if (isLocked) {
+                                              setShowCreditWarning(true);
+                                              setIsModelDropdownOpen(false);
+                                              return;
+                                            }
+                                            handleChange("imageModel", model.id);
+                                            setIsModelDropdownOpen(false);
+                                          }}
+                                          className={`w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors ${
+                                            formData.imageModel === model.id
+                                              ? "bg-violet-50"
+                                              : isLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50"
+                                          }`}
+                                        >
+                                          <div className="flex items-center gap-2.5">
+                                            {formData.imageModel === model.id ? (
+                                              <Check size={16} className="text-violet-600" />
+                                            ) : (
+                                              <Sparkles size={16} className="text-purple-500" />
+                                            )}
+                                            <span className={`text-sm ${formData.imageModel === model.id ? "font-medium text-violet-700" : "text-slate-700"}`}>{model.name}</span>
+                                            {isLocked && <Lock size={12} className="text-slate-400 ml-1" />}
+                                          </div>
+                                          <span className="text-xs text-slate-400">{model.credits} ✦</span>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              </>
+                            )}
                           </div>
-                        </div>
+
+                          {/* Image Art Style Selection (like Gamma) */}
+                          <p className="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">
+                            Art Style
+                          </p>
+                          <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+                            {[
+                              { id: "illustration", label: "Illustration", image: "https://img.freepik.com/premium-vector/stylish-woman-wearing-sunglasses-blazer_999679-23054.jpg" },
+                              { id: "photo", label: "Photo", image: "https://static.vecteezy.com/vite/assets/photo-masthead-375-BoK_p8LG.webp" },
+                              { id: "3d", label: "3D", image: "https://www.sculpteo.com/wp-content/uploads/elementor/thumbs/dice-final-o8x1hxsg7y9mnjtmpd7pzj7cjzv8qseogaahdmgq20.png" },
+                              { id: "line-art", label: "Line Art", image: "https://img.freepik.com/free-vector/abstract-waves-black-white-line-art-decoration-set-wallpaper-wall-art-design_79020-172.jpg?semt=ais_hybrid&w=740&q=80" },
+                              { id: "abstract", label: "Abstract", image: "https://russell-collection.com/wp-content/uploads/2025/04/abstract-art-examples.jpg" },
+                              { id: "custom", label: "Custom", image: "/logo.png", isGrayscale: true },
+                            ].map((style) => (
+                              <button
+                                key={style.id}
+                                type="button"
+                                onClick={() => handleChange("imageArtStyle", style.id)}
+                                className={`flex-shrink-0 flex flex-col items-center gap-1 transition-all ${
+                                  formData.imageArtStyle === style.id
+                                    ? "opacity-100"
+                                    : "opacity-70 hover:opacity-100"
+                                }`}
+                              >
+                                <div className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                                  formData.imageArtStyle === style.id
+                                    ? "border-[#06b6d4] ring-2 ring-[#06b6d4]/30"
+                                    : "border-slate-200 hover:border-slate-300"
+                                }`}>
+                                  <img 
+                                    src={style.image} 
+                                    alt={style.label}
+                                    className={`w-full h-full object-cover ${'isGrayscale' in style && style.isGrayscale ? 'grayscale' : ''}`}
+                                  />
+                                  {formData.imageArtStyle === style.id && (
+                                    <div className="absolute inset-0 bg-[#06b6d4]/20 flex items-end justify-start p-1">
+                                      <Check size={12} className="text-[#06b6d4] bg-white rounded-full p-0.5" />
+                                    </div>
+                                  )}
+                                </div>
+                                <span className={`text-[10px] font-medium ${
+                                  formData.imageArtStyle === style.id ? "text-[#06b6d4]" : "text-slate-600"
+                                }`}>{style.label}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </>
                       ) : (
                         <>
                           <div className="relative">

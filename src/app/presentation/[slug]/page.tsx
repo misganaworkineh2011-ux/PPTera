@@ -201,6 +201,7 @@ export default async function PresentationPage({
       prefetchedCustomTheme={prefetchedCustomTheme}
       isStreaming={isStreaming}
       totalSlidesForStreaming={totalSlidesForStreaming}
+      subscriptionPlan={user.subscriptionPlan}
     />
   );
 }

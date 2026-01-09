@@ -371,11 +371,13 @@ export async function GET(
   }> | undefined;
   const metadata = content?.metadata as { tone?: string; language?: string } | undefined;
   const imageSource = content?.imageSource as string | undefined;
+  const imageModel = content?.imageModel as string | undefined;
   const textDensity = content?.textDensity as string | undefined;
   const streamingComplete = content?.streamingComplete as boolean | undefined;
 
   console.log("[stream-content] Content parsed:", {
     imageSource,
+    imageModel,
     textDensity,
     streamingComplete,
     hasPendingSlides: !!pendingSlides,
@@ -496,7 +498,7 @@ export async function GET(
                     mapIndex++;
                   }
                 } else if (imageSource === "ai-generated") {
-                  console.log("[stream-content] Generating AI images for batch:", batch.map(b => b.index));
+                  console.log("[stream-content] Generating AI images for batch:", batch.map(b => b.index), "model:", imageModel);
                   const slidesWithMetadata = batch.map(({ slide }) => ({
                     type: slide.type,
                     title: slide.title,
@@ -504,7 +506,7 @@ export async function GET(
                     image: slide.image,
                   }));
 
-                  const generatedImages = await generateAIImages(slidesWithMetadata as Parameters<typeof generateAIImages>[0]);
+                  const generatedImages = await generateAIImages(slidesWithMetadata as Parameters<typeof generateAIImages>[0], imageModel as Parameters<typeof generateAIImages>[1]);
                   console.log("[stream-content] Generated images count:", generatedImages.size);
 
                   let mapIndex = 0;

@@ -5,20 +5,18 @@ import {
   Grid,
   List as ListIcon,
   Image as ImageIcon,
-  MoreHorizontal,
   Search,
-  Plus,
   Sparkles,
   Download,
   Trash2,
   X,
   Loader2,
-  Zap,
+  Copy,
+  Check,
 } from "lucide-react";
 import Image from "next/image";
 import AIImageGenerator from "~/components/AIImageGenerator";
 import { cn } from "~/lib/utils";
-import { CREDIT_COSTS } from "~/lib/credits";
 import DashboardStickyHeader from "~/components/dashboard/DashboardStickyHeader";
 
 interface ImageData {
@@ -50,6 +48,8 @@ export default function ImagesPageClient({
   const [showGenerator, setShowGenerator] = useState(false);
   const [selectedImage, setSelectedImage] = useState<ImageData | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [copiedUrl, setCopiedUrl] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const filteredImages = images.filter((img) =>
     img.filename.toLowerCase().includes(searchQuery.toLowerCase())
@@ -70,9 +70,8 @@ export default function ImagesPageClient({
   }, [credits]);
 
   const handleDeleteImage = async (imageId: string) => {
-    if (!confirm("Are you sure you want to delete this image?")) return;
-    
     setDeletingId(imageId);
+    setDeleteConfirmId(null);
     try {
       const response = await fetch(`/api/images/${imageId}`, {
         method: "DELETE",
@@ -87,6 +86,24 @@ export default function ImagesPageClient({
       console.error("Failed to delete image:", error);
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleDownloadImage = async (url: string, filename: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      // Fallback to opening in new tab
+      window.open(url, "_blank");
     }
   };
 
@@ -112,23 +129,14 @@ export default function ImagesPageClient({
         stickyIcon={<ImageIcon size={18} />}
         stickyTitle="Images"
         actions={
-          <div className="flex items-center gap-2 md:gap-3">
-            {/* Credits Display */}
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
-              <Zap className="h-4 w-4 text-amber-500" />
-              <span className="text-sm font-medium text-amber-700 dark:text-amber-400">
-                {credits.toLocaleString()}
-              </span>
-            </div>
-            <button
-              onClick={() => setShowGenerator(true)}
-              className="flex items-center gap-1.5 md:gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-white shadow-lg shadow-[#06b6d4]/20 transition-all hover:from-[#172554] hover:to-[#0891b2] hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap"
-            >
-              <Sparkles size={16} className="md:w-[18px] md:h-[18px]" />
-              <span className="hidden sm:inline">Generate with AI</span>
-              <span className="sm:hidden">Generate</span>
-            </button>
-          </div>
+          <button
+            onClick={() => setShowGenerator(true)}
+            className="flex items-center gap-1.5 md:gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-white shadow-lg shadow-[#06b6d4]/20 transition-all hover:from-[#172554] hover:to-[#0891b2] hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap"
+          >
+            <Sparkles size={16} className="md:w-[18px] md:h-[18px]" />
+            <span className="hidden sm:inline">Generate with AI</span>
+            <span className="sm:hidden">Generate</span>
+          </button>
         }
       />
 
@@ -225,11 +233,7 @@ export default function ImagesPageClient({
                         onClick={(e) => {
                           e.stopPropagation();
                           if (img.url) {
-                            const link = document.createElement("a");
-                            link.href = img.url;
-                            link.download = img.filename;
-                            link.target = "_blank";
-                            link.click();
+                            handleDownloadImage(img.url, img.filename);
                           }
                         }}
                         className="p-1.5 bg-white/20 hover:bg-white/30 rounded-lg transition"
@@ -239,7 +243,7 @@ export default function ImagesPageClient({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDeleteImage(img.id);
+                          setDeleteConfirmId(img.id);
                         }}
                         disabled={deletingId === img.id}
                         className="p-1.5 bg-red-500/80 hover:bg-red-500 rounded-lg transition"
@@ -302,7 +306,7 @@ export default function ImagesPageClient({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleDeleteImage(img.id);
+                    setDeleteConfirmId(img.id);
                   }}
                   disabled={deletingId === img.id}
                   className="p-2 text-slate-400 hover:text-red-500 transition"
@@ -321,9 +325,9 @@ export default function ImagesPageClient({
 
       {/* AI Image Generator Modal */}
       {showGenerator && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
           <div className="relative w-full max-w-lg bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white dark:bg-neutral-900 px-6 py-4 border-b border-slate-200 dark:border-neutral-800 flex items-center justify-between">
+            <div className="sticky top-0 z-10 bg-white dark:bg-neutral-900 px-6 py-4 border-b border-slate-200 dark:border-neutral-800 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] rounded-xl">
                   <Sparkles className="h-5 w-5 text-white" />
@@ -350,6 +354,7 @@ export default function ImagesPageClient({
                   handleImageGenerated(url);
                   // Keep modal open to show result
                 }}
+                subscriptionPlan={subscriptionPlan}
               />
             </div>
           </div>
@@ -358,42 +363,50 @@ export default function ImagesPageClient({
 
       {/* Image Preview Modal */}
       {selectedImage && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-          onClick={() => setSelectedImage(null)}
-        >
-          <div
-            className="relative max-w-4xl w-full bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="relative max-w-4xl w-full bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-neutral-800">
-              <h3 className="font-semibold text-slate-900 dark:text-white truncate">
+              <h3 className="font-semibold text-slate-900 dark:text-white truncate pr-4">
                 {selectedImage.filename}
               </h3>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 {selectedImage.url && (
-                  <button
-                    onClick={() => {
-                      const link = document.createElement("a");
-                      link.href = selectedImage.url!;
-                      link.download = selectedImage.filename;
-                      link.target = "_blank";
-                      link.click();
-                    }}
-                    className="p-2 text-slate-500 hover:text-[#06b6d4] transition"
-                  >
-                    <Download className="h-5 w-5" />
-                  </button>
+                  <>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(selectedImage.url!);
+                        setCopiedUrl(true);
+                        setTimeout(() => setCopiedUrl(false), 2000);
+                      }}
+                      className="p-2 text-slate-500 hover:text-[#06b6d4] transition"
+                      title="Copy URL"
+                    >
+                      {copiedUrl ? (
+                        <Check className="h-5 w-5 text-green-500" />
+                      ) : (
+                        <Copy className="h-5 w-5" />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => handleDownloadImage(selectedImage.url!, selectedImage.filename)}
+                      className="p-2 text-slate-500 hover:text-[#06b6d4] transition"
+                      title="Download"
+                    >
+                      <Download className="h-5 w-5" />
+                    </button>
+                  </>
                 )}
                 <button
-                  onClick={() => handleDeleteImage(selectedImage.id)}
+                  onClick={() => setDeleteConfirmId(selectedImage.id)}
                   className="p-2 text-slate-500 hover:text-red-500 transition"
+                  title="Delete"
                 >
                   <Trash2 className="h-5 w-5" />
                 </button>
                 <button
                   onClick={() => setSelectedImage(null)}
                   className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition"
+                  title="Close"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -411,7 +424,82 @@ export default function ImagesPageClient({
                   <ImageIcon className="h-16 w-16 text-slate-300" />
                 </div>
               )}
+              
+              {/* URL Display */}
+              {selectedImage.url && (
+                <div className="mt-4 p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={selectedImage.url}
+                      readOnly
+                      className="flex-1 text-xs text-slate-600 dark:text-neutral-400 bg-transparent border-none outline-none truncate"
+                    />
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(selectedImage.url!);
+                        setCopiedUrl(true);
+                        setTimeout(() => setCopiedUrl(false), 2000);
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-[#06b6d4] hover:bg-[#0891b2] rounded-lg transition"
+                    >
+                      {copiedUrl ? (
+                        <>
+                          <Check className="h-3.5 w-3.5" />
+                          Copied!
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3.5 w-3.5" />
+                          Copy URL
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl p-6 max-w-sm w-full">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-full">
+                <Trash2 className="h-6 w-6 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-900 dark:text-white">Delete Image</h3>
+                <p className="text-sm text-slate-500 dark:text-neutral-400">This action cannot be undone</p>
+              </div>
+            </div>
+            <p className="text-slate-600 dark:text-neutral-300 mb-6">
+              Are you sure you want to delete this image? It will be permanently removed from your library.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-neutral-300 bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 dark:hover:bg-neutral-700 rounded-xl transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteImage(deleteConfirmId)}
+                disabled={deletingId === deleteConfirmId}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-xl transition flex items-center justify-center gap-2"
+              >
+                {deletingId === deleteConfirmId ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  "Delete"
+                )}
+              </button>
             </div>
           </div>
         </div>
