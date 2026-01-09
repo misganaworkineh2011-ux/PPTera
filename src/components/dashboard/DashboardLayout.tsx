@@ -5,7 +5,6 @@ import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
 import Onboarding from "~/components/Onboarding";
 import { cn } from "~/lib/utils";
-import { useUser } from "@clerk/nextjs";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -43,7 +42,6 @@ export default function DashboardLayout({ children, subscriptionPlan, credits, o
   const [stickyTitleContent, setStickyTitleContent] = useState<React.ReactNode | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const { user } = useUser();
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -146,10 +144,7 @@ export default function DashboardLayout({ children, subscriptionPlan, credits, o
 
         {/* Onboarding Modal */}
         {showOnboarding && (
-          <Onboarding
-            userName={user?.firstName || undefined}
-            onComplete={() => setShowOnboarding(false)}
-          />
+          <Onboarding onComplete={() => setShowOnboarding(false)} />
         )}
       </div>
     </StickyContext.Provider>

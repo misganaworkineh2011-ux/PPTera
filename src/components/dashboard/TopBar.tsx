@@ -144,6 +144,7 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
       <div className="flex items-center gap-2 lg:gap-3 shrink-0">
         {/* Mobile menu button */}
         <button
+          data-onboarding="mobile-menu"
           onClick={() => setIsMobileSidebarOpen(true)}
           className="lg:hidden p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800"
         >
@@ -180,6 +181,7 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
         
         {/* Upgrade Button - Always visible, text shows from xl+ */}
         <button
+          data-onboarding="upgrade"
           onClick={() => setShowPricingModal(true)}
           className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 px-2.5 xl:px-4 py-1.5 xl:py-2 text-sm font-semibold text-white shadow-sm transition hover:shadow-md"
         >
