@@ -631,7 +631,7 @@ export default function CreatePresentationClient({
   const isSamePrompt = normalizedCurrent !== "" && normalizedCurrent === normalizedLast;
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden">
+    <div className="h-screen w-full relative overflow-hidden">
       {/* Pricing Modal for Credit Warning */}
       <PricingModal
         isOpen={showCreditWarning}
@@ -644,9 +644,9 @@ export default function CreatePresentationClient({
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Lato:wght@400;700&family=Cormorant+Garamond:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Nunito+Sans:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap');
       `}</style>
 
-      {/* Logo-Inspired Gradient Background - Extra Soft with More Upper M Color */}
+      {/* Logo-Inspired Gradient Background - Fixed Full Height */}
       <div
-        className="absolute inset-0 z-0"
+        className="fixed inset-0 z-0"
         style={{
           background: `linear-gradient(to bottom, 
             #f7fefc 0%,
@@ -664,9 +664,9 @@ export default function CreatePresentationClient({
         }}
       />
 
-      {/* Extra Soft Light Overlay for Depth */}
+      {/* Extra Soft Light Overlay for Depth - Fixed */}
       <div
-        className="absolute inset-0 z-0"
+        className="fixed inset-0 z-0"
         style={{
           background: `
             radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.7) 0%, transparent 50%),
@@ -677,27 +677,37 @@ export default function CreatePresentationClient({
         }}
       />
 
-      {/* Subtle Grid Pattern */}
-      <div
-        className="absolute inset-0 z-0 opacity-[0.03]"
-        style={{
-          backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.5) 1px, transparent 1px)`,
-          backgroundSize: '40px 40px'
-        }}
-      />
+      {/* Noise/Grain Texture Overlay - using CSS filter for reliable cross-browser support */}
+      <svg className="fixed inset-0 w-full h-full z-[1] pointer-events-none opacity-[0.7]" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="noiseFilter">
+            <feTurbulence 
+              type="fractalNoise" 
+              baseFrequency="0.9" 
+              numOctaves="5" 
+              stitchTiles="stitch"
+            />
+            <feColorMatrix type="saturate" values="0" />
+            <feComponentTransfer>
+              <feFuncA type="linear" slope="1.5" />
+            </feComponentTransfer>
+          </filter>
+        </defs>
+        <rect width="100%" height="100%" filter="url(#noiseFilter)" />
+      </svg>
 
-      {/* Content */}
-      <div className="relative z-10 min-h-screen flex flex-col">
-        {/* Header */}
-        <div className="px-8 pt-8 pb-4">
-          <button
-            onClick={() => (showOutline ? handleStartOver() : router.back())}
-            className="mb-4 flex items-center gap-2 rounded-full bg-white/80 backdrop-blur-sm px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-all hover:bg-white hover:text-[#1e3a8a]"
-          >
-            <ArrowLeft size={16} /> {showOutline ? "Start Over" : "Back"}
-          </button>
-        </div>
+      {/* Fixed Header with Back Button */}
+      <div className="fixed top-0 left-0 right-0 z-20 px-6 pt-6 pb-4">
+        <button
+          onClick={() => (showOutline ? handleStartOver() : router.back())}
+          className="flex items-center gap-2 rounded-full bg-white/90 backdrop-blur-sm px-4 py-2 text-sm font-medium text-slate-700 shadow-md transition-all hover:bg-white hover:text-[#1e3a8a] hover:shadow-lg"
+        >
+          <ArrowLeft size={16} /> {showOutline ? "Start Over" : "Back"}
+        </button>
+      </div>
 
+      {/* Scrollable Content Area */}
+      <div className="relative z-10 h-screen overflow-y-auto pt-20">
         {/* Error Message - Minimal, at the top */}
         {hasError && streamState.error && (
           <div className="px-4 sm:px-6 lg:px-8 mb-4">
@@ -720,15 +730,15 @@ export default function CreatePresentationClient({
 
         {/* Form Section - Compact when streaming/completed */}
         <div className={`px-4 sm:px-6 lg:px-8 ${showOutline ? "pb-4" : "pb-12"}`}>
-          <div className={`mx-auto ${showOutline ? "max-w-4xl" : "max-w-2xl"}`}>
+          <div className={`mx-auto ${showOutline ? "max-w-4xl" : "max-w-xl"}`}>
             {!showOutline && (
               <div className="flex flex-col items-center justify-center mb-8">
-                <h1 className="text-4xl font-bold tracking-tight text-[#1e3a8a] mb-3">
+                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#1e3a8a] mb-2 text-center">
                   {mode === "ai" && "AI Generation"}
                   {mode === "docs" && "Import Documents"}
                   {mode === "scratch" && "Start from Scratch"}
                 </h1>
-                <p className="text-slate-600 text-center">
+                <p className="text-slate-600 text-center text-sm sm:text-base max-w-md">
                   {mode === "ai" && "Describe your idea and watch AI craft a complete professional deck"}
                   {mode === "docs" && "Upload PDFs, Word files, or paste content to transform into a presentation"}
                   {mode === "scratch" && "Build from a blank canvas with full creative control over every slide"}
@@ -736,22 +746,23 @@ export default function CreatePresentationClient({
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Form Card */}
+            <form onSubmit={handleSubmit} className={`${!showOutline ? "bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6 sm:p-8" : ""}`}>
               {/* Description - Compact when streaming */}
-              <div className={showOutline ? "flex flex-col md:flex-row items-start gap-4" : ""}>
+              <div className={showOutline ? "flex flex-col md:flex-row items-start gap-4" : "space-y-5"}>
                 <div className={showOutline ? "flex-1 w-full" : ""}>
                   {!showOutline && mode === "ai" && (
-                    <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-3">
+                    <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
                       What to Create
                     </label>
                   )}
                   {!showOutline && mode === "docs" && (
-                    <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-3">
+                    <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
                       Upload or Paste Content
                     </label>
                   )}
                   {!showOutline && mode === "scratch" && (
-                    <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-3">
+                    <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
                       Presentation Title
                     </label>
                   )}
@@ -763,10 +774,9 @@ export default function CreatePresentationClient({
                       value={formData.description}
                       onChange={(e) => handleChange("description", e.target.value)}
                       placeholder="Define what you want to create in one sentence or more..."
-                      rows={showOutline ? 2 : 4}
+                      rows={showOutline ? 2 : 3}
                       disabled={isStreaming}
-                      className={`w-full rounded-md border border-slate-200 bg-white px-5 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all resize-none shadow-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""
-                        }`}
+                      className={`w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all resize-none text-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""}`}
                       required
                     />
                   )}
@@ -774,8 +784,8 @@ export default function CreatePresentationClient({
                   {/* Docs Mode - File upload and paste area */}
                   {mode === "docs" && !showOutline && (
                     <div className="space-y-4">
-                      <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-[#06b6d4] transition-colors">
-                        <Upload className="mx-auto h-12 w-12 text-slate-400 mb-3" />
+                      <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center hover:border-[#06b6d4] transition-colors bg-slate-50/50">
+                        <Upload className="mx-auto h-10 w-10 text-slate-400 mb-2" />
                         <input
                           type="file"
                           id="file-upload"
@@ -797,7 +807,6 @@ export default function CreatePresentationClient({
                                 });
 
                                 if (!response.ok) {
-                                  // Attempt to read text if JSON fails, to catch HTML error pages
                                   const text = await response.text();
                                   console.error(`Upload failed: ${response.status} ${response.statusText}`, text);
 
@@ -811,7 +820,7 @@ export default function CreatePresentationClient({
 
                                 const data = await response.json();
                                 handleChange("description", data.text);
-                                setPastedContent(data.text); // Also update the textarea display
+                                setPastedContent(data.text);
                                 toast.success("Document parsed successfully", { id: loadingToast });
                               } catch (error) {
                                 console.error("Parsing error:", error);
@@ -823,7 +832,7 @@ export default function CreatePresentationClient({
                         />
                         <label
                           htmlFor="file-upload"
-                          className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-50"
+                          className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-[#06b6d4] transition-all"
                         >
                           Choose File
                         </label>
@@ -831,7 +840,11 @@ export default function CreatePresentationClient({
                           {uploadedFile ? uploadedFile.name : "PDF, Word, PowerPoint, or Text files"}
                         </p>
                       </div>
-                      <div className="text-center text-sm text-slate-500">or</div>
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 h-px bg-slate-200"></div>
+                        <span className="text-xs text-slate-400 font-medium">OR</span>
+                        <div className="flex-1 h-px bg-slate-200"></div>
+                      </div>
                       <textarea
                         value={pastedContent}
                         onChange={(e) => {
@@ -839,9 +852,9 @@ export default function CreatePresentationClient({
                           handleChange("description", e.target.value);
                         }}
                         placeholder="Paste your content here..."
-                        rows={6}
+                        rows={5}
                         disabled={isStreaming}
-                        className="w-full rounded-md border border-slate-200 bg-white px-5 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all resize-none shadow-sm"
+                        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all resize-none text-sm"
                       />
                     </div>
                   )}
@@ -855,8 +868,7 @@ export default function CreatePresentationClient({
                       placeholder="Your content..."
                       rows={2}
                       disabled={isStreaming}
-                      className={`w-full rounded-md border border-slate-200 bg-white px-5 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all resize-none shadow-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""
-                        }`}
+                      className={`w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all resize-none text-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""}`}
                       required
                     />
                   )}
@@ -870,8 +882,7 @@ export default function CreatePresentationClient({
                       onChange={(e) => handleChange("description", e.target.value)}
                       placeholder="Enter your presentation title..."
                       disabled={isStreaming}
-                      className={`w-full rounded-md border border-slate-200 bg-white px-5 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all shadow-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""
-                        }`}
+                      className={`w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all text-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""}`}
                       required
                     />
                   )}
@@ -925,24 +936,11 @@ export default function CreatePresentationClient({
               {/* Full form controls when not streaming */}
               {!showOutline && (
                 <>
-                  {mode === "ai" && (
-                    <p className="text-xs text-slate-500 -mt-4">
-                      Describe your presentation idea, topics to cover, main message, or any specific requirements.
-                    </p>
-                  )}
-                  {mode === "docs" && (
-                    <p className="text-xs text-slate-500 -mt-4">
-                      Upload a document or paste content, and AI will structure it into a presentation.
-                    </p>
-                  )}
-                  {mode === "scratch" && (
-                    <p className="text-xs text-slate-500 -mt-4">
-                      Start with a blank presentation. You&apos;ll be able to add and customize slides manually.
-                    </p>
-                  )}
-
                   {/* Number of Slides */}
                   <div>
+                    <label htmlFor="slides" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
+                      Number of Slides
+                    </label>
                     <div className="relative">
                       <select
                         id="slides"
@@ -951,7 +949,6 @@ export default function CreatePresentationClient({
                           const value = parseInt(e.target.value);
                           const selectedOption = allSlideOptions.find((opt) => opt.value === value);
                           if (value > 0 && selectedOption?.disabled) {
-                            // Show pricing modal when trying to select a disabled (premium) option
                             setShowCreditWarning(true);
                             return;
                           }
@@ -959,7 +956,7 @@ export default function CreatePresentationClient({
                             handleChange("numberOfSlides", value);
                           }
                         }}
-                        className="w-full rounded-md border border-slate-200 bg-white px-5 py-4 text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all shadow-sm appearance-none cursor-pointer"
+                        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all appearance-none cursor-pointer"
                       >
                         {allSlideOptions.map((option, index) => {
                           if (option.isGroupHeader) {
@@ -971,9 +968,8 @@ export default function CreatePresentationClient({
                           }
                           const planLabel = option.plan !== "Free" ? option.plan : "";
                           const spaces = planLabel ? "\u00A0".repeat(Math.max(1, 15 - option.label.length)) : "";
-                          const lockIcon = option.disabled ? "" : "";
                           const displayLabel = planLabel
-                            ? `${option.label}${spaces}${planLabel} ${lockIcon}`.trim()
+                            ? `${option.label}${spaces}${planLabel}`.trim()
                             : option.label;
 
                           return (
@@ -987,25 +983,25 @@ export default function CreatePresentationClient({
                           );
                         })}
                       </select>
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                        <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
                       </div>
                     </div>
                   </div>
 
-                  {/* Tone and Language */}
-                  <div className="mt-4 grid grid-cols-2 gap-6">
+                  {/* Tone and Language - Side by side */}
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="tone" className="block text-sm font-semibold text-[#1e3a8a] mb-3">
+                      <label htmlFor="tone" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
                         Tone
                       </label>
                       <select
                         id="tone"
                         value={formData.tone}
                         onChange={(e) => handleChange("tone", e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-5 py-4 text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all shadow-sm"
+                        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
                       >
                         <option value="professional">Professional</option>
                         <option value="casual">Casual</option>
@@ -1016,14 +1012,14 @@ export default function CreatePresentationClient({
                     </div>
 
                     <div>
-                      <label htmlFor="language" className="block text-sm font-semibold text-[#1e3a8a] mb-3">
+                      <label htmlFor="language" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
                         Language
                       </label>
                       <select
                         id="language"
                         value={formData.language}
                         onChange={(e) => handleChange("language", e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-5 py-4 text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all shadow-sm"
+                        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
                       >
                         <option value="english">English</option>
                         <option value="spanish">Spanish</option>
@@ -1043,8 +1039,8 @@ export default function CreatePresentationClient({
                 </>
               )}
 
-              {/* Primary generate / regenerate button (same position, no icon) */}
-              <div className="flex items-center justify-center pt-4">
+              {/* Primary generate / regenerate button */}
+              <div className={`flex items-center justify-center ${!showOutline ? "pt-2" : "pt-4"}`}>
                 <button
                   type="submit"
                   disabled={!formData.description.trim() || isStreaming}
@@ -1053,7 +1049,7 @@ export default function CreatePresentationClient({
                       ? "Regenerate this outline with the same description (replaces current outline)"
                       : "Generate a new outline with this description (replaces current outline)"
                   }
-                  className="px-12 py-3 rounded-md bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold shadow-lg transition-all hover:opacity-90 hover:shadow-xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="w-full sm:w-auto px-10 py-3 rounded-xl bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold shadow-lg transition-all hover:opacity-90 hover:shadow-xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm"
                 >
                   {isStreaming ? (
                     mode === "scratch" ? "Creating…" : isSamePrompt ? "Regenerating…" : "Generating…"
