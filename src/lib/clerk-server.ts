@@ -1,7 +1,11 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { cookies } from "next/headers";
 import { db } from "~/server/db";
 import { redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
+import { nanoid } from "nanoid";
+
+const REFERRAL_CREDITS = 10;
 
 // ============================================================================
 // USER CREATION HELPER
@@ -36,11 +40,48 @@ async function ensureUserInDatabase(clerkId: string): Promise<Awaited<ReturnType
   const emailVerified =
     clerkUser.emailAddresses[0]?.verification?.status === "verified";
 
+  // Check if email already exists - if so, link this Clerk account to existing user
+  if (email) {
+    const existingEmailUser = await db.user.findUnique({
+      where: { email },
+    });
+    if (existingEmailUser) {
+      // Email already exists - update the existing user with this new Clerk ID
+      // This handles cases where user signs in with different auth method (Google vs email)
+      try {
+        const updatedUser = await db.user.update({
+          where: { email },
+          data: { clerkId }, // Link new Clerk account to existing user
+        });
+        console.log(`Linked Clerk ID ${clerkId} to existing user with email ${email}`);
+        return updatedUser;
+      } catch (updateError) {
+        // If update fails (e.g., clerkId already used), try to find by clerkId
+        const userByClerk = await db.user.findUnique({ where: { clerkId } });
+        if (userByClerk) return userByClerk;
+        console.error(`Failed to link Clerk ID to existing email user:`, updateError);
+        return null;
+      }
+    }
+  }
+
+  // Check for referral code in cookies
+  let referralCode: string | undefined;
+  try {
+    const cookieStore = await cookies();
+    referralCode = cookieStore.get("referral_code")?.value;
+  } catch {
+    // Cookies might not be available in some contexts
+  }
+
   // Retry logic for race conditions (webhook might create user concurrently)
   const maxRetries = 3;
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
+      // Generate a unique referral code for the new user
+      const newUserReferralCode = nanoid(8).toUpperCase();
+      
       const newUser = await db.user.create({
         data: {
           clerkId,
@@ -50,8 +91,14 @@ async function ensureUserInDatabase(clerkId: string): Promise<Awaited<ReturnType
           image: clerkUser.imageUrl,
           credits: 200, // Free credits for new users
           subscriptionPlan: "Free",
+          referralCode: newUserReferralCode,
         },
       });
+
+      // Process referral if code exists
+      if (referralCode) {
+        await processReferral(newUser.id, email, referralCode);
+      }
 
       return newUser;
     } catch (error) {
@@ -92,6 +139,86 @@ async function ensureUserInDatabase(clerkId: string): Promise<Awaited<ReturnType
   }
 
   return null;
+}
+
+/**
+ * Process a referral when a new user signs up
+ */
+async function processReferral(newUserId: string, newUserEmail: string, referralCode: string): Promise<void> {
+  try {
+    // Check if the new user already has a referral (shouldn't happen for new users, but safety check)
+    const newUser = await db.user.findUnique({
+      where: { id: newUserId },
+      select: { referredBy: true },
+    });
+
+    if (newUser?.referredBy) {
+      return; // User already used a referral code
+    }
+
+    // Find the referrer by their referral code
+    const referrer = await db.user.findUnique({
+      where: { referralCode: referralCode.toUpperCase() },
+      select: { id: true },
+    });
+
+    if (!referrer || referrer.id === newUserId) {
+      return; // Invalid code or self-referral
+    }
+
+    // Check if this referral already exists
+    const existingReferral = await db.referral.findFirst({
+      where: {
+        referrerId: referrer.id,
+        referredUserId: newUserId,
+      },
+    });
+
+    if (existingReferral) {
+      return; // Already processed
+    }
+
+    // Create the referral and award credits in a transaction (only referrer gets credits)
+    await db.$transaction([
+      // Create referral record
+      db.referral.create({
+        data: {
+          referrerId: referrer.id,
+          referredUserId: newUserId,
+          referredEmail: newUserEmail,
+          referralCode: nanoid(12),
+          status: "completed",
+          creditsAwarded: REFERRAL_CREDITS,
+          completedAt: new Date(),
+        },
+      }),
+      // Award credits to referrer only
+      db.user.update({
+        where: { id: referrer.id },
+        data: { credits: { increment: REFERRAL_CREDITS } },
+      }),
+      // Mark new user as referred (no credits for them)
+      db.user.update({
+        where: { id: newUserId },
+        data: {
+          referredBy: referralCode.toUpperCase(),
+        },
+      }),
+      // Create notification for referrer
+      db.notification.create({
+        data: {
+          userId: referrer.id,
+          type: "referral",
+          title: "Referral Bonus!",
+          message: `You earned ${REFERRAL_CREDITS} credits! Someone signed up using your referral link.`,
+          link: "/dashboard/billing",
+        },
+      }),
+    ]);
+  } catch (error) {
+    // Log but don't fail user creation if referral processing fails
+    console.error("Failed to process referral:", error);
+  }
 }
 
 // ============================================================================
