@@ -179,12 +179,14 @@ model ContactSubmission {
   id        String   @id @default(cuid())
   name      String
   email     String
+  category  String   @default("general")
   subject   String
   message   String
-  status    String   @default("pending")
+  status    String   @default("pending") // pending, replied, resolved
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([status])
   @@map("contact_submission")
 }
 
@@ -301,12 +303,16 @@ model InsightPost {
 }
 
 model Newsletter {
-  id             String    @id @default(cuid())
-  email          String    @unique
-  isActive       Boolean   @default(true)
-  subscribedAt   DateTime  @default(now())
-  unsubscribedAt DateTime?
+  id               String    @id @default(cuid())
+  email            String    @unique
+  status           String    @default("pending") // pending, confirmed, unsubscribed
+  confirmToken     String?   @unique
+  unsubscribeToken String?   @unique
+  subscribedAt     DateTime  @default(now())
+  confirmedAt      DateTime?
+  unsubscribedAt   DateTime?
 
+  @@index([status])
   @@map("newsletter")
 }
 

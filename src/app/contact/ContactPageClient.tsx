@@ -4,9 +4,10 @@ import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
 import { getTranslations, type Language } from "~/lib/i18n";
 import { Mail, MessageCircle } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LoadingButton } from "~/components/LoadingButton";
 import { toast } from "sonner";
+import { useUser } from "@clerk/nextjs";
 
 interface ContactPageClientProps {
   currentLang: Language;
@@ -14,13 +15,34 @@ interface ContactPageClientProps {
 
 export function ContactPageClient({ currentLang }: ContactPageClientProps) {
   const t = getTranslations(currentLang);
+  const { user, isLoaded } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    category: "general" as "general" | "support" | "billing" | "feedback" | "partnership",
     subject: "",
     message: "",
   });
+
+  // Pre-fill form with user data when logged in
+  useEffect(() => {
+    if (isLoaded && user) {
+      const userName = user.fullName ?? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
+      setFormData((prev) => ({
+        ...prev,
+        name: userName || prev.name,
+        email: user.primaryEmailAddress?.emailAddress ?? prev.email,
+      }));
+    }
+  }, [isLoaded, user]);
+
+  // Check if form is valid for submission
+  const isFormValid =
+    formData.name.trim().length >= 2 &&
+    formData.email.includes("@") &&
+    formData.subject.trim().length >= 5 &&
+    formData.message.trim().length >= 20;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +65,15 @@ export function ContactPageClient({ currentLang }: ContactPageClientProps) {
         duration: 5000,
         position: "top-center",
       });
-      setFormData({ name: "", email: "", subject: "", message: "" });
+      // Reset form but keep user data if logged in
+      const userName = user?.fullName ?? `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim();
+      setFormData({
+        name: userName || "",
+        email: user?.primaryEmailAddress?.emailAddress ?? "",
+        category: "general",
+        subject: "",
+        message: "",
+      });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to send message. Please try again.", {
         duration: 5000,
@@ -148,7 +178,8 @@ export function ContactPageClient({ currentLang }: ContactPageClientProps) {
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20"
+                    readOnly={!!user}
+                    className={`w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 ${user ? "bg-slate-50 text-slate-600 cursor-not-allowed" : ""}`}
                     placeholder={t.yourName || "Your name"}
                   />
                 </div>
@@ -161,7 +192,8 @@ export function ContactPageClient({ currentLang }: ContactPageClientProps) {
                     required
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20"
+                    readOnly={!!user}
+                    className={`w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 ${user ? "bg-slate-50 text-slate-600 cursor-not-allowed" : ""}`}
                     placeholder={t.yourEmail || "your@email.com"}
                   />
                 </div>
@@ -183,6 +215,24 @@ export function ContactPageClient({ currentLang }: ContactPageClientProps) {
 
               <div>
                 <label className="block text-sm font-semibold text-slate-900 mb-2">
+                  {t.category || "Category"} *
+                </label>
+                <select
+                  required
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value as typeof formData.category })}
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 bg-white"
+                >
+                  <option value="general">General Inquiry</option>
+                  <option value="support">Technical Support</option>
+                  <option value="billing">Billing & Payments</option>
+                  <option value="feedback">Feedback & Suggestions</option>
+                  <option value="partnership">Partnership & Business</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-900 mb-2">
                   {t.message || "Message"} *
                 </label>
                 <textarea
@@ -198,6 +248,7 @@ export function ContactPageClient({ currentLang }: ContactPageClientProps) {
               <LoadingButton
                 type="submit"
                 isLoading={isLoading}
+                disabled={!isFormValid}
                 loadingText={t.sending || "Sending..."}
                 variant="primary"
                 className="w-full"
