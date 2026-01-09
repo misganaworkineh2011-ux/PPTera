@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Plus,
   Search,
@@ -15,66 +15,23 @@ import {
   Grid,
   List as ListIcon,
   Sparkles,
+  Loader2,
+  Check,
+  X,
+  Pencil,
 } from "lucide-react";
 import ChartModal from "~/components/charts/ChartModal";
 import InteractiveChart from "~/components/charts/InteractiveChart";
-import { type ChartData, CHART_TEMPLATES } from "~/lib/charts/types";
+import { type ChartData } from "~/lib/charts/types";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
 import DashboardStickyHeader from "~/components/dashboard/DashboardStickyHeader";
 
-// Sample saved charts for demo
-const SAMPLE_CHARTS: (ChartData & { id: string; createdAt: Date })[] = [
-  {
-    id: "1",
-    type: "bar",
-    title: "Q4 Sales Performance",
-    data: [
-      { label: "Product A", value: 45000, color: "#06b6d4" },
-      { label: "Product B", value: 38000, color: "#1e3a8a" },
-      { label: "Product C", value: 52000, color: "#10b981" },
-      { label: "Product D", value: 31000, color: "#f59e0b" },
-    ],
-    config: { showValues: true, showLabels: true, colorScheme: "default" },
-    createdAt: new Date("2024-12-15"),
-  },
-  {
-    id: "2",
-    type: "pie",
-    title: "Market Share Distribution",
-    data: [
-      { label: "Our Company", value: 35, color: "#06b6d4" },
-      { label: "Competitor A", value: 28, color: "#1e3a8a" },
-      { label: "Competitor B", value: 22, color: "#10b981" },
-      { label: "Others", value: 15, color: "#f59e0b" },
-    ],
-    config: { showLegend: true, showValues: true },
-    createdAt: new Date("2024-12-14"),
-  },
-  {
-    id: "3",
-    type: "line",
-    title: "Monthly Revenue Trend",
-    data: [
-      { label: "Jan", value: 120000 },
-      { label: "Feb", value: 135000 },
-      { label: "Mar", value: 128000 },
-      { label: "Apr", value: 145000 },
-      { label: "May", value: 162000 },
-      { label: "Jun", value: 178000 },
-    ],
-    config: { showGrid: true, lineSmooth: true, showLabels: true },
-    createdAt: new Date("2024-12-13"),
-  },
-  {
-    id: "4",
-    type: "kpi",
-    title: "Total Revenue",
-    data: [{ label: "Revenue", value: 2450000 }],
-    config: { showValues: true, target: 3000000, trend: "up", trendValue: 15, prefix: "$" },
-    createdAt: new Date("2024-12-12"),
-  },
-];
+interface SavedChart extends ChartData {
+  id: string;
+  createdAt: Date;
+  updatedAt?: Date;
+}
 
 type ViewMode = "grid" | "list";
 type FilterType = "all" | "bar" | "pie" | "line" | "kpi" | "other";
@@ -83,13 +40,52 @@ export default function ChartsPage() {
   const { language } = useLanguage();
   const t = dashboardTranslations[language] || dashboardTranslations.en;
 
-  const [charts, setCharts] = useState<(ChartData & { id: string; createdAt: Date })[]>(SAMPLE_CHARTS);
+  const [charts, setCharts] = useState<SavedChart[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [filterType, setFilterType] = useState<FilterType>("all");
   const [showChartModal, setShowChartModal] = useState(false);
   const [editingChart, setEditingChart] = useState<ChartData | null>(null);
+  const [editingChartId, setEditingChartId] = useState<string | null>(null);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const renameInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch charts on mount
+  useEffect(() => {
+    fetchCharts();
+  }, []);
+
+  // Focus rename input when renaming
+  useEffect(() => {
+    if (renamingId && renameInputRef.current) {
+      renameInputRef.current.focus();
+      renameInputRef.current.select();
+    }
+  }, [renamingId]);
+
+  const fetchCharts = async () => {
+    try {
+      setIsLoading(true);
+      const res = await fetch("/api/charts");
+      if (!res.ok) throw new Error("Failed to fetch charts");
+      const data = await res.json();
+      setCharts(
+        data.charts.map((c: SavedChart) => ({
+          ...c,
+          createdAt: new Date(c.createdAt),
+          updatedAt: c.updatedAt ? new Date(c.updatedAt) : undefined,
+        }))
+      );
+    } catch (error) {
+      console.error("Error fetching charts:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Filter charts
   const filteredCharts = charts.filter((chart) => {
@@ -104,43 +100,174 @@ export default function ChartsPage() {
     return matchesSearch && chart.type === filterType;
   });
 
-  const handleCreateChart = (chart: ChartData) => {
-    const newChart = {
-      ...chart,
-      id: Date.now().toString(),
-      createdAt: new Date(),
-    };
-    setCharts((prev) => [newChart, ...prev]);
-    setShowChartModal(false);
-    setEditingChart(null);
+  const handleCreateChart = async (chart: ChartData) => {
+    try {
+      setIsSaving(true);
+      const res = await fetch("/api/charts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: chart.title || "Untitled Chart",
+          type: chart.type,
+          data: chart.data,
+          config: chart.config,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to create chart");
+      const data = await res.json();
+      
+      const newChart: SavedChart = {
+        ...data.chart,
+        createdAt: new Date(data.chart.createdAt),
+        updatedAt: data.chart.updatedAt ? new Date(data.chart.updatedAt) : undefined,
+      };
+      
+      setCharts((prev) => [newChart, ...prev]);
+      setShowChartModal(false);
+      setEditingChart(null);
+      setEditingChartId(null);
+    } catch (error) {
+      console.error("Error creating chart:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleUpdateChart = async (chart: ChartData) => {
+    if (!editingChartId) return;
+    
+    try {
+      setIsSaving(true);
+      const res = await fetch(`/api/charts/${editingChartId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: chart.title,
+          type: chart.type,
+          data: chart.data,
+          config: chart.config,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update chart");
+      const data = await res.json();
+      
+      setCharts((prev) =>
+        prev.map((c) =>
+          c.id === editingChartId
+            ? {
+                ...data.chart,
+                createdAt: new Date(data.chart.createdAt),
+                updatedAt: data.chart.updatedAt ? new Date(data.chart.updatedAt) : undefined,
+              }
+            : c
+        )
+      );
+      setShowChartModal(false);
+      setEditingChart(null);
+      setEditingChartId(null);
+    } catch (error) {
+      console.error("Error updating chart:", error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleEditChart = (chartId: string) => {
     const chart = charts.find((c) => c.id === chartId);
     if (chart) {
       setEditingChart(chart);
+      setEditingChartId(chartId);
       setShowChartModal(true);
     }
     setActiveMenu(null);
   };
 
-  const handleDeleteChart = (chartId: string) => {
-    setCharts((prev) => prev.filter((c) => c.id !== chartId));
+  const handleDeleteChart = async (chartId: string) => {
+    try {
+      const res = await fetch(`/api/charts/${chartId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) throw new Error("Failed to delete chart");
+      setCharts((prev) => prev.filter((c) => c.id !== chartId));
+    } catch (error) {
+      console.error("Error deleting chart:", error);
+    }
     setActiveMenu(null);
   };
 
-  const handleDuplicateChart = (chartId: string) => {
+  const handleDuplicateChart = async (chartId: string) => {
     const chart = charts.find((c) => c.id === chartId);
-    if (chart) {
-      const duplicate = {
-        ...chart,
-        id: Date.now().toString(),
-        title: `${chart.title} (Copy)`,
-        createdAt: new Date(),
+    if (!chart) return;
+
+    try {
+      setIsSaving(true);
+      const res = await fetch("/api/charts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: `${chart.title} (Copy)`,
+          type: chart.type,
+          data: chart.data,
+          config: chart.config,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to duplicate chart");
+      const data = await res.json();
+      
+      const newChart: SavedChart = {
+        ...data.chart,
+        createdAt: new Date(data.chart.createdAt),
+        updatedAt: data.chart.updatedAt ? new Date(data.chart.updatedAt) : undefined,
       };
-      setCharts((prev) => [duplicate, ...prev]);
+      
+      setCharts((prev) => [newChart, ...prev]);
+    } catch (error) {
+      console.error("Error duplicating chart:", error);
+    } finally {
+      setIsSaving(false);
     }
     setActiveMenu(null);
+  };
+
+  const startRename = (chartId: string, currentTitle: string) => {
+    setRenamingId(chartId);
+    setRenameValue(currentTitle || "Untitled Chart");
+    setActiveMenu(null);
+  };
+
+  const handleRename = async () => {
+    if (!renamingId || !renameValue.trim()) {
+      setRenamingId(null);
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/charts/${renamingId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: renameValue.trim() }),
+      });
+
+      if (!res.ok) throw new Error("Failed to rename chart");
+      
+      setCharts((prev) =>
+        prev.map((c) =>
+          c.id === renamingId ? { ...c, title: renameValue.trim() } : c
+        )
+      );
+    } catch (error) {
+      console.error("Error renaming chart:", error);
+    }
+    setRenamingId(null);
+  };
+
+  const cancelRename = () => {
+    setRenamingId(null);
+    setRenameValue("");
   };
 
   const getChartIcon = (type: string) => {
@@ -162,6 +289,18 @@ export default function ChartsPage() {
     }
   };
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 size={40} className="animate-spin text-[#06b6d4]" />
+          <p className="text-slate-500 dark:text-neutral-400">Loading charts...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       {/* Header with sticky behavior */}
@@ -179,11 +318,17 @@ export default function ChartsPage() {
           <button
             onClick={() => {
               setEditingChart(null);
+              setEditingChartId(null);
               setShowChartModal(true);
             }}
-            className="flex items-center gap-1.5 md:gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-white shadow-lg shadow-[#06b6d4]/20 transition-all hover:from-[#172554] hover:to-[#0891b2] hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap"
+            disabled={isSaving}
+            className="flex items-center gap-1.5 md:gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-white shadow-lg shadow-[#06b6d4]/20 transition-all hover:from-[#172554] hover:to-[#0891b2] hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap disabled:opacity-50"
           >
-            <Plus size={16} className="md:w-[18px] md:h-[18px]" />
+            {isSaving ? (
+              <Loader2 size={16} className="animate-spin md:w-[18px] md:h-[18px]" />
+            ) : (
+              <Plus size={16} className="md:w-[18px] md:h-[18px]" />
+            )}
             <span className="hidden sm:inline">Create Chart</span>
             <span className="sm:hidden">Create</span>
           </button>
@@ -199,7 +344,7 @@ export default function ChartsPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search charts..."
-            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-800 dark:text-white focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-800 dark:text-white focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 dark:border-neutral-700 dark:bg-neutral-800"
           />
         </div>
 
@@ -218,7 +363,7 @@ export default function ChartsPage() {
                 className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
                   filterType === filter.id
                     ? "bg-white text-[#06b6d4] shadow-sm dark:bg-neutral-700"
-                    : "text-slate-600 dark:text-neutral-400 hover:text-slate-800 dark:text-neutral-400"
+                    : "text-slate-600 dark:text-neutral-400 hover:text-slate-800"
                 }`}
               >
                 {filter.icon}
@@ -292,13 +437,13 @@ export default function ChartsPage() {
                 <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/0 opacity-0 transition-all group-hover:bg-black/40 group-hover:opacity-100">
                   <button
                     onClick={() => handleEditChart(chart.id)}
-                    className="rounded-full bg-white p-2.5 text-slate-700 dark:text-neutral-300 shadow-lg transition-transform hover:scale-110 hover:bg-[#06b6d4] hover:text-white"
+                    className="rounded-full bg-white p-2.5 text-slate-700 shadow-lg transition-transform hover:scale-110 hover:bg-[#06b6d4] hover:text-white"
                   >
                     <Edit3 size={16} />
                   </button>
                   <button
                     onClick={() => handleDuplicateChart(chart.id)}
-                    className="rounded-full bg-white p-2.5 text-slate-700 dark:text-neutral-300 shadow-lg transition-transform hover:scale-110 hover:bg-[#06b6d4] hover:text-white"
+                    className="rounded-full bg-white p-2.5 text-slate-700 shadow-lg transition-transform hover:scale-110 hover:bg-[#06b6d4] hover:text-white"
                   >
                     <Copy size={16} />
                   </button>
@@ -314,9 +459,41 @@ export default function ChartsPage() {
               <div className="flex flex-1 flex-col p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
-                    <h3 className="mb-1 truncate text-sm font-bold text-slate-800 dark:text-white" title={chart.title || "Untitled Chart"}>
-                      {chart.title || "Untitled Chart"}
-                    </h3>
+                    {renamingId === chart.id ? (
+                      <div className="flex items-center gap-1">
+                        <input
+                          ref={renameInputRef}
+                          type="text"
+                          value={renameValue}
+                          onChange={(e) => setRenameValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleRename();
+                            if (e.key === "Escape") cancelRename();
+                          }}
+                          className="flex-1 rounded border border-[#06b6d4] bg-white px-2 py-0.5 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 dark:bg-neutral-800 dark:text-white"
+                        />
+                        <button
+                          onClick={handleRename}
+                          className="rounded p-1 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                        >
+                          <Check size={14} />
+                        </button>
+                        <button
+                          onClick={cancelRename}
+                          className="rounded p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      <h3
+                        className="mb-1 truncate text-sm font-bold text-slate-800 dark:text-white cursor-pointer hover:text-[#06b6d4] transition-colors"
+                        title="Click to rename"
+                        onClick={() => startRename(chart.id, chart.title || "Untitled Chart")}
+                      >
+                        {chart.title || "Untitled Chart"}
+                      </h3>
+                    )}
                     <p className="text-xs text-slate-500 dark:text-neutral-500">
                       {new Date(chart.createdAt).toLocaleDateString()} • {chart.data.length} data points
                     </p>
@@ -335,14 +512,20 @@ export default function ChartsPage() {
                       <div className="absolute right-0 bottom-full mb-2 w-44 rounded-xl border border-slate-200 bg-white shadow-xl dark:border-neutral-700 dark:bg-neutral-800 z-50">
                         <div className="p-1.5">
                           <button
+                            onClick={() => startRename(chart.id, chart.title || "Untitled Chart")}
+                            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-neutral-300 dark:hover:bg-neutral-700"
+                          >
+                            <Pencil size={15} /> Rename
+                          </button>
+                          <button
                             onClick={() => handleEditChart(chart.id)}
-                            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:text-neutral-300 dark:hover:bg-neutral-700"
+                            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-neutral-300 dark:hover:bg-neutral-700"
                           >
                             <Edit3 size={15} /> Edit Chart
                           </button>
                           <button
                             onClick={() => handleDuplicateChart(chart.id)}
-                            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:text-neutral-300 dark:hover:bg-neutral-700"
+                            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-neutral-300 dark:hover:bg-neutral-700"
                           >
                             <Copy size={15} /> Duplicate
                           </button>
@@ -379,14 +562,52 @@ export default function ChartsPage() {
                     <span className="capitalize">{chart.type}</span>
                   </div>
                 </div>
-                <h3 className="mb-1 truncate text-base font-bold text-slate-800 dark:text-white">
-                  {chart.title || "Untitled Chart"}
-                </h3>
+                {renamingId === chart.id ? (
+                  <div className="flex items-center gap-2 mb-1">
+                    <input
+                      ref={renameInputRef}
+                      type="text"
+                      value={renameValue}
+                      onChange={(e) => setRenameValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleRename();
+                        if (e.key === "Escape") cancelRename();
+                      }}
+                      className="flex-1 max-w-xs rounded border border-[#06b6d4] bg-white px-2 py-1 text-base font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 dark:bg-neutral-800 dark:text-white"
+                    />
+                    <button
+                      onClick={handleRename}
+                      className="rounded p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                    >
+                      <Check size={16} />
+                    </button>
+                    <button
+                      onClick={cancelRename}
+                      className="rounded p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ) : (
+                  <h3
+                    className="mb-1 truncate text-base font-bold text-slate-800 dark:text-white cursor-pointer hover:text-[#06b6d4] transition-colors"
+                    onClick={() => startRename(chart.id, chart.title || "Untitled Chart")}
+                  >
+                    {chart.title || "Untitled Chart"}
+                  </h3>
+                )}
                 <p className="text-xs text-slate-500 dark:text-neutral-500">
                   Created {new Date(chart.createdAt).toLocaleDateString()} • {chart.data.length} data points
                 </p>
               </div>
               <div className="flex items-center gap-1">
+                <button
+                  onClick={() => startRename(chart.id, chart.title || "Untitled Chart")}
+                  className="rounded-lg p-2.5 text-slate-400 transition-colors hover:bg-[#06b6d4]/10 hover:text-[#06b6d4]"
+                  title="Rename"
+                >
+                  <Pencil size={18} />
+                </button>
                 <button
                   onClick={() => handleEditChart(chart.id)}
                   className="rounded-lg p-2.5 text-slate-400 transition-colors hover:bg-[#06b6d4]/10 hover:text-[#06b6d4]"
@@ -414,62 +635,15 @@ export default function ChartsPage() {
         </div>
       )}
 
-
-      {/* Templates Section */}
-      <div className="mt-12">
-        <div className="mb-5 flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-bold text-slate-800 dark:text-white">Quick Start Templates</h2>
-            <p className="text-sm text-slate-500 dark:text-neutral-500">Click to instantly create a chart</p>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-          {CHART_TEMPLATES.map((template) => (
-            <button
-              key={template.id}
-              onClick={() => {
-                const newChart = {
-                  id: Date.now().toString(),
-                  type: template.type,
-                  title: template.name,
-                  data: [...template.sampleData],
-                  config: { ...template.defaultConfig },
-                  createdAt: new Date(),
-                };
-                setCharts((prev) => [newChart, ...prev]);
-              }}
-              className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:border-[#06b6d4] hover:shadow-lg hover:shadow-[#06b6d4]/10 dark:border-neutral-800 dark:bg-neutral-900"
-            >
-              <div className="aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 p-3 dark:from-neutral-800 dark:to-neutral-900">
-                <InteractiveChart
-                  chart={{
-                    type: template.type,
-                    data: template.sampleData,
-                    config: { ...template.defaultConfig, showAnimation: false },
-                  }}
-                  compact={true}
-                  interactive={false}
-                />
-              </div>
-              <div className="flex items-center gap-2 p-3 border-t border-slate-100 dark:border-neutral-800">
-                <span className="text-[#06b6d4]">{getChartIcon(template.type)}</span>
-                <span className="truncate text-sm font-medium text-slate-700 dark:text-neutral-300 transition-colors group-hover:text-[#06b6d4] dark:text-neutral-300">
-                  {template.name}
-                </span>
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Chart Modal */}
       <ChartModal
         isOpen={showChartModal}
         onClose={() => {
           setShowChartModal(false);
           setEditingChart(null);
+          setEditingChartId(null);
         }}
-        onInsert={handleCreateChart}
+        onInsert={editingChartId ? handleUpdateChart : handleCreateChart}
         existingChart={editingChart}
       />
     </div>

@@ -87,6 +87,7 @@ model Image {
 
 model Chart {
   id             String        @id @default(cuid())
+  title          String        @default("Untitled Chart")
   type           String
   data           Json
   config         Json
@@ -94,8 +95,11 @@ model Chart {
   userId         String
   presentationId String?
   createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
   presentation   Presentation? @relation(fields: [presentationId], references: [id])
   user           User          @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt(sort: Desc)])
 }
 
 model Template {
