@@ -11,6 +11,7 @@ import {
   TestimonialsSection,
   CTASection,
   TemplatesSection,
+  PricingSection,
 } from "~/components/landing";
 
 interface LandingPageClientProps {
@@ -28,6 +29,7 @@ export function LandingPageClient({ currentLang }: LandingPageClientProps) {
         <TrustedBySection />
         <FeaturesSection t={t} currentLang={currentLang} />
         <HowItWorksSection t={t} currentLang={currentLang} />
+        <PricingSection t={t} currentLang={currentLang} />
         <TestimonialsSection t={t} />
         <CTASection t={t} currentLang={currentLang} />
         <TemplatesSection t={t} currentLang={currentLang} />

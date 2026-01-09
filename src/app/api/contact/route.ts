@@ -1,8 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/server/db";
+import { checkRateLimit, getClientIP, RATE_LIMITS } from "~/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limiting
+    const ip = getClientIP(req);
+    const rateLimit = checkRateLimit(`contact:${ip}`, RATE_LIMITS.CONTACT);
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
     const { name, email, subject, message } = body;
 

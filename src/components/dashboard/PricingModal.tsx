@@ -234,81 +234,77 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
                 </span>
               </div>
 
-              {/* Plans */}
-              {loading ? (
-                <div className="flex justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-[#06b6d4]" />
-                </div>
-              ) : error ? (
-                <div className="flex flex-col items-center justify-center py-12 gap-4">
-                  <div className="flex items-center gap-2 text-red-500 bg-red-50 dark:bg-red-900/20 px-4 py-2 rounded-lg">
-                    <AlertCircle className="h-5 w-5" />
-                    <span>{error}</span>
+              {/* Error banner (non-blocking) */}
+              {error && (
+                <div className="flex items-center justify-between gap-3 mb-4 px-4 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800">
+                  <div className="flex items-center gap-2 text-red-600 dark:text-red-300">
+                    <AlertCircle className="h-4 w-4" />
+                    <span className="text-xs">Could not load latest pricing. Showing defaults.</span>
                   </div>
                   <button
                     onClick={loadProducts}
-                    className="text-sm text-[#06b6d4] hover:underline"
+                    className="text-xs text-red-600 dark:text-red-300 hover:underline"
                   >
                     Try again
                   </button>
                 </div>
-              ) : (
-                <div className="grid gap-3 md:grid-cols-3">
-                  {products.map((product) => {
-                    const priceData = isAnnual ? product.yearly : product.monthly;
-                    const activePrice = priceData || product.monthly || product.yearly;
-                    const isCurrentPlan = currentPlan?.toLowerCase() === product.key.toLowerCase();
-                    const isHighlighted = product.key === 'pro';
-                    const isUltra = product.key === 'ultra';
+              )}
 
-                    if (!activePrice) return null;
+              {/* Plans - always rendered; prices use skeleton while loading */}
+              <div className="grid gap-3 md:grid-cols-3">
+                {products.map((product) => {
+                  const priceData = isAnnual ? product.yearly : product.monthly;
+                  const activePrice = priceData || product.monthly || product.yearly;
+                  const isCurrentPlan = currentPlan?.toLowerCase() === product.key.toLowerCase();
+                  const isHighlighted = product.key === 'pro';
+                  const isUltra = product.key === 'ultra';
 
-                    // Get plan-specific features based on pricing page
-                    const getPlanFeatures = (key: string) => {
-                      if (key === 'plus') {
-                        return [
-                          'Create up to 20 cards per prompt',
-                          '1,000 monthly credits',
-                          'Remove PPTMaster branding',
-                          'Advanced AI image models',
-                        ];
-                      } else if (key === 'pro') {
-                        return [
-                          'Create up to 60 cards per prompt',
-                          '4,000 monthly credits',
-                          'Premium AI image models',
-                          'Custom branding & fonts',
-                          'Detailed analytics & advanced sharing',
-                        ];
-                      } else if (key === 'ultra') {
-                        return [
-                          'Create up to 75 cards per prompt',
-                          '20,000 monthly credits',
-                          'Access to the most advanced AI models (text, image, video)',
-                          'Early access to new features',
-                        ];
-                      }
-                      return [];
-                    };
+                  // Get plan-specific features based on pricing page
+                  const getPlanFeatures = (key: string) => {
+                    if (key === 'plus') {
+                      return [
+                        'Create up to 20 cards per prompt',
+                        '1,000 monthly credits',
+                        'Remove PPTMaster branding',
+                        'Advanced AI image models',
+                      ];
+                    } else if (key === 'pro') {
+                      return [
+                        'Create up to 60 cards per prompt',
+                        '4,000 monthly credits',
+                        'Premium AI image models',
+                        'Custom branding & fonts',
+                        'Detailed analytics & advanced sharing',
+                      ];
+                    } else if (key === 'ultra') {
+                      return [
+                        'Create up to 75 cards per prompt',
+                        '20,000 monthly credits',
+                        'Access to the most advanced AI models (text, image, video)',
+                        'Early access to new features',
+                      ];
+                    }
+                    return [];
+                  };
 
-                    const features = getPlanFeatures(product.key);
-                    
-                    // Get dynamic prices from Polar
-                    const monthlyPrice = product.monthly?.priceAmount ? product.monthly.priceAmount / 100 : null;
-                    const yearlyPrice = product.yearly?.priceAmount ? product.yearly.priceAmount / 100 : null;
-                    const yearlyMonthly = yearlyPrice ? Math.round(yearlyPrice / 12) : monthlyPrice;
+                  const features = getPlanFeatures(product.key);
+                  
+                  // Get dynamic prices from Polar
+                  const monthlyPrice = product.monthly?.priceAmount ? product.monthly.priceAmount / 100 : null;
+                  const yearlyPrice = product.yearly?.priceAmount ? product.yearly.priceAmount / 100 : null;
+                  const yearlyMonthly = yearlyPrice ? Math.round(yearlyPrice / 12) : monthlyPrice;
 
-                    return (
-                      <div
-                        key={product.key}
-                        className={cn(
-                          "relative rounded-lg p-4 border transition-all duration-300 flex flex-col h-full",
-                          isHighlighted
-                            ? "bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white border-transparent shadow-xl scale-[1.02]"
-                            : "bg-white dark:bg-neutral-800 text-slate-900 dark:text-white border-slate-200 dark:border-neutral-700 hover:border-[#06b6d4]",
-                          isCurrentPlan && "ring-2 ring-green-500"
-                        )}
-                      >
+                  return (
+                    <div
+                      key={product.key}
+                      className={cn(
+                        "relative rounded-lg p-4 border transition-all duration-300 flex flex-col h-full",
+                        isHighlighted
+                          ? "bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white border-transparent shadow-xl scale-[1.02]"
+                          : "bg-white dark:bg-neutral-800 text-slate-900 dark:text-white border-slate-200 dark:border-neutral-700 hover:border-[#06b6d4]",
+                        isCurrentPlan && "ring-2 ring-green-500"
+                      )}
+                    >
                         {isHighlighted && (
                           <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-lg whitespace-nowrap">
                             MOST POPULAR
@@ -338,7 +334,14 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
                           </p>
 
                           <div className="mb-3">
-                            {isAnnual ? (
+                            {loading ? (
+                              <div className="h-6 w-16 rounded bg-slate-200/70 dark:bg-neutral-700 animate-pulse" />
+                            ) : !activePrice || error ? (
+                              <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-neutral-400">
+                                <AlertCircle className="h-3 w-3" />
+                                <span>Pricing unavailable</span>
+                              </div>
+                            ) : isAnnual ? (
                               <>
                                 <div className="flex items-baseline gap-1">
                                   <span className="text-2xl font-bold">
@@ -403,7 +406,6 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
                     );
                   })}
                 </div>
-              )}
             </>
           )}
 

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import DashboardStickyHeader from "~/components/dashboard/DashboardStickyHeader";
+import { ReferralCard } from "~/components/dashboard/ReferralCard";
 
 interface BillingData {
   subscription: {
@@ -350,6 +351,9 @@ export default function BillingPage() {
           <ChevronRight className="h-4 w-4 text-zinc-400" />
         </Link>
       </div>
+
+      {/* Referral Program */}
+      <ReferralCard />
 
       {/* Plan Features */}
       {billing.planDetails && (

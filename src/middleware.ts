@@ -37,8 +37,20 @@ function isBot(userAgent: string | null): boolean {
 const SUPPORTED_LANGUAGES = ["en", "es", "fr", "de", "zh", "pt", "it", "ja", "ko", "ar", "hi", "ru"];
 
 export default clerkMiddleware(async (auth, request) => {
-  const { pathname } = request.nextUrl;
+  const { pathname, searchParams } = request.nextUrl;
   const userAgent = request.headers.get("user-agent");
+
+  // Capture referral code from URL and store in cookie
+  const refCode = searchParams.get("ref");
+  if (refCode && !request.cookies.get("referral_code")) {
+    const response = NextResponse.redirect(new URL(pathname, request.url));
+    response.cookies.set("referral_code", refCode.toUpperCase(), {
+      maxAge: 30 * 24 * 60 * 60, // 30 days
+      path: "/",
+      httpOnly: true,
+    });
+    return response;
+  }
 
   // Skip i18n for API routes, static files, protected routes, and export pages
   if (

@@ -11,7 +11,7 @@ model User {
   id                    String          @id @default(cuid())
   clerkId               String          @unique
   name                  String
-  email                 String
+  email                 String          @unique
   emailVerified         Boolean         @default(false)
   image                 String?
   createdAt             DateTime        @default(now())
@@ -24,6 +24,8 @@ model User {
   polarCustomerId       String?
   polarSubscriptionId   String?
   subscriptionStartDate DateTime?
+  referralCode          String?         @unique
+  referredBy            String?         // referralCode of the user who referred them
   activities            Activity[]
   charts                Chart[]
   collaborations        Collaboration[]
@@ -364,4 +366,27 @@ model Feedback {
 
   @@index([presentationId])
   @@map("feedback")
+}
+
+model Referral {
+  id              String    @id @default(cuid())
+  referrerId      String    // User who shared the referral
+  referredEmail   String?   // Email of referred user (before signup)
+  referredUserId  String?   // User ID after signup
+  referralCode    String    @unique
+  status          String    @default("pending") // pending, completed, expired
+  creditsAwarded  Int       @default(0)
+  createdAt       DateTime  @default(now())
+  completedAt     DateTime?
+  // Purchase tracking for influencer deals
+  hasPurchased    Boolean   @default(false)
+  purchasedAt     DateTime?
+  purchasePlan    String?   // plus, pro, ultra
+  purchaseAmount  Float?    // Amount in dollars
+
+  @@index([referrerId])
+  @@index([referralCode])
+  @@index([referredUserId])
+  @@index([referrerId, hasPurchased])
+  @@map("referral")
 }
