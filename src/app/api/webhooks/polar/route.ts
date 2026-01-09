@@ -306,6 +306,56 @@ export async function POST(req: NextRequest) {
           },
         }).catch(err => console.error("[Polar Webhook] Failed to create notification:", err));
 
+        // Track referral purchase if user was referred
+        if (user.referredBy) {
+          try {
+            const priceAmount = (data as any).product_price?.price_amount || 
+                               (data as any).amount || 
+                               (data as any).checkout?.amount || 0;
+            const purchaseAmount = priceAmount / 100; // Convert cents to dollars
+            
+            await db.referral.updateMany({
+              where: {
+                referredUserId: user.id,
+                hasPurchased: false,
+              },
+              data: {
+                hasPurchased: true,
+                purchasedAt: new Date(),
+                purchasePlan: planConfig.plan,
+                purchaseAmount: purchaseAmount,
+              },
+            });
+            
+            // Notify the referrer about the conversion
+            const referrer = await db.user.findUnique({
+              where: { referralCode: user.referredBy },
+              select: { id: true },
+            });
+            
+            if (referrer) {
+              await db.notification.create({
+                data: {
+                  userId: referrer.id,
+                  type: "referral_conversion",
+                  title: "Referral Converted! 🎉",
+                  message: `Someone you referred just subscribed to the ${planConfig.plan} plan!`,
+                  link: "/dashboard/billing",
+                },
+              });
+            }
+            
+            console.log("[Polar Webhook] Referral purchase tracked:", {
+              userId: user.id,
+              referredBy: user.referredBy,
+              plan: planConfig.plan,
+              amount: purchaseAmount,
+            });
+          } catch (refError) {
+            console.error("[Polar Webhook] Failed to track referral purchase:", refError);
+          }
+        }
+
         return NextResponse.json({
           success: true,
           message: "Credits updated successfully",
