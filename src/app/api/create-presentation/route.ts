@@ -14,7 +14,6 @@ import {
 import type { BoxLayoutType } from "~/lib/layouts/content/boxes";
 import { generateSlug } from "~/lib/utils";
 import type { ChartData } from "~/lib/blocks";
-import { CREDIT_COSTS, calculateSlideCredits } from "~/lib/credits";
 
 interface SlideInput {
   type: "title" | "content";
@@ -117,45 +116,6 @@ export async function POST(request: Request) {
         { error: "No slides provided" },
         { status: 400 }
       );
-    }
-
-    // Calculate credits needed: 4 credits per slide
-    const slideCredits = calculateSlideCredits(slides.length);
-    
-    // Calculate AI image credits if AI images are selected
-    let aiImageCredits = 0;
-    if (imageSource === "ai-generated") {
-      // Count slides that need images
-      const slidesNeedingImages = slides.filter((slide) => {
-        if (slide.type === "title") {
-          return slide.image?.required ?? true;
-        }
-        return slide.assets?.image?.required ?? false;
-      }).length;
-      
-      // Determine credit cost based on model
-      const imageCostPerImage = imageModel === "dall-e-3-hd" 
-        ? CREDIT_COSTS.IMAGE_HD 
-        : imageModel?.includes("gemini") 
-          ? (imageModel.includes("hd") ? CREDIT_COSTS.GEMINI_IMAGEN_HD : CREDIT_COSTS.GEMINI_IMAGEN)
-          : CREDIT_COSTS.IMAGE_BASIC;
-      
-      aiImageCredits = slidesNeedingImages * imageCostPerImage;
-    }
-    
-    const totalCreditsNeeded = slideCredits + aiImageCredits;
-
-    // Check if user has enough credits
-    if (user.credits < totalCreditsNeeded) {
-      return NextResponse.json({ 
-        error: "Insufficient credits",
-        required: totalCreditsNeeded,
-        available: user.credits,
-        breakdown: {
-          slides: slideCredits,
-          aiImages: aiImageCredits,
-        }
-      }, { status: 403 });
     }
 
     // Get theme configuration
@@ -405,40 +365,6 @@ export async function POST(request: Request) {
       slidesStored: Array.isArray(presentation.slides) ? (presentation.slides as unknown[]).length : "not-array",
     });
 
-    // Deduct credits: 4 per slide + AI image costs
-    const actualSlideCount = presentationSlides.length;
-    const actualSlideCredits = calculateSlideCredits(actualSlideCount);
-    
-    // Count actual AI images generated
-    let actualAiImageCredits = 0;
-    if (imageSource === "ai-generated") {
-      const aiImagesGenerated = presentationSlides.filter(
-        (slide) => slide.image && slide.image.source === "ai" && slide.image.url
-      ).length;
-      
-      const imageCostPerImage = imageModel === "dall-e-3-hd" 
-        ? CREDIT_COSTS.IMAGE_HD 
-        : imageModel?.includes("gemini") 
-          ? (imageModel.includes("hd") ? CREDIT_COSTS.GEMINI_IMAGEN_HD : CREDIT_COSTS.GEMINI_IMAGEN)
-          : CREDIT_COSTS.IMAGE_BASIC;
-      
-      actualAiImageCredits = aiImagesGenerated * imageCostPerImage;
-    }
-    
-    const totalCreditsUsed = actualSlideCredits + actualAiImageCredits;
-    
-    // Deduct credits from user
-    await db.user.update({
-      where: { id: user.id },
-      data: { credits: { decrement: totalCreditsUsed } },
-    });
-
-    console.log("[create-presentation] Deducted credits:", {
-      totalCreditsUsed,
-      slideCredits: actualSlideCredits,
-      aiImageCredits: actualAiImageCredits,
-    });
-
     // Persist AI images into the Image library for the current user
     try {
       const aiSlideImages = presentationSlides
@@ -477,11 +403,6 @@ export async function POST(request: Request) {
       imagesAdded: presentationSlides.filter((s) => s.image?.url).length,
       chartsAdded: presentationSlides.filter((s) => s.chart).length,
       iconsAdded: presentationSlides.filter((s) => s.icons?.length).length,
-      creditsUsed: totalCreditsUsed,
-      creditBreakdown: {
-        slides: actualSlideCredits,
-        aiImages: actualAiImageCredits,
-      },
     });
   } catch (error) {
     console.error("Error creating presentation:", error);

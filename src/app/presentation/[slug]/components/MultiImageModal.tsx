@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import type { Theme } from "~/lib/themes";
 import type { SlideImage } from "~/components/presentation/types";
 import { CREDIT_COSTS } from "~/lib/credits";
+import { getModalColors } from "~/app/presentation/[slug]/components/ui-colors";
 
 // AI Image model options with credit costs - matches CreatePresentationClient
 const AI_IMAGE_MODELS = [
@@ -68,28 +69,9 @@ export function MultiImageModal({
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPreview, setGeneratedPreview] = useState<string | null>(null);
 
-  // Helper to determine if a color is dark
-  const isColorDark = (hexColor: string): boolean => {
-    if (!hexColor || !hexColor.startsWith("#")) return true;
-    const hex = hexColor.replace("#", "");
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    return luminance < 0.5;
-  };
-
-  // Theme-aware colors - use theme colors directly for all themes
-  const isDark = isColorDark(theme.colors.background);
-  const colors = {
-    bg: theme.pageBackground || theme.colors.background,
-    surface: theme.colors.surface,
-    border: theme.colors.border,
-    text: theme.colors.text,
-    textMuted: theme.colors.textMuted,
-    hoverBg: theme.colors.surfaceHover || (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)"),
-    inputBg: isDark ? theme.colors.background : theme.colors.surface,
-  };
+  // Theme-aware colors using the helper
+  const colors = getModalColors(theme);
+  const isDark = colors.isDark;
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedIndex(index);

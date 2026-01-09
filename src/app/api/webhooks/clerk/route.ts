@@ -4,7 +4,6 @@ import type { WebhookEvent } from "@clerk/nextjs/server";
 import { db } from "~/server/db";
 import { env } from "~/env";
 import { Prisma } from "@prisma/client";
-import { sendWelcomeEmail } from "~/lib/email";
 
 // Force dynamic rendering for webhook endpoint
 export const dynamic = "force-dynamic";
@@ -191,14 +190,6 @@ async function handleUserCreated(data: unknown) {
             subscriptionPlan: "Free",
           },
         });
-        
-        // Send welcome email (don't block on failure)
-        if (email) {
-          sendWelcomeEmail(email, name).catch((err) => {
-            console.error("Failed to send welcome email:", err);
-          });
-        }
-        
         return;
       } catch (error) {
         // Handle unique constraint violation (race condition)

@@ -1,4 +1,67 @@
 import type { ThemeType } from "./types";
+import type { Theme } from "~/lib/themes";
+
+// Helper to check if theme has a background image
+export function hasBackgroundImage(theme: Theme): boolean {
+  return !!(theme.backgroundImage || theme.previewBackgroundImage);
+}
+
+// Helper to determine if a color is dark
+function isColorDark(hexColor: string): boolean {
+  if (!hexColor || !hexColor.startsWith("#")) return true;
+  const hex = hexColor.replace("#", "");
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance < 0.5;
+}
+
+// Helper to convert hex to rgba
+function hexToRgba(hex: string, alpha: number): string {
+  if (!hex || !hex.startsWith("#")) return `rgba(0, 0, 0, ${alpha})`;
+  const cleanHex = hex.replace("#", "");
+  const r = parseInt(cleanHex.substring(0, 2), 16);
+  const g = parseInt(cleanHex.substring(2, 4), 16);
+  const b = parseInt(cleanHex.substring(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+// Get theme-aware modal/panel colors that work with background images
+export function getModalColors(theme: Theme) {
+  const hasBgImage = hasBackgroundImage(theme);
+  const isDark = isColorDark(theme.colors.background);
+  
+  // For ALL themes (including background image themes), use the theme's actual colors
+  // This ensures modals, drawers, and dropdowns match the theme's color palette
+  return {
+    // Use theme's background with high opacity for modals
+    bg: hasBgImage 
+      ? hexToRgba(theme.colors.background, 0.97)
+      : (theme.pageBackground || theme.colors.background),
+    surface: theme.colors.surface,
+    surfaceHover: theme.colors.surfaceHover || (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)"),
+    border: theme.colors.border,
+    borderStrong: theme.colors.borderStrong || theme.colors.border,
+    text: theme.colors.text,
+    textMuted: theme.colors.textMuted,
+    heading: theme.colors.heading || theme.colors.text,
+    hoverBg: theme.colors.surfaceHover || (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)"),
+    inputBg: theme.colors.surface,
+    accent: theme.colors.primary,
+    accentHover: theme.colors.primaryHover || theme.colors.primary,
+    secondary: theme.colors.secondary || theme.colors.primary,
+    success: theme.colors.success || "#22c55e",
+    warning: theme.colors.warning || "#f59e0b",
+    error: theme.colors.error || "#ef4444",
+    isDark,
+    hasBgImage,
+    // Additional theme-specific colors for rich UI
+    cardBg: theme.cardBox?.background || theme.colors.surface,
+    cardBorder: theme.cardBox?.borderColor || theme.colors.border,
+    cardShadow: theme.cardBox?.shadow || theme.design?.shadows?.medium || "none",
+  };
+}
 
 // Theme-aware UI colors
 export function getUIColors(themeType: ThemeType) {
