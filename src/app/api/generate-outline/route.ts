@@ -44,19 +44,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // 3. Check credits
-    if (user.credits > 100) {
-      return NextResponse.json(
-        {
-          error: "Insufficient credits",
-          message: "You don't have enough credits. Please purchase more credits or upgrade your plan.",
-          credits: user.credits,
-        },
-        { status: 403 }
-      );
-    }
-
-    // 4. Parse request body
+    // 3. Parse request body
     const body = await req.json();
     const { description, numberOfSlides, tone, language } = body as {
       description?: string;
@@ -449,13 +437,7 @@ Return ONLY a valid JSON object in this exact structure:
       );
     }
 
-    // 11. Deduct credits (only 1 credit for outline generation)
-    await db.user.update({
-      where: { id: user.id },
-      data: { credits: user.credits - 1 },
-    });
-
-    // 12. Return the outline
+    // 11. Return the outline WITHOUT deducting credits
     return NextResponse.json({
       success: true,
       outline: outline.slides,
@@ -465,7 +447,8 @@ Return ONLY a valid JSON object in this exact structure:
         tone: toneDescription,
         language: languageDescription,
       },
-      creditsRemaining: user.credits - 1,
+      // Keep response shape compatible but do not deduct credits
+      creditsRemaining: user.credits,
     });
 
   } catch (error) {

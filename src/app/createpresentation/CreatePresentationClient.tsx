@@ -10,6 +10,7 @@ import { isCustomThemeId, getCustomThemeDbId, convertCustomThemeToTheme } from "
 import ThemeSelector from "~/components/ThemeSelector";
 import RecentOutlines from "~/components/createpresentation/RecentOutlines";
 import PricingModal from "~/components/dashboard/PricingModal";
+import { CREDIT_COSTS } from "~/lib/credits";
 
 interface ExistingOutline {
   id: string;
@@ -33,7 +34,7 @@ interface CreatePresentationClientProps {
   recentOutlines?: RecentOutline[];
 }
 
-// Credit cost per presentation generation
+// Credit cost per presentation generation (legacy check for AI outline generation UI)
 const CREDIT_COST_PER_GENERATION = 10;
 
 // Define all slide options by plan
@@ -604,6 +605,16 @@ export default function CreatePresentationClient({
     }
     return acc + chars;
   }, 0);
+
+  // Credits needed for final presentation (4 credits per created slide)
+  const creditsPerSlide = CREDIT_COSTS.SLIDE;
+  const creditsNeededForPresentation = slides.length * creditsPerSlide;
+  const effectiveCredits =
+    typeof streamState.creditsRemaining === "number"
+      ? streamState.creditsRemaining
+      : userCredits;
+  const hasEnoughCreditsForPresentation =
+    creditsNeededForPresentation === 0 || effectiveCredits >= creditsNeededForPresentation;
 
   // Check actual streaming status, not just view state
   const isStreaming = streamState.status === "streaming" || streamState.status === "connecting";
@@ -1421,43 +1432,89 @@ export default function CreatePresentationClient({
       {
         isCompleted && !isStreaming && (
           <div className="fixed inset-x-0 bottom-0 z-20">
-            <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pb-4">
-              <div className="flex items-center justify-between rounded-xl bg-white px-4 py-3 shadow-lg border border-slate-200">
+            <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pb-4">
+              <div className="flex flex-wrap md:flex-nowrap items-center justify-between gap-3 rounded-xl bg-white px-4 py-3 shadow-lg border border-slate-200">
                 <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
                   <span className="flex items-center gap-1">
                     <span className="text-slate-500">Slides:</span>
-                    <strong className="text-[#1e3a8a]">{slides.length || streamState.totalSlides || 0}</strong>
+                    <strong className="text-[#1e3a8a]">
+                      {slides.length || streamState.totalSlides || 0}
+                    </strong>
                   </span>
                   <span className="hidden sm:inline text-slate-300">•</span>
                   <span className="hidden sm:flex items-center gap-1">
                     <span className="text-slate-500">Characters:</span>
-                    <strong className="text-[#1e3a8a]">{totalCharacters.toLocaleString()}</strong>
+                    <strong className="text-[#1e3a8a]">
+                      {totalCharacters.toLocaleString()}
+                    </strong>
                   </span>
                   <span className="text-slate-300">•</span>
                   <span className="flex items-center gap-1">
-                    <span className="text-slate-500">Credits:</span>
-                    <strong className="text-[#06b6d4]">{streamState.creditsRemaining ?? userCredits}</strong>
+                    <span className="text-slate-500">Credits needed:</span>
+                    <strong className="text-[#1e3a8a]">
+                      {creditsNeededForPresentation}
+                    </strong>
                   </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleCreatePresentation}
-                  disabled={!isCompleted || slides.length === 0 || isCreatingPresentation}
-                  className="px-5 py-2 rounded-lg bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white text-sm font-semibold shadow-md transition-all hover:opacity-90 hover:shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center gap-2"
-                >
-                  {isCreatingPresentation ? (
-                    <>
-                      <Loader2 size={15} className="animate-spin" />
-                      <span className="hidden sm:inline">{formData.imageSource === "stock-photos" ? "Fetching Images..." : "Creating..."}</span>
-                      <span className="sm:hidden">Creating...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="hidden sm:inline">Create Presentation</span>
-                      <span className="sm:hidden">Create</span>
-                    </>
+                  <span className="hidden sm:inline text-slate-300">•</span>
+                  <span className="flex items-center gap-1">
+                    <span className="text-slate-500">Credits left:</span>
+                    <strong
+                      className={
+                        hasEnoughCreditsForPresentation
+                          ? "text-[#06b6d4]"
+                          : "text-red-500"
+                      }
+                    >
+                      {effectiveCredits}
+                    </strong>
+                  </span>
+                  {!hasEnoughCreditsForPresentation && (
+                    <span className="text-[11px] text-red-500">
+                      Not enough credits to create this presentation.
+                    </span>
                   )}
-                </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  {!hasEnoughCreditsForPresentation && (
+                    <button
+                      type="button"
+                      onClick={() => setShowCreditWarning(true)}
+                      className="px-3 py-1.5 rounded-lg border border-[#06b6d4] text-[#06b6d4] text-xs font-semibold hover:bg-cyan-50 transition-colors"
+                    >
+                      Upgrade / Buy credits
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleCreatePresentation}
+                    disabled={
+                      !isCompleted ||
+                      slides.length === 0 ||
+                      isCreatingPresentation ||
+                      !hasEnoughCreditsForPresentation
+                    }
+                    className="px-5 py-2 rounded-lg bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white text-sm font-semibold shadow-md transition-all hover:opacity-90 hover:shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center gap-2"
+                  >
+                    {isCreatingPresentation ? (
+                      <>
+                        <Loader2 size={15} className="animate-spin" />
+                        <span className="hidden sm:inline">
+                          {formData.imageSource === "stock-photos"
+                            ? "Fetching Images..."
+                            : "Creating..."}
+                        </span>
+                        <span className="sm:hidden">Creating...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="hidden sm:inline">
+                          Create Presentation
+                        </span>
+                        <span className="sm:hidden">Create</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

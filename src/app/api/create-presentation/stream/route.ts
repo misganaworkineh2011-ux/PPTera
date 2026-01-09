@@ -13,6 +13,7 @@ import {
   type SlideAssets,
   type ContentLayoutStyle,
 } from "~/lib/presentation";
+import { calculateSlideCredits, CREDIT_COSTS } from "~/lib/credits";
 import type { ContentLayoutCategory } from "~/lib/layouts/content";
 import type { SlideLayoutType, ImageSize, ImageShape } from "~/lib/layouts/slide";
 import type { SlideImage as OutlineSlideImage } from "~/lib/dashboard/hooks/useOutlineStream";
@@ -187,6 +188,22 @@ export async function POST(request: Request) {
 
   if (!slides || slides.length === 0) {
     return new Response(JSON.stringify({ error: "No slides provided" }), { status: 400 });
+  }
+
+  // Credit check: 4 credits per slide (no charge for outline)
+  const requestedSlideCount = slides.length;
+  const creditsNeeded = calculateSlideCredits(requestedSlideCount);
+
+  if (user.credits < creditsNeeded) {
+    return new Response(
+      JSON.stringify({
+        error: "Insufficient credits",
+        required: creditsNeeded,
+        available: user.credits,
+        costPerSlide: CREDIT_COSTS.SLIDE,
+      }),
+      { status: 403, headers: { "Content-Type": "application/json" } },
+    );
   }
 
   const themeConfig = getThemeById(theme);
@@ -545,6 +562,15 @@ export async function POST(request: Request) {
             slides: JSON.parse(JSON.stringify(presentationSlides)),
             thumbnailUrl,
           },
+        });
+
+        // Deduct credits based on actual slide count (4 credits per slide)
+        const actualSlideCount = presentationSlides.length;
+        const creditsUsed = calculateSlideCredits(actualSlideCount);
+
+        await db.user.update({
+          where: { id: user.id },
+          data: { credits: { decrement: creditsUsed } },
         });
 
         // Save AI images to library

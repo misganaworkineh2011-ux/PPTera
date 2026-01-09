@@ -64,15 +64,7 @@ export async function POST(req: Request) {
     );
   }
 
-  // 3. Check credits
-  if (user.credits < 1) {
-    return new Response(
-      JSON.stringify({ error: "Insufficient credits", message: "You don't have enough credits." }),
-      { status: 403, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
-  // 4. Parse request body
+  // 3. Parse request body
   let body;
   try {
     body = await req.json();
@@ -657,18 +649,13 @@ Return ONLY a valid JSON object in this exact structure:
           },
         });
 
-        // Deduct credits
-        await db.user.update({
-          where: { id: user.id },
-          data: { credits: user.credits - 1 },
-        });
-
-        // Send completion event
+        // Send completion event WITHOUT deducting credits for outline generation
         sendEvent(controller, "outlineDone", {
           outlineId: outline.id,
           slides: finalOutline.slides,
           metadata: finalOutline.metadata,
-          creditsRemaining: user.credits - 1,
+          // Keep response shape compatible but do not deduct credits
+          creditsRemaining: user.credits,
           provider: useGeminiFallback ? "gemini" : "openai",
         });
 

@@ -11,6 +11,7 @@ import {
   type SlideAssets,
   type SlideImage,
 } from "~/lib/presentation";
+import { calculateSlideCredits, CREDIT_COSTS } from "~/lib/credits";
 import type { BoxLayoutType } from "~/lib/layouts/content/boxes";
 import { generateSlug } from "~/lib/utils";
 import type { ChartData } from "~/lib/blocks";
@@ -118,6 +119,22 @@ export async function POST(request: Request) {
       );
     }
 
+    // Credit check: 4 credits per slide (no charge for outline)
+    const requestedSlideCount = slides.length;
+    const creditsNeeded = calculateSlideCredits(requestedSlideCount);
+
+    if (user.credits < creditsNeeded) {
+      return NextResponse.json(
+        {
+          error: "Insufficient credits",
+          required: creditsNeeded,
+          available: user.credits,
+          costPerSlide: CREDIT_COSTS.SLIDE,
+        },
+        { status: 403 }
+      );
+    }
+
     // Get theme configuration
     const themeConfig = getThemeById(theme);
 
@@ -153,6 +170,14 @@ export async function POST(request: Request) {
           slides: [], // Empty - will be populated by streaming
           userId: user.id,
         },
+      });
+
+      // Deduct credits based on requested slide count (4 credits per slide)
+      // Outline generation itself is free; we only charge when presentation is created
+      const creditsUsed = calculateSlideCredits(requestedSlideCount);
+      await db.user.update({
+        where: { id: user.id },
+        data: { credits: { decrement: creditsUsed } },
       });
 
       console.log("[create-presentation] Created presentation with outlineId:", validOutlineId);
@@ -363,6 +388,15 @@ export async function POST(request: Request) {
       title: presentation.title,
       outlineId: validOutlineIdNonStreaming,
       slidesStored: Array.isArray(presentation.slides) ? (presentation.slides as unknown[]).length : "not-array",
+    });
+
+    // Deduct credits based on actual slide count (4 credits per slide)
+    const actualSlideCount = presentationSlides.length;
+    const creditsUsed = calculateSlideCredits(actualSlideCount);
+
+    await db.user.update({
+      where: { id: user.id },
+      data: { credits: { decrement: creditsUsed } },
     });
 
     // Persist AI images into the Image library for the current user
