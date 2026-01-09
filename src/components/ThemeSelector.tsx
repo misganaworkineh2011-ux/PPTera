@@ -3,103 +3,14 @@
 import { useState, useMemo, useEffect } from "react";
 import { X, Search, Check, Sparkles } from "lucide-react";
 import { themes, getThemeById, type Theme, getSlideShapeStyles } from "~/lib/themes";
+import { convertCustomThemeToTheme } from "~/lib/custom-theme-utils";
 import { Button } from "~/components/ui/Button";
 
-// Convert custom theme from DB to Theme format
-function convertCustomTheme(dbTheme: any): Theme {
-  const colors = dbTheme.colors?.custom || {
-    background: "#ffffff",
-    backgroundAlt: "#f8fafc",
-    text: "#334155",
-    heading: "#0f172a",
-    primary: "#3b82f6",
-    accent: "#06b6d4",
-  };
-
-  const fontMap: Record<string, string> = {
-    inter: "'Inter', sans-serif",
-    roboto: "'Roboto', sans-serif",
-    poppins: "'Poppins', sans-serif",
-    montserrat: "'Montserrat', sans-serif",
-    lato: "'Lato', sans-serif",
-    "open-sans": "'Open Sans', sans-serif",
-    playfair: "'Playfair Display', serif",
-    merriweather: "'Merriweather', serif",
-    "source-code": "'Source Code Pro', monospace",
-    "space-grotesk": "'Space Grotesk', sans-serif",
-  };
-
-  const headingFont = fontMap[dbTheme.fonts?.heading] || "'Inter', sans-serif";
-  const bodyFont = fontMap[dbTheme.fonts?.body] || "'Inter', sans-serif";
-
-  return {
-    id: `custom-${dbTheme.id}`,
-    name: dbTheme.name,
-    description: "Your custom theme",
-    category: "creative" as const,
-    colors: {
-      background: colors.background,
-      backgroundAlt: colors.backgroundAlt,
-      surface: colors.backgroundAlt,
-      text: colors.text,
-      textMuted: colors.text,
-      heading: colors.heading,
-      link: colors.accent,
-      linkHover: colors.accent,
-      primary: colors.primary,
-      primaryHover: colors.primary,
-      secondary: colors.accent,
-      secondaryHover: colors.accent,
-      accent: colors.accent,
-      border: colors.backgroundAlt,
-      borderHover: colors.primary,
-      shadow: "rgba(0, 0, 0, 0.1)",
-      success: "#22c55e",
-      warning: "#f59e0b",
-      error: "#ef4444",
-    },
-    fonts: {
-      heading: { family: headingFont, weight: 700, letterSpacing: "-0.02em" },
-      body: { family: bodyFont, weight: 400, lineHeight: "1.6" },
-      caption: { family: bodyFont, weight: 500, size: "0.875rem" },
-    },
-    design: {
-      borderRadius: { small: "0.5rem", medium: "0.75rem", large: "1rem", full: "9999px" },
-      shadows: {
-        small: "0 2px 8px rgba(0, 0, 0, 0.1)",
-        medium: "0 8px 24px rgba(0, 0, 0, 0.15)",
-        large: "0 16px 48px rgba(0, 0, 0, 0.2)",
-      },
-      spacing: { tight: "0.5rem", normal: "1rem", relaxed: "1.5rem" },
-    },
-    slideStyles: {
-      title: {
-        background: `linear-gradient(135deg, ${colors.background} 0%, ${colors.backgroundAlt} 100%)`,
-      },
-      content: {
-        background: colors.background,
-        bulletStyle: "disc" as const,
-      },
-      image: {
-        borderRadius: "0.75rem",
-        shadow: "0 20px 50px rgba(0, 0, 0, 0.2)",
-      },
-    },
-    preview: {
-      titleBg: colors.background,
-      bodyBg: colors.backgroundAlt,
-      textColor: colors.text,
-      accentColor: colors.accent,
-    },
-    cardBox: {
-      background: colors.backgroundAlt,
-      borderColor: colors.primary,
-      titleColor: colors.heading,
-      bodyColor: colors.text,
-      accentColor: colors.accent,
-    },
-    isCustom: true,
-  } as Theme & { isCustom?: boolean };
+// Convert custom theme from DB to Theme format - resolves curated palette colors
+function convertCustomTheme(dbTheme: any): Theme & { isCustom?: boolean } {
+  // Use the full conversion function for complete theme support
+  const theme = convertCustomThemeToTheme(dbTheme);
+  return { ...theme, isCustom: true };
 }
 
 interface ThemeSelectorProps {
@@ -277,6 +188,14 @@ export default function ThemeSelector({
                 const hasBackgroundImage = !!theme.previewBackgroundImage || !!theme.backgroundImage;
                 const bgImageUrl = theme.previewBackgroundImage || theme.backgroundImage;
                 const slideShapeStyles = getSlideShapeStyles(theme.slideShape);
+                
+                // For custom themes, use the background color from colors, not preview.titleBg (which might be a URL)
+                const previewBgColor = hasBackgroundImage 
+                  ? theme.colors.background 
+                  : (typeof theme.preview.titleBg === 'string' && !theme.preview.titleBg.startsWith('url(') 
+                      ? theme.preview.titleBg 
+                      : theme.colors.background);
+                
                 return (
                   <button
                     key={theme.id}
@@ -292,7 +211,7 @@ export default function ThemeSelector({
                       <div
                         className="aspect-[1.6/1] w-full relative rounded-md overflow-hidden"
                         style={{
-                          backgroundColor: theme.preview.titleBg,
+                          backgroundColor: previewBgColor,
                           backgroundImage: hasBackgroundImage
                             ? `url(${bgImageUrl})`
                             : theme.slideStyles.title.pattern || "none",
@@ -411,14 +330,19 @@ export default function ThemeSelector({
           <div
             className="flex-1 overflow-hidden relative flex flex-col items-center justify-center p-6"
             style={{
-              background: previewTheme.previewBackgroundImage 
-                ? "transparent" 
-                : previewTheme.slideStyles.title.background,
-              backgroundImage: previewTheme.previewBackgroundImage 
-                ? `url(${previewTheme.previewBackgroundImage})` 
-                : (previewTheme.slideStyles.title.pattern || "none"),
-              backgroundSize: previewTheme.previewBackgroundImage ? "cover" : "auto",
-              backgroundPosition: previewTheme.previewBackgroundImage ? "center" : "center",
+              // For themes with background images, show the image on the page background
+              background: previewTheme.backgroundImage 
+                ? previewTheme.colors.background
+                : (previewTheme.previewBackgroundImage 
+                  ? "transparent" 
+                  : previewTheme.slideStyles.title.background),
+              backgroundImage: previewTheme.backgroundImage 
+                ? `url(${previewTheme.backgroundImage})`
+                : (previewTheme.previewBackgroundImage 
+                  ? `url(${previewTheme.previewBackgroundImage})` 
+                  : (previewTheme.slideStyles.title.pattern || "none")),
+              backgroundSize: (previewTheme.backgroundImage || previewTheme.previewBackgroundImage) ? "cover" : "auto",
+              backgroundPosition: (previewTheme.backgroundImage || previewTheme.previewBackgroundImage) ? "center" : "center",
             }}
           >
             {/* Overlay for depth */}
@@ -447,9 +371,15 @@ export default function ThemeSelector({
                 style={{
                   transform: "rotateX(3deg)",
                   transformStyle: "preserve-3d",
-                  background: previewTheme.slideStyles.title.background,
-                  backgroundImage: previewTheme.slideStyles.title.pattern || "none",
+                  // For themes with background images, use card background instead of slide background
+                  background: previewTheme.backgroundImage 
+                    ? (previewTheme.cardBox?.background || `${previewTheme.colors.background}ee`)
+                    : previewTheme.slideStyles.title.background,
+                  backgroundImage: previewTheme.backgroundImage 
+                    ? "none"
+                    : (previewTheme.slideStyles.title.pattern || "none"),
                   border: `1px solid ${previewTheme.colors.border}`,
+                  backdropFilter: previewTheme.backgroundImage ? "blur(12px)" : "none",
                   ...getSlideShapeStyles(previewTheme.slideShape),
                 }}
               >
@@ -488,8 +418,12 @@ export default function ThemeSelector({
                 style={{
                   transform: "rotateX(0deg)",
                   transformStyle: "preserve-3d",
-                  background: previewTheme.slideStyles.content.background,
+                  // For themes with background images, use card background
+                  background: previewTheme.backgroundImage 
+                    ? (previewTheme.cardBox?.background || `${previewTheme.colors.background}ee`)
+                    : previewTheme.slideStyles.content.background,
                   border: `1px solid ${previewTheme.colors.border}`,
+                  backdropFilter: previewTheme.backgroundImage ? "blur(12px)" : "none",
                   ...getSlideShapeStyles(previewTheme.slideShape),
                 }}
               >
@@ -534,8 +468,12 @@ export default function ThemeSelector({
                 style={{
                   transform: "rotateX(-3deg)",
                   transformStyle: "preserve-3d",
-                  background: previewTheme.slideStyles.content.background,
+                  // For themes with background images, use card background
+                  background: previewTheme.backgroundImage 
+                    ? (previewTheme.cardBox?.background || `${previewTheme.colors.background}ee`)
+                    : previewTheme.slideStyles.content.background,
                   border: `1px solid ${previewTheme.colors.border}`,
+                  backdropFilter: previewTheme.backgroundImage ? "blur(12px)" : "none",
                   ...getSlideShapeStyles(previewTheme.slideShape),
                 }}
               >

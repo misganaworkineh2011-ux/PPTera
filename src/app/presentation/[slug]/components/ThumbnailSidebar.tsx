@@ -7,6 +7,17 @@ import type { SlideData } from "~/components/presentation/types";
 import { getUIColors, getModalColors } from "./ui-colors";
 import { getThemeType } from "./types";
 
+// Helper to determine if a color is dark
+function isColorDark(hexColor: string): boolean {
+  if (!hexColor || !hexColor.startsWith("#")) return true;
+  const hex = hexColor.replace("#", "");
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance < 0.5;
+}
+
 type ViewMode = "grid" | "list";
 
 interface ThumbnailSidebarProps {
@@ -35,8 +46,16 @@ export function ThumbnailSidebar({
   const modalColors = getModalColors(theme);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   
-  // Theme-aware background styles - use modalColors for consistent theming
-  const bgStyle = { background: modalColors.bg };
+  // Check if theme has a background image
+  const hasBgImage = !!(theme.backgroundImage || theme.previewBackgroundImage);
+  
+  // Theme-aware background styles - use semi-transparent for bg image themes
+  const bgStyle = hasBgImage 
+    ? { 
+        background: `rgba(${isColorDark(theme.colors.background) ? '0,0,0' : '255,255,255'}, 0.85)`,
+        backdropFilter: 'blur(12px)',
+      }
+    : { background: modalColors.bg };
   const bgClass = "";
 
   // For list view: sidebar shrinks to content and centers vertically

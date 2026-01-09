@@ -860,14 +860,14 @@ function SlideRendererComponent({
     accent: theme.colors.primary,
     text: theme.colors.heading,
     textMuted: theme.colors.textMuted,
+    // Custom themes use their own cardBg from colorMap (custom-dark or custom-light)
   };
 
-  // Slide background style - uses cardBox.background if available
-  // This makes slides appear as "cards" on top of the page background image
-  // Added transparency so background image shows through nicely
+  // Slide background style - uses cardBox.background if available for custom themes
+  // Custom themes should NOT be transparent - they use solid backgrounds
   const customBgStyle: React.CSSProperties = hasCardBox 
     ? { 
-        backgroundColor: theme.cardBox.background + "cc", // ~80% opacity (cc = 204/255)
+        backgroundColor: theme.cardBox.background,
         border: `1px solid ${theme.cardBox.borderColor}`,
         backdropFilter: "blur(12px)",
       }
@@ -878,6 +878,47 @@ function SlideRendererComponent({
   // Helper to determine if we should use Tailwind gradient classes
   // Only use them when we don't have cardBox or custom theme styles
   const useGradientClasses = !hasCardBox && !isCustomTheme;
+  
+  // Custom card style for custom themes - use cardBox styling
+  const customCardStyle: React.CSSProperties | undefined = (isCustomTheme && theme.cardBox) 
+    ? {
+        backgroundColor: theme.cardBox.background,
+        borderColor: theme.cardBox.borderColor,
+        boxShadow: theme.cardBox.shadow,
+        backdropFilter: "blur(8px)",
+      }
+    : undefined;
+  
+  // Whether to use custom card styling instead of Tailwind cardBg classes
+  const useCustomCardStyle = isCustomTheme && !!customCardStyle;
+  
+  // Helper to get card background class and style
+  // For custom themes, use inline styles from theme.cardBox
+  // Otherwise use Tailwind classes from colors.cardBg
+  const getCardBgProps = (additionalClasses = ""): { className: string; style?: React.CSSProperties } => {
+    if (useCustomCardStyle) {
+      return {
+        className: `backdrop-blur-md border ${additionalClasses}`.trim(),
+        style: customCardStyle,
+      };
+    }
+    return {
+      className: `${colors.cardBg} ${additionalClasses}`.trim(),
+    };
+  };
+  
+  // Helper component for card backgrounds that respects theme background images
+  const CardBox = ({ children, className = "", style = {} }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) => {
+    const cardProps = getCardBgProps();
+    return (
+      <div 
+        className={`${cardProps.className} ${className}`} 
+        style={{ ...cardProps.style, ...style }}
+      >
+        {children}
+      </div>
+    );
+  };
 
   const SlideIndicator = ({ position = "top-left" }: { position?: "top-left" | "top-right" }) => {
     if (!showPageNumber) return null;
@@ -2015,9 +2056,9 @@ function SlideRendererComponent({
               <div className={`w-20 h-px bg-gradient-to-r ${colors.accentLine} to-transparent opacity-50`} />
             </div>
             <Title className="text-4xl md:text-5xl lg:text-6xl mb-6" />
-            <div className={`mt-6 backdrop-blur-sm rounded-lg p-6 border ${colors.cardBg}`}>
+            <CardBox className="mt-6 backdrop-blur-sm rounded-lg p-6 border">
               <EnhancedContent compact />
-            </div>
+            </CardBox>
           </div>
         </div>
 
@@ -2169,27 +2210,30 @@ function SlideRendererComponent({
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4 mt-3 sm:mt-4 md:mt-6">
-            {bulletPoints.map((point, i) => (
-              <div key={i} className={`p-3 sm:p-4 md:p-5 rounded-lg sm:rounded-xl border backdrop-blur-sm ${colors.cardBg}`}>
-                <div className="flex items-start gap-2 sm:gap-3">
-                  <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-md sm:rounded-lg flex items-center justify-center text-xs sm:text-sm font-bold shrink-0" style={{ backgroundColor: colors.accent, color: themeType === "light" || themeType === "corporate" ? "#fff" : "#000" }}>
-                    {i + 1}
+            {bulletPoints.map((point, i) => {
+              const cardBgProps = getCardBgProps("p-3 sm:p-4 md:p-5 rounded-lg sm:rounded-xl border backdrop-blur-sm");
+              return (
+                <div key={i} className={cardBgProps.className} style={cardBgProps.style}>
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-md sm:rounded-lg flex items-center justify-center text-xs sm:text-sm font-bold shrink-0" style={{ backgroundColor: colors.accent, color: themeType === "light" || themeType === "corporate" ? "#fff" : "#000" }}>
+                      {i + 1}
+                    </div>
+                    <EditableText
+                      value={point}
+                      isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                      onStartEdit={() => onStartEditing(index, "bullet", i)}
+                      onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                      onFinish={onFinishEditing}
+                      className="flex-1 text-sm sm:text-base leading-relaxed"
+                      style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+                      isOwner={canEdit}
+                      isHovered={isHovered}
+                      onDelete={() => onDeleteBullet(index, i)}
+                    />
                   </div>
-                  <EditableText
-                    value={point}
-                    isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
-                    onStartEdit={() => onStartEditing(index, "bullet", i)}
-                    onChange={(val) => onUpdateContent(index, "bullet", val, i)}
-                    onFinish={onFinishEditing}
-                    className="flex-1 text-sm sm:text-base leading-relaxed"
-                    style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
-                    isOwner={canEdit}
-                    isHovered={isHovered}
-                    onDelete={() => onDeleteBullet(index, i)}
-                  />
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {canEdit && (
@@ -2222,7 +2266,7 @@ function SlideRendererComponent({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
             {/* Left Column */}
-            <div className={`p-4 sm:p-5 md:p-6 rounded-lg sm:rounded-xl border backdrop-blur-sm ${colors.cardBg}`}>
+            <CardBox className="p-4 sm:p-5 md:p-6 rounded-lg sm:rounded-xl border backdrop-blur-sm">
               <div className="space-y-3 sm:space-y-4">
                 {leftColumn.map((point, i) => (
                   <div key={i} className="flex items-start gap-2 sm:gap-3">
@@ -2242,10 +2286,10 @@ function SlideRendererComponent({
                   </div>
                 ))}
               </div>
-            </div>
+            </CardBox>
 
             {/* Right Column */}
-            <div className={`p-4 sm:p-5 md:p-6 rounded-lg sm:rounded-xl border backdrop-blur-sm ${colors.cardBg}`}>
+            <CardBox className="p-4 sm:p-5 md:p-6 rounded-lg sm:rounded-xl border backdrop-blur-sm">
               <div className="space-y-3 sm:space-y-4">
                 {rightColumn.map((point, i) => (
                   <div key={i} className="flex items-start gap-2 sm:gap-3">
@@ -2265,7 +2309,7 @@ function SlideRendererComponent({
                   </div>
                 ))}
               </div>
-            </div>
+            </CardBox>
           </div>
 
           {canEdit && (
@@ -2322,28 +2366,31 @@ function SlideRendererComponent({
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-5 max-w-4xl">
-            {bulletPoints.slice(0, 4).map((point, i) => (
-              <div key={i} className={`p-4 sm:p-5 md:p-6 rounded-lg sm:rounded-xl border backdrop-blur-sm ${colors.cardBg}`}>
-                <div className="flex items-center gap-3 mb-2 sm:mb-3">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center font-bold text-sm sm:text-base" style={{ backgroundColor: colors.accent, color: themeType === "light" || themeType === "corporate" ? "#fff" : "#000" }}>
-                    {i + 1}
+            {bulletPoints.slice(0, 4).map((point, i) => {
+              const cardBgProps = getCardBgProps("p-4 sm:p-5 md:p-6 rounded-lg sm:rounded-xl border backdrop-blur-sm");
+              return (
+                <div key={i} className={cardBgProps.className} style={cardBgProps.style}>
+                  <div className="flex items-center gap-3 mb-2 sm:mb-3">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center font-bold text-sm sm:text-base" style={{ backgroundColor: colors.accent, color: themeType === "light" || themeType === "corporate" ? "#fff" : "#000" }}>
+                      {i + 1}
+                    </div>
+                    <div className="h-px flex-1" style={{ backgroundColor: `${colors.accent}30` }} />
                   </div>
-                  <div className="h-px flex-1" style={{ backgroundColor: `${colors.accent}30` }} />
+                  <EditableText
+                    value={point}
+                    isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                    onStartEdit={() => onStartEditing(index, "bullet", i)}
+                    onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                    onFinish={onFinishEditing}
+                    className="text-sm sm:text-base leading-relaxed"
+                    style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+                    isOwner={canEdit}
+                    isHovered={isHovered}
+                    onDelete={() => onDeleteBullet(index, i)}
+                  />
                 </div>
-                <EditableText
-                  value={point}
-                  isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
-                  onStartEdit={() => onStartEditing(index, "bullet", i)}
-                  onChange={(val) => onUpdateContent(index, "bullet", val, i)}
-                  onFinish={onFinishEditing}
-                  className="text-sm sm:text-base leading-relaxed"
-                  style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
-                  isOwner={canEdit}
-                  isHovered={isHovered}
-                  onDelete={() => onDeleteBullet(index, i)}
-                />
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {canEdit && isHovered && bulletPoints.length < 4 && (
@@ -2370,25 +2417,28 @@ function SlideRendererComponent({
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8" />
 
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
-            {bulletPoints.slice(0, 2).map((point, i) => (
-              <div key={i} className={`p-5 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl border-2 backdrop-blur-sm flex flex-col ${colors.cardBg}`} style={{ borderColor: `${colors.accent}40` }}>
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl mb-4 sm:mb-5 flex items-center justify-center" style={{ backgroundColor: `${colors.accent}15` }}>
-                  <span className="text-2xl sm:text-3xl font-bold" style={{ color: colors.accent }}>{i + 1}</span>
+            {bulletPoints.slice(0, 2).map((point, i) => {
+              const cardBgProps = getCardBgProps("p-5 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl border-2 backdrop-blur-sm flex flex-col");
+              return (
+                <div key={i} className={cardBgProps.className} style={{ ...cardBgProps.style, borderColor: `${colors.accent}40` }}>
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl mb-4 sm:mb-5 flex items-center justify-center" style={{ backgroundColor: `${colors.accent}15` }}>
+                    <span className="text-2xl sm:text-3xl font-bold" style={{ color: colors.accent }}>{i + 1}</span>
+                  </div>
+                  <EditableText
+                    value={point}
+                    isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                    onStartEdit={() => onStartEditing(index, "bullet", i)}
+                    onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                    onFinish={onFinishEditing}
+                    className="text-base sm:text-lg leading-relaxed flex-1"
+                    style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+                    isOwner={canEdit}
+                    isHovered={isHovered}
+                    onDelete={() => onDeleteBullet(index, i)}
+                  />
                 </div>
-                <EditableText
-                  value={point}
-                  isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
-                  onStartEdit={() => onStartEditing(index, "bullet", i)}
-                  onChange={(val) => onUpdateContent(index, "bullet", val, i)}
-                  onFinish={onFinishEditing}
-                  className="text-base sm:text-lg leading-relaxed flex-1"
-                  style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
-                  isOwner={canEdit}
-                  isHovered={isHovered}
-                  onDelete={() => onDeleteBullet(index, i)}
-                />
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {canEdit && isHovered && bulletPoints.length < 2 && (
@@ -2414,25 +2464,28 @@ function SlideRendererComponent({
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8 text-center" align="center" />
 
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
-            {bulletPoints.slice(0, 3).map((point, i) => (
-              <div key={i} className={`p-4 sm:p-5 md:p-6 rounded-xl border backdrop-blur-sm flex flex-col items-center text-center ${colors.cardBg}`}>
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full mb-3 sm:mb-4 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${colors.accent}30, ${colors.accent}10)`, border: `2px solid ${colors.accent}40` }}>
-                  <span className="text-xl sm:text-2xl font-bold" style={{ color: colors.accent }}>{i + 1}</span>
+            {bulletPoints.slice(0, 3).map((point, i) => {
+              const cardBgProps = getCardBgProps("p-4 sm:p-5 md:p-6 rounded-xl border backdrop-blur-sm flex flex-col items-center text-center");
+              return (
+                <div key={i} className={cardBgProps.className} style={cardBgProps.style}>
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full mb-3 sm:mb-4 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${colors.accent}30, ${colors.accent}10)`, border: `2px solid ${colors.accent}40` }}>
+                    <span className="text-xl sm:text-2xl font-bold" style={{ color: colors.accent }}>{i + 1}</span>
+                  </div>
+                  <EditableText
+                    value={point}
+                    isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                    onStartEdit={() => onStartEditing(index, "bullet", i)}
+                    onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                    onFinish={onFinishEditing}
+                    className="text-sm sm:text-base leading-relaxed"
+                    style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+                    isOwner={canEdit}
+                    isHovered={isHovered}
+                    onDelete={() => onDeleteBullet(index, i)}
+                  />
                 </div>
-                <EditableText
-                  value={point}
-                  isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
-                  onStartEdit={() => onStartEditing(index, "bullet", i)}
-                  onChange={(val) => onUpdateContent(index, "bullet", val, i)}
-                  onFinish={onFinishEditing}
-                  className="text-sm sm:text-base leading-relaxed"
-                  style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
-                  isOwner={canEdit}
-                  isHovered={isHovered}
-                  onDelete={() => onDeleteBullet(index, i)}
-                />
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {canEdit && isHovered && bulletPoints.length < 3 && (
@@ -2450,6 +2503,7 @@ function SlideRendererComponent({
     const midPoint = Math.ceil(bulletPoints.length / 2);
     const leftItems = bulletPoints.slice(0, midPoint);
     const rightItems = bulletPoints.slice(midPoint);
+    const comparisonCardProps = getCardBgProps("p-4 sm:p-5 md:p-6 rounded-xl border-2");
 
     return (
       <div className="h-full relative overflow-hidden">
@@ -2462,7 +2516,7 @@ function SlideRendererComponent({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-5xl mx-auto">
             {/* Left Side */}
-            <div className={`p-4 sm:p-5 md:p-6 rounded-xl border-2 ${colors.cardBg}`} style={{ borderColor: `${colors.accent}50` }}>
+            <div className={comparisonCardProps.className} style={{ ...comparisonCardProps.style, borderColor: `${colors.accent}50` }}>
               <div className="text-center mb-4 pb-3 border-b" style={{ borderColor: `${colors.accent}30` }}>
                 <span className="text-sm sm:text-base font-semibold uppercase tracking-wider" style={{ color: colors.accent }}>Option A</span>
               </div>
@@ -2488,7 +2542,7 @@ function SlideRendererComponent({
             </div>
 
             {/* Right Side */}
-            <div className={`p-4 sm:p-5 md:p-6 rounded-xl border-2 ${colors.cardBg}`} style={{ borderColor: `${colors.accent}30` }}>
+            <div className={comparisonCardProps.className} style={{ ...comparisonCardProps.style, borderColor: `${colors.accent}30` }}>
               <div className="text-center mb-4 pb-3 border-b" style={{ borderColor: `${colors.accent}20` }}>
                 <span className="text-sm sm:text-base font-semibold uppercase tracking-wider" style={{ color: colors.textMuted }}>Option B</span>
               </div>
@@ -2539,25 +2593,28 @@ function SlideRendererComponent({
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-6 sm:mb-8 md:mb-10 text-center" align="center" />
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6 max-w-5xl mx-auto">
-            {bulletPoints.map((point, i) => (
-              <div key={i} className={`p-4 sm:p-5 md:p-6 rounded-xl border text-center ${colors.cardBg}`}>
-                <div className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2" style={{ color: colors.accent }}>
-                  {i + 1}
+            {bulletPoints.map((point, i) => {
+              const statsCardProps = getCardBgProps("p-4 sm:p-5 md:p-6 rounded-xl border text-center");
+              return (
+                <div key={i} className={statsCardProps.className} style={statsCardProps.style}>
+                  <div className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2" style={{ color: colors.accent }}>
+                    {i + 1}
+                  </div>
+                  <EditableText
+                    value={point}
+                    isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
+                    onStartEdit={() => onStartEditing(index, "bullet", i)}
+                    onChange={(val) => onUpdateContent(index, "bullet", val, i)}
+                    onFinish={onFinishEditing}
+                    className="text-xs sm:text-sm uppercase tracking-wider"
+                    style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
+                    isOwner={canEdit}
+                    isHovered={isHovered}
+                    onDelete={() => onDeleteBullet(index, i)}
+                  />
                 </div>
-                <EditableText
-                  value={point}
-                  isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
-                  onStartEdit={() => onStartEditing(index, "bullet", i)}
-                  onChange={(val) => onUpdateContent(index, "bullet", val, i)}
-                  onFinish={onFinishEditing}
-                  className="text-xs sm:text-sm uppercase tracking-wider"
-                  style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
-                  isOwner={canEdit}
-                  isHovered={isHovered}
-                  onDelete={() => onDeleteBullet(index, i)}
-                />
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {canEdit && (

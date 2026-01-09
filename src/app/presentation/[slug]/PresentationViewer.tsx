@@ -45,6 +45,9 @@ import {
   type ThemeType,
 } from "./components";
 
+// Client-side cache for custom themes (converted Theme objects)
+const customThemeCache = new Map<string, Theme>();
+
 // Helper function to strip HTML tags from text
 const stripHtml = (html: string): string => {
   if (!html) return "";
@@ -90,8 +93,8 @@ interface CustomThemeData {
   id: string;
   name: string;
   colors: unknown;
-  fonts: unknown;
-  designElements: unknown;
+  fonts?: unknown;
+  designElements?: unknown;
 }
 
 interface PresentationViewerProps {
@@ -630,17 +633,32 @@ export default function PresentationViewer({
   const fontsUrl = getGoogleFontsUrl(theme);
 
   // Handle theme change from sidebar
-  const handleThemeChange = useCallback((newThemeId: string) => {
+  const handleThemeChange = useCallback((newThemeId: string, customThemeData?: CustomThemeData) => {
     setCurrentThemeId(newThemeId);
-    // If it's a custom theme, we need to fetch it
-    if (newThemeId.startsWith("custom-")) {
+    // If it's a custom theme and we have the data, use it directly (no fetch needed)
+    if (newThemeId.startsWith("custom-") && customThemeData) {
+      const converted = convertCustomThemeToTheme(customThemeData);
+      customThemeCache.set(newThemeId, converted); // Cache for future use
+      setCustomTheme(converted);
+      setIsLoadingTheme(false);
+    } else if (newThemeId.startsWith("custom-")) {
+      // Check cache first
+      const cached = customThemeCache.get(newThemeId);
+      if (cached) {
+        setCustomTheme(cached);
+        setIsLoadingTheme(false);
+        return;
+      }
+      // Fallback: fetch if data not provided and not in cache
       const dbId = newThemeId.replace("custom-", "");
       setIsLoadingTheme(true);
       fetch(`/api/themes/custom/${dbId}`)
         .then(res => res.json())
         .then(data => {
           if (data.theme) {
-            setCustomTheme(convertCustomThemeToTheme(data.theme));
+            const converted = convertCustomThemeToTheme(data.theme);
+            customThemeCache.set(newThemeId, converted); // Cache for future use
+            setCustomTheme(converted);
           }
         })
         .catch(err => console.error("Failed to load custom theme:", err))
@@ -2133,8 +2151,8 @@ export default function PresentationViewer({
           style={{
             ...(showContentLayoutPanel ? { marginRight: `${CONTENT_LAYOUT_PANEL_WIDTH}px` } : {}),
             ...(showThumbnails && !isPublicView && !isMobile && !isFullscreen && !isPresenting ? { marginLeft: '176px' } : {}),
-            // Apply page background to scrollable area for themes with cardBox (dark themes)
-            ...(theme.pageBackground ? { background: theme.pageBackground } : {}),
+            // Only apply page background if there's no background image (let parent show through)
+            ...(!theme.backgroundImage && theme.pageBackground ? { background: theme.pageBackground } : {}),
           }}
         >
         <div className={`${isFullscreen || isPresenting ? "" : "px-0 sm:px-2 md:px-4 py-4 sm:py-8"} max-w-full ${showContentLayoutPanel ? 'pb-20' : ''}`}>
@@ -2535,6 +2553,9 @@ function ScrollSlideContent({ slide, index, theme, renderSlide, isMobile }: {
   const isFullImageLayout = slideLayout === "image-full" || layout === "full-image";
   const isImageBackgroundLayout = slideLayout === "image-background" || layout === "image-background";
   const needsFixedAspectRatio = isFullImageLayout || isImageBackgroundLayout;
+  
+  // Check if this is a custom theme
+  const isCustomTheme = theme.id.startsWith("custom-");
 
   const bgColors: Record<ThemeType, string> = {
     dark: "bg-gradient-to-br from-zinc-900 via-zinc-950 to-black",
@@ -2551,20 +2572,17 @@ function ScrollSlideContent({ slide, index, theme, renderSlide, isMobile }: {
     architectural: "bg-gradient-to-br from-[#0a0a0a] via-[#141414] to-[#0a0a0a]",
     anime: "bg-gradient-to-br from-[#1a1625] via-[#251f35] to-[#1a1625]",
     hacker: "bg-gradient-to-br from-[#0d0d0d] via-[#141414] to-[#0d0d0d]",
-    // Custom themes use inline styles via bgStyle, these are fallbacks
+    // Custom themes use inline styles via bgStyle
     "custom-dark": "",
     "custom-light": "",
   };
 
-  // If theme has cardBox, the slide handles its own background with transparency
-  // Don't apply a solid background here so the page background shows through
-  const hasCardBox = !!theme.cardBox?.background;
-  
   // Use custom pageBackground if available, otherwise fall back to themeType-based classes
   const hasCustomPageBg = !!theme.pageBackground;
-  // When hasCardBox is true, don't apply any background - let the slide be transparent
-  const bgClass = hasCardBox ? "" : (hasCustomPageBg ? "" : bgColors[themeType]);
-  const bgStyle = hasCardBox ? {} : (hasCustomPageBg ? { background: theme.pageBackground } : {});
+  
+  // Custom themes use pageBackground, built-in themes use Tailwind classes
+  const bgClass = isCustomTheme ? "" : (hasCustomPageBg ? "" : bgColors[themeType]);
+  const bgStyle = isCustomTheme || hasCustomPageBg ? { background: theme.pageBackground || theme.colors.background } : {};
 
   // For full-image layouts, use fixed aspect ratio
   if (needsFixedAspectRatio) {

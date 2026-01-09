@@ -1368,6 +1368,15 @@ export default function CreatePresentationClient({
                           const theme = getThemeForDisplay(themeId);
                           if (!theme) return null;
                           const isSelected = formData.theme === theme.id;
+                          const hasBackgroundImage = !!(theme.previewBackgroundImage || theme.backgroundImage);
+                          const bgImageUrl = theme.previewBackgroundImage || theme.backgroundImage;
+                          // For custom themes, use the background color from colors, not preview.titleBg (which might be a URL)
+                          const previewBgColor = hasBackgroundImage 
+                            ? theme.colors.background 
+                            : (typeof theme.preview.titleBg === 'string' && !theme.preview.titleBg.startsWith('url(') 
+                                ? theme.preview.titleBg 
+                                : theme.colors.background);
+                          
                           return (
                             <button
                               key={theme.id}
@@ -1390,16 +1399,16 @@ export default function CreatePresentationClient({
                                 <div
                                   className="aspect-[1.8/1] w-full rounded shadow-sm relative overflow-hidden"
                                   style={{
-                                    backgroundColor: theme.preview.titleBg,
-                                    backgroundImage: (theme.previewBackgroundImage || theme.backgroundImage)
-                                      ? `url(${theme.previewBackgroundImage || theme.backgroundImage})`
+                                    backgroundColor: previewBgColor,
+                                    backgroundImage: hasBackgroundImage
+                                      ? `url(${bgImageUrl})`
                                       : theme.slideStyles.title.pattern || "none",
                                     backgroundSize: "cover",
                                     backgroundPosition: "center",
                                   }}
                                 >
                                   {/* Lighter overlay for background images */}
-                                  {(theme.previewBackgroundImage || theme.backgroundImage) && (
+                                  {hasBackgroundImage && (
                                     <div
                                       className="absolute inset-0"
                                       style={{ background: "rgba(0,0,0,0.25)" }}
@@ -1410,10 +1419,10 @@ export default function CreatePresentationClient({
                                   <div className="absolute inset-0 flex items-center justify-center">
                                     <div
                                       className={`rounded backdrop-blur-sm transition-all duration-300 flex flex-col justify-center px-2 py-1.5 overflow-hidden ${
-                                        theme.previewBackgroundImage || theme.backgroundImage ? "w-[70%] h-[60%]" : "w-[85%] h-[75%]"
+                                        hasBackgroundImage ? "w-[70%] h-[60%]" : "w-[85%] h-[75%]"
                                       }`}
                                       style={{
-                                        backgroundColor: (theme.previewBackgroundImage || theme.backgroundImage)
+                                        backgroundColor: hasBackgroundImage
                                           ? `${theme.cardBox?.background || theme.colors.background}e8`
                                           : theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
                                         border: theme.cardBox?.borderColor ? `1px solid ${theme.cardBox.borderColor}` : "none",

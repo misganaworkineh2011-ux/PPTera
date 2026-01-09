@@ -106,6 +106,7 @@ export async function POST(request: NextRequest) {
       bodyFont,
       cardStyle,
       logoUrl,
+      backgroundImageUrl,
     } = body;
 
     if (!themeName?.trim()) {
@@ -133,6 +134,7 @@ export async function POST(request: NextRequest) {
     const designElements = {
       cardStyle,
       logoUrl,
+      backgroundImageUrl,
     };
 
     const theme = await db.theme.create({
