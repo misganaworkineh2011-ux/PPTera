@@ -657,15 +657,18 @@ Return ONLY a valid JSON object in this exact structure:
           },
         });
 
-        // NOTE: Credits are NOT deducted during outline generation
-        // Credits are deducted during presentation creation (4 per slide + AI image costs)
+        // Deduct credits
+        await db.user.update({
+          where: { id: user.id },
+          data: { credits: user.credits - 1 },
+        });
 
         // Send completion event
         sendEvent(controller, "outlineDone", {
           outlineId: outline.id,
           slides: finalOutline.slides,
           metadata: finalOutline.metadata,
-          creditsRemaining: user.credits,
+          creditsRemaining: user.credits - 1,
           provider: useGeminiFallback ? "gemini" : "openai",
         });
 

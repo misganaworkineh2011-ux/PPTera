@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/server/db";
-import { sendContactNotification, sendContactConfirmation } from "~/lib/email";
 
 export async function POST(req: NextRequest) {
   try {
@@ -35,15 +34,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Send email notification to admin (don't block on failure)
-    sendContactNotification(name, email, subject, message).catch((err) => {
-      console.error("Failed to send admin notification:", err);
-    });
-
-    // Send confirmation email to user (don't block on failure)
-    sendContactConfirmation(email, name, subject).catch((err) => {
-      console.error("Failed to send user confirmation:", err);
-    });
+    // TODO: Send email notification to admin
+    // TODO: Send confirmation email to user
 
     return NextResponse.json(
       {
