@@ -167,7 +167,7 @@ export const translations = {
     heroCard7Prompt: "Generate an employee training presentation with interactive elements...",
     
     // Features Section Demo Prompt
-    featuresDemoPrompt: "Create a pitch deck for my SaaS startup with modern design.",
+    featuresDemoPrompt: "Create an engaging presentation about wildlife animals, their habitats, endangered species, and conservation efforts worldwide.",
     
     // Features Section Slide Names
     slideTitleSlide: "TITLE SLIDE",
@@ -943,7 +943,7 @@ export const translations = {
     heroCard7Prompt: "Genera una presentación de capacitación para empleados con elementos interactivos...",
     
     // Features Section Demo Prompt
-    featuresDemoPrompt: "Crea un pitch deck para mi startup SaaS con diseño moderno.",
+    featuresDemoPrompt: "Crea una presentación atractiva sobre animales salvajes, sus hábitats, especies en peligro de extinción y esfuerzos de conservación en todo el mundo.",
     
     // Features Section Slide Names
     slideTitleSlide: "DIAPOSITIVA DE TÍTULO",
@@ -1714,7 +1714,7 @@ export const translations = {
     heroCard7Prompt: "Générez une présentation de formation pour employés avec des éléments interactifs...",
     
     // Features Section Demo Prompt
-    featuresDemoPrompt: "Créez un pitch deck pour ma startup SaaS avec un design moderne.",
+    featuresDemoPrompt: "Créez une présentation captivante sur les animaux sauvages, leurs habitats, les espèces menacées et les efforts de conservation dans le monde.",
     
     // Features Section Slide Names
     slideTitleSlide: "DIAPOSITIVE DE TITRE",
@@ -2484,7 +2484,7 @@ export const translations = {
     heroCard7Prompt: "Generiere eine Mitarbeiterschulungs-Präsentation mit interaktiven Elementen...",
     
     // Features Section Demo Prompt
-    featuresDemoPrompt: "Erstelle ein Pitch-Deck für mein SaaS-Startup mit modernem Design.",
+    featuresDemoPrompt: "Erstelle eine ansprechende Präsentation über Wildtiere, ihre Lebensräume, bedrohte Arten und weltweite Naturschutzbemühungen.",
     
     // Features Section Slide Names
     slideTitleSlide: "TITELFOLIE",
@@ -3254,7 +3254,7 @@ export const translations = {
     heroCard7Prompt: "生成一份带有互动元素的员工培训演示文稿...",
     
     // Features Section Demo Prompt
-    featuresDemoPrompt: "为我的SaaS初创公司创建一个设计现代的路演文档。",
+    featuresDemoPrompt: "创建一个关于野生动物、它们的栖息地、濒危物种和全球保护工作的精彩演示文稿。",
     
     // Features Section Slide Names
     slideTitleSlide: "标题页",
@@ -4024,7 +4024,7 @@ export const translations = {
     heroCard7Prompt: "Gere uma apresentação de treinamento para funcionários com elementos interativos...",
     
     // Features Section Demo Prompt
-    featuresDemoPrompt: "Crie um pitch deck para minha startup SaaS com design moderno.",
+    featuresDemoPrompt: "Crie uma apresentação envolvente sobre animais selvagens, seus habitats, espécies ameaçadas e esforços de conservação em todo o mundo.",
     
     // Features Section Slide Names
     slideTitleSlide: "SLIDE DE TÍTULO",
@@ -4794,7 +4794,7 @@ export const translations = {
     heroCard7Prompt: "Genera una presentazione per la formazione dipendenti con elementi interattivi...",
     
     // Features Section Demo Prompt
-    featuresDemoPrompt: "Crea un pitch deck per la mia startup SaaS con design moderno.",
+    featuresDemoPrompt: "Crea una presentazione coinvolgente sugli animali selvatici, i loro habitat, le specie in pericolo e gli sforzi di conservazione nel mondo.",
     
     // Features Section Slide Names
     slideTitleSlide: "SLIDE TITOLO",
@@ -5565,7 +5565,7 @@ export const translations = {
     heroCard7Prompt: "インタラクティブな要素を含む従業員研修プレゼンテーションを生成して...",
     
     // Features Section Demo Prompt
-    featuresDemoPrompt: "私のSaaSスタートアップ向けにモダンなデザインのピッチデッキを作成して。",
+    featuresDemoPrompt: "野生動物、その生息地、絶滅危惧種、そして世界中の保護活動についての魅力的なプレゼンテーションを作成してください。",
     
     // Features Section Slide Names
     slideTitleSlide: "タイトルスライド",
@@ -6336,7 +6336,7 @@ export const translations = {
     heroCard7Prompt: "대화형 요소가 포함된 직원 교육 프레젠테이션을 생성해줘...",
     
     // Features Section Demo Prompt
-    featuresDemoPrompt: "내 SaaS 스타트업을 위한 현대적인 디자인의 피치 덱을 만들어줘.",
+    featuresDemoPrompt: "야생 동물, 서식지, 멸종 위기 종, 전 세계 보전 노력에 대한 매력적인 프레젠테이션을 만들어주세요.",
     
     // Features Section Slide Names
     slideTitleSlide: "제목 슬라이드",
@@ -7107,7 +7107,7 @@ export const translations = {
     heroCard7Prompt: "ولد عرضاً تدريبياً للموظفين مع عناصر تفاعلية...",
     
     // Features Section Demo Prompt
-    featuresDemoPrompt: "أنشئ عرضاً تقديمياً لشركتي البرمجيات (SaaS) بتصميم حديث.",
+    featuresDemoPrompt: "أنشئ عرضاً تقديمياً جذاباً عن الحيوانات البرية وموائلها والأنواع المهددة بالانقراض وجهود الحفاظ عليها حول العالم.",
     
     // Features Section Slide Names
     slideTitleSlide: "شريحة العنوان",
@@ -7880,7 +7880,7 @@ export const translations = {
     heroCard7Prompt: "इंटरैक्टिव तत्वों के साथ एक कर्मचारी प्रशिक्षण प्रेजेंटेशन जनरेट करें...",
     
     // Features Section Demo Prompt
-    featuresDemoPrompt: "आधुनिक डिज़ाइन के साथ मेरे SaaS स्टार्टअप के लिए एक पिच डेक बनाएं।",
+    featuresDemoPrompt: "वन्यजीवों, उनके आवासों, लुप्तप्राय प्रजातियों और दुनिया भर में संरक्षण प्रयासों के बारे में एक आकर्षक प्रस्तुति बनाएं।",
     
     // Features Section Slide Names
     slideTitleSlide: "शीर्षक स्लाइड",
@@ -8653,7 +8653,7 @@ export const translations = {
     heroCard7Prompt: "Сгенерируй презентацию для обучения сотрудников с интерактивными элементами...",
     
     // Features Section Demo Prompt
-    featuresDemoPrompt: "Создай питч-дек для моего SaaS-стартапа с современным дизайном.",
+    featuresDemoPrompt: "Создай увлекательную презентацию о диких животных, их среде обитания, исчезающих видах и усилиях по сохранению природы во всём мире.",
     
     // Features Section Slide Names
     slideTitleSlide: "ТИТУЛЬНЫЙ СЛАЙД",
