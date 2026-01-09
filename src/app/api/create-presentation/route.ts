@@ -38,6 +38,10 @@ interface CreatePresentationRequest {
   imageSource: string;
   // Optional image model for AI-generated images
   imageModel?: string;
+  // Image art style (illustration, photo, 3d, line-art, abstract, custom)
+  imageArtStyle?: string;
+  // Custom art style text (when imageArtStyle is "custom")
+  customArtStyleText?: string;
   textDensity?: "minimal" | "concise" | "detailed" | "extensive";
   metadata: {
     topic: string;
@@ -97,7 +101,7 @@ export async function POST(request: Request) {
 
     // Parse request
     const body: CreatePresentationRequest = await request.json();
-    const { outlineId, slides, theme, imageSource, imageModel, textDensity = "concise", metadata, streaming = true } = body;
+    const { outlineId, slides, theme, imageSource, imageModel, imageArtStyle, customArtStyleText, textDensity = "concise", metadata, streaming = true } = body;
 
     console.log("[create-presentation] Received request:", {
       outlineId,
@@ -160,6 +164,8 @@ export async function POST(request: Request) {
             themeConfig: themeConfig || null,
             imageSource,
             imageModel,
+            imageArtStyle,
+            customArtStyleText,
             textDensity,
             metadata,
             createdFrom: "outline",

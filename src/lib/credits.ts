@@ -3,7 +3,7 @@
  * 
  * Credit costs:
  * - Slides: 4 credits per slide
- * - AI Images: 10-25 credits depending on model
+ * - AI Images: 10-120 credits depending on model
  * - Charts: 2 credits
  * - Outlines: 5 credits
  */
@@ -11,22 +11,34 @@
 /**
  * Credit costs for different operations
  * - Slides: 4 credits per slide generated
- * - AI Images: Varies by model
+ * - AI Images: Varies by model (based on Gamma pricing)
  */
 export const CREDIT_COSTS = {
   // Slide generation
   SLIDE: 4,                    // 4 credits per slide
   
-  // OpenAI DALL-E 3 Image generation
-  IMAGE_BASIC: 10,             // DALL-E 3 standard quality
-  IMAGE_HD: 15,                // DALL-E 3 HD quality
+  // Gemini multimodal models (conversational image generation)
+  GEMINI_FLASH: 10,            // Gemini 2.5 Flash Image ("Nano Banana") - fast, budget-friendly
+  GEMINI_FLASH_HD: 30,         // Gemini Flash HD
+  GEMINI_PRO: 10,              // Gemini 3 Pro Image Preview ("Nano Banana Pro") - best reasoning
+  GEMINI_PRO_HD: 30,           // Gemini Pro HD
   
-  // Google Gemini Image generation
-  GEMINI_IMAGEN: 8,            // Gemini Imagen 3 (faster, cheaper)
-  GEMINI_IMAGEN_HD: 12,        // Gemini Imagen 3 HD
+  // Google Imagen models (dedicated text-to-image)
+  IMAGEN_4: 15,                // Imagen 4 Standard (imagen-4.0-generate-001) - balanced
+  IMAGEN_4_ULTRA: 30,          // Imagen 4 Ultra (imagen-4.0-ultra-generate-001) - highest quality 2K
+  IMAGEN_4_FAST: 10,           // Imagen 4 Fast (imagen-4.0-fast-generate-001) - low latency
   
-  // Legacy (for backwards compatibility)
-  IMAGE_PREMIUM: 25,           // Reserved for future premium models
+  // OpenAI DALL-E models
+  DALLE_STANDARD: 40,          // DALL-E 3 standard quality
+  DALLE_HD: 60,                // DALL-E 3 HD quality
+  GPT_IMAGE_DETAILED: 120,     // GPT Image (highest quality)
+  
+  // Legacy aliases (for backwards compatibility)
+  IMAGE_BASIC: 10,             // Maps to GEMINI_FLASH
+  IMAGE_HD: 30,                // Maps to GEMINI_PRO_HD
+  IMAGE_PREMIUM: 120,          // Maps to GPT_IMAGE_DETAILED
+  GEMINI_IMAGEN: 10,           // Legacy alias
+  GEMINI_IMAGEN_HD: 30,        // Legacy alias
   
   // Other operations
   CHART_GENERATION: 2,         // AI-generated chart

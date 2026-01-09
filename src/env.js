@@ -27,6 +27,10 @@ export const env = createEnv({
     // Cloudinary configuration (optional, required for AI image uploads)
     CLOUDINARY_CLOUD_NAME: z.string().optional(),
     CLOUDINARY_UPLOAD_PRESET: z.string().optional(),
+    // Resend email configuration
+    RESEND_API_KEY: z.string().optional(),
+    RESEND_FROM_EMAIL: z.string().optional(),
+    RESEND_REPLY_TO_EMAIL: z.string().optional(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -57,6 +61,9 @@ export const env = createEnv({
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
     CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
     CLOUDINARY_UPLOAD_PRESET: process.env.CLOUDINARY_UPLOAD_PRESET,
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL,
+    RESEND_REPLY_TO_EMAIL: process.env.RESEND_REPLY_TO_EMAIL,
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
   },

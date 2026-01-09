@@ -1,26 +1,36 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, BarChart3, Sparkles, PieChart, TrendingUp, Activity, Target, Filter, LayoutGrid, Gauge, ArrowDownWideNarrow, BarChart2, BarChartHorizontal, CircleDot, Layers } from "lucide-react";
-import { type ChartData, CHART_TEMPLATES, type ChartType } from "~/lib/charts/types";
+import {
+  X,
+  BarChart3,
+  PieChart,
+  TrendingUp,
+  Activity,
+  Target,
+  Filter,
+  LayoutGrid,
+  Gauge,
+  ArrowDownWideNarrow,
+  BarChart2,
+  BarChartHorizontal,
+  CircleDot,
+  Layers,
+  FolderOpen,
+  Plus,
+  Loader2,
+  Check,
+} from "lucide-react";
+import { type ChartData, type ChartType } from "~/lib/charts/types";
 import ChartCreator from "./ChartCreator";
 import InteractiveChart from "./InteractiveChart";
 import { type Theme } from "~/lib/themes";
 import { getModalColors } from "~/app/presentation/[slug]/components/ui-colors";
 
-// Helper to determine if theme is dark
-function isDarkTheme(theme?: Theme): boolean {
-  if (!theme) return false;
-  const bg = theme.colors?.background || "#ffffff";
-  if (bg.startsWith("#")) {
-    const hex = bg.slice(1);
-    const r = parseInt(hex.slice(0, 2), 16);
-    const g = parseInt(hex.slice(2, 4), 16);
-    const b = parseInt(hex.slice(4, 6), 16);
-    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    return luminance < 0.5;
-  }
-  return false;
+interface SavedChart extends ChartData {
+  id: string;
+  createdAt: Date;
+  updatedAt?: Date;
 }
 
 // Get theme-aware colors using the helper
@@ -36,7 +46,7 @@ function getThemeColors(theme?: Theme) {
       accent: "#06b6d4",
     };
   }
-  
+
   const modalColors = getModalColors(theme);
   return {
     bg: modalColors.bg,
@@ -50,7 +60,11 @@ function getThemeColors(theme?: Theme) {
 }
 
 // Map chart types to representative icons
-function getChartIcon(type: ChartType, size: number = 20, accentColor: string = "#06b6d4") {
+function getChartIcon(
+  type: ChartType,
+  size: number = 20,
+  accentColor: string = "#06b6d4"
+) {
   const iconProps = { size, style: { color: accentColor } };
   switch (type) {
     case "bar":
@@ -101,92 +115,122 @@ interface ChartModalProps {
   existingChart?: ChartData | null;
 }
 
-export default function ChartModal({ isOpen, onClose, onInsert, theme, existingChart }: ChartModalProps) {
-  const [mode, setMode] = useState<"templates" | "create">(existingChart ? "create" : "templates");
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
-  const colors = getThemeColors(theme);
-  const isDark = isDarkTheme(theme);
+type TabType = "my-charts" | "create";
 
-  // Reset mode when modal opens
+export default function ChartModal({
+  isOpen,
+  onClose,
+  onInsert,
+  theme,
+  existingChart,
+}: ChartModalProps) {
+  const colors = getThemeColors(theme);
+  const [activeTab, setActiveTab] = useState<TabType>(
+    existingChart ? "create" : "my-charts"
+  );
+  const [savedCharts, setSavedCharts] = useState<SavedChart[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
+
+  // Fetch saved charts when modal opens
   useEffect(() => {
-    if (isOpen) {
-      setMode(existingChart ? "create" : "templates");
-      setSelectedTemplate(null);
+    if (isOpen && !existingChart) {
+      fetchSavedCharts();
     }
   }, [isOpen, existingChart]);
 
-  if (!isOpen) return null;
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setActiveTab(existingChart ? "create" : "my-charts");
+      setSelectedChartId(null);
+    }
+  }, [isOpen, existingChart]);
 
-  const handleTemplateSelect = (templateId: string) => {
-    setSelectedTemplate(templateId);
-    const template = CHART_TEMPLATES.find(t => t.id === templateId);
-    if (template) {
-      // Go directly to create mode with template data
-      setMode("create");
+  const fetchSavedCharts = async () => {
+    try {
+      setIsLoading(true);
+      const res = await fetch("/api/charts");
+      if (!res.ok) throw new Error("Failed to fetch charts");
+      const data = await res.json();
+      setSavedCharts(
+        data.charts.map((c: SavedChart) => ({
+          ...c,
+          createdAt: new Date(c.createdAt),
+          updatedAt: c.updatedAt ? new Date(c.updatedAt) : undefined,
+        }))
+      );
+    } catch (error) {
+      console.error("Error fetching charts:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  if (!isOpen) return null;
 
   const handleSave = (chart: ChartData) => {
     onInsert(chart);
     onClose();
   };
 
-  const getInitialChart = (): ChartData | undefined => {
-    if (existingChart) return existingChart;
-    if (selectedTemplate) {
-      const template = CHART_TEMPLATES.find(t => t.id === selectedTemplate);
-      if (template) {
-        return {
-          type: template.type,
-          title: template.name,
-          data: [...template.sampleData],
-          config: { ...template.defaultConfig },
-        };
-      }
-    }
-    return undefined;
+  const handleSelectSavedChart = (chart: SavedChart) => {
+    // Insert the saved chart data (without the id, createdAt, etc.)
+    const chartData: ChartData = {
+      type: chart.type,
+      title: chart.title,
+      subtitle: chart.subtitle,
+      data: chart.data,
+      config: chart.config,
+      series: chart.series,
+    };
+    onInsert(chartData);
+    onClose();
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      
+      {/* Backdrop - click to close */}
+      <div className="absolute inset-0" onClick={onClose} />
+
       {/* Modal */}
-      <div 
-        className="relative w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl overflow-hidden mx-4"
+      <div
+        className="relative mx-4 max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-2xl shadow-2xl"
         style={{
           backgroundColor: colors.bg,
           border: `1px solid ${colors.border}`,
         }}
       >
         {/* Header */}
-        <div 
+        <div
           className="flex items-center justify-between px-6 py-4"
           style={{ borderBottom: `1px solid ${colors.border}` }}
         >
           <div className="flex items-center gap-3">
-            <div 
-              className="p-2 rounded-lg"
+            <div
+              className="rounded-lg p-2"
               style={{ backgroundColor: `${colors.accent}15` }}
             >
-              {existingChart ? getChartIcon(existingChart.type) : selectedTemplate ? getChartIcon(CHART_TEMPLATES.find(t => t.id === selectedTemplate)?.type || "bar") : <BarChart3 size={20} style={{ color: colors.accent }} />}
+              {existingChart ? (
+                getChartIcon(existingChart.type)
+              ) : (
+                <BarChart3 size={20} style={{ color: colors.accent }} />
+              )}
             </div>
             <div>
               <h2 className="text-lg font-bold" style={{ color: colors.text }}>
                 {existingChart ? "Edit Chart" : "Add Chart"}
               </h2>
               <p className="text-sm" style={{ color: colors.textMuted }}>
-                {mode === "templates" ? "Choose a template or create from scratch" : "Customize your chart"}
+                {existingChart
+                  ? "Modify your chart data and settings"
+                  : "Select a saved chart or create a new one"}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg transition-colors"
+            className="rounded-lg p-2 transition-colors"
             style={{ color: colors.textMuted }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = colors.hoverBg;
@@ -201,126 +245,192 @@ export default function ChartModal({ isOpen, onClose, onInsert, theme, existingC
           </button>
         </div>
 
-        {/* Content */}
-        <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
-          {mode === "templates" ? (
-            <div className="p-6">
-              {/* Quick Actions */}
-              <div className="flex gap-3 mb-6">
-                <button
-                  onClick={() => setMode("create")}
-                  className="flex-1 flex items-center justify-center gap-2 p-4 text-white rounded-xl hover:shadow-lg transition-all"
-                  style={{ 
-                    background: `linear-gradient(to bottom right, ${colors.accent}, ${colors.accent}dd)`,
-                    boxShadow: `0 4px 14px ${colors.accent}40`,
+        {/* Tabs - only show when not editing */}
+        {!existingChart && (
+          <div
+            className="flex gap-1 px-6 pt-4"
+            style={{ borderBottom: `1px solid ${colors.border}` }}
+          >
+            <button
+              onClick={() => setActiveTab("my-charts")}
+              className="flex items-center gap-2 rounded-t-lg px-4 py-2.5 text-sm font-medium transition-colors"
+              style={{
+                backgroundColor:
+                  activeTab === "my-charts" ? colors.surface : "transparent",
+                color:
+                  activeTab === "my-charts" ? colors.accent : colors.textMuted,
+                borderBottom:
+                  activeTab === "my-charts"
+                    ? `2px solid ${colors.accent}`
+                    : "2px solid transparent",
+              }}
+            >
+              <FolderOpen size={16} />
+              My Charts
+              {savedCharts.length > 0 && (
+                <span
+                  className="rounded-full px-2 py-0.5 text-xs"
+                  style={{
+                    backgroundColor: `${colors.accent}20`,
+                    color: colors.accent,
                   }}
                 >
-                  <Sparkles size={20} />
-                  <span className="font-medium">Create from Scratch</span>
-                </button>
-              </div>
+                  {savedCharts.length}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab("create")}
+              className="flex items-center gap-2 rounded-t-lg px-4 py-2.5 text-sm font-medium transition-colors"
+              style={{
+                backgroundColor:
+                  activeTab === "create" ? colors.surface : "transparent",
+                color:
+                  activeTab === "create" ? colors.accent : colors.textMuted,
+                borderBottom:
+                  activeTab === "create"
+                    ? `2px solid ${colors.accent}`
+                    : "2px solid transparent",
+              }}
+            >
+              <Plus size={16} />
+              Create New
+            </button>
+          </div>
+        )}
 
-              {/* Templates by Category */}
-              {["business", "analytics", "comparison", "progress", "distribution"].map(category => {
-                const categoryTemplates = CHART_TEMPLATES.filter(t => t.category === category);
-                if (categoryTemplates.length === 0) return null;
-
-                return (
-                  <div key={category} className="mb-6">
-                    <h3 
-                      className="text-sm font-semibold mb-3 capitalize"
-                      style={{ color: colors.text }}
+        {/* Content */}
+        <div className="max-h-[calc(90vh-140px)] overflow-y-auto">
+          {activeTab === "my-charts" && !existingChart ? (
+            <div className="p-6">
+              {isLoading ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Loader2
+                    size={32}
+                    className="animate-spin"
+                    style={{ color: colors.accent }}
+                  />
+                  <p
+                    className="mt-3 text-sm"
+                    style={{ color: colors.textMuted }}
+                  >
+                    Loading your charts...
+                  </p>
+                </div>
+              ) : savedCharts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div
+                    className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl"
+                    style={{ backgroundColor: colors.surface }}
+                  >
+                    <BarChart3 size={32} style={{ color: colors.textMuted }} />
+                  </div>
+                  <h3
+                    className="mb-2 text-lg font-semibold"
+                    style={{ color: colors.text }}
+                  >
+                    No saved charts
+                  </h3>
+                  <p
+                    className="mb-6 max-w-md text-center text-sm"
+                    style={{ color: colors.textMuted }}
+                  >
+                    Create charts in the Charts dashboard to reuse them across
+                    your presentations
+                  </p>
+                  <button
+                    onClick={() => setActiveTab("create")}
+                    className="flex items-center gap-2 rounded-lg px-4 py-2 font-medium text-white transition-colors"
+                    style={{ backgroundColor: colors.accent }}
+                  >
+                    <Plus size={16} />
+                    Create New Chart
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                  {savedCharts.map((chart) => (
+                    <button
+                      key={chart.id}
+                      onClick={() => handleSelectSavedChart(chart)}
+                      onMouseEnter={() => setSelectedChartId(chart.id)}
+                      onMouseLeave={() => setSelectedChartId(null)}
+                      className="group relative flex flex-col overflow-hidden rounded-xl text-left transition-all"
+                      style={{
+                        backgroundColor: colors.surface,
+                        border: `1px solid ${
+                          selectedChartId === chart.id
+                            ? colors.accent
+                            : colors.border
+                        }`,
+                        boxShadow:
+                          selectedChartId === chart.id
+                            ? `0 4px 12px ${colors.accent}30`
+                            : "none",
+                      }}
                     >
-                      {category} Charts
-                    </h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                      {categoryTemplates.map(template => (
-                        <button
-                          key={template.id}
-                          onClick={() => handleTemplateSelect(template.id)}
-                          className="group p-4 text-left rounded-xl transition-all"
-                          style={{
-                            backgroundColor: isDark ? colors.surface : "#ffffff",
-                            border: `1px solid ${colors.border}`,
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = colors.accent;
-                            e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = colors.border;
-                            e.currentTarget.style.boxShadow = "none";
-                          }}
-                        >
-                          {/* Mini Preview */}
-                          <div 
-                            className="h-24 mb-3 rounded-lg p-2 overflow-hidden relative"
-                            style={{ backgroundColor: isDark ? colors.bg : colors.surface }}
+                      {/* Chart Preview */}
+                      <div
+                        className="relative aspect-[4/3] w-full overflow-hidden p-3"
+                        style={{ backgroundColor: colors.bg }}
+                      >
+                        <InteractiveChart
+                          chart={chart}
+                          theme={theme}
+                          compact={true}
+                          interactive={false}
+                        />
+                        {/* Selection indicator */}
+                        {selectedChartId === chart.id && (
+                          <div
+                            className="absolute inset-0 flex items-center justify-center"
+                            style={{ backgroundColor: `${colors.accent}20` }}
                           >
-                            <InteractiveChart
-                              chart={{
-                                type: template.type,
-                                data: template.sampleData,
-                                config: { ...template.defaultConfig, showAnimation: false },
-                              }}
-                              theme={theme}
-                              compact={true}
-                              interactive={false}
-                            />
-                            {/* Chart type icon badge */}
-                            <div 
-                              className="absolute top-1 right-1 p-1 rounded shadow-sm"
-                              style={{ backgroundColor: isDark ? `${colors.surface}ee` : "rgba(255,255,255,0.9)" }}
+                            <div
+                              className="rounded-full p-2"
+                              style={{ backgroundColor: colors.accent }}
                             >
-                              {getChartIcon(template.type, 14)}
+                              <Check size={20} className="text-white" />
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            {getChartIcon(template.type, 16)}
-                            <span 
-                              className="text-sm font-medium transition-colors"
-                              style={{ color: colors.text }}
-                            >
-                              {template.name}
-                            </span>
-                          </div>
-                          <div 
-                            className="text-xs mt-0.5 ml-6"
-                            style={{ color: colors.textMuted }}
-                          >
-                            {template.description}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
+                        )}
+                        {/* Chart type badge */}
+                        <div
+                          className="absolute left-2 top-2 flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                          style={{
+                            backgroundColor: `${colors.bg}ee`,
+                            color: colors.accent,
+                          }}
+                        >
+                          {getChartIcon(chart.type as ChartType, 12)}
+                          <span className="capitalize">{chart.type}</span>
+                        </div>
+                      </div>
+
+                      {/* Card Content */}
+                      <div className="p-3">
+                        <h3
+                          className="truncate text-sm font-semibold"
+                          style={{ color: colors.text }}
+                        >
+                          {chart.title || "Untitled Chart"}
+                        </h3>
+                        <p
+                          className="mt-0.5 text-xs"
+                          style={{ color: colors.textMuted }}
+                        >
+                          {chart.data.length} data points
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           ) : (
             <div className="p-6">
-              {/* Back button */}
-              {!existingChart && (
-                <button
-                  onClick={() => {
-                    setMode("templates");
-                    setSelectedTemplate(null);
-                  }}
-                  className="mb-4 text-sm transition-colors"
-                  style={{ color: colors.textMuted }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = colors.accent;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = colors.textMuted;
-                  }}
-                >
-                  ← Back to templates
-                </button>
-              )}
-              
               <ChartCreator
-                initialChart={getInitialChart()}
+                initialChart={existingChart || undefined}
                 onSave={handleSave}
                 onCancel={onClose}
                 theme={theme}

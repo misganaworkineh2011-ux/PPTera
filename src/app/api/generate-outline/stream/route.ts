@@ -149,7 +149,35 @@ export async function POST(req: Request) {
   }
 
   // 8. Build the prompt for OpenAI
-  const toneDescription = tone || "professional";
+  // Map tone to detailed description for better LLM understanding
+  const toneDescriptions: Record<string, string> = {
+    // Business tones
+    professional: "professional and polished - clear, authoritative, and business-appropriate",
+    formal: "formal and sophisticated - structured, respectful, and ceremonial",
+    corporate: "corporate and strategic - business-focused, data-driven, and executive-level",
+    executive: "executive and commanding - high-level, decisive, and leadership-oriented",
+    // Friendly tones
+    casual: "casual and relaxed - approachable, easy-going, and conversational",
+    friendly: "friendly and warm - welcoming, personable, and engaging",
+    conversational: "conversational and natural - like talking to a colleague or friend",
+    warm: "warm and inviting - empathetic, supportive, and encouraging",
+    // Creative tones
+    creative: "creative and imaginative - innovative, artistic, and thought-provoking",
+    playful: "playful and fun - lighthearted, witty, and entertaining",
+    bold: "bold and daring - confident, impactful, and attention-grabbing",
+    inspirational: "inspirational and uplifting - motivating, visionary, and empowering",
+    // Educational tones
+    educational: "educational and instructive - clear, structured, and learning-focused",
+    informative: "informative and factual - detailed, accurate, and knowledge-sharing",
+    technical: "technical and precise - detailed, accurate, and expert-level",
+    academic: "academic and scholarly - research-based, analytical, and rigorous",
+    // Persuasive tones
+    persuasive: "persuasive and compelling - convincing, influential, and action-oriented",
+    confident: "confident and assertive - self-assured, strong, and decisive",
+    motivational: "motivational and energizing - inspiring action, enthusiasm, and drive",
+    compelling: "compelling and captivating - engaging, powerful, and memorable",
+  };
+  const toneDescription = toneDescriptions[tone || "professional"] || tone || "professional";
   const languageDescription = language || "english";
   const contentSlides = numberOfSlides - 1;
 

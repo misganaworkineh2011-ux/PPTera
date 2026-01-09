@@ -45,7 +45,7 @@ const config: NextConfig = {
   
   // Optimize images
   images: {
-    domains: ["images.unsplash.com", "images.pexels.com", "img.clerk.com", "res.cloudinary.com"],
+    domains: ["images.unsplash.com", "images.pexels.com", "img.clerk.com", "res.cloudinary.com", "oaidalleapiprodscus.blob.core.windows.net"],
     remotePatterns: [
       {
         protocol: "https",
@@ -65,6 +65,32 @@ const config: NextConfig = {
       {
         protocol: "https",
         hostname: "res.cloudinary.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "oaidalleapiprodscus.blob.core.windows.net",
+        pathname: "/**",
+      },
+      // Art style preview images
+      {
+        protocol: "https",
+        hostname: "img.freepik.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "static.vecteezy.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "www.sculpteo.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "russell-collection.com",
         pathname: "/**",
       },
     ],

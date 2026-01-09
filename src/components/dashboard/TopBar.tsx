@@ -214,7 +214,7 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
 
           {/* Notifications Dropdown */}
           {showNotifications && (
-            <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-sm rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-2xl z-50">
+            <div className="fixed sm:absolute inset-x-3 sm:inset-x-auto sm:right-0 top-16 sm:top-full sm:mt-2 w-auto sm:w-80 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-2xl z-50">
               <div className="border-b border-slate-100 dark:border-zinc-700 p-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-slate-900 dark:text-white">{t.notificationsTitle || "Notifications"}</h3>
@@ -225,7 +225,7 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
                   )}
                 </div>
               </div>
-              <div className="max-h-96 overflow-y-auto">
+              <div className="max-h-[60vh] sm:max-h-96 overflow-y-auto">
                 {loading ? (
                   <div className="p-8 text-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#06b6d4] mx-auto"></div>

@@ -1,22 +1,26 @@
 "use client";
 
 import { useState } from "react";
-import { X, ImagePlus, Trash2, CheckCircle2, Loader2, Settings2, Sparkles, Coins } from "lucide-react";
+import { X, ImagePlus, Trash2, CheckCircle2, Loader2, Settings2, Sparkles, Lock, ChevronDown, Check } from "lucide-react";
 import { toast } from "sonner";
 import type { Theme } from "~/lib/themes";
 import type { SlideImage } from "~/components/presentation/types";
 import { CREDIT_COSTS } from "~/lib/credits";
 import { getModalColors } from "~/app/presentation/[slug]/components/ui-colors";
+import PricingModal from "~/components/dashboard/PricingModal";
 
 // AI Image model options with credit costs - matches CreatePresentationClient
 const AI_IMAGE_MODELS = [
-  { id: "gemini-2.5-flash-image", name: "Nano Banana (Gemini 2.5 Flash)", quality: "standard", model: "gemini-2.5-flash-image", credits: CREDIT_COSTS.GEMINI_IMAGEN },
-  { id: "gemini-3-pro-image-preview", name: "Nano Banana Pro (Gemini 3 Pro)", quality: "hd", model: "gemini-3-pro-image-preview", credits: CREDIT_COSTS.GEMINI_IMAGEN_HD },
-  { id: "imagen-4.0-generate-001", name: "Imagen 4", quality: "standard", model: "imagen-4.0-generate-001", credits: CREDIT_COSTS.GEMINI_IMAGEN },
-  { id: "imagen-4.0-ultra-generate-001", name: "Imagen 4 Ultra", quality: "hd", model: "imagen-4.0-ultra-generate-001", credits: CREDIT_COSTS.IMAGE_HD },
-  { id: "imagen-4.0-fast-generate-001", name: "Imagen 4 Fast", quality: "standard", model: "imagen-4.0-fast-generate-001", credits: CREDIT_COSTS.GEMINI_IMAGEN },
-  { id: "openai-standard", name: "DALL-E 3", quality: "standard", model: "openai", credits: CREDIT_COSTS.IMAGE_BASIC },
-  { id: "openai-hd", name: "DALL-E 3 HD", quality: "hd", model: "openai", credits: CREDIT_COSTS.IMAGE_HD },
+  { id: "gpt-image-1-mini", name: "GPT Image Mini", quality: "standard", model: "gpt-image-1-mini", credits: CREDIT_COSTS.IMAGE_BASIC, tier: "basic" },
+  { id: "gemini-2.5-flash-image", name: "Nano Banana", quality: "standard", model: "gemini-2.5-flash-image", credits: CREDIT_COSTS.GEMINI_FLASH, tier: "basic" },
+  { id: "imagen-4.0-fast-generate-001", name: "Imagen 4 Fast", quality: "standard", model: "imagen-4.0-fast-generate-001", credits: CREDIT_COSTS.IMAGEN_4_FAST, tier: "basic" },
+  { id: "gemini-3-pro-image-preview", name: "Nano Banana Pro", quality: "hd", model: "gemini-3-pro-image-preview", credits: CREDIT_COSTS.GEMINI_PRO, tier: "plus", isNew: true },
+  { id: "imagen-4.0-generate-001", name: "Imagen 4", quality: "standard", model: "imagen-4.0-generate-001", credits: CREDIT_COSTS.IMAGEN_4, tier: "plus" },
+  { id: "openai-standard", name: "DALL-E 3", quality: "standard", model: "openai", credits: CREDIT_COSTS.DALLE_STANDARD, tier: "pro" },
+  { id: "imagen-4.0-ultra-generate-001", name: "Imagen 4 Ultra", quality: "hd", model: "imagen-4.0-ultra-generate-001", credits: CREDIT_COSTS.IMAGEN_4_ULTRA, tier: "ultra" },
+  { id: "gpt-image-1.5", name: "GPT Image 1.5", quality: "hd", model: "gpt-image-1.5", credits: CREDIT_COSTS.GPT_IMAGE_DETAILED, tier: "ultra" },
+  { id: "gpt-image-1", name: "GPT Image 1", quality: "hd", model: "gpt-image-1", credits: CREDIT_COSTS.GPT_IMAGE_DETAILED, tier: "ultra" },
+  { id: "openai-hd", name: "DALL-E 3 HD", quality: "hd", model: "openai", credits: CREDIT_COSTS.DALLE_HD, tier: "ultra" },
 ];
 
 type AIImageModel = typeof AI_IMAGE_MODELS[number];
@@ -28,6 +32,7 @@ interface MultiImageModalProps {
   isLoading: boolean;
   theme: Theme;
   presentationId?: string;
+  subscriptionPlan?: string | null;
   onUrlChange: (url: string) => void;
   onAddImage: () => void;
   onUpdateImage: (idx: number) => void;
@@ -47,6 +52,7 @@ export function MultiImageModal({
   isLoading,
   theme,
   presentationId,
+  subscriptionPlan,
   onUrlChange,
   onAddImage,
   onUpdateImage,
@@ -68,10 +74,24 @@ export function MultiImageModal({
   const [selectedModel, setSelectedModel] = useState<AIImageModel>(AI_IMAGE_MODELS[0]!);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPreview, setGeneratedPreview] = useState<string | null>(null);
+  const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
+  const [showPricingModal, setShowPricingModal] = useState(false);
+
+  // User plan for model access
+  const userPlan = subscriptionPlan?.toLowerCase() || "free";
 
   // Theme-aware colors using the helper
   const colors = getModalColors(theme);
   const isDark = colors.isDark;
+
+  // Check if user has access to a model tier
+  const hasAccessToTier = (tier: string) => {
+    if (tier === "basic") return true;
+    if (tier === "plus") return userPlan === "plus" || userPlan === "pro" || userPlan === "ultra";
+    if (tier === "pro") return userPlan === "pro" || userPlan === "ultra";
+    if (tier === "ultra") return userPlan === "ultra";
+    return false;
+  };
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedIndex(index);
@@ -438,56 +458,236 @@ export function MultiImageModal({
             {activeTab === "ai" && !isEditing && (
               <>
                 <label
-                  className="block text-sm font-medium mb-2"
-                  style={{ color: colors.text }}
+                  className="block text-xs font-medium mb-2 uppercase tracking-wide"
+                  style={{ color: colors.textMuted }}
                 >
-                  Generate with AI
+                  AI image model
                 </label>
                 
-                {/* Model Selection */}
-                <div className="grid grid-cols-2 gap-2 mb-3">
-                  {AI_IMAGE_MODELS.map((model) => (
-                    <button
-                      key={model.id}
-                      onClick={() => setSelectedModel(model)}
-                      className={`p-3 rounded-lg text-left transition-all ${
-                        selectedModel.id === model.id ? "ring-2" : ""
-                      }`}
-                      style={{
-                        backgroundColor: selectedModel.id === model.id 
-                          ? `${theme.colors.primary}20` 
-                          : colors.inputBg,
-                        borderColor: selectedModel.id === model.id 
-                          ? theme.colors.primary 
-                          : colors.border,
-                        border: `1px solid ${selectedModel.id === model.id ? theme.colors.primary : colors.border}`,
-                        ["--tw-ring-color" as string]: theme.colors.primary,
-                      } as React.CSSProperties}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium" style={{ color: colors.text }}>
-                          {model.name}
-                        </span>
-                        <span 
-                          className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full"
-                          style={{ 
-                            backgroundColor: `${theme.colors.primary}20`,
-                            color: theme.colors.primary,
-                          }}
-                        >
-                          <Coins size={12} />
-                          {model.credits}
-                        </span>
+                {/* Model Selection - Gamma Style Dropdown */}
+                <div className="relative mb-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
+                    className="w-full flex items-center justify-between gap-2 rounded-lg px-3 py-2.5 text-sm transition-all"
+                    style={{
+                      backgroundColor: colors.surface,
+                      border: `1px solid ${colors.border}`,
+                      color: colors.text,
+                    }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Sparkles size={16} className="text-violet-500" />
+                      <span className="font-medium">{selectedModel.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs" style={{ color: colors.textMuted }}>
+                        {selectedModel.credits} ✦
+                      </span>
+                      <ChevronDown size={16} className={`transition-transform duration-200 ${isModelDropdownOpen ? "rotate-180" : ""}`} style={{ color: colors.textMuted }} />
+                    </div>
+                  </button>
+
+                  {/* Dropdown Menu - Absolute position within relative container */}
+                  {isModelDropdownOpen && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-[9998]"
+                        onClick={() => setIsModelDropdownOpen(false)}
+                      />
+                      <div 
+                        className="absolute top-full left-0 right-0 mt-1 rounded-xl shadow-2xl z-[9999] max-h-[400px] overflow-y-auto"
+                        style={{
+                          backgroundColor: colors.bg,
+                          border: `1px solid ${colors.border}`,
+                        }}
+                      >
+                        {/* Basic Models */}
+                        <div className="p-2" style={{ borderBottom: `1px solid ${colors.border}` }}>
+                          <div className="px-2 py-1.5 mb-1">
+                            <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: colors.textMuted }}>Basic models</span>
+                          </div>
+                          {AI_IMAGE_MODELS.filter(m => m.tier === "basic").map((m) => (
+                            <button
+                              key={m.id}
+                              type="button"
+                              onClick={() => {
+                                setSelectedModel(m);
+                                setIsModelDropdownOpen(false);
+                              }}
+                              className="w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors"
+                              style={{
+                                backgroundColor: selectedModel.id === m.id ? "rgba(139, 92, 246, 0.1)" : "transparent",
+                              }}
+                              onMouseEnter={(e) => {
+                                if (selectedModel.id !== m.id) e.currentTarget.style.backgroundColor = colors.hoverBg;
+                              }}
+                              onMouseLeave={(e) => {
+                                if (selectedModel.id !== m.id) e.currentTarget.style.backgroundColor = "transparent";
+                              }}
+                            >
+                              <div className="flex items-center gap-2.5">
+                                {selectedModel.id === m.id ? (
+                                  <Check size={16} className="text-violet-600" />
+                                ) : (
+                                  <Sparkles size={16} className="text-violet-500" />
+                                )}
+                                <span className="text-sm" style={{ color: selectedModel.id === m.id ? "rgb(109, 40, 217)" : colors.text, fontWeight: selectedModel.id === m.id ? 500 : 400 }}>{m.name}</span>
+                              </div>
+                              <span className="text-xs" style={{ color: colors.textMuted }}>{m.credits} ✦</span>
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Advanced Models - Plus */}
+                        <div className="p-2" style={{ borderBottom: `1px solid ${colors.border}` }}>
+                          <div className="flex items-center gap-2 px-2 py-1.5 mb-1">
+                            <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: colors.textMuted }}>Advanced models</span>
+                            <span className="text-[10px] font-semibold text-white bg-blue-500 px-1.5 py-0.5 rounded-full">PLUS</span>
+                          </div>
+                          {AI_IMAGE_MODELS.filter(m => m.tier === "plus").map((m) => {
+                            const isLocked = !hasAccessToTier("plus");
+                            return (
+                              <button
+                                key={m.id}
+                                type="button"
+                                onClick={() => {
+                                  if (isLocked) {
+                                    setShowPricingModal(true);
+                                    setIsModelDropdownOpen(false);
+                                    return;
+                                  }
+                                  setSelectedModel(m);
+                                  setIsModelDropdownOpen(false);
+                                }}
+                                className="w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors"
+                                style={{
+                                  backgroundColor: selectedModel.id === m.id ? "rgba(139, 92, 246, 0.1)" : "transparent",
+                                  opacity: isLocked ? 0.5 : 1,
+                                  cursor: isLocked ? "not-allowed" : "pointer",
+                                }}
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  {selectedModel.id === m.id ? (
+                                    <Check size={16} className="text-violet-600" />
+                                  ) : (
+                                    <Sparkles size={16} className="text-violet-500" />
+                                  )}
+                                  <span className="text-sm" style={{ color: selectedModel.id === m.id ? "rgb(109, 40, 217)" : colors.text, fontWeight: selectedModel.id === m.id ? 500 : 400 }}>{m.name}</span>
+                                  {m.isNew && (
+                                    <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-full">NEW</span>
+                                  )}
+                                  {isLocked && <Lock size={12} className="ml-1" style={{ color: colors.textMuted }} />}
+                                </div>
+                                <span className="text-xs" style={{ color: colors.textMuted }}>{m.credits} ✦</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Premium Models - Pro */}
+                        <div className="p-2" style={{ borderBottom: `1px solid ${colors.border}` }}>
+                          <div className="flex items-center gap-2 px-2 py-1.5 mb-1">
+                            <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: colors.textMuted }}>Premium models</span>
+                            <span className="text-[10px] font-semibold text-white bg-indigo-600 px-1.5 py-0.5 rounded-full">PRO</span>
+                          </div>
+                          {AI_IMAGE_MODELS.filter(m => m.tier === "pro").map((m) => {
+                            const isLocked = !hasAccessToTier("pro");
+                            return (
+                              <button
+                                key={m.id}
+                                type="button"
+                                onClick={() => {
+                                  if (isLocked) {
+                                    setShowPricingModal(true);
+                                    setIsModelDropdownOpen(false);
+                                    return;
+                                  }
+                                  setSelectedModel(m);
+                                  setIsModelDropdownOpen(false);
+                                }}
+                                className="w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors"
+                                style={{
+                                  backgroundColor: selectedModel.id === m.id ? "rgba(139, 92, 246, 0.1)" : "transparent",
+                                  opacity: isLocked ? 0.5 : 1,
+                                  cursor: isLocked ? "not-allowed" : "pointer",
+                                }}
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  {selectedModel.id === m.id ? (
+                                    <Check size={16} className="text-violet-600" />
+                                  ) : (
+                                    <svg className="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="currentColor">
+                                      <path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.985 5.985 0 0 0-3.998 2.9 6.046 6.046 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.795.795 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646zM2.34 7.896a4.485 4.485 0 0 1 2.366-1.973V11.6a.766.766 0 0 0 .388.676l5.815 3.355-2.02 1.168a.076.076 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.34 7.896zm16.597 3.855l-5.833-3.387L15.119 7.2a.076.076 0 0 1 .071 0l4.83 2.791a4.494 4.494 0 0 1-.676 8.105v-5.678a.79.79 0 0 0-.407-.667zm2.01-3.023l-.141-.085-4.774-2.782a.776.776 0 0 0-.785 0L9.409 9.23V6.897a.066.066 0 0 1 .028-.061l4.83-2.787a4.5 4.5 0 0 1 6.68 4.66zm-12.64 4.135l-2.02-1.164a.08.08 0 0 1-.038-.057V6.075a4.5 4.5 0 0 1 7.375-3.453l-.142.08-4.778 2.758a.795.795 0 0 0-.393.681zm1.097-2.365l2.602-1.5 2.607 1.5v2.999l-2.597 1.5-2.607-1.5z"/>
+                                    </svg>
+                                  )}
+                                  <span className="text-sm" style={{ color: selectedModel.id === m.id ? "rgb(109, 40, 217)" : colors.text, fontWeight: selectedModel.id === m.id ? 500 : 400 }}>{m.name}</span>
+                                  {isLocked && <Lock size={12} className="ml-1" style={{ color: colors.textMuted }} />}
+                                </div>
+                                <span className="text-xs" style={{ color: colors.textMuted }}>{m.credits} ✦</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Ultra Models */}
+                        <div className="p-2">
+                          <div className="flex items-center gap-2 px-2 py-1.5 mb-1">
+                            <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: colors.textMuted }}>Ultra models</span>
+                            <span className="text-[10px] font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-500 px-1.5 py-0.5 rounded-full">ULTRA</span>
+                          </div>
+                          {AI_IMAGE_MODELS.filter(m => m.tier === "ultra").map((m) => {
+                            const isLocked = !hasAccessToTier("ultra");
+                            return (
+                              <button
+                                key={m.id}
+                                type="button"
+                                onClick={() => {
+                                  if (isLocked) {
+                                    setShowPricingModal(true);
+                                    setIsModelDropdownOpen(false);
+                                    return;
+                                  }
+                                  setSelectedModel(m);
+                                  setIsModelDropdownOpen(false);
+                                }}
+                                className="w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors"
+                                style={{
+                                  backgroundColor: selectedModel.id === m.id ? "rgba(139, 92, 246, 0.1)" : "transparent",
+                                  opacity: isLocked ? 0.5 : 1,
+                                  cursor: isLocked ? "not-allowed" : "pointer",
+                                }}
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  {selectedModel.id === m.id ? (
+                                    <Check size={16} className="text-violet-600" />
+                                  ) : (
+                                    <Sparkles size={16} className="text-purple-500" />
+                                  )}
+                                  <span className="text-sm" style={{ color: selectedModel.id === m.id ? "rgb(109, 40, 217)" : colors.text, fontWeight: selectedModel.id === m.id ? 500 : 400 }}>{m.name}</span>
+                                  {isLocked && <Lock size={12} className="ml-1" style={{ color: colors.textMuted }} />}
+                                </div>
+                                <span className="text-xs" style={{ color: colors.textMuted }}>{m.credits} ✦</span>
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </button>
-                  ))}
+                    </>
+                  )}
                 </div>
 
                 {/* Prompt Input */}
+                <label
+                  className="block text-xs font-medium mb-2 uppercase tracking-wide"
+                  style={{ color: colors.textMuted }}
+                >
+                  Describe your image
+                </label>
                 <textarea
                   value={aiPrompt}
                   onChange={(e) => setAiPrompt(e.target.value)}
-                  placeholder="Describe the image you want to generate..."
+                  placeholder="A professional business presentation background with abstract shapes..."
                   rows={3}
                   className="w-full px-4 py-3 rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-opacity-20 resize-none"
                   style={{
@@ -584,6 +784,13 @@ export function MultiImageModal({
           </button>
         </div>
       </div>
+
+      {/* Pricing Modal */}
+      <PricingModal
+        isOpen={showPricingModal}
+        onClose={() => setShowPricingModal(false)}
+        currentPlan={subscriptionPlan}
+      />
     </div>
   );
 }

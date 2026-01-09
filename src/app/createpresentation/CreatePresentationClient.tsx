@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, GripVertical, Trash2, Edit3, Check, X, Upload } from "lucide-react";
+import Image from "next/image";
+import { ArrowLeft, Loader2, GripVertical, Trash2, Edit3, Check, X, Upload, Lock, ChevronDown, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useOutlineStream, type Slide, type OutlineMetadata } from "~/lib/dashboard/hooks/useOutlineStream";
 import { themes, getThemeById, type Theme } from "~/lib/themes";
@@ -262,6 +263,12 @@ export default function CreatePresentationClient({
   const hasEnoughCredits = userCredits >= CREDIT_COST_PER_GENERATION;
   const isFreeUser = !subscriptionPlan || subscriptionPlan === 'free';
 
+  // Client-side mount state for SVG noise filter (prevents hydration mismatch)
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // View state: 'form' | 'streaming' | 'completed'
   const [view, setView] = useState<"form" | "streaming" | "completed">(
     existingOutline ? "completed" : "form"
@@ -281,15 +288,26 @@ export default function CreatePresentationClient({
     imageSource: "no-images",
     textDensity: "concise" as "minimal" | "concise" | "detailed" | "extensive",
     imageLicensing: "all-images" as "all-images" | "free-to-use" | "free-commercial",
-    // Default AI image model ("Nano Banana" - Gemini 2.5 Flash Image)
+    // Default AI image model (Gemini 2.5 Flash - "Nano Banana")
     imageModel: "gemini-2.5-flash-image" as
-      | "gemini-2.5-flash-image"
-      | "gemini-3-pro-image-preview"
-      | "imagen-4.0-generate-001"
-      | "imagen-4.0-ultra-generate-001"
-      | "imagen-4.0-fast-generate-001"
-      | "openai"
-      | "openai-hd",
+      // Google Gemini models (multimodal)
+      | "gemini-2.5-flash-image"           // ~$0.039/image - Nano Banana
+      | "gemini-3-pro-image-preview"       // ~$0.134/image - Nano Banana Pro
+      // Google Imagen 4 models (dedicated text-to-image)
+      | "imagen-4.0-fast-generate-001"     // $0.02/image - Fast
+      | "imagen-4.0-generate-001"          // $0.04/image - Standard
+      | "imagen-4.0-ultra-generate-001"    // $0.06/image - Ultra
+      // OpenAI GPT Image models
+      | "gpt-image-1.5"                    // Latest flagship
+      | "gpt-image-1"                      // Previous flagship
+      | "gpt-image-1-mini"                 // Budget option
+      // Legacy OpenAI DALL-E
+      | "openai"                           // DALL-E 3 ~$0.04/image
+      | "openai-hd",                       // DALL-E 3 HD ~$0.08/image
+    // Image art style (like Gamma)
+    imageArtStyle: "photo" as "illustration" | "photo" | "abstract" | "3d" | "line-art" | "custom",
+    // Custom art style text (when imageArtStyle is "custom")
+    customArtStyleText: "",
   });
 
   const [lastDescription, setLastDescription] = useState(
@@ -312,7 +330,19 @@ export default function CreatePresentationClient({
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
+  const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [isCreatingPresentation, setIsCreatingPresentation] = useState(false);
+
+  // Close model dropdown when pressing Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isModelDropdownOpen) {
+        setIsModelDropdownOpen(false);
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isModelDropdownOpen]);
 
   // Track recently selected themes for quick access (6 themes for 3x2 grid)
   // Filter to only include unique theme IDs that exist
@@ -568,6 +598,8 @@ export default function CreatePresentationClient({
           language: formData.language,
         },
         imageModel: formData.imageModel,
+        imageArtStyle: formData.imageArtStyle,
+        customArtStyleText: formData.customArtStyleText,
         streaming: true, // Enable Gamma-style streaming
       };
 
@@ -631,7 +663,7 @@ export default function CreatePresentationClient({
   const isSamePrompt = normalizedCurrent !== "" && normalizedCurrent === normalizedLast;
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden">
+    <div className="h-screen w-full relative overflow-hidden">
       {/* Pricing Modal for Credit Warning */}
       <PricingModal
         isOpen={showCreditWarning}
@@ -644,9 +676,9 @@ export default function CreatePresentationClient({
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Lato:wght@400;700&family=Cormorant+Garamond:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Nunito+Sans:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap');
       `}</style>
 
-      {/* Logo-Inspired Gradient Background - Extra Soft with More Upper M Color */}
+      {/* Logo-Inspired Gradient Background - Fixed Full Height */}
       <div
-        className="absolute inset-0 z-0"
+        className="fixed inset-0 z-0"
         style={{
           background: `linear-gradient(to bottom, 
             #f7fefc 0%,
@@ -664,9 +696,9 @@ export default function CreatePresentationClient({
         }}
       />
 
-      {/* Extra Soft Light Overlay for Depth */}
+      {/* Extra Soft Light Overlay for Depth - Fixed */}
       <div
-        className="absolute inset-0 z-0"
+        className="fixed inset-0 z-0"
         style={{
           background: `
             radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.7) 0%, transparent 50%),
@@ -677,27 +709,39 @@ export default function CreatePresentationClient({
         }}
       />
 
-      {/* Subtle Grid Pattern */}
-      <div
-        className="absolute inset-0 z-0 opacity-[0.03]"
-        style={{
-          backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.5) 1px, transparent 1px)`,
-          backgroundSize: '40px 40px'
-        }}
-      />
+      {/* Noise/Grain Texture Overlay - using CSS filter for reliable cross-browser support */}
+      {isMounted && (
+        <svg className="fixed inset-0 w-full h-full z-[1] pointer-events-none opacity-[0.7]" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="noiseFilter">
+              <feTurbulence 
+                type="fractalNoise" 
+                baseFrequency="0.9" 
+                numOctaves="5" 
+                stitchTiles="stitch"
+              />
+              <feColorMatrix type="saturate" values="0" />
+              <feComponentTransfer>
+                <feFuncA type="linear" slope="1.5" />
+              </feComponentTransfer>
+            </filter>
+          </defs>
+          <rect width="100%" height="100%" filter="url(#noiseFilter)" />
+        </svg>
+      )}
 
-      {/* Content */}
-      <div className="relative z-10 min-h-screen flex flex-col">
-        {/* Header */}
-        <div className="px-8 pt-8 pb-4">
-          <button
-            onClick={() => (showOutline ? handleStartOver() : router.back())}
-            className="mb-4 flex items-center gap-2 rounded-full bg-white/80 backdrop-blur-sm px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-all hover:bg-white hover:text-[#1e3a8a]"
-          >
-            <ArrowLeft size={16} /> {showOutline ? "Start Over" : "Back"}
-          </button>
-        </div>
+      {/* Fixed Header with Back Button */}
+      <div className="fixed top-0 left-0 right-0 z-20 px-6 pt-6 pb-4">
+        <button
+          onClick={() => (showOutline ? handleStartOver() : router.back())}
+          className="flex items-center gap-2 rounded-full bg-white/90 backdrop-blur-sm px-4 py-2 text-sm font-medium text-slate-700 shadow-md transition-all hover:bg-white hover:text-[#1e3a8a] hover:shadow-lg"
+        >
+          <ArrowLeft size={16} /> {showOutline ? "Start Over" : "Back"}
+        </button>
+      </div>
 
+      {/* Scrollable Content Area */}
+      <div className="relative z-10 h-screen overflow-y-auto pt-20">
         {/* Error Message - Minimal, at the top */}
         {hasError && streamState.error && (
           <div className="px-4 sm:px-6 lg:px-8 mb-4">
@@ -720,15 +764,15 @@ export default function CreatePresentationClient({
 
         {/* Form Section - Compact when streaming/completed */}
         <div className={`px-4 sm:px-6 lg:px-8 ${showOutline ? "pb-4" : "pb-12"}`}>
-          <div className={`mx-auto ${showOutline ? "max-w-4xl" : "max-w-2xl"}`}>
+          <div className={`mx-auto ${showOutline ? "max-w-4xl" : "max-w-xl"}`}>
             {!showOutline && (
               <div className="flex flex-col items-center justify-center mb-8">
-                <h1 className="text-4xl font-bold tracking-tight text-[#1e3a8a] mb-3">
+                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#1e3a8a] mb-2 text-center">
                   {mode === "ai" && "AI Generation"}
                   {mode === "docs" && "Import Documents"}
                   {mode === "scratch" && "Start from Scratch"}
                 </h1>
-                <p className="text-slate-600 text-center">
+                <p className="text-slate-600 text-center text-sm sm:text-base max-w-md">
                   {mode === "ai" && "Describe your idea and watch AI craft a complete professional deck"}
                   {mode === "docs" && "Upload PDFs, Word files, or paste content to transform into a presentation"}
                   {mode === "scratch" && "Build from a blank canvas with full creative control over every slide"}
@@ -736,22 +780,23 @@ export default function CreatePresentationClient({
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Form Card */}
+            <form onSubmit={handleSubmit} className={`${!showOutline ? "bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6 sm:p-8" : ""}`}>
               {/* Description - Compact when streaming */}
-              <div className={showOutline ? "flex flex-col md:flex-row items-start gap-4" : ""}>
+              <div className={showOutline ? "flex flex-col md:flex-row items-start gap-4" : "space-y-5"}>
                 <div className={showOutline ? "flex-1 w-full" : ""}>
                   {!showOutline && mode === "ai" && (
-                    <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-3">
+                    <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
                       What to Create
                     </label>
                   )}
                   {!showOutline && mode === "docs" && (
-                    <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-3">
+                    <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
                       Upload or Paste Content
                     </label>
                   )}
                   {!showOutline && mode === "scratch" && (
-                    <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-3">
+                    <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
                       Presentation Title
                     </label>
                   )}
@@ -763,10 +808,9 @@ export default function CreatePresentationClient({
                       value={formData.description}
                       onChange={(e) => handleChange("description", e.target.value)}
                       placeholder="Define what you want to create in one sentence or more..."
-                      rows={showOutline ? 2 : 4}
+                      rows={showOutline ? 2 : 3}
                       disabled={isStreaming}
-                      className={`w-full rounded-md border border-slate-200 bg-white px-5 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all resize-none shadow-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""
-                        }`}
+                      className={`w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all resize-none text-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""}`}
                       required
                     />
                   )}
@@ -774,8 +818,8 @@ export default function CreatePresentationClient({
                   {/* Docs Mode - File upload and paste area */}
                   {mode === "docs" && !showOutline && (
                     <div className="space-y-4">
-                      <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-[#06b6d4] transition-colors">
-                        <Upload className="mx-auto h-12 w-12 text-slate-400 mb-3" />
+                      <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center hover:border-[#06b6d4] transition-colors bg-slate-50/50">
+                        <Upload className="mx-auto h-10 w-10 text-slate-400 mb-2" />
                         <input
                           type="file"
                           id="file-upload"
@@ -797,7 +841,6 @@ export default function CreatePresentationClient({
                                 });
 
                                 if (!response.ok) {
-                                  // Attempt to read text if JSON fails, to catch HTML error pages
                                   const text = await response.text();
                                   console.error(`Upload failed: ${response.status} ${response.statusText}`, text);
 
@@ -811,6 +854,7 @@ export default function CreatePresentationClient({
 
                                 const data = await response.json();
                                 handleChange("description", data.text);
+                                setPastedContent(data.text);
                                 toast.success("Document parsed successfully", { id: loadingToast });
                               } catch (error) {
                                 console.error("Parsing error:", error);
@@ -822,7 +866,7 @@ export default function CreatePresentationClient({
                         />
                         <label
                           htmlFor="file-upload"
-                          className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-50"
+                          className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-[#06b6d4] transition-all"
                         >
                           Choose File
                         </label>
@@ -830,7 +874,11 @@ export default function CreatePresentationClient({
                           {uploadedFile ? uploadedFile.name : "PDF, Word, PowerPoint, or Text files"}
                         </p>
                       </div>
-                      <div className="text-center text-sm text-slate-500">or</div>
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 h-px bg-slate-200"></div>
+                        <span className="text-xs text-slate-400 font-medium">OR</span>
+                        <div className="flex-1 h-px bg-slate-200"></div>
+                      </div>
                       <textarea
                         value={pastedContent}
                         onChange={(e) => {
@@ -838,9 +886,9 @@ export default function CreatePresentationClient({
                           handleChange("description", e.target.value);
                         }}
                         placeholder="Paste your content here..."
-                        rows={6}
+                        rows={5}
                         disabled={isStreaming}
-                        className="w-full rounded-md border border-slate-200 bg-white px-5 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all resize-none shadow-sm"
+                        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all resize-none text-sm"
                       />
                     </div>
                   )}
@@ -854,8 +902,7 @@ export default function CreatePresentationClient({
                       placeholder="Your content..."
                       rows={2}
                       disabled={isStreaming}
-                      className={`w-full rounded-md border border-slate-200 bg-white px-5 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all resize-none shadow-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""
-                        }`}
+                      className={`w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all resize-none text-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""}`}
                       required
                     />
                   )}
@@ -869,8 +916,7 @@ export default function CreatePresentationClient({
                       onChange={(e) => handleChange("description", e.target.value)}
                       placeholder="Enter your presentation title..."
                       disabled={isStreaming}
-                      className={`w-full rounded-md border border-slate-200 bg-white px-5 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all shadow-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""
-                        }`}
+                      className={`w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all text-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""}`}
                       required
                     />
                   )}
@@ -899,11 +945,36 @@ export default function CreatePresentationClient({
                       onChange={(e) => handleChange("tone", e.target.value)}
                       className="flex-1 md:flex-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 disabled:opacity-60 min-w-[120px]"
                     >
-                      <option value="professional">Professional</option>
-                      <option value="casual">Casual</option>
-                      <option value="formal">Formal</option>
-                      <option value="creative">Creative</option>
-                      <option value="friendly">Friendly</option>
+                      <optgroup label="Business">
+                        <option value="professional"> Professional</option>
+                        <option value="formal">Formal</option>
+                        <option value="corporate">Corporate</option>
+                        <option value="executive">Executive</option>
+                      </optgroup>
+                      <optgroup label="Friendly">
+                        <option value="casual">Casual</option>
+                        <option value="friendly">Friendly</option>
+                        <option value="conversational"> Conversational</option>
+                        <option value="warm">Warm</option>
+                      </optgroup>
+                      <optgroup label="Creative">
+                        <option value="creative"> Creative</option>
+                        <option value="playful"> Playful</option>
+                        <option value="bold">Bold</option>
+                        <option value="inspirational">Inspirational</option>
+                      </optgroup>
+                      <optgroup label="Educational">
+                        <option value="educational">Educational</option>
+                        <option value="informative">Informative</option>
+                        <option value="technical">Technical</option>
+                        <option value="academic">Academic</option>
+                      </optgroup>
+                      <optgroup label="Persuasive">
+                        <option value="persuasive">Persuasive</option>
+                        <option value="confident">Confident</option>
+                        <option value="motivational">Motivational</option>
+                        <option value="compelling">Compelling</option>
+                      </optgroup>
                     </select>
                     <select
                       value={formData.language}
@@ -911,11 +982,48 @@ export default function CreatePresentationClient({
                       onChange={(e) => handleChange("language", e.target.value)}
                       className="flex-1 md:flex-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 disabled:opacity-60 min-w-[100px]"
                     >
-                      <option value="english">English</option>
-                      <option value="spanish">Spanish</option>
-                      <option value="french">French</option>
-                      <option value="german">German</option>
-                      <option value="chinese">Chinese</option>
+                      <optgroup label="Popular">
+                        <option value="english">🇺🇸 English</option>
+                        <option value="spanish">🇪🇸 Español</option>
+                        <option value="french">🇫🇷 Français</option>
+                        <option value="german">🇩🇪 Deutsch</option>
+                        <option value="chinese">🇨🇳 中文</option>
+                      </optgroup>
+                      <optgroup label="European">
+                        <option value="portuguese">🇵🇹 Português</option>
+                        <option value="italian">🇮🇹 Italiano</option>
+                        <option value="dutch">🇳🇱 Nederlands</option>
+                        <option value="polish">🇵🇱 Polski</option>
+                        <option value="swedish">🇸🇪 Svenska</option>
+                        <option value="norwegian">🇳🇴 Norsk</option>
+                        <option value="danish">🇩🇰 Dansk</option>
+                        <option value="finnish">🇫🇮 Suomi</option>
+                        <option value="greek">🇬🇷 Ελληνικά</option>
+                        <option value="czech">🇨🇿 Čeština</option>
+                        <option value="romanian">🇷🇴 Română</option>
+                        <option value="hungarian">🇭🇺 Magyar</option>
+                        <option value="ukrainian">🇺🇦 Українська</option>
+                        <option value="russian">🇷🇺 Русский</option>
+                      </optgroup>
+                      <optgroup label="Asian">
+                        <option value="japanese">🇯🇵 日本語</option>
+                        <option value="korean">🇰🇷 한국어</option>
+                        <option value="hindi">🇮🇳 हिन्दी</option>
+                        <option value="thai">🇹🇭 ไทย</option>
+                        <option value="vietnamese">🇻🇳 Tiếng Việt</option>
+                        <option value="indonesian">🇮🇩 Bahasa Indonesia</option>
+                        <option value="malay">🇲🇾 Bahasa Melayu</option>
+                        <option value="tagalog">🇵🇭 Tagalog</option>
+                        <option value="bengali">🇧🇩 বাংলা</option>
+                        <option value="tamil">🇮🇳 தமிழ்</option>
+                      </optgroup>
+                      <optgroup label="Middle East & Africa">
+                        <option value="arabic">🇸🇦 العربية</option>
+                        <option value="hebrew">🇮🇱 עברית</option>
+                        <option value="turkish">🇹🇷 Türkçe</option>
+                        <option value="persian">🇮🇷 فارسی</option>
+                        <option value="swahili">🇰🇪 Kiswahili</option>
+                      </optgroup>
                     </select>
                   </div>
                 )}
@@ -924,24 +1032,11 @@ export default function CreatePresentationClient({
               {/* Full form controls when not streaming */}
               {!showOutline && (
                 <>
-                  {mode === "ai" && (
-                    <p className="text-xs text-slate-500 -mt-4">
-                      Describe your presentation idea, topics to cover, main message, or any specific requirements.
-                    </p>
-                  )}
-                  {mode === "docs" && (
-                    <p className="text-xs text-slate-500 -mt-4">
-                      Upload a document or paste content, and AI will structure it into a presentation.
-                    </p>
-                  )}
-                  {mode === "scratch" && (
-                    <p className="text-xs text-slate-500 -mt-4">
-                      Start with a blank presentation. You&apos;ll be able to add and customize slides manually.
-                    </p>
-                  )}
-
                   {/* Number of Slides */}
                   <div>
+                    <label htmlFor="slides" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
+                      Number of Slides
+                    </label>
                     <div className="relative">
                       <select
                         id="slides"
@@ -950,7 +1045,6 @@ export default function CreatePresentationClient({
                           const value = parseInt(e.target.value);
                           const selectedOption = allSlideOptions.find((opt) => opt.value === value);
                           if (value > 0 && selectedOption?.disabled) {
-                            // Show pricing modal when trying to select a disabled (premium) option
                             setShowCreditWarning(true);
                             return;
                           }
@@ -958,7 +1052,7 @@ export default function CreatePresentationClient({
                             handleChange("numberOfSlides", value);
                           }
                         }}
-                        className="w-full rounded-md border border-slate-200 bg-white px-5 py-4 text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all shadow-sm appearance-none cursor-pointer"
+                        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all appearance-none cursor-pointer"
                       >
                         {allSlideOptions.map((option, index) => {
                           if (option.isGroupHeader) {
@@ -970,9 +1064,8 @@ export default function CreatePresentationClient({
                           }
                           const planLabel = option.plan !== "Free" ? option.plan : "";
                           const spaces = planLabel ? "\u00A0".repeat(Math.max(1, 15 - option.label.length)) : "";
-                          const lockIcon = option.disabled ? "" : "";
                           const displayLabel = planLabel
-                            ? `${option.label}${spaces}${planLabel} ${lockIcon}`.trim()
+                            ? `${option.label}${spaces}${planLabel}`.trim()
                             : option.label;
 
                           return (
@@ -986,64 +1079,119 @@ export default function CreatePresentationClient({
                           );
                         })}
                       </select>
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                        <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
                       </div>
                     </div>
                   </div>
 
-                  {/* Tone and Language */}
-                  <div className="mt-4 grid grid-cols-2 gap-6">
+                  {/* Tone and Language - Side by side */}
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="tone" className="block text-sm font-semibold text-[#1e3a8a] mb-3">
+                      <label htmlFor="tone" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
                         Tone
                       </label>
                       <select
                         id="tone"
                         value={formData.tone}
                         onChange={(e) => handleChange("tone", e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-5 py-4 text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all shadow-sm"
+                        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
                       >
-                        <option value="professional">Professional</option>
-                        <option value="casual">Casual</option>
-                        <option value="formal">Formal</option>
-                        <option value="creative">Creative</option>
-                        <option value="friendly">Friendly</option>
+                        <optgroup label="Business">
+                          <option value="professional"> Professional</option>
+                          <option value="formal">Formal</option>
+                          <option value="corporate"> Corporate</option>
+                          <option value="executive"> Executive</option>
+                        </optgroup>
+                        <optgroup label="Friendly">
+                          <option value="casual">Casual</option>
+                          <option value="friendly"> Friendly</option>
+                          <option value="conversational">Conversational</option>
+                          <option value="warm">Warm</option>
+                        </optgroup>
+                        <optgroup label="Creative">
+                          <option value="creative"> Creative</option>
+                          <option value="playful">Playful</option>
+                          <option value="bold"> Bold</option>
+                          <option value="inspirational"> Inspirational</option>
+                        </optgroup>
+                        <optgroup label="Educational">
+                          <option value="educational"> Educational</option>
+                          <option value="informative"> Informative</option>
+                          <option value="technical"> Technical</option>
+                          <option value="academic"> Academic</option>
+                        </optgroup>
+                        <optgroup label="Persuasive">
+                          <option value="persuasive"> Persuasive</option>
+                          <option value="confident"> Confident</option>
+                          <option value="motivational"> Motivational</option>
+                          <option value="compelling"> Compelling</option>
+                        </optgroup>
                       </select>
                     </div>
 
                     <div>
-                      <label htmlFor="language" className="block text-sm font-semibold text-[#1e3a8a] mb-3">
+                      <label htmlFor="language" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
                         Language
                       </label>
                       <select
                         id="language"
                         value={formData.language}
                         onChange={(e) => handleChange("language", e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-5 py-4 text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all shadow-sm"
+                        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
                       >
-                        <option value="english">English</option>
-                        <option value="spanish">Spanish</option>
-                        <option value="french">French</option>
-                        <option value="german">German</option>
-                        <option value="italian">Italian</option>
-                        <option value="portuguese">Portuguese</option>
-                        <option value="chinese">Chinese</option>
-                        <option value="japanese">Japanese</option>
-                        <option value="korean">Korean</option>
-                        <option value="arabic">Arabic</option>
-                        <option value="hindi">Hindi</option>
-                        <option value="russian">Russian</option>
+                        <optgroup label="Popular">
+                          <option value="english">🇺🇸 English</option>
+                          <option value="spanish">🇪🇸 Español</option>
+                          <option value="french">🇫🇷 Français</option>
+                          <option value="german">🇩🇪 Deutsch</option>
+                          <option value="chinese">🇨🇳 中文</option>
+                        </optgroup>
+                        <optgroup label="European">
+                          <option value="portuguese">🇵🇹 Português</option>
+                          <option value="italian">🇮🇹 Italiano</option>
+                          <option value="dutch">🇳🇱 Nederlands</option>
+                          <option value="polish">🇵🇱 Polski</option>
+                          <option value="swedish">🇸🇪 Svenska</option>
+                          <option value="norwegian">🇳🇴 Norsk</option>
+                          <option value="danish">🇩🇰 Dansk</option>
+                          <option value="finnish">🇫🇮 Suomi</option>
+                          <option value="greek">🇬🇷 Ελληνικά</option>
+                          <option value="czech">🇨🇿 Čeština</option>
+                          <option value="romanian">🇷🇴 Română</option>
+                          <option value="hungarian">🇭🇺 Magyar</option>
+                          <option value="ukrainian">🇺🇦 Українська</option>
+                          <option value="russian">🇷🇺 Русский</option>
+                        </optgroup>
+                        <optgroup label="Asian">
+                          <option value="japanese">🇯🇵 日本語</option>
+                          <option value="korean">🇰🇷 한국어</option>
+                          <option value="hindi">🇮🇳 हिन्दी</option>
+                          <option value="thai">🇹🇭 ไทย</option>
+                          <option value="vietnamese">🇻🇳 Tiếng Việt</option>
+                          <option value="indonesian">🇮🇩 Bahasa Indonesia</option>
+                          <option value="malay">🇲🇾 Bahasa Melayu</option>
+                          <option value="tagalog">🇵🇭 Tagalog</option>
+                          <option value="bengali">🇧🇩 বাংলা</option>
+                          <option value="tamil">🇮🇳 தமிழ்</option>
+                        </optgroup>
+                        <optgroup label="Middle East & Africa">
+                          <option value="arabic">🇸🇦 العربية</option>
+                          <option value="hebrew">🇮🇱 עברית</option>
+                          <option value="turkish">🇹🇷 Türkçe</option>
+                          <option value="persian">🇮🇷 فارسی</option>
+                          <option value="swahili">🇰🇪 Kiswahili</option>
+                        </optgroup>
                       </select>
                     </div>
                   </div>
                 </>
               )}
 
-              {/* Primary generate / regenerate button (same position, no icon) */}
-              <div className="flex items-center justify-center pt-4">
+              {/* Primary generate / regenerate button */}
+              <div className={`flex items-center justify-center ${!showOutline ? "pt-2" : "pt-4"}`}>
                 <button
                   type="submit"
                   disabled={!formData.description.trim() || isStreaming}
@@ -1052,7 +1200,7 @@ export default function CreatePresentationClient({
                       ? "Regenerate this outline with the same description (replaces current outline)"
                       : "Generate a new outline with this description (replaces current outline)"
                   }
-                  className="px-12 py-3 rounded-md bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold shadow-lg transition-all hover:opacity-90 hover:shadow-xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="w-full sm:w-auto px-10 py-3 rounded-xl bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold shadow-lg transition-all hover:opacity-90 hover:shadow-xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm"
                 >
                   {isStreaming ? (
                     mode === "scratch" ? "Creating…" : isSamePrompt ? "Regenerating…" : "Generating…"
@@ -1139,7 +1287,7 @@ export default function CreatePresentationClient({
 
                 {/* Presentation style box – used when creating slides from this outline */}
                 {isCompleted && (
-                  <div className="mt-6 mb-[60px] rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm px-4 py-4 shadow-sm">
+                  <div className={`mt-6 mb-[60px] rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm px-4 py-4 shadow-sm ${isModelDropdownOpen ? 'relative z-[50]' : ''}`}>
                     {/* Text Content Section */}
                     <div className="mb-6 pb-6 border-b border-slate-200">
                       <div className="flex items-center gap-2 mb-3">
@@ -1220,6 +1368,15 @@ export default function CreatePresentationClient({
                           const theme = getThemeForDisplay(themeId);
                           if (!theme) return null;
                           const isSelected = formData.theme === theme.id;
+                          const hasBackgroundImage = !!(theme.previewBackgroundImage || theme.backgroundImage);
+                          const bgImageUrl = theme.previewBackgroundImage || theme.backgroundImage;
+                          // For custom themes, use the background color from colors, not preview.titleBg (which might be a URL)
+                          const previewBgColor = hasBackgroundImage 
+                            ? theme.colors.background 
+                            : (typeof theme.preview.titleBg === 'string' && !theme.preview.titleBg.startsWith('url(') 
+                                ? theme.preview.titleBg 
+                                : theme.colors.background);
+                          
                           return (
                             <button
                               key={theme.id}
@@ -1242,16 +1399,16 @@ export default function CreatePresentationClient({
                                 <div
                                   className="aspect-[1.8/1] w-full rounded shadow-sm relative overflow-hidden"
                                   style={{
-                                    backgroundColor: theme.preview.titleBg,
-                                    backgroundImage: (theme.previewBackgroundImage || theme.backgroundImage)
-                                      ? `url(${theme.previewBackgroundImage || theme.backgroundImage})`
+                                    backgroundColor: previewBgColor,
+                                    backgroundImage: hasBackgroundImage
+                                      ? `url(${bgImageUrl})`
                                       : theme.slideStyles.title.pattern || "none",
                                     backgroundSize: "cover",
                                     backgroundPosition: "center",
                                   }}
                                 >
                                   {/* Lighter overlay for background images */}
-                                  {(theme.previewBackgroundImage || theme.backgroundImage) && (
+                                  {hasBackgroundImage && (
                                     <div
                                       className="absolute inset-0"
                                       style={{ background: "rgba(0,0,0,0.25)" }}
@@ -1262,10 +1419,10 @@ export default function CreatePresentationClient({
                                   <div className="absolute inset-0 flex items-center justify-center">
                                     <div
                                       className={`rounded backdrop-blur-sm transition-all duration-300 flex flex-col justify-center px-2 py-1.5 overflow-hidden ${
-                                        theme.previewBackgroundImage || theme.backgroundImage ? "w-[70%] h-[60%]" : "w-[85%] h-[75%]"
+                                        hasBackgroundImage ? "w-[70%] h-[60%]" : "w-[85%] h-[75%]"
                                       }`}
                                       style={{
-                                        backgroundColor: (theme.previewBackgroundImage || theme.backgroundImage)
+                                        backgroundColor: hasBackgroundImage
                                           ? `${theme.cardBox?.background || theme.colors.background}e8`
                                           : theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
                                         border: theme.cardBox?.borderColor ? `1px solid ${theme.cardBox.borderColor}` : "none",
@@ -1335,41 +1492,315 @@ export default function CreatePresentationClient({
                     {/* Second selector: AI model (for AI images) or licensing (for external images) */}
                     <div>
                       {formData.imageSource === "ai-generated" ? (
-                        <div className="relative">
-                          <select
-                            id="imageModel-outline"
-                            value={formData.imageModel}
-                            onChange={(e) => handleChange("imageModel", e.target.value)}
-                            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all appearance-none"
-                          >
-                            <option value="gemini-2.5-flash-image">
-                              Nano Banana (Gemini 2.5 Flash Image)
-                            </option>
-                            <option value="gemini-3-pro-image-preview">
-                              Nano Banana Pro (Gemini 3 Pro Image Preview)
-                            </option>
-                            <option value="imagen-4.0-generate-001">
-                              Imagen 4
-                            </option>
-                            <option value="imagen-4.0-ultra-generate-001">
-                              Imagen 4 Ultra
-                            </option>
-                            <option value="imagen-4.0-fast-generate-001">
-                              Imagen 4 Fast
-                            </option>
-                            <option value="openai">
-                              DALL-E 3
-                            </option>
-                            <option value="openai-hd">
-                              DALL-E 3 HD
-                            </option>
-                          </select>
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                            <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
+                        <>
+                          {/* AI Model Selection - Gamma Style Custom Dropdown */}
+                          <p className="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">
+                            AI image model
+                          </p>
+                          <div className="relative mb-4 z-[100]">
+                            {/* Selected Model Button */}
+                            <button
+                              type="button"
+                              onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
+                              className="w-full flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
+                            >
+                              <div className="flex items-center gap-2">
+                                <Sparkles size={16} className="text-violet-500" />
+                                <span className="font-medium">
+                                  {formData.imageModel === "gemini-2.5-flash-image" && "Nano Banana"}
+                                  {formData.imageModel === "gemini-3-pro-image-preview" && "Nano Banana Pro"}
+                                  {formData.imageModel === "imagen-4.0-fast-generate-001" && "Imagen 4 Fast"}
+                                  {formData.imageModel === "imagen-4.0-generate-001" && "Imagen 4"}
+                                  {formData.imageModel === "imagen-4.0-ultra-generate-001" && "Imagen 4 Ultra"}
+                                  {formData.imageModel === "gpt-image-1.5" && "GPT Image 1.5"}
+                                  {formData.imageModel === "gpt-image-1" && "GPT Image 1"}
+                                  {formData.imageModel === "gpt-image-1-mini" && "GPT Image Mini"}
+                                  {formData.imageModel === "openai" && "DALL-E 3"}
+                                  {formData.imageModel === "openai-hd" && "DALL-E 3 HD"}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-slate-500">
+                                  {formData.imageModel === "gemini-2.5-flash-image" && CREDIT_COSTS.GEMINI_FLASH}
+                                  {formData.imageModel === "gemini-3-pro-image-preview" && CREDIT_COSTS.GEMINI_PRO}
+                                  {formData.imageModel === "imagen-4.0-fast-generate-001" && CREDIT_COSTS.IMAGEN_4_FAST}
+                                  {formData.imageModel === "imagen-4.0-generate-001" && CREDIT_COSTS.IMAGEN_4}
+                                  {formData.imageModel === "imagen-4.0-ultra-generate-001" && CREDIT_COSTS.IMAGEN_4_ULTRA}
+                                  {formData.imageModel === "gpt-image-1.5" && CREDIT_COSTS.GPT_IMAGE_DETAILED}
+                                  {formData.imageModel === "gpt-image-1" && CREDIT_COSTS.GPT_IMAGE_DETAILED}
+                                  {formData.imageModel === "gpt-image-1-mini" && CREDIT_COSTS.IMAGE_BASIC}
+                                  {formData.imageModel === "openai" && CREDIT_COSTS.DALLE_STANDARD}
+                                  {formData.imageModel === "openai-hd" && CREDIT_COSTS.DALLE_HD} ✦
+                                </span>
+                                <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${isModelDropdownOpen ? "rotate-180" : ""}`} />
+                              </div>
+                            </button>
+
+                            {/* Dropdown Menu - Fixed position to appear above sticky footer */}
+                            {isModelDropdownOpen && (
+                              <>
+                                {/* Backdrop to close dropdown - covers entire screen */}
+                                <div
+                                  className="fixed inset-0 z-[9998] bg-transparent"
+                                  onClick={() => setIsModelDropdownOpen(false)}
+                                  onMouseDown={() => setIsModelDropdownOpen(false)}
+                                />
+                                <div 
+                                  className="absolute bottom-full left-0 right-0 mb-1 bg-white rounded-xl border border-slate-200 shadow-2xl z-[9999] max-h-[400px] overflow-y-auto"
+                                >
+                                  {/* Basic Models - Free */}
+                                  <div className="p-2 border-b border-slate-100">
+                                    <div className="px-2 py-1.5 mb-1">
+                                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Basic models</span>
+                                    </div>
+                                    {[
+                                      { id: "gpt-image-1-mini", name: "GPT Image Mini", credits: CREDIT_COSTS.IMAGE_BASIC },
+                                      { id: "gemini-2.5-flash-image", name: "Nano Banana", credits: CREDIT_COSTS.GEMINI_FLASH },
+                                      { id: "imagen-4.0-fast-generate-001", name: "Imagen 4 Fast", credits: CREDIT_COSTS.IMAGEN_4_FAST },
+                                    ].map((model) => (
+                                      <button
+                                        key={model.id}
+                                        type="button"
+                                        onClick={() => {
+                                          handleChange("imageModel", model.id);
+                                          setIsModelDropdownOpen(false);
+                                        }}
+                                        className={`w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors ${
+                                          formData.imageModel === model.id
+                                            ? "bg-violet-50"
+                                            : "hover:bg-slate-50"
+                                        }`}
+                                      >
+                                        <div className="flex items-center gap-2.5">
+                                          {formData.imageModel === model.id ? (
+                                            <Check size={16} className="text-violet-600" />
+                                          ) : (
+                                            <Sparkles size={16} className="text-violet-500" />
+                                          )}
+                                          <span className={`text-sm ${formData.imageModel === model.id ? "font-medium text-violet-700" : "text-slate-700"}`}>{model.name}</span>
+                                        </div>
+                                        <span className="text-xs text-slate-400">{model.credits} ✦</span>
+                                      </button>
+                                    ))}
+                                  </div>
+
+                                  {/* Advanced Models - Plus */}
+                                  <div className="p-2 border-b border-slate-100">
+                                    <div className="flex items-center gap-2 px-2 py-1.5 mb-1">
+                                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Advanced models</span>
+                                      <span className="text-[10px] font-semibold text-white bg-blue-500 px-1.5 py-0.5 rounded-full">PLUS</span>
+                                    </div>
+                                    {[
+                                      { id: "gemini-3-pro-image-preview", name: "Nano Banana Pro", credits: CREDIT_COSTS.GEMINI_PRO, isNew: true },
+                                      { id: "imagen-4.0-generate-001", name: "Imagen 4", credits: CREDIT_COSTS.IMAGEN_4 },
+                                    ].map((model) => {
+                                      const userPlan = subscriptionPlan?.toLowerCase() || "free";
+                                      const hasAccess = userPlan === "plus" || userPlan === "pro" || userPlan === "ultra";
+                                      const isLocked = !hasAccess;
+                                      return (
+                                        <button
+                                          key={model.id}
+                                          type="button"
+                                          onClick={() => {
+                                            if (isLocked) {
+                                              setShowCreditWarning(true);
+                                              setIsModelDropdownOpen(false);
+                                              return;
+                                            }
+                                            handleChange("imageModel", model.id);
+                                            setIsModelDropdownOpen(false);
+                                          }}
+                                          className={`w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors ${
+                                            formData.imageModel === model.id
+                                              ? "bg-violet-50"
+                                              : isLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50"
+                                          }`}
+                                        >
+                                          <div className="flex items-center gap-2.5">
+                                            {formData.imageModel === model.id ? (
+                                              <Check size={16} className="text-violet-600" />
+                                            ) : (
+                                              <Sparkles size={16} className="text-violet-500" />
+                                            )}
+                                            <span className={`text-sm ${formData.imageModel === model.id ? "font-medium text-violet-700" : "text-slate-700"}`}>{model.name}</span>
+                                            {model.isNew && (
+                                              <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-full">NEW</span>
+                                            )}
+                                            {isLocked && <Lock size={12} className="text-slate-400 ml-1" />}
+                                          </div>
+                                          <span className="text-xs text-slate-400">{model.credits} ✦</span>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+
+                                  {/* Premium Models - Pro */}
+                                  <div className="p-2 border-b border-slate-100">
+                                    <div className="flex items-center gap-2 px-2 py-1.5 mb-1">
+                                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Premium models</span>
+                                      <span className="text-[10px] font-semibold text-white bg-indigo-600 px-1.5 py-0.5 rounded-full">PRO</span>
+                                    </div>
+                                    {[
+                                      { id: "openai", name: "DALL-E 3", credits: CREDIT_COSTS.DALLE_STANDARD },
+                                    ].map((model) => {
+                                      const userPlan = subscriptionPlan?.toLowerCase() || "free";
+                                      const hasAccess = userPlan === "pro" || userPlan === "ultra";
+                                      const isLocked = !hasAccess;
+                                      return (
+                                        <button
+                                          key={model.id}
+                                          type="button"
+                                          onClick={() => {
+                                            if (isLocked) {
+                                              setShowCreditWarning(true);
+                                              setIsModelDropdownOpen(false);
+                                              return;
+                                            }
+                                            handleChange("imageModel", model.id);
+                                            setIsModelDropdownOpen(false);
+                                          }}
+                                          className={`w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors ${
+                                            formData.imageModel === model.id
+                                              ? "bg-violet-50"
+                                              : isLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50"
+                                          }`}
+                                        >
+                                          <div className="flex items-center gap-2.5">
+                                            {formData.imageModel === model.id ? (
+                                              <Check size={16} className="text-violet-600" />
+                                            ) : (
+                                              <svg className="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.985 5.985 0 0 0-3.998 2.9 6.046 6.046 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.795.795 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646zM2.34 7.896a4.485 4.485 0 0 1 2.366-1.973V11.6a.766.766 0 0 0 .388.676l5.815 3.355-2.02 1.168a.076.076 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.34 7.896zm16.597 3.855l-5.833-3.387L15.119 7.2a.076.076 0 0 1 .071 0l4.83 2.791a4.494 4.494 0 0 1-.676 8.105v-5.678a.79.79 0 0 0-.407-.667zm2.01-3.023l-.141-.085-4.774-2.782a.776.776 0 0 0-.785 0L9.409 9.23V6.897a.066.066 0 0 1 .028-.061l4.83-2.787a4.5 4.5 0 0 1 6.68 4.66zm-12.64 4.135l-2.02-1.164a.08.08 0 0 1-.038-.057V6.075a4.5 4.5 0 0 1 7.375-3.453l-.142.08-4.778 2.758a.795.795 0 0 0-.393.681zm1.097-2.365l2.602-1.5 2.607 1.5v2.999l-2.597 1.5-2.607-1.5z"/>
+                                              </svg>
+                                            )}
+                                            <span className={`text-sm ${formData.imageModel === model.id ? "font-medium text-violet-700" : "text-slate-700"}`}>{model.name}</span>
+                                            {isLocked && <Lock size={12} className="text-slate-400 ml-1" />}
+                                          </div>
+                                          <span className="text-xs text-slate-400">{model.credits} ✦</span>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+
+                                  {/* Ultra Models */}
+                                  <div className="p-2">
+                                    <div className="flex items-center gap-2 px-2 py-1.5 mb-1">
+                                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Ultra models</span>
+                                      <span className="text-[10px] font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-500 px-1.5 py-0.5 rounded-full">ULTRA</span>
+                                    </div>
+                                    {[
+                                      { id: "imagen-4.0-ultra-generate-001", name: "Imagen 4 Ultra", credits: CREDIT_COSTS.IMAGEN_4_ULTRA },
+                                      { id: "gpt-image-1.5", name: "GPT Image 1.5", credits: CREDIT_COSTS.GPT_IMAGE_DETAILED },
+                                      { id: "gpt-image-1", name: "GPT Image 1", credits: CREDIT_COSTS.GPT_IMAGE_DETAILED },
+                                      { id: "openai-hd", name: "DALL-E 3 HD", credits: CREDIT_COSTS.DALLE_HD },
+                                    ].map((model) => {
+                                      const userPlan = subscriptionPlan?.toLowerCase() || "free";
+                                      const hasAccess = userPlan === "ultra";
+                                      const isLocked = !hasAccess;
+                                      return (
+                                        <button
+                                          key={model.id}
+                                          type="button"
+                                          onClick={() => {
+                                            if (isLocked) {
+                                              setShowCreditWarning(true);
+                                              setIsModelDropdownOpen(false);
+                                              return;
+                                            }
+                                            handleChange("imageModel", model.id);
+                                            setIsModelDropdownOpen(false);
+                                          }}
+                                          className={`w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors ${
+                                            formData.imageModel === model.id
+                                              ? "bg-violet-50"
+                                              : isLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50"
+                                          }`}
+                                        >
+                                          <div className="flex items-center gap-2.5">
+                                            {formData.imageModel === model.id ? (
+                                              <Check size={16} className="text-violet-600" />
+                                            ) : (
+                                              <Sparkles size={16} className="text-purple-500" />
+                                            )}
+                                            <span className={`text-sm ${formData.imageModel === model.id ? "font-medium text-violet-700" : "text-slate-700"}`}>{model.name}</span>
+                                            {isLocked && <Lock size={12} className="text-slate-400 ml-1" />}
+                                          </div>
+                                          <span className="text-xs text-slate-400">{model.credits} ✦</span>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              </>
+                            )}
                           </div>
-                        </div>
+
+                          {/* Image Art Style Selection (like Gamma) */}
+                          <p className="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">
+                            Art Style
+                          </p>
+                          <div className="flex gap-2 mb-2 overflow-x-auto pb-1">
+                            {[
+                              { id: "illustration", label: "Illustration", image: "https://img.freepik.com/premium-vector/stylish-woman-wearing-sunglasses-blazer_999679-23054.jpg" },
+                              { id: "photo", label: "Photo", image: "https://static.vecteezy.com/vite/assets/photo-masthead-375-BoK_p8LG.webp" },
+                              { id: "3d", label: "3D", image: "https://www.sculpteo.com/wp-content/uploads/elementor/thumbs/dice-final-o8x1hxsg7y9mnjtmpd7pzj7cjzv8qseogaahdmgq20.png" },
+                              { id: "line-art", label: "Line Art", image: "https://img.freepik.com/free-vector/abstract-waves-black-white-line-art-decoration-set-wallpaper-wall-art-design_79020-172.jpg" },
+                              { id: "abstract", label: "Abstract", image: "https://russell-collection.com/wp-content/uploads/2025/04/abstract-art-examples.jpg" },
+                              { id: "custom", label: "Custom", image: "/logo.png", isGrayscale: true, isLocal: true },
+                            ].map((style) => (
+                              <button
+                                key={style.id}
+                                type="button"
+                                onClick={() => handleChange("imageArtStyle", style.id)}
+                                className={`flex-shrink-0 flex flex-col items-center gap-1 transition-all ${
+                                  formData.imageArtStyle === style.id
+                                    ? "opacity-100"
+                                    : "opacity-70 hover:opacity-100"
+                                }`}
+                              >
+                                <div className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                                  formData.imageArtStyle === style.id
+                                    ? "border-[#06b6d4] ring-2 ring-[#06b6d4]/30"
+                                    : "border-slate-200 hover:border-slate-300"
+                                }`}>
+                                  <Image 
+                                    src={style.image} 
+                                    alt={style.label}
+                                    width={64}
+                                    height={64}
+                                    className={`w-full h-full object-cover ${'isGrayscale' in style && style.isGrayscale ? 'grayscale' : ''}`}
+                                    loading="lazy"
+                                    unoptimized={'isLocal' in style && style.isLocal}
+                                  />
+                                  {formData.imageArtStyle === style.id && (
+                                    <div className="absolute inset-0 bg-[#06b6d4]/20 flex items-end justify-start p-1">
+                                      <Check size={12} className="text-[#06b6d4] bg-white rounded-full p-0.5" />
+                                    </div>
+                                  )}
+                                </div>
+                                <span className={`text-[10px] font-medium ${
+                                  formData.imageArtStyle === style.id ? "text-[#06b6d4]" : "text-slate-600"
+                                }`}>{style.label}</span>
+                              </button>
+                            ))}
+                          </div>
+                          
+                          {/* Custom Art Style Text Input */}
+                          {formData.imageArtStyle === "custom" && (
+                            <div className="mb-4">
+                              <input
+                                type="text"
+                                value={formData.customArtStyleText}
+                                onChange={(e) => handleChange("customArtStyleText", e.target.value)}
+                                placeholder="Describe your art style (e.g., watercolor, cyberpunk, minimalist flat design...)"
+                                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
+                              />
+                              <p className="text-[10px] text-slate-500 mt-1">
+                                Be specific! E.g., &quot;vintage oil painting&quot;, &quot;anime style&quot;, &quot;neon cyberpunk&quot;, &quot;watercolor sketch&quot;
+                              </p>
+                            </div>
+                          )}
+                        </>
                       ) : (
                         <>
                           <div className="relative">

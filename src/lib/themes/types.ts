@@ -127,6 +127,8 @@ export interface ThemeSlideShape {
   shadow: "none" | "subtle" | "medium" | "deep" | "solid";
   // Solid shadow color (used when shadow is "solid")
   solidShadowColor?: string;
+  // Raw CSS shadow value (overrides shadow property when set)
+  rawShadow?: string;
   // Border style
   border?: {
     width: string;
@@ -169,11 +171,16 @@ export function getSlideShapeStyles(shape?: ThemeSlideShape): React.CSSPropertie
     solid: "none", // Will be overridden below if solidShadowColor is set
   };
   
-  // For solid shadow, use the solidShadowColor or default to a pink/accent color
-  let boxShadow = shadowMap[s.shadow] || shadowMap.medium;
-  if (s.shadow === "solid") {
-    const solidColor = s.solidShadowColor || "#f0abfc"; // Default pink if not specified
+  // Use rawShadow if provided (for custom themes with exact CSS values)
+  let boxShadow: string;
+  if (s.rawShadow !== undefined) {
+    boxShadow = s.rawShadow;
+  } else if (s.shadow === "solid") {
+    // For solid shadow, use the solidShadowColor or default to a pink/accent color
+    const solidColor = s.solidShadowColor || "#f0abfc";
     boxShadow = `8px 8px 0px 0px ${solidColor}`;
+  } else {
+    boxShadow = shadowMap[s.shadow] ?? shadowMap.medium!;
   }
   
   return {

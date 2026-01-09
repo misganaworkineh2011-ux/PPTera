@@ -1,5 +1,6 @@
 "use client";
 
+import type React from "react";
 import { useState, useEffect } from "react";
 import { Grid, List as ListIcon, Palette, Trash2, MoreHorizontal, X, Eye, Loader2 } from "lucide-react";
 import { useLanguage } from "~/contexts/LanguageContext";
@@ -7,6 +8,22 @@ import { dashboardTranslations } from "~/lib/dashboard-translations";
 
 // Google Fonts URL for preview
 const GOOGLE_FONTS_URL = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Poppins:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Lato:wght@400;700&family=Open+Sans:wght@400;600;700&family=Playfair+Display:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Source+Code+Pro:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap";
+
+// Curated color palettes - must match CustomThemeCreator and API
+const CURATED_PALETTES: Record<string, { background: string; backgroundAlt: string; text: string; heading: string; primary: string; accent: string }> = {
+  "clean-white": { background: "#ffffff", backgroundAlt: "#f8fafc", text: "#334155", heading: "#0f172a", primary: "#3b82f6", accent: "#06b6d4" },
+  "soft-cream": { background: "#fefce8", backgroundAlt: "#fef9c3", text: "#713f12", heading: "#422006", primary: "#ca8a04", accent: "#eab308" },
+  "elegant-noir": { background: "#0a0a0b", backgroundAlt: "#1a1a1d", text: "#e4e4e7", heading: "#fafafa", primary: "#f59e0b", accent: "#6366f1" },
+  "midnight-blue": { background: "#0f172a", backgroundAlt: "#1e293b", text: "#cbd5e1", heading: "#f1f5f9", primary: "#3b82f6", accent: "#06b6d4" },
+  "forest-green": { background: "#052e16", backgroundAlt: "#14532d", text: "#bbf7d0", heading: "#dcfce7", primary: "#22c55e", accent: "#4ade80" },
+  "ocean-depths": { background: "#0c4a6e", backgroundAlt: "#075985", text: "#bae6fd", heading: "#e0f2fe", primary: "#0ea5e9", accent: "#38bdf8" },
+  "sunset-warm": { background: "#fff7ed", backgroundAlt: "#ffedd5", text: "#9a3412", heading: "#7c2d12", primary: "#f97316", accent: "#fb923c" },
+  "rose-garden": { background: "#fff1f2", backgroundAlt: "#ffe4e6", text: "#9f1239", heading: "#881337", primary: "#f43f5e", accent: "#fb7185" },
+  "purple-haze": { background: "#2e1065", backgroundAlt: "#4c1d95", text: "#e9d5ff", heading: "#f3e8ff", primary: "#a855f7", accent: "#c084fc" },
+  "cyber-neon": { background: "#020617", backgroundAlt: "#0f172a", text: "#22d3ee", heading: "#67e8f9", primary: "#06b6d4", accent: "#f0abfc" },
+  "corporate-gray": { background: "#f8fafc", backgroundAlt: "#f1f5f9", text: "#475569", heading: "#1e293b", primary: "#64748b", accent: "#94a3b8" },
+  "warm-earth": { background: "#faf5f0", backgroundAlt: "#f5ebe0", text: "#78350f", heading: "#451a03", primary: "#b45309", accent: "#d97706" },
+};
 
 interface ThemeData {
   id: string;
@@ -32,6 +49,7 @@ interface ThemeData {
   designElements?: {
     cardStyle?: string;
     logoUrl?: string | null;
+    backgroundImageUrl?: string | null;
   };
   isDefault: boolean;
   createdAt?: Date;
@@ -71,6 +89,17 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
     setThemes(initialThemes);
   }, [initialThemes]);
 
+  // Load Google Fonts on mount
+  useEffect(() => {
+    const existingLink = document.querySelector(`link[href="${GOOGLE_FONTS_URL}"]`);
+    if (!existingLink) {
+      const link = document.createElement("link");
+      link.href = GOOGLE_FONTS_URL;
+      link.rel = "stylesheet";
+      document.head.appendChild(link);
+    }
+  }, []);
+
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -85,13 +114,41 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
     }
   }, [activeMenu]);
 
-  const getThemeColors = (theme: ThemeData): string[] => {
-    if (theme.colors.colors) return theme.colors.colors;
-    if (theme.colors.custom) {
-      const c = theme.colors.custom;
-      return [c.background, c.primary, c.accent, c.backgroundAlt];
+  // Helper to resolve theme colors (handles both curated palettes and custom colors)
+  const resolveThemeColors = (theme: ThemeData) => {
+    const defaultColors = {
+      background: "#ffffff",
+      backgroundAlt: "#f8fafc",
+      text: "#334155",
+      heading: "#0f172a",
+      primary: "#3b82f6",
+      accent: "#06b6d4",
+    };
+    
+    // First try custom colors
+    if (theme.colors.custom && theme.colors.custom.background) {
+      return {
+        background: theme.colors.custom.background || defaultColors.background,
+        backgroundAlt: theme.colors.custom.backgroundAlt || defaultColors.backgroundAlt,
+        text: theme.colors.custom.text || defaultColors.text,
+        heading: theme.colors.custom.heading || defaultColors.heading,
+        primary: theme.colors.custom.primary || defaultColors.primary,
+        accent: theme.colors.custom.accent || defaultColors.accent,
+      };
     }
-    return ["#3b82f6", "#06b6d4", "#f8fafc", "#e2e8f0"];
+    // Then try to resolve from curated palette
+    if (theme.colors.palette) {
+      const paletteColors = CURATED_PALETTES[theme.colors.palette];
+      if (paletteColors) {
+        return paletteColors;
+      }
+    }
+    // Fallback to defaults
+    return defaultColors;
+  };
+
+  const getBackgroundImage = (theme: ThemeData): string | null => {
+    return theme.designElements?.backgroundImageUrl || null;
   };
 
   const getFontName = (theme: ThemeData): string => {
@@ -190,149 +247,222 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
           </div>
         ) : viewMode === "grid" ? (
           <div className="grid gap-3 sm:gap-4 grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-            {themes.map((theme) => (
-              <div
-                key={theme.id}
-                onClick={() => setPreviewTheme(theme)}
-                className="group relative flex flex-col overflow-hidden rounded-md border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-lg hover:shadow-[#06b6d4]/10 cursor-pointer"
-              >
-                {/* Color Preview - matching aspect ratio */}
-                <div className="aspect-[16/9] w-full relative overflow-hidden">
-                  <div className="absolute inset-0 flex">
-                    {getThemeColors(theme).map((color, idx) => (
-                      <div key={idx} className="flex-1" style={{ backgroundColor: color }} />
-                    ))}
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-br from-black/5 to-transparent group-hover:from-black/10 transition-colors" />
-                  
-                  {/* Preview icon on hover */}
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-full p-2 shadow-lg">
-                      <Eye size={18} className="text-[#1e3a8a] dark:text-[#06b6d4]" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Content Section - matching presentations */}
-                <div className="flex flex-col p-2 sm:p-3">
-                  <h3 className="mb-1.5 sm:mb-2 line-clamp-2 text-xs sm:text-sm font-bold text-[#1e3a8a] dark:text-white" title={theme.name}>
-                    {theme.name}
-                  </h3>
-
-                  {/* Font indicator */}
-                  <div className="flex items-center gap-1 sm:gap-1.5 mb-1.5 sm:mb-2">
-                    <span className="text-[10px] sm:text-xs font-medium text-slate-500 dark:text-neutral-400">{getFontName(theme)}</span>
-                  </div>
-
-                  {/* Footer */}
-                  <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-slate-50 dark:border-neutral-800">
-                    <span className="text-[9px] sm:text-[10px] text-slate-400 dark:text-neutral-500">
-                      {t.customTheme || "Custom Theme"}
+            {themes.map((theme) => {
+              const themeColors = resolveThemeColors(theme);
+              const bgImage = getBackgroundImage(theme);
+              const headingFontFamily = fontFamilyMap[theme.fonts.heading || "inter"] || "'Inter', sans-serif";
+              const bodyFontFamily = fontFamilyMap[theme.fonts.body || "inter"] || "'Inter', sans-serif";
+              
+              return (
+                <div
+                  key={theme.id}
+                  onClick={() => setPreviewTheme(theme)}
+                  className="group relative flex flex-col overflow-hidden rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-lg hover:shadow-[#06b6d4]/10 cursor-pointer"
+                >
+                  {/* Custom badge */}
+                  <div className="absolute top-2 left-2 z-10">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
+                      ✨ Custom
                     </span>
-                    <div className="relative menu-container">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveMenu(activeMenu === theme.id ? null : theme.id);
-                        }}
-                        className="text-slate-300 hover:text-[#06b6d4] dark:text-neutral-500 dark:hover:text-[#06b6d4]"
+                  </div>
+
+                  {/* Theme Preview - actual slide-like preview */}
+                  <div 
+                    className="aspect-[16/10] w-full relative overflow-hidden border-b border-slate-100 dark:border-neutral-800"
+                    style={{ 
+                      backgroundColor: themeColors.background,
+                      backgroundImage: bgImage ? `url(${bgImage})` : undefined,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                    }}
+                  >
+                    {/* Overlay for readability when background image is present */}
+                    {bgImage && (
+                      <div 
+                        className="absolute inset-0" 
+                        style={{ backgroundColor: `${themeColors.background}cc` }} 
+                      />
+                    )}
+                    
+                    {/* Mini slide content */}
+                    <div className="relative p-3 h-full flex flex-col">
+                      <h4 
+                        className="text-sm font-bold mb-1 line-clamp-1"
+                        style={{ color: themeColors.heading, fontFamily: headingFontFamily }}
                       >
-                        <MoreHorizontal size={14} />
-                      </button>
-                      {activeMenu === theme.id && (
-                        <div className="absolute right-0 bottom-full mb-1 w-36 rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg z-50">
-                          <div className="p-1">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setPreviewTheme(theme);
-                                setActiveMenu(null);
-                              }}
-                              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800"
-                            >
-                              <Eye size={14} /> {t.preview || "Preview"}
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openDeleteConfirm(theme);
-                              }}
-                              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
-                            >
-                              <Trash2 size={14} /> {t.delete || "Delete"}
-                            </button>
+                        Title
+                      </h4>
+                      <p 
+                        className="text-[10px] mb-2 line-clamp-1"
+                        style={{ color: themeColors.text, fontFamily: bodyFontFamily }}
+                      >
+                        Body &amp; <span style={{ color: themeColors.accent, textDecoration: "underline" }}>link</span>
+                      </p>
+                      
+                      {/* Mini color dots */}
+                      <div className="mt-auto flex gap-1">
+                        <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: themeColors.primary }} />
+                        <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: themeColors.accent }} />
+                        <div className="w-3 h-3 rounded-full shadow-sm border" style={{ backgroundColor: themeColors.backgroundAlt, borderColor: themeColors.primary + "40" }} />
+                      </div>
+                    </div>
+                    
+                    {/* Preview icon on hover */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
+                      <div className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-full p-2 shadow-lg">
+                        <Eye size={18} className="text-[#1e3a8a] dark:text-[#06b6d4]" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Content Section */}
+                  <div className="flex flex-col p-2 sm:p-3 bg-white dark:bg-neutral-900">
+                    {/* Footer with name and menu */}
+                    <div className="flex items-center justify-between">
+                      <h3 className="line-clamp-1 text-xs sm:text-sm font-bold text-[#1e3a8a] dark:text-white" title={theme.name}>
+                        {theme.name}
+                      </h3>
+                      <div className="relative menu-container">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveMenu(activeMenu === theme.id ? null : theme.id);
+                          }}
+                          className="text-slate-300 hover:text-[#06b6d4] dark:text-neutral-500 dark:hover:text-[#06b6d4]"
+                        >
+                          <MoreHorizontal size={14} />
+                        </button>
+                        {activeMenu === theme.id && (
+                          <div className="absolute right-0 bottom-full mb-1 w-36 rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg z-50">
+                            <div className="p-1">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setPreviewTheme(theme);
+                                  setActiveMenu(null);
+                                }}
+                                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800"
+                              >
+                                <Eye size={14} /> {t.preview || "Preview"}
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openDeleteConfirm(theme);
+                                }}
+                                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                              >
+                                <Trash2 size={14} /> {t.delete || "Delete"}
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           /* List View */
           <div className="space-y-2">
-            {themes.map((theme) => (
-              <div
-                key={theme.id}
-                onClick={() => setPreviewTheme(theme)}
-                className="group flex items-center gap-2 sm:gap-4 rounded-md border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-2 sm:p-3 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-md cursor-pointer"
-              >
-                {/* Color Preview */}
-                <div className="w-14 h-10 sm:w-20 sm:h-14 flex-shrink-0 rounded relative overflow-hidden">
-                  <div className="absolute inset-0 flex">
-                    {getThemeColors(theme).map((color, idx) => (
-                      <div key={idx} className="flex-1" style={{ backgroundColor: color }} />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-sm sm:text-base font-bold text-[#1e3a8a] dark:text-white truncate">{theme.name}</h3>
-                  <p className="text-[10px] sm:text-xs text-slate-500 dark:text-neutral-400">{getFontName(theme)}</p>
-                </div>
-
-                {/* Actions */}
-                <div className="relative flex-shrink-0 menu-container">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActiveMenu(activeMenu === theme.id ? null : theme.id);
+            {themes.map((theme) => {
+              const themeColors = resolveThemeColors(theme);
+              const bgImage = getBackgroundImage(theme);
+              const headingFontFamily = fontFamilyMap[theme.fonts.heading || "inter"] || "'Inter', sans-serif";
+              const bodyFontFamily = fontFamilyMap[theme.fonts.body || "inter"] || "'Inter', sans-serif";
+              
+              return (
+                <div
+                  key={theme.id}
+                  onClick={() => setPreviewTheme(theme)}
+                  className="group flex items-center gap-2 sm:gap-4 rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-2 sm:p-3 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-md cursor-pointer"
+                >
+                  {/* Theme Preview - mini slide */}
+                  <div 
+                    className="w-20 h-14 sm:w-28 sm:h-20 flex-shrink-0 rounded-lg relative overflow-hidden"
+                    style={{ 
+                      backgroundColor: themeColors.background,
+                      backgroundImage: bgImage ? `url(${bgImage})` : undefined,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
                     }}
-                    className="text-slate-300 hover:text-[#06b6d4] dark:text-neutral-500 dark:hover:text-[#06b6d4]"
                   >
-                    <MoreHorizontal size={18} />
-                  </button>
-                  {activeMenu === theme.id && (
-                    <div className="absolute right-0 top-full mt-1 w-36 rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg z-50">
-                      <div className="p-1">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setPreviewTheme(theme);
-                            setActiveMenu(null);
-                          }}
-                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800"
-                        >
-                          <Eye size={14} /> {t.preview || "Preview"}
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openDeleteConfirm(theme);
-                          }}
-                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
-                        >
-                          <Trash2 size={14} /> {t.delete || "Delete"}
-                        </button>
+                    {bgImage && (
+                      <div className="absolute inset-0" style={{ backgroundColor: `${themeColors.background}cc` }} />
+                    )}
+                    <div className="relative p-2 h-full flex flex-col">
+                      <h4 
+                        className="text-[10px] sm:text-xs font-bold line-clamp-1"
+                        style={{ color: themeColors.heading, fontFamily: headingFontFamily }}
+                      >
+                        Title
+                      </h4>
+                      <p 
+                        className="text-[8px] sm:text-[10px] line-clamp-1"
+                        style={{ color: themeColors.text, fontFamily: bodyFontFamily }}
+                      >
+                        Body &amp; <span style={{ color: themeColors.accent }}>link</span>
+                      </p>
+                      <div className="mt-auto flex gap-0.5">
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: themeColors.primary }} />
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: themeColors.accent }} />
                       </div>
                     </div>
-                  )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-sm sm:text-base font-bold text-[#1e3a8a] dark:text-white truncate">{theme.name}</h3>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-1.5 py-0.5 text-[8px] font-semibold text-white">
+                        ✨ Custom
+                      </span>
+                    </div>
+                    <p className="text-[10px] sm:text-xs text-slate-500 dark:text-neutral-400">{getFontName(theme)}</p>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="relative flex-shrink-0 menu-container">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveMenu(activeMenu === theme.id ? null : theme.id);
+                      }}
+                      className="text-slate-300 hover:text-[#06b6d4] dark:text-neutral-500 dark:hover:text-[#06b6d4]"
+                    >
+                      <MoreHorizontal size={18} />
+                    </button>
+                    {activeMenu === theme.id && (
+                      <div className="absolute right-0 top-full mt-1 w-36 rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg z-50">
+                        <div className="p-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPreviewTheme(theme);
+                              setActiveMenu(null);
+                            }}
+                            className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800"
+                          >
+                            <Eye size={14} /> {t.preview || "Preview"}
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openDeleteConfirm(theme);
+                            }}
+                            className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                          >
+                            <Trash2 size={14} /> {t.delete || "Delete"}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -394,17 +524,66 @@ function ThemePreviewModal({ theme, onClose }: { theme: ThemeData; onClose: () =
     }
   }, []);
 
-  const colors = theme.colors.custom || {
-    background: "#ffffff",
-    backgroundAlt: "#f8fafc",
-    text: "#334155",
-    heading: "#0f172a",
-    primary: "#3b82f6",
-    accent: "#06b6d4",
+  // Resolve colors - handles both curated palettes and custom colors
+  const resolveColors = () => {
+    const defaultColors = {
+      background: "#ffffff",
+      backgroundAlt: "#f8fafc",
+      text: "#334155",
+      heading: "#0f172a",
+      primary: "#3b82f6",
+      accent: "#06b6d4",
+    };
+    
+    if (theme.colors.custom && theme.colors.custom.background) {
+      return theme.colors.custom;
+    }
+    if (theme.colors.palette) {
+      const paletteColors = CURATED_PALETTES[theme.colors.palette];
+      if (paletteColors) {
+        return paletteColors;
+      }
+    }
+    return defaultColors;
   };
 
+  const colors = resolveColors();
+  const backgroundImageUrl = theme.designElements?.backgroundImageUrl || null;
   const headingFontFamily = fontFamilyMap[theme.fonts.heading || "inter"] || "'Inter', sans-serif";
   const bodyFontFamily = fontFamilyMap[theme.fonts.body || "inter"] || "'Inter', sans-serif";
+  const cardStyle = theme.designElements?.cardStyle || "standard";
+
+  // Get slide shape styles - must match CustomThemeCreator preview exactly
+  const getSlideShapeStyles = (): React.CSSProperties => {
+    switch (cardStyle) {
+      case "standard":
+        return { borderRadius: "0.75rem", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.2)" };
+      case "flat":
+        return { borderRadius: "0", boxShadow: "none", border: `2px solid ${colors.primary}30` };
+      case "outline":
+        return { borderRadius: "0", boxShadow: "none", border: `3px solid ${colors.primary}` };
+      case "outline-rounded":
+        return { borderRadius: "1.5rem", boxShadow: "none", border: `3px solid ${colors.primary}` };
+      case "sharp":
+        return { borderRadius: "0", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)" };
+      case "blocky":
+        return { borderRadius: "0", boxShadow: `8px 8px 0px 0px ${colors.primary}` };
+      case "blocky-rounded":
+        return { borderRadius: "1.5rem", boxShadow: `8px 8px 0px 0px ${colors.primary}` };
+      case "glass":
+        return { borderRadius: "1rem", boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)", border: `1px solid ${colors.primary}20` };
+      case "rounded":
+        return { borderRadius: "1.5rem", boxShadow: "0 20px 40px -10px rgba(0, 0, 0, 0.2)" };
+      case "soft-cloud":
+        return { borderRadius: "1.25rem", boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)" };
+      case "capsule":
+        return { borderRadius: "2.5rem", boxShadow: "0 15px 30px -8px rgba(0, 0, 0, 0.2)" };
+      default:
+        return { borderRadius: "0.75rem", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.2)" };
+    }
+  };
+
+  const slideShapeStyles = getSlideShapeStyles();
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
@@ -416,7 +595,7 @@ function ThemePreviewModal({ theme, onClose }: { theme: ThemeData; onClose: () =
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
           <div>
             <h2 className="text-xl font-bold text-[#1e3a8a]">{theme.name}</h2>
-            <p className="text-sm text-slate-500">Theme Preview</p>
+            <p className="text-sm text-slate-500">Theme Preview • Shape: {cardStyle}</p>
           </div>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100">
             <X size={20} />
@@ -424,11 +603,27 @@ function ThemePreviewModal({ theme, onClose }: { theme: ThemeData; onClose: () =
         </div>
 
         {/* Preview Content */}
-        <div className="p-6" style={{ backgroundColor: colors.background }}>
-          {/* Slide Preview */}
+        <div 
+          className="p-6 relative"
+          style={{ 
+            backgroundColor: colors.background,
+            backgroundImage: backgroundImageUrl ? `url(${backgroundImageUrl})` : undefined,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        >
+          {/* Overlay for readability */}
+          {backgroundImageUrl && (
+            <div className="absolute inset-0" style={{ backgroundColor: `${colors.background}cc` }} />
+          )}
+          
+          {/* Slide Preview - with slide shape applied */}
           <div 
-            className="rounded-xl overflow-hidden shadow-lg"
-            style={{ backgroundColor: colors.backgroundAlt }}
+            className="relative overflow-hidden"
+            style={{ 
+              backgroundColor: backgroundImageUrl ? "transparent" : colors.backgroundAlt,
+              ...slideShapeStyles,
+            }}
           >
             <div className="p-8">
               <p className="text-xs mb-2" style={{ color: colors.accent }}>Hello 👋</p>
