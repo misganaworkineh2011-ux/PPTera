@@ -811,6 +811,7 @@ export default function CreatePresentationClient({
 
                                 const data = await response.json();
                                 handleChange("description", data.text);
+                                setPastedContent(data.text); // Also update the textarea display
                                 toast.success("Document parsed successfully", { id: loadingToast });
                               } catch (error) {
                                 console.error("Parsing error:", error);

@@ -45,7 +45,8 @@
     "officeparser": "^5.2.2",
     "openai": "^4.77.0",
     "pdf-lib": "^1.17.1",
-    "pdf2json": "^4.0.0",
+    "pdf-parse": "^2.4.5",
+    "pdfjs-dist": "^4.0.379",
     "pptxgenjs": "^3.12.0",
     "puppeteer": "^24.33.1",
     "puppeteer-core": "^24.34.0",
@@ -61,6 +62,7 @@
     "sonner": "^2.0.7",
     "svix": "^1.82.0",
     "tailwind-merge": "^3.3.1",
+    "unpdf": "^1.4.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {
