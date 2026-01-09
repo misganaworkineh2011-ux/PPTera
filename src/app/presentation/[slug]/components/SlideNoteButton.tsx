@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { StickyNote, Send, X } from "lucide-react";
 import type { Theme } from "~/lib/themes";
 import { getThemeType } from "./types";
+import { getModalColors } from "./ui-colors";
 
 interface SlideNoteButtonProps {
   slideIndex: number;
@@ -32,17 +33,17 @@ export function SlideNoteButton({
   const panelRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Theme-aware styling
-  const themeType = theme ? getThemeType(theme) : "light";
-  const isLight = themeType === "light" || themeType === "corporate";
+  // Theme-aware styling using the helper
+  const colors = theme ? getModalColors(theme) : null;
+  const isLight = colors ? !colors.isDark : true;
   
   // Theme-aware colors
-  const panelBg = theme?.pageBackground || (isLight ? "#ffffff" : theme?.colors.background || "#18181b");
-  const panelBorder = isLight ? "#e2e8f0" : theme?.colors.border || "#3f3f46";
-  const textColor = isLight ? "#1e293b" : theme?.colors.text || "#fafafa";
-  const mutedColor = isLight ? "#94a3b8" : theme?.colors.textMuted || "#a1a1aa";
-  const surfaceColor = isLight ? "#fef3c7" : theme?.colors.surface || "#27272a";
-  const surfaceBorder = isLight ? "rgba(251, 191, 36, 0.5)" : theme?.colors.border || "#3f3f46";
+  const panelBg = colors?.bg || "#ffffff";
+  const panelBorder = colors?.border || "#e2e8f0";
+  const textColor = colors?.text || "#1e293b";
+  const mutedColor = colors?.textMuted || "#94a3b8";
+  const surfaceColor = isLight ? "#fef3c7" : (colors?.surface || "#27272a");
+  const surfaceBorder = isLight ? "rgba(251, 191, 36, 0.5)" : (colors?.border || "#3f3f46");
 
   // Calculate panel position when opening
   const openPanel = () => {

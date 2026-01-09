@@ -85,6 +85,35 @@ import { skyBlueTheme } from "./sky-blue";
 import { coastalBreezeTheme } from "./coastal-breeze";
 import { neonMatrixTheme } from "./neon-matrix";
 import { midnightBorderTheme } from "./midnight-border";
+import { retroMotorbikeTheme } from "./vintage-botanical";
+import { roseStripesTheme } from "./rose-garden";
+import { botanicalGardenTheme } from "./golden-meadow";
+import { cozyCottageTheme } from "./autumn-harvest";
+import { urbanBuildingTheme } from "./urban-building";
+import { sunsetCoastTheme } from "./sunset-coast";
+import { goldenHorizonTheme } from "./golden-horizon";
+import { lavenderFieldsTheme } from "./lavender-fields";
+import { desertSandTheme } from "./desert-sand";
+import { mistyForestTheme } from "./misty-forest";
+import { tropicalJungleTheme } from "./tropical-jungle";
+import { citrusSplashTheme } from "./citrus-splash";
+import { vintageWineTheme } from "./vintage-wine";
+import { sunnyBeachTheme } from "./sunny-beach";
+import { industrialSteelTheme } from "./industrial-steel";
+import { japaneseGardenTheme } from "./japanese-garden";
+import { nauticalEleganceTheme } from "./nautical-elegance";
+import { springBlossomTheme } from "./spring-blossom";
+import { autumnSunsetTheme } from "./autumn-sunset";
+import { royalVelvetTheme } from "./royal-velvet";
+import { midnightGoldTheme } from "./midnight-gold";
+import { cherryBlossomTheme } from "./cherry-blossom";
+import { primaryBoldTheme } from "./primary-bold";
+import { violetDreamTheme } from "./violet-dream";
+import { rusticEarthTheme } from "./rustic-earth";
+import { copperSpiceTheme } from "./copper-spice";
+import { mintTangerineTheme } from "./mint-tangerine";
+import { vintageCreamTheme } from "./vintage-cream";
+import { oceanPeachTheme } from "./ocean-peach";
 
 // Re-export themes for direct imports
 export {
@@ -111,33 +140,92 @@ export {
   coastalBreezeTheme,
   neonMatrixTheme,
   midnightBorderTheme,
+  retroMotorbikeTheme,
+  roseStripesTheme,
+  botanicalGardenTheme,
+  cozyCottageTheme,
+  urbanBuildingTheme,
+  sunsetCoastTheme,
+  goldenHorizonTheme,
+  lavenderFieldsTheme,
+  desertSandTheme,
+  mistyForestTheme,
+  tropicalJungleTheme,
+  citrusSplashTheme,
+  vintageWineTheme,
+  sunnyBeachTheme,
+  industrialSteelTheme,
+  japaneseGardenTheme,
+  nauticalEleganceTheme,
+  springBlossomTheme,
+  autumnSunsetTheme,
+  royalVelvetTheme,
+  midnightGoldTheme,
+  cherryBlossomTheme,
+  primaryBoldTheme,
+  violetDreamTheme,
+  rusticEarthTheme,
+  copperSpiceTheme,
+  mintTangerineTheme,
+  vintageCreamTheme,
+  oceanPeachTheme,
 };
 
-// All themes array - shuffled for variety
+// All themes array - alternating non-image and image background themes for variety
 export const themes = [
-  blackGoldLuxuryTheme,
-  corporateCleanTheme,
-  sunsetGradientTheme,
-  obsidianTheme,
-  sageGardenTheme,
-  cyberpunkNeonTheme,
-  frostTheme,
-  midnightBorderTheme,
-  nebulaTheme,
-  paperCraftTheme,
-  hackerTerminalTheme,
-  coastalBreezeTheme,
-  auroraTheme,
-  lavenderDreamTheme,
-  emberTheme,
-  neonMatrixTheme,
-  sakuraTheme,
-  dnaBlueprintTheme,
-  terracottaTheme,
-  skyBlueTheme,
-  midnightTheme,
-  animeDreamscapeTheme,
-  auroraBorealisTechTheme,
+  // Non-image, Image, Non-image, Image pattern
+  corporateCleanTheme,        // non-image
+  oceanPeachTheme,            // image
+  blackGoldLuxuryTheme,       // non-image
+  japaneseGardenTheme,        // image
+  sageGardenTheme,            // non-image
+  nauticalEleganceTheme,      // image
+  lavenderDreamTheme,         // non-image
+  springBlossomTheme,         // image
+  paperCraftTheme,            // non-image
+  autumnSunsetTheme,          // image
+  skyBlueTheme,               // non-image
+  royalVelvetTheme,           // image
+  coastalBreezeTheme,         // non-image
+  midnightGoldTheme,          // image
+  frostTheme,                 // non-image
+  cherryBlossomTheme,         // image
+  nebulaTheme,                // non-image
+  primaryBoldTheme,           // image
+  emberTheme,                 // non-image
+  violetDreamTheme,           // image
+  auroraTheme,                // non-image
+  rusticEarthTheme,           // image
+  sakuraTheme,                // non-image
+  copperSpiceTheme,           // image
+  terracottaTheme,            // non-image
+  mintTangerineTheme,         // image
+  obsidianTheme,              // non-image
+  vintageCreamTheme,          // image
+  midnightTheme,              // non-image
+  retroMotorbikeTheme,        // image
+  sunsetGradientTheme,        // non-image
+  roseStripesTheme,           // image
+  hackerTerminalTheme,        // non-image
+  botanicalGardenTheme,       // image
+  cyberpunkNeonTheme,         // non-image
+  cozyCottageTheme,           // image
+  neonMatrixTheme,            // non-image
+  urbanBuildingTheme,         // image
+  midnightBorderTheme,        // non-image
+  sunsetCoastTheme,           // image
+  dnaBlueprintTheme,          // non-image
+  goldenHorizonTheme,         // image
+  animeDreamscapeTheme,       // non-image
+  lavenderFieldsTheme,        // image
+  auroraBorealisTechTheme,    // non-image
+  desertSandTheme,            // image
+  mistyForestTheme,           // image
+  tropicalJungleTheme,        // image
+  citrusSplashTheme,          // image
+  vintageWineTheme,           // image
+  sunnyBeachTheme,            // image
+  industrialSteelTheme,       // image
 ];
 
 // Helper functions

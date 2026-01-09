@@ -21,6 +21,7 @@ import {
 import { type LayoutType } from "~/lib/slide-layouts";
 import type { Theme } from "~/lib/themes";
 import { getThemeType } from "./types";
+import { getModalColors } from "./ui-colors";
 
 // ============================================================================
 // TYPES
@@ -55,7 +56,6 @@ interface SlideMenuProps {
   slideContent?: SlideContent;
   speakerNotes?: string[];
   theme?: Theme;
-  onChangeLayout: () => void;
   onChangeContentLayout?: () => void;
   onDuplicate: () => void;
   onAddSlide: () => void;
@@ -99,29 +99,16 @@ function getThemeColors(theme?: Theme): ThemeColors {
     };
   }
   
-  const themeType = getThemeType(theme);
-  const isLight = themeType === "light" || themeType === "corporate";
-  
-  if (isLight) {
-    return {
-      bg: "#ffffff",
-      border: "rgba(226, 232, 240, 0.8)",
-      text: "#334155",
-      textMuted: "#94a3b8",
-      surface: "#f1f5f9",
-      hoverBg: "#f1f5f9",
-      divider: "#f1f5f9",
-    };
-  }
+  const colors = getModalColors(theme);
   
   return {
-    bg: theme.pageBackground || theme.colors.background,
-    border: theme.colors.border,
-    text: theme.colors.text,
-    textMuted: theme.colors.textMuted,
-    surface: theme.colors.surface,
-    hoverBg: theme.colors.surfaceHover || theme.colors.surface,
-    divider: theme.colors.border,
+    bg: colors.bg,
+    border: colors.border,
+    text: colors.text,
+    textMuted: colors.textMuted,
+    surface: colors.surface,
+    hoverBg: colors.hoverBg,
+    divider: colors.border,
   };
 }
 
@@ -258,7 +245,6 @@ interface StylingPanelProps {
   hasChart?: boolean;
   slideType?: "title" | "content";
   colors: ThemeColors;
-  onChangeLayout: () => void;
   onChangeContentLayout?: () => void;
   onAddImage: () => void;
   onAddChart?: () => void;
@@ -271,7 +257,6 @@ function StylingPanel({
   hasChart,
   slideType,
   colors,
-  onChangeLayout,
   onChangeContentLayout,
   onAddImage,
   onAddChart,
@@ -283,7 +268,6 @@ function StylingPanel({
     onClose();
   };
 
-  const showChangeLayout = slideType === "title" || imageCount > 0;
   const showContentLayout = slideType !== "title" && onChangeContentLayout;
 
   return (
@@ -295,14 +279,6 @@ function StylingPanel({
       }}
     >
       <div className="space-y-0.5">
-        {showChangeLayout && (
-          <MenuButton
-            icon={<LayoutGrid size={15} />}
-            label="Slide layout"
-            colors={colors}
-            onClick={handleAction(onChangeLayout)}
-          />
-        )}
         {showContentLayout && (
           <MenuButton
             icon={<LayoutGrid size={15} />}
@@ -501,7 +477,6 @@ export function SlideMenu({
   hasChart,
   slideContent,
   theme,
-  onChangeLayout,
   onChangeContentLayout,
   onDuplicate,
   onAddSlide,
@@ -589,7 +564,6 @@ export function SlideMenu({
               hasChart={hasChart}
               slideType={slideContent?.type}
               colors={colors}
-              onChangeLayout={onChangeLayout}
               onChangeContentLayout={onChangeContentLayout}
               onAddImage={onAddImage}
               onAddChart={onAddChart}

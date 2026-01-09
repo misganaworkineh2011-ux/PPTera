@@ -6,14 +6,11 @@ import { type ChartData, CHART_TEMPLATES, type ChartType } from "~/lib/charts/ty
 import ChartCreator from "./ChartCreator";
 import InteractiveChart from "./InteractiveChart";
 import { type Theme } from "~/lib/themes";
+import { getModalColors } from "~/app/presentation/[slug]/components/ui-colors";
 
 // Helper to determine if theme is dark
 function isDarkTheme(theme?: Theme): boolean {
   if (!theme) return false;
-  const themeId = theme.id || "";
-  const darkThemes = ["elegant-noir", "obsidian", "midnight", "nebula", "cyber", "alien", "cosmic", "architectural", "anime", "hacker", "black-gold-luxury", "neon-matrix", "midnight-border"];
-  if (darkThemes.some(t => themeId.includes(t))) return true;
-  // Check by background color luminance
   const bg = theme.colors?.background || "#ffffff";
   if (bg.startsWith("#")) {
     const hex = bg.slice(1);
@@ -26,29 +23,29 @@ function isDarkTheme(theme?: Theme): boolean {
   return false;
 }
 
-// Get theme-aware colors
+// Get theme-aware colors using the helper
 function getThemeColors(theme?: Theme) {
-  const isDark = isDarkTheme(theme);
-  if (isDark && theme) {
-    // For dark themes, use solid background color (not gradient) for modal
+  if (!theme) {
     return {
-      bg: theme.colors.background,
-      surface: theme.colors.surface,
-      border: theme.colors.border,
-      text: theme.colors.text,
-      textMuted: theme.colors.textMuted,
-      hoverBg: theme.colors.surfaceHover || "rgba(255,255,255,0.1)",
-      accent: theme.colors.primary || "#06b6d4",
+      bg: "#ffffff",
+      surface: "#f8fafc",
+      border: "#e2e8f0",
+      text: "#0f172a",
+      textMuted: "#64748b",
+      hoverBg: "#f1f5f9",
+      accent: "#06b6d4",
     };
   }
+  
+  const modalColors = getModalColors(theme);
   return {
-    bg: "#ffffff",
-    surface: "#f8fafc",
-    border: "#e2e8f0",
-    text: "#0f172a",
-    textMuted: "#64748b",
-    hoverBg: "#f1f5f9",
-    accent: "#06b6d4",
+    bg: modalColors.bg,
+    surface: modalColors.surface,
+    border: modalColors.border,
+    text: modalColors.text,
+    textMuted: modalColors.textMuted,
+    hoverBg: modalColors.hoverBg,
+    accent: modalColors.accent || "#06b6d4",
   };
 }
 

@@ -18,7 +18,6 @@ import {
   type EditingState,
 } from "~/components/presentation/types";
 import SlideRenderer from "~/components/presentation/SlideRenderer";
-import LayoutModal from "~/components/presentation/LayoutModal";
 import ContentLayoutPanel, { CONTENT_LAYOUT_PANEL_WIDTH, type ContentLayoutId } from "~/components/presentation/ContentLayoutPanel";
 import ExportModal from "~/components/presentation/ExportModal";
 import ShareModal from "~/components/presentation/ShareModal";
@@ -210,7 +209,6 @@ export default function PresentationViewer({
   const [activeSlideIndex, setActiveSlideIndex] = useState<number | null>(null);
   // Track the last hovered slide for the AI agent panel
   const [lastHoveredSlideIndex, setLastHoveredSlideIndex] = useState<number>(0);
-  const [showLayoutModal, setShowLayoutModal] = useState(false);
   const [showContentLayoutPanel, setShowContentLayoutPanel] = useState(false);
   const [editingText, setEditingText] = useState<EditingState | null>(null);
   const [showImageModal, setShowImageModal] = useState<number | null>(null);
@@ -1006,7 +1004,6 @@ export default function PresentationViewer({
       };
       updateSlidesWithSave(newSlides);
     }
-    setShowLayoutModal(false);
   };
 
   const changeContentLayout = (slideIndex: number, layoutId: ContentLayoutId) => {
@@ -1609,7 +1606,6 @@ export default function PresentationViewer({
               image: slide.image,
               images: slide.images,
             }}
-            onChangeLayout={() => { setActiveSlideIndex(index); setShowLayoutModal(true); }}
             onChangeContentLayout={() => { setActiveSlideIndex(index); setShowContentLayoutPanel(true); }}
             onDuplicate={() => duplicateSlide(index)}
             onAddSlide={() => addSlideAt(index)}
@@ -2258,24 +2254,6 @@ export default function PresentationViewer({
         {viewMode === "scroll" && !isFullscreen && !isPublicView && showFeedback && <FeedbackSection presentationId={presentation.id} theme={theme} />}
         </div>
         {/* End of content area that shifts */}
-
-        {showLayoutModal && activeSlideIndex !== null && (
-          <LayoutModal 
-            slideType={slides[activeSlideIndex]?.type || "content"}
-            currentSlideLayout={slides[activeSlideIndex]?.slideLayout || "image-right"}
-            currentContentLayout={slides[activeSlideIndex]?.contentLayout || "box-style-1"}
-            currentImageSize={slides[activeSlideIndex]?.imageSize || "medium"}
-            currentImageShape={slides[activeSlideIndex]?.imageShape || "arc"}
-            contentItems={slides[activeSlideIndex]?.bulletPoints?.map((bp, i) => ({
-              label: `Point ${i + 1}`,
-              text: typeof bp === "string" ? bp : ((bp as { text?: string } | null)?.text ?? ""),
-            })) || []}
-            theme={theme}
-            onSelectSlideLayout={(layoutId, imageSize, imageShape) => changeSlideLayout(activeSlideIndex, layoutId, imageSize, imageShape)}
-            onOpenContentLayoutPanel={() => setShowContentLayoutPanel(true)}
-            onClose={() => setShowLayoutModal(false)} 
-          />
-        )}
 
         {showImageModal !== null && (
           <MultiImageModal
