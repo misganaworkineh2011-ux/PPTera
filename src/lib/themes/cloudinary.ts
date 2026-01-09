@@ -49,3 +49,60 @@ export function getThemePreviewUrl(themeId: string): string {
   const publicId = getThemeBackgroundPath(themeId);
   return `${CLOUDINARY_BASE_URL}/${publicId}`;
 }
+
+/**
+ * Transform any Cloudinary URL to add optimization parameters
+ * Works with any Cloudinary URL format
+ * 
+ * @param url - Original Cloudinary URL
+ * @param options - Transformation options
+ * @returns Optimized Cloudinary URL
+ */
+export function getOptimizedCloudinaryUrl(
+  url: string,
+  options: {
+    width?: number;
+    height?: number;
+    quality?: "auto" | number;
+    format?: "auto" | "webp" | "avif" | "jpg" | "png";
+  } = {}
+): string {
+  if (!url || !url.includes("cloudinary.com")) {
+    return url;
+  }
+
+  const { width = 400, quality = "auto", format = "auto" } = options;
+
+  // Build transformation string
+  const transforms: string[] = [];
+  if (width) transforms.push(`w_${width}`);
+  transforms.push(`q_${quality}`);
+  transforms.push(`f_${format}`);
+  transforms.push("c_fill"); // Crop to fill dimensions
+
+  const transformString = transforms.join(",");
+
+  // Insert transformations after /upload/
+  // Handle both formats:
+  // 1. .../upload/v123456/... (with version)
+  // 2. .../upload/folder/... (without version)
+  const uploadIndex = url.indexOf("/upload/");
+  if (uploadIndex === -1) return url;
+
+  const beforeUpload = url.substring(0, uploadIndex + 8); // includes "/upload/"
+  const afterUpload = url.substring(uploadIndex + 8);
+
+  return `${beforeUpload}${transformString}/${afterUpload}`;
+}
+
+/**
+ * Get optimized thumbnail URL for theme preview cards
+ * Uses small dimensions and auto quality/format for fast loading
+ */
+export function getThemeThumbnailUrl(url: string): string {
+  return getOptimizedCloudinaryUrl(url, {
+    width: 400,
+    quality: "auto",
+    format: "auto",
+  });
+}

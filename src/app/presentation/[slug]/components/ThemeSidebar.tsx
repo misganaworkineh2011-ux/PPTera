@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { X, Check, Loader2, Sparkles } from "lucide-react";
 import { themes, type Theme, getSlideShapeStyles } from "~/lib/themes";
+import { getThemeThumbnailUrl } from "~/lib/themes/cloudinary";
 import { getModalColors } from "./ui-colors";
 
 // All theme fonts for preview - loaded when sidebar opens
@@ -233,6 +234,8 @@ function ThemeCard({
 }) {
   const hasBackgroundImage = !!theme.previewBackgroundImage || !!theme.backgroundImage;
   const bgImageUrl = theme.previewBackgroundImage || theme.backgroundImage;
+  // Use optimized thumbnail URL for faster loading
+  const optimizedBgUrl = bgImageUrl ? getThemeThumbnailUrl(bgImageUrl) : undefined;
   const slideShapeStyles = getSlideShapeStyles(theme.slideShape);
   
   return (
@@ -260,7 +263,7 @@ function ThemeCard({
         style={{
           backgroundColor: theme.preview?.titleBg || theme.colors.background,
           backgroundImage: hasBackgroundImage
-            ? `url(${bgImageUrl})`
+            ? `url(${optimizedBgUrl})`
             : theme.slideStyles?.title?.pattern || "none",
           backgroundSize: "cover",
           backgroundPosition: "center",
