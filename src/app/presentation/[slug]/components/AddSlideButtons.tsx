@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { Plus, Sparkles, Send, Loader2, X, Image, LayoutGrid } from "lucide-react";
 import type { Theme } from "~/lib/themes";
 import { getThemeType } from "./types";
+import { getModalColors } from "./ui-colors";
 
 interface AddSlideButtonsProps {
   onAddSlide: () => void;
@@ -23,16 +24,16 @@ export function AddSlideButtons({ onAddSlide, onAddAISlide, presentationContext,
   const panelRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Theme-aware styling
-  const themeType = theme ? getThemeType(theme) : "light";
-  const isLight = themeType === "light" || themeType === "corporate";
+  // Theme-aware styling using the helper
+  const colors = theme ? getModalColors(theme) : null;
+  const isLight = colors ? !colors.isDark : true;
   
   // Theme-aware colors for the panel
-  const panelBg = theme?.pageBackground || (isLight ? "#ffffff" : theme?.colors.background || "#18181b");
-  const panelBorder = isLight ? "#e2e8f0" : theme?.colors.border || "#3f3f46";
-  const textColor = isLight ? "#1e293b" : theme?.colors.text || "#fafafa";
-  const mutedColor = isLight ? "#94a3b8" : theme?.colors.textMuted || "#a1a1aa";
-  const surfaceColor = isLight ? "#f1f5f9" : theme?.colors.surface || "#27272a";
+  const panelBg = colors?.bg || "#ffffff";
+  const panelBorder = colors?.border || "#e2e8f0";
+  const textColor = colors?.text || "#1e293b";
+  const mutedColor = colors?.textMuted || "#94a3b8";
+  const surfaceColor = colors?.surface || "#f1f5f9";
 
   // Calculate panel position when opening
   const openAIPanel = () => {

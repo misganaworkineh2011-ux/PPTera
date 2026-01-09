@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { X, Download, Crown } from "lucide-react";
 import { type Theme } from "~/lib/themes";
 import PricingModal from "~/components/dashboard/PricingModal";
+import { getModalColors } from "~/app/presentation/[slug]/components/ui-colors";
 
 interface ExportModalProps {
   isExporting: boolean;
@@ -52,7 +53,8 @@ function getThemeType(theme: Theme): ThemeType {
   if (theme.id === "architectural-mono") return "architectural";
   if (theme.id === "anime-dreamscape") return "anime";
   if (theme.id === "hacker-terminal") return "hacker";
-  return "dark";
+  // For themes with background images or unknown themes, check background luminance
+  return isColorDark(theme.colors.background) ? "custom-dark" : "custom-light";
 }
 
 const themeColors: Record<ThemeType, {
@@ -306,6 +308,9 @@ export default function ExportModal({
   const c = themeColors[themeType];
   const accentColor = theme.colors.primary;
   
+  // Get modal colors for inline styles
+  const modalColors = getModalColors(theme);
+  
   const hasPaidPlan = subscriptionPlan && ["plus", "pro", "ultra"].includes(subscriptionPlan);
 
   // Microsoft PowerPoint icon - official style
@@ -354,7 +359,13 @@ export default function ExportModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className={`relative w-full max-w-2xl rounded-2xl p-6 shadow-2xl border ${c.bg} ${c.border}`}>
+      <div 
+        className="relative w-full max-w-2xl rounded-2xl p-6 shadow-2xl border"
+        style={{
+          backgroundColor: modalColors.bg,
+          borderColor: modalColors.border,
+        }}
+      >
         {/* Close button */}
         <button
           onClick={onClose}

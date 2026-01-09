@@ -4,6 +4,7 @@ import { useEffect, useRef, useMemo } from "react";
 import { X, LayoutGrid, CheckCircle2 } from "lucide-react";
 import type { Theme } from "~/lib/themes";
 import { getThemeType } from "~/app/presentation/[slug]/components/types";
+import { getModalColors } from "~/app/presentation/[slug]/components/ui-colors";
 import { boxLayouts } from "~/lib/layouts/content/boxes";
 import { stepsLayouts } from "~/lib/layouts/content/steps";
 import { bulletLayouts } from "~/lib/layouts/content/bullets";
@@ -320,13 +321,14 @@ export default function ContentLayoutPanel({
     return "Unknown";
   }, [currentContentLayout]);
 
-  // Theme-aware colors
+  // Theme-aware colors using the helper
   const themeType = getThemeType(theme);
   const isLight = themeType === "light" || themeType === "corporate" || themeType === "custom-light";
+  const modalColors = getModalColors(theme);
   
-  // Use theme's pageBackground for dark themes
-  const panelBg = theme.pageBackground || (isLight ? "#ffffff" : theme.colors.background);
-  const headerBg = isLight ? "#f8fafc" : theme.colors.surface;
+  // Use modalColors for panel background
+  const panelBg = modalColors.bg;
+  const headerBg = isLight ? "#f8fafc" : modalColors.surface;
   
   const colors = isLight ? {
     bg: "#ffffff",
@@ -342,14 +344,14 @@ export default function ContentLayoutPanel({
   } : {
     bg: panelBg,
     headerBg: headerBg,
-    border: theme.colors.border,
-    text: theme.colors.text,
-    textMuted: theme.colors.textMuted,
-    accent: theme.colors.primary || "#a78bfa",
-    hoverBg: theme.colors.surfaceHover || "#27272a",
-    categoryBg: theme.colors.surface || "rgba(39, 39, 42, 0.5)",
-    currentBg: `${theme.colors.primary || "#a78bfa"}15`,
-    infoBg: theme.colors.surface || "#27272a",
+    border: modalColors.border,
+    text: modalColors.text,
+    textMuted: modalColors.textMuted,
+    accent: modalColors.accent || "#a78bfa",
+    hoverBg: modalColors.hoverBg || "#27272a",
+    categoryBg: modalColors.surface || "rgba(39, 39, 42, 0.5)",
+    currentBg: `${modalColors.accent || "#a78bfa"}15`,
+    infoBg: modalColors.surface || "#27272a",
   };
 
   if (!isOpen) return null;

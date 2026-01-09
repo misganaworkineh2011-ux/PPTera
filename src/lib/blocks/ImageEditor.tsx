@@ -4,6 +4,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { Check, Crop, ZoomIn, RotateCcw } from "lucide-react";
 import type { ImageBlock } from "./types";
 import type { Theme } from "~/lib/themes";
+import { getModalColors } from "~/app/presentation/[slug]/components/ui-colors";
 
 interface ImageEditorProps {
   block: ImageBlock;
@@ -127,14 +128,15 @@ export default function ImageEditor({ block, onSave, onCancel, theme }: ImageEdi
     objectFit,
   };
 
-  // Theme-aware colors
-  const isDark = theme ? isColorDark(theme.colors.background) : false;
+  // Theme-aware colors using the helper
+  const modalColors = theme ? getModalColors(theme) : null;
+  const isDark = modalColors?.isDark ?? (theme ? isColorDark(theme.colors.background) : false);
   const colors = {
-    bg: theme?.colors.background || "#ffffff",
-    surface: theme?.colors.surface || "#f8fafc",
-    border: theme?.colors.border || "#e2e8f0",
-    text: theme?.colors.text || "#0f172a",
-    textMuted: theme?.colors.textMuted || "#64748b",
+    bg: modalColors?.bg || theme?.colors.background || "#ffffff",
+    surface: modalColors?.surface || theme?.colors.surface || "#f8fafc",
+    border: modalColors?.border || theme?.colors.border || "#e2e8f0",
+    text: modalColors?.text || theme?.colors.text || "#0f172a",
+    textMuted: modalColors?.textMuted || theme?.colors.textMuted || "#64748b",
     primary: theme?.colors.primary || "#0891b2",
     accent: theme?.colors.accent || "#06b6d4",
   };

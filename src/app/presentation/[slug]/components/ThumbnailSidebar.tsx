@@ -4,8 +4,8 @@ import { useState } from "react";
 import { X, LayoutGrid, List } from "lucide-react";
 import type { Theme } from "~/lib/themes";
 import type { SlideData } from "~/components/presentation/types";
+import { getUIColors, getModalColors } from "./ui-colors";
 import { getThemeType } from "./types";
-import { getUIColors } from "./ui-colors";
 
 type ViewMode = "grid" | "list";
 
@@ -32,16 +32,12 @@ export function ThumbnailSidebar({
 }: ThumbnailSidebarProps) {
   const themeType = getThemeType(theme);
   const ui = getUIColors(themeType);
+  const modalColors = getModalColors(theme);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  const isLight = themeType === "light" || themeType === "corporate";
   
-  // Theme-aware background styles
-  const bgStyle = theme.pageBackground 
-    ? { background: theme.pageBackground }
-    : {};
-  const bgClass = theme.pageBackground 
-    ? "" 
-    : isLight ? "bg-slate-50" : "bg-zinc-900/95";
+  // Theme-aware background styles - use modalColors for consistent theming
+  const bgStyle = { background: modalColors.bg };
+  const bgClass = "";
 
   // For list view: sidebar shrinks to content and centers vertically
   // For grid view: sidebar is full height
@@ -52,19 +48,19 @@ export function ThumbnailSidebar({
           className={`w-full mx-2 px-2 py-3 rounded-xl border shadow-lg ${bgClass}`}
           style={{
             ...bgStyle,
-            borderColor: isLight ? "#e2e8f0" : theme.colors.border || "#3f3f46",
+            borderColor: modalColors.border,
           }}
         >
           {/* Header with toggle */}
           <div className="flex items-center justify-between mb-3">
             <div
               className="flex items-center rounded-full p-0.5"
-              style={{ backgroundColor: isLight ? "rgba(226, 232, 240, 0.8)" : theme.colors.surface || "#27272a" }}
+              style={{ backgroundColor: modalColors.surface }}
             >
               <button
                 onClick={() => setViewMode("grid")}
                 className="p-1.5 rounded-full transition-all"
-                style={{ color: isLight ? "#64748b" : theme.colors.textMuted || "#a1a1aa" }}
+                style={{ color: modalColors.textMuted }}
                 title="Grid view"
               >
                 <LayoutGrid size={14} />
@@ -73,8 +69,8 @@ export function ThumbnailSidebar({
                 onClick={() => setViewMode("list")}
                 className="p-1.5 rounded-full transition-all shadow-sm"
                 style={{ 
-                  backgroundColor: isLight ? "#ffffff" : theme.colors.surfaceHover || "#3f3f46",
-                  color: isLight ? "#2563eb" : "#ffffff"
+                  backgroundColor: modalColors.surfaceHover,
+                  color: modalColors.text
                 }}
                 title="List view"
               >
@@ -84,7 +80,7 @@ export function ThumbnailSidebar({
             <button
               onClick={onClose}
               className="p-1.5 rounded-lg transition-colors"
-              style={{ color: isLight ? "#94a3b8" : theme.colors.textMuted || "#71717a" }}
+              style={{ color: modalColors.textMuted }}
             >
               <X size={16} />
             </button>
@@ -102,8 +98,8 @@ export function ThumbnailSidebar({
                   className="w-5 h-5 shrink-0 flex items-center justify-center rounded text-[10px] font-semibold transition-colors"
                   style={
                     currentSlide === index
-                      ? { backgroundColor: theme.colors.primary, color: "#ffffff" }
-                      : { backgroundColor: isLight ? "#e2e8f0" : theme.colors.surface || "#27272a", color: isLight ? "#475569" : theme.colors.textMuted || "#a1a1aa" }
+                      ? { backgroundColor: modalColors.accent, color: "#ffffff" }
+                      : { backgroundColor: modalColors.surface, color: modalColors.textMuted }
                   }
                 >
                   {index + 1}
@@ -112,8 +108,8 @@ export function ThumbnailSidebar({
                   className="flex-1 text-left py-1 px-1.5 rounded text-xs truncate transition-colors"
                   style={
                     currentSlide === index
-                      ? { backgroundColor: isLight ? "#eff6ff" : theme.colors.surface || "#27272a", color: isLight ? "#1d4ed8" : "#ffffff" }
-                      : { color: isLight ? "#334155" : theme.colors.text || "#d4d4d8" }
+                      ? { backgroundColor: modalColors.surface, color: modalColors.accent }
+                      : { color: modalColors.text }
                   }
                 >
                   {slide.title || slide.subtitle || `Slide ${index + 1}`}
@@ -132,7 +128,7 @@ export function ThumbnailSidebar({
       className={`w-44 shrink-0 h-[calc(100vh-56px)] fixed left-0 top-[56px] flex flex-col border-r ${bgClass}`}
       style={{
         ...bgStyle,
-        borderColor: isLight ? "#e2e8f0" : theme.colors.border || "#27272a",
+        borderColor: modalColors.border,
       }}
     >
       {/* Header with toggle */}
@@ -140,14 +136,14 @@ export function ThumbnailSidebar({
         <div className="flex items-center justify-between">
           <div
             className="flex items-center rounded-full p-0.5"
-            style={{ backgroundColor: isLight ? "rgba(226, 232, 240, 0.8)" : theme.colors.surface || "#27272a" }}
+            style={{ backgroundColor: modalColors.surface }}
           >
             <button
               onClick={() => setViewMode("grid")}
               className="p-1.5 rounded-full transition-all shadow-sm"
               style={{ 
-                backgroundColor: isLight ? "#ffffff" : theme.colors.surfaceHover || "#3f3f46",
-                color: isLight ? "#2563eb" : "#ffffff"
+                backgroundColor: modalColors.surfaceHover,
+                color: modalColors.text
               }}
               title="Grid view"
             >
@@ -156,7 +152,7 @@ export function ThumbnailSidebar({
             <button
               onClick={() => setViewMode("list")}
               className="p-1.5 rounded-full transition-all"
-              style={{ color: isLight ? "#64748b" : theme.colors.textMuted || "#a1a1aa" }}
+              style={{ color: modalColors.textMuted }}
               title="List view"
             >
               <List size={14} />
@@ -165,7 +161,7 @@ export function ThumbnailSidebar({
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg transition-colors"
-            style={{ color: isLight ? "#94a3b8" : theme.colors.textMuted || "#71717a" }}
+            style={{ color: modalColors.textMuted }}
           >
             <X size={16} />
           </button>
@@ -185,10 +181,10 @@ export function ThumbnailSidebar({
             <div
               className="aspect-video overflow-hidden rounded ring-1"
               style={{
-                boxShadow: currentSlide === index ? `0 0 0 2px ${theme.colors.primary}` : undefined,
+                boxShadow: currentSlide === index ? `0 0 0 2px ${modalColors.accent}` : undefined,
                 ["--tw-ring-color" as string]: currentSlide === index 
-                  ? theme.colors.primary 
-                  : isLight ? "#e2e8f0" : theme.colors.border || "#3f3f46",
+                  ? modalColors.accent 
+                  : modalColors.border,
                 willChange: "box-shadow",
               }}
             >
@@ -197,8 +193,8 @@ export function ThumbnailSidebar({
             <div
               className="absolute bottom-1 left-1 px-1 py-0.5 rounded text-[8px] font-semibold"
               style={{ 
-                backgroundColor: isLight ? "rgba(255, 255, 255, 0.9)" : "rgba(0, 0, 0, 0.7)",
-                color: isLight ? "#334155" : "#ffffff"
+                backgroundColor: modalColors.isDark ? "rgba(0, 0, 0, 0.7)" : "rgba(255, 255, 255, 0.9)",
+                color: modalColors.text
               }}
             >
               {index + 1}

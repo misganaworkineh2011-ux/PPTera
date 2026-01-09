@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { X, Check, Loader2, Sparkles } from "lucide-react";
 import { themes, type Theme, getSlideShapeStyles } from "~/lib/themes";
-import { getThemeType } from "./types";
+import { getModalColors } from "./ui-colors";
 
 // All theme fonts for preview - loaded when sidebar opens
 const THEME_FONTS_URL = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Lato:wght@400;700&family=Cormorant+Garamond:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Nunito+Sans:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap";
@@ -40,27 +40,18 @@ export function ThemeSidebar({
   const [customThemes, setCustomThemes] = useState<CustomTheme[]>([]);
   const [changingTheme, setChangingTheme] = useState<string | null>(null);
 
-  // Get theme-aware colors
-  const themeType = theme ? getThemeType(theme) : "dark";
-  const isLight = themeType === "light" || themeType === "corporate" || themeType === "custom-light";
+  // Get theme-aware colors using the helper - use modalColors for ALL themes
+  const modalColors = theme ? getModalColors(theme) : null;
 
-  // Theme-aware colors using actual theme data
-  const colors = isLight ? {
-    bg: "#ffffff",
-    surface: "#f8fafc",
-    border: "#e2e8f0",
-    text: "#0f172a",
-    textMuted: "#64748b",
-    accent: "#3b82f6",
-    hoverBg: "#f1f5f9",
-  } : theme ? {
-    bg: theme.pageBackground || theme.colors.background,
-    surface: theme.colors.surface,
-    border: theme.colors.border,
-    text: theme.colors.text,
-    textMuted: theme.colors.textMuted,
-    accent: theme.colors.primary || "#a78bfa",
-    hoverBg: theme.colors.surfaceHover || "rgba(255,255,255,0.1)",
+  // Theme-aware colors using actual theme data from getModalColors
+  const colors = modalColors ? {
+    bg: modalColors.bg,
+    surface: modalColors.surface,
+    border: modalColors.border,
+    text: modalColors.text,
+    textMuted: modalColors.textMuted,
+    accent: modalColors.accent || "#a78bfa",
+    hoverBg: modalColors.hoverBg || (modalColors.isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)"),
   } : {
     bg: "#18181b",
     surface: "#27272a",

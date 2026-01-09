@@ -5,6 +5,7 @@ import { Star, X, Send, Loader2, CheckCircle } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { useUser } from "@clerk/nextjs";
 import type { Theme } from "~/lib/themes";
+import { getModalColors } from "~/app/presentation/[slug]/components/ui-colors";
 
 const STORAGE_KEY = "pptmaster_rate_prompt";
 const PRESENTATIONS_THRESHOLD = 5;
@@ -37,26 +38,27 @@ export function RateUsModal({ onClose, theme }: RateUsModalProps) {
     content: "",
   });
 
-  // Theme-aware colors
-  const isDark = theme ? isColorDark(theme.colors.background) : true;
+  // Theme-aware colors using the helper
+  const modalColors = theme ? getModalColors(theme) : null;
+  const isDark = modalColors?.isDark ?? (theme ? isColorDark(theme.colors.background) : true);
   const colors = isDark ? {
-    bg: "#18181b",
-    text: "#fafafa",
-    textMuted: "#a1a1aa",
-    border: "#3f3f46",
-    inputBg: "#27272a",
-    hoverBg: "#3f3f46",
+    bg: modalColors?.bg || "#18181b",
+    text: modalColors?.text || "#fafafa",
+    textMuted: modalColors?.textMuted || "#a1a1aa",
+    border: modalColors?.border || "#3f3f46",
+    inputBg: modalColors?.surface || "#27272a",
+    hoverBg: modalColors?.hoverBg || "#3f3f46",
     successBg: "rgba(34, 197, 94, 0.1)",
     successText: "#4ade80",
     starFill: "#facc15",
     starEmpty: "#3f3f46",
   } : {
-    bg: "#ffffff",
-    text: "#0f172a",
-    textMuted: "#64748b",
-    border: "#e2e8f0",
-    inputBg: "#ffffff",
-    hoverBg: "#f1f5f9",
+    bg: modalColors?.bg || "#ffffff",
+    text: modalColors?.text || "#0f172a",
+    textMuted: modalColors?.textMuted || "#64748b",
+    border: modalColors?.border || "#e2e8f0",
+    inputBg: modalColors?.surface || "#ffffff",
+    hoverBg: modalColors?.hoverBg || "#f1f5f9",
     successBg: "#dcfce7",
     successText: "#16a34a",
     starFill: "#facc15",

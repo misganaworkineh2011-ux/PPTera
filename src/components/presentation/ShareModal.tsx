@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { X, Globe, Lock, CheckCircle2, Copy, Link2, Users, ChevronDown, Mail, UserPlus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { Theme } from "~/lib/themes";
+import { getModalColors } from "~/app/presentation/[slug]/components/ui-colors";
 
 interface Collaborator {
   id: string;
@@ -35,16 +36,19 @@ export default function ShareModal({
 }: ShareModalProps) {
   const [activeTab, setActiveTab] = useState<"collaborate" | "share" | "export" | "embed">("share");
 
-  // Theme colors
-  const bgColor = theme?.colors.background || "#ffffff";
-  const textColor = theme?.colors.text || "#1e293b";
+  // Get modal colors using the helper
+  const modalColors = theme ? getModalColors(theme) : null;
+  
+  // Theme colors - use modalColors for consistent theming
+  const bgColor = modalColors?.bg || theme?.colors.background || "#ffffff";
+  const textColor = modalColors?.text || theme?.colors.text || "#1e293b";
   const headingColor = theme?.colors.heading || "#0f172a";
   const primaryColor = theme?.colors.primary || "#06b6d4";
-  const mutedColor = theme?.colors.textMuted || "#64748b";
+  const mutedColor = modalColors?.textMuted || theme?.colors.textMuted || "#64748b";
 
   // Determine if theme is dark
-  const isDark = theme?.colors.background.startsWith("#") &&
-    parseInt(theme.colors.background.slice(1, 3), 16) < 128;
+  const isDark = modalColors?.isDark ?? (theme?.colors.background.startsWith("#") &&
+    parseInt(theme.colors.background.slice(1, 3), 16) < 128);
 
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 sm:p-4">
