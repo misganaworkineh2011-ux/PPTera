@@ -319,10 +319,10 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center lg:min-h-[calc(100vh-160px)]">
           {/* Left Column */}
           <div className="flex flex-col justify-center max-w-xl">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-zinc-900 leading-[1.1] mb-6">
+            <div className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-zinc-900 leading-[1.1] mb-6" role="heading" aria-level={2}>
               {t.heroTitle} <br />
               <span className="text-zinc-400">{t.heroSubtitle}</span>
-            </h1>
+            </div>
 
             <p className="text-lg text-zinc-600 mb-8 leading-relaxed">
               {t.heroDescription}
