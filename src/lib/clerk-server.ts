@@ -40,15 +40,28 @@ async function ensureUserInDatabase(clerkId: string): Promise<Awaited<ReturnType
   const emailVerified =
     clerkUser.emailAddresses[0]?.verification?.status === "verified";
 
-  // Check if email already exists (prevent duplicate accounts)
+  // Check if email already exists - if so, link this Clerk account to existing user
   if (email) {
     const existingEmailUser = await db.user.findUnique({
       where: { email },
     });
     if (existingEmailUser) {
-      // Email already in use - return null to prevent duplicate
-      console.error(`Email ${email} already exists in database`);
-      return null;
+      // Email already exists - update the existing user with this new Clerk ID
+      // This handles cases where user signs in with different auth method (Google vs email)
+      try {
+        const updatedUser = await db.user.update({
+          where: { email },
+          data: { clerkId }, // Link new Clerk account to existing user
+        });
+        console.log(`Linked Clerk ID ${clerkId} to existing user with email ${email}`);
+        return updatedUser;
+      } catch (updateError) {
+        // If update fails (e.g., clerkId already used), try to find by clerkId
+        const userByClerk = await db.user.findUnique({ where: { clerkId } });
+        if (userByClerk) return userByClerk;
+        console.error(`Failed to link Clerk ID to existing email user:`, updateError);
+        return null;
+      }
     }
   }
 
