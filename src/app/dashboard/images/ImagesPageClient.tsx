@@ -35,9 +35,7 @@ interface ImagesPageClientProps {
 }
 
 export default function ImagesPageClient({
-  userId,
   credits: initialCredits,
-  userName,
   initialImages,
   subscriptionPlan,
 }: ImagesPageClientProps) {
@@ -50,6 +48,12 @@ export default function ImagesPageClient({
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+
+  // Handle image load error - show logo fallback
+  const handleImageError = (imageId: string) => {
+    setFailedImages(prev => new Set(prev).add(imageId));
+  };
 
   const filteredImages = images.filter((img) =>
     img.filename.toLowerCase().includes(searchQuery.toLowerCase())
@@ -213,16 +217,23 @@ export default function ImagesPageClient({
               >
                 {/* Image Thumbnail */}
                 <div className="aspect-square w-full bg-gradient-to-br from-[#1e3a8a]/10 to-[#06b6d4]/10 relative overflow-hidden">
-                  {img.url ? (
+                  {img.url && !failedImages.has(img.id) ? (
                     <Image
                       src={img.url}
                       alt={img.filename}
                       fill
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      onError={() => handleImageError(img.id)}
                     />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center p-4">
-                      <ImageIcon className="h-12 w-12 text-slate-300" />
+                      <Image
+                        src="/logo.png"
+                        alt="PPT Master"
+                        width={64}
+                        height={64}
+                        className="opacity-60 group-hover:opacity-80 transition-opacity"
+                      />
                     </div>
                   )}
                   
@@ -281,17 +292,24 @@ export default function ImagesPageClient({
                 className="flex items-center gap-4 p-3 rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-[#06b6d4]/50 cursor-pointer transition"
               >
                 <div className="h-16 w-16 rounded-lg overflow-hidden bg-slate-100 dark:bg-neutral-800 flex-shrink-0">
-                  {img.url ? (
+                  {img.url && !failedImages.has(img.id) ? (
                     <Image
                       src={img.url}
                       alt={img.filename}
                       width={64}
                       height={64}
                       className="object-cover w-full h-full"
+                      onError={() => handleImageError(img.id)}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <ImageIcon className="h-6 w-6 text-slate-400" />
+                      <Image
+                        src="/logo.png"
+                        alt="PPT Master"
+                        width={32}
+                        height={32}
+                        className="opacity-60"
+                      />
                     </div>
                   )}
                 </div>
