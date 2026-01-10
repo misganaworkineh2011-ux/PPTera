@@ -93,6 +93,8 @@ export interface SlideData {
   layoutMode?: "legacy" | "flow" | "canvas";
   // Animation for present mode
   animation?: SlideAnimationType;
+  // Enable/disable content animations (bullets, boxes, etc.)
+  contentAnimation?: boolean;
 }
 
 export interface PresentationData {

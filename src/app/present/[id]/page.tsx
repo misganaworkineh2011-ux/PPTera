@@ -352,6 +352,7 @@ export default function PresenterPage({ params }: PresenterPageProps) {
                   isHovered={false}
                   isEditing={false}
                   editingText={null}
+                  isPresenting={true}
                   onStartEditing={() => { }}
                   onUpdateContent={() => { }}
                   onFinishEditing={() => { }}

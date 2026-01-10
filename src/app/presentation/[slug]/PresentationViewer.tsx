@@ -28,6 +28,7 @@ import { RateUsModal, incrementPresentationCount, checkExistingReview } from "~/
 import { ImageEditor, type ImageBlock } from "~/lib/blocks";
 import ChartModal from "~/components/charts/ChartModal";
 import { type ChartData } from "~/lib/charts/types";
+import { useUpgradeModal } from "~/hooks/useUpgradeModal";
 
 // Import extracted components
 import {
@@ -127,6 +128,7 @@ export default function PresentationViewer({
   subscriptionPlan,
 }: PresentationViewerProps) {
   const router = useRouter();
+  const { showUpgradeModal, UpgradeModal } = useUpgradeModal();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(isPublicView);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -1057,6 +1059,15 @@ export default function PresentationViewer({
     }
   };
 
+  const changeContentAnimation = (slideIndex: number, enabled: boolean) => {
+    const newSlides = [...slidesData];
+    const existingSlide = newSlides[slideIndex];
+    if (existingSlide) {
+      newSlides[slideIndex] = { ...existingSlide, contentAnimation: enabled };
+      updateSlidesWithSave(newSlides);
+    }
+  };
+
   const duplicateSlide = (index: number) => {
     const original = slidesData[index];
     if (original) {
@@ -1776,6 +1787,7 @@ export default function PresentationViewer({
             isEditing={isEditing ?? false}
             editingText={editingText}
             showPageNumber={showPageNumbers}
+            isPresenting={isPresenting}
             onStartEditing={startEditing}
             onUpdateContent={updateSlideContent}
             onFinishEditing={() => setEditingText(null)}
@@ -2216,7 +2228,9 @@ export default function PresentationViewer({
                             animationId={currentSlideData.animation}
                             isPresenting={isFullscreen || isPresenting || isPublicView}
                           >
-                            {renderSlide(currentSlideData, currentSlide, true)}
+                            <div className="w-full h-full">
+                              {renderSlide(currentSlideData, currentSlide, true)}
+                            </div>
                           </AnimatedSlide>
                         </div>
                       </div>
@@ -2230,7 +2244,9 @@ export default function PresentationViewer({
                         animationId={currentSlideData.animation}
                         isPresenting={isFullscreen || isPresenting || isPublicView}
                       >
-                        {renderSlide(currentSlideData, currentSlide, true)}
+                        <div className="w-full h-full">
+                          {renderSlide(currentSlideData, currentSlide, true)}
+                        </div>
                       </AnimatedSlide>
                     </div>
                   );
@@ -2395,11 +2411,25 @@ export default function PresentationViewer({
             isOpen={true}
             theme={theme}
             currentAnimation={slides[showAnimationPicker]?.animation || "fade"}
+            contentAnimation={slides[showAnimationPicker]?.contentAnimation !== false}
+            isPaidUser={!!subscriptionPlan && ['plus', 'pro', 'ultra'].includes(subscriptionPlan)}
             onClose={() => setShowAnimationPicker(null)}
             onSelect={(animationId: string) => {
               changeSlideAnimation(showAnimationPicker, animationId);
               toast.success("Animation updated");
               setShowAnimationPicker(null);
+            }}
+            onContentAnimationChange={(enabled: boolean) => {
+              changeContentAnimation(showAnimationPicker, enabled);
+              toast.success(enabled ? "Content animation enabled" : "Content animation disabled");
+            }}
+            onUpgrade={() => {
+              showUpgradeModal({
+                feature: "Premium Animations",
+                requiredPlan: "plus",
+                currentPlan: subscriptionPlan,
+                description: "Unlock stunning premium animations like Disintegrate, Vortex, Hologram, and more to make your presentations stand out.",
+              });
             }}
           />
         )}
@@ -2577,6 +2607,9 @@ export default function PresentationViewer({
         }}
         onClose={() => setShowContentLayoutPanel(false)}
       />
+
+      {/* Upgrade Modal for Premium Features */}
+      <UpgradeModal />
     </>
   );
 }

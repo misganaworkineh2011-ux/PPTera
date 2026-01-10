@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, memo } from "react";
+import { useState, memo, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ImageIcon, Plus, LayoutGrid } from "lucide-react";
 import { type Theme } from "~/lib/themes";
@@ -52,6 +52,7 @@ interface SlideRendererProps {
   isEditing: boolean;
   editingText: EditingState | null;
   showPageNumber?: boolean;
+  isPresenting?: boolean; // Enable content animations during presentation
   onStartEditing: (slideIndex: number, field: string, bulletIndex?: number) => void;
   onUpdateContent: (slideIndex: number, field: string, value: string, bulletIndex?: number) => void;
   onFinishEditing: () => void;
@@ -335,7 +336,7 @@ function getSlideImages(slide: SlideData) {
 
 function SlideRendererComponent({
   slide, index, totalSlides, theme, isOwner, isFullscreen, isHovered, isEditing,
-  editingText, showPageNumber = true, onStartEditing, onUpdateContent, onFinishEditing, onAddBullet, onDeleteBullet,
+  editingText, showPageNumber = true, isPresenting = false, onStartEditing, onUpdateContent, onFinishEditing, onAddBullet, onDeleteBullet,
   onDeleteTitle, onDeleteSubtitle, onReorderContent, onChangeContentLayout, onOpenContentLayoutPanel, onUpdateChart,
   onOpenImageModal, onRemoveImage, onChangeImageShape, onChangeImagePosition, onReorderImages,
 }: SlideRendererProps) {
@@ -350,6 +351,45 @@ function SlideRendererComponent({
   const bulletPoints = slide.bulletPoints || [];
   const canEdit = isOwner && !isFullscreen;
   const themeType = getThemeType(theme);
+  
+  // Use isPresenting or isFullscreen to determine if we should animate content
+  // Also check if contentAnimation is enabled for this slide (defaults to true)
+  const contentAnimationEnabled = slide.contentAnimation !== false;
+  const inPresentationMode = isPresenting || isFullscreen;
+  
+  // Track animation state per slide using a stable key
+  // Use a ref to track which slide index has been animated
+  const animatedSlidesRef = useRef<Set<number>>(new Set());
+  const prevPresentingRef = useRef(inPresentationMode);
+  
+  // Reset animation tracking when entering/exiting presentation mode
+  useEffect(() => {
+    if (prevPresentingRef.current !== inPresentationMode) {
+      // Clear animation tracking when presentation mode changes
+      animatedSlidesRef.current.clear();
+      prevPresentingRef.current = inPresentationMode;
+    }
+  }, [inPresentationMode]);
+  
+  // Determine if this slide should animate
+  // Only animate if: in presentation mode, animation enabled, and this slide hasn't animated yet
+  const hasAnimatedThisSlide = animatedSlidesRef.current.has(index);
+  const shouldAnimateContent = inPresentationMode && contentAnimationEnabled && !hasAnimatedThisSlide;
+  
+  // Mark this slide as animated after mount (only once per slide per presentation session)
+  useEffect(() => {
+    if (inPresentationMode && contentAnimationEnabled && !hasAnimatedThisSlide) {
+      // Mark as animated after animation completes (use longest animation duration)
+      const timer = setTimeout(() => {
+        animatedSlidesRef.current.add(index);
+      }, 500); // Wait for animation to complete
+      return () => clearTimeout(timer);
+    }
+  }, [inPresentationMode, contentAnimationEnabled, hasAnimatedThisSlide, index]);
+  
+  // Generate a stable animation key for this slide
+  // This prevents re-animation when component re-renders but slide hasn't changed
+  const animationKey = `slide-${index}-${inPresentationMode ? 'presenting' : 'editing'}`;
   
   // Get image shape from slide (default to arc for backward compatibility)
   const imageShape: ImageShape = slide.imageShape || "arc";
@@ -939,9 +979,9 @@ function SlideRendererComponent({
     if (!slide.slideDescription || slide.type === "title") return null;
     return (
       <motion.div
-        initial={isFullscreen ? { opacity: 0, y: 10 } : undefined}
-        animate={isFullscreen ? { opacity: 1, y: 0 } : undefined}
-        transition={{ delay: 0.3, duration: 0.5 }}
+        initial={shouldAnimateContent ? { opacity: 0, y: 10 } : undefined}
+        animate={shouldAnimateContent ? { opacity: 1, y: 0 } : undefined}
+        transition={{ delay: 0.15, duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
       >
         <EditableText
           value={slide.slideDescription}
@@ -966,9 +1006,9 @@ function SlideRendererComponent({
   const Title = ({ className = "", align = "left", showSubtitle = false }: { className?: string; align?: "left" | "center" | "right"; showSubtitle?: boolean }) => (
     <motion.div 
       className={showSubtitle ? "space-y-2" : ""}
-      initial={isFullscreen ? { opacity: 0, y: 20 } : undefined}
-      animate={isFullscreen ? { opacity: 1, y: 0 } : undefined}
-      transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
+      initial={shouldAnimateContent ? { opacity: 0, y: 20 } : undefined}
+      animate={shouldAnimateContent ? { opacity: 1, y: 0 } : undefined}
+      transition={{ delay: 0.1, duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
     >
       <EditableText
         value={slide.title}
@@ -1030,10 +1070,10 @@ function SlideRendererComponent({
     return (
       <motion.div 
         className={compact ? "space-y-2 sm:space-y-3" : "space-y-3 sm:space-y-4"}
-        initial={isFullscreen ? "hidden" : "visible"}
+        initial={shouldAnimateContent ? "hidden" : "visible"}
         animate="visible"
         variants={{
-          visible: { transition: { staggerChildren: isFullscreen ? 0.15 : 0, delayChildren: 0.3 } },
+          visible: { transition: { staggerChildren: shouldAnimateContent ? 0.08 : 0, delayChildren: 0.15 } },
           hidden: {}
         }}
       >
@@ -1042,8 +1082,8 @@ function SlideRendererComponent({
             key={i} 
             className="flex items-start gap-2 sm:gap-3 group/bullet"
             variants={{
-              hidden: { opacity: 0, x: -10 },
-              visible: { opacity: 1, x: 0, transition: { duration: 0.4 } }
+              hidden: { opacity: 0, x: -15 },
+              visible: { opacity: 1, x: 0, transition: { duration: 0.25, ease: [0.25, 0.1, 0.25, 1] } }
             }}
           >
             <div className={`${compact ? "mt-1.5" : "mt-2"} flex items-center gap-1 sm:gap-2 shrink-0`}>
@@ -1246,6 +1286,10 @@ function SlideRendererComponent({
           onReorderItems: canEdit && onReorderContent ? (fromIdx: number, toIdx: number) => onReorderContent(index, fromIdx, toIdx) : undefined,
           isOwner: canEdit,
           isHovered,
+          // Only animate content when in presentation/fullscreen mode and animation hasn't played yet
+          isPresenting: shouldAnimateContent,
+          // Stable animation key to prevent re-animation on re-renders
+          animationKey,
         };
         
         switch (layoutCategory) {
@@ -1435,9 +1479,9 @@ function SlideRendererComponent({
         className={`relative ${sizeClass} ${className}`}
         onMouseEnter={() => canEdit && setHoveredImageIndex(imageIndex)}
         onMouseLeave={() => setHoveredImageIndex(null)}
-        initial={isFullscreen ? { opacity: 0, scale: 0.95, filter: "blur(5px)" } : undefined}
-        animate={isFullscreen ? { opacity: 1, scale: 1, filter: "blur(0px)" } : undefined}
-        transition={{ delay: 0.4, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        initial={shouldAnimateContent ? { opacity: 0, scale: 0.97, filter: "blur(4px)" } : undefined}
+        animate={shouldAnimateContent ? { opacity: 1, scale: 1, filter: "blur(0px)" } : undefined}
+        transition={{ delay: 0.2, duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
       >
         <div className={`absolute inset-0 bg-gradient-to-br ${colors.accentBorder} rounded-lg`} />
         <div className={`absolute inset-[1px] ${colors.surface} rounded-lg overflow-hidden`}>
