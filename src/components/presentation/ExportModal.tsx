@@ -7,6 +7,7 @@ import PricingModal from "~/components/dashboard/PricingModal";
 import { getModalColors } from "~/app/presentation/[slug]/components/ui-colors";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
+import { trackExportPresentation } from "~/components/GoogleAnalytics";
 
 interface ExportModalProps {
   isExporting: boolean;
@@ -360,6 +361,8 @@ export default function ExportModal({
       range: exportRange,
       ...(exportRange === "custom" && { customRange: { from: customFrom, to: customTo || totalSlides } }),
     };
+    // Track export event
+    trackExportPresentation(selectedFormat);
     onExport(selectedFormat, options);
   };
 

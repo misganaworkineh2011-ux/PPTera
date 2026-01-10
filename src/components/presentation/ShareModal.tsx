@@ -8,6 +8,7 @@ import type { Theme } from "~/lib/themes";
 import { getModalColors } from "~/app/presentation/[slug]/components/ui-colors";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
+import { trackSharePresentation } from "~/components/GoogleAnalytics";
 
 interface Collaborator {
   id: string;
@@ -643,57 +644,16 @@ function ShareTab({
     navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     toast.success(t.linkCopied || "Link copied!");
+    trackSharePresentation("link");
     setTimeout(() => setCopied(false), 2000);
   };
 
-<<<<<<< HEAD
   const handleSendEmailInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inviteEmail.trim()) {
       toast.error("Please enter an email address");
       return;
     }
-=======
-  return (
-    <div className="space-y-6">
-      {/* View Analytics Section */}
-      <div 
-        className="flex items-center justify-between py-4"
-        style={{ borderBottom: `1px solid ${colors.border}` }}
-      >
-        <div className="flex items-center gap-3">
-          <div 
-            className="w-10 h-10 rounded-lg flex items-center justify-center"
-            style={{ backgroundColor: colors.iconBg }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: colors.iconColor }}>
-              <path d="M18 20V10" />
-              <path d="M12 20V4" />
-              <path d="M6 20v-6" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-sm font-semibold" style={{ color: colors.text }}>{t.viewAnalytics || "View analytics"}</p>
-            <p className="text-xs" style={{ color: colors.textMuted }}>{t.anyoneCanView || "Anyone can view, but not comment or edit."}</p>
-          </div>
-        </div>
-        <button
-          onClick={copyToClipboard}
-          disabled={!isPublic || !shareUrl}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all border"
-          style={{
-            backgroundColor: copied ? colors.successBg : (isPublic && shareUrl ? colors.cardBg : colors.lockBg),
-            color: copied ? colors.successText : (isPublic && shareUrl ? colors.text : colors.textMuted),
-            borderColor: copied ? colors.successBorder : colors.border,
-            cursor: !isPublic || !shareUrl ? "not-allowed" : "pointer",
-            opacity: !isPublic || !shareUrl ? 0.6 : 1,
-          }}
-        >
-          <Link2 size={16} />
-          {copied ? (t.copiedStatus || "Copied!") : (t.copyLink || "Copy link")}
-        </button>
-      </div>
->>>>>>> c91d68ad8ff760ccef9d199887a4e2bd016f0d1c
 
     setSendingInvite(true);
     try {
@@ -713,6 +673,7 @@ function ShareTab({
       }
 
       toast.success(`Invite sent to ${inviteEmail}!`);
+      trackSharePresentation("email");
       setInviteEmail("");
       setInviteMessage("");
       setShowEmailInvite(false);
@@ -758,13 +719,8 @@ function ShareTab({
             </button>
           </div>
 
-<<<<<<< HEAD
           {/* Share Link Input */}
           <div className="space-y-3">
-=======
-          <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: colors.textMuted }}>{t.shareLinkLabel || "Share Link"}</label>
->>>>>>> c91d68ad8ff760ccef9d199887a4e2bd016f0d1c
             <div className="flex items-center gap-2">
               <div className="flex-1 relative">
                 <input
@@ -1052,6 +1008,7 @@ function CollaborateTab({ presentationId, theme }: { presentationId: string; the
 
       const data = await res.json();
       toast.success(`Invitations sent to ${data.invited} people!`);
+      trackSharePresentation("collaborate");
       setEmailList([]);
       fetchCollaborators();
     } catch {

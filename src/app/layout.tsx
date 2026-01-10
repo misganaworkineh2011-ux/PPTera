@@ -3,6 +3,7 @@ import { Toaster } from "sonner";
 import { GeistSans } from "geist/font/sans";
 import { LanguageProvider } from "~/contexts/LanguageContext";
 import { NavigationProvider } from "~/contexts/NavigationContext";
+import GoogleAnalytics from "~/components/GoogleAnalytics";
 import "~/styles/globals.css";
 import { type Metadata, type Viewport } from "next";
 
@@ -184,6 +185,7 @@ export default function RootLayout({
           <link rel="dns-prefetch" href="https://res.cloudinary.com" />
         </head>
         <body className="font-sans bg-white">
+          <GoogleAnalytics />
           {/* Minimal noscript fallback - doesn't interfere with SEO */}
           <noscript>
             <style>{`.js-only { display: none !important; }`}</style>
