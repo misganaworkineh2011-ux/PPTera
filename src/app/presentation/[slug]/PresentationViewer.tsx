@@ -132,6 +132,7 @@ export default function PresentationViewer({
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(isPublicView);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isShaking, setIsShaking] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showThemeSidebar, setShowThemeSidebar] = useState(false);
   const [showAgentPanel, setShowAgentPanel] = useState(false);
@@ -896,7 +897,15 @@ export default function PresentationViewer({
     [slides.length, isAnimating],
   );
 
-  const nextSlide = useCallback(() => goToSlide(currentSlide + 1), [currentSlide, goToSlide]);
+  const nextSlide = useCallback(() => {
+    if (currentSlide >= slides.length - 1) {
+      // On last slide, trigger shake animation
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 500);
+      return;
+    }
+    goToSlide(currentSlide + 1);
+  }, [currentSlide, goToSlide, slides.length]);
   const prevSlide = useCallback(() => goToSlide(currentSlide - 1), [currentSlide, goToSlide]);
 
   // Update lastHoveredSlideIndex when a slide is hovered
@@ -2221,7 +2230,7 @@ export default function PresentationViewer({
 
                   if (useFixedRatio) {
                     return (
-                      <div className={`relative overflow-hidden ${isFullscreen || isPresenting ? "w-screen h-screen flex items-center justify-center" : `w-full rounded-lg shadow-2xl ring-1 ${getUIColors(getThemeType(theme)).ring}`}`} style={!isFullscreen && !isPresenting ? { aspectRatio: "16/9", maxHeight: "calc(100vh - 200px)" } : {}}>
+                      <div className={`relative overflow-hidden ${isFullscreen || isPresenting ? "w-screen h-screen flex items-center justify-center" : `w-full rounded-lg shadow-2xl ring-1 ${getUIColors(getThemeType(theme)).ring}`} ${isShaking ? "animate-shake" : ""}`} style={!isFullscreen && !isPresenting ? { aspectRatio: "16/9", maxHeight: "calc(100vh - 200px)" } : {}}>
                         <div className={`${isFullscreen || isPresenting ? "w-full h-full" : "w-full h-full"}`}>
                           <AnimatedSlide
                             slideKey={currentSlide}
@@ -2238,7 +2247,7 @@ export default function PresentationViewer({
                   }
 
                   return (
-                    <div className={`relative overflow-hidden w-full rounded-lg shadow-2xl ring-1 ${getUIColors(getThemeType(theme)).ring}`} style={{ height: `min(${dynamicHeight}px, calc(100vh - 200px))` }}>
+                    <div className={`relative overflow-hidden w-full rounded-lg shadow-2xl ring-1 ${getUIColors(getThemeType(theme)).ring} ${isShaking ? "animate-shake" : ""}`} style={{ height: `min(${dynamicHeight}px, calc(100vh - 200px))` }}>
                       <AnimatedSlide
                         slideKey={currentSlide}
                         animationId={currentSlideData.animation}
