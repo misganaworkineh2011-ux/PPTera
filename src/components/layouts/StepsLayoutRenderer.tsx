@@ -1,10 +1,40 @@
 "use client";
 
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 import { GripVertical } from "lucide-react";
 import type { StepsLayoutType, StepContentItem } from "~/lib/layouts/content/steps";
 import EditableText from "~/components/presentation/EditableText";
 import type { Theme } from "~/lib/themes";
+
+// Animation variants for staggered step animations
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const stepVariants = {
+  hidden: { 
+    opacity: 0, 
+    y: 20,
+    scale: 0.95,
+  },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    scale: 1,
+    transition: {
+      duration: 0.35,
+      ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
+    },
+  },
+};
 
 // Theme styles type
 interface ThemeStyles {
@@ -59,6 +89,8 @@ interface StepsLayoutRendererProps {
   accentColor?: string;
   className?: string;
   isNarrowSpace?: boolean;
+  isPresenting?: boolean;
+  animationKey?: string;
   // Editing props
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
@@ -80,6 +112,8 @@ export function StepsLayoutRenderer({
   accentColor = "#047857",
   className = "",
   isNarrowSpace = false,
+  isPresenting = false,
+  animationKey,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -139,7 +173,7 @@ export function StepsLayoutRenderer({
     onDragLeave: handleDragLeave,
     onDrop: handleDrop,
     onDragEnd: handleDragEnd,
-    canDrag: isOwner && !!onReorderItems,
+    canDrag: isOwner && !!onReorderItems && !isPresenting,
   };
 
   if (layoutId === "steps-pyramid") {
@@ -148,6 +182,7 @@ export function StepsLayoutRenderer({
         items={displayItems}
         themeStyles={themeStyles}
         className={className}
+        isPresenting={isPresenting}
         isEditing={isEditing}
         editingText={editingText}
         onStartEditLabel={onStartEditLabel}
@@ -169,6 +204,7 @@ export function StepsLayoutRenderer({
         items={displayItems}
         themeStyles={themeStyles}
         className={className}
+        isPresenting={isPresenting}
         isEditing={isEditing}
         editingText={editingText}
         onStartEditLabel={onStartEditLabel}
@@ -191,6 +227,7 @@ export function StepsLayoutRenderer({
         themeStyles={themeStyles}
         className={className}
         isNarrowSpace={isNarrowSpace}
+        isPresenting={isPresenting}
         isEditing={isEditing}
         editingText={editingText}
         onStartEditLabel={onStartEditLabel}
@@ -211,6 +248,7 @@ export function StepsLayoutRenderer({
       items={displayItems}
       themeStyles={themeStyles}
       className={className}
+      isPresenting={isPresenting}
       isEditing={isEditing}
       editingText={editingText}
       onStartEditLabel={onStartEditLabel}
@@ -238,12 +276,31 @@ interface DragProps {
   canDrag: boolean;
 }
 
+// Common props for step sub-components
+interface StepSubComponentProps {
+  items: StepContentItem[];
+  themeStyles: ThemeStyles;
+  className: string;
+  isPresenting?: boolean;
+  isEditing?: boolean;
+  editingText?: { field: string; bulletIndex?: number } | null;
+  onStartEditLabel?: (index: number) => void;
+  onStartEditText?: (index: number) => void;
+  onUpdateLabel?: (index: number, value: string) => void;
+  onUpdateText?: (index: number, value: string) => void;
+  onFinishEditing?: () => void;
+  onDeleteItem?: (index: number) => void;
+  isOwner?: boolean;
+  isHovered?: boolean;
+}
+
 // Style 1: Pyramid Steps - Sharp triangle with gaps between sections, text staggered diagonally
 // Pyramid sections sized to match text content height
 function PyramidSteps({
   items,
   themeStyles,
   className,
+  isPresenting = false,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -266,6 +323,7 @@ function PyramidSteps({
   items: StepContentItem[];
   themeStyles: ThemeStyles;
   className: string;
+  isPresenting?: boolean;
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
   onStartEditLabel?: (index: number) => void;
@@ -513,6 +571,7 @@ function ArrowSteps({
   items,
   themeStyles,
   className,
+  isPresenting = false,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -535,6 +594,7 @@ function ArrowSteps({
   items: StepContentItem[];
   themeStyles: ThemeStyles;
   className: string;
+  isPresenting?: boolean;
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
   onStartEditLabel?: (index: number) => void;
@@ -584,34 +644,24 @@ function ArrowSteps({
   const bodyWidth = 30;
   const headHeight = 25;
 
+  const Container = isPresenting ? motion.div : "div";
+  const containerProps = isPresenting ? { 
+    variants: containerVariants, 
+    initial: "hidden", 
+    animate: "visible" 
+  } : {};
+
   return (
-    <div className={`flex flex-col gap-3 ${className}`}>
+    <Container className={`flex flex-col gap-3 ${className}`} {...containerProps}>
       {items.map((item, index) => {
         const arrowHeight = rowHeights[index] || minRowHeight;
         const isDragging = draggedIndex === index;
         const isDragOver = dragOverIndex === index;
         
-        return (
-          <div
-            key={index}
-            draggable={canDrag}
-            onDragStart={(e) => onDragStart(e, index)}
-            onDragOver={(e) => onDragOver(e, index)}
-            onDragLeave={onDragLeave}
-            onDrop={(e) => onDrop(e, index)}
-            onDragEnd={onDragEnd}
-            className={`flex items-stretch gap-5 transition-all ${
-              isDragging ? "opacity-50 scale-95" : ""
-            } ${isDragOver ? "ring-2 ring-cyan-500 rounded-lg" : ""} ${
-              canDrag ? "cursor-grab active:cursor-grabbing" : ""
-            }`}
-            style={{ 
-              paddingLeft: `${getLeftPadding(index)}px`,
-              minHeight: `${arrowHeight}px`,
-            }}
-          >
+        const itemContent = (
+          <>
             {/* Drag handle */}
-            {canDrag && isHovered && (
+            {canDrag && !isPresenting && isHovered && (
               <div className="flex-shrink-0 flex items-center opacity-50 hover:opacity-100 transition-opacity">
                 <GripVertical size={16} style={{ color: themeStyles.bodyColor }} />
               </div>
@@ -685,10 +735,50 @@ function ArrowSteps({
                 </p>
               )}
             </div>
+          </>
+        );
+
+        const baseClassName = `flex items-stretch gap-5 transition-all ${
+          isDragging ? "opacity-50 scale-95" : ""
+        } ${isDragOver ? "ring-2 ring-cyan-500 rounded-lg" : ""} ${
+          canDrag && !isPresenting ? "cursor-grab active:cursor-grabbing" : ""
+        }`;
+        
+        const baseStyle = { 
+          paddingLeft: `${getLeftPadding(index)}px`,
+          minHeight: `${arrowHeight}px`,
+        };
+
+        if (isPresenting) {
+          return (
+            <motion.div
+              key={index}
+              className={baseClassName}
+              style={baseStyle}
+              variants={stepVariants}
+            >
+              {itemContent}
+            </motion.div>
+          );
+        }
+        
+        return (
+          <div
+            key={index}
+            draggable={canDrag}
+            onDragStart={(e) => onDragStart(e, index)}
+            onDragOver={(e) => onDragOver(e, index)}
+            onDragLeave={onDragLeave}
+            onDrop={(e) => onDrop(e, index)}
+            onDragEnd={onDragEnd}
+            className={baseClassName}
+            style={baseStyle}
+          >
+            {itemContent}
           </div>
         );
       })}
-    </div>
+    </Container>
   );
 }
 
@@ -698,6 +788,7 @@ function CardSteps({
   themeStyles,
   className,
   isNarrowSpace,
+  isPresenting = false,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -721,6 +812,7 @@ function CardSteps({
   themeStyles: ThemeStyles;
   className: string;
   isNarrowSpace: boolean;
+  isPresenting?: boolean;
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
   onStartEditLabel?: (index: number) => void;
@@ -938,6 +1030,7 @@ function BarSteps({
   items,
   themeStyles,
   className,
+  isPresenting = false,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -960,6 +1053,7 @@ function BarSteps({
   items: StepContentItem[];
   themeStyles: ThemeStyles;
   className: string;
+  isPresenting?: boolean;
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
   onStartEditLabel?: (index: number) => void;

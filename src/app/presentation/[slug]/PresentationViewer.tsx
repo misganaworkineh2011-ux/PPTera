@@ -18,14 +18,17 @@ import {
   type EditingState,
 } from "~/components/presentation/types";
 import SlideRenderer from "~/components/presentation/SlideRenderer";
+import AnimatedSlide from "~/components/presentation/AnimatedSlide";
 import ContentLayoutPanel, { CONTENT_LAYOUT_PANEL_WIDTH, type ContentLayoutId } from "~/components/presentation/ContentLayoutPanel";
 import ExportModal from "~/components/presentation/ExportModal";
 import ShareModal from "~/components/presentation/ShareModal";
 import FeedbackSection from "~/components/presentation/FeedbackSection";
+import AnimationPicker from "~/components/presentation/AnimationPicker";
 import { RateUsModal, incrementPresentationCount, checkExistingReview } from "~/components/RateUsModal";
 import { ImageEditor, type ImageBlock } from "~/lib/blocks";
 import ChartModal from "~/components/charts/ChartModal";
 import { type ChartData } from "~/lib/charts/types";
+import { useUpgradeModal } from "~/hooks/useUpgradeModal";
 
 // Import extracted components
 import {
@@ -125,9 +128,11 @@ export default function PresentationViewer({
   subscriptionPlan,
 }: PresentationViewerProps) {
   const router = useRouter();
+  const { showUpgradeModal, UpgradeModal } = useUpgradeModal();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(isPublicView);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isShaking, setIsShaking] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showThemeSidebar, setShowThemeSidebar] = useState(false);
   const [showAgentPanel, setShowAgentPanel] = useState(false);
@@ -225,6 +230,8 @@ export default function PresentationViewer({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   // Chart modal state
   const [showChartModal, setShowChartModal] = useState<number | null>(null);
+  // Animation picker modal state
+  const [showAnimationPicker, setShowAnimationPicker] = useState<number | null>(null);
   // AI editing state - tracks which slide is being edited by AI
   const [aiEditingSlideIndex, setAiEditingSlideIndex] = useState<number | null>(null);
   // In-tab presentation mode (not fullscreen, but focused view)
@@ -890,7 +897,15 @@ export default function PresentationViewer({
     [slides.length, isAnimating],
   );
 
-  const nextSlide = useCallback(() => goToSlide(currentSlide + 1), [currentSlide, goToSlide]);
+  const nextSlide = useCallback(() => {
+    if (currentSlide >= slides.length - 1) {
+      // On last slide, trigger shake animation
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 500);
+      return;
+    }
+    goToSlide(currentSlide + 1);
+  }, [currentSlide, goToSlide, slides.length]);
   const prevSlide = useCallback(() => goToSlide(currentSlide - 1), [currentSlide, goToSlide]);
 
   // Update lastHoveredSlideIndex when a slide is hovered
@@ -1040,6 +1055,24 @@ export default function PresentationViewer({
     const existingSlide = newSlides[slideIndex];
     if (existingSlide) {
       newSlides[slideIndex] = { ...existingSlide, contentLayout: layoutId };
+      updateSlidesWithSave(newSlides);
+    }
+  };
+
+  const changeSlideAnimation = (slideIndex: number, animationId: string) => {
+    const newSlides = [...slidesData];
+    const existingSlide = newSlides[slideIndex];
+    if (existingSlide) {
+      newSlides[slideIndex] = { ...existingSlide, animation: animationId };
+      updateSlidesWithSave(newSlides);
+    }
+  };
+
+  const changeContentAnimation = (slideIndex: number, enabled: boolean) => {
+    const newSlides = [...slidesData];
+    const existingSlide = newSlides[slideIndex];
+    if (existingSlide) {
+      newSlides[slideIndex] = { ...existingSlide, contentAnimation: enabled };
       updateSlidesWithSave(newSlides);
     }
   };
@@ -1625,6 +1658,7 @@ export default function PresentationViewer({
             totalSlides={slides.length}
             imageCount={getSlideImages(slide).length}
             theme={theme}
+            currentAnimation={slide.animation}
             slideContent={{
               type: slide.type,
               title: slide.title,
@@ -1656,6 +1690,7 @@ export default function PresentationViewer({
             onMoveUp={() => moveSlide(index, "up")}
             onMoveDown={() => moveSlide(index, "down")}
             onDelete={() => deleteSlide(index)}
+            onOpenAnimationPicker={() => setShowAnimationPicker(index)}
             onAIEditingChange={(isEditing) => setAiEditingSlideIndex(isEditing ? index : null)}
             onAIEdit={(editedSlide) => {
               // Update the slide with AI-edited content - full slide replacement
@@ -1761,6 +1796,7 @@ export default function PresentationViewer({
             isEditing={isEditing ?? false}
             editingText={editingText}
             showPageNumber={showPageNumbers}
+            isPresenting={isPresenting}
             onStartEditing={startEditing}
             onUpdateContent={updateSlideContent}
             onFinishEditing={() => setEditingText(null)}
@@ -2109,9 +2145,11 @@ export default function PresentationViewer({
             onShare={() => setShowShareModal(true)}
             onPresent={() => {
               // Main Present button triggers fullscreen
-              toggleFullscreen();
               if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen();
+                document.documentElement.requestFullscreen().catch(() => {
+                  // Fullscreen blocked - just enter presentation mode without fullscreen
+                  console.log("Fullscreen not available, entering presentation mode");
+                });
               }
             }}
             onExitPresent={() => {
@@ -2192,17 +2230,33 @@ export default function PresentationViewer({
 
                   if (useFixedRatio) {
                     return (
-                      <div className={`relative overflow-hidden ${isFullscreen || isPresenting ? "w-screen h-screen flex items-center justify-center" : `w-full rounded-lg shadow-2xl ring-1 ${getUIColors(getThemeType(theme)).ring}`}`} style={!isFullscreen && !isPresenting ? { aspectRatio: "16/9", maxHeight: "calc(100vh - 200px)" } : {}}>
+                      <div className={`relative overflow-hidden ${isFullscreen || isPresenting ? "w-screen h-screen flex items-center justify-center" : `w-full rounded-lg shadow-2xl ring-1 ${getUIColors(getThemeType(theme)).ring}`} ${isShaking ? "animate-shake" : ""}`} style={!isFullscreen && !isPresenting ? { aspectRatio: "16/9", maxHeight: "calc(100vh - 200px)" } : {}}>
                         <div className={`${isFullscreen || isPresenting ? "w-full h-full" : "w-full h-full"}`}>
-                          {renderSlide(currentSlideData, currentSlide, true)}
+                          <AnimatedSlide
+                            slideKey={currentSlide}
+                            animationId={currentSlideData.animation}
+                            isPresenting={isFullscreen || isPresenting || isPublicView}
+                          >
+                            <div className="w-full h-full">
+                              {renderSlide(currentSlideData, currentSlide, true)}
+                            </div>
+                          </AnimatedSlide>
                         </div>
                       </div>
                     );
                   }
 
                   return (
-                    <div className={`relative overflow-hidden w-full rounded-lg shadow-2xl ring-1 ${getUIColors(getThemeType(theme)).ring}`} style={{ height: `min(${dynamicHeight}px, calc(100vh - 200px))` }}>
-                      {renderSlide(currentSlideData, currentSlide, true)}
+                    <div className={`relative overflow-hidden w-full rounded-lg shadow-2xl ring-1 ${getUIColors(getThemeType(theme)).ring} ${isShaking ? "animate-shake" : ""}`} style={{ height: `min(${dynamicHeight}px, calc(100vh - 200px))` }}>
+                      <AnimatedSlide
+                        slideKey={currentSlide}
+                        animationId={currentSlideData.animation}
+                        isPresenting={isFullscreen || isPresenting || isPublicView}
+                      >
+                        <div className="w-full h-full">
+                          {renderSlide(currentSlideData, currentSlide, true)}
+                        </div>
+                      </AnimatedSlide>
                     </div>
                   );
                 })()}
@@ -2356,6 +2410,35 @@ export default function PresentationViewer({
               updateSlidesWithSave(newSlides);
               toast.success(slides[slideIndex]?.chart ? "Chart updated" : "Chart added to slide");
               setShowChartModal(null);
+            }}
+          />
+        )}
+
+        {/* Animation Picker Modal */}
+        {showAnimationPicker !== null && (
+          <AnimationPicker
+            isOpen={true}
+            theme={theme}
+            currentAnimation={slides[showAnimationPicker]?.animation || "fade"}
+            contentAnimation={slides[showAnimationPicker]?.contentAnimation !== false}
+            isPaidUser={!!subscriptionPlan && ['plus', 'pro', 'ultra'].includes(subscriptionPlan)}
+            onClose={() => setShowAnimationPicker(null)}
+            onSelect={(animationId: string) => {
+              changeSlideAnimation(showAnimationPicker, animationId);
+              toast.success("Animation updated");
+              setShowAnimationPicker(null);
+            }}
+            onContentAnimationChange={(enabled: boolean) => {
+              changeContentAnimation(showAnimationPicker, enabled);
+              toast.success(enabled ? "Content animation enabled" : "Content animation disabled");
+            }}
+            onUpgrade={() => {
+              showUpgradeModal({
+                feature: "Premium Animations",
+                requiredPlan: "plus",
+                currentPlan: subscriptionPlan,
+                description: "Unlock stunning premium animations like Disintegrate, Vortex, Hologram, and more to make your presentations stand out.",
+              });
             }}
           />
         )}
@@ -2533,6 +2616,9 @@ export default function PresentationViewer({
         }}
         onClose={() => setShowContentLayoutPanel(false)}
       />
+
+      {/* Upgrade Modal for Premium Features */}
+      <UpgradeModal />
     </>
   );
 }

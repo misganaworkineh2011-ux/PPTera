@@ -1,11 +1,41 @@
 "use client";
 
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 import { ImageIcon, GripVertical } from "lucide-react";
 import type { ImageLayoutType, ImageContentItem } from "~/lib/layouts/content/images";
 import { calculateImageGridDimensions } from "~/lib/layouts/content/images";
 import type { Theme } from "~/lib/themes";
 import EditableText from "~/components/presentation/EditableText";
+
+// Animation variants for staggered image animations
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const imageVariants = {
+  hidden: { 
+    opacity: 0, 
+    y: 20,
+    scale: 0.95,
+  },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    scale: 1,
+    transition: {
+      duration: 0.4,
+      ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
+    },
+  },
+};
 
 // Theme styles type
 interface ThemeStyles {
@@ -43,6 +73,8 @@ interface ImageLayoutRendererProps {
   accentColor?: string;
   className?: string;
   isNarrowSpace?: boolean;
+  isPresenting?: boolean;
+  animationKey?: string;
   // Editing props
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
@@ -65,6 +97,8 @@ export function ImageLayoutRenderer({
   accentColor = "#047857",
   className = "",
   isNarrowSpace = false,
+  isPresenting = false,
+  animationKey,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -117,7 +151,7 @@ export function ImageLayoutRenderer({
     setDragOverIndex(null);
   };
 
-  const canDrag = isOwner && isHovered && onReorderItems;
+  const canDrag = isOwner && isHovered && onReorderItems && !isPresenting;
 
   // Common drag props for each item
   const getDragProps = (idx: number) => canDrag ? {
@@ -147,195 +181,321 @@ export function ImageLayoutRenderer({
     </div>
   ) : null;
 
+  // Container and item wrapper for animations
+  const Container = isPresenting ? motion.div : "div";
+  const containerProps = isPresenting ? { 
+    variants: containerVariants, 
+    initial: "hidden", 
+    animate: "visible" 
+  } : {};
+
   // Style 1: Small rounded square left, text right (horizontal layout per item)
   if (layoutId === "image-style-1") {
     return (
-      <div
+      <Container
         className={`grid gap-6 ${className}`}
         style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}
+        {...containerProps}
       >
-        {displayItems.map((item, idx) => (
-          <div 
-            key={idx} 
-            className={`flex items-start gap-4 group relative ${canDrag ? "cursor-grab active:cursor-grabbing" : ""}`}
-            {...getDragProps(idx)}
-            style={getItemStyle(idx)}
-          >
-            <DragHandle />
-            <div
-              className={`flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden relative ${isOwner && isHovered ? "cursor-pointer" : ""}`}
-              style={{
-                backgroundColor: item.image ? undefined : `${themeStyles.accentColor}15`,
-                border: item.image ? "none" : `1px dashed ${themeStyles.accentColor}40`,
-              }}
-              onClick={() => isOwner && isHovered && onChangeImage?.(idx)}
-            >
-              {item.image ? (
-                <img src={item.image} alt={item.label || ""} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <ImageIcon size={24} style={{ color: `${themeStyles.accentColor}50` }} />
-                </div>
-              )}
-              {/* Hover overlay for changing image */}
-              {isOwner && isHovered && onChangeImage && (
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <ImageIcon size={20} className="text-white" />
-                </div>
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              {item.label && (
-                onStartEditLabel ? (
+        {displayItems.map((item, idx) => {
+          const baseClassName = `flex items-start gap-4 group relative ${canDrag ? "cursor-grab active:cursor-grabbing" : ""}`;
+          const content = (
+            <>
+              <DragHandle />
+              <div
+                className={`flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden relative ${isOwner && isHovered && !isPresenting ? "cursor-pointer" : ""}`}
+                style={{
+                  backgroundColor: item.image ? undefined : `${themeStyles.accentColor}15`,
+                  border: item.image ? "none" : `1px dashed ${themeStyles.accentColor}40`,
+                }}
+                onClick={() => isOwner && isHovered && !isPresenting && onChangeImage?.(idx)}
+              >
+                {item.image ? (
+                  <img src={item.image} alt={item.label || ""} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <ImageIcon size={24} style={{ color: `${themeStyles.accentColor}50` }} />
+                  </div>
+                )}
+                {isOwner && isHovered && !isPresenting && onChangeImage && (
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <ImageIcon size={20} className="text-white" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                {item.label && (
+                  onStartEditLabel ? (
+                    <EditableText
+                      value={item.label}
+                      isEditing={isEditing && editingText?.field === `content-label-${idx}`}
+                      onStartEdit={() => onStartEditLabel(idx)}
+                      onChange={(val) => onUpdateLabel?.(idx, val)}
+                      onFinish={onFinishEditing || (() => {})}
+                      onDelete={onDeleteItem ? () => onDeleteItem(idx) : undefined}
+                      className="text-base font-semibold mb-1"
+                      style={{ color: themeStyles.titleColor }}
+                      isOwner={isOwner}
+                      isHovered={isHovered}
+                    />
+                  ) : (
+                    <h3 className="text-base font-semibold mb-1" style={{ color: themeStyles.titleColor }}>
+                      {item.label}
+                    </h3>
+                  )
+                )}
+                {onStartEditText ? (
                   <EditableText
-                    value={item.label}
-                    isEditing={isEditing && editingText?.field === `content-label-${idx}`}
-                    onStartEdit={() => onStartEditLabel(idx)}
-                    onChange={(val) => onUpdateLabel?.(idx, val)}
+                    value={item.text}
+                    isEditing={isEditing && editingText?.field === `content-text-${idx}`}
+                    onStartEdit={() => onStartEditText(idx)}
+                    onChange={(val) => onUpdateText?.(idx, val)}
                     onFinish={onFinishEditing || (() => {})}
                     onDelete={onDeleteItem ? () => onDeleteItem(idx) : undefined}
-                    className="text-base font-semibold mb-1"
-                    style={{ color: themeStyles.titleColor }}
+                    className="text-sm leading-relaxed"
+                    style={{ color: themeStyles.bodyColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
                   />
                 ) : (
-                  <h3 className="text-base font-semibold mb-1" style={{ color: themeStyles.titleColor }}>
-                    {item.label}
-                  </h3>
-                )
-              )}
-              {onStartEditText ? (
-                <EditableText
-                  value={item.text}
-                  isEditing={isEditing && editingText?.field === `content-text-${idx}`}
-                  onStartEdit={() => onStartEditText(idx)}
-                  onChange={(val) => onUpdateText?.(idx, val)}
-                  onFinish={onFinishEditing || (() => {})}
-                  onDelete={onDeleteItem ? () => onDeleteItem(idx) : undefined}
-                  className="text-sm leading-relaxed"
-                  style={{ color: themeStyles.bodyColor }}
-                  isOwner={isOwner}
-                  isHovered={isHovered}
-                />
-              ) : (
-                <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
-                  {item.text}
-                </p>
-              )}
+                  <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
+                    {item.text}
+                  </p>
+                )}
+              </div>
+            </>
+          );
+          
+          if (isPresenting) {
+            return (
+              <motion.div key={idx} className={baseClassName} variants={imageVariants}>
+                {content}
+              </motion.div>
+            );
+          }
+          
+          return (
+            <div key={idx} className={baseClassName} {...getDragProps(idx)} style={getItemStyle(idx)}>
+              {content}
             </div>
-          </div>
-        ))}
-      </div>
+          );
+        })}
+      </Container>
     );
   }
 
   // Style 2: Larger rounded square top, text below
   if (layoutId === "image-style-2") {
     return (
-      <div
+      <Container
         className={`grid gap-6 ${className}`}
         style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}
+        {...containerProps}
       >
-        {displayItems.map((item, idx) => (
-          <div 
-            key={idx} 
-            className={`flex flex-col group relative ${canDrag ? "cursor-grab active:cursor-grabbing" : ""}`}
-            {...getDragProps(idx)}
-            style={getItemStyle(idx)}
-          >
-            <DragHandle />
-            <div
-              className={`w-full aspect-square rounded-2xl overflow-hidden mb-4 relative ${isOwner && isHovered ? "cursor-pointer" : ""}`}
-              style={{
-                backgroundColor: item.image ? undefined : `${themeStyles.accentColor}15`,
-                border: item.image ? "none" : `1px dashed ${themeStyles.accentColor}40`,
-                maxWidth: "180px",
-              }}
-              onClick={() => isOwner && isHovered && onChangeImage?.(idx)}
-            >
-              {item.image ? (
-                <img src={item.image} alt={item.label || ""} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <ImageIcon size={40} style={{ color: `${themeStyles.accentColor}50` }} />
-                </div>
-              )}
-              {/* Hover overlay for changing image */}
-              {isOwner && isHovered && onChangeImage && (
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <ImageIcon size={28} className="text-white" />
-                </div>
-              )}
-            </div>
-            <div>
-              {item.label && (
-                onStartEditLabel ? (
+        {displayItems.map((item, idx) => {
+          const baseClassName = `flex flex-col group relative ${canDrag ? "cursor-grab active:cursor-grabbing" : ""}`;
+          const content = (
+            <>
+              <DragHandle />
+              <div
+                className={`w-full aspect-square rounded-2xl overflow-hidden mb-4 relative ${isOwner && isHovered && !isPresenting ? "cursor-pointer" : ""}`}
+                style={{
+                  backgroundColor: item.image ? undefined : `${themeStyles.accentColor}15`,
+                  border: item.image ? "none" : `1px dashed ${themeStyles.accentColor}40`,
+                  maxWidth: "180px",
+                }}
+                onClick={() => isOwner && isHovered && !isPresenting && onChangeImage?.(idx)}
+              >
+                {item.image ? (
+                  <img src={item.image} alt={item.label || ""} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <ImageIcon size={40} style={{ color: `${themeStyles.accentColor}50` }} />
+                  </div>
+                )}
+                {isOwner && isHovered && !isPresenting && onChangeImage && (
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <ImageIcon size={28} className="text-white" />
+                  </div>
+                )}
+              </div>
+              <div>
+                {item.label && (
+                  onStartEditLabel ? (
+                    <EditableText
+                      value={item.label}
+                      isEditing={isEditing && editingText?.field === `content-label-${idx}`}
+                      onStartEdit={() => onStartEditLabel(idx)}
+                      onChange={(val) => onUpdateLabel?.(idx, val)}
+                      onFinish={onFinishEditing || (() => {})}
+                      onDelete={onDeleteItem ? () => onDeleteItem(idx) : undefined}
+                      className="text-lg font-semibold mb-2"
+                      style={{ color: themeStyles.titleColor }}
+                      isOwner={isOwner}
+                      isHovered={isHovered}
+                    />
+                  ) : (
+                    <h3 className="text-lg font-semibold mb-2" style={{ color: themeStyles.titleColor }}>
+                      {item.label}
+                    </h3>
+                  )
+                )}
+                {onStartEditText ? (
                   <EditableText
-                    value={item.label}
-                    isEditing={isEditing && editingText?.field === `content-label-${idx}`}
-                    onStartEdit={() => onStartEditLabel(idx)}
-                    onChange={(val) => onUpdateLabel?.(idx, val)}
+                    value={item.text}
+                    isEditing={isEditing && editingText?.field === `content-text-${idx}`}
+                    onStartEdit={() => onStartEditText(idx)}
+                    onChange={(val) => onUpdateText?.(idx, val)}
                     onFinish={onFinishEditing || (() => {})}
                     onDelete={onDeleteItem ? () => onDeleteItem(idx) : undefined}
-                    className="text-lg font-semibold mb-2"
-                    style={{ color: themeStyles.titleColor }}
+                    className="text-sm leading-relaxed"
+                    style={{ color: themeStyles.bodyColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
                   />
                 ) : (
-                  <h3 className="text-lg font-semibold mb-2" style={{ color: themeStyles.titleColor }}>
-                    {item.label}
-                  </h3>
-                )
-              )}
-              {onStartEditText ? (
-                <EditableText
-                  value={item.text}
-                  isEditing={isEditing && editingText?.field === `content-text-${idx}`}
-                  onStartEdit={() => onStartEditText(idx)}
-                  onChange={(val) => onUpdateText?.(idx, val)}
-                  onFinish={onFinishEditing || (() => {})}
-                  onDelete={onDeleteItem ? () => onDeleteItem(idx) : undefined}
-                  className="text-sm leading-relaxed"
-                  style={{ color: themeStyles.bodyColor }}
-                  isOwner={isOwner}
-                  isHovered={isHovered}
-                />
-              ) : (
-                <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
-                  {item.text}
-                </p>
-              )}
+                  <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
+                    {item.text}
+                  </p>
+                )}
+              </div>
+            </>
+          );
+          
+          if (isPresenting) {
+            return (
+              <motion.div key={idx} className={baseClassName} variants={imageVariants}>
+                {content}
+              </motion.div>
+            );
+          }
+          
+          return (
+            <div key={idx} className={baseClassName} {...getDragProps(idx)} style={getItemStyle(idx)}>
+              {content}
             </div>
-          </div>
-        ))}
-      </div>
+          );
+        })}
+      </Container>
     );
   }
 
   // Style 3: Large circle top, text below centered
   if (layoutId === "image-style-3") {
     return (
-      <div
+      <Container
         className={`grid gap-8 ${className}`}
         style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}
+        {...containerProps}
       >
-        {displayItems.map((item, idx) => (
-          <div 
-            key={idx} 
-            className={`flex flex-col items-center text-center group relative ${canDrag ? "cursor-grab active:cursor-grabbing" : ""}`}
-            {...getDragProps(idx)}
-            style={getItemStyle(idx)}
-          >
+        {displayItems.map((item, idx) => {
+          const baseClassName = `flex flex-col items-center text-center group relative ${canDrag ? "cursor-grab active:cursor-grabbing" : ""}`;
+          const content = (
+            <>
+              <DragHandle />
+              <div
+                className={`w-40 h-40 rounded-full overflow-hidden mb-4 flex-shrink-0 relative ${isOwner && isHovered && !isPresenting ? "cursor-pointer" : ""}`}
+                style={{
+                  backgroundColor: item.image ? undefined : `${themeStyles.accentColor}15`,
+                  border: item.image ? "none" : `1px dashed ${themeStyles.accentColor}40`,
+                }}
+                onClick={() => isOwner && isHovered && !isPresenting && onChangeImage?.(idx)}
+              >
+                {item.image ? (
+                  <img src={item.image} alt={item.label || ""} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <ImageIcon size={48} style={{ color: `${themeStyles.accentColor}50` }} />
+                  </div>
+                )}
+                {isOwner && isHovered && !isPresenting && onChangeImage && (
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
+                    <ImageIcon size={32} className="text-white" />
+                  </div>
+                )}
+              </div>
+              <div>
+                {item.label && (
+                  onStartEditLabel ? (
+                    <EditableText
+                      value={item.label}
+                      isEditing={isEditing && editingText?.field === `content-label-${idx}`}
+                      onStartEdit={() => onStartEditLabel(idx)}
+                      onChange={(val) => onUpdateLabel?.(idx, val)}
+                      onFinish={onFinishEditing || (() => {})}
+                      onDelete={onDeleteItem ? () => onDeleteItem(idx) : undefined}
+                      className="text-lg font-semibold mb-2"
+                      style={{ color: themeStyles.titleColor }}
+                      isOwner={isOwner}
+                      isHovered={isHovered}
+                    />
+                  ) : (
+                    <h3 className="text-lg font-semibold mb-2" style={{ color: themeStyles.titleColor }}>
+                      {item.label}
+                    </h3>
+                  )
+                )}
+                {onStartEditText ? (
+                  <EditableText
+                    value={item.text}
+                    isEditing={isEditing && editingText?.field === `content-text-${idx}`}
+                    onStartEdit={() => onStartEditText(idx)}
+                    onChange={(val) => onUpdateText?.(idx, val)}
+                    onFinish={onFinishEditing || (() => {})}
+                    onDelete={onDeleteItem ? () => onDeleteItem(idx) : undefined}
+                    className="text-sm leading-relaxed max-w-[250px]"
+                    style={{ color: themeStyles.bodyColor }}
+                    isOwner={isOwner}
+                    isHovered={isHovered}
+                  />
+                ) : (
+                  <p className="text-sm leading-relaxed max-w-[250px]" style={{ color: themeStyles.bodyColor }}>
+                    {item.text}
+                  </p>
+                )}
+              </div>
+            </>
+          );
+          
+          if (isPresenting) {
+            return (
+              <motion.div key={idx} className={baseClassName} variants={imageVariants}>
+                {content}
+              </motion.div>
+            );
+          }
+          
+          return (
+            <div key={idx} className={baseClassName} {...getDragProps(idx)} style={getItemStyle(idx)}>
+              {content}
+            </div>
+          );
+        })}
+      </Container>
+    );
+  }
+
+  // Style 4: Large rounded rectangle top, text below centered
+  return (
+    <Container
+      className={`grid gap-6 ${className}`}
+      style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}
+      {...containerProps}
+    >
+      {displayItems.map((item, idx) => {
+        const baseClassName = `flex flex-col items-center text-center group relative ${canDrag ? "cursor-grab active:cursor-grabbing" : ""}`;
+        const content = (
+          <>
             <DragHandle />
             <div
-              className={`w-40 h-40 rounded-full overflow-hidden mb-4 flex-shrink-0 relative ${isOwner && isHovered ? "cursor-pointer" : ""}`}
+              className={`w-full rounded-2xl overflow-hidden mb-4 relative ${isOwner && isHovered && !isPresenting ? "cursor-pointer" : ""}`}
               style={{
+                aspectRatio: "4/3",
+                maxWidth: "280px",
                 backgroundColor: item.image ? undefined : `${themeStyles.accentColor}15`,
                 border: item.image ? "none" : `1px dashed ${themeStyles.accentColor}40`,
               }}
-              onClick={() => isOwner && isHovered && onChangeImage?.(idx)}
+              onClick={() => isOwner && isHovered && !isPresenting && onChangeImage?.(idx)}
             >
               {item.image ? (
                 <img src={item.image} alt={item.label || ""} className="w-full h-full object-cover" />
@@ -344,9 +504,8 @@ export function ImageLayoutRenderer({
                   <ImageIcon size={48} style={{ color: `${themeStyles.accentColor}50` }} />
                 </div>
               )}
-              {/* Hover overlay for changing image */}
-              {isOwner && isHovered && onChangeImage && (
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
+              {isOwner && isHovered && !isPresenting && onChangeImage && (
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-2xl">
                   <ImageIcon size={32} className="text-white" />
                 </div>
               )}
@@ -380,104 +539,35 @@ export function ImageLayoutRenderer({
                   onChange={(val) => onUpdateText?.(idx, val)}
                   onFinish={onFinishEditing || (() => {})}
                   onDelete={onDeleteItem ? () => onDeleteItem(idx) : undefined}
-                  className="text-sm leading-relaxed max-w-[250px]"
+                  className="text-sm leading-relaxed max-w-[280px]"
                   style={{ color: themeStyles.bodyColor }}
                   isOwner={isOwner}
                   isHovered={isHovered}
                 />
               ) : (
-                <p className="text-sm leading-relaxed max-w-[250px]" style={{ color: themeStyles.bodyColor }}>
+                <p className="text-sm leading-relaxed max-w-[280px]" style={{ color: themeStyles.bodyColor }}>
                   {item.text}
                 </p>
               )}
             </div>
+          </>
+        );
+        
+        if (isPresenting) {
+          return (
+            <motion.div key={idx} className={baseClassName} variants={imageVariants}>
+              {content}
+            </motion.div>
+          );
+        }
+        
+        return (
+          <div key={idx} className={baseClassName} {...getDragProps(idx)} style={getItemStyle(idx)}>
+            {content}
           </div>
-        ))}
-      </div>
-    );
-  }
-
-  // Style 4: Large rounded rectangle top, text below centered
-  return (
-    <div
-      className={`grid gap-6 ${className}`}
-      style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}
-    >
-      {displayItems.map((item, idx) => (
-        <div 
-          key={idx} 
-          className={`flex flex-col items-center text-center group relative ${canDrag ? "cursor-grab active:cursor-grabbing" : ""}`}
-          {...getDragProps(idx)}
-          style={getItemStyle(idx)}
-        >
-          <DragHandle />
-          <div
-            className={`w-full rounded-2xl overflow-hidden mb-4 relative ${isOwner && isHovered ? "cursor-pointer" : ""}`}
-            style={{
-              aspectRatio: "4/3",
-              maxWidth: "280px",
-              backgroundColor: item.image ? undefined : `${themeStyles.accentColor}15`,
-              border: item.image ? "none" : `1px dashed ${themeStyles.accentColor}40`,
-            }}
-            onClick={() => isOwner && isHovered && onChangeImage?.(idx)}
-          >
-            {item.image ? (
-              <img src={item.image} alt={item.label || ""} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <ImageIcon size={48} style={{ color: `${themeStyles.accentColor}50` }} />
-              </div>
-            )}
-            {/* Hover overlay for changing image */}
-            {isOwner && isHovered && onChangeImage && (
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-2xl">
-                <ImageIcon size={32} className="text-white" />
-              </div>
-            )}
-          </div>
-          <div>
-            {item.label && (
-              onStartEditLabel ? (
-                <EditableText
-                  value={item.label}
-                  isEditing={isEditing && editingText?.field === `content-label-${idx}`}
-                  onStartEdit={() => onStartEditLabel(idx)}
-                  onChange={(val) => onUpdateLabel?.(idx, val)}
-                  onFinish={onFinishEditing || (() => {})}
-                  onDelete={onDeleteItem ? () => onDeleteItem(idx) : undefined}
-                  className="text-lg font-semibold mb-2"
-                  style={{ color: themeStyles.titleColor }}
-                  isOwner={isOwner}
-                  isHovered={isHovered}
-                />
-              ) : (
-                <h3 className="text-lg font-semibold mb-2" style={{ color: themeStyles.titleColor }}>
-                  {item.label}
-                </h3>
-              )
-            )}
-            {onStartEditText ? (
-              <EditableText
-                value={item.text}
-                isEditing={isEditing && editingText?.field === `content-text-${idx}`}
-                onStartEdit={() => onStartEditText(idx)}
-                onChange={(val) => onUpdateText?.(idx, val)}
-                onFinish={onFinishEditing || (() => {})}
-                onDelete={onDeleteItem ? () => onDeleteItem(idx) : undefined}
-                className="text-sm leading-relaxed max-w-[280px]"
-                style={{ color: themeStyles.bodyColor }}
-                isOwner={isOwner}
-                isHovered={isHovered}
-              />
-            ) : (
-              <p className="text-sm leading-relaxed max-w-[280px]" style={{ color: themeStyles.bodyColor }}>
-                {item.text}
-              </p>
-            )}
-          </div>
-        </div>
-      ))}
-    </div>
+        );
+      })}
+    </Container>
   );
 }
 
