@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "~/lib/utils";
 import SlideRenderer from "~/components/presentation/SlideRenderer";
+import AnimatedSlide from "~/components/presentation/AnimatedSlide";
 import { getThemeById, getDefaultTheme, type Theme } from "~/lib/themes";
 import { convertCustomThemeToTheme } from "~/lib/custom-theme-utils";
 import { type PresentationData } from "~/components/presentation/types";
@@ -336,22 +337,29 @@ export default function PresenterPage({ params }: PresenterPageProps) {
           {/* Slide Container */}
           <div className="flex-1 flex items-center justify-center">
             <div className="relative w-full aspect-video max-h-full max-w-[calc(100vh*16/9)] bg-white overflow-hidden shadow-2xl rounded-lg">
-              <SlideRenderer
-                slide={slide}
-                index={currentSlide}
-                totalSlides={presentation.slides.length}
-                theme={theme}
-                isOwner={false}
-                isFullscreen={true}
-                isHovered={false}
-                isEditing={false}
-                editingText={null}
-                onStartEditing={() => { }}
-                onUpdateContent={() => { }}
-                onFinishEditing={() => { }}
-                onAddBullet={() => { }}
-                onDeleteBullet={() => { }}
-              />
+              <AnimatedSlide
+                slideKey={currentSlide}
+                animationId={slide.animation || "fade-up"}
+                isPresenting={true}
+              >
+                <SlideRenderer
+                  slide={slide}
+                  index={currentSlide}
+                  totalSlides={presentation.slides.length}
+                  theme={theme}
+                  isOwner={false}
+                  isFullscreen={true}
+                  isHovered={false}
+                  isEditing={false}
+                  editingText={null}
+                  isPresenting={true}
+                  onStartEditing={() => { }}
+                  onUpdateContent={() => { }}
+                  onFinishEditing={() => { }}
+                  onAddBullet={() => { }}
+                  onDeleteBullet={() => { }}
+                />
+              </AnimatedSlide>
             </div>
           </div>
 

@@ -1,11 +1,41 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
+import { motion } from "framer-motion";
 import { Check, ChevronRight, GripVertical } from "lucide-react";
 import type { BulletLayoutType, BulletContentItem } from "~/lib/layouts/content/bullets";
 import { calculateBulletGridDimensions } from "~/lib/layouts/content/bullets";
 import EditableText from "~/components/presentation/EditableText";
 import type { Theme } from "~/lib/themes";
+
+// Animation variants for staggered bullet animations
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.07,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const bulletVariants = {
+  hidden: { 
+    opacity: 0, 
+    x: -20,
+    scale: 0.95,
+  },
+  visible: { 
+    opacity: 1, 
+    x: 0, 
+    scale: 1,
+    transition: {
+      duration: 0.3,
+      ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
+    },
+  },
+};
 
 // Helper to get theme-aware styles
 function getThemeStyles(theme?: Theme, accentColor?: string) {
@@ -68,6 +98,8 @@ interface BulletLayoutRendererProps {
   accentColor?: string;
   className?: string;
   isNarrowSpace?: boolean;
+  isPresenting?: boolean;
+  animationKey?: string; // Stable key to prevent animation replay
   // Editing props
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
@@ -89,6 +121,8 @@ export function BulletLayoutRenderer({
   accentColor = "#047857",
   className = "",
   isNarrowSpace = false,
+  isPresenting = false,
+  animationKey,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -170,6 +204,8 @@ export function BulletLayoutRenderer({
         bulletType="circle"
         className={className}
         isNarrowSpace={isNarrowSpace}
+        isPresenting={isPresenting}
+        animationKey={animationKey}
         isEditing={isEditing}
         editingText={editingText}
         onStartEditLabel={onStartEditLabel}
@@ -196,6 +232,8 @@ export function BulletLayoutRenderer({
         bulletType="circle"
         className={className}
         isNarrowSpace={isNarrowSpace}
+        isPresenting={isPresenting}
+        animationKey={animationKey}
         isEditing={isEditing}
         editingText={editingText}
         onStartEditLabel={onStartEditLabel}
@@ -222,6 +260,8 @@ export function BulletLayoutRenderer({
         bulletType="checkmark"
         className={className}
         isNarrowSpace={isNarrowSpace}
+        isPresenting={isPresenting}
+        animationKey={animationKey}
         isEditing={isEditing}
         editingText={editingText}
         onStartEditLabel={onStartEditLabel}
@@ -246,6 +286,8 @@ export function BulletLayoutRenderer({
       themeStyles={themeStyles}
       className={className}
       isNarrowSpace={isNarrowSpace}
+      isPresenting={isPresenting}
+      animationKey={animationKey}
       isEditing={isEditing}
       editingText={editingText}
       onStartEditLabel={onStartEditLabel}
@@ -281,6 +323,8 @@ function CardBullets({
   bulletType,
   className,
   isNarrowSpace,
+  isPresenting = false,
+  animationKey,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -300,6 +344,8 @@ function CardBullets({
   bulletType: "circle" | "checkmark";
   className: string;
   isNarrowSpace: boolean;
+  isPresenting?: boolean;
+  animationKey?: string;
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
   onStartEditLabel?: (index: number) => void;
@@ -318,8 +364,16 @@ function CardBullets({
 
   // Special 2-1 layout for 3 items
   if (specialLayout === "2-1" && items.length === 3) {
+    const Container = isPresenting ? motion.div : "div";
+    const containerProps = isPresenting ? { 
+      key: animationKey,
+      variants: containerVariants, 
+      initial: "hidden", 
+      animate: "visible" 
+    } : {};
+    
     return (
-      <div className={`flex flex-col gap-4 ${className}`}>
+      <Container className={`flex flex-col gap-4 ${className}`} {...containerProps}>
         {/* Top row - 2 items */}
         <div className="grid grid-cols-2 gap-4">
           {items.slice(0, 2).map((item, idx) => (
@@ -329,6 +383,7 @@ function CardBullets({
               index={idx}
               themeStyles={themeStyles}
               bulletType={bulletType}
+              isPresenting={isPresenting}
               isEditing={isEditing}
               editingText={editingText}
               onStartEditLabel={onStartEditLabel}
@@ -352,6 +407,7 @@ function CardBullets({
             index={2}
             themeStyles={themeStyles}
             bulletType={bulletType}
+            isPresenting={isPresenting}
             isEditing={isEditing}
             editingText={editingText}
             onStartEditLabel={onStartEditLabel}
@@ -367,16 +423,26 @@ function CardBullets({
             getDragClasses={getDragClasses}
           />
         </div>
-      </div>
+      </Container>
     );
   }
 
+  // Use motion container when presenting
+  const Container = isPresenting ? motion.div : "div";
+  const containerProps = isPresenting ? { 
+    key: animationKey,
+    variants: containerVariants, 
+    initial: "hidden", 
+    animate: "visible" 
+  } : {};
+
   return (
-    <div
+    <Container
       className={`grid gap-4 ${className}`}
       style={{
         gridTemplateColumns: `repeat(${columns}, 1fr)`,
       }}
+      {...containerProps}
     >
       {items.map((item, idx) => (
         <BulletCard
@@ -385,6 +451,7 @@ function CardBullets({
           index={idx}
           themeStyles={themeStyles}
           bulletType={bulletType}
+          isPresenting={isPresenting}
           isEditing={isEditing}
           editingText={editingText}
           onStartEditLabel={onStartEditLabel}
@@ -400,7 +467,7 @@ function CardBullets({
           getDragClasses={getDragClasses}
         />
       ))}
-    </div>
+    </Container>
   );
 }
 
@@ -410,6 +477,7 @@ function BulletCard({
   index,
   themeStyles,
   bulletType,
+  isPresenting = false,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -428,6 +496,7 @@ function BulletCard({
   index: number;
   themeStyles: ThemeStyles;
   bulletType: "circle" | "checkmark";
+  isPresenting?: boolean;
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
   onStartEditLabel?: (index: number) => void;
@@ -445,18 +514,22 @@ function BulletCard({
   const dragClasses = getDragClasses ? getDragClasses(index) : "";
   const props = dragProps ? dragProps(index) : {};
   
+  const Wrapper = isPresenting ? motion.div : "div";
+  const wrapperProps = isPresenting ? { variants: bulletVariants } : {};
+  
   return (
-    <div
+    <Wrapper
       className={`rounded-2xl p-5 relative group/drag-item ${dragClasses}`}
       style={{
         backgroundColor: themeStyles.cardBgColor,
         border: `1px solid ${themeStyles.cardBorderColor}`,
-        cursor: canDrag ? "grab" : "default",
+        cursor: canDrag && !isPresenting ? "grab" : "default",
       }}
-      {...props}
+      {...wrapperProps}
+      {...(isPresenting ? {} : props)}
     >
       {/* Drag handle */}
-      {canDrag && (
+      {canDrag && !isPresenting && (
         <div 
           className="absolute -left-5 top-1/2 -translate-y-1/2 opacity-0 group-hover/drag-item:opacity-60 transition-opacity cursor-grab z-20"
           title="Drag to reorder"
@@ -523,7 +596,7 @@ function BulletCard({
           )}
         </div>
       </div>
-    </div>
+    </Wrapper>
   );
 }
 
@@ -534,6 +607,8 @@ function SimpleBullets({
   bulletType,
   className,
   isNarrowSpace,
+  isPresenting = false,
+  animationKey,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -553,6 +628,8 @@ function SimpleBullets({
   bulletType: "circle";
   className: string;
   isNarrowSpace: boolean;
+  isPresenting?: boolean;
+  animationKey?: string;
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
   onStartEditLabel?: (index: number) => void;
@@ -567,10 +644,18 @@ function SimpleBullets({
   dragProps?: (idx: number) => Record<string, unknown>;
   getDragClasses?: (idx: number) => string;
 }) {
+  const Container = isPresenting ? motion.div : "div";
+  const containerProps = isPresenting ? { 
+    key: animationKey,
+    variants: containerVariants, 
+    initial: "hidden", 
+    animate: "visible" 
+  } : {};
+
   // For 3 items: 2 columns on top row, 1 on bottom
   if (items.length === 3 && !isNarrowSpace) {
     return (
-      <div className={`flex flex-col gap-6 ${className}`}>
+      <Container className={`flex flex-col gap-6 ${className}`} {...containerProps}>
         {/* Top row - 2 items */}
         <div className="grid grid-cols-2 gap-8">
           {items.slice(0, 2).map((item, idx) => (
@@ -579,6 +664,7 @@ function SimpleBullets({
               item={item}
               index={idx}
               themeStyles={themeStyles}
+              isPresenting={isPresenting}
               isEditing={isEditing}
               editingText={editingText}
               onStartEditLabel={onStartEditLabel}
@@ -601,6 +687,7 @@ function SimpleBullets({
             item={items[2]!}
             index={2}
             themeStyles={themeStyles}
+            isPresenting={isPresenting}
             isEditing={isEditing}
             editingText={editingText}
             onStartEditLabel={onStartEditLabel}
@@ -616,7 +703,7 @@ function SimpleBullets({
             getDragClasses={getDragClasses}
           />
         </div>
-      </div>
+      </Container>
     );
   }
 
@@ -624,11 +711,14 @@ function SimpleBullets({
   const columns = isNarrowSpace ? 1 : items.length <= 2 ? items.length : 2;
 
   return (
-    <div
+    <Container
       className={`grid gap-6 ${className}`}
       style={{
         gridTemplateColumns: `repeat(${columns}, 1fr)`,
       }}
+      variants={containerProps.variants}
+      initial={containerProps.initial}
+      animate={containerProps.animate}
     >
       {items.map((item, idx) => (
         <SimpleBulletItem
@@ -636,6 +726,7 @@ function SimpleBullets({
           item={item}
           index={idx}
           themeStyles={themeStyles}
+          isPresenting={isPresenting}
           isEditing={isEditing}
           editingText={editingText}
           onStartEditLabel={onStartEditLabel}
@@ -651,7 +742,7 @@ function SimpleBullets({
           getDragClasses={getDragClasses}
         />
       ))}
-    </div>
+    </Container>
   );
 }
 
@@ -660,6 +751,7 @@ function SimpleBulletItem({
   item,
   index,
   themeStyles,
+  isPresenting = false,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -677,6 +769,7 @@ function SimpleBulletItem({
   item: BulletContentItem;
   index: number;
   themeStyles: ThemeStyles;
+  isPresenting?: boolean;
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
   onStartEditLabel?: (index: number) => void;
@@ -694,14 +787,18 @@ function SimpleBulletItem({
   const dragClasses = getDragClasses ? getDragClasses(index) : "";
   const props = dragProps ? dragProps(index) : {};
   
+  const Wrapper = isPresenting ? motion.div : "div";
+  const wrapperProps = isPresenting ? { variants: bulletVariants } : {};
+  
   return (
-    <div 
+    <Wrapper 
       className={`flex items-start gap-3 relative group/drag-item ${dragClasses}`}
-      style={{ cursor: canDrag ? "grab" : "default" }}
-      {...props}
+      style={{ cursor: canDrag && !isPresenting ? "grab" : "default" }}
+      {...wrapperProps}
+      {...(isPresenting ? {} : props)}
     >
       {/* Drag handle */}
-      {canDrag && (
+      {canDrag && !isPresenting && (
         <div 
           className="absolute -left-5 top-1/2 -translate-y-1/2 opacity-0 group-hover/drag-item:opacity-60 transition-opacity cursor-grab z-20"
           title="Drag to reorder"
@@ -757,7 +854,7 @@ function SimpleBulletItem({
           </p>
         )}
       </div>
-    </div>
+    </Wrapper>
   );
 }
 
@@ -767,6 +864,8 @@ function ArrowBullets({
   themeStyles,
   className,
   isNarrowSpace,
+  isPresenting = false,
+  animationKey,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -785,6 +884,8 @@ function ArrowBullets({
   themeStyles: ThemeStyles;
   className: string;
   isNarrowSpace: boolean;
+  isPresenting?: boolean;
+  animationKey?: string;
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
   onStartEditLabel?: (index: number) => void;
@@ -802,26 +903,39 @@ function ArrowBullets({
   // Vertical list layout
   const columns = isNarrowSpace ? 1 : items.length <= 4 ? 1 : 2;
 
+  const Container = isPresenting ? motion.div : "div";
+  const containerProps = isPresenting ? { 
+    key: animationKey,
+    variants: containerVariants, 
+    initial: "hidden", 
+    animate: "visible" 
+  } : {};
+  
+  const ItemWrapper = isPresenting ? motion.div : "div";
+
   return (
-    <div
+    <Container
       className={`grid gap-4 ${className}`}
       style={{
         gridTemplateColumns: `repeat(${columns}, 1fr)`,
       }}
+      {...containerProps}
     >
       {items.map((item, idx) => {
         const dragClasses = getDragClasses ? getDragClasses(idx) : "";
         const props = dragProps ? dragProps(idx) : {};
+        const itemProps = isPresenting ? { variants: bulletVariants } : {};
         
         return (
-          <div 
+          <ItemWrapper 
             key={idx} 
             className={`flex items-start gap-3 relative group/drag-item ${dragClasses}`}
-            style={{ cursor: canDrag ? "grab" : "default" }}
-            {...props}
+            style={{ cursor: canDrag && !isPresenting ? "grab" : "default" }}
+            {...itemProps}
+            {...(isPresenting ? {} : props)}
           >
             {/* Drag handle */}
-            {canDrag && (
+            {canDrag && !isPresenting && (
               <div 
                 className="absolute -left-5 top-1/2 -translate-y-1/2 opacity-0 group-hover/drag-item:opacity-60 transition-opacity cursor-grab z-20"
                 title="Drag to reorder"
@@ -874,10 +988,10 @@ function ArrowBullets({
                 </p>
               )}
             </div>
-          </div>
+          </ItemWrapper>
         );
       })}
-    </div>
+    </Container>
   );
 }
 

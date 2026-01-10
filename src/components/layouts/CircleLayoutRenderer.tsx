@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { motion } from "framer-motion";
 import type {
   CircleLayoutType,
   CircleContentItem,
@@ -13,6 +14,33 @@ import {
 } from "~/lib/layouts/content/circles";
 import EditableText from "~/components/presentation/EditableText";
 import type { Theme } from "~/lib/themes";
+
+// Animation variants for staggered circle animations
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const circleVariants = {
+  hidden: { 
+    opacity: 0, 
+    scale: 0.8,
+  },
+  visible: { 
+    opacity: 1, 
+    scale: 1,
+    transition: {
+      duration: 0.35,
+      ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
+    },
+  },
+};
 
 // Theme styles type
 interface ThemeStyles {
@@ -66,6 +94,8 @@ interface CircleLayoutRendererProps {
   theme?: Theme;
   accentColor?: string;
   className?: string;
+  isPresenting?: boolean;
+  animationKey?: string;
   // Editing props
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
@@ -86,6 +116,8 @@ export function CircleLayoutRenderer({
   theme,
   accentColor = "#0d9488",
   className = "",
+  isPresenting = false,
+  animationKey,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -106,6 +138,8 @@ export function CircleLayoutRenderer({
         items={displayItems}
         themeStyles={themeStyles}
         className={className}
+        isPresenting={isPresenting}
+        animationKey={animationKey}
         isEditing={isEditing}
         editingText={editingText}
         onStartEditLabel={onStartEditLabel}
@@ -125,6 +159,8 @@ export function CircleLayoutRenderer({
       items={displayItems}
       themeStyles={themeStyles}
       className={className}
+      isPresenting={isPresenting}
+      animationKey={animationKey}
       isEditing={isEditing}
       editingText={editingText}
       onStartEditLabel={onStartEditLabel}
@@ -144,6 +180,8 @@ function ArcLayout({
   items,
   themeStyles,
   className,
+  isPresenting = false,
+  animationKey,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -158,6 +196,8 @@ function ArcLayout({
   items: CircleContentItem[];
   themeStyles: ThemeStyles;
   className: string;
+  isPresenting?: boolean;
+  animationKey?: string;
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
   onStartEditLabel?: (index: number) => void;
@@ -203,8 +243,10 @@ function ArcLayout({
   // Grid columns based on item count
   const gridCols = Math.min(itemCount, 6);
 
-  return (
-    <div className={`w-full flex flex-col items-center ${className}`}>
+  const containerClassName = `w-full flex flex-col items-center justify-center ${className}`;
+
+  const content = (
+    <>
       {/* Text row - items spread horizontally, with vertical offset following arc curve */}
       <div
         className="w-full grid gap-2 px-4"
@@ -218,14 +260,18 @@ function ArcLayout({
           // Edge items have more top margin (appear lower) - increased for wing texts
           const topMargin = Math.round((1 - pos.verticalFactor) * 100);
 
+          const ItemWrapper = isPresenting ? motion.div : "div";
+          const itemProps = isPresenting ? { variants: circleVariants } : {};
+
           return (
-            <div
+            <ItemWrapper
               key={index}
               className="flex flex-col"
               style={{
                 marginTop: `${topMargin}px`,
                 textAlign: pos.textAlign,
               }}
+              {...itemProps}
             >
               {item.label &&
                 (onStartEditLabel ? (
@@ -272,7 +318,7 @@ function ArcLayout({
                   {item.text}
                 </p>
               )}
-            </div>
+            </ItemWrapper>
           );
         })}
       </div>
@@ -283,6 +329,7 @@ function ArcLayout({
         height="250"
         viewBox="-240 -240 480 250"
         className="flex-shrink-0 -mt-20"
+        suppressHydrationWarning
       >
         {Array.from({ length: itemCount }).map((_, index) => {
           const path = getArcSegmentPath(
@@ -306,6 +353,7 @@ function ArcLayout({
                 fill={themeStyles.shapeBgColor}
                 stroke={themeStyles.shapeBorderColor}
                 strokeWidth="1"
+                suppressHydrationWarning
               />
               <circle
                 cx={iconPos.x}
@@ -314,6 +362,7 @@ function ArcLayout({
                 fill="white"
                 stroke={`${themeStyles.accentColor}40`}
                 strokeWidth="1"
+                suppressHydrationWarning
               />
               {item?.icon ? (
                 <text
@@ -323,6 +372,7 @@ function ArcLayout({
                   dominantBaseline="central"
                   fontSize="12"
                   fill={themeStyles.accentColor}
+                  suppressHydrationWarning
                 >
                   {item.icon}
                 </text>
@@ -332,14 +382,31 @@ function ArcLayout({
                   cy={iconPos.y}
                   r={3}
                   fill={`${themeStyles.accentColor}40`}
+                  suppressHydrationWarning
                 />
               )}
             </g>
           );
         })}
       </svg>
-    </div>
+    </>
   );
+
+  if (isPresenting) {
+    return (
+      <motion.div
+        key={animationKey}
+        className={containerClassName}
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {content}
+      </motion.div>
+    );
+  }
+
+  return <div className={containerClassName}>{content}</div>;
 }
 
 // Ring Layout
@@ -347,6 +414,8 @@ function RingLayout({
   items,
   themeStyles,
   className,
+  isPresenting = false,
+  animationKey,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -361,6 +430,8 @@ function RingLayout({
   items: CircleContentItem[];
   themeStyles: ThemeStyles;
   className: string;
+  isPresenting?: boolean;
+  animationKey?: string;
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
   onStartEditLabel?: (index: number) => void;
@@ -381,12 +452,13 @@ function RingLayout({
 
   // For more than 4 items, use grid below
   if (itemCount > 4) {
-    return (
-      <div className={`w-full flex flex-col items-center gap-4 ${className}`}>
+    const gridContent = (
+      <>
         <svg
           width={svgSize}
           height={svgSize}
           viewBox={`${-svgSize / 2} ${-svgSize / 2} ${svgSize} ${svgSize}`}
+          suppressHydrationWarning
         >
           {Array.from({ length: itemCount }).map((_, index) => {
             const path = getRingSegmentPath(
@@ -410,6 +482,7 @@ function RingLayout({
                   fill={themeStyles.shapeBgColor}
                   stroke={themeStyles.shapeBorderColor}
                   strokeWidth="1"
+                  suppressHydrationWarning
                 />
                 <circle
                   cx={iconPos.x}
@@ -418,6 +491,7 @@ function RingLayout({
                   fill="white"
                   stroke={`${themeStyles.accentColor}40`}
                   strokeWidth="1"
+                  suppressHydrationWarning
                 />
                 {item?.icon ? (
                   <text
@@ -427,6 +501,7 @@ function RingLayout({
                     dominantBaseline="central"
                     fontSize="10"
                     fill={themeStyles.accentColor}
+                    suppressHydrationWarning
                   >
                     {item.icon}
                   </text>
@@ -436,6 +511,7 @@ function RingLayout({
                     cy={iconPos.y}
                     r={2}
                     fill={`${themeStyles.accentColor}40`}
+                    suppressHydrationWarning
                   />
                 )}
               </g>
@@ -449,65 +525,89 @@ function RingLayout({
             gridTemplateColumns: `repeat(${Math.min(itemCount, 4)}, 1fr)`,
           }}
         >
-          {items.map((item, index) => (
-            <div
-              key={index}
-              className="p-2 rounded-lg text-center"
-              style={{ backgroundColor: themeStyles.cardBgColor }}
-            >
-              {item.label &&
-                (onStartEditLabel ? (
+          {items.map((item, index) => {
+            const ItemWrapper = isPresenting ? motion.div : "div";
+            const itemProps = isPresenting ? { variants: circleVariants } : {};
+            
+            return (
+              <ItemWrapper
+                key={index}
+                className="p-2 rounded-lg text-center"
+                style={{ backgroundColor: themeStyles.cardBgColor }}
+                {...itemProps}
+              >
+                {item.label &&
+                  (onStartEditLabel ? (
+                    <EditableText
+                      value={item.label}
+                      isEditing={
+                        isEditing &&
+                        editingText?.field === `content-label-${index}`
+                      }
+                      onStartEdit={() => onStartEditLabel(index)}
+                      onChange={(val) => onUpdateLabel?.(index, val)}
+                      onFinish={onFinishEditing || (() => {})}
+                      onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
+                      className="text-sm font-semibold mb-1"
+                      style={{ color: themeStyles.titleColor }}
+                      isOwner={isOwner}
+                      isHovered={isHovered}
+                    />
+                  ) : (
+                    <h3
+                      className="text-sm font-semibold mb-1"
+                      style={{ color: themeStyles.titleColor }}
+                    >
+                      {item.label}
+                    </h3>
+                  ))}
+                {onStartEditText ? (
                   <EditableText
-                    value={item.label}
+                    value={item.text}
                     isEditing={
-                      isEditing &&
-                      editingText?.field === `content-label-${index}`
+                      isEditing && editingText?.field === `content-text-${index}`
                     }
-                    onStartEdit={() => onStartEditLabel(index)}
-                    onChange={(val) => onUpdateLabel?.(index, val)}
+                    onStartEdit={() => onStartEditText(index)}
+                    onChange={(val) => onUpdateText?.(index, val)}
                     onFinish={onFinishEditing || (() => {})}
                     onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                    className="text-sm font-semibold mb-1"
-                    style={{ color: themeStyles.titleColor }}
+                    className="text-xs leading-relaxed line-clamp-2"
+                    style={{ color: themeStyles.bodyColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
                   />
                 ) : (
-                  <h3
-                    className="text-sm font-semibold mb-1"
-                    style={{ color: themeStyles.titleColor }}
+                  <p
+                    className="text-xs leading-relaxed line-clamp-2"
+                    style={{ color: themeStyles.bodyColor }}
                   >
-                    {item.label}
-                  </h3>
-                ))}
-              {onStartEditText ? (
-                <EditableText
-                  value={item.text}
-                  isEditing={
-                    isEditing && editingText?.field === `content-text-${index}`
-                  }
-                  onStartEdit={() => onStartEditText(index)}
-                  onChange={(val) => onUpdateText?.(index, val)}
-                  onFinish={onFinishEditing || (() => {})}
-                  onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                  className="text-xs leading-relaxed line-clamp-2"
-                  style={{ color: themeStyles.bodyColor }}
-                  isOwner={isOwner}
-                  isHovered={isHovered}
-                />
-              ) : (
-                <p
-                  className="text-xs leading-relaxed line-clamp-2"
-                  style={{ color: themeStyles.bodyColor }}
-                >
-                  {item.text}
-                </p>
-              )}
-            </div>
-          ))}
+                    {item.text}
+                  </p>
+                )}
+              </ItemWrapper>
+            );
+          })}
         </div>
-      </div>
+      </>
     );
+
+    const gridClassName = `w-full flex flex-col items-center justify-center gap-4 ${className}`;
+
+    if (isPresenting) {
+      return (
+        <motion.div
+          key={animationKey}
+          className={gridClassName}
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {gridContent}
+        </motion.div>
+      );
+    }
+
+    return <div className={gridClassName}>{gridContent}</div>;
   }
 
   // Standard layout - content on sides
@@ -516,18 +616,19 @@ function RingLayout({
   const leftIndices = items.map((_, i) => i).filter((i) => i % 2 === 0);
   const rightIndices = items.map((_, i) => i).filter((i) => i % 2 === 1);
 
-  return (
-    <div
-      className={`w-full flex items-center justify-center gap-6 ${className}`}
-    >
+  const standardContent = (
+    <>
       <div
         className="flex flex-col justify-center items-end text-right space-y-4"
         style={{ maxWidth: "180px" }}
       >
         {leftItems.map((item, idx) => {
           const actualIndex = leftIndices[idx]!;
+          const ItemWrapper = isPresenting ? motion.div : "div";
+          const itemProps = isPresenting ? { variants: circleVariants } : {};
+          
           return (
-            <div key={idx}>
+            <ItemWrapper key={idx} {...itemProps}>
               {item.label &&
                 (onStartEditLabel ? (
                   <EditableText
@@ -577,7 +678,7 @@ function RingLayout({
                   {item.text}
                 </p>
               )}
-            </div>
+            </ItemWrapper>
           );
         })}
       </div>
@@ -586,6 +687,7 @@ function RingLayout({
         width={svgSize}
         height={svgSize}
         viewBox={`${-svgSize / 2} ${-svgSize / 2} ${svgSize} ${svgSize}`}
+        suppressHydrationWarning
       >
         {Array.from({ length: itemCount }).map((_, index) => {
           const path = getRingSegmentPath(
@@ -609,6 +711,7 @@ function RingLayout({
                 fill={themeStyles.shapeBgColor}
                 stroke={themeStyles.shapeBorderColor}
                 strokeWidth="1"
+                suppressHydrationWarning
               />
               <circle
                 cx={iconPos.x}
@@ -617,6 +720,7 @@ function RingLayout({
                 fill="white"
                 stroke={`${themeStyles.accentColor}40`}
                 strokeWidth="1"
+                suppressHydrationWarning
               />
               {item?.icon ? (
                 <text
@@ -626,6 +730,7 @@ function RingLayout({
                   dominantBaseline="central"
                   fontSize="11"
                   fill={themeStyles.accentColor}
+                  suppressHydrationWarning
                 >
                   {item.icon}
                 </text>
@@ -635,6 +740,7 @@ function RingLayout({
                   cy={iconPos.y}
                   r="3"
                   fill={`${themeStyles.accentColor}40`}
+                  suppressHydrationWarning
                 />
               )}
             </g>
@@ -648,8 +754,11 @@ function RingLayout({
       >
         {rightItems.map((item, idx) => {
           const actualIndex = rightIndices[idx]!;
+          const ItemWrapper = isPresenting ? motion.div : "div";
+          const itemProps = isPresenting ? { variants: circleVariants } : {};
+          
           return (
-            <div key={idx}>
+            <ItemWrapper key={idx} {...itemProps}>
               {item.label &&
                 (onStartEditLabel ? (
                   <EditableText
@@ -699,12 +808,30 @@ function RingLayout({
                   {item.text}
                 </p>
               )}
-            </div>
+            </ItemWrapper>
           );
         })}
       </div>
-    </div>
+    </>
   );
+
+  const standardClassName = `w-full flex items-center justify-center gap-6 ${className}`;
+
+  if (isPresenting) {
+    return (
+      <motion.div
+        key={animationKey}
+        className={standardClassName}
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {standardContent}
+      </motion.div>
+    );
+  }
+
+  return <div className={standardClassName}>{standardContent}</div>;
 }
 
 export default CircleLayoutRenderer;

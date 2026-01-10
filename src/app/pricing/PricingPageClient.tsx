@@ -8,6 +8,7 @@ import { cn } from "~/lib/utils";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { getTranslations, type Language } from "~/lib/i18n";
+import { trackViewPricing, trackSelectPlan, trackBeginCheckout } from "~/components/GoogleAnalytics";
 
 type PolarProduct = {
   key: string;
@@ -99,6 +100,8 @@ export function PricingPageClient({ currentLang }: PricingPageClientProps) {
         if (!res.ok) throw new Error("Failed to load pricing");
         const data = await res.json();
         setProducts(data);
+        // Track pricing page view
+        trackViewPricing();
       } catch (err) {
         console.error(err);
         setError("Could not load pricing plans. Please try again later.");
@@ -128,8 +131,16 @@ export function PricingPageClient({ currentLang }: PricingPageClientProps) {
     const priceData = isAnnual ? product.yearly : product.monthly;
     if (!priceData) return;
 
+    const price = priceData.priceAmount / 100;
+    
+    // Track plan selection
+    trackSelectPlan(productKey, price, isAnnual);
+
     setCheckoutLoadingId(productKey);
     try {
+      // Track checkout begin
+      trackBeginCheckout(productKey, price, isAnnual);
+      
       const res = await fetch("/api/polar/checkout", {
         method: "POST",
         body: JSON.stringify({

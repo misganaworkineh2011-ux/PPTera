@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { X, Globe, Lock, CheckCircle2, Copy, Link2, Users, ChevronDown, Mail, UserPlus, Trash2 } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
+import { X, Globe, Lock, CheckCircle2, Copy, Link2, Users, ChevronDown, Mail, UserPlus, Trash2, Edit3 } from "lucide-react";
 import { toast } from "sonner";
 import type { Theme } from "~/lib/themes";
 import { getModalColors } from "~/app/presentation/[slug]/components/ui-colors";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
+import { trackSharePresentation } from "~/components/GoogleAnalytics";
 
 interface Collaborator {
   id: string;
@@ -550,6 +552,12 @@ function ShareTab({
   const [shareToken, setShareToken] = useState(initialShareToken || null);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
+  
+  // Email invite state
+  const [showEmailInvite, setShowEmailInvite] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteMessage, setInviteMessage] = useState("");
+  const [sendingInvite, setSendingInvite] = useState(false);
 
   // Get translations
   const { language } = useLanguage();
@@ -636,52 +644,52 @@ function ShareTab({
     navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     toast.success(t.linkCopied || "Link copied!");
+    trackSharePresentation("link");
     setTimeout(() => setCopied(false), 2000);
   };
 
-  return (
-    <div className="space-y-6">
-      {/* View Analytics Section */}
-      <div 
-        className="flex items-center justify-between py-4"
-        style={{ borderBottom: `1px solid ${colors.border}` }}
-      >
-        <div className="flex items-center gap-3">
-          <div 
-            className="w-10 h-10 rounded-lg flex items-center justify-center"
-            style={{ backgroundColor: colors.iconBg }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: colors.iconColor }}>
-              <path d="M18 20V10" />
-              <path d="M12 20V4" />
-              <path d="M6 20v-6" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-sm font-semibold" style={{ color: colors.text }}>{t.viewAnalytics || "View analytics"}</p>
-            <p className="text-xs" style={{ color: colors.textMuted }}>{t.anyoneCanView || "Anyone can view, but not comment or edit."}</p>
-          </div>
-        </div>
-        <button
-          onClick={copyToClipboard}
-          disabled={!isPublic || !shareUrl}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all border"
-          style={{
-            backgroundColor: copied ? colors.successBg : (isPublic && shareUrl ? colors.cardBg : colors.lockBg),
-            color: copied ? colors.successText : (isPublic && shareUrl ? colors.text : colors.textMuted),
-            borderColor: copied ? colors.successBorder : colors.border,
-            cursor: !isPublic || !shareUrl ? "not-allowed" : "pointer",
-            opacity: !isPublic || !shareUrl ? 0.6 : 1,
-          }}
-        >
-          <Link2 size={16} />
-          {copied ? (t.copiedStatus || "Copied!") : (t.copyLink || "Copy link")}
-        </button>
-      </div>
+  const handleSendEmailInvite = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteEmail.trim()) {
+      toast.error("Please enter an email address");
+      return;
+    }
 
+    setSendingInvite(true);
+    try {
+      const res = await fetch("/api/presentations/share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          presentationId,
+          recipientEmail: inviteEmail.trim(),
+          message: inviteMessage.trim() || undefined,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to send invite");
+      }
+
+      toast.success(`Invite sent to ${inviteEmail}!`);
+      trackSharePresentation("email");
+      setInviteEmail("");
+      setInviteMessage("");
+      setShowEmailInvite(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to send invite");
+    } finally {
+      setSendingInvite(false);
+    }
+  };
+
+  return (
+    <div className="space-y-5">
       {/* Share Link Section */}
       {isPublic && shareUrl ? (
         <div className="space-y-4">
+          {/* Status Banner */}
           <div 
             className="flex items-center gap-3 p-4 rounded-xl"
             style={{ 
@@ -711,8 +719,8 @@ function ShareTab({
             </button>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: colors.textMuted }}>{t.shareLinkLabel || "Share Link"}</label>
+          {/* Share Link Input */}
+          <div className="space-y-3">
             <div className="flex items-center gap-2">
               <div className="flex-1 relative">
                 <input
@@ -727,17 +735,92 @@ function ShareTab({
                   }}
                 />
               </div>
+            </div>
+            
+            {/* Action Buttons - Side by Side */}
+            <div className="flex items-center gap-2">
               <button
                 onClick={copyToClipboard}
-                className="p-3 rounded-lg transition-all"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all border"
                 style={{
                   backgroundColor: copied ? "#22c55e" : colors.copyBtnBg,
-                  color: copied ? "#ffffff" : colors.textMuted,
+                  color: copied ? "#ffffff" : colors.text,
+                  borderColor: copied ? "#22c55e" : colors.border,
                 }}
               >
-                {copied ? <CheckCircle2 size={18} /> : <Copy size={18} />}
+                {copied ? <CheckCircle2 size={16} /> : <Copy size={16} />}
+                {copied ? "Copied!" : "Copy link"}
+              </button>
+              <button
+                onClick={() => setShowEmailInvite(!showEmailInvite)}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all border"
+                style={{
+                  backgroundColor: showEmailInvite ? colors.iconBg : colors.copyBtnBg,
+                  color: showEmailInvite ? colors.iconColor : colors.text,
+                  borderColor: showEmailInvite ? colors.iconColor : colors.border,
+                }}
+              >
+                <Mail size={16} />
+                Share via email
               </button>
             </div>
+
+            {/* Email Invite Form - Expands Below */}
+            {showEmailInvite && (
+              <form onSubmit={handleSendEmailInvite} className="space-y-3 pt-3" style={{ borderTop: `1px solid ${colors.border}` }}>
+                <div className="relative">
+                  <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: colors.textMuted }} />
+                  <input
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder="Enter recipient's email"
+                    className="w-full rounded-lg border pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    style={{ 
+                      backgroundColor: colors.inputBg,
+                      borderColor: colors.border,
+                      color: colors.text,
+                    }}
+                    required
+                  />
+                </div>
+                <textarea
+                  value={inviteMessage}
+                  onChange={(e) => setInviteMessage(e.target.value)}
+                  placeholder="Add a personal message (optional)"
+                  rows={2}
+                  className="w-full rounded-lg border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 resize-none"
+                  style={{ 
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border,
+                    color: colors.text,
+                  }}
+                />
+                <button
+                  type="submit"
+                  disabled={sendingInvite || !inviteEmail.trim()}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white transition-all disabled:opacity-50"
+                  style={{ backgroundColor: colors.btnBg }}
+                >
+                  {sendingInvite ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Mail size={16} />
+                      Send Invite
+                    </>
+                  )}
+                </button>
+              </form>
+            )}
+
+            {/* Info text */}
+            <p className="text-xs text-center pt-2" style={{ color: colors.textMuted }}>
+              Anyone with the link can view, but not comment or edit.
+            </p>
           </div>
         </div>
       ) : (
@@ -774,11 +857,21 @@ function CollaborateTab({ presentationId, theme }: { presentationId: string; the
 
   const textColor = theme?.colors.text || "#1e293b";
   const mutedColor = theme?.colors.textMuted || "#64748b";
-  const [email, setEmail] = useState("");
+  const [emailInput, setEmailInput] = useState("");
+  const [emailList, setEmailList] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState("");
-  const [workspaceAccess, setWorkspaceAccess] = useState<"no-access" | "can-view" | "can-edit">("no-access");
+  const [selectedRole, setSelectedRole] = useState<"viewer" | "editor">("viewer");
+  const [showRoleDropdown, setShowRoleDropdown] = useState(false);
+  const [openCollabDropdown, setOpenCollabDropdown] = useState<string | null>(null);
+  const [updatingCollabId, setUpdatingCollabId] = useState<string | null>(null);
+  
+  // For portal-based dropdown positioning
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
+  const [roleDropdownStyle, setRoleDropdownStyle] = useState<React.CSSProperties>({});
+  const roleButtonRef = useRef<HTMLButtonElement>(null);
+  const collabButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   const fetchCollaborators = async () => {
     setFetching(true);
@@ -798,47 +891,161 @@ function CollaborateTab({ presentationId, theme }: { presentationId: string; the
     fetchCollaborators();
   }, [presentationId]);
 
-  const handleAddCollaborator = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim()) return;
+  // Calculate and set dropdown position for role selector
+  const handleOpenRoleDropdown = () => {
+    if (showRoleDropdown) {
+      setShowRoleDropdown(false);
+      return;
+    }
+    
+    if (roleButtonRef.current) {
+      const rect = roleButtonRef.current.getBoundingClientRect();
+      const dropdownHeight = 140;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const openAbove = spaceBelow < dropdownHeight;
+      
+      setRoleDropdownStyle({
+        position: 'fixed',
+        left: rect.left,
+        width: rect.width,
+        ...(openAbove 
+          ? { bottom: window.innerHeight - rect.top + 4 }
+          : { top: rect.bottom + 4 }
+        ),
+      });
+    }
+    setShowRoleDropdown(true);
+  };
+
+  // Calculate and set dropdown position for collaborator role
+  const handleOpenCollabDropdown = (collabId: string) => {
+    if (openCollabDropdown === collabId) {
+      setOpenCollabDropdown(null);
+      return;
+    }
+    
+    const buttonEl = collabButtonRefs.current[collabId];
+    if (buttonEl) {
+      const rect = buttonEl.getBoundingClientRect();
+      const dropdownHeight = 80;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const openAbove = spaceBelow < dropdownHeight;
+      
+      setDropdownStyle({
+        position: 'fixed',
+        left: rect.left,
+        width: rect.width,
+        ...(openAbove 
+          ? { bottom: window.innerHeight - rect.top + 4 }
+          : { top: rect.bottom + 4 }
+        ),
+      });
+    }
+    setOpenCollabDropdown(collabId);
+  };
+
+  const isValidEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      addEmailToList();
+    } else if (e.key === "Backspace" && !emailInput && emailList.length > 0) {
+      // Remove last email when backspace on empty input
+      setEmailList(emailList.slice(0, -1));
+    }
+  };
+
+  const addEmailToList = () => {
+    const trimmedEmail = emailInput.trim().toLowerCase();
+    if (!trimmedEmail) return;
+
+    if (!isValidEmail(trimmedEmail)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
+    if (emailList.includes(trimmedEmail)) {
+      setError("This email is already added");
+      return;
+    }
+
+    // Check if already a collaborator
+    if (collaborators.some(c => c.email.toLowerCase() === trimmedEmail)) {
+      setError("This person is already a collaborator");
+      return;
+    }
+
+    setEmailList([...emailList, trimmedEmail]);
+    setEmailInput("");
+    setError("");
+  };
+
+  const removeEmail = (emailToRemove: string) => {
+    setEmailList(emailList.filter(e => e !== emailToRemove));
+  };
+
+  const handleInviteAll = async () => {
+    if (emailList.length === 0) return;
 
     setLoading(true);
     setError("");
 
     try {
-      const res = await fetch(`/api/presentations/${presentationId}/collaborators`, {
+      const res = await fetch(`/api/presentations/${presentationId}/invite`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), role: "viewer" }),
+        body: JSON.stringify({ emails: emailList, role: selectedRole }),
       });
 
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error || "Failed to add collaborator");
+        setError(data.error || "Failed to send invitations");
         return;
       }
 
-      setEmail("");
-      toast.success("Collaborator added successfully!");
+      const data = await res.json();
+      toast.success(`Invitations sent to ${data.invited} people!`);
+      trackSharePresentation("collaborate");
+      setEmailList([]);
       fetchCollaborators();
     } catch {
-      setError("Failed to add collaborator");
+      setError("Failed to send invitations");
     } finally {
       setLoading(false);
     }
   };
 
   const handleUpdateRole = async (collaboratorId: string, newRole: string) => {
+    // Optimistic update - update local state immediately
+    const previousCollaborators = [...collaborators];
+    setUpdatingCollabId(collaboratorId);
+    
+    // Update local state optimistically
+    setCollaborators(prev => 
+      prev.map(c => c.id === collaboratorId ? { ...c, role: newRole } : c)
+    );
+    
     try {
-      await fetch(`/api/presentations/${presentationId}/collaborators`, {
+      const res = await fetch(`/api/presentations/${presentationId}/collaborators`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ collaboratorId, role: newRole }),
       });
+      
+      if (!res.ok) {
+        throw new Error("Failed to update role");
+      }
+      
       toast.success("Role updated!");
-      fetchCollaborators();
     } catch {
+      // Revert on error
+      setCollaborators(previousCollaborators);
       toast.error("Failed to update role");
+    } finally {
+      setUpdatingCollabId(null);
     }
   };
 
@@ -856,80 +1063,180 @@ function CollaborateTab({ presentationId, theme }: { presentationId: string; the
 
   return (
     <div className="space-y-6">
-      {/* Add People Input */}
-      <div className="relative">
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.35-4.35" />
-          </svg>
+      {/* Add People Input with Email Chips */}
+      <div className="space-y-3">
+        <div 
+          className="flex flex-wrap items-center gap-2 p-3 rounded-xl border border-slate-200 bg-slate-50 min-h-[52px] cursor-text"
+          onClick={() => document.getElementById("email-input")?.focus()}
+        >
+          {/* Email Chips */}
+          {emailList.map((email) => (
+            <span
+              key={email}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-medium"
+            >
+              {email}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeEmail(email);
+                }}
+                className="hover:bg-blue-200 rounded-full p-0.5 transition"
+              >
+                <X size={14} />
+              </button>
+            </span>
+          ))}
+          
+          {/* Input */}
+          <input
+            id="email-input"
+            type="email"
+            value={emailInput}
+            onChange={(e) => {
+              setEmailInput(e.target.value);
+              setError("");
+            }}
+            onKeyDown={handleKeyDown}
+            onBlur={addEmailToList}
+            placeholder={emailList.length === 0 ? "Add emails (press Enter after each)" : "Add more..."}
+            className="flex-1 min-w-[150px] bg-transparent text-sm focus:outline-none placeholder:text-slate-400"
+          />
         </div>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              handleAddCollaborator(e);
-            }
-          }}
-          placeholder="Add emails or people"
-          className="w-full pl-12 pr-4 py-4 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50"
-        />
+
+        {/* Role selector and Add button */}
+        {emailList.length > 0 && (
+          <div className="flex items-center gap-2">
+            {/* Custom Role Dropdown */}
+            <div className="relative flex-1">
+              <button
+                ref={roleButtonRef}
+                type="button"
+                onClick={handleOpenRoleDropdown}
+                className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg border border-slate-200 text-sm bg-white hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]/20 focus:border-[#1e3a8a] text-slate-700 font-medium transition-all"
+              >
+                <span className="flex items-center gap-2">
+                  {selectedRole === "editor" ? (
+                    <>
+                      <Edit3 size={14} className="text-[#1e3a8a]" />
+                      Can edit
+                    </>
+                  ) : (
+                    <>
+                      <Globe size={14} className="text-[#06b6d4]" />
+                      Can view
+                    </>
+                  )}
+                </span>
+                <ChevronDown 
+                  size={16} 
+                  className={`text-slate-400 transition-transform duration-200 ${showRoleDropdown ? "rotate-180" : ""}`} 
+                />
+              </button>
+              
+              {/* Portal-based Dropdown Menu */}
+              {showRoleDropdown && typeof document !== 'undefined' && createPortal(
+                <>
+                  <div 
+                    className="fixed inset-0 z-[99999]" 
+                    onClick={() => setShowRoleDropdown(false)} 
+                  />
+                  <div 
+                    className="bg-white rounded-lg border border-slate-200 shadow-xl z-[100000] overflow-hidden animate-in fade-in duration-100"
+                    style={roleDropdownStyle}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedRole("viewer");
+                        setShowRoleDropdown(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-4 py-3 text-sm text-left hover:bg-slate-50 transition-colors ${
+                        selectedRole === "viewer" ? "bg-slate-50" : ""
+                      }`}
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-[#06b6d4]/10 flex items-center justify-center">
+                        <Globe size={16} className="text-[#06b6d4]" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-900">Can view</p>
+                        <p className="text-xs text-slate-500">View only access</p>
+                      </div>
+                    </button>
+                    <div className="border-t border-slate-100" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedRole("editor");
+                        setShowRoleDropdown(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-4 py-3 text-sm text-left hover:bg-slate-50 transition-colors ${
+                        selectedRole === "editor" ? "bg-slate-50" : ""
+                      }`}
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-[#1e3a8a]/10 flex items-center justify-center">
+                        <Edit3 size={16} className="text-[#1e3a8a]" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-900">Can edit</p>
+                        <p className="text-xs text-slate-500">Full editing access</p>
+                      </div>
+                    </button>
+                  </div>
+                </>,
+                document.body
+              )}
+            </div>
+            <button
+              onClick={handleInviteAll}
+              disabled={loading || emailList.length === 0}
+              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white rounded-lg text-sm font-semibold hover:opacity-90 transition disabled:opacity-50"
+            >
+              {loading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <UserPlus size={16} />
+                  Add {emailList.length > 1 ? `(${emailList.length})` : ""}
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
 
       {error && (
         <p className="text-sm text-red-500 bg-red-50 px-3 py-2 rounded-lg">{error}</p>
       )}
 
-      {/* Workspace Members */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between py-2">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-600">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
-            </div>
-            <span className="text-sm font-semibold text-slate-700">Workspace members</span>
+      {/* Current User */}
+      <div className="flex items-center justify-between py-3 border-t border-slate-200">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center">
+            <span className="text-sm font-bold text-white">Y</span>
           </div>
-          <div className="relative">
-            <select
-              value={workspaceAccess}
-              onChange={(e) => setWorkspaceAccess(e.target.value as typeof workspaceAccess)}
-              className="appearance-none pl-3 pr-10 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-600 font-medium"
-            >
-              <option value="no-access">No access</option>
-              <option value="can-view">Can view</option>
-              <option value="can-edit">Can edit</option>
-            </select>
-            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          <div>
+            <p className="text-sm font-medium text-slate-900">You</p>
+            <p className="text-xs text-slate-500">Owner</p>
           </div>
         </div>
-
-        {/* Current User */}
-        <div className="flex items-center justify-between py-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center">
-              <span className="text-sm font-bold text-white">Y</span>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-slate-900">You</p>
-            </div>
-          </div>
-          <span className="text-sm text-slate-500 font-medium">Full Access</span>
-        </div>
+        <span className="text-sm text-slate-500 font-medium">Full Access</span>
       </div>
 
       {/* Collaborators List */}
       {!fetching && collaborators.length > 0 && (
         <div className="space-y-2 max-h-64 overflow-y-auto border-t border-slate-200 pt-4">
           {collaborators.map((collab) => (
-            <div key={collab.id} className="flex items-center justify-between py-3 hover:bg-slate-50 rounded-lg px-2 transition-colors">
+            <div 
+              key={collab.id} 
+              className={`flex items-center justify-between py-3 hover:bg-slate-50 rounded-lg px-2 transition-all duration-200 ${
+                updatingCollabId === collab.id ? "opacity-50" : ""
+              }`}
+            >
               <div className="flex items-center gap-3">
                 {collab.user?.image ? (
                   <img src={collab.user.image} alt="" className="w-10 h-10 rounded-full" />
@@ -952,14 +1259,77 @@ function CollaborateTab({ presentationId, theme }: { presentationId: string; the
               <div className="flex items-center gap-2">
                 {isOwner ? (
                   <>
-                    <select
-                      value={collab.role}
-                      onChange={(e) => handleUpdateRole(collab.id, e.target.value)}
-                      className="text-sm px-3 py-1.5 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-600"
-                    >
-                      <option value="viewer">Can view</option>
-                      <option value="editor">Can edit</option>
-                    </select>
+                    {/* Custom Role Dropdown for Collaborator */}
+                    <div className="relative">
+                      <button
+                        ref={(el) => { collabButtonRefs.current[collab.id] = el; }}
+                        type="button"
+                        onClick={() => handleOpenCollabDropdown(collab.id)}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 text-sm bg-white hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]/20 text-slate-600 font-medium transition-all"
+                      >
+                        {collab.role === "editor" ? (
+                          <>
+                            <Edit3 size={12} className="text-[#1e3a8a]" />
+                            Can edit
+                          </>
+                        ) : (
+                          <>
+                            <Globe size={12} className="text-[#06b6d4]" />
+                            Can view
+                          </>
+                        )}
+                        <ChevronDown 
+                          size={14} 
+                          className={`text-slate-400 transition-transform duration-200 ${openCollabDropdown === collab.id ? "rotate-180" : ""}`} 
+                        />
+                      </button>
+                      
+                      {/* Portal-based Dropdown Menu */}
+                      {openCollabDropdown === collab.id && typeof document !== 'undefined' && createPortal(
+                        <>
+                          <div 
+                            className="fixed inset-0 z-[99999]" 
+                            onClick={() => setOpenCollabDropdown(null)} 
+                          />
+                          <div 
+                            className="bg-white rounded-lg border border-slate-200 shadow-xl z-[100000] overflow-hidden animate-in fade-in duration-100"
+                            style={dropdownStyle}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOpenCollabDropdown(null);
+                                if (collab.role !== "viewer") {
+                                  handleUpdateRole(collab.id, "viewer");
+                                }
+                              }}
+                              className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-slate-50 transition-colors ${
+                                collab.role === "viewer" ? "bg-slate-50" : ""
+                              }`}
+                            >
+                              <Globe size={12} className="text-[#06b6d4]" />
+                              Can view
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOpenCollabDropdown(null);
+                                if (collab.role !== "editor") {
+                                  handleUpdateRole(collab.id, "editor");
+                                }
+                              }}
+                              className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-slate-50 transition-colors ${
+                                collab.role === "editor" ? "bg-slate-50" : ""
+                              }`}
+                            >
+                              <Edit3 size={12} className="text-[#1e3a8a]" />
+                              Can edit
+                            </button>
+                          </div>
+                        </>,
+                        document.body
+                      )}
+                    </div>
                     <button
                       onClick={() => handleRemove(collab.id)}
                       className="p-2 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition"
@@ -968,8 +1338,18 @@ function CollaborateTab({ presentationId, theme }: { presentationId: string; the
                     </button>
                   </>
                 ) : (
-                  <span className="text-sm text-slate-500 font-medium">
-                    {collab.role === "editor" ? "Can edit" : "Can view"}
+                  <span className="text-sm text-slate-500 font-medium flex items-center gap-1.5">
+                    {collab.role === "editor" ? (
+                      <>
+                        <Edit3 size={12} className="text-[#1e3a8a]" />
+                        Can edit
+                      </>
+                    ) : (
+                      <>
+                        <Globe size={12} className="text-[#06b6d4]" />
+                        Can view
+                      </>
+                    )}
                   </span>
                 )}
               </div>

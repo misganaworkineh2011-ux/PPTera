@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 import { GripVertical } from "lucide-react";
 import type {
   QuotesLayoutType,
@@ -8,6 +9,35 @@ import type {
 } from "~/lib/layouts/content/quotes";
 import EditableText from "~/components/presentation/EditableText";
 import type { Theme } from "~/lib/themes";
+
+// Animation variants for staggered quote animations
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const quoteVariants = {
+  hidden: { 
+    opacity: 0, 
+    y: 30,
+    scale: 0.9,
+  },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    scale: 1,
+    transition: {
+      duration: 0.4,
+      ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
+    },
+  },
+};
 
 // Theme styles type
 interface ThemeStyles {
@@ -62,6 +92,8 @@ interface QuotesLayoutRendererProps {
   accentColor?: string;
   className?: string;
   isNarrowSpace?: boolean;
+  isPresenting?: boolean;
+  animationKey?: string;
   // Editing props
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
@@ -84,6 +116,8 @@ export function QuotesLayoutRenderer({
   className = "",
   isNarrowSpace = false,
   hasImage = false, // New prop to indicate if slide has image
+  isPresenting = false,
+  animationKey,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -163,6 +197,7 @@ export function QuotesLayoutRenderer({
         themeStyles={themeStyles}
         className={className}
         hasImage={hasImage}
+        isPresenting={isPresenting}
         isEditing={isEditing}
         editingText={editingText}
         onStartEditLabel={onStartEditLabel}
@@ -186,6 +221,7 @@ export function QuotesLayoutRenderer({
       themeStyles={themeStyles}
       className={className}
       hasImage={hasImage}
+      isPresenting={isPresenting}
       isEditing={isEditing}
       editingText={editingText}
       onStartEditLabel={onStartEditLabel}
@@ -223,6 +259,7 @@ function BubbleQuotes({
   themeStyles,
   className,
   hasImage = false,
+  isPresenting = false,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -241,6 +278,7 @@ function BubbleQuotes({
   themeStyles: ThemeStyles;
   className: string;
   hasImage?: boolean;
+  isPresenting?: boolean;
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
   onStartEditLabel?: (index: number) => void;
@@ -264,21 +302,32 @@ function BubbleQuotes({
     ? "flex-1 min-w-[300px] max-w-[500px] flex flex-col"
     : "flex-1 min-w-0 flex flex-col"; // min-w-0 allows flex shrinking, content-driven sizing
 
+  const Container = isPresenting ? motion.div : "div";
+  const containerProps = isPresenting ? { 
+    variants: containerVariants, 
+    initial: "hidden", 
+    animate: "visible" 
+  } : {};
+
   return (
-    <div className={containerClass}>
+    <Container className={containerClass} {...containerProps}>
       {items.map((item, index) => {
         const dragClasses = getDragClasses ? getDragClasses(index) : "";
-        const props = dragProps ? dragProps(index) : {};
+        const props = dragProps && !isPresenting ? dragProps(index) : {};
+        
+        const Wrapper = isPresenting ? motion.div : "div";
+        const wrapperProps = isPresenting ? { variants: quoteVariants } : {};
         
         return (
-          <div 
+          <Wrapper 
             key={index} 
             className={`${itemClass} relative group/drag-item ${dragClasses}`}
-            style={{ cursor: canDrag ? "grab" : "default" }}
+            style={{ cursor: canDrag && !isPresenting ? "grab" : "default" }}
+            {...wrapperProps}
             {...props}
           >
             {/* Drag handle */}
-            {canDrag && (
+            {canDrag && !isPresenting && (
               <div 
                 className="absolute -left-5 top-1/2 -translate-y-1/2 opacity-0 group-hover/drag-item:opacity-60 transition-opacity cursor-grab z-20"
                 title="Drag to reorder"
@@ -371,10 +420,10 @@ function BubbleQuotes({
                 <path d="M0 0 L25 50 L50 0 Z" fill="currentColor" />
               </svg>
             </div>
-          </div>
+          </Wrapper>
         );
       })}
-    </div>
+    </Container>
   );
 }
 
@@ -384,6 +433,7 @@ function MarksQuotes({
   themeStyles,
   className,
   hasImage = false,
+  isPresenting = false,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -402,6 +452,7 @@ function MarksQuotes({
   themeStyles: ThemeStyles;
   className: string;
   hasImage?: boolean;
+  isPresenting?: boolean;
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
   onStartEditLabel?: (index: number) => void;
@@ -425,21 +476,32 @@ function MarksQuotes({
     ? "flex-1 min-w-[320px] max-w-[500px]"
     : "flex-1 min-w-0"; // min-w-0 allows flex shrinking, content-driven sizing
 
+  const Container = isPresenting ? motion.div : "div";
+  const containerProps = isPresenting ? { 
+    variants: containerVariants, 
+    initial: "hidden", 
+    animate: "visible" 
+  } : {};
+
   return (
-    <div className={containerClass}>
+    <Container className={containerClass} {...containerProps}>
       {items.map((item, index) => {
         const dragClasses = getDragClasses ? getDragClasses(index) : "";
-        const props = dragProps ? dragProps(index) : {};
+        const props = dragProps && !isPresenting ? dragProps(index) : {};
+        
+        const Wrapper = isPresenting ? motion.div : "div";
+        const wrapperProps = isPresenting ? { variants: quoteVariants } : {};
         
         return (
-          <div 
+          <Wrapper 
             key={index} 
             className={`${itemClass} relative group/drag-item ${dragClasses}`}
-            style={{ cursor: canDrag ? "grab" : "default" }}
+            style={{ cursor: canDrag && !isPresenting ? "grab" : "default" }}
+            {...wrapperProps}
             {...props}
           >
             {/* Drag handle */}
-            {canDrag && (
+            {canDrag && !isPresenting && (
               <div 
                 className="absolute -left-5 top-1/2 -translate-y-1/2 opacity-0 group-hover/drag-item:opacity-60 transition-opacity cursor-grab z-20"
                 title="Drag to reorder"
@@ -537,10 +599,10 @@ function MarksQuotes({
                 <QuoteIcon className="w-6 h-6" />
               </div>
             </div>
-          </div>
+          </Wrapper>
         );
       })}
-    </div>
+    </Container>
   );
 }
 

@@ -14,6 +14,9 @@ import type { CircleLayoutType } from "~/lib/layouts/content/circles";
 import type { SlideLayoutType, ImageSize, ImageShape } from "~/lib/layouts/slide";
 import type { ChartData, ChartConfig } from "~/lib/charts/types";
 
+// Animation type for slides
+export type SlideAnimationType = string; // Animation preset ID from ~/lib/animations
+
 // Combined content layout type for all categories
 export type ContentLayoutType = 
   | BoxLayoutType 
@@ -88,6 +91,10 @@ export interface SlideData {
   // Block-based content (Gamma-style)
   blocks?: ContentBlock[];
   layoutMode?: "legacy" | "flow" | "canvas";
+  // Animation for present mode
+  animation?: SlideAnimationType;
+  // Enable/disable content animations (bullets, boxes, etc.)
+  contentAnimation?: boolean;
 }
 
 export interface PresentationData {

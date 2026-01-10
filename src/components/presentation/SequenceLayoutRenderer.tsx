@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import type { Theme } from "~/lib/themes";
 import type {
   SequenceLayout,
@@ -13,6 +14,35 @@ import {
 } from "~/lib/layouts/content/sequence";
 import EditableText from "./EditableText";
 
+// Animation variants for staggered sequence animations
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const sequenceVariants = {
+  hidden: { 
+    opacity: 0, 
+    y: 15,
+    scale: 0.97,
+  },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    scale: 1,
+    transition: {
+      duration: 0.35,
+      ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
+    },
+  },
+};
+
 interface SequenceLayoutRendererProps {
   layoutId?: SequenceLayoutType;
   items: SequenceContentItem[];
@@ -21,6 +51,8 @@ interface SequenceLayoutRendererProps {
   showIcons?: boolean;
   className?: string;
   isNarrowSpace?: boolean; // true when image is left/right, false when top/bottom
+  isPresenting?: boolean;
+  animationKey?: string;
   // Editing props
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
@@ -42,6 +74,8 @@ export default function SequenceLayoutRenderer({
   showIcons = true,
   className = "",
   isNarrowSpace = false,
+  isPresenting = false,
+  animationKey,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -60,6 +94,15 @@ export default function SequenceLayoutRenderer({
   if (!layout || items.length === 0) return null;
 
   const baseStyles = getBaseSequenceStyles(theme);
+
+  // Container and item wrapper for animations
+  const Container = isPresenting ? motion.div : "div";
+  const containerProps = isPresenting ? { 
+    key: animationKey,
+    variants: containerVariants, 
+    initial: "hidden", 
+    animate: "visible" 
+  } : {};
 
   // Render dot or icon marker
   const renderMarker = (item: SequenceContentItem, index: number) => {
@@ -176,7 +219,7 @@ export default function SequenceLayoutRenderer({
   // Style 1: Horizontal Top Process
   if (layout.id === "sequence-style-1") {
     return (
-      <div className={className} style={{ width: "100%" }}>
+      <Container className={className} style={{ width: "100%" }} {...containerProps}>
         {/* Top horizontal line */}
         <div className="relative mb-8 pt-4">
           <div
@@ -187,28 +230,33 @@ export default function SequenceLayoutRenderer({
             }}
           />
           <div className="relative flex justify-between items-start">
-            {items.map((item, index) => (
-              <div key={index} className="flex flex-col items-center flex-1">
-                {/* Marker on line */}
-                <div className="relative z-10 -mt-[calc(8px)]"> {/* Half height offset */}
-                  {renderMarker(item, index)}
-                </div>
-                
-                {/* Vertical connector line */}
-                <div 
-                  className="w-px h-8 mb-4" 
-                  style={{ backgroundColor: `${baseStyles.lineColor}40` }}
-                />
-                
-                {/* Content */}
-                <div className="px-2 w-full">
-                  {renderContent(item, index, "center")}
-                </div>
-              </div>
-            ))}
+            {items.map((item, index) => {
+              const ItemWrapper = isPresenting ? motion.div : "div";
+              const itemProps = isPresenting ? { variants: sequenceVariants } : {};
+              
+              return (
+                <ItemWrapper key={index} className="flex flex-col items-center flex-1" {...itemProps}>
+                  {/* Marker on line */}
+                  <div className="relative z-10 -mt-[calc(8px)]"> {/* Half height offset */}
+                    {renderMarker(item, index)}
+                  </div>
+                  
+                  {/* Vertical connector line */}
+                  <div 
+                    className="w-px h-8 mb-4" 
+                    style={{ backgroundColor: `${baseStyles.lineColor}40` }}
+                  />
+                  
+                  {/* Content */}
+                  <div className="px-2 w-full">
+                    {renderContent(item, index, "center")}
+                  </div>
+                </ItemWrapper>
+              );
+            })}
           </div>
         </div>
-      </div>
+      </Container>
     );
   }
 
@@ -216,7 +264,7 @@ export default function SequenceLayoutRenderer({
   // Content alternates above and below the center line
   if (layout.id === "sequence-style-2") {
     return (
-      <div className={className} style={{ width: "100%" }}>
+      <Container className={className} style={{ width: "100%" }} {...containerProps}>
         {/* Container with grid layout for precise positioning */}
         <div className="relative w-full">
           
@@ -224,8 +272,11 @@ export default function SequenceLayoutRenderer({
           <div className="flex justify-between w-full mb-4">
             {items.map((item, index) => {
               const isAbove = index % 2 === 0;
+              const ItemWrapper = isPresenting ? motion.div : "div";
+              const itemProps = isPresenting ? { variants: sequenceVariants } : {};
+              
               return (
-                <div key={index} className="flex-1 px-2">
+                <ItemWrapper key={index} className="flex-1 px-2" {...itemProps}>
                   {isAbove ? (
                     <div className="text-center">
                       {renderContent(item, index, "center")}
@@ -233,7 +284,7 @@ export default function SequenceLayoutRenderer({
                   ) : (
                     <div className="h-full" /> // Empty spacer for items below the line
                   )}
-                </div>
+                </ItemWrapper>
               );
             })}
           </div>
@@ -289,8 +340,11 @@ export default function SequenceLayoutRenderer({
           <div className="flex justify-between w-full mt-4">
             {items.map((item, index) => {
               const isAbove = index % 2 === 0;
+              const ItemWrapper = isPresenting ? motion.div : "div";
+              const itemProps = isPresenting ? { variants: sequenceVariants } : {};
+              
               return (
-                <div key={index} className="flex-1 px-2">
+                <ItemWrapper key={index} className="flex-1 px-2" {...itemProps}>
                   {!isAbove ? (
                     <div className="text-center">
                       {renderContent(item, index, "center")}
@@ -298,13 +352,13 @@ export default function SequenceLayoutRenderer({
                   ) : (
                     <div className="h-full" /> // Empty spacer for items above the line
                   )}
-                </div>
+                </ItemWrapper>
               );
             })}
           </div>
           
         </div>
-      </div>
+      </Container>
     );
   }
 
@@ -316,7 +370,7 @@ export default function SequenceLayoutRenderer({
     const lineLeftPosition = 20; // Fixed position for the vertical line from left edge
     
     return (
-      <div className={className} style={{ width: "100%" }}>
+      <Container className={className} style={{ width: "100%" }} {...containerProps}>
         <div className="relative" style={{ paddingLeft: `${lineLeftPosition + dotSize/2 + connectorLength + gapAfterConnector}px` }}>
           {/* Vertical line - positioned to pass through dot centers */}
           <div
@@ -330,40 +384,45 @@ export default function SequenceLayoutRenderer({
           
           {/* Content items with dots */}
           <div className="flex flex-col gap-10">
-            {items.map((item, index) => (
-              <div key={index} className="relative flex items-start">
-                {/* Dot - positioned on the vertical line, aligned with title text */}
-                <div 
-                  className="absolute z-10"
-                  style={{
-                    left: `-${dotSize/2 + connectorLength + gapAfterConnector}px`,
-                    top: "8px", // Aligned with title text baseline
-                  }}
-                >
-                  {renderMarker(item, index)}
-                </div>
-                
-                {/* Horizontal connector line from dot to gap */}
-                <div 
-                  className="absolute"
-                  style={{ 
-                    left: `-${connectorLength + gapAfterConnector}px`,
-                    top: `${8 + dotSize/2 - 1}px`, // Center of dot (adjusted for new top position)
-                    width: `${connectorLength}px`,
-                    height: "2px",
-                    backgroundColor: `${baseStyles.lineColor}40`,
-                  }}
-                />
+            {items.map((item, index) => {
+              const ItemWrapper = isPresenting ? motion.div : "div";
+              const itemProps = isPresenting ? { variants: sequenceVariants } : {};
+              
+              return (
+                <ItemWrapper key={index} className="relative flex items-start" {...itemProps}>
+                  {/* Dot - positioned on the vertical line, aligned with title text */}
+                  <div 
+                    className="absolute z-10"
+                    style={{
+                      left: `-${dotSize/2 + connectorLength + gapAfterConnector}px`,
+                      top: "8px", // Aligned with title text baseline
+                    }}
+                  >
+                    {renderMarker(item, index)}
+                  </div>
+                  
+                  {/* Horizontal connector line from dot to gap */}
+                  <div 
+                    className="absolute"
+                    style={{ 
+                      left: `-${connectorLength + gapAfterConnector}px`,
+                      top: `${8 + dotSize/2 - 1}px`, // Center of dot (adjusted for new top position)
+                      width: `${connectorLength}px`,
+                      height: "2px",
+                      backgroundColor: `${baseStyles.lineColor}40`,
+                    }}
+                  />
 
-                {/* Content - title aligns with dot */}
-                <div className="w-full">
-                  {renderContent(item, index, "left")}
-                </div>
-              </div>
-            ))}
+                  {/* Content - title aligns with dot */}
+                  <div className="w-full">
+                    {renderContent(item, index, "left")}
+                  </div>
+                </ItemWrapper>
+              );
+            })}
           </div>
         </div>
-      </div>
+      </Container>
     );
   }
 
@@ -374,7 +433,7 @@ export default function SequenceLayoutRenderer({
     const gapAfterConnector = 16; // Gap between connector and content
     
     return (
-      <div className={className} style={{ width: "100%" }}>
+      <Container className={className} style={{ width: "100%" }} {...containerProps}>
         <div className="relative w-full">
           {/* Center vertical line - passes through all dots */}
           <div
@@ -390,10 +449,14 @@ export default function SequenceLayoutRenderer({
           <div className="relative w-full flex flex-col gap-10">
             {items.map((item, index) => {
               const isLeft = index % 2 === 0;
+              const ItemWrapper = isPresenting ? motion.div : "div";
+              const itemProps = isPresenting ? { variants: sequenceVariants } : {};
+              
               return (
-                <div
+                <ItemWrapper
                   key={index}
                   className="relative flex items-start w-full"
+                  {...itemProps}
                 >
                   {/* Left content (for even indices) */}
                   <div className="flex-1" style={{ paddingRight: `${connectorLength + gapAfterConnector + dotSize/2}px` }}>
@@ -456,12 +519,12 @@ export default function SequenceLayoutRenderer({
                       <div /> // Empty spacer
                     )}
                   </div>
-                </div>
+                </ItemWrapper>
               );
             })}
           </div>
         </div>
-      </div>
+      </Container>
     );
   }
 

@@ -17,6 +17,7 @@ import {
   Loader2,
   Send,
   BarChart3,
+  Wand2,
 } from "lucide-react";
 import { type LayoutType } from "~/lib/slide-layouts";
 import type { Theme } from "~/lib/themes";
@@ -57,6 +58,7 @@ interface SlideMenuProps {
   slideContent?: SlideContent;
   speakerNotes?: string[];
   theme?: Theme;
+  currentAnimation?: string;
   onChangeContentLayout?: () => void;
   onDuplicate: () => void;
   onAddSlide: () => void;
@@ -70,6 +72,7 @@ interface SlideMenuProps {
   onAddNote?: (note: string) => void;
   onEditNote?: (noteIndex: number, note: string) => void;
   onDeleteNote?: (noteIndex: number) => void;
+  onOpenAnimationPicker?: () => void;
   isAIEditing?: boolean;
   onAIEditingChange?: (isEditing: boolean) => void;
 }
@@ -247,12 +250,14 @@ interface StylingPanelProps {
   imageCount: number;
   hasChart?: boolean;
   slideType?: "title" | "content";
+  currentAnimation?: string;
   colors: ThemeColors;
   t: Record<string, string>;
   onChangeContentLayout?: () => void;
   onAddImage: () => void;
   onAddChart?: () => void;
   onRemoveChart?: () => void;
+  onOpenAnimationPicker?: () => void;
   onClose: () => void;
 }
 
@@ -260,12 +265,14 @@ function StylingPanel({
   imageCount,
   hasChart,
   slideType,
+  currentAnimation,
   colors,
   t,
   onChangeContentLayout,
   onAddImage,
   onAddChart,
   onRemoveChart,
+  onOpenAnimationPicker,
   onClose,
 }: StylingPanelProps) {
   const handleAction = (action: () => void) => () => {
@@ -274,6 +281,14 @@ function StylingPanel({
   };
 
   const showContentLayout = slideType !== "title" && onChangeContentLayout;
+
+  // Get animation display name
+  const getAnimationName = (animationId?: string) => {
+    if (!animationId || animationId === "none") return t.noAnimation || "None";
+    if (animationId === "fade") return "Fade";
+    // Capitalize first letter and replace dashes with spaces
+    return animationId.split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
+  };
 
   return (
     <div 
@@ -305,6 +320,17 @@ function StylingPanel({
             colors={colors}
             onClick={handleAction(onAddChart)}
           />
+        )}
+        {onOpenAnimationPicker && (
+          <>
+            <div className="h-px my-1.5" style={{ backgroundColor: colors.divider }} />
+            <MenuButton
+              icon={<Wand2 size={15} />}
+              label={`${t.animation || "Animation"}: ${getAnimationName(currentAnimation)}`}
+              colors={colors}
+              onClick={handleAction(onOpenAnimationPicker)}
+            />
+          </>
         )}
         {hasChart && onRemoveChart && (
           <MenuButton
@@ -484,6 +510,7 @@ export function SlideMenu({
   hasChart,
   slideContent,
   theme,
+  currentAnimation,
   onChangeContentLayout,
   onDuplicate,
   onAddSlide,
@@ -495,6 +522,7 @@ export function SlideMenu({
   onDelete,
   onAIEdit,
   onAIEditingChange,
+  onOpenAnimationPicker,
 }: SlideMenuProps) {
   const [activePanel, setActivePanel] = useState<ActivePanel>("none");
   const [panelPosition, setPanelPosition] = useState({ top: 0, left: 0 });
@@ -575,12 +603,14 @@ export function SlideMenu({
               imageCount={imageCount}
               hasChart={hasChart}
               slideType={slideContent?.type}
+              currentAnimation={currentAnimation}
               colors={colors}
               t={t}
               onChangeContentLayout={onChangeContentLayout}
               onAddImage={onAddImage}
               onAddChart={onAddChart}
               onRemoveChart={onRemoveChart}
+              onOpenAnimationPicker={onOpenAnimationPicker}
               onClose={closePanel}
             />
           );

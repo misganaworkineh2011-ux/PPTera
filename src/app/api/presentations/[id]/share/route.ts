@@ -5,15 +5,16 @@ import { nanoid } from "nanoid";
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await requireAuth();
+    const { id } = await params;
     const { isPublic } = await request.json();
 
     // Check if user owns the presentation
     const presentation = await db.presentation.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!presentation || presentation.userId !== user.id) {
@@ -28,7 +29,7 @@ export async function POST(
 
     // Update presentation
     const updated = await db.presentation.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         isPublic,
         shareToken,
@@ -54,13 +55,14 @@ export async function POST(
 // Get share status
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await requireAuth();
+    const { id } = await params;
 
     const presentation = await db.presentation.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: {
         id: true,
         isPublic: true,

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, memo } from "react";
+import { useState, memo, useRef, useEffect } from "react";
+import { motion } from "framer-motion";
 import { ImageIcon, Plus, LayoutGrid } from "lucide-react";
 import { type Theme } from "~/lib/themes";
 import { type SlideData, type EditingState, type SlideChartData } from "./types";
@@ -51,6 +52,7 @@ interface SlideRendererProps {
   isEditing: boolean;
   editingText: EditingState | null;
   showPageNumber?: boolean;
+  isPresenting?: boolean; // Enable content animations during presentation
   onStartEditing: (slideIndex: number, field: string, bulletIndex?: number) => void;
   onUpdateContent: (slideIndex: number, field: string, value: string, bulletIndex?: number) => void;
   onFinishEditing: () => void;
@@ -334,7 +336,7 @@ function getSlideImages(slide: SlideData) {
 
 function SlideRendererComponent({
   slide, index, totalSlides, theme, isOwner, isFullscreen, isHovered, isEditing,
-  editingText, showPageNumber = true, onStartEditing, onUpdateContent, onFinishEditing, onAddBullet, onDeleteBullet,
+  editingText, showPageNumber = true, isPresenting = false, onStartEditing, onUpdateContent, onFinishEditing, onAddBullet, onDeleteBullet,
   onDeleteTitle, onDeleteSubtitle, onReorderContent, onChangeContentLayout, onOpenContentLayoutPanel, onUpdateChart,
   onOpenImageModal, onRemoveImage, onChangeImageShape, onChangeImagePosition, onReorderImages,
 }: SlideRendererProps) {
@@ -349,6 +351,45 @@ function SlideRendererComponent({
   const bulletPoints = slide.bulletPoints || [];
   const canEdit = isOwner && !isFullscreen;
   const themeType = getThemeType(theme);
+  
+  // Use isPresenting or isFullscreen to determine if we should animate content
+  // Also check if contentAnimation is enabled for this slide (defaults to true)
+  const contentAnimationEnabled = slide.contentAnimation !== false;
+  const inPresentationMode = isPresenting || isFullscreen;
+  
+  // Track animation state per slide using a stable key
+  // Use a ref to track which slide index has been animated
+  const animatedSlidesRef = useRef<Set<number>>(new Set());
+  const prevPresentingRef = useRef(inPresentationMode);
+  
+  // Reset animation tracking when entering/exiting presentation mode
+  useEffect(() => {
+    if (prevPresentingRef.current !== inPresentationMode) {
+      // Clear animation tracking when presentation mode changes
+      animatedSlidesRef.current.clear();
+      prevPresentingRef.current = inPresentationMode;
+    }
+  }, [inPresentationMode]);
+  
+  // Determine if this slide should animate
+  // Only animate if: in presentation mode, animation enabled, and this slide hasn't animated yet
+  const hasAnimatedThisSlide = animatedSlidesRef.current.has(index);
+  const shouldAnimateContent = inPresentationMode && contentAnimationEnabled && !hasAnimatedThisSlide;
+  
+  // Mark this slide as animated after mount (only once per slide per presentation session)
+  useEffect(() => {
+    if (inPresentationMode && contentAnimationEnabled && !hasAnimatedThisSlide) {
+      // Mark as animated after animation completes (use longest animation duration)
+      const timer = setTimeout(() => {
+        animatedSlidesRef.current.add(index);
+      }, 500); // Wait for animation to complete
+      return () => clearTimeout(timer);
+    }
+  }, [inPresentationMode, contentAnimationEnabled, hasAnimatedThisSlide, index]);
+  
+  // Generate a stable animation key for this slide
+  // This prevents re-animation when component re-renders but slide hasn't changed
+  const animationKey = `slide-${index}-${inPresentationMode ? 'presenting' : 'editing'}`;
   
   // Get image shape from slide (default to arc for backward compatibility)
   const imageShape: ImageShape = slide.imageShape || "arc";
@@ -937,27 +978,38 @@ function SlideRendererComponent({
   const SlideDescription = ({ className = "", align = "left" }: { className?: string; align?: "left" | "center" | "right" }) => {
     if (!slide.slideDescription || slide.type === "title") return null;
     return (
-      <EditableText
-        value={slide.slideDescription}
-        isEditing={isEditing && editingText?.field === "slideDescription"}
-        onStartEdit={() => onStartEditing(index, "slideDescription")}
-        onChange={(val) => onUpdateContent(index, "slideDescription", val)}
-        onFinish={onFinishEditing}
-        className={`text-sm sm:text-base md:text-lg leading-relaxed mb-3 sm:mb-4 md:mb-5 ${className}`}
-        style={{
-          fontFamily: theme.fonts.body.family,
-          color: colors.textMuted || colors.text,
-          opacity: 0.8,
-          textAlign: align,
-        }}
-        isOwner={canEdit}
-        isHovered={isHovered}
-      />
+      <motion.div
+        initial={shouldAnimateContent ? { opacity: 0, y: 10 } : undefined}
+        animate={shouldAnimateContent ? { opacity: 1, y: 0 } : undefined}
+        transition={{ delay: 0.15, duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+      >
+        <EditableText
+          value={slide.slideDescription}
+          isEditing={isEditing && editingText?.field === "slideDescription"}
+          onStartEdit={() => onStartEditing(index, "slideDescription")}
+          onChange={(val) => onUpdateContent(index, "slideDescription", val)}
+          onFinish={onFinishEditing}
+          className={`text-sm sm:text-base md:text-lg leading-relaxed mb-3 sm:mb-4 md:mb-5 ${className}`}
+          style={{
+            fontFamily: theme.fonts.body.family,
+            color: colors.textMuted || colors.text,
+            opacity: 0.8,
+            textAlign: align,
+          }}
+          isOwner={canEdit}
+          isHovered={isHovered}
+        />
+      </motion.div>
     );
   };
 
   const Title = ({ className = "", align = "left", showSubtitle = false }: { className?: string; align?: "left" | "center" | "right"; showSubtitle?: boolean }) => (
-    <div className={showSubtitle ? "space-y-2" : ""}>
+    <motion.div 
+      className={showSubtitle ? "space-y-2" : ""}
+      initial={shouldAnimateContent ? { opacity: 0, y: 20 } : undefined}
+      animate={shouldAnimateContent ? { opacity: 1, y: 0 } : undefined}
+      transition={{ delay: 0.1, duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+    >
       <EditableText
         value={slide.title}
         isEditing={isEditing && editingText?.field === "title"}
@@ -995,7 +1047,7 @@ function SlideRendererComponent({
           isHovered={isHovered}
         />
       )}
-    </div>
+    </motion.div>
   );
 
   const BulletPoints = ({ compact = false }: { compact?: boolean }) => {
@@ -1016,9 +1068,24 @@ function SlideRendererComponent({
     });
 
     return (
-      <div className={compact ? "space-y-2 sm:space-y-3" : "space-y-3 sm:space-y-4"}>
+      <motion.div 
+        className={compact ? "space-y-2 sm:space-y-3" : "space-y-3 sm:space-y-4"}
+        initial={shouldAnimateContent ? "hidden" : "visible"}
+        animate="visible"
+        variants={{
+          visible: { transition: { staggerChildren: shouldAnimateContent ? 0.08 : 0, delayChildren: 0.15 } },
+          hidden: {}
+        }}
+      >
         {parsedBullets.map((item, i) => (
-          <div key={i} className="flex items-start gap-2 sm:gap-3 group/bullet">
+          <motion.div 
+            key={i} 
+            className="flex items-start gap-2 sm:gap-3 group/bullet"
+            variants={{
+              hidden: { opacity: 0, x: -15 },
+              visible: { opacity: 1, x: 0, transition: { duration: 0.25, ease: [0.25, 0.1, 0.25, 1] } }
+            }}
+          >
             <div className={`${compact ? "mt-1.5" : "mt-2"} flex items-center gap-1 sm:gap-2 shrink-0`}>
               <div
                 className={`${compact ? "w-1.5 h-1.5 sm:w-2 sm:h-2" : "w-2 h-2 sm:w-2.5 sm:h-2.5"} rounded-full ${!isCustomTheme ? colors.accentMuted : ''}`}
@@ -1077,7 +1144,7 @@ function SlideRendererComponent({
                 />
               )}
             </div>
-          </div>
+          </motion.div>
         ))}
         {canEdit && isHovered && (
           <button
@@ -1088,7 +1155,7 @@ function SlideRendererComponent({
             <Plus size={12} className="sm:w-[14px] sm:h-[14px]" /> <span className="hidden sm:inline">Add point</span><span className="sm:hidden">Add</span>
           </button>
         )}
-      </div>
+      </motion.div>
     );
   };
 
@@ -1219,6 +1286,10 @@ function SlideRendererComponent({
           onReorderItems: canEdit && onReorderContent ? (fromIdx: number, toIdx: number) => onReorderContent(index, fromIdx, toIdx) : undefined,
           isOwner: canEdit,
           isHovered,
+          // Only animate content when in presentation/fullscreen mode and animation hasn't played yet
+          isPresenting: shouldAnimateContent,
+          // Stable animation key to prevent re-animation on re-renders
+          animationKey,
         };
         
         switch (layoutCategory) {
@@ -1404,10 +1475,13 @@ function SlideRendererComponent({
     const isImageHovered = hoveredImageIndex === imageIndex;
     
     return (
-      <div 
+      <motion.div 
         className={`relative ${sizeClass} ${className}`}
         onMouseEnter={() => canEdit && setHoveredImageIndex(imageIndex)}
         onMouseLeave={() => setHoveredImageIndex(null)}
+        initial={shouldAnimateContent ? { opacity: 0, scale: 0.97, filter: "blur(4px)" } : undefined}
+        animate={shouldAnimateContent ? { opacity: 1, scale: 1, filter: "blur(0px)" } : undefined}
+        transition={{ delay: 0.2, duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
       >
         <div className={`absolute inset-0 bg-gradient-to-br ${colors.accentBorder} rounded-lg`} />
         <div className={`absolute inset-[1px] ${colors.surface} rounded-lg overflow-hidden`}>
@@ -1433,7 +1507,7 @@ function SlideRendererComponent({
             theme={isThemeDark ? "dark" : "light"}
           />
         )}
-      </div>
+      </motion.div>
     );
   };
 
@@ -1818,7 +1892,7 @@ function SlideRendererComponent({
         )}
 
         {/* Content Area - Below image */}
-        <div className="flex-1 relative flex flex-col p-4 sm:p-8 md:p-12 pt-6 sm:pt-8">
+        <div className="flex-1 relative flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-6 sm:pt-8">
           {/* Title */}
           <div className="mb-4 sm:mb-6 text-center">
             <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl" align="center" showSubtitle={isTitleSlide} />
@@ -1868,7 +1942,7 @@ function SlideRendererComponent({
         <SlideIndicator position="top-left" />
 
         {/* Content Area - Above image */}
-        <div className="flex-1 relative flex flex-col p-4 sm:p-8 md:p-12 pb-6 sm:pb-8">
+        <div className="flex-1 relative flex flex-col justify-center p-4 sm:p-8 md:p-12 pb-6 sm:pb-8">
           {/* Title */}
           <div className="mb-4 sm:mb-6 text-center">
             <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl" align="center" showSubtitle={isTitleSlide} />
@@ -1948,7 +2022,7 @@ function SlideRendererComponent({
     );
   }
 
-  // LAYOUT 3: Centered - Image Top, Content Bottom
+  // LAYOUT 3: Centered - Image Top, Content Bottom (or centered when no image)
   if (layout === "centered") {
     return (
       <div className="h-full relative overflow-hidden">
@@ -1957,7 +2031,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className={`relative h-full flex flex-col ${hasImage ? "items-center justify-center" : "justify-start"} ${hasImage ? "p-4 sm:p-8 md:p-12" : "p-4 sm:p-6 md:p-8"} pt-12 sm:pt-8 md:pt-12 ${hasImage ? "text-center" : ""} overflow-y-auto`}>
+        <div className={`relative h-full flex flex-col items-center justify-center ${hasImage ? "p-4 sm:p-8 md:p-12" : "p-4 sm:p-6 md:p-8"} ${hasImage ? "text-center" : ""} overflow-y-auto`}>
           {hasImage && (
             <div className={`w-full ${hasMultipleImages ? "max-w-4xl" : "max-w-2xl"} mb-4 sm:mb-6 md:mb-8 relative`}>
               {hasMultipleImages ? (
@@ -1970,11 +2044,11 @@ function SlideRendererComponent({
             </div>
           )}
 
-          <Title className={`text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-3 sm:mb-4 md:mb-6 ${hasImage ? "max-w-4xl" : "w-full"} ${hasImage ? "" : "text-left"}`} align={hasImage ? "center" : "left"} />
-          {!isTitleSlide && <SlideDescription className={`mb-3 sm:mb-4 md:mb-5 ${hasImage ? "" : "text-left"}`} align={hasImage ? "center" : "left"} />}
+          <Title className={`text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-3 sm:mb-4 md:mb-6 ${hasImage ? "max-w-4xl" : "w-full max-w-5xl"} ${hasImage ? "" : "text-left"}`} align={hasImage ? "center" : "left"} />
+          {!isTitleSlide && <SlideDescription className={`mb-3 sm:mb-4 md:mb-5 ${hasImage ? "" : "text-left w-full max-w-5xl"}`} align={hasImage ? "center" : "left"} />}
 
-          <div className={`${hasImage ? "max-w-2xl w-full text-left" : "w-full"} mt-2 sm:mt-3 md:mt-4`}>
-            <EnhancedContent compact />
+          <div className={`${hasImage ? "max-w-2xl w-full text-left" : "w-full max-w-5xl"} mt-2 sm:mt-3 md:mt-4`}>
+            <EnhancedContent compact={hasImage} />
           </div>
         </div>
         <div className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${colors.borderLine} to-transparent`} />
@@ -2206,7 +2280,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
+        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4 mt-3 sm:mt-4 md:mt-6">
@@ -2261,7 +2335,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
+        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
@@ -2333,7 +2407,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
+        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8 text-center" align="center" />
 
           {/* Use EnhancedContent to respect contentLayout (box layout) */}
@@ -2362,7 +2436,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
+        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-5 max-w-4xl">
@@ -2413,10 +2487,10 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 flex flex-col overflow-y-auto">
+        <div className="relative h-full p-4 sm:p-8 md:p-12 flex flex-col justify-center overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8" />
 
-          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
             {bulletPoints.slice(0, 2).map((point, i) => {
               const cardBgProps = getCardBgProps("p-5 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl border-2 backdrop-blur-sm flex flex-col");
               return (
@@ -2460,10 +2534,10 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 flex flex-col overflow-y-auto">
+        <div className="relative h-full p-4 sm:p-8 md:p-12 flex flex-col justify-center overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8 text-center" align="center" />
 
-          <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
             {bulletPoints.slice(0, 3).map((point, i) => {
               const cardBgProps = getCardBgProps("p-4 sm:p-5 md:p-6 rounded-xl border backdrop-blur-sm flex flex-col items-center text-center");
               return (
@@ -2511,7 +2585,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
+        <div className="relative h-full p-4 sm:p-8 md:p-12 flex flex-col justify-center overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8 text-center" align="center" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-5xl mx-auto">
@@ -2589,7 +2663,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
+        <div className="relative h-full p-4 sm:p-8 md:p-12 flex flex-col justify-center overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-6 sm:mb-8 md:mb-10 text-center" align="center" />
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6 max-w-5xl mx-auto">
@@ -2719,7 +2793,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 flex flex-col overflow-y-auto">
+        <div className="relative h-full p-4 sm:p-8 md:p-12 flex flex-col justify-center overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 text-center" align="center" />
 
           {/* Centered Image */}
@@ -2900,11 +2974,11 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full flex">
+        <div className="relative h-full flex items-center">
           {/* Timeline line */}
           <div className="absolute left-24 top-24 bottom-12 w-px" style={{ backgroundColor: colors.accent, opacity: 0.3 }} />
 
-          <div className="flex-1 p-12 pt-20 pl-32">
+          <div className="flex-1 p-12 pl-32">
             <Title className="text-3xl md:text-4xl mb-10" />
 
             <div className="space-y-6">

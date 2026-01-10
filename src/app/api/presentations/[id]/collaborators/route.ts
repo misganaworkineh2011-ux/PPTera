@@ -6,13 +6,14 @@ import { nanoid } from "nanoid";
 // Get all collaborators for a presentation
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await requireAuth();
+    const { id } = await params;
 
     const presentation = await db.presentation.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { userId: true },
     });
 
@@ -23,7 +24,7 @@ export async function GET(
     // Check if user is owner or collaborator
     const isOwner = presentation.userId === user.id;
     const collaboration = await db.collaboration.findFirst({
-      where: { presentationId: params.id, email: user.email, status: "accepted" },
+      where: { presentationId: id, email: user.email, status: "accepted" },
     });
 
     if (!isOwner && !collaboration) {
@@ -31,7 +32,7 @@ export async function GET(
     }
 
     const collaborators = await db.collaboration.findMany({
-      where: { presentationId: params.id },
+      where: { presentationId: id },
       include: {
         user: {
           select: { id: true, name: true, email: true, image: true },
@@ -50,10 +51,11 @@ export async function GET(
 // Add a new collaborator
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await requireAuth();
+    const { id } = await params;
     const { email, role } = await request.json();
 
     if (!email || !role || !["editor", "viewer"].includes(role)) {
@@ -61,7 +63,7 @@ export async function POST(
     }
 
     const presentation = await db.presentation.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { userId: true, title: true },
     });
 
@@ -71,7 +73,7 @@ export async function POST(
 
     // Check if already a collaborator
     const existing = await db.collaboration.findUnique({
-      where: { presentationId_email: { presentationId: params.id, email } },
+      where: { presentationId_email: { presentationId: id, email } },
     });
 
     if (existing) {
@@ -83,7 +85,7 @@ export async function POST(
 
     const collaboration = await db.collaboration.create({
       data: {
-        presentationId: params.id,
+        presentationId: id,
         email,
         role,
         userId: existingUser?.id,
@@ -103,7 +105,7 @@ export async function POST(
         userId: user.id,
         type: "share",
         description: `Shared "${presentation.title}" with ${email}`,
-        presentationId: params.id,
+        presentationId: id,
       },
     });
 
@@ -119,10 +121,11 @@ export async function POST(
 // Update collaborator role
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await requireAuth();
+    const { id } = await params;
     const { collaboratorId, role } = await request.json();
 
     if (!collaboratorId || !role || !["editor", "viewer"].includes(role)) {
@@ -130,7 +133,7 @@ export async function PATCH(
     }
 
     const presentation = await db.presentation.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { userId: true },
     });
 
@@ -158,10 +161,11 @@ export async function PATCH(
 // Remove a collaborator
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await requireAuth();
+    const { id } = await params;
     const { searchParams } = new URL(request.url);
     const collaboratorId = searchParams.get("collaboratorId");
 
@@ -170,7 +174,7 @@ export async function DELETE(
     }
 
     const presentation = await db.presentation.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { userId: true },
     });
 

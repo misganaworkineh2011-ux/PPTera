@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { motion } from "framer-motion";
 import { GripVertical } from "lucide-react";
 import type { Theme } from "~/lib/themes";
 import type {
@@ -15,6 +16,35 @@ import {
   getRecommendedBoxLayout,
 } from "~/lib/layouts/content/boxes";
 import EditableText from "./EditableText";
+
+// Animation variants for staggered box animations
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const boxVariants = {
+  hidden: { 
+    opacity: 0, 
+    y: 25, 
+    scale: 0.95,
+  },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    scale: 1,
+    transition: {
+      duration: 0.35,
+      ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
+    },
+  },
+};
 
 interface BoxLayoutRendererProps {
   layoutId?: BoxLayoutType;
@@ -35,6 +65,8 @@ interface BoxLayoutRendererProps {
   onReorderItems?: (fromIndex: number, toIndex: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
+  isPresenting?: boolean;
+  animationKey?: string;
 }
 
 export default function BoxLayoutRenderer({
@@ -56,6 +88,8 @@ export default function BoxLayoutRenderer({
   onReorderItems,
   isOwner = false,
   isHovered = false,
+  isPresenting = false,
+  animationKey,
 }: BoxLayoutRendererProps & { hasImage?: boolean }) {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -178,7 +212,7 @@ export default function BoxLayoutRenderer({
     const commonClasses = "flex flex-col h-full w-full transition-all duration-200 hover:shadow-lg relative";
     const isDragging = draggedIndex === idx;
     const isDragOver = dragOverIndex === idx;
-    const canDrag = isOwner && onReorderItems && items.length > 1;
+    const canDrag = isOwner && onReorderItems && items.length > 1 && !isPresenting;
     const { labelElement, textElement } = renderBoxContent(item, idx);
 
     const dragProps = canDrag ? {
@@ -191,7 +225,7 @@ export default function BoxLayoutRenderer({
     } : {};
 
     const wrapperClasses = `relative group/drag-item h-full ${isDragging ? "opacity-50" : ""} ${isDragOver ? "ring-2 ring-blue-500 ring-offset-2" : ""}`;
-    const wrapperStyle = { cursor: canDrag ? "grab" : "default" };
+    const wrapperStyle: React.CSSProperties = { cursor: canDrag ? "grab" : "default" };
 
     const dragHandle = canDrag && (
       <div 
@@ -201,112 +235,145 @@ export default function BoxLayoutRenderer({
         <GripVertical size={14} className="text-current" />
       </div>
     );
-    
-    switch (layout.id) {
-      case "box-style-1":
-        return (
-          <div key={idx} ref={(el) => { dragRefs.current[idx] = el; }} className={wrapperClasses} style={wrapperStyle} {...dragProps}>
-            {dragHandle}
-            <div className={commonClasses} style={{
-              backgroundColor: baseStyles.bgColor,
-              borderRadius: baseStyles.borderRadius,
-              boxShadow: baseStyles.shadow,
-              borderLeft: `6px solid ${baseStyles.accentColor}`,
-              padding: compact ? "1.25rem 0.875rem" : "2rem 1.25rem",
-            }}>
-              {labelElement}
-              {textElement}
-            </div>
-          </div>
-        );
 
-      case "box-style-2":
-        return (
-          <div key={idx} ref={(el) => { dragRefs.current[idx] = el; }} className={wrapperClasses} style={wrapperStyle} {...dragProps}>
-            {dragHandle}
-            <div className={commonClasses} style={{
-              backgroundColor: baseStyles.bgColor,
-              borderRadius: baseStyles.borderRadius,
-              boxShadow: baseStyles.shadow,
-              border: `1px solid ${baseStyles.borderColor}`,
-              padding: compact ? "1.25rem 0.875rem" : "2rem 1.25rem",
-            }}>
-              {labelElement}
-              {textElement}
-            </div>
-          </div>
-        );
+    const renderBoxContent1 = () => (
+      <div className={commonClasses} style={{
+        backgroundColor: baseStyles.bgColor,
+        borderRadius: baseStyles.borderRadius,
+        boxShadow: baseStyles.shadow,
+        borderLeft: `6px solid ${baseStyles.accentColor}`,
+        padding: compact ? "1.25rem 0.875rem" : "2rem 1.25rem",
+      }}>
+        {labelElement}
+        {textElement}
+      </div>
+    );
 
-      case "box-style-3":
-        return (
-          <div key={idx} ref={(el) => { dragRefs.current[idx] = el; }} className={wrapperClasses} style={wrapperStyle} {...dragProps}>
-            {dragHandle}
-            <div className={commonClasses} style={{
-              backgroundColor: baseStyles.bgColor,
-              borderRadius: baseStyles.borderRadius,
-              boxShadow: baseStyles.shadow,
-              border: `1px solid ${baseStyles.borderColor}`,
-              padding: compact ? "1.25rem 0.875rem" : "2rem 1.25rem",
-            }}>
-              {item.icon && (
-                <div className="flex justify-center mb-4">
-                  <div className="rounded-full flex items-center justify-center" style={{
-                    backgroundColor: baseStyles.accentColor,
-                    width: compact ? "36px" : "48px",
-                    height: compact ? "36px" : "48px",
-                    color: "white",
-                    fontSize: compact ? "18px" : "24px",
-                  }}>
-                    {item.icon}
-                  </div>
-                </div>
-              )}
-              {labelElement}
-              {textElement}
-            </div>
-          </div>
-        );
+    const renderBoxContent2 = () => (
+      <div className={commonClasses} style={{
+        backgroundColor: baseStyles.bgColor,
+        borderRadius: baseStyles.borderRadius,
+        boxShadow: baseStyles.shadow,
+        border: `1px solid ${baseStyles.borderColor}`,
+        padding: compact ? "1.25rem 0.875rem" : "2rem 1.25rem",
+      }}>
+        {labelElement}
+        {textElement}
+      </div>
+    );
 
-      case "box-style-4":
-        return (
-          <div key={idx} ref={(el) => { dragRefs.current[idx] = el; }} className={wrapperClasses} style={wrapperStyle} {...dragProps}>
-            {dragHandle}
-            <div className={commonClasses} style={{
-              backgroundColor: baseStyles.bgColor,
-              borderRadius: baseStyles.borderRadius,
-              boxShadow: baseStyles.shadow,
-              border: `1px solid ${baseStyles.borderColor}`,
-              paddingTop: compact ? "2.5rem" : "3rem",
+    const renderBoxContent3 = () => (
+      <div className={commonClasses} style={{
+        backgroundColor: baseStyles.bgColor,
+        borderRadius: baseStyles.borderRadius,
+        boxShadow: baseStyles.shadow,
+        border: `1px solid ${baseStyles.borderColor}`,
+        padding: compact ? "1.25rem 0.875rem" : "2rem 1.25rem",
+      }}>
+        {item.icon && (
+          <div className="flex justify-center mb-4">
+            <div className="rounded-full flex items-center justify-center" style={{
+              backgroundColor: baseStyles.accentColor,
+              width: compact ? "36px" : "48px",
+              height: compact ? "36px" : "48px",
+              color: "white",
+              fontSize: compact ? "18px" : "24px",
             }}>
-              <div className="absolute top-0 left-0 right-0" style={{ height: "6px", backgroundColor: baseStyles.accentColor }} />
-              {item.icon && (
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-[3px]" style={{ zIndex: 10 }}>
-                  <div className="rounded-full flex items-center justify-center" style={{
-                    backgroundColor: baseStyles.accentColor,
-                    width: compact ? "36px" : "48px",
-                    height: compact ? "36px" : "48px",
-                    color: "white",
-                    fontSize: compact ? "18px" : "24px",
-                  }}>
-                    {item.icon}
-                  </div>
-                </div>
-              )}
-              <div style={{ padding: compact ? "0 0.875rem 1.25rem" : "0 1.25rem 2rem" }}>
-                {labelElement}
-                {textElement}
-              </div>
+              {item.icon}
             </div>
           </div>
-        );
-      
-      default:
-        return null;
+        )}
+        {labelElement}
+        {textElement}
+      </div>
+    );
+
+    const renderBoxContent4 = () => (
+      <div className={commonClasses} style={{
+        backgroundColor: baseStyles.bgColor,
+        borderRadius: baseStyles.borderRadius,
+        boxShadow: baseStyles.shadow,
+        border: `1px solid ${baseStyles.borderColor}`,
+        paddingTop: compact ? "2.5rem" : "3rem",
+      }}>
+        <div className="absolute top-0 left-0 right-0" style={{ height: "6px", backgroundColor: baseStyles.accentColor }} />
+        {item.icon && (
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-[3px]" style={{ zIndex: 10 }}>
+            <div className="rounded-full flex items-center justify-center" style={{
+              backgroundColor: baseStyles.accentColor,
+              width: compact ? "36px" : "48px",
+              height: compact ? "36px" : "48px",
+              color: "white",
+              fontSize: compact ? "18px" : "24px",
+            }}>
+              {item.icon}
+            </div>
+          </div>
+        )}
+        <div style={{ padding: compact ? "0 0.875rem 1.25rem" : "0 1.25rem 2rem" }}>
+          {labelElement}
+          {textElement}
+        </div>
+      </div>
+    );
+
+    const getBoxContent = () => {
+      switch (layout.id) {
+        case "box-style-1": return renderBoxContent1();
+        case "box-style-2": return renderBoxContent2();
+        case "box-style-3": return renderBoxContent3();
+        case "box-style-4": return renderBoxContent4();
+        default: return null;
+      }
+    };
+
+    // When presenting, use motion.div for animations
+    if (isPresenting) {
+      return (
+        <motion.div 
+          key={idx} 
+          className={wrapperClasses} 
+          style={wrapperStyle}
+          variants={boxVariants}
+        >
+          {getBoxContent()}
+        </motion.div>
+      );
     }
+
+    // When not presenting, use regular div with drag support
+    return (
+      <div 
+        key={idx} 
+        ref={(el) => { dragRefs.current[idx] = el; }} 
+        className={wrapperClasses} 
+        style={wrapperStyle} 
+        {...dragProps}
+      >
+        {dragHandle}
+        {getBoxContent()}
+      </div>
+    );
   };
 
   if (gridStyles.specialLayout === "image-2-1" || gridStyles.specialLayout === "narrow-3") {
     if (items.length === 3) {
+      if (isPresenting) {
+        return (
+          <motion.div 
+            key={animationKey}
+            className={className} 
+            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "auto auto", gap: gridStyles.gap, width: "100%" }}
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            {items.slice(0, 2).map((item, idx) => renderBox(item, idx))}
+            <div style={{ gridColumn: "1 / -1" }}>{renderBox(items[2]!, 2)}</div>
+          </motion.div>
+        );
+      }
+      
       return (
         <div className={className} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "auto auto", gap: gridStyles.gap, width: "100%" }}>
           {items.slice(0, 2).map((item, idx) => renderBox(item, idx))}
@@ -323,6 +390,22 @@ export default function BoxLayoutRenderer({
     gap: gridStyles.gap,
     width: "100%",
   };
+
+  // Use motion.div container when presenting for staggered animations
+  if (isPresenting) {
+    return (
+      <motion.div 
+        key={animationKey}
+        className={className} 
+        style={gridStyle}
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {items.map((item, idx) => renderBox(item, idx))}
+      </motion.div>
+    );
+  }
 
   return (
     <div className={className} style={gridStyle}>
