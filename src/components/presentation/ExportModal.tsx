@@ -5,6 +5,8 @@ import { X, Download, Crown } from "lucide-react";
 import { type Theme } from "~/lib/themes";
 import PricingModal from "~/components/dashboard/PricingModal";
 import { getModalColors } from "~/app/presentation/[slug]/components/ui-colors";
+import { useLanguage } from "~/contexts/LanguageContext";
+import { dashboardTranslations } from "~/lib/dashboard-translations";
 
 interface ExportModalProps {
   isExporting: boolean;
@@ -294,6 +296,10 @@ export default function ExportModal({
   const [customFromInput, setCustomFromInput] = useState("1");
   const [customToInput, setCustomToInput] = useState(String(totalSlides));
   const [showPricingModal, setShowPricingModal] = useState(false);
+  
+  // Get translations
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language] || dashboardTranslations.en;
 
   // Update customTo when totalSlides changes
   useEffect(() => {
@@ -376,15 +382,15 @@ export default function ExportModal({
 
         {/* Header */}
         <div className="mb-6">
-          <h2 className={`text-xl font-bold ${c.text}`}>Export Presentation</h2>
+          <h2 className={`text-xl font-bold ${c.text}`}>{t.exportModalTitle || "Export Presentation"}</h2>
           <p className={`text-sm mt-1 ${c.textMuted}`}>
-            {totalSlides} slides • Choose format and range
+            {totalSlides} {t.slidesCountExport || "slides"} • {t.chooseFormatRange || "Choose format and range"}
           </p>
         </div>
 
         {/* Format Selection */}
         <div className="mb-6">
-          <label className={`text-sm font-medium ${c.textMuted} mb-3 block`}>Format</label>
+          <label className={`text-sm font-medium ${c.textMuted} mb-3 block`}>{t.formatLabel || "Format"}</label>
           <div className="grid grid-cols-3 gap-3">
             {formats.map((fmt) => (
               <button
@@ -408,7 +414,7 @@ export default function ExportModal({
 
         {/* Range Selection */}
         <div className="mb-6">
-          <label className={`text-sm font-medium ${c.textMuted} mb-3 block`}>Slides to export</label>
+          <label className={`text-sm font-medium ${c.textMuted} mb-3 block`}>{t.slidesToExport || "Slides to export"}</label>
           <div className={`inline-flex p-1 rounded-xl ${c.cardBg} ${c.cardBorder} border`}>
             <button
               onClick={() => setExportRange("all")}
@@ -419,7 +425,7 @@ export default function ExportModal({
               }`}
               style={exportRange === "all" ? { backgroundColor: accentColor } : undefined}
             >
-              All slides ({totalSlides})
+              {t.allSlidesRange || "All slides"} ({totalSlides})
             </button>
             <button
               onClick={() => setExportRange("current")}
@@ -430,7 +436,7 @@ export default function ExportModal({
               }`}
               style={exportRange === "current" ? { backgroundColor: accentColor } : undefined}
             >
-              Current slide only
+              {t.currentSlideOnly || "Current slide only"}
             </button>
             <button
               onClick={() => setExportRange("custom")}
@@ -441,14 +447,14 @@ export default function ExportModal({
               }`}
               style={exportRange === "custom" ? { backgroundColor: accentColor } : undefined}
             >
-              Custom range
+              {t.customRange || "Custom range"}
             </button>
           </div>
 
           {exportRange === "custom" && (
             <div className={`inline-flex items-center gap-4 p-4 mt-3 rounded-xl ${c.cardBg} ${c.cardBorder} border`}>
               <div className="flex items-center gap-2">
-                <span className={`text-sm font-medium ${c.textMuted}`}>From</span>
+                <span className={`text-sm font-medium ${c.textMuted}`}>{t.fromSlide || "From"}</span>
                 <input
                   type="text"
                   inputMode="numeric"
@@ -466,7 +472,7 @@ export default function ExportModal({
                   style={{ ["--tw-ring-color" as string]: accentColor }}
                 />
               </div>
-              <span className={`text-sm ${c.textMuted}`}>to</span>
+              <span className={`text-sm ${c.textMuted}`}>{t.toSlide || "to"}</span>
               <div className="flex items-center gap-2">
                 <input
                   type="text"
@@ -496,17 +502,17 @@ export default function ExportModal({
               <Crown size={18} className="text-amber-500 mt-0.5 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className={`text-sm ${c.text}`}>
-                  Exported files include "Made with PPTMaster" watermark
+                  {t.watermarkNotice || "Exported files include \"Made with PPTMaster\" watermark"}
                 </p>
                 <p className={`text-xs mt-1 ${c.textMuted}`}>
-                  Upgrade to remove branding from exports
+                  {t.upgradeToRemove || "Upgrade to remove branding from exports"}
                 </p>
                 <button
                   onClick={() => setShowPricingModal(true)}
                   className="inline-flex items-center gap-1 text-xs font-medium mt-2"
                   style={{ color: accentColor }}
                 >
-                  View plans →
+                  {t.viewPlansBtn || "View plans"} →
                 </button>
               </div>
             </div>
@@ -520,7 +526,7 @@ export default function ExportModal({
             disabled={isExporting}
             className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${c.textMuted} ${c.closeHover}`}
           >
-            Cancel
+            {t.cancel || "Cancel"}
           </button>
           <button
             onClick={handleExport}
@@ -531,12 +537,12 @@ export default function ExportModal({
             {isExporting ? (
               <>
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Exporting...
+                {t.exportingStatus || "Exporting..."}
               </>
             ) : (
               <>
                 <Download size={16} />
-                Export
+                {t.exportBtn || "Export"}
               </>
             )}
           </button>

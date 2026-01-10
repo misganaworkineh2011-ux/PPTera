@@ -295,7 +295,7 @@ export default function ChartsPage() {
       <div className="flex h-[60vh] items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 size={40} className="animate-spin text-[#06b6d4]" />
-          <p className="text-slate-500 dark:text-neutral-400">Loading charts...</p>
+          <p className="text-slate-500 dark:text-neutral-400">{t.loadingCharts || "Loading charts..."}</p>
         </div>
       </div>
     );
@@ -329,8 +329,8 @@ export default function ChartsPage() {
             ) : (
               <Plus size={16} className="md:w-[18px] md:h-[18px]" />
             )}
-            <span className="hidden sm:inline">Create Chart</span>
-            <span className="sm:hidden">Create</span>
+            <span className="hidden sm:inline">{t.createChart || "Create Chart"}</span>
+            <span className="sm:hidden">{t.createBtn || "Create"}</span>
           </button>
         }
       />
@@ -343,7 +343,7 @@ export default function ChartsPage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search charts..."
+            placeholder={t.searchCharts || "Search charts..."}
             className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-800 dark:text-white focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 dark:border-neutral-700 dark:bg-neutral-800"
           />
         </div>
@@ -404,12 +404,12 @@ export default function ChartsPage() {
             <BarChart3 size={32} className="text-slate-400" />
           </div>
           <h3 className="mb-2 text-lg font-semibold text-slate-700 dark:text-neutral-300">
-            {searchQuery ? "No charts found" : "No charts yet"}
+            {searchQuery ? (t.noChartsFound || "No charts found") : (t.noChartsYet || "No charts yet")}
           </h3>
           <p className="mb-6 max-w-md text-center text-sm text-slate-500 dark:text-neutral-400">
             {searchQuery
-              ? "Try adjusting your search or filters"
-              : "Create your first chart to visualize data in your presentations"}
+              ? (t.tryAdjustingSearch || "Try adjusting your search or filters")
+              : (t.createFirstChart || "Create your first chart to visualize data in your presentations")}
           </p>
           {!searchQuery && (
             <button
@@ -417,7 +417,7 @@ export default function ChartsPage() {
               className="flex items-center gap-2 rounded-lg bg-[#06b6d4] px-4 py-2 font-medium text-white transition-colors hover:bg-[#0891b2]"
             >
               <Sparkles size={16} />
-              Create Your First Chart
+              {t.createYourFirstChart || "Create Your First Chart"}
             </button>
           )}
         </div>
@@ -515,26 +515,26 @@ export default function ChartsPage() {
                             onClick={() => startRename(chart.id, chart.title || "Untitled Chart")}
                             className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-neutral-300 dark:hover:bg-neutral-700"
                           >
-                            <Pencil size={15} /> Rename
+                            <Pencil size={15} /> {t.rename || "Rename"}
                           </button>
                           <button
                             onClick={() => handleEditChart(chart.id)}
                             className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-neutral-300 dark:hover:bg-neutral-700"
                           >
-                            <Edit3 size={15} /> Edit Chart
+                            <Edit3 size={15} /> {t.editChart || "Edit Chart"}
                           </button>
                           <button
                             onClick={() => handleDuplicateChart(chart.id)}
                             className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-neutral-300 dark:hover:bg-neutral-700"
                           >
-                            <Copy size={15} /> Duplicate
+                            <Copy size={15} /> {t.duplicate || "Duplicate"}
                           </button>
                           <div className="my-1.5 border-t border-slate-100 dark:border-neutral-700" />
                           <button
                             onClick={() => handleDeleteChart(chart.id)}
                             className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
                           >
-                            <Trash2 size={15} /> Delete
+                            <Trash2 size={15} /> {t.delete || "Delete"}
                           </button>
                         </div>
                       </div>

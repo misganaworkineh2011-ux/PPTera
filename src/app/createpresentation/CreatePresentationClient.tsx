@@ -12,6 +12,8 @@ import ThemeSelector from "~/components/ThemeSelector";
 import RecentOutlines from "~/components/createpresentation/RecentOutlines";
 import PricingModal from "~/components/dashboard/PricingModal";
 import { CREDIT_COSTS } from "~/lib/credits";
+import { useLanguage } from "~/contexts/LanguageContext";
+import { dashboardTranslations } from "~/lib/dashboard-translations";
 
 interface ExistingOutline {
   id: string;
@@ -257,6 +259,10 @@ export default function CreatePresentationClient({
 }: CreatePresentationClientProps) {
   const router = useRouter();
   const { state: streamState, startStream, cancel, reset } = useOutlineStream();
+  
+  // Translations
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language] || dashboardTranslations.en;
 
   // Credit check state
   const [showCreditWarning, setShowCreditWarning] = useState(false);
@@ -736,7 +742,7 @@ export default function CreatePresentationClient({
           onClick={() => (showOutline ? handleStartOver() : router.back())}
           className="flex items-center gap-2 rounded-full bg-white/90 backdrop-blur-sm px-4 py-2 text-sm font-medium text-slate-700 shadow-md transition-all hover:bg-white hover:text-[#1e3a8a] hover:shadow-lg"
         >
-          <ArrowLeft size={16} /> {showOutline ? "Start Over" : "Back"}
+          <ArrowLeft size={16} /> {showOutline ? t.startOver : t.backBtn}
         </button>
       </div>
 
@@ -755,7 +761,7 @@ export default function CreatePresentationClient({
                   onClick={handleStartOver}
                   className="text-red-700 hover:text-red-900 underline text-xs font-medium"
                 >
-                  Try again
+                  {t.tryAgainBtn}
                 </button>
               </div>
             </div>
@@ -768,14 +774,14 @@ export default function CreatePresentationClient({
             {!showOutline && (
               <div className="flex flex-col items-center justify-center mb-8">
                 <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#1e3a8a] mb-2 text-center">
-                  {mode === "ai" && "AI Generation"}
-                  {mode === "docs" && "Import Documents"}
-                  {mode === "scratch" && "Start from Scratch"}
+                  {mode === "ai" && t.aiGenerationMode}
+                  {mode === "docs" && t.importDocumentsMode}
+                  {mode === "scratch" && t.startFromScratchMode}
                 </h1>
                 <p className="text-slate-600 text-center text-sm sm:text-base max-w-md">
-                  {mode === "ai" && "Describe your idea and watch AI craft a complete professional deck"}
-                  {mode === "docs" && "Upload PDFs, Word files, or paste content to transform into a presentation"}
-                  {mode === "scratch" && "Build from a blank canvas with full creative control over every slide"}
+                  {mode === "ai" && t.describeYourIdea}
+                  {mode === "docs" && t.importDocumentsDesc}
+                  {mode === "scratch" && t.startFromScratchDesc}
                 </p>
               </div>
             )}
@@ -787,17 +793,17 @@ export default function CreatePresentationClient({
                 <div className={showOutline ? "flex-1 w-full" : ""}>
                   {!showOutline && mode === "ai" && (
                     <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
-                      What to Create
+                      {t.whatToCreateLabel}
                     </label>
                   )}
                   {!showOutline && mode === "docs" && (
                     <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
-                      Upload or Paste Content
+                      {t.uploadOrPasteContent}
                     </label>
                   )}
                   {!showOutline && mode === "scratch" && (
                     <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
-                      Presentation Title
+                      {t.presentationTitleLabel}
                     </label>
                   )}
 
@@ -807,7 +813,7 @@ export default function CreatePresentationClient({
                       id="description"
                       value={formData.description}
                       onChange={(e) => handleChange("description", e.target.value)}
-                      placeholder="Define what you want to create in one sentence or more..."
+                      placeholder={t.defineWhatToCreate}
                       rows={showOutline ? 2 : 3}
                       disabled={isStreaming}
                       className={`w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all resize-none text-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""}`}
@@ -832,7 +838,7 @@ export default function CreatePresentationClient({
                               const formData = new FormData();
                               formData.append("file", file);
 
-                              const loadingToast = toast.loading("Parsing document...");
+                              const loadingToast = toast.loading(t.parsingDocument);
 
                               try {
                                 const response = await fetch("/api/parse-document", {
@@ -855,7 +861,7 @@ export default function CreatePresentationClient({
                                 const data = await response.json();
                                 handleChange("description", data.text);
                                 setPastedContent(data.text);
-                                toast.success("Document parsed successfully", { id: loadingToast });
+                                toast.success(t.documentParsedSuccess, { id: loadingToast });
                               } catch (error) {
                                 console.error("Parsing error:", error);
                                 toast.error(error instanceof Error ? error.message : "Failed to parse document", { id: loadingToast });
@@ -868,15 +874,15 @@ export default function CreatePresentationClient({
                           htmlFor="file-upload"
                           className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-[#06b6d4] transition-all"
                         >
-                          Choose File
+                          {t.chooseFile}
                         </label>
                         <p className="mt-2 text-xs text-slate-500">
-                          {uploadedFile ? uploadedFile.name : "PDF, Word, PowerPoint, or Text files"}
+                          {uploadedFile ? uploadedFile.name : t.pdfWordPptText}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
                         <div className="flex-1 h-px bg-slate-200"></div>
-                        <span className="text-xs text-slate-400 font-medium">OR</span>
+                        <span className="text-xs text-slate-400 font-medium">{t.orDivider}</span>
                         <div className="flex-1 h-px bg-slate-200"></div>
                       </div>
                       <textarea
@@ -885,7 +891,7 @@ export default function CreatePresentationClient({
                           setPastedContent(e.target.value);
                           handleChange("description", e.target.value);
                         }}
-                        placeholder="Paste your content here..."
+                        placeholder={t.pasteContentHere}
                         rows={5}
                         disabled={isStreaming}
                         className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all resize-none text-sm"
@@ -899,7 +905,7 @@ export default function CreatePresentationClient({
                       id="description"
                       value={formData.description}
                       onChange={(e) => handleChange("description", e.target.value)}
-                      placeholder="Your content..."
+                      placeholder={t.yourContentPlaceholder}
                       rows={2}
                       disabled={isStreaming}
                       className={`w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all resize-none text-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""}`}
@@ -914,7 +920,7 @@ export default function CreatePresentationClient({
                       id="description"
                       value={formData.description}
                       onChange={(e) => handleChange("description", e.target.value)}
-                      placeholder="Enter your presentation title..."
+                      placeholder={t.enterPresentationTitle}
                       disabled={isStreaming}
                       className={`w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all text-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""}`}
                       required
@@ -1035,7 +1041,7 @@ export default function CreatePresentationClient({
                   {/* Number of Slides */}
                   <div>
                     <label htmlFor="slides" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
-                      Number of Slides
+                      {t.numberOfSlides}
                     </label>
                     <div className="relative">
                       <select
@@ -1091,7 +1097,7 @@ export default function CreatePresentationClient({
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="tone" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
-                        Tone
+                        {t.tone}
                       </label>
                       <select
                         id="tone"
@@ -1134,7 +1140,7 @@ export default function CreatePresentationClient({
 
                     <div>
                       <label htmlFor="language" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
-                        Language
+                        {t.languageLabel}
                       </label>
                       <select
                         id="language"
@@ -1142,14 +1148,14 @@ export default function CreatePresentationClient({
                         onChange={(e) => handleChange("language", e.target.value)}
                         className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
                       >
-                        <optgroup label="Popular">
+                        <optgroup label={t.languagePopular}>
                           <option value="english">🇺🇸 English</option>
                           <option value="spanish">🇪🇸 Español</option>
                           <option value="french">🇫🇷 Français</option>
                           <option value="german">🇩🇪 Deutsch</option>
                           <option value="chinese">🇨🇳 中文</option>
                         </optgroup>
-                        <optgroup label="European">
+                        <optgroup label={t.languageEuropean}>
                           <option value="portuguese">🇵🇹 Português</option>
                           <option value="italian">🇮🇹 Italiano</option>
                           <option value="dutch">🇳🇱 Nederlands</option>
@@ -1165,7 +1171,7 @@ export default function CreatePresentationClient({
                           <option value="ukrainian">🇺🇦 Українська</option>
                           <option value="russian">🇷🇺 Русский</option>
                         </optgroup>
-                        <optgroup label="Asian">
+                        <optgroup label={t.languageAsian}>
                           <option value="japanese">🇯🇵 日本語</option>
                           <option value="korean">🇰🇷 한국어</option>
                           <option value="hindi">🇮🇳 हिन्दी</option>
@@ -1177,7 +1183,7 @@ export default function CreatePresentationClient({
                           <option value="bengali">🇧🇩 বাংলা</option>
                           <option value="tamil">🇮🇳 தமிழ்</option>
                         </optgroup>
-                        <optgroup label="Middle East & Africa">
+                        <optgroup label={t.languageMiddleEastAfrica}>
                           <option value="arabic">🇸🇦 العربية</option>
                           <option value="hebrew">🇮🇱 עברית</option>
                           <option value="turkish">🇹🇷 Türkçe</option>
@@ -1197,17 +1203,17 @@ export default function CreatePresentationClient({
                   disabled={!formData.description.trim() || isStreaming}
                   title={
                     isSamePrompt
-                      ? "Regenerate this outline with the same description (replaces current outline)"
-                      : "Generate a new outline with this description (replaces current outline)"
+                      ? t.regenerateOutlineBtn
+                      : t.generateOutlineBtn
                   }
                   className="w-full sm:w-auto px-10 py-3 rounded-xl bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold shadow-lg transition-all hover:opacity-90 hover:shadow-xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm"
                 >
                   {isStreaming ? (
-                    mode === "scratch" ? "Creating…" : isSamePrompt ? "Regenerating…" : "Generating…"
+                    mode === "scratch" ? t.creatingDots : isSamePrompt ? t.regeneratingDots : t.generatingDots
                   ) : (
-                    mode === "ai" ? (isSamePrompt ? "Regenerate outline" : "Generate outline") :
-                      mode === "docs" ? "Transform to Presentation" :
-                        mode === "scratch" ? "Create Presentation" : "Create Blank Presentation"
+                    mode === "ai" ? (isSamePrompt ? t.regenerateOutlineBtn : t.generateOutlineBtn) :
+                      mode === "docs" ? t.transformToPresentation :
+                        mode === "scratch" ? t.createPresentation : t.createPresentation
                   )}
                 </button>
               </div>
@@ -1231,8 +1237,8 @@ export default function CreatePresentationClient({
                     <Loader2 size={16} className="animate-spin" />
                     <span className="font-medium">
                       {streamState.currentSlideIndex >= 0
-                        ? `Generating slide ${streamState.currentSlideIndex + 1} of ${streamState.totalSlides}...`
-                        : `Preparing to generate ${streamState.totalSlides} slides...`}
+                        ? (t.generatingSlideOf || "Generating slide {current} of {total}...").replace('{current}', String(streamState.currentSlideIndex + 1)).replace('{total}', String(streamState.totalSlides))
+                        : (t.preparingToGenerate || "Preparing to generate {total} slides...").replace('{total}', String(streamState.totalSlides))}
                     </span>
                   </div>
                 )}
@@ -1368,6 +1374,15 @@ export default function CreatePresentationClient({
                           const theme = getThemeForDisplay(themeId);
                           if (!theme) return null;
                           const isSelected = formData.theme === theme.id;
+                          const hasBackgroundImage = !!(theme.previewBackgroundImage || theme.backgroundImage);
+                          const bgImageUrl = theme.previewBackgroundImage || theme.backgroundImage;
+                          // For custom themes, use the background color from colors, not preview.titleBg (which might be a URL)
+                          const previewBgColor = hasBackgroundImage 
+                            ? theme.colors.background 
+                            : (typeof theme.preview.titleBg === 'string' && !theme.preview.titleBg.startsWith('url(') 
+                                ? theme.preview.titleBg 
+                                : theme.colors.background);
+                          
                           return (
                             <button
                               key={theme.id}
@@ -1390,16 +1405,16 @@ export default function CreatePresentationClient({
                                 <div
                                   className="aspect-[1.8/1] w-full rounded shadow-sm relative overflow-hidden"
                                   style={{
-                                    backgroundColor: theme.preview.titleBg,
-                                    backgroundImage: (theme.previewBackgroundImage || theme.backgroundImage)
-                                      ? `url(${theme.previewBackgroundImage || theme.backgroundImage})`
+                                    backgroundColor: previewBgColor,
+                                    backgroundImage: hasBackgroundImage
+                                      ? `url(${bgImageUrl})`
                                       : theme.slideStyles.title.pattern || "none",
                                     backgroundSize: "cover",
                                     backgroundPosition: "center",
                                   }}
                                 >
                                   {/* Lighter overlay for background images */}
-                                  {(theme.previewBackgroundImage || theme.backgroundImage) && (
+                                  {hasBackgroundImage && (
                                     <div
                                       className="absolute inset-0"
                                       style={{ background: "rgba(0,0,0,0.25)" }}
@@ -1410,10 +1425,10 @@ export default function CreatePresentationClient({
                                   <div className="absolute inset-0 flex items-center justify-center">
                                     <div
                                       className={`rounded backdrop-blur-sm transition-all duration-300 flex flex-col justify-center px-2 py-1.5 overflow-hidden ${
-                                        theme.previewBackgroundImage || theme.backgroundImage ? "w-[70%] h-[60%]" : "w-[85%] h-[75%]"
+                                        hasBackgroundImage ? "w-[70%] h-[60%]" : "w-[85%] h-[75%]"
                                       }`}
                                       style={{
-                                        backgroundColor: (theme.previewBackgroundImage || theme.backgroundImage)
+                                        backgroundColor: hasBackgroundImage
                                           ? `${theme.cardBox?.background || theme.colors.background}e8`
                                           : theme.cardBox?.background || "rgba(255, 255, 255, 0.95)",
                                         border: theme.cardBox?.borderColor ? `1px solid ${theme.cardBox.borderColor}` : "none",
@@ -1542,7 +1557,7 @@ export default function CreatePresentationClient({
                                   {/* Basic Models - Free */}
                                   <div className="p-2 border-b border-slate-100">
                                     <div className="px-2 py-1.5 mb-1">
-                                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Basic models</span>
+                                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{t.basicModels}</span>
                                     </div>
                                     {[
                                       { id: "gpt-image-1-mini", name: "GPT Image Mini", credits: CREDIT_COSTS.IMAGE_BASIC },
@@ -1578,7 +1593,7 @@ export default function CreatePresentationClient({
                                   {/* Advanced Models - Plus */}
                                   <div className="p-2 border-b border-slate-100">
                                     <div className="flex items-center gap-2 px-2 py-1.5 mb-1">
-                                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Advanced models</span>
+                                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{t.advancedModels}</span>
                                       <span className="text-[10px] font-semibold text-white bg-blue-500 px-1.5 py-0.5 rounded-full">PLUS</span>
                                     </div>
                                     {[
@@ -1628,7 +1643,7 @@ export default function CreatePresentationClient({
                                   {/* Premium Models - Pro */}
                                   <div className="p-2 border-b border-slate-100">
                                     <div className="flex items-center gap-2 px-2 py-1.5 mb-1">
-                                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Premium models</span>
+                                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{t.premiumModels}</span>
                                       <span className="text-[10px] font-semibold text-white bg-indigo-600 px-1.5 py-0.5 rounded-full">PRO</span>
                                     </div>
                                     {[
@@ -1858,28 +1873,28 @@ export default function CreatePresentationClient({
               <div className="flex flex-wrap md:flex-nowrap items-center justify-between gap-3 rounded-xl bg-white px-4 py-3 shadow-lg border border-slate-200">
                 <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
                   <span className="flex items-center gap-1">
-                    <span className="text-slate-500">Slides:</span>
+                    <span className="text-slate-500">{t.slidesCount}</span>
                     <strong className="text-[#1e3a8a]">
                       {slides.length || streamState.totalSlides || 0}
                     </strong>
                   </span>
                   <span className="hidden sm:inline text-slate-300">•</span>
                   <span className="hidden sm:flex items-center gap-1">
-                    <span className="text-slate-500">Characters:</span>
+                    <span className="text-slate-500">{t.charactersCount}</span>
                     <strong className="text-[#1e3a8a]">
                       {totalCharacters.toLocaleString()}
                     </strong>
                   </span>
                   <span className="text-slate-300">•</span>
                   <span className="flex items-center gap-1">
-                    <span className="text-slate-500">Credits needed:</span>
+                    <span className="text-slate-500">{t.creditsNeededLabel}</span>
                     <strong className="text-[#1e3a8a]">
                       {creditsNeededForPresentation}
                     </strong>
                   </span>
                   <span className="hidden sm:inline text-slate-300">•</span>
                   <span className="flex items-center gap-1">
-                    <span className="text-slate-500">Credits left:</span>
+                    <span className="text-slate-500">{t.creditsRemaining}:</span>
                     <strong
                       className={
                         hasEnoughCreditsForPresentation
@@ -1892,7 +1907,7 @@ export default function CreatePresentationClient({
                   </span>
                   {!hasEnoughCreditsForPresentation && (
                     <span className="text-[11px] text-red-500">
-                      Not enough credits to create this presentation.
+                      {t.notEnoughCredits}
                     </span>
                   )}
                 </div>
@@ -1922,17 +1937,17 @@ export default function CreatePresentationClient({
                         <Loader2 size={15} className="animate-spin" />
                         <span className="hidden sm:inline">
                           {formData.imageSource === "stock-photos"
-                            ? "Fetching Images..."
-                            : "Creating..."}
+                            ? t.creatingDots
+                            : t.creatingDots}
                         </span>
-                        <span className="sm:hidden">Creating...</span>
+                        <span className="sm:hidden">{t.creatingDots}</span>
                       </>
                     ) : (
                       <>
                         <span className="hidden sm:inline">
-                          Create Presentation
+                          {t.createPresentation}
                         </span>
-                        <span className="sm:hidden">Create</span>
+                        <span className="sm:hidden">{t.createBtn}</span>
                       </>
                     )}
                   </button>

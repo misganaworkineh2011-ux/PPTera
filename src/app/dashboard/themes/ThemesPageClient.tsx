@@ -85,6 +85,7 @@ export default function ThemesPageClient({ initialThemes }: ThemesPageClientProp
         isOpen={showCreator}
         onClose={() => setShowCreator(false)}
         onSave={handleSaveTheme}
+        subscriptionPlan={user?.subscriptionPlan}
       />
 
       {/* Pricing Modal */}

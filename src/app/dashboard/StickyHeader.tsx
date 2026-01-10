@@ -4,6 +4,8 @@ import { FileText, Import } from "lucide-react";
 import CreateProjectButton from "~/components/dashboard/CreateProjectButton";
 import { useEffect, useRef, useState } from "react";
 import { useStickyContext } from "~/components/dashboard/DashboardLayout";
+import { useLanguage } from "~/contexts/LanguageContext";
+import { dashboardTranslations } from "~/lib/dashboard-translations";
 
 import { useRouter } from "next/navigation";
 
@@ -18,6 +20,8 @@ export default function StickyHeader({ userId, credits }: StickyHeaderProps) {
   const headerRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const { setIsTitleSticky, setStickyTitleContent } = useStickyContext();
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language] || dashboardTranslations.en;
 
   useEffect(() => {
     // Only enable sticky behavior on md+ screens
@@ -44,7 +48,7 @@ export default function StickyHeader({ userId, credits }: StickyHeaderProps) {
                 <FileText size={16} className="lg:hidden" />
                 <FileText size={18} className="hidden lg:block" />
               </div>
-              <h1 className="text-lg lg:text-xl font-bold tracking-tight text-[#1e3a8a] whitespace-nowrap">Presentations</h1>
+              <h1 className="text-lg lg:text-xl font-bold tracking-tight text-[#1e3a8a] whitespace-nowrap">{t.presentations || "Presentations"}</h1>
             </>
           );
         } else {
@@ -65,7 +69,7 @@ export default function StickyHeader({ userId, credits }: StickyHeaderProps) {
       }
       setStickyTitleContent(null);
     };
-  }, [setIsTitleSticky, setStickyTitleContent]);
+  }, [setIsTitleSticky, setStickyTitleContent, t]);
 
   return (
     <>
@@ -84,7 +88,7 @@ export default function StickyHeader({ userId, credits }: StickyHeaderProps) {
             <FileText size={18} className="sm:hidden" />
             <FileText size={22} className="hidden sm:block" />
           </div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[#1e3a8a]">Presentations</h1>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[#1e3a8a]">{t.presentations || "Presentations"}</h1>
         </div>
 
         {/* Action buttons - right aligned */}
@@ -95,7 +99,7 @@ export default function StickyHeader({ userId, credits }: StickyHeaderProps) {
             className="flex items-center gap-1.5 md:gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-[#1e3a8a] hover:border-[#1e3a8a]/20 whitespace-nowrap"
           >
             <Import size={16} className="md:w-[18px] md:h-[18px]" />
-            <span className="hidden sm:inline">Import</span>
+            <span className="hidden sm:inline">{t.importBtn || "Import"}</span>
           </button>
         </div>
       </div>

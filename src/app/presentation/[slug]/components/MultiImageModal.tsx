@@ -8,6 +8,8 @@ import type { SlideImage } from "~/components/presentation/types";
 import { CREDIT_COSTS } from "~/lib/credits";
 import { getModalColors } from "~/app/presentation/[slug]/components/ui-colors";
 import PricingModal from "~/components/dashboard/PricingModal";
+import { useLanguage } from "~/contexts/LanguageContext";
+import { dashboardTranslations } from "~/lib/dashboard-translations";
 
 // AI Image model options with credit costs - matches CreatePresentationClient
 const AI_IMAGE_MODELS = [
@@ -83,6 +85,10 @@ export function MultiImageModal({
   // Theme-aware colors using the helper
   const colors = getModalColors(theme);
   const isDark = colors.isDark;
+
+  // Get translations
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language] || dashboardTranslations.en;
 
   // Check if user has access to a model tier
   const hasAccessToTier = (tier: string) => {
@@ -215,7 +221,7 @@ export function MultiImageModal({
             className="text-lg font-semibold"
             style={{ color: colors.text }}
           >
-            Manage Images {images.length > 0 && `(${images.length})`}
+            {t.manageImages || "Manage Images"} {images.length > 0 && `(${images.length})`}
           </h3>
           <button
             onClick={onClose}
@@ -240,9 +246,9 @@ export function MultiImageModal({
                 className="block text-sm font-medium mb-2"
                 style={{ color: colors.text }}
               >
-                Current Images{" "}
+                {t.currentImages || "Current Images"}{" "}
                 <span className="text-xs font-normal opacity-70">
-                  (drag to reorder)
+                  ({t.dragToReorder || "drag to reorder"})
                 </span>
               </label>
               <div className="grid grid-cols-3 gap-3">
@@ -277,7 +283,7 @@ export function MultiImageModal({
                         <button
                           onClick={() => onOpenWysiwygEditor(idx)}
                           className="p-2 rounded-lg bg-cyan-500/80 hover:bg-cyan-500 text-white transition-colors"
-                          title="Edit Image (Crop, Mask, Adjust)"
+                          title={t.editImageCropMask || "Edit Image (Crop, Mask, Adjust)"}
                         >
                           <Settings2 size={16} />
                         </button>
@@ -285,14 +291,14 @@ export function MultiImageModal({
                       <button
                         onClick={() => onEditImage(idx)}
                         className="p-2 rounded-lg bg-white/20 hover:bg-white/30 text-white transition-colors"
-                        title="Replace URL"
+                        title={t.replaceUrlBtn || "Replace URL"}
                       >
                         <ImagePlus size={16} />
                       </button>
                       <button
                         onClick={() => onRemoveImage(idx)}
                         className="p-2 rounded-lg bg-red-500/80 hover:bg-red-500 text-white transition-colors"
-                        title="Remove"
+                        title={t.removeImageBtn || "Remove"}
                       >
                         <Trash2 size={16} />
                       </button>
@@ -335,7 +341,7 @@ export function MultiImageModal({
                   }}
                 >
                   <ImagePlus size={16} />
-                  URL
+                  {t.addFromUrl || "URL"}
                 </button>
                 <button
                   onClick={() => setActiveTab("ai")}
@@ -349,7 +355,7 @@ export function MultiImageModal({
                   }}
                 >
                   <Sparkles size={16} />
-                  AI Generate
+                  {t.aiGenerate || "AI Generate"}
                 </button>
               </div>
             )}

@@ -15,6 +15,8 @@ import {
 import Link from "next/link";
 import DashboardStickyHeader from "~/components/dashboard/DashboardStickyHeader";
 import { ReferralCard } from "~/components/dashboard/ReferralCard";
+import { useLanguage } from "~/contexts/LanguageContext";
+import { dashboardTranslations } from "~/lib/dashboard-translations";
 
 interface BillingData {
   subscription: {
@@ -58,6 +60,8 @@ export default function BillingPage() {
   const [activities, setActivities] = useState<UsageActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language] || dashboardTranslations.en;
 
   useEffect(() => {
     async function fetchBillingData() {
@@ -93,10 +97,10 @@ export default function BillingPage() {
         {/* Header - static with sticky behavior */}
         <DashboardStickyHeader
           icon={<CreditCard size={22} />}
-          title="Billing"
-          subtitle="Manage your subscription and credits"
+          title={t.billingTitle || "Billing"}
+          subtitle={t.billingSubtitle || "Manage your subscription and credits"}
           stickyIcon={<CreditCard size={18} />}
-          stickyTitle="Billing"
+          stickyTitle={t.billingTitle || "Billing"}
         />
 
         {/* Current Plan Skeleton */}
@@ -107,14 +111,14 @@ export default function BillingPage() {
                 <CreditCard className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
               </div>
               <div>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">Current Plan</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">{t.currentPlan || "Current Plan"}</p>
                 <div className="h-5 w-20 bg-zinc-200 dark:bg-zinc-700 rounded animate-pulse mt-1" />
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {["Credits", "Monthly Limit", "Billing", "Resets"].map((label, i) => (
+            {[t.credits || "Credits", t.monthlyLimit || "Monthly Limit", t.billing || "Billing", t.resets || "Resets"].map((label, i) => (
               <div key={i} className="bg-zinc-50 dark:bg-zinc-700/50 rounded-lg p-4">
                 <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">{label}</p>
                 <div className="h-7 w-16 bg-zinc-200 dark:bg-zinc-600 rounded animate-pulse" />
@@ -126,7 +130,7 @@ export default function BillingPage() {
         {/* Credit Usage Skeleton */}
         <div className="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-medium text-zinc-900 dark:text-white">Credit Usage</h2>
+            <h2 className="font-medium text-zinc-900 dark:text-white">{t.creditUsage || "Credit Usage"}</h2>
             <div className="h-4 w-16 bg-zinc-200 dark:bg-zinc-700 rounded animate-pulse" />
           </div>
 
@@ -140,9 +144,9 @@ export default function BillingPage() {
           </div>
 
           <div className="mt-6 pt-6 border-t border-zinc-100 dark:border-zinc-700">
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-3">Estimated remaining:</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-3">{t.estimatedRemaining || "Estimated remaining"}:</p>
             <div className="grid grid-cols-2 gap-4">
-              {["slides", "AI images"].map((label, i) => (
+              {[t.slides || "slides", t.aiImages || "AI images"].map((label, i) => (
                 <div key={i}>
                   <div className="h-8 w-12 bg-zinc-200 dark:bg-zinc-700 rounded animate-pulse mb-1" />
                   <p className="text-xs text-zinc-500 dark:text-zinc-400">{label}</p>
@@ -157,8 +161,8 @@ export default function BillingPage() {
           <div className="flex items-center gap-3 p-4 bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700">
             <TrendingUp className="h-5 w-5 text-cyan-500" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-zinc-900 dark:text-white">Upgrade</p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">More credits</p>
+              <p className="text-sm font-medium text-zinc-900 dark:text-white">{t.upgrade || "Upgrade"}</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">{t.moreCredits || "More credits"}</p>
             </div>
             <ChevronRight className="h-4 w-4 text-zinc-400" />
           </div>
@@ -166,8 +170,8 @@ export default function BillingPage() {
           <div className="flex items-center gap-3 p-4 bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700">
             <Zap className="h-5 w-5 text-blue-500" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-zinc-900 dark:text-white">Buy Credits</p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">One-time</p>
+              <p className="text-sm font-medium text-zinc-900 dark:text-white">{t.buyCredits || "Buy Credits"}</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">{t.oneTime || "One-time"}</p>
             </div>
             <ChevronRight className="h-4 w-4 text-zinc-400" />
           </div>
@@ -175,8 +179,8 @@ export default function BillingPage() {
           <div className="flex items-center gap-3 p-4 bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700">
             <Clock className="h-5 w-5 text-zinc-400" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-zinc-900 dark:text-white">History</p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">All activity</p>
+              <p className="text-sm font-medium text-zinc-900 dark:text-white">{t.history || "History"}</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">{t.allActivity || "All activity"}</p>
             </div>
             <ChevronRight className="h-4 w-4 text-zinc-400" />
           </div>
@@ -184,7 +188,7 @@ export default function BillingPage() {
 
         {/* Features Skeleton */}
         <div className="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 p-6">
-          <h2 className="font-medium text-zinc-900 dark:text-white mb-4">Plan Features</h2>
+          <h2 className="font-medium text-zinc-900 dark:text-white mb-4">{t.planFeatures || "Plan Features"}</h2>
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="flex items-center gap-2">
@@ -212,10 +216,10 @@ export default function BillingPage() {
       {/* Header with sticky behavior */}
       <DashboardStickyHeader
         icon={<CreditCard size={22} />}
-        title="Billing"
-        subtitle="Manage your subscription and credits"
+        title={t.billingTitle || "Billing"}
+        subtitle={t.billingSubtitle || "Manage your subscription and credits"}
         stickyIcon={<CreditCard size={18} />}
-        stickyTitle="Billing"
+        stickyTitle={t.billingTitle || "Billing"}
       />
 
       {/* Current Plan */}
@@ -226,9 +230,9 @@ export default function BillingPage() {
               <CreditCard className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
             </div>
             <div>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">Current Plan</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">{t.currentPlan || "Current Plan"}</p>
               <p className="font-semibold text-zinc-900 dark:text-white capitalize">
-                {billing.subscription.plan || "Free"}
+                {billing.subscription.plan || t.free || "Free"}
               </p>
             </div>
           </div>
@@ -238,32 +242,32 @@ export default function BillingPage() {
               className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-sm font-medium rounded-lg hover:opacity-90 transition shadow-sm"
             >
               <Sparkles className="h-4 w-4" />
-              Upgrade
+              {t.upgrade || "Upgrade"}
             </Link>
           )}
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="bg-zinc-50 dark:bg-zinc-700/50 rounded-lg p-4">
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Credits</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">{t.credits || "Credits"}</p>
             <p className="text-xl font-semibold text-zinc-900 dark:text-white">
               {billing.credits.current.toLocaleString()}
             </p>
           </div>
           <div className="bg-zinc-50 dark:bg-zinc-700/50 rounded-lg p-4">
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Monthly Limit</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">{t.monthlyLimit || "Monthly Limit"}</p>
             <p className="text-xl font-semibold text-zinc-900 dark:text-white">
               {billing.credits.max.toLocaleString()}
             </p>
           </div>
           <div className="bg-zinc-50 dark:bg-zinc-700/50 rounded-lg p-4">
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Billing</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">{t.billing || "Billing"}</p>
             <p className="text-xl font-semibold text-zinc-900 dark:text-white capitalize">
               {billing.subscription.type || "—"}
             </p>
           </div>
           <div className="bg-zinc-50 dark:bg-zinc-700/50 rounded-lg p-4">
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Resets</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">{t.resets || "Resets"}</p>
             <p className="text-lg font-semibold text-zinc-900 dark:text-white">
               {billing.subscription.nextResetDate
                 ? new Date(billing.subscription.nextResetDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })
@@ -276,9 +280,9 @@ export default function BillingPage() {
       {/* Credit Usage */}
       <div className="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-medium text-zinc-900 dark:text-white">Credit Usage</h2>
+          <h2 className="font-medium text-zinc-900 dark:text-white">{t.creditUsage || "Credit Usage"}</h2>
           <span className="text-sm text-zinc-500 dark:text-zinc-400">
-            {billing.credits.usagePercentage}% used
+            {billing.credits.usagePercentage}% {t.used || "used"}
           </span>
         </div>
 
@@ -290,24 +294,24 @@ export default function BillingPage() {
         </div>
 
         <div className="flex justify-between text-sm text-zinc-500 dark:text-zinc-400">
-          <span>{billing.credits.used.toLocaleString()} used</span>
-          <span>{billing.credits.current.toLocaleString()} remaining</span>
+          <span>{billing.credits.used.toLocaleString()} {t.used || "used"}</span>
+          <span>{billing.credits.current.toLocaleString()} {t.remaining || "remaining"}</span>
         </div>
 
         <div className="mt-6 pt-6 border-t border-zinc-100 dark:border-zinc-700">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-3">Estimated remaining:</p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-3">{t.estimatedRemaining || "Estimated remaining"}:</p>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-2xl font-semibold text-zinc-900 dark:text-white">
                 {billing.usage.estimatedSlides}
               </p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">slides</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">{t.slides || "slides"}</p>
             </div>
             <div>
               <p className="text-2xl font-semibold text-zinc-900 dark:text-white">
                 {billing.usage.estimatedImages}
               </p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">AI images</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">{t.aiImages || "AI images"}</p>
             </div>
           </div>
         </div>
@@ -321,8 +325,8 @@ export default function BillingPage() {
         >
           <TrendingUp className="h-5 w-5 text-cyan-500 group-hover:text-cyan-600" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-zinc-900 dark:text-white">Upgrade</p>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">More credits</p>
+            <p className="text-sm font-medium text-zinc-900 dark:text-white">{t.upgrade || "Upgrade"}</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">{t.moreCredits || "More credits"}</p>
           </div>
           <ChevronRight className="h-4 w-4 text-zinc-400 group-hover:text-cyan-500" />
         </Link>
@@ -333,8 +337,8 @@ export default function BillingPage() {
         >
           <Zap className="h-5 w-5 text-blue-500 group-hover:text-blue-600" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-zinc-900 dark:text-white">Buy Credits</p>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">One-time</p>
+            <p className="text-sm font-medium text-zinc-900 dark:text-white">{t.buyCredits || "Buy Credits"}</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">{t.oneTime || "One-time"}</p>
           </div>
           <ChevronRight className="h-4 w-4 text-zinc-400 group-hover:text-blue-500" />
         </Link>
@@ -345,8 +349,8 @@ export default function BillingPage() {
         >
           <Clock className="h-5 w-5 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-zinc-900 dark:text-white">History</p>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">All activity</p>
+            <p className="text-sm font-medium text-zinc-900 dark:text-white">{t.history || "History"}</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">{t.allActivity || "All activity"}</p>
           </div>
           <ChevronRight className="h-4 w-4 text-zinc-400" />
         </Link>
@@ -358,7 +362,7 @@ export default function BillingPage() {
       {/* Plan Features */}
       {billing.planDetails && (
         <div className="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 p-6">
-          <h2 className="font-medium text-zinc-900 dark:text-white mb-4">Plan Features</h2>
+          <h2 className="font-medium text-zinc-900 dark:text-white mb-4">{t.planFeatures || "Plan Features"}</h2>
           <ul className="space-y-2">
             {billing.planDetails.features.map((feature, idx) => (
               <li key={idx} className="flex items-start gap-2 text-sm">
@@ -374,9 +378,9 @@ export default function BillingPage() {
       {activities.length > 0 && (
         <div className="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-medium text-zinc-900 dark:text-white">Recent Activity</h2>
+            <h2 className="font-medium text-zinc-900 dark:text-white">{t.recentActivity || "Recent Activity"}</h2>
             <Link href="/dashboard/activity" className="text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300">
-              View all
+              {t.viewAll || "View all"}
             </Link>
           </div>
 

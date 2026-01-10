@@ -1,31 +1,96 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import type React from "react";
+import { useState, useEffect, useRef } from "react";
 import { X, Check, Loader2, Sparkles } from "lucide-react";
 import { themes, type Theme, getSlideShapeStyles } from "~/lib/themes";
 import { getThemeThumbnailUrl } from "~/lib/themes/cloudinary";
 import { getModalColors } from "./ui-colors";
+import { useLanguage } from "~/contexts/LanguageContext";
+import { dashboardTranslations } from "~/lib/dashboard-translations";
 
 // All theme fonts for preview - loaded when sidebar opens
 const THEME_FONTS_URL = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Lato:wght@400;700&family=Cormorant+Garamond:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Nunito+Sans:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap";
+
+// Client-side cache for custom themes (persists across sidebar opens)
+const customThemesCache = {
+  data: null as CustomTheme[] | null,
+  timestamp: 0,
+  TTL: 5 * 60 * 1000, // 5 minutes
+  isValid() {
+    return this.data !== null && Date.now() - this.timestamp < this.TTL;
+  },
+  set(themes: CustomTheme[]) {
+    this.data = themes;
+    this.timestamp = Date.now();
+  },
+  get() {
+    return this.isValid() ? this.data : null;
+  },
+  invalidate() {
+    this.data = null;
+    this.timestamp = 0;
+  }
+};
+
+// Export for external invalidation (e.g., after creating a new theme)
+export function invalidateCustomThemesCache() {
+  customThemesCache.invalidate();
+}
 
 interface CustomTheme {
   id: string;
   name: string;
   colors: {
-    primary: string;
-    secondary: string;
-    background: string;
-    text: string;
-    accent: string;
+    mode?: string;
+    palette?: string;
+    custom?: {
+      primary: string;
+      secondary?: string;
+      background: string;
+      backgroundAlt?: string;
+      text: string;
+      heading?: string;
+      accent: string;
+    };
   };
+  fonts?: {
+    heading?: string;
+    body?: string;
+  };
+  designElements?: {
+    backgroundImageUrl?: string | null;
+    logoUrl?: string | null;
+    cardStyle?: string;
+  };
+}
+
+// Helper to resolve colors from custom theme data
+function resolveCustomThemeColors(theme: CustomTheme) {
+  const defaultColors = {
+    primary: "#3b82f6",
+    background: "#ffffff",
+    text: "#334155",
+    accent: "#06b6d4",
+  };
+  
+  if (theme.colors.custom) {
+    return {
+      primary: theme.colors.custom.primary || defaultColors.primary,
+      background: theme.colors.custom.background || defaultColors.background,
+      text: theme.colors.custom.text || defaultColors.text,
+      accent: theme.colors.custom.accent || defaultColors.accent,
+    };
+  }
+  
+  return defaultColors;
 }
 
 interface ThemeSidebarProps {
   isOpen: boolean;
   onClose: () => void;
   currentThemeId: string;
-  onThemeChange: (themeId: string) => void;
+  onThemeChange: (themeId: string, customThemeData?: CustomTheme) => void;
   presentationId: string;
   theme?: Theme;
 }
@@ -38,8 +103,12 @@ export function ThemeSidebar({
   presentationId,
   theme,
 }: ThemeSidebarProps) {
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language] || dashboardTranslations.en;
   const [customThemes, setCustomThemes] = useState<CustomTheme[]>([]);
+  const [isLoadingThemes, setIsLoadingThemes] = useState(false);
   const [changingTheme, setChangingTheme] = useState<string | null>(null);
+  const hasFetched = useRef(false);
 
   // Get theme-aware colors using the helper - use modalColors for ALL themes
   const modalColors = theme ? getModalColors(theme) : null;
@@ -76,21 +145,38 @@ export function ThemeSidebar({
     }
   }, [isOpen]);
 
-  // Fetch custom themes
+  // Fetch custom themes with caching
   useEffect(() => {
-    if (isOpen) {
-      fetch("/api/themes")
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.themes) {
-            setCustomThemes(data.themes);
-          }
-        })
-        .catch(console.error);
+    if (!isOpen) return;
+    
+    // Check cache first
+    const cached = customThemesCache.get();
+    if (cached) {
+      setCustomThemes(cached);
+      return;
     }
+    
+    // Prevent duplicate fetches
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+    
+    setIsLoadingThemes(true);
+    fetch("/api/themes")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.themes) {
+          setCustomThemes(data.themes);
+          customThemesCache.set(data.themes);
+        }
+      })
+      .catch(console.error)
+      .finally(() => {
+        setIsLoadingThemes(false);
+        hasFetched.current = false;
+      });
   }, [isOpen]);
 
-  const handleThemeSelect = async (themeId: string) => {
+  const handleThemeSelect = async (themeId: string, customThemeData?: CustomTheme) => {
     if (themeId === currentThemeId) return;
 
     setChangingTheme(themeId);
@@ -103,7 +189,8 @@ export function ThemeSidebar({
       });
 
       if (response.ok) {
-        onThemeChange(themeId);
+        // Pass custom theme data directly to avoid extra fetch
+        onThemeChange(themeId, customThemeData);
       }
     } catch (error) {
       console.error("Failed to change theme:", error);
@@ -137,7 +224,7 @@ export function ThemeSidebar({
         >
           <div className="flex items-center gap-2">
             <Sparkles size={18} style={{ color: colors.accent }} />
-            <h2 className="text-lg font-semibold" style={{ color: colors.text }}>Themes</h2>
+            <h2 className="text-lg font-semibold" style={{ color: colors.text }}>{t.themesTitle || "Themes"}</h2>
           </div>
           <button
             onClick={onClose}
@@ -164,43 +251,51 @@ export function ThemeSidebar({
               className="text-xs font-medium uppercase tracking-wider mb-3"
               style={{ color: colors.textMuted }}
             >
-              Built-in Themes
+              {t.builtInThemes || "Built-in Themes"}
             </h3>
             <div className="grid grid-cols-2 gap-3">
-              {themes.map((t) => (
+              {themes.map((thm) => (
                 <ThemeCard
-                  key={t.id}
-                  theme={t}
-                  isSelected={currentThemeId === t.id}
-                  isLoading={changingTheme === t.id}
-                  onClick={() => handleThemeSelect(t.id)}
+                  key={thm.id}
+                  theme={thm}
+                  isSelected={currentThemeId === thm.id}
+                  isLoading={changingTheme === thm.id}
+                  onClick={() => handleThemeSelect(thm.id)}
                   colors={colors}
+                  t={t}
                 />
               ))}
             </div>
           </div>
 
           {/* Custom Themes */}
-          {customThemes.length > 0 && (
+          {(customThemes.length > 0 || isLoadingThemes) && (
             <div>
               <h3 
                 className="text-xs font-medium uppercase tracking-wider mb-3"
                 style={{ color: colors.textMuted }}
               >
-                Your Custom Themes
+                {t.yourCustomThemes || "Your Custom Themes"}
               </h3>
-              <div className="grid grid-cols-2 gap-3">
-                {customThemes.map((t) => (
-                  <CustomThemeCard
-                    key={t.id}
-                    theme={t}
-                    isSelected={currentThemeId === `custom-${t.id}`}
-                    isLoading={changingTheme === `custom-${t.id}`}
-                    onClick={() => handleThemeSelect(`custom-${t.id}`)}
-                    colors={colors}
-                  />
-                ))}
-              </div>
+              {isLoadingThemes ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 size={20} className="animate-spin" style={{ color: colors.textMuted }} />
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  {customThemes.map((thm) => (
+                    <CustomThemeCard
+                      key={thm.id}
+                      theme={thm}
+                      isSelected={currentThemeId === `custom-${thm.id}`}
+                      isLoading={changingTheme === `custom-${thm.id}`}
+                      onClick={() => handleThemeSelect(`custom-${thm.id}`, thm)}
+                      colors={colors}
+                      t={t}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -225,18 +320,27 @@ function ThemeCard({
   isLoading,
   onClick,
   colors,
+  t,
 }: {
   theme: Theme;
   isSelected: boolean;
   isLoading: boolean;
   onClick: () => void;
   colors: ThemeColors;
+  t: Record<string, string>;
 }) {
   const hasBackgroundImage = !!theme.previewBackgroundImage || !!theme.backgroundImage;
   const bgImageUrl = theme.previewBackgroundImage || theme.backgroundImage;
   // Use optimized thumbnail URL for faster loading
   const optimizedBgUrl = bgImageUrl ? getThemeThumbnailUrl(bgImageUrl) : undefined;
   const slideShapeStyles = getSlideShapeStyles(theme.slideShape);
+  
+  // For custom themes, use the background color from colors, not preview.titleBg (which might be a URL)
+  const previewBgColor = hasBackgroundImage 
+    ? theme.colors.background 
+    : (typeof theme.preview?.titleBg === 'string' && !theme.preview.titleBg.startsWith('url(') 
+        ? theme.preview.titleBg 
+        : theme.colors.background);
   
   return (
     <button
@@ -261,7 +365,7 @@ function ThemeCard({
       <div
         className="aspect-[16/10] w-full relative overflow-hidden"
         style={{
-          backgroundColor: theme.preview?.titleBg || theme.colors.background,
+          backgroundColor: previewBgColor,
           backgroundImage: hasBackgroundImage
             ? `url(${optimizedBgUrl})`
             : theme.slideStyles?.title?.pattern || "none",
@@ -300,15 +404,15 @@ function ThemeCard({
               className="text-[10px] font-bold mb-0.5 truncate"
               style={{ color: theme.cardBox?.titleColor || theme.colors.heading, fontFamily: theme.fonts?.heading?.family || "inherit" }}
             >
-              Title
+              {t.titleText || "Title"}
             </div>
             <div className="flex items-center gap-0.5 text-[8px]">
-              <span style={{ color: theme.cardBox?.bodyColor || theme.colors.text }}>Body &</span>
+              <span style={{ color: theme.cardBox?.bodyColor || theme.colors.text }}>{t.bodyText || "Body"} &</span>
               <span 
                 className="underline"
                 style={{ color: theme.cardBox?.accentColor || theme.colors.accent || theme.colors.primary }}
               >
-                link
+                {t.linkText || "link"}
               </span>
             </div>
           </div>
@@ -340,13 +444,52 @@ function CustomThemeCard({
   isLoading,
   onClick,
   colors,
+  t,
 }: {
   theme: CustomTheme;
   isSelected: boolean;
   isLoading: boolean;
   onClick: () => void;
   colors: ThemeColors;
+  t: Record<string, string>;
 }) {
+  const hasBackgroundImage = !!theme.designElements?.backgroundImageUrl;
+  const bgImageUrl = theme.designElements?.backgroundImageUrl;
+  const themeColors = resolveCustomThemeColors(theme);
+  const cardStyle = theme.designElements?.cardStyle || "standard";
+
+  // Get slide shape styles - must match CustomThemeCreator preview exactly
+  const getCustomSlideShapeStyles = (): React.CSSProperties => {
+    switch (cardStyle) {
+      case "standard":
+        return { borderRadius: "0.75rem", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.2)" };
+      case "flat":
+        return { borderRadius: "0", boxShadow: "none", border: `2px solid ${themeColors.primary}30` };
+      case "outline":
+        return { borderRadius: "0", boxShadow: "none", border: `3px solid ${themeColors.primary}` };
+      case "outline-rounded":
+        return { borderRadius: "1.5rem", boxShadow: "none", border: `3px solid ${themeColors.primary}` };
+      case "sharp":
+        return { borderRadius: "0", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)" };
+      case "blocky":
+        return { borderRadius: "0", boxShadow: `8px 8px 0px 0px ${themeColors.primary}` };
+      case "blocky-rounded":
+        return { borderRadius: "1.5rem", boxShadow: `8px 8px 0px 0px ${themeColors.primary}` };
+      case "glass":
+        return { borderRadius: "1rem", boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)", border: `1px solid ${themeColors.primary}20` };
+      case "rounded":
+        return { borderRadius: "1.5rem", boxShadow: "0 20px 40px -10px rgba(0, 0, 0, 0.2)" };
+      case "soft-cloud":
+        return { borderRadius: "1.25rem", boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)" };
+      case "capsule":
+        return { borderRadius: "2.5rem", boxShadow: "0 15px 30px -8px rgba(0, 0, 0, 0.2)" };
+      default:
+        return { borderRadius: "0.75rem", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.2)" };
+    }
+  };
+
+  const slideShapeStyles = getCustomSlideShapeStyles();
+  
   return (
     <button
       onClick={onClick}
@@ -369,36 +512,56 @@ function CustomThemeCard({
       {/* Theme Preview - fills entire card area */}
       <div
         className="aspect-[16/10] w-full relative overflow-hidden"
-        style={{ backgroundColor: theme.colors.background }}
+        style={{ 
+          backgroundColor: themeColors.background,
+          backgroundImage: hasBackgroundImage ? `url(${bgImageUrl})` : undefined,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
       >
-        {/* Content card centered */}
+        {/* Overlay for background images */}
+        {hasBackgroundImage && (
+          <div
+            className="absolute inset-0"
+            style={{ background: "rgba(0,0,0,0.25)" }}
+          />
+        )}
+        
+        {/* Content card centered - SHAPE APPLIED HERE */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div
-            className="rounded-md p-2.5 backdrop-blur-md w-[85%] h-[75%] flex flex-col justify-center"
+            className={`backdrop-blur-md flex flex-col justify-center overflow-hidden ${
+              hasBackgroundImage ? "w-[70%] h-[60%] p-2" : "w-[85%] h-[75%] p-2.5"
+            }`}
             style={{
-              backgroundColor: `${theme.colors.background}ee`,
-              border: `1px solid ${theme.colors.primary}40`,
+              backgroundColor: hasBackgroundImage 
+                ? `${themeColors.background}e8`
+                : `${themeColors.background}ee`,
+              border: cardStyle === "flat" || cardStyle === "outline" || cardStyle === "outline-rounded" || cardStyle === "glass" 
+                ? undefined // Border is set in slideShapeStyles
+                : `1px solid ${themeColors.primary}40`,
+              ...slideShapeStyles,
             }}
           >
             <div
               className="text-sm font-bold mb-1 truncate"
-              style={{ color: theme.colors.text }}
+              style={{ color: themeColors.text }}
             >
-              Title
+              {t.titleText || "Title"}
             </div>
             <div
               className="text-xs font-medium flex items-center gap-1"
-              style={{ color: theme.colors.text }}
+              style={{ color: themeColors.text }}
             >
-              Body &{" "}
+              {t.bodyText || "Body"} &{" "}
               <span
                 className="underline decoration-1 underline-offset-1"
                 style={{
-                  color: theme.colors.accent,
-                  textDecorationColor: theme.colors.accent,
+                  color: themeColors.accent,
+                  textDecorationColor: themeColors.accent,
                 }}
               >
-                link
+                {t.linkText || "link"}
               </span>
             </div>
           </div>
@@ -407,7 +570,7 @@ function CustomThemeCard({
         {/* Custom badge */}
         <div className="absolute top-1.5 left-1.5 flex items-center gap-0.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 px-1.5 py-0.5">
           <Sparkles size={8} className="text-white" />
-          <span className="text-[8px] font-bold text-white">Custom</span>
+          <span className="text-[8px] font-bold text-white">{t.customBadge || "Custom"}</span>
         </div>
       </div>
 

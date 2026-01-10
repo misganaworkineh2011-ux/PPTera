@@ -6,6 +6,8 @@ import { X, Globe, Lock, CheckCircle2, Copy, Link2, Users, ChevronDown, Mail, Us
 import { toast } from "sonner";
 import type { Theme } from "~/lib/themes";
 import { getModalColors } from "~/app/presentation/[slug]/components/ui-colors";
+import { useLanguage } from "~/contexts/LanguageContext";
+import { dashboardTranslations } from "~/lib/dashboard-translations";
 
 interface Collaborator {
   id: string;
@@ -36,6 +38,10 @@ export default function ShareModal({
   theme
 }: ShareModalProps) {
   const [activeTab, setActiveTab] = useState<"collaborate" | "share" | "export" | "embed">("share");
+
+  // Get translations
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language] || dashboardTranslations.en;
 
   // Get modal colors using the helper
   const modalColors = theme ? getModalColors(theme) : null;
@@ -72,7 +78,7 @@ export default function ShareModal({
               <Link2 size={18} className="sm:hidden" style={{ color: primaryColor }} />
               <Link2 size={20} className="hidden sm:block" style={{ color: primaryColor }} />
             </div>
-            <h2 className="text-lg sm:text-xl font-bold" style={{ color: headingColor }}>Share Presentation</h2>
+            <h2 className="text-lg sm:text-xl font-bold" style={{ color: headingColor }}>{t.sharePresentation || "Share Presentation"}</h2>
           </div>
           <button
             onClick={onClose}
@@ -99,8 +105,8 @@ export default function ShareModal({
             }}
           >
             <Users size={16} className="sm:w-[18px] sm:h-[18px]" />
-            <span className="hidden xs:inline">Collaborate</span>
-            <span className="xs:hidden">Collab</span>
+            <span className="hidden xs:inline">{t.collaborate || "Collaborate"}</span>
+            <span className="xs:hidden">{t.collaborate || "Collab"}</span>
           </button>
           <button
             onClick={() => setActiveTab("share")}
@@ -111,7 +117,7 @@ export default function ShareModal({
             }}
           >
             <Globe size={16} className="sm:w-[18px] sm:h-[18px]" />
-            Share
+            {t.shareTab || "Share"}
           </button>
           <button
             onClick={() => setActiveTab("export")}
@@ -126,7 +132,7 @@ export default function ShareModal({
               <polyline points="7 10 12 15 17 10" />
               <line x1="12" y1="15" x2="12" y2="3" />
             </svg>
-            Export
+            {t.exportTab || "Export"}
           </button>
           <button
             onClick={() => setActiveTab("embed")}
@@ -140,7 +146,7 @@ export default function ShareModal({
               <polyline points="16 18 22 12 16 6" />
               <polyline points="8 6 2 12 8 18" />
             </svg>
-            Embed
+            {t.embedTab || "Embed"}
           </button>
         </div>
 
@@ -170,6 +176,10 @@ function ExportTab({ presentationId, theme, onExportStart }: { presentationId: s
     parseInt(theme.colors.background.slice(1, 3), 16) < 128;
   
   const primaryColor = theme?.colors.primary || "#06b6d4";
+  
+  // Get translations
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language] || dashboardTranslations.en;
   
   const colors = isDark ? {
     text: "#fafafa",
@@ -220,9 +230,9 @@ function ExportTab({ presentationId, theme, onExportStart }: { presentationId: s
   );
 
   const formats = [
-    { id: "pptx" as const, Icon: PowerPointIcon, label: "PowerPoint", ext: ".pptx" },
-    { id: "pdf" as const, Icon: PDFIcon, label: "PDF", ext: ".pdf" },
-    { id: "images" as const, Icon: ImagesIcon, label: "Images", ext: ".zip" },
+    { id: "pptx" as const, Icon: PowerPointIcon, label: t.powerpoint || "PowerPoint", ext: ".pptx" },
+    { id: "pdf" as const, Icon: PDFIcon, label: t.pdf || "PDF", ext: ".pdf" },
+    { id: "images" as const, Icon: ImagesIcon, label: t.imagesZip || "Images", ext: ".zip" },
   ];
 
   const handleExport = async () => {
@@ -235,7 +245,7 @@ function ExportTab({ presentationId, theme, onExportStart }: { presentationId: s
       params.set("range", "all");
 
       const exportUrl = `/api/presentations/${presentationId}/export?${params.toString()}`;
-      toast.info(`Preparing ${selectedFormat.toUpperCase()} export...`);
+      toast.info(`${t.preparingExport || "Preparing export"}...`);
 
       const response = await fetch(exportUrl);
       
@@ -265,7 +275,7 @@ function ExportTab({ presentationId, theme, onExportStart }: { presentationId: s
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      toast.success("Export complete!");
+      toast.success(t.exportCompleteMsg || "Export complete!");
     } catch (error) {
       console.error("Export failed:", error);
       toast.error(error instanceof Error ? error.message : "Export failed");
@@ -277,13 +287,13 @@ function ExportTab({ presentationId, theme, onExportStart }: { presentationId: s
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold mb-2" style={{ color: colors.heading }}>Export Presentation</h3>
-        <p className="text-sm" style={{ color: colors.textMuted }}>Download your presentation in various formats</p>
+        <h3 className="text-lg font-semibold mb-2" style={{ color: colors.heading }}>{t.exportPresentationTitle || "Export Presentation"}</h3>
+        <p className="text-sm" style={{ color: colors.textMuted }}>{t.downloadInFormats || "Download your presentation in various formats"}</p>
       </div>
 
       {/* Format Selection - Grid like ExportModal */}
       <div>
-        <label className="text-sm font-medium mb-3 block" style={{ color: colors.textMuted }}>Format</label>
+        <label className="text-sm font-medium mb-3 block" style={{ color: colors.textMuted }}>{t.formatLabel || "Format"}</label>
         <div className="grid grid-cols-3 gap-3">
           {formats.map((fmt) => (
             <button
@@ -315,7 +325,7 @@ function ExportTab({ presentationId, theme, onExportStart }: { presentationId: s
           {isExporting ? (
             <>
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              Exporting...
+              {t.exportingStatus || "Exporting..."}
             </>
           ) : (
             <>
@@ -324,7 +334,7 @@ function ExportTab({ presentationId, theme, onExportStart }: { presentationId: s
                 <polyline points="7 10 12 15 17 10" />
                 <line x1="12" y1="15" x2="12" y2="3" />
               </svg>
-              Export
+              {t.exportBtn || "Export"}
             </>
           )}
         </button>
@@ -339,6 +349,10 @@ function EmbedTab({ presentationId, theme }: { presentationId: string; theme?: T
   const [width, setWidth] = useState(960);
   const [height, setHeight] = useState(540);
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+
+  // Get translations
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language] || dashboardTranslations.en;
 
   const embedCode = embedSize === "responsive"
     ? `<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;max-width:100%;">
@@ -387,20 +401,20 @@ function EmbedTab({ presentationId, theme }: { presentationId: string; theme?: T
   const copyEmbedCode = () => {
     navigator.clipboard.writeText(embedCode);
     setCopied(true);
-    toast.success("Embed code copied!");
+    toast.success(t.copiedStatus || "Copied!");
     setTimeout(() => setCopied(false), 2000);
   };
 
   return (
     <div className="space-y-4 sm:space-y-6">
       <div>
-        <h3 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2" style={{ color: colors.heading }}>Embed Presentation</h3>
-        <p className="text-xs sm:text-sm" style={{ color: colors.textMuted }}>Add this presentation to your website or blog</p>
+        <h3 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2" style={{ color: colors.heading }}>{t.embedPresentation || "Embed Presentation"}</h3>
+        <p className="text-xs sm:text-sm" style={{ color: colors.textMuted }}>{t.addToWebsite || "Add this presentation to your website or blog"}</p>
       </div>
 
       {/* Size Options */}
       <div className="space-y-2 sm:space-y-3">
-        <label className="text-xs sm:text-sm font-semibold" style={{ color: colors.text }}>Embed Size</label>
+        <label className="text-xs sm:text-sm font-semibold" style={{ color: colors.text }}>{t.embedSize || "Embed Size"}</label>
         <div className="flex gap-2">
           <button
             onClick={() => setEmbedSize("responsive")}
@@ -411,7 +425,7 @@ function EmbedTab({ presentationId, theme }: { presentationId: string; theme?: T
               borderColor: embedSize === "responsive" ? colors.activeBtnBorder : colors.inactiveBtnBorder,
             }}
           >
-            Responsive
+            {t.responsive || "Responsive"}
           </button>
           <button
             onClick={() => setEmbedSize("fixed")}
@@ -422,14 +436,14 @@ function EmbedTab({ presentationId, theme }: { presentationId: string; theme?: T
               borderColor: embedSize === "fixed" ? colors.activeBtnBorder : colors.inactiveBtnBorder,
             }}
           >
-            Fixed Size
+            {t.fixedSize || "Fixed Size"}
           </button>
         </div>
 
         {embedSize === "fixed" && (
           <div className="flex gap-2 sm:gap-3 mt-2 sm:mt-3">
             <div className="flex-1">
-              <label className="text-xs mb-1 block" style={{ color: colors.textMuted }}>Width (px)</label>
+              <label className="text-xs mb-1 block" style={{ color: colors.textMuted }}>{t.widthPx || "Width (px)"}</label>
               <input
                 type="number"
                 value={width}
@@ -443,7 +457,7 @@ function EmbedTab({ presentationId, theme }: { presentationId: string; theme?: T
               />
             </div>
             <div className="flex-1">
-              <label className="text-xs mb-1 block" style={{ color: colors.textMuted }}>Height (px)</label>
+              <label className="text-xs mb-1 block" style={{ color: colors.textMuted }}>{t.heightPx || "Height (px)"}</label>
               <input
                 type="number"
                 value={height}
@@ -465,7 +479,7 @@ function EmbedTab({ presentationId, theme }: { presentationId: string; theme?: T
         className="rounded-xl border-2 p-2 sm:p-4"
         style={{ borderColor: colors.border, backgroundColor: colors.cardBg }}
       >
-        <p className="text-xs font-semibold mb-2 sm:mb-3 uppercase tracking-wide" style={{ color: colors.textMuted }}>Preview</p>
+        <p className="text-xs font-semibold mb-2 sm:mb-3 uppercase tracking-wide" style={{ color: colors.textMuted }}>{t.previewLabel || "Preview"}</p>
         <div 
           className="aspect-video rounded-lg border overflow-hidden"
           style={{ borderColor: colors.border, backgroundColor: isDark ? "#18181b" : "#ffffff" }}
@@ -481,7 +495,7 @@ function EmbedTab({ presentationId, theme }: { presentationId: string; theme?: T
 
       {/* Embed Code */}
       <div className="space-y-2 sm:space-y-3">
-        <label className="text-xs sm:text-sm font-semibold" style={{ color: colors.text }}>Embed Code</label>
+        <label className="text-xs sm:text-sm font-semibold" style={{ color: colors.text }}>{t.embedCodeLabel || "Embed Code"}</label>
         <div className="relative">
           <pre 
             className="w-full rounded-xl border px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-mono overflow-x-auto whitespace-pre-wrap break-all max-h-32 sm:max-h-40 overflow-y-auto"
@@ -503,7 +517,7 @@ function EmbedTab({ presentationId, theme }: { presentationId: string; theme?: T
             }}
           >
             {copied ? <CheckCircle2 size={14} className="sm:w-4 sm:h-4" /> : <Copy size={14} className="sm:w-4 sm:h-4" />}
-            <span className="hidden sm:inline">{copied ? "Copied!" : "Copy"}</span>
+            <span className="hidden sm:inline">{copied ? (t.copiedStatus || "Copied!") : (t.copy || "Copy")}</span>
           </button>
         </div>
         <p 
@@ -515,7 +529,7 @@ function EmbedTab({ presentationId, theme }: { presentationId: string; theme?: T
             color: colors.textMuted,
           }}
         >
-          💡 Paste this code into your website&apos;s HTML to embed the presentation
+          💡 {t.pasteIntoHtml || "Paste this code into your website's HTML to embed the presentation"}
         </p>
       </div>
     </div>
@@ -543,6 +557,10 @@ function ShareTab({
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteMessage, setInviteMessage] = useState("");
   const [sendingInvite, setSendingInvite] = useState(false);
+
+  // Get translations
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language] || dashboardTranslations.en;
 
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
   const shareUrl = shareToken ? `${baseUrl}/share/${shareToken}` : "";
@@ -624,16 +642,58 @@ function ShareTab({
   const copyToClipboard = () => {
     navigator.clipboard.writeText(shareUrl);
     setCopied(true);
-    toast.success("Link copied!");
+    toast.success(t.linkCopied || "Link copied!");
     setTimeout(() => setCopied(false), 2000);
   };
 
+<<<<<<< HEAD
   const handleSendEmailInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inviteEmail.trim()) {
       toast.error("Please enter an email address");
       return;
     }
+=======
+  return (
+    <div className="space-y-6">
+      {/* View Analytics Section */}
+      <div 
+        className="flex items-center justify-between py-4"
+        style={{ borderBottom: `1px solid ${colors.border}` }}
+      >
+        <div className="flex items-center gap-3">
+          <div 
+            className="w-10 h-10 rounded-lg flex items-center justify-center"
+            style={{ backgroundColor: colors.iconBg }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: colors.iconColor }}>
+              <path d="M18 20V10" />
+              <path d="M12 20V4" />
+              <path d="M6 20v-6" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-sm font-semibold" style={{ color: colors.text }}>{t.viewAnalytics || "View analytics"}</p>
+            <p className="text-xs" style={{ color: colors.textMuted }}>{t.anyoneCanView || "Anyone can view, but not comment or edit."}</p>
+          </div>
+        </div>
+        <button
+          onClick={copyToClipboard}
+          disabled={!isPublic || !shareUrl}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all border"
+          style={{
+            backgroundColor: copied ? colors.successBg : (isPublic && shareUrl ? colors.cardBg : colors.lockBg),
+            color: copied ? colors.successText : (isPublic && shareUrl ? colors.text : colors.textMuted),
+            borderColor: copied ? colors.successBorder : colors.border,
+            cursor: !isPublic || !shareUrl ? "not-allowed" : "pointer",
+            opacity: !isPublic || !shareUrl ? 0.6 : 1,
+          }}
+        >
+          <Link2 size={16} />
+          {copied ? (t.copiedStatus || "Copied!") : (t.copyLink || "Copy link")}
+        </button>
+      </div>
+>>>>>>> c91d68ad8ff760ccef9d199887a4e2bd016f0d1c
 
     setSendingInvite(true);
     try {
@@ -683,8 +743,8 @@ function ShareTab({
               <Globe style={{ color: colors.successIconColor }} size={20} />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold" style={{ color: colors.successText }}>Public link active</p>
-              <p className="text-xs mt-0.5" style={{ color: colors.successTextMuted }}>Anyone with the link can view this presentation</p>
+              <p className="text-sm font-semibold" style={{ color: colors.successText }}>{t.publicLinkActive || "Public link active"}</p>
+              <p className="text-xs mt-0.5" style={{ color: colors.successTextMuted }}>{t.anyoneWithLinkCanView || "Anyone with the link can view this presentation"}</p>
             </div>
             <button
               onClick={handleTogglePublic}
@@ -694,12 +754,17 @@ function ShareTab({
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.successIconBg}
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             >
-              Disable
+              {t.disableLink || "Disable"}
             </button>
           </div>
 
+<<<<<<< HEAD
           {/* Share Link Input */}
           <div className="space-y-3">
+=======
+          <div className="space-y-2">
+            <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: colors.textMuted }}>{t.shareLinkLabel || "Share Link"}</label>
+>>>>>>> c91d68ad8ff760ccef9d199887a4e2bd016f0d1c
             <div className="flex items-center gap-2">
               <div className="flex-1 relative">
                 <input
@@ -810,9 +875,9 @@ function ShareTab({
           >
             <Lock style={{ color: colors.lockIconColor }} size={28} />
           </div>
-          <p className="font-semibold mb-2" style={{ color: colors.text }}>Link sharing is off</p>
+          <p className="font-semibold mb-2" style={{ color: colors.text }}>{t.linkSharingDisabled || "Link sharing is off"}</p>
           <p className="text-sm mb-4" style={{ color: colors.textMuted }}>
-            Enable link sharing to let anyone with the link view this presentation
+            {t.enableToShare || "Enable link sharing to let anyone with the link view this presentation"}
           </p>
           <button
             onClick={handleTogglePublic}
@@ -822,7 +887,7 @@ function ShareTab({
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.btnHoverBg}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = colors.btnBg}
           >
-            {loading ? "Enabling..." : "Enable link sharing"}
+            {loading ? "Enabling..." : (t.enableLinkSharing || "Enable link sharing")}
           </button>
         </div>
       )}

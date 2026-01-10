@@ -4,6 +4,8 @@ import { createPortal } from "react-dom";
 import { X, Lock, Sparkles, ArrowRight } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { useState, useEffect } from "react";
+import { useLanguage } from "~/contexts/LanguageContext";
+import { dashboardTranslations } from "~/lib/dashboard-translations";
 
 type PolarProduct = {
   key: string;
@@ -55,6 +57,8 @@ export default function UpgradeModal({
   const [isNavigating, setIsNavigating] = useState(false);
   const [products, setProducts] = useState<PolarProduct[]>([]);
   const [loadingPrices, setLoadingPrices] = useState(false);
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language] || dashboardTranslations.en;
   
   // Reset navigation state when modal opens
   useEffect(() => {
@@ -117,8 +121,8 @@ export default function UpgradeModal({
               <Lock className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-white">Upgrade Required</h2>
-              <p className="text-white/80 text-sm">Unlock premium features</p>
+              <h2 className="text-2xl font-bold text-white">{t.upgradeRequired || "Upgrade Required"}</h2>
+              <p className="text-white/80 text-sm">{t.unlockPremiumFeatures || "Unlock premium features"}</p>
             </div>
           </div>
         </div>
@@ -134,10 +138,10 @@ export default function UpgradeModal({
             </div>
             
             <p className="text-slate-600 dark:text-neutral-400 leading-relaxed">
-              {description || `This feature requires a ${planInfo.name} plan or higher.`}
+              {description || (t.featureRequiresPlan || "This feature requires a {plan} plan or higher.").replace("{plan}", planInfo.name)}
               {currentPlanLower && currentPlanLower !== 'free' && (
                 <span className="block mt-2 text-sm">
-                  You're currently on the <span className="font-semibold capitalize">{currentPlanLower}</span> plan.
+                  {(t.currentlyOnPlan || "You're currently on the {plan} plan.").replace("{plan}", currentPlanLower)}
                 </span>
               )}
             </p>
@@ -147,7 +151,7 @@ export default function UpgradeModal({
           <div className="mb-6 p-4 rounded-xl border-2 border-slate-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800/50">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                {planInfo.name} Plan
+                {planInfo.name} {t.plan || "Plan"}
               </h3>
               <div className="text-right">
                 {loadingPrices ? (
@@ -156,10 +160,10 @@ export default function UpgradeModal({
                   <>
                     <div className="text-2xl font-bold text-slate-900 dark:text-white">
                       ${yearlyMonthly ?? '—'}
-                      <span className="text-sm font-normal text-slate-500 dark:text-neutral-400">/mo</span>
+                      <span className="text-sm font-normal text-slate-500 dark:text-neutral-400">{t.perMonth || "/mo"}</span>
                     </div>
                     <div className="text-xs text-slate-500 dark:text-neutral-500">
-                      billed annually
+                      {t.billedAnnually || "billed annually"}
                     </div>
                   </>
                 )}
@@ -185,7 +189,7 @@ export default function UpgradeModal({
               onClick={onClose}
               className="flex-1 px-4 py-2.5 rounded-lg border-2 border-slate-200 dark:border-neutral-700 text-slate-700 dark:text-neutral-300 font-semibold hover:bg-slate-50 dark:hover:bg-neutral-800 transition"
             >
-              Maybe Later
+              {t.maybeLater || "Maybe Later"}
             </button>
             <button
               onClick={handleUpgrade}
@@ -196,7 +200,7 @@ export default function UpgradeModal({
                 <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  View Plans
+                  {t.viewPlans || "View Plans"}
                   <ArrowRight className="h-4 w-4" />
                 </>
               )}

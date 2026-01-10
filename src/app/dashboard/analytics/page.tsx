@@ -15,6 +15,8 @@ import {
 import Link from "next/link";
 import { cn, getPresentationUrl } from "~/lib/utils";
 import DashboardStickyHeader from "~/components/dashboard/DashboardStickyHeader";
+import { useLanguage } from "~/contexts/LanguageContext";
+import { dashboardTranslations } from "~/lib/dashboard-translations";
 
 interface AnalyticsData {
   overview: {
@@ -48,6 +50,8 @@ interface AnalyticsData {
 }
 
 export default function AnalyticsPage() {
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language] || dashboardTranslations.en;
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -77,10 +81,10 @@ export default function AnalyticsPage() {
         {/* Header - static with sticky behavior */}
         <DashboardStickyHeader
           icon={<BarChart3 size={22} />}
-          title="Analytics"
-          subtitle="Track your presentation performance"
+          title={t.analytics || "Analytics"}
+          subtitle={t.trackPerformance || "Track your presentation performance"}
           stickyIcon={<BarChart3 size={18} />}
-          stickyTitle="Analytics"
+          stickyTitle={t.analytics || "Analytics"}
           actions={
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-slate-400" />
@@ -89,9 +93,9 @@ export default function AnalyticsPage() {
                 onChange={(e) => setPeriod(Number(e.target.value))}
                 className="px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-sm"
               >
-                <option value={7}>Last 7 days</option>
-                <option value={30}>Last 30 days</option>
-                <option value={90}>Last 90 days</option>
+                <option value={7}>{t.last7Days || "Last 7 days"}</option>
+                <option value={30}>{t.last30Days || "Last 30 days"}</option>
+                <option value={90}>{t.last90Days || "Last 90 days"}</option>
               </select>
             </div>
           }
@@ -164,7 +168,7 @@ export default function AnalyticsPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
         <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
-        <p className="text-slate-600">{error || "Something went wrong"}</p>
+        <p className="text-slate-600">{error || t.somethingWentWrong || "Something went wrong"}</p>
       </div>
     );
   }
@@ -179,10 +183,10 @@ export default function AnalyticsPage() {
       {/* Header with sticky behavior */}
       <DashboardStickyHeader
         icon={<BarChart3 size={22} />}
-        title="Analytics"
-        subtitle="Track your presentation performance"
+        title={t.analytics || "Analytics"}
+        subtitle={t.trackPerformance || "Track your presentation performance"}
         stickyIcon={<BarChart3 size={18} />}
-        stickyTitle="Analytics"
+        stickyTitle={t.analytics || "Analytics"}
         actions={
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-slate-400" />
@@ -191,9 +195,9 @@ export default function AnalyticsPage() {
               onChange={(e) => setPeriod(Number(e.target.value))}
               className="px-3 py-2 rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-sm"
             >
-              <option value={7}>Last 7 days</option>
-              <option value={30}>Last 30 days</option>
-              <option value={90}>Last 90 days</option>
+              <option value={7}>{t.last7Days || "Last 7 days"}</option>
+              <option value={30}>{t.last30Days || "Last 30 days"}</option>
+              <option value={90}>{t.last90Days || "Last 90 days"}</option>
             </select>
           </div>
         }
@@ -224,7 +228,7 @@ export default function AnalyticsPage() {
             {data.overview.totalPresentations}
           </p>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400">
-            Total Presentations
+            {t.totalPresentations || "Total Presentations"}
           </p>
         </div>
 
@@ -238,7 +242,7 @@ export default function AnalyticsPage() {
             {data.overview.totalSlides}
           </p>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400">
-            Total Slides
+            {t.totalSlides || "Total Slides"}
           </p>
         </div>
 
@@ -252,7 +256,7 @@ export default function AnalyticsPage() {
             {data.overview.totalViews}
           </p>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400">
-            Total Views
+            {t.totalViews || "Total Views"}
           </p>
         </div>
 
@@ -266,7 +270,7 @@ export default function AnalyticsPage() {
             {data.overview.avgSlidesPerPresentation}
           </p>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400">
-            Avg Slides/Presentation
+            {t.avgSlidesPerPresentation || "Avg Slides/Presentation"}
           </p>
         </div>
       </div>
@@ -274,7 +278,7 @@ export default function AnalyticsPage() {
       {/* Activity Chart */}
       <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-slate-200 dark:border-neutral-800 p-4 sm:p-6">
         <h3 className="font-semibold text-slate-900 dark:text-white mb-4 sm:mb-6">
-          Activity Over Time
+          {t.activityOverTime || "Activity Over Time"}
         </h3>
         <div className="h-40 sm:h-48 flex items-end gap-[2px] sm:gap-1 overflow-x-auto">
           {data.dailyActivity.map((day, idx) => {
@@ -308,7 +312,7 @@ export default function AnalyticsPage() {
         {/* Top Presentations */}
         <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-slate-200 dark:border-neutral-800 p-4 sm:p-6">
           <h3 className="font-semibold text-slate-900 dark:text-white mb-4">
-            Top Presentations
+            {t.topPresentations || "Top Presentations"}
           </h3>
           {data.topPresentations.length > 0 ? (
             <div className="space-y-2 sm:space-y-3">
@@ -326,7 +330,7 @@ export default function AnalyticsPage() {
                       {pres.title}
                     </p>
                     <p className="text-xs text-slate-500">
-                      {pres.slides} slides • {new Date(pres.createdAt).toLocaleDateString()}
+                      {pres.slides} {t.slides || "slides"} • {new Date(pres.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                   <div className="flex items-center gap-1 text-xs sm:text-sm text-slate-500 shrink-0">
@@ -339,7 +343,7 @@ export default function AnalyticsPage() {
             </div>
           ) : (
             <p className="text-center text-slate-500 py-8">
-              No presentations yet
+              {t.noPresentationsYet || "No presentations yet"}
             </p>
           )}
         </div>
@@ -347,7 +351,7 @@ export default function AnalyticsPage() {
         {/* Activity Breakdown */}
         <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-slate-200 dark:border-neutral-800 p-4 sm:p-6">
           <h3 className="font-semibold text-slate-900 dark:text-white mb-4">
-            Activity Breakdown
+            {t.activityBreakdown || "Activity Breakdown"}
           </h3>
           {Object.keys(data.activityBreakdown).length > 0 ? (
             <div className="space-y-3 sm:space-y-4">
@@ -376,7 +380,7 @@ export default function AnalyticsPage() {
             </div>
           ) : (
             <p className="text-center text-slate-500 py-8">
-              No activity in this period
+              {t.noActivityInPeriod || "No activity in this period"}
             </p>
           )}
         </div>
@@ -387,17 +391,17 @@ export default function AnalyticsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div>
             <h3 className="text-base sm:text-lg font-semibold mb-1">
-              {data.overview.recentPresentations} presentations created
+              {data.overview.recentPresentations} {t.presentationsCreated || "presentations created"}
             </h3>
             <p className="text-white/70 text-xs sm:text-sm">
-              in the last {period} days
+              {t.inTheLast || "in the last"} {period} {t.daysAgo || "days"}
             </p>
           </div>
           <Link
             href="/createpresentation"
             className="px-4 py-2 bg-white text-[#1e3a8a] rounded-xl font-semibold hover:bg-slate-100 transition text-center text-sm sm:text-base w-full sm:w-auto"
           >
-            Create New
+            {t.createNew || "Create New"}
           </Link>
         </div>
       </div>

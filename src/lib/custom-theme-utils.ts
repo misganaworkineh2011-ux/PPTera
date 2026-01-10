@@ -74,7 +74,7 @@ export function convertCustomThemeToTheme(dbTheme: {
   id: string;
   name: string;
   colors: any;
-  fonts: any;
+  fonts?: any;
   designElements?: any;
 }): Theme {
   // Try to get colors from custom field first, then fall back to curated palette
@@ -103,6 +103,12 @@ export function convertCustomThemeToTheme(dbTheme: {
   const headingFont = fontFamilyMap[dbTheme.fonts?.heading] || "'Inter', sans-serif";
   const bodyFont = fontFamilyMap[dbTheme.fonts?.body] || "'Inter', sans-serif";
   
+  // Get design elements (cardStyle, backgroundImageUrl, logoUrl)
+  const designElements = dbTheme.designElements || {};
+  const cardStyle = designElements.cardStyle || "standard";
+  const backgroundImageUrl = designElements.backgroundImageUrl || null;
+  const logoUrl = designElements.logoUrl || null;
+  
   // Determine if this is a dark theme
   const isDark = isColorDark(colors.background);
   
@@ -118,6 +124,23 @@ export function convertCustomThemeToTheme(dbTheme: {
   const shadowSmall = isDark ? "0 2px 8px rgba(0, 0, 0, 0.3)" : "0 2px 8px rgba(0, 0, 0, 0.1)";
   const shadowMedium = isDark ? "0 8px 24px rgba(0, 0, 0, 0.4)" : "0 8px 24px rgba(0, 0, 0, 0.15)";
   const shadowLarge = isDark ? "0 16px 48px rgba(0, 0, 0, 0.5)" : "0 16px 48px rgba(0, 0, 0, 0.2)";
+  
+  // Map cardStyle to border radius and shadow - MUST match CustomThemeCreator preview exactly
+  const cardStyleMap: Record<string, { borderRadius: string; shadow: string; border?: string }> = {
+    standard: { borderRadius: "0.75rem", shadow: "0 10px 25px -5px rgba(0, 0, 0, 0.2)" },
+    flat: { borderRadius: "0", shadow: "none", border: `2px solid ${colors.primary}30` },
+    outline: { borderRadius: "0", shadow: "none", border: `3px solid ${colors.primary}` },
+    "outline-rounded": { borderRadius: "1.5rem", shadow: "none", border: `3px solid ${colors.primary}` },
+    sharp: { borderRadius: "0", shadow: "0 4px 12px rgba(0, 0, 0, 0.15)" },
+    blocky: { borderRadius: "0", shadow: `8px 8px 0px 0px ${colors.primary}` },
+    "blocky-rounded": { borderRadius: "1.5rem", shadow: `8px 8px 0px 0px ${colors.primary}` },
+    glass: { borderRadius: "1rem", shadow: "0 8px 32px rgba(0, 0, 0, 0.1)", border: `1px solid ${colors.primary}20` },
+    rounded: { borderRadius: "1.5rem", shadow: "0 20px 40px -10px rgba(0, 0, 0, 0.2)" },
+    "soft-cloud": { borderRadius: "1.25rem", shadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)" },
+    capsule: { borderRadius: "2.5rem", shadow: "0 15px 30px -8px rgba(0, 0, 0, 0.2)" },
+  };
+  
+  const cardConfig = cardStyleMap[cardStyle] ?? cardStyleMap.standard!;
 
   return {
     id: `custom-${dbTheme.id}`,
@@ -128,8 +151,10 @@ export function convertCustomThemeToTheme(dbTheme: {
       background: colors.background,
       backgroundAlt: colors.backgroundAlt,
       surface: colors.backgroundAlt,
+      surfaceHover: adjustColor(colors.backgroundAlt, isDark ? 10 : -10),
       text: colors.text,
       textMuted: textMuted,
+      textInverse: isDark ? "#0f172a" : "#f8fafc",
       heading: colors.heading,
       link: colors.accent,
       linkHover: accentHover,
@@ -139,8 +164,11 @@ export function convertCustomThemeToTheme(dbTheme: {
       secondaryHover: accentHover,
       accent: colors.accent,
       border: borderColor,
+      borderStrong: adjustColor(borderColor, isDark ? 20 : -20),
       borderHover: borderHover,
       shadow: shadowColor,
+      overlay: hexToRgba(colors.background, 0.8),
+      glow: hexToRgba(colors.primary, 0.3),
       success: "#22c55e",
       warning: "#f59e0b",
       error: "#ef4444",
@@ -151,48 +179,116 @@ export function convertCustomThemeToTheme(dbTheme: {
       caption: { family: bodyFont, weight: 500, size: "0.875rem" },
     },
     design: {
-      borderRadius: { small: "0.5rem", medium: "0.75rem", large: "1rem", full: "9999px" },
+      borderRadius: { 
+        small: cardConfig.borderRadius === "0" ? "0" : "0.375rem", 
+        medium: cardConfig.borderRadius, 
+        large: cardConfig.borderRadius === "0" ? "0" : "1rem", 
+        full: "9999px" 
+      },
       shadows: {
         small: shadowSmall,
-        medium: shadowMedium,
+        medium: cardConfig.shadow,
         large: shadowLarge,
       },
       spacing: { tight: "0.5rem", normal: "1.25rem", relaxed: "2rem" },
     },
     slideStyles: {
       title: {
-        background: `linear-gradient(135deg, ${colors.background} 0%, ${colors.backgroundAlt} 50%, ${colors.background} 100%)`,
-        pattern: `radial-gradient(ellipse at 30% 20%, ${hexToRgba(colors.primary, 0.15)} 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, ${hexToRgba(colors.accent, 0.1)} 0%, transparent 40%)`,
+        // For themes with background images, use solid/gradient background for slides
+        // The background image is applied at the page level, not slide level
+        background: backgroundImageUrl 
+          ? `linear-gradient(135deg, ${colors.background} 0%, ${colors.backgroundAlt} 50%, ${colors.background} 100%)`
+          : `linear-gradient(135deg, ${colors.background} 0%, ${colors.backgroundAlt} 50%, ${colors.background} 100%)`,
+        pattern: backgroundImageUrl 
+          ? undefined 
+          : `radial-gradient(ellipse at 30% 20%, ${hexToRgba(colors.primary, 0.15)} 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, ${hexToRgba(colors.accent, 0.1)} 0%, transparent 40%)`,
       },
       content: {
-        background: `linear-gradient(180deg, ${colors.background} 0%, ${colors.backgroundAlt} 100%)`,
+        // For themes with background images, use solid/gradient background for slides
+        background: backgroundImageUrl 
+          ? `linear-gradient(180deg, ${colors.background} 0%, ${colors.backgroundAlt} 100%)`
+          : `linear-gradient(180deg, ${colors.background} 0%, ${colors.backgroundAlt} 100%)`,
         bulletStyle: "circle",
       },
       image: {
-        borderRadius: "0.75rem",
+        borderRadius: cardConfig.borderRadius,
         shadow: shadowLarge,
         overlay: `linear-gradient(to top, ${hexToRgba(colors.background, 0.9)} 0%, transparent 60%)`,
       },
     },
+    // Slide shape based on card style - uses rawShadow for exact CSS values matching preview
+    slideShape: {
+      type: cardStyle === "rounded" || cardStyle === "soft-cloud" || cardStyle === "capsule" ? "soft" 
+           : cardStyle === "standard" || cardStyle === "glass" ? "rounded" 
+           : "sharp",
+      borderRadius: cardConfig.borderRadius,
+      shadow: cardStyle === "flat" ? "none" 
+             : cardStyle === "blocky" ? "solid" 
+             : cardStyle === "soft-cloud" || cardStyle === "rounded" ? "deep" 
+             : "medium",
+      // Use rawShadow for exact CSS values matching the CustomThemeCreator preview
+      rawShadow: cardConfig.shadow,
+      solidShadowColor: cardStyle === "blocky" ? colors.primary : undefined,
+      border: cardConfig.border ? {
+        width: cardConfig.border.split(" ")[0] || "1px",
+        color: cardConfig.border.includes("solid") ? borderColor : colors.primary,
+        style: "solid" as const,
+      } : undefined,
+    },
     preview: {
-      titleBg: `linear-gradient(135deg, ${colors.backgroundAlt} 0%, ${colors.background} 100%)`,
+      titleBg: backgroundImageUrl 
+        ? colors.background
+        : `linear-gradient(135deg, ${colors.backgroundAlt} 0%, ${colors.background} 100%)`,
       bodyBg: colors.background,
       textColor: colors.text,
       accentColor: colors.accent,
     },
-    overlay: `linear-gradient(180deg, ${hexToRgba(colors.background, 0.4)} 0%, ${hexToRgba(colors.background, 0.2)} 100%)`,
+    // Background image support
+    backgroundImage: backgroundImageUrl || undefined,
+    previewBackgroundImage: backgroundImageUrl || undefined,
+    backgroundPosition: "center",
+    backgroundSize: "cover",
+    overlay: backgroundImageUrl 
+      ? `linear-gradient(180deg, ${hexToRgba(colors.background, 0.85)} 0%, ${hexToRgba(colors.background, 0.75)} 100%)`
+      : `linear-gradient(180deg, ${hexToRgba(colors.background, 0.4)} 0%, ${hexToRgba(colors.background, 0.2)} 100%)`,
     cardBox: {
-      background: hexToRgba(colors.backgroundAlt, 0.8),
-      borderColor: hexToRgba(colors.primary, 0.2),
+      // Use solid background colors for cards - no transparency
+      background: colors.backgroundAlt,
+      borderColor: hexToRgba(colors.primary, 0.25),
       titleColor: colors.heading,
       bodyColor: colors.text,
       accentColor: colors.accent,
-      shadow: shadowMedium,
+      shadow: cardConfig.shadow,
     },
-    // Page background gradient for the presentation viewer - matches built-in theme pattern
-    // Pattern: from-[background] via-[backgroundAlt] to-[background] for a subtle but visible gradient
-    pageBackground: isDark
-      ? `linear-gradient(to bottom right, ${colors.background}, ${colors.backgroundAlt}, ${colors.background})`
+    // Layout elements styling based on card style
+    layoutElements: {
+      background: hexToRgba(colors.backgroundAlt, 0.6),
+      borderColor: hexToRgba(colors.primary, 0.15),
+      hoverBackground: hexToRgba(colors.backgroundAlt, 0.8),
+    },
+    // Gradients
+    gradients: {
+      primary: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.accent} 100%)`,
+      secondary: `linear-gradient(135deg, ${colors.backgroundAlt} 0%, ${colors.background} 100%)`,
+      overlay: `linear-gradient(180deg, ${hexToRgba(colors.background, 0.9)} 0%, ${hexToRgba(colors.background, 0.7)} 100%)`,
+      text: `linear-gradient(135deg, ${colors.heading} 0%, ${colors.primary} 100%)`,
+    },
+    // Page background gradient for the presentation viewer
+    // For themes with background images, use solid color (image will be applied separately)
+    pageBackground: backgroundImageUrl 
+      ? colors.background
+      : (isDark
+        ? `linear-gradient(to bottom right, ${colors.background}, ${colors.backgroundAlt}, ${colors.background})`
+        : `linear-gradient(to bottom right, ${colors.background}, ${colors.backgroundAlt}, ${colors.background})`),
+    // Page background gradient (used when no background image)
+    pageBackgroundGradient: backgroundImageUrl 
+      ? undefined
       : `linear-gradient(to bottom right, ${colors.background}, ${colors.backgroundAlt}, ${colors.background})`,
+    // Store custom design elements for reference
+    cssVariables: {
+      "--custom-card-style": cardStyle,
+      "--custom-border-radius": cardConfig.borderRadius,
+      "--custom-logo-url": logoUrl || "",
+    },
   };
 }
