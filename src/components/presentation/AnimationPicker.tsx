@@ -10,6 +10,7 @@ import {
   type AnimationCategory,
 } from "~/lib/animations";
 import type { Theme } from "~/lib/themes";
+import { useLanguage } from "~/contexts/LanguageContext";
 
 interface AnimationPickerProps {
   isOpen: boolean;
@@ -44,6 +45,8 @@ function AnimationPreview({
   cardTextBg,
   textPrimary,
   textSecondary,
+  premiumBadgeText,
+  effectsBadgeText,
   onPlay,
   onSelect,
 }: {
@@ -56,6 +59,8 @@ function AnimationPreview({
   cardTextBg: string;
   textPrimary: string;
   textSecondary: string;
+  premiumBadgeText: string;
+  effectsBadgeText: string;
   onPlay: () => void;
   onSelect: () => void;
 }) {
@@ -148,14 +153,14 @@ function AnimationPreview({
         {isPremium && (
           <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-[10px] font-bold text-black flex items-center gap-1">
             <Crown size={10} />
-            PREMIUM
+            {premiumBadgeText}
           </div>
         )}
 
         {/* Effects badge (only show if not premium) */}
         {animation.hasEffects && !isPremium && (
           <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-[10px] font-bold text-white">
-            ✨ FX
+            ✨ {effectsBadgeText}
           </div>
         )}
       </div>
@@ -180,6 +185,7 @@ export default function AnimationPicker({
   onUpgrade,
   onClose,
 }: AnimationPickerProps) {
+  const { t } = useLanguage();
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<AnimationCategory | "all">("all");
 
@@ -191,6 +197,19 @@ export default function AnimationPicker({
     selectedCategory === "all"
       ? ANIMATION_PRESETS
       : ANIMATION_PRESETS.filter((a) => a.category === selectedCategory);
+
+  // Category name translations map
+  const categoryTranslations: Record<string, string> = {
+    all: t.animationCategoryAll || "All",
+    fade: t.animationCategoryFade || "Fade",
+    slide: t.animationCategorySlide || "Slide",
+    zoom: t.animationCategoryZoom || "Zoom",
+    flip: t.animationCategoryFlip || "Flip",
+    creative: t.animationCategoryCreative || "Creative",
+    cinematic: t.animationCategoryCinematic || "Cinematic",
+    particles: t.animationCategoryParticles || "Particles",
+    premium: t.animationCategoryPremium || "Premium ✨",
+  };
 
   if (!isOpen) return null;
 
@@ -232,10 +251,10 @@ export default function AnimationPicker({
             </div>
             <div>
               <h2 className="text-lg font-bold" style={{ color: textPrimary }}>
-                Slide Animation
+                {t.animationPickerTitle || "Slide Animation"}
               </h2>
               <p className="text-sm" style={{ color: textSecondary }}>
-                Choose how this slide appears during presentation
+                {t.animationPickerSubtitle || "Choose how this slide appears during presentation"}
               </p>
             </div>
           </div>
@@ -263,7 +282,7 @@ export default function AnimationPicker({
                 color: selectedCategory === "all" ? "#ffffff" : textSecondary,
               }}
             >
-              All
+              {categoryTranslations.all}
             </button>
             {categories
               .filter((c) => c.category !== "none")
@@ -281,7 +300,7 @@ export default function AnimationPicker({
                   }}
                 >
                   {cat.category === "premium" && <Crown size={14} />}
-                  {cat.name}
+                  {categoryTranslations[cat.category] || cat.name}
                   <span className="text-xs opacity-60">({cat.animations.length})</span>
                 </button>
               ))}
@@ -307,6 +326,8 @@ export default function AnimationPicker({
                   cardTextBg={cardTextBg}
                   textPrimary={textPrimary}
                   textSecondary={textSecondary}
+                  premiumBadgeText={t.animationPremiumBadge || "PREMIUM"}
+                  effectsBadgeText={t.animationEffectsBadge || "FX"}
                   onPlay={() => {
                     setPlayingId(animation.id);
                     setTimeout(() => setPlayingId(null), animation.duration + 100);
@@ -341,10 +362,10 @@ export default function AnimationPicker({
               </div>
               <div>
                 <p className="text-sm font-medium" style={{ color: textPrimary }}>
-                  Content Animation
+                  {t.animationContentToggle || "Content Animation"}
                 </p>
                 <p className="text-xs" style={{ color: textSecondary }}>
-                  Animate bullets, boxes, and other content items
+                  {t.animationContentToggleDesc || "Animate bullets, boxes, and other content items"}
                 </p>
               </div>
             </div>
@@ -371,7 +392,7 @@ export default function AnimationPicker({
           style={{ borderColor, backgroundColor: `${bgSecondary}50` }}
         >
           <p className="text-xs" style={{ color: textSecondary }}>
-            Animations play when navigating between slides in present mode
+            {t.animationFooterNote || "Animations play when navigating between slides in present mode"}
           </p>
           <div className="flex gap-3">
             <button
@@ -379,14 +400,14 @@ export default function AnimationPicker({
               className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-white/10"
               style={{ color: textSecondary }}
             >
-              Cancel
+              {t.animationCancel || "Cancel"}
             </button>
             <button
               onClick={onClose}
               className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors hover:opacity-90"
               style={{ backgroundColor: accentColor }}
             >
-              Done
+              {t.animationDone || "Done"}
             </button>
           </div>
         </div>
