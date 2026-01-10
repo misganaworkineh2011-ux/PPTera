@@ -358,19 +358,27 @@ export default function BoxLayoutRenderer({
 
   if (gridStyles.specialLayout === "image-2-1" || gridStyles.specialLayout === "narrow-3") {
     if (items.length === 3) {
-      const Container = isPresenting ? motion.div : "div";
-      const containerProps = isPresenting ? { 
-        key: animationKey,
-        variants: containerVariants, 
-        initial: "hidden", 
-        animate: "visible" 
-      } : {};
+      if (isPresenting) {
+        return (
+          <motion.div 
+            key={animationKey}
+            className={className} 
+            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "auto auto", gap: gridStyles.gap, width: "100%" }}
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            {items.slice(0, 2).map((item, idx) => renderBox(item, idx))}
+            <div style={{ gridColumn: "1 / -1" }}>{renderBox(items[2]!, 2)}</div>
+          </motion.div>
+        );
+      }
       
       return (
-        <Container className={className} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "auto auto", gap: gridStyles.gap, width: "100%" }} {...containerProps}>
+        <div className={className} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "auto auto", gap: gridStyles.gap, width: "100%" }}>
           {items.slice(0, 2).map((item, idx) => renderBox(item, idx))}
           <div style={{ gridColumn: "1 / -1" }}>{renderBox(items[2]!, 2)}</div>
-        </Container>
+        </div>
       );
     }
   }

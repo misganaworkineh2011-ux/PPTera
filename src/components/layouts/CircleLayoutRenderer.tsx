@@ -243,17 +243,10 @@ function ArcLayout({
   // Grid columns based on item count
   const gridCols = Math.min(itemCount, 6);
 
-  // Container and item wrapper for animations
-  const Container = isPresenting ? motion.div : "div";
-  const containerProps = isPresenting ? { 
-    key: animationKey,
-    variants: containerVariants, 
-    initial: "hidden", 
-    animate: "visible" 
-  } : {};
+  const containerClassName = `w-full flex flex-col items-center justify-center ${className}`;
 
-  return (
-    <Container className={`w-full flex flex-col items-center ${className}`} {...containerProps}>
+  const content = (
+    <>
       {/* Text row - items spread horizontally, with vertical offset following arc curve */}
       <div
         className="w-full grid gap-2 px-4"
@@ -336,6 +329,7 @@ function ArcLayout({
         height="250"
         viewBox="-240 -240 480 250"
         className="flex-shrink-0 -mt-20"
+        suppressHydrationWarning
       >
         {Array.from({ length: itemCount }).map((_, index) => {
           const path = getArcSegmentPath(
@@ -359,6 +353,7 @@ function ArcLayout({
                 fill={themeStyles.shapeBgColor}
                 stroke={themeStyles.shapeBorderColor}
                 strokeWidth="1"
+                suppressHydrationWarning
               />
               <circle
                 cx={iconPos.x}
@@ -367,6 +362,7 @@ function ArcLayout({
                 fill="white"
                 stroke={`${themeStyles.accentColor}40`}
                 strokeWidth="1"
+                suppressHydrationWarning
               />
               {item?.icon ? (
                 <text
@@ -376,6 +372,7 @@ function ArcLayout({
                   dominantBaseline="central"
                   fontSize="12"
                   fill={themeStyles.accentColor}
+                  suppressHydrationWarning
                 >
                   {item.icon}
                 </text>
@@ -385,14 +382,31 @@ function ArcLayout({
                   cy={iconPos.y}
                   r={3}
                   fill={`${themeStyles.accentColor}40`}
+                  suppressHydrationWarning
                 />
               )}
             </g>
           );
         })}
       </svg>
-    </Container>
+    </>
   );
+
+  if (isPresenting) {
+    return (
+      <motion.div
+        key={animationKey}
+        className={containerClassName}
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {content}
+      </motion.div>
+    );
+  }
+
+  return <div className={containerClassName}>{content}</div>;
 }
 
 // Ring Layout
@@ -436,23 +450,15 @@ function RingLayout({
   const svgSize = itemCount <= 4 ? 240 : itemCount <= 6 ? 200 : 180;
   const gapAngle = itemCount <= 4 ? 15 : itemCount <= 6 ? 12 : 10;
 
-  // Container and item wrapper for animations
-  const Container = isPresenting ? motion.div : "div";
-  const containerProps = isPresenting ? { 
-    key: animationKey,
-    variants: containerVariants, 
-    initial: "hidden", 
-    animate: "visible" 
-  } : {};
-
   // For more than 4 items, use grid below
   if (itemCount > 4) {
-    return (
-      <Container className={`w-full flex flex-col items-center gap-4 ${className}`} {...containerProps}>
+    const gridContent = (
+      <>
         <svg
           width={svgSize}
           height={svgSize}
           viewBox={`${-svgSize / 2} ${-svgSize / 2} ${svgSize} ${svgSize}`}
+          suppressHydrationWarning
         >
           {Array.from({ length: itemCount }).map((_, index) => {
             const path = getRingSegmentPath(
@@ -476,6 +482,7 @@ function RingLayout({
                   fill={themeStyles.shapeBgColor}
                   stroke={themeStyles.shapeBorderColor}
                   strokeWidth="1"
+                  suppressHydrationWarning
                 />
                 <circle
                   cx={iconPos.x}
@@ -484,6 +491,7 @@ function RingLayout({
                   fill="white"
                   stroke={`${themeStyles.accentColor}40`}
                   strokeWidth="1"
+                  suppressHydrationWarning
                 />
                 {item?.icon ? (
                   <text
@@ -493,6 +501,7 @@ function RingLayout({
                     dominantBaseline="central"
                     fontSize="10"
                     fill={themeStyles.accentColor}
+                    suppressHydrationWarning
                   >
                     {item.icon}
                   </text>
@@ -502,6 +511,7 @@ function RingLayout({
                     cy={iconPos.y}
                     r={2}
                     fill={`${themeStyles.accentColor}40`}
+                    suppressHydrationWarning
                   />
                 )}
               </g>
@@ -578,8 +588,26 @@ function RingLayout({
             );
           })}
         </div>
-      </Container>
+      </>
     );
+
+    const gridClassName = `w-full flex flex-col items-center justify-center gap-4 ${className}`;
+
+    if (isPresenting) {
+      return (
+        <motion.div
+          key={animationKey}
+          className={gridClassName}
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {gridContent}
+        </motion.div>
+      );
+    }
+
+    return <div className={gridClassName}>{gridContent}</div>;
   }
 
   // Standard layout - content on sides
@@ -588,11 +616,8 @@ function RingLayout({
   const leftIndices = items.map((_, i) => i).filter((i) => i % 2 === 0);
   const rightIndices = items.map((_, i) => i).filter((i) => i % 2 === 1);
 
-  return (
-    <Container
-      className={`w-full flex items-center justify-center gap-6 ${className}`}
-      {...containerProps}
-    >
+  const standardContent = (
+    <>
       <div
         className="flex flex-col justify-center items-end text-right space-y-4"
         style={{ maxWidth: "180px" }}
@@ -662,6 +687,7 @@ function RingLayout({
         width={svgSize}
         height={svgSize}
         viewBox={`${-svgSize / 2} ${-svgSize / 2} ${svgSize} ${svgSize}`}
+        suppressHydrationWarning
       >
         {Array.from({ length: itemCount }).map((_, index) => {
           const path = getRingSegmentPath(
@@ -685,6 +711,7 @@ function RingLayout({
                 fill={themeStyles.shapeBgColor}
                 stroke={themeStyles.shapeBorderColor}
                 strokeWidth="1"
+                suppressHydrationWarning
               />
               <circle
                 cx={iconPos.x}
@@ -693,6 +720,7 @@ function RingLayout({
                 fill="white"
                 stroke={`${themeStyles.accentColor}40`}
                 strokeWidth="1"
+                suppressHydrationWarning
               />
               {item?.icon ? (
                 <text
@@ -702,6 +730,7 @@ function RingLayout({
                   dominantBaseline="central"
                   fontSize="11"
                   fill={themeStyles.accentColor}
+                  suppressHydrationWarning
                 >
                   {item.icon}
                 </text>
@@ -711,6 +740,7 @@ function RingLayout({
                   cy={iconPos.y}
                   r="3"
                   fill={`${themeStyles.accentColor}40`}
+                  suppressHydrationWarning
                 />
               )}
             </g>
@@ -782,8 +812,26 @@ function RingLayout({
           );
         })}
       </div>
-    </Container>
+    </>
   );
+
+  const standardClassName = `w-full flex items-center justify-center gap-6 ${className}`;
+
+  if (isPresenting) {
+    return (
+      <motion.div
+        key={animationKey}
+        className={standardClassName}
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {standardContent}
+      </motion.div>
+    );
+  }
+
+  return <div className={standardClassName}>{standardContent}</div>;
 }
 
 export default CircleLayoutRenderer;

@@ -1892,7 +1892,7 @@ function SlideRendererComponent({
         )}
 
         {/* Content Area - Below image */}
-        <div className="flex-1 relative flex flex-col p-4 sm:p-8 md:p-12 pt-6 sm:pt-8">
+        <div className="flex-1 relative flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-6 sm:pt-8">
           {/* Title */}
           <div className="mb-4 sm:mb-6 text-center">
             <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl" align="center" showSubtitle={isTitleSlide} />
@@ -1942,7 +1942,7 @@ function SlideRendererComponent({
         <SlideIndicator position="top-left" />
 
         {/* Content Area - Above image */}
-        <div className="flex-1 relative flex flex-col p-4 sm:p-8 md:p-12 pb-6 sm:pb-8">
+        <div className="flex-1 relative flex flex-col justify-center p-4 sm:p-8 md:p-12 pb-6 sm:pb-8">
           {/* Title */}
           <div className="mb-4 sm:mb-6 text-center">
             <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl" align="center" showSubtitle={isTitleSlide} />
@@ -2022,7 +2022,7 @@ function SlideRendererComponent({
     );
   }
 
-  // LAYOUT 3: Centered - Image Top, Content Bottom
+  // LAYOUT 3: Centered - Image Top, Content Bottom (or centered when no image)
   if (layout === "centered") {
     return (
       <div className="h-full relative overflow-hidden">
@@ -2031,7 +2031,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className={`relative h-full flex flex-col ${hasImage ? "items-center justify-center" : "justify-start"} ${hasImage ? "p-4 sm:p-8 md:p-12" : "p-4 sm:p-6 md:p-8"} pt-12 sm:pt-8 md:pt-12 ${hasImage ? "text-center" : ""} overflow-y-auto`}>
+        <div className={`relative h-full flex flex-col items-center justify-center ${hasImage ? "p-4 sm:p-8 md:p-12" : "p-4 sm:p-6 md:p-8"} ${hasImage ? "text-center" : ""} overflow-y-auto`}>
           {hasImage && (
             <div className={`w-full ${hasMultipleImages ? "max-w-4xl" : "max-w-2xl"} mb-4 sm:mb-6 md:mb-8 relative`}>
               {hasMultipleImages ? (
@@ -2044,11 +2044,11 @@ function SlideRendererComponent({
             </div>
           )}
 
-          <Title className={`text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-3 sm:mb-4 md:mb-6 ${hasImage ? "max-w-4xl" : "w-full"} ${hasImage ? "" : "text-left"}`} align={hasImage ? "center" : "left"} />
-          {!isTitleSlide && <SlideDescription className={`mb-3 sm:mb-4 md:mb-5 ${hasImage ? "" : "text-left"}`} align={hasImage ? "center" : "left"} />}
+          <Title className={`text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-3 sm:mb-4 md:mb-6 ${hasImage ? "max-w-4xl" : "w-full max-w-5xl"} ${hasImage ? "" : "text-left"}`} align={hasImage ? "center" : "left"} />
+          {!isTitleSlide && <SlideDescription className={`mb-3 sm:mb-4 md:mb-5 ${hasImage ? "" : "text-left w-full max-w-5xl"}`} align={hasImage ? "center" : "left"} />}
 
-          <div className={`${hasImage ? "max-w-2xl w-full text-left" : "w-full"} mt-2 sm:mt-3 md:mt-4`}>
-            <EnhancedContent compact />
+          <div className={`${hasImage ? "max-w-2xl w-full text-left" : "w-full max-w-5xl"} mt-2 sm:mt-3 md:mt-4`}>
+            <EnhancedContent compact={hasImage} />
           </div>
         </div>
         <div className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${colors.borderLine} to-transparent`} />
@@ -2280,7 +2280,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
+        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4 mt-3 sm:mt-4 md:mt-6">
@@ -2335,7 +2335,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
+        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
@@ -2407,7 +2407,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
+        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8 text-center" align="center" />
 
           {/* Use EnhancedContent to respect contentLayout (box layout) */}
@@ -2436,7 +2436,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
+        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-5 max-w-4xl">
@@ -2487,10 +2487,10 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 flex flex-col overflow-y-auto">
+        <div className="relative h-full p-4 sm:p-8 md:p-12 flex flex-col justify-center overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8" />
 
-          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
             {bulletPoints.slice(0, 2).map((point, i) => {
               const cardBgProps = getCardBgProps("p-5 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl border-2 backdrop-blur-sm flex flex-col");
               return (
@@ -2534,10 +2534,10 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 flex flex-col overflow-y-auto">
+        <div className="relative h-full p-4 sm:p-8 md:p-12 flex flex-col justify-center overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8 text-center" align="center" />
 
-          <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
             {bulletPoints.slice(0, 3).map((point, i) => {
               const cardBgProps = getCardBgProps("p-4 sm:p-5 md:p-6 rounded-xl border backdrop-blur-sm flex flex-col items-center text-center");
               return (
@@ -2585,7 +2585,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
+        <div className="relative h-full p-4 sm:p-8 md:p-12 flex flex-col justify-center overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8 text-center" align="center" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-5xl mx-auto">
@@ -2663,7 +2663,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
+        <div className="relative h-full p-4 sm:p-8 md:p-12 flex flex-col justify-center overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-6 sm:mb-8 md:mb-10 text-center" align="center" />
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6 max-w-5xl mx-auto">
@@ -2793,7 +2793,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 flex flex-col overflow-y-auto">
+        <div className="relative h-full p-4 sm:p-8 md:p-12 flex flex-col justify-center overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 text-center" align="center" />
 
           {/* Centered Image */}
@@ -2974,11 +2974,11 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full flex">
+        <div className="relative h-full flex items-center">
           {/* Timeline line */}
           <div className="absolute left-24 top-24 bottom-12 w-px" style={{ backgroundColor: colors.accent, opacity: 0.3 }} />
 
-          <div className="flex-1 p-12 pt-20 pl-32">
+          <div className="flex-1 p-12 pl-32">
             <Title className="text-3xl md:text-4xl mb-10" />
 
             <div className="space-y-6">
