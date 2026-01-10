@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, memo } from "react";
+import { motion } from "framer-motion";
 import { ImageIcon, Plus, LayoutGrid } from "lucide-react";
 import { type Theme } from "~/lib/themes";
 import { type SlideData, type EditingState, type SlideChartData } from "./types";
@@ -937,27 +938,38 @@ function SlideRendererComponent({
   const SlideDescription = ({ className = "", align = "left" }: { className?: string; align?: "left" | "center" | "right" }) => {
     if (!slide.slideDescription || slide.type === "title") return null;
     return (
-      <EditableText
-        value={slide.slideDescription}
-        isEditing={isEditing && editingText?.field === "slideDescription"}
-        onStartEdit={() => onStartEditing(index, "slideDescription")}
-        onChange={(val) => onUpdateContent(index, "slideDescription", val)}
-        onFinish={onFinishEditing}
-        className={`text-sm sm:text-base md:text-lg leading-relaxed mb-3 sm:mb-4 md:mb-5 ${className}`}
-        style={{
-          fontFamily: theme.fonts.body.family,
-          color: colors.textMuted || colors.text,
-          opacity: 0.8,
-          textAlign: align,
-        }}
-        isOwner={canEdit}
-        isHovered={isHovered}
-      />
+      <motion.div
+        initial={isFullscreen ? { opacity: 0, y: 10 } : undefined}
+        animate={isFullscreen ? { opacity: 1, y: 0 } : undefined}
+        transition={{ delay: 0.3, duration: 0.5 }}
+      >
+        <EditableText
+          value={slide.slideDescription}
+          isEditing={isEditing && editingText?.field === "slideDescription"}
+          onStartEdit={() => onStartEditing(index, "slideDescription")}
+          onChange={(val) => onUpdateContent(index, "slideDescription", val)}
+          onFinish={onFinishEditing}
+          className={`text-sm sm:text-base md:text-lg leading-relaxed mb-3 sm:mb-4 md:mb-5 ${className}`}
+          style={{
+            fontFamily: theme.fonts.body.family,
+            color: colors.textMuted || colors.text,
+            opacity: 0.8,
+            textAlign: align,
+          }}
+          isOwner={canEdit}
+          isHovered={isHovered}
+        />
+      </motion.div>
     );
   };
 
   const Title = ({ className = "", align = "left", showSubtitle = false }: { className?: string; align?: "left" | "center" | "right"; showSubtitle?: boolean }) => (
-    <div className={showSubtitle ? "space-y-2" : ""}>
+    <motion.div 
+      className={showSubtitle ? "space-y-2" : ""}
+      initial={isFullscreen ? { opacity: 0, y: 20 } : undefined}
+      animate={isFullscreen ? { opacity: 1, y: 0 } : undefined}
+      transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
+    >
       <EditableText
         value={slide.title}
         isEditing={isEditing && editingText?.field === "title"}
@@ -995,7 +1007,7 @@ function SlideRendererComponent({
           isHovered={isHovered}
         />
       )}
-    </div>
+    </motion.div>
   );
 
   const BulletPoints = ({ compact = false }: { compact?: boolean }) => {
@@ -1016,9 +1028,24 @@ function SlideRendererComponent({
     });
 
     return (
-      <div className={compact ? "space-y-2 sm:space-y-3" : "space-y-3 sm:space-y-4"}>
+      <motion.div 
+        className={compact ? "space-y-2 sm:space-y-3" : "space-y-3 sm:space-y-4"}
+        initial={isFullscreen ? "hidden" : "visible"}
+        animate="visible"
+        variants={{
+          visible: { transition: { staggerChildren: isFullscreen ? 0.15 : 0, delayChildren: 0.3 } },
+          hidden: {}
+        }}
+      >
         {parsedBullets.map((item, i) => (
-          <div key={i} className="flex items-start gap-2 sm:gap-3 group/bullet">
+          <motion.div 
+            key={i} 
+            className="flex items-start gap-2 sm:gap-3 group/bullet"
+            variants={{
+              hidden: { opacity: 0, x: -10 },
+              visible: { opacity: 1, x: 0, transition: { duration: 0.4 } }
+            }}
+          >
             <div className={`${compact ? "mt-1.5" : "mt-2"} flex items-center gap-1 sm:gap-2 shrink-0`}>
               <div
                 className={`${compact ? "w-1.5 h-1.5 sm:w-2 sm:h-2" : "w-2 h-2 sm:w-2.5 sm:h-2.5"} rounded-full ${!isCustomTheme ? colors.accentMuted : ''}`}
@@ -1077,7 +1104,7 @@ function SlideRendererComponent({
                 />
               )}
             </div>
-          </div>
+          </motion.div>
         ))}
         {canEdit && isHovered && (
           <button
@@ -1088,7 +1115,7 @@ function SlideRendererComponent({
             <Plus size={12} className="sm:w-[14px] sm:h-[14px]" /> <span className="hidden sm:inline">Add point</span><span className="sm:hidden">Add</span>
           </button>
         )}
-      </div>
+      </motion.div>
     );
   };
 
@@ -1404,10 +1431,13 @@ function SlideRendererComponent({
     const isImageHovered = hoveredImageIndex === imageIndex;
     
     return (
-      <div 
+      <motion.div 
         className={`relative ${sizeClass} ${className}`}
         onMouseEnter={() => canEdit && setHoveredImageIndex(imageIndex)}
         onMouseLeave={() => setHoveredImageIndex(null)}
+        initial={isFullscreen ? { opacity: 0, scale: 0.95, filter: "blur(5px)" } : undefined}
+        animate={isFullscreen ? { opacity: 1, scale: 1, filter: "blur(0px)" } : undefined}
+        transition={{ delay: 0.4, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
       >
         <div className={`absolute inset-0 bg-gradient-to-br ${colors.accentBorder} rounded-lg`} />
         <div className={`absolute inset-[1px] ${colors.surface} rounded-lg overflow-hidden`}>
@@ -1433,7 +1463,7 @@ function SlideRendererComponent({
             theme={isThemeDark ? "dark" : "light"}
           />
         )}
-      </div>
+      </motion.div>
     );
   };
 
