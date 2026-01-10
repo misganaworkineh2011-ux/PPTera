@@ -927,17 +927,20 @@ export default function DashboardContent({ presentations: propPresentations, use
       )}
 
       {/* Share Modal */}
-      {showShareModal && (() => {
-        const pres = presentations.find(p => p.id === showShareModal);
-        return pres ? (
-          <ShareModal
-            presentationId={showShareModal}
-            initialIsPublic={pres.isPublic}
-            initialShareToken={pres.shareToken}
-            onClose={() => setShowShareModal(null)}
-          />
-        ) : null;
-      })()}
+      {showShareModal && typeof document !== "undefined" && createPortal(
+        (() => {
+          const pres = presentations.find(p => p.id === showShareModal);
+          return pres ? (
+            <ShareModal
+              presentationId={showShareModal}
+              initialIsPublic={pres.isPublic}
+              initialShareToken={pres.shareToken}
+              onClose={() => setShowShareModal(null)}
+            />
+          ) : null;
+        })(),
+        document.body
+      )}
 
       {/* Portal Dropdown Menu */}
       {activeMenu && menuPosition && typeof document !== "undefined" && createPortal(
