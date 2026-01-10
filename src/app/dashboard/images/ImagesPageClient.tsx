@@ -18,6 +18,8 @@ import Image from "next/image";
 import AIImageGenerator from "~/components/AIImageGenerator";
 import { cn } from "~/lib/utils";
 import DashboardStickyHeader from "~/components/dashboard/DashboardStickyHeader";
+import { useLanguage } from "~/contexts/LanguageContext";
+import { dashboardTranslations } from "~/lib/dashboard-translations";
 
 interface ImageData {
   id: string;
@@ -39,6 +41,8 @@ export default function ImagesPageClient({
   initialImages,
   subscriptionPlan,
 }: ImagesPageClientProps) {
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language] || dashboardTranslations.en;
   const [images, setImages] = useState<ImageData[]>(initialImages);
   const [credits, setCredits] = useState(initialCredits);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -129,17 +133,17 @@ export default function ImagesPageClient({
             <ImageIcon size={22} className="hidden sm:block" />
           </>
         }
-        title="Images"
+        title={t.imagesTitle || "Images"}
         stickyIcon={<ImageIcon size={18} />}
-        stickyTitle="Images"
+        stickyTitle={t.imagesTitle || "Images"}
         actions={
           <button
             onClick={() => setShowGenerator(true)}
             className="flex items-center gap-1.5 md:gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-white shadow-lg shadow-[#06b6d4]/20 transition-all hover:from-[#172554] hover:to-[#0891b2] hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap"
           >
             <Sparkles size={16} className="md:w-[18px] md:h-[18px]" />
-            <span className="hidden sm:inline">Generate with AI</span>
-            <span className="sm:hidden">Generate</span>
+            <span className="hidden sm:inline">{t.generateWithAI || "Generate with AI"}</span>
+            <span className="sm:hidden">{t.generate || "Generate"}</span>
           </button>
         }
       />
@@ -150,7 +154,7 @@ export default function ImagesPageClient({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input
             type="text"
-            placeholder="Search images..."
+            placeholder={t.searchImages || "Search images..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent"
@@ -190,12 +194,12 @@ export default function ImagesPageClient({
               <ImageIcon size={28} className="text-[#06b6d4]" />
             </div>
             <h3 className="mb-2 text-lg font-bold text-[#1e3a8a] dark:text-white">
-              {searchQuery ? "No images found" : "No images yet"}
+              {searchQuery ? (t.noImagesFound || "No images found") : (t.noImagesYet || "No images yet")}
             </h3>
             <p className="text-sm text-slate-500 dark:text-neutral-400 max-w-xs mx-auto mb-6">
               {searchQuery
-                ? "Try a different search term"
-                : "Generate your first AI image or upload one to get started."}
+                ? (t.tryDifferentSearch || "Try a different search term")
+                : (t.generateFirstImage || "Generate your first AI image or upload one to get started.")}
             </p>
             {!searchQuery && (
               <button
@@ -203,7 +207,7 @@ export default function ImagesPageClient({
                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white rounded-xl font-medium hover:opacity-90 transition"
               >
                 <Sparkles className="h-4 w-4" />
-                Generate with AI
+                {t.generateWithAI || "Generate with AI"}
               </button>
             )}
           </div>
@@ -352,10 +356,10 @@ export default function ImagesPageClient({
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                    AI Image Generator
+                    {t.aiImageGenerator || "AI Image Generator"}
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-neutral-400">
-                    Powered by Google & OpenAI
+                    {t.poweredBy || "Powered by Google & OpenAI"}
                   </p>
                 </div>
               </div>
@@ -469,12 +473,12 @@ export default function ImagesPageClient({
                       {copiedUrl ? (
                         <>
                           <Check className="h-3.5 w-3.5" />
-                          Copied!
+                          {t.copied || "Copied!"}
                         </>
                       ) : (
                         <>
                           <Copy className="h-3.5 w-3.5" />
-                          Copy URL
+                          {t.copyUrl || "Copy URL"}
                         </>
                       )}
                     </button>
@@ -495,19 +499,19 @@ export default function ImagesPageClient({
                 <Trash2 className="h-6 w-6 text-red-600 dark:text-red-400" />
               </div>
               <div>
-                <h3 className="font-bold text-slate-900 dark:text-white">Delete Image</h3>
-                <p className="text-sm text-slate-500 dark:text-neutral-400">This action cannot be undone</p>
+                <h3 className="font-bold text-slate-900 dark:text-white">{t.deleteImage || "Delete Image"}</h3>
+                <p className="text-sm text-slate-500 dark:text-neutral-400">{t.cannotBeUndone || "This action cannot be undone"}</p>
               </div>
             </div>
             <p className="text-slate-600 dark:text-neutral-300 mb-6">
-              Are you sure you want to delete this image? It will be permanently removed from your library.
+              {t.permanentlyRemoved || "Are you sure you want to delete this image? It will be permanently removed from your library."}
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setDeleteConfirmId(null)}
                 className="flex-1 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-neutral-300 bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 dark:hover:bg-neutral-700 rounded-xl transition"
               >
-                Cancel
+                {t.cancel || "Cancel"}
               </button>
               <button
                 onClick={() => handleDeleteImage(deleteConfirmId)}
@@ -517,10 +521,10 @@ export default function ImagesPageClient({
                 {deletingId === deleteConfirmId ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Deleting...
+                    {t.deleting || "Deleting..."}
                   </>
                 ) : (
-                  "Delete"
+                  t.delete || "Delete"
                 )}
               </button>
             </div>

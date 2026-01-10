@@ -142,7 +142,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create the referral and award credits in a transaction (only referrer gets credits)
+    // Create the referral and award credits in a transaction (BOTH users get credits)
     await db.$transaction([
       // Create referral record
       db.referral.create({
@@ -152,20 +152,21 @@ export async function POST(request: Request) {
           referredEmail: newUser.email,
           referralCode: nanoid(12),
           status: "completed",
-          creditsAwarded: REFERRAL_CREDITS,
+          creditsAwarded: REFERRAL_CREDITS * 2, // Total credits awarded (both users)
           completedAt: new Date(),
         },
       }),
-      // Award credits to referrer only
+      // Award credits to referrer
       db.user.update({
         where: { id: referrer.id },
         data: { credits: { increment: REFERRAL_CREDITS } },
       }),
-      // Mark new user as referred (no credits for them)
+      // Award credits to referred user AND mark as referred
       db.user.update({
         where: { id: newUser.id },
         data: {
           referredBy: referralCode.toUpperCase(),
+          credits: { increment: REFERRAL_CREDITS },
         },
       }),
       // Create notification for referrer
@@ -178,11 +179,21 @@ export async function POST(request: Request) {
           link: "/dashboard/billing",
         },
       }),
+      // Create notification for referred user
+      db.notification.create({
+        data: {
+          userId: newUser.id,
+          type: "referral",
+          title: "Welcome Bonus!",
+          message: `You earned ${REFERRAL_CREDITS} bonus credits for using a referral link!`,
+          link: "/dashboard/billing",
+        },
+      }),
     ]);
 
     return NextResponse.json({
       success: true,
-      message: `Referral completed! The referrer earned ${REFERRAL_CREDITS} credits.`,
+      message: `Referral completed! Both you and the referrer earned ${REFERRAL_CREDITS} credits.`,
       creditsAwarded: REFERRAL_CREDITS,
     });
   } catch (error) {

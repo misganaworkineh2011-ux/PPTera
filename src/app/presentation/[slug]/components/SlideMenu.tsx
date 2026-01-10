@@ -20,8 +20,9 @@ import {
 } from "lucide-react";
 import { type LayoutType } from "~/lib/slide-layouts";
 import type { Theme } from "~/lib/themes";
-import { getThemeType } from "./types";
 import { getModalColors } from "./ui-colors";
+import { useLanguage } from "~/contexts/LanguageContext";
+import { dashboardTranslations } from "~/lib/dashboard-translations";
 
 // ============================================================================
 // TYPES
@@ -120,6 +121,7 @@ interface MorePanelProps {
   index: number;
   totalSlides: number;
   colors: ThemeColors;
+  t: Record<string, string>;
   onDuplicate: () => void;
   onAddSlide: () => void;
   onMoveUp: () => void;
@@ -133,6 +135,7 @@ function MorePanel({
   index,
   totalSlides,
   colors,
+  t,
   onDuplicate,
   onAddSlide,
   onMoveUp,
@@ -152,33 +155,33 @@ function MorePanel({
       <div className="space-y-0.5">
         <MenuButton
           icon={<Copy size={15} />}
-          label="Duplicate"
+          label={t.duplicate || "Duplicate"}
           colors={colors}
           onClick={() => { onDuplicate(); onClose(); }}
         />
         <MenuButton
           icon={<PlusCircle size={15} />}
-          label="Add slide below"
+          label={t.addSlideBelow || "Add slide below"}
           colors={colors}
           onClick={() => { onAddSlide(); onClose(); }}
         />
         <MenuButton
           icon={<Link2 size={15} />}
-          label="Copy link"
+          label={t.copyLinkSlide || "Copy link"}
           colors={colors}
           onClick={() => { onCopyLink(); onClose(); }}
         />
         <div className="h-px my-1.5" style={{ backgroundColor: colors.divider }} />
         <MenuButton
           icon={<MoveUp size={15} />}
-          label="Move up"
+          label={t.moveUp || "Move up"}
           colors={colors}
           onClick={onMoveUp}
           disabled={index === 0}
         />
         <MenuButton
           icon={<MoveDown size={15} />}
-          label="Move down"
+          label={t.moveDown || "Move down"}
           colors={colors}
           onClick={onMoveDown}
           disabled={index === totalSlides - 1}
@@ -186,7 +189,7 @@ function MorePanel({
         <div className="h-px my-1.5" style={{ backgroundColor: colors.divider }} />
         <MenuButton
           icon={<Trash2 size={15} />}
-          label="Delete"
+          label={t.delete || "Delete"}
           colors={colors}
           onClick={() => { onDelete(); onClose(); }}
           disabled={totalSlides <= 1}
@@ -245,6 +248,7 @@ interface StylingPanelProps {
   hasChart?: boolean;
   slideType?: "title" | "content";
   colors: ThemeColors;
+  t: Record<string, string>;
   onChangeContentLayout?: () => void;
   onAddImage: () => void;
   onAddChart?: () => void;
@@ -257,6 +261,7 @@ function StylingPanel({
   hasChart,
   slideType,
   colors,
+  t,
   onChangeContentLayout,
   onAddImage,
   onAddChart,
@@ -282,21 +287,21 @@ function StylingPanel({
         {showContentLayout && (
           <MenuButton
             icon={<LayoutGrid size={15} />}
-            label="Content layout"
+            label={t.contentLayout || "Content layout"}
             colors={colors}
             onClick={handleAction(onChangeContentLayout)}
           />
         )}
         <MenuButton
           icon={<ImagePlus size={15} />}
-          label={imageCount > 0 ? `Images (${imageCount})` : "Add image"}
+          label={imageCount > 0 ? `${t.imagesCount || "Images"} (${imageCount})` : (t.addImageBtn || "Add image")}
           colors={colors}
           onClick={handleAction(onAddImage)}
         />
         {onAddChart && (
           <MenuButton
             icon={<BarChart3 size={15} />}
-            label={hasChart ? "Edit chart" : "Add chart"}
+            label={hasChart ? (t.editChartSlide || "Edit chart") : (t.addChartSlide || "Add chart")}
             colors={colors}
             onClick={handleAction(onAddChart)}
           />
@@ -304,7 +309,7 @@ function StylingPanel({
         {hasChart && onRemoveChart && (
           <MenuButton
             icon={<Trash2 size={15} />}
-            label="Remove chart"
+            label={t.removeChart || "Remove chart"}
             colors={colors}
             onClick={handleAction(onRemoveChart)}
             danger
@@ -318,12 +323,14 @@ function StylingPanel({
 function AIPanel({
   slideContent,
   colors,
+  t,
   onAIEdit,
   onClose,
   onLoadingChange,
 }: {
   slideContent?: SlideContent;
   colors: ThemeColors;
+  t: Record<string, string>;
   onAIEdit?: (editedSlide: SlideContent) => void;
   onClose: () => void;
   onLoadingChange?: (isLoading: boolean) => void;
@@ -384,10 +391,10 @@ function AIPanel({
   };
 
   const suggestions = [
-    "Add a relevant image",
-    "Make it more professional",
-    "Add more bullet points",
-    "Simplify the content",
+    { key: "addRelevantImage", fallback: "Add a relevant image" },
+    { key: "makeMoreProfessional", fallback: "Make it more professional" },
+    { key: "addMoreBulletPoints", fallback: "Add more bullet points" },
+    { key: "simplifyContentBtn", fallback: "Simplify the content" },
   ];
 
   return (
@@ -405,8 +412,8 @@ function AIPanel({
           <Sparkles size={14} className="text-white" />
         </div>
         <div>
-          <p className="text-sm font-semibold" style={{ color: colors.text }}>Edit with AI</p>
-          <p className="text-[11px]" style={{ color: colors.textMuted }}>2 credits per edit</p>
+          <p className="text-sm font-semibold" style={{ color: colors.text }}>{t.editWithAIBtn || "Edit with AI"}</p>
+          <p className="text-[11px]" style={{ color: colors.textMuted }}>{t.creditsPerEdit || "2 credits per edit"}</p>
         </div>
       </div>
 
@@ -423,7 +430,7 @@ function AIPanel({
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
           onKeyUp={(e) => e.stopPropagation()}
-          placeholder="How would you like to edit this slide?"
+          placeholder={t.howEditSlide || "How would you like to edit this slide?"}
           className="w-full px-3 py-2.5 pr-10 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-violet-500/20 disabled:opacity-50"
           style={{ 
             backgroundColor: colors.surface,
@@ -449,8 +456,8 @@ function AIPanel({
       <div className="mt-2.5 flex flex-wrap gap-1.5">
         {suggestions.map((suggestion) => (
           <button
-            key={suggestion}
-            onClick={() => setPrompt(suggestion)}
+            key={suggestion.key}
+            onClick={() => setPrompt(t[suggestion.key] || suggestion.fallback)}
             disabled={isLoading}
             className="px-2.5 py-1 text-xs rounded-full transition-colors disabled:opacity-50"
             style={{ 
@@ -458,7 +465,7 @@ function AIPanel({
               color: colors.textMuted,
             }}
           >
-            {suggestion}
+            {t[suggestion.key] || suggestion.fallback}
           </button>
         ))}
       </div>
@@ -493,6 +500,10 @@ export function SlideMenu({
   const [panelPosition, setPanelPosition] = useState({ top: 0, left: 0 });
   const toolbarRef = useRef<HTMLDivElement>(null);
   const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
+  
+  // Get translations
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language] || dashboardTranslations.en;
   
   // Get theme colors
   const colors = getThemeColors(theme);
@@ -548,6 +559,7 @@ export function SlideMenu({
               index={index}
               totalSlides={totalSlides}
               colors={colors}
+              t={t}
               onDuplicate={onDuplicate}
               onAddSlide={onAddSlide}
               onMoveUp={onMoveUp}
@@ -564,6 +576,7 @@ export function SlideMenu({
               hasChart={hasChart}
               slideType={slideContent?.type}
               colors={colors}
+              t={t}
               onChangeContentLayout={onChangeContentLayout}
               onAddImage={onAddImage}
               onAddChart={onAddChart}
@@ -576,6 +589,7 @@ export function SlideMenu({
             <AIPanel
               slideContent={slideContent}
               colors={colors}
+              t={t}
               onAIEdit={onAIEdit}
               onClose={closePanel}
               onLoadingChange={onAIEditingChange}
@@ -621,7 +635,7 @@ export function SlideMenu({
                 ? "bg-slate-900 text-white"
                 : "text-slate-600 hover:bg-slate-100 hover:text-slate-800"
             }`}
-            title="More options"
+            title={t.moreOptions || "More options"}
           >
             <MoreHorizontal size={16} />
           </button>
@@ -634,7 +648,7 @@ export function SlideMenu({
                 ? "bg-slate-900 text-white"
                 : "text-slate-600 hover:bg-slate-100 hover:text-slate-800"
             }`}
-            title="Styling"
+            title={t.styling || "Styling"}
           >
             <Palette size={16} />
           </button>
@@ -647,7 +661,7 @@ export function SlideMenu({
                 ? "bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white"
                 : "text-slate-600 hover:bg-violet-50 hover:text-violet-600"
             }`}
-            title="Edit with AI"
+            title={t.editWithAIBtn || "Edit with AI"}
           >
             <Sparkles size={16} />
           </button>

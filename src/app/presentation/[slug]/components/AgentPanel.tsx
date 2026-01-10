@@ -14,6 +14,8 @@ import {
 import type { Theme } from "~/lib/themes";
 import type { SlideData } from "~/components/presentation/types";
 import { getModalColors } from "./ui-colors";
+import { useLanguage } from "~/contexts/LanguageContext";
+import { dashboardTranslations } from "~/lib/dashboard-translations";
 
 interface AgentPanelProps {
   isOpen: boolean;
@@ -43,7 +45,7 @@ interface SlideProgress {
 const quickActions: QuickAction[] = [
   {
     id: "improve",
-    label: "Improve writing",
+    label: "improveWriting",
     icon: <Wand2 size={14} />,
     prompt:
       "Improve the writing quality of all text content including titles, subtitles, and bullet points. Make it more professional and engaging.",
@@ -51,7 +53,7 @@ const quickActions: QuickAction[] = [
   },
   {
     id: "grammar",
-    label: "Fix spelling & grammar",
+    label: "fixSpellingGrammarBtn",
     icon: <FileText size={14} />,
     prompt:
       "Fix any spelling and grammar errors in all text content including titles, subtitles, and bullet points.",
@@ -59,14 +61,14 @@ const quickActions: QuickAction[] = [
   },
   {
     id: "translate",
-    label: "Translate",
+    label: "translateBtn",
     icon: <Languages size={14} />,
     prompt: "Translate all text content to",
     category: "writing",
   },
   {
     id: "longer",
-    label: "Make longer",
+    label: "makeLonger",
     icon: <FileText size={14} />,
     prompt:
       "Expand all content with more details, examples, and bullet points. Add more substance to each slide.",
@@ -74,7 +76,7 @@ const quickActions: QuickAction[] = [
   },
   {
     id: "shorter",
-    label: "Make shorter",
+    label: "makeShorter",
     icon: <Minimize2 size={14} />,
     prompt:
       "Make all content more concise while keeping key points. Reduce bullet points and simplify text.",
@@ -82,7 +84,7 @@ const quickActions: QuickAction[] = [
   },
   {
     id: "simplify",
-    label: "Simplify language",
+    label: "simplifyLanguage",
     icon: <FileText size={14} />,
     prompt:
       "Simplify the language in all slides to be easier to understand. Use simpler words and shorter sentences.",
@@ -90,7 +92,7 @@ const quickActions: QuickAction[] = [
   },
   {
     id: "specific",
-    label: "Be more specific",
+    label: "beMoreSpecific",
     icon: <FileText size={14} />,
     prompt:
       "Add more specific details, data, statistics, and concrete examples to all slides.",
@@ -116,6 +118,10 @@ export function AgentPanel({
   const [error, setError] = useState<string | null>(null);
   const [slideProgress, setSlideProgress] = useState<SlideProgress[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  
+  // Get translations
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language] || dashboardTranslations.en;
   
   // Keep a ref to track the latest slides during streaming
   const slidesRef = useRef<SlideData[]>(slides);
@@ -460,7 +466,7 @@ export function AgentPanel({
                 className="font-semibold"
                 style={{ color: themeStyles.text }}
               >
-                Edit all cards
+                {t.editAllCards || "Edit all cards"}
               </h3>
             </div>
           </div>
@@ -470,7 +476,7 @@ export function AgentPanel({
                 href="/dashboard/billing"
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
               >
-                Get more
+                {t.getMoreCredits || "Get more"}
               </a>
             )}
             {credits !== null && (
@@ -478,7 +484,7 @@ export function AgentPanel({
                 className="text-sm"
                 style={{ color: credits <= 5 ? "#f59e0b" : themeStyles.textMuted, fontWeight: credits <= 5 ? 500 : 400 }}
               >
-                {credits <= 0 ? "You're out of credits" : `${credits} credits`}
+                {credits <= 0 ? (t.outOfCredits || "You're out of credits") : `${credits} ${t.creditsCount || "credits"}`}
               </span>
             )}
             <button
@@ -507,7 +513,7 @@ export function AgentPanel({
                 className="text-sm"
                 style={{ color: themeStyles.text }}
               >
-                Updating slides... ({slideProgress.filter(p => p.status === "complete").length}/{slideProgress.length})
+                {t.updatingSlides || "Updating slides..."} ({slideProgress.filter(p => p.status === "complete").length}/{slideProgress.length})
               </span>
             </div>
           )}
@@ -526,7 +532,7 @@ export function AgentPanel({
                 boxShadow: editScope === "all" ? "0 1px 2px rgba(0,0,0,0.1)" : "none",
               }}
             >
-              All slides
+              {t.allSlidesScope || "All slides"}
             </button>
             <button
               onClick={() => setEditScope("current")}
@@ -537,7 +543,7 @@ export function AgentPanel({
                 boxShadow: editScope === "current" ? "0 1px 2px rgba(0,0,0,0.1)" : "none",
               }}
             >
-              Current slide ({currentSlideIndex + 1})
+              {t.currentSlideScope || "Current slide"} ({currentSlideIndex + 1})
             </button>
           </div>
 
@@ -561,7 +567,7 @@ export function AgentPanel({
                   handleSubmitStreaming();
                 }
               }}
-              placeholder="Ask me to edit, create, or style anything"
+              placeholder={t.askToEditCreate || "Ask me to edit, create, or style anything"}
               className="w-full px-4 py-3 bg-transparent resize-none focus:outline-none"
               style={{ color: themeStyles.text }}
               rows={2}
@@ -607,7 +613,7 @@ export function AgentPanel({
                 className="text-xs font-medium uppercase tracking-wider"
                 style={{ color: themeStyles.textMuted }}
               >
-                Writing
+                {t.writingCategory || "Writing"}
               </h4>
               <div className="flex flex-wrap gap-2">
                 {quickActions
@@ -624,7 +630,7 @@ export function AgentPanel({
                       }}
                     >
                       {action.icon}
-                      {action.label}
+                      {t[action.label] || action.label}
                     </button>
                   ))}
               </div>
@@ -633,7 +639,7 @@ export function AgentPanel({
                 className="text-xs font-medium uppercase tracking-wider pt-2"
                 style={{ color: themeStyles.textMuted }}
               >
-                Content
+                {t.contentCategory || "Content"}
               </h4>
               <div className="flex flex-wrap gap-2">
                 {quickActions
@@ -650,7 +656,7 @@ export function AgentPanel({
                       }}
                     >
                       {action.icon}
-                      {action.label}
+                      {t[action.label] || action.label}
                     </button>
                   ))}
               </div>

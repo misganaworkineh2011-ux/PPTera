@@ -57,11 +57,13 @@ function SkeletonCard({ index }: { index: number }) {
 function InfiniteScrollTrigger({ 
   onLoadMore, 
   isLoading, 
-  remainingCount 
+  remainingCount,
+  moreText
 }: { 
   onLoadMore: () => void; 
   isLoading: boolean;
   remainingCount: number;
+  moreText: string;
 }) {
   const triggerRef = useRef<HTMLDivElement>(null);
   const hasTriggered = useRef(false);
@@ -127,7 +129,7 @@ function InfiniteScrollTrigger({
         >
           <div className="flex items-center gap-1.5">
             <div className="w-8 h-[2px] bg-gradient-to-r from-transparent via-slate-300 to-transparent dark:via-slate-600 rounded-full group-hover:via-slate-400" />
-            <span className="text-xs font-medium">Scroll for {remainingCount} more</span>
+            <span className="text-xs font-medium">{remainingCount} {moreText}</span>
             <div className="w-8 h-[2px] bg-gradient-to-r from-transparent via-slate-300 to-transparent dark:via-slate-600 rounded-full group-hover:via-slate-400" />
           </div>
         </button>
@@ -354,7 +356,7 @@ export default function DashboardContent({ presentations: propPresentations, use
         });
 
         // Show toast immediately
-        toast.success(newPinnedState ? "Added to favorites" : "Removed from favorites");
+        toast.success(newPinnedState ? (t.addedToFavorites || "Added to favorites") : (t.removedFromFavorites || "Removed from favorites"));
 
         // Make API call in background
         fetch(`/api/presentations/${presId}/favorite`, { method: "PATCH" })
@@ -366,7 +368,7 @@ export default function DashboardContent({ presentations: propPresentations, use
           .catch((error) => {
             console.error("Error toggling favorite:", error);
             rollbackFavorite();
-            toast.error("Failed to update favorite status");
+            toast.error(t.failedToUpdate || "Failed to update favorite status");
           });
         break;
 
@@ -385,13 +387,13 @@ export default function DashboardContent({ presentations: propPresentations, use
             const data = await response.json();
             // Add the duplicated presentation to the list immediately
             setPresentations(prev => [data.presentation, ...prev]);
-            toast.success("Presentation duplicated!");
+            toast.success(t.presentationDuplicated || "Presentation duplicated!");
           } else {
-            toast.error("Failed to duplicate presentation");
+            toast.error(t.failedToDuplicate || "Failed to duplicate presentation");
           }
         } catch (error) {
           console.error("Error duplicating:", error);
-          toast.error("Failed to duplicate presentation");
+          toast.error(t.failedToDuplicate || "Failed to duplicate presentation");
         } finally {
           setLoadingAction(null);
         }
@@ -410,10 +412,10 @@ export default function DashboardContent({ presentations: propPresentations, use
           await navigator.clipboard.writeText(url);
           setCopiedId(presId);
           setTimeout(() => setCopiedId(null), 2000);
-          toast.success("Link copied to clipboard!");
+          toast.success(t.linkCopied || "Link copied to clipboard!");
         } catch (error) {
           console.error("Error copying link:", error);
-          toast.error("Failed to copy link");
+          toast.error(t.failedToCopyLink || "Failed to copy link");
         }
         break;
 
@@ -429,7 +431,7 @@ export default function DashboardContent({ presentations: propPresentations, use
 
   const handleRename = async (presId: string) => {
     if (!renameValue.trim()) {
-      toast?.error?.("Title cannot be empty") || alert("Title cannot be empty");
+      toast?.error?.(t.titleCannotBeEmpty || "Title cannot be empty") || alert(t.titleCannotBeEmpty || "Title cannot be empty");
       return;
     }
 
@@ -457,9 +459,9 @@ export default function DashboardContent({ presentations: propPresentations, use
         setPresentations(prev =>
           prev.map(p => p.id === presId ? { ...p, title: oldTitle } : p)
         );
-        toast.error("Failed to rename presentation");
+        toast.error(t.failedToRename || "Failed to rename presentation");
       } else {
-        toast.success("Presentation renamed successfully");
+        toast.success(t.renamedSuccessfully || "Presentation renamed successfully");
       }
     } catch (error) {
       console.error("Error renaming:", error);
@@ -467,7 +469,7 @@ export default function DashboardContent({ presentations: propPresentations, use
       setPresentations(prev =>
         prev.map(p => p.id === presId ? { ...p, title: oldTitle } : p)
       );
-      toast.error("Failed to rename presentation");
+      toast.error(t.failedToRename || "Failed to rename presentation");
     }
   };
 
@@ -483,12 +485,12 @@ export default function DashboardContent({ presentations: propPresentations, use
 
       if (!response.ok) {
         rollbackDelete();
-        toast?.error?.("Failed to delete presentation") || alert("Failed to delete presentation");
+        toast?.error?.(t.failedToDelete || "Failed to delete presentation") || alert(t.failedToDelete || "Failed to delete presentation");
       }
     } catch (error) {
       console.error("Error deleting:", error);
       rollbackDelete();
-      toast?.error?.("Failed to delete presentation") || alert("Failed to delete presentation");
+      toast?.error?.(t.failedToDelete || "Failed to delete presentation") || alert(t.failedToDelete || "Failed to delete presentation");
     }
   };
 
@@ -743,6 +745,7 @@ export default function DashboardContent({ presentations: propPresentations, use
                 onLoadMore={onLoadMore} 
                 isLoading={isLoadingMore || false}
                 remainingCount={pagination ? pagination.total - presentations.length : 0}
+                moreText={t.moreItems || "more"}
               />
             )}
           </div>
