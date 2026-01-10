@@ -3,6 +3,8 @@
 import { Sparkles, FileText, PenTool, X } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "~/contexts/LanguageContext";
+import { dashboardTranslations } from "~/lib/dashboard-translations";
 
 interface Props {
   userId: string;
@@ -12,6 +14,8 @@ interface Props {
 
 export default function ProjectCreationWizard({ userId, credits, onClose }: Props) {
   const router = useRouter();
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language] || dashboardTranslations.en;
 
   const handleSelect = (mode: string) => {
     onClose();
@@ -21,8 +25,8 @@ export default function ProjectCreationWizard({ userId, credits, onClose }: Prop
   const options = [
     {
       id: "ai",
-      title: "AI Generation",
-      description: "Describe your idea and let AI create a professional presentation",
+      title: t.aiGenerationMode || "AI Generation",
+      description: t.aiGenerationDesc || "Describe your idea and let AI create a professional presentation",
       icon: Sparkles,
       iconBg: "bg-violet-500/10",
       iconColor: "text-violet-600",
@@ -30,8 +34,8 @@ export default function ProjectCreationWizard({ userId, credits, onClose }: Prop
     },
     {
       id: "docs",
-      title: "Import Documents",
-      description: "Upload PDFs or Word files to transform into slides",
+      title: t.importDocumentsMode || "Import Documents",
+      description: t.importDocumentsDesc || "Upload PDFs or Word files to transform into slides",
       icon: FileText,
       iconBg: "bg-blue-500/10",
       iconColor: "text-blue-600",
@@ -39,8 +43,8 @@ export default function ProjectCreationWizard({ userId, credits, onClose }: Prop
     },
     {
       id: "scratch",
-      title: "Start from Scratch",
-      description: "Build from a blank canvas with full creative control",
+      title: t.startFromScratchMode || "Start from Scratch",
+      description: t.startFromScratchDesc || "Build from a blank canvas with full creative control",
       icon: PenTool,
       iconBg: "bg-emerald-500/10",
       iconColor: "text-emerald-600",
@@ -60,10 +64,10 @@ export default function ProjectCreationWizard({ userId, credits, onClose }: Prop
         </button>
         
         <h2 className="text-xl font-semibold text-gray-900">
-          Create new presentation
+          {t.createNewPresentation || "Create new presentation"}
         </h2>
         <p className="mt-1 text-sm text-gray-500">
-          Choose how you&apos;d like to get started
+          {t.chooseHowToStart || "Choose how you'd like to get started"}
         </p>
       </div>
 

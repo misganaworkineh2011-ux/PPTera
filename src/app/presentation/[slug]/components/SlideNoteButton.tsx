@@ -6,6 +6,8 @@ import { StickyNote, Send, X } from "lucide-react";
 import type { Theme } from "~/lib/themes";
 import { getThemeType } from "./types";
 import { getModalColors } from "./ui-colors";
+import { useLanguage } from "~/contexts/LanguageContext";
+import { dashboardTranslations } from "~/lib/dashboard-translations";
 
 interface SlideNoteButtonProps {
   slideIndex: number;
@@ -36,6 +38,10 @@ export function SlideNoteButton({
   // Theme-aware styling using the helper
   const colors = theme ? getModalColors(theme) : null;
   const isLight = colors ? !colors.isDark : true;
+  
+  // Get translations
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language] || dashboardTranslations.en;
   
   // Theme-aware colors
   const panelBg = colors?.bg || "#ffffff";
@@ -122,7 +128,7 @@ export function SlideNoteButton({
       >
         <StickyNote size={15} />
         <span className="text-xs font-medium">
-          {noteCount > 0 ? `${noteCount} Note${noteCount > 1 ? "s" : ""}` : "Add Note"}
+          {noteCount > 0 ? `${noteCount} ${noteCount > 1 ? (t.notesCountPlural?.replace("{count}", "") || "Notes") : (t.notesCount?.replace("{count}", "") || "Note")}` : (t.addNote || "Add Note")}
         </span>
       </button>
 
@@ -150,8 +156,8 @@ export function SlideNoteButton({
                   <StickyNote size={16} className="text-white" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold" style={{ color: textColor }}>Speaker Notes</p>
-                  <p className="text-xs" style={{ color: mutedColor }}>Slide {slideIndex + 1}</p>
+                  <p className="text-sm font-semibold" style={{ color: textColor }}>{t.speakerNotes || "Speaker Notes"}</p>
+                  <p className="text-xs" style={{ color: mutedColor }}>{t.slideLabel || "Slide"} {slideIndex + 1}</p>
                 </div>
               </div>
               <button
@@ -200,13 +206,13 @@ export function SlideNoteButton({
                             className="px-2.5 py-1 text-xs rounded-md"
                             style={{ color: mutedColor }}
                           >
-                            Cancel
+                            {t.cancelNote || "Cancel"}
                           </button>
                           <button
                             onClick={handleSaveEdit}
                             className="px-2.5 py-1 text-xs text-amber-600 hover:text-amber-700 font-medium rounded-md"
                           >
-                            Save
+                            {t.saveNote || "Save"}
                           </button>
                         </div>
                       </div>
@@ -221,13 +227,13 @@ export function SlideNoteButton({
                             className="text-xs font-medium"
                             style={{ color: mutedColor }}
                           >
-                            Edit
+                            {t.editNote || "Edit"}
                           </button>
                           <button
                             onClick={() => onDeleteNote(idx)}
                             className="text-xs text-red-500 font-medium"
                           >
-                            Delete
+                            {t.deleteNote || "Delete"}
                           </button>
                         </div>
                       </>
@@ -247,7 +253,7 @@ export function SlideNoteButton({
                   e.stopPropagation();
                   if (e.key === "Enter" && e.ctrlKey) handleAddNote();
                 }}
-                placeholder="Add a speaker note..."
+                placeholder={t.addSpeakerNote || "Add a speaker note..."}
                 className="w-full px-3 py-2.5 pr-11 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                 style={{ 
                   backgroundColor: isLight ? "#ffffff" : theme?.colors.surface || "#27272a",
@@ -267,7 +273,7 @@ export function SlideNoteButton({
             </div>
 
             <p className="text-[11px] mt-2.5 text-center" style={{ color: mutedColor }}>
-              Ctrl+Enter to add • Visible in presenter view
+              {t.ctrlEnterToAdd || "Ctrl+Enter to add • Visible in presenter view"}
             </p>
           </div>,
           document.body

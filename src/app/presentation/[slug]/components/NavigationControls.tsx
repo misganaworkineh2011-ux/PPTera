@@ -4,6 +4,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Theme } from "~/lib/themes";
 import { getThemeType } from "./types";
 import { getUIColors } from "./ui-colors";
+import { useLanguage } from "~/contexts/LanguageContext";
+import { dashboardTranslations } from "~/lib/dashboard-translations";
 
 interface NavigationControlsProps {
   currentSlide: number;
@@ -25,6 +27,8 @@ export function NavigationControls({
   theme,
 }: NavigationControlsProps) {
   const ui = getUIColors(getThemeType(theme));
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language] || dashboardTranslations.en;
 
   return (
     <div
@@ -40,7 +44,7 @@ export function NavigationControls({
         }`}
       >
         <ChevronLeft size={18} className="sm:w-[18px] sm:h-[18px] w-4 h-4" />
-        <span className="hidden sm:inline text-sm">Previous</span>
+        <span className="hidden sm:inline text-sm">{t.previous || "Previous"}</span>
       </button>
       <div className="flex items-center gap-1 sm:gap-1.5">
         {Array.from({ length: totalSlides }).map((_, index) => (
@@ -69,7 +73,7 @@ export function NavigationControls({
             : ui.navBtn
         }`}
       >
-        <span className="hidden sm:inline text-sm">Next</span>
+        <span className="hidden sm:inline text-sm">{t.nextBtn || "Next"}</span>
         <ChevronRight size={18} className="sm:w-[18px] sm:h-[18px] w-4 h-4" />
       </button>
     </div>

@@ -13,6 +13,8 @@ import { imageLayouts } from "~/lib/layouts/content/images";
 import { circleLayouts } from "~/lib/layouts/content/circles";
 import { sequenceLayouts } from "~/lib/layouts/content/sequence";
 import type { ContentLayoutType } from "./types";
+import { useLanguage } from "~/contexts/LanguageContext";
+import { dashboardTranslations } from "~/lib/dashboard-translations";
 
 // Import actual layout renderers
 import BoxLayoutRenderer from "./BoxLayoutRenderer";
@@ -291,6 +293,21 @@ export default function ContentLayoutPanel({
 }: ContentLayoutPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const currentCategory = getCategoryFromLayoutId(currentContentLayout);
+  
+  // Get translations
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language] || dashboardTranslations.en;
+
+  // Category names with translations
+  const categoryNames: Record<LayoutCategory, string> = {
+    boxes: t.boxCards || "Box Cards",
+    steps: t.stepsProcess || "Steps & Process",
+    bullets: t.bulletPointsLayout || "Bullet Points",
+    quotes: t.quotesTestimonials || "Quotes & Testimonials",
+    images: t.imageGallery || "Image Gallery",
+    circles: t.circularLayouts || "Circular Layouts",
+    sequence: t.sequenceTimeline || "Sequence & Timeline",
+  };
 
   // Sort categories to put current category first
   const sortedCategories = useMemo(() => {
@@ -380,7 +397,7 @@ export default function ContentLayoutPanel({
         >
           <div className="flex items-center gap-2">
             <LayoutGrid size={18} style={{ color: colors.accent }} />
-            <h3 className="font-semibold" style={{ color: colors.text }}>Content Layout</h3>
+            <h3 className="font-semibold" style={{ color: colors.text }}>{t.contentLayoutTitle || "Content Layout"}</h3>
           </div>
           <button
             onClick={onClose}
@@ -407,11 +424,11 @@ export default function ContentLayoutPanel({
           <div>
             <div className="p-3">
               <p className="text-xs mb-1" style={{ color: colors.textMuted }}>
-                Choose a layout style. Changes apply instantly.
+                {t.chooseLayoutStyle || "Choose a layout style. Changes apply instantly."}
               </p>
               {contentItems.length > 0 && (
                 <p className="text-[10px]" style={{ color: colors.textMuted }}>
-                  Previews show your actual content ({contentItems.length} item{contentItems.length !== 1 ? "s" : ""})
+                  {t.previewsShowContent || "Previews show your actual content"} ({contentItems.length} {contentItems.length !== 1 ? (t.itemsCount || "items") : "item"})
                 </p>
               )}
             </div>
@@ -438,14 +455,14 @@ export default function ContentLayoutPanel({
                         className="text-sm font-medium"
                         style={{ color: isCurrentCategory ? colors.accent : colors.text }}
                       >
-                        {category.name}
+                        {categoryNames[category.id] || category.name}
                       </h4>
                       {isCurrentCategory && (
                         <span 
                           className="text-[9px] px-1.5 py-0.5 rounded text-white"
                           style={{ backgroundColor: colors.accent }}
                         >
-                          Current
+                          {t.currentLabel || "Current"}
                         </span>
                       )}
                     </div>
@@ -512,12 +529,12 @@ export default function ContentLayoutPanel({
                 }}
               >
                 <div className="text-xs" style={{ color: colors.textMuted }}>
-                  <span className="font-medium">Current:</span>{" "}
+                  <span className="font-medium">{t.currentLabel || "Current"}:</span>{" "}
                   <span style={{ color: colors.text }}>{currentLayoutName}</span>
                 </div>
                 {contentItems.length > 0 && (
                   <div className="text-[10px] mt-1" style={{ color: colors.textMuted }}>
-                    {contentItems.length} content item{contentItems.length !== 1 ? "s" : ""}
+                    {contentItems.length} {t.contentItemsCount || "content items"}
                   </div>
                 )}
               </div>

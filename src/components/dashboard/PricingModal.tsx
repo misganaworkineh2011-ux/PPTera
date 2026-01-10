@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { X, Loader2, AlertCircle, Zap, Plus, Sparkles } from "lucide-react";
+import { X, Loader2, AlertCircle, Zap } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "~/contexts/LanguageContext";
+import { dashboardTranslations } from "~/lib/dashboard-translations";
 
 type PolarProduct = {
   key: string;
@@ -26,6 +28,13 @@ type PolarProduct = {
   } | null;
 };
 
+type TopupOption = {
+  credits: number;
+  price: number;
+  priceDisplay: string;
+  available: boolean;
+};
+
 interface PricingModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -35,7 +44,9 @@ interface PricingModalProps {
 export default function PricingModal({ isOpen, onClose, currentPlan }: PricingModalProps) {
   const [isAnnual, setIsAnnual] = useState(true);
   const [products, setProducts] = useState<PolarProduct[]>([]);
+  const [topupOptions, setTopupOptions] = useState<TopupOption[]>([]);
   const [loading, setLoading] = useState(true);
+  const [topupLoading, setTopupLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [checkoutLoadingId, setCheckoutLoadingId] = useState<string | null>(null);
   const [topupLoadingId, setTopupLoadingId] = useState<number | null>(null);
@@ -43,11 +54,11 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
 
   const { isSignedIn } = useUser();
   const router = useRouter();
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language] || dashboardTranslations.en;
 
-  // Check if user is a paid subscriber
   const isPaidUser = currentPlan && currentPlan.toLowerCase() !== 'free';
 
-  // Reset loading state when modal opens (handles back navigation)
   useEffect(() => {
     if (isOpen) {
       setCheckoutLoadingId(null);
@@ -55,11 +66,12 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
     }
   }, [isOpen]);
 
-  // Fetch products when modal opens
   useEffect(() => {
-    if (isOpen && products.length === 0) {
-      loadProducts();
-    }
+    if (isOpen && products.length === 0) loadProducts();
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen && topupOptions.length === 0) loadTopupOptions();
   }, [isOpen]);
 
   async function loadProducts() {
@@ -68,25 +80,33 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
     try {
       const res = await fetch("/api/polar/products");
       if (!res.ok) throw new Error("Failed to load pricing");
-      const data = await res.json();
-      setProducts(data);
+      setProducts(await res.json());
     } catch (err) {
       console.error(err);
-      setError("Could not load pricing plans. Please try again.");
+      setError("Could not load pricing plans.");
     } finally {
       setLoading(false);
     }
   }
 
-  const handleSubscribe = async (productKey: string) => {
-    if (!isSignedIn) {
-      router.push("/sign-in");
-      return;
+  async function loadTopupOptions() {
+    setTopupLoading(true);
+    try {
+      const res = await fetch("/api/polar/topup");
+      if (!res.ok) throw new Error("Failed to load topup options");
+      const data = await res.json();
+      setTopupOptions(data.options || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setTopupLoading(false);
     }
+  }
 
+  const handleSubscribe = async (productKey: string) => {
+    if (!isSignedIn) { router.push("/sign-in"); return; }
     const product = products.find(p => p.key === productKey);
     if (!product) return;
-
     const priceData = isAnnual ? product.yearly : product.monthly;
     if (!priceData) return;
 
@@ -95,17 +115,11 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
       const res = await fetch("/api/polar/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productId: priceData.id,
-          recurringInterval: isAnnual ? "year" : "month"
-        })
+        body: JSON.stringify({ productId: priceData.id, recurringInterval: isAnnual ? "year" : "month" })
       });
       const data = await res.json();
-      if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
-      } else {
-        throw new Error("No checkout URL returned");
-      }
+      if (data.checkoutUrl) window.location.href = data.checkoutUrl;
+      else throw new Error("No checkout URL");
     } catch (err) {
       console.error(err);
       alert("Failed to start checkout");
@@ -113,18 +127,8 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
     }
   };
 
-  const topUpOptions = [
-    { credits: 500, price: "$9.99", popular: false, slides: 125, images: 50 },
-    { credits: 1000, price: "$17.99", popular: true, slides: 250, images: 100 },
-    { credits: 2500, price: "$39.99", popular: false, slides: 625, images: 250 },
-  ];
-
   const handleTopup = async (credits: number, index: number) => {
-    if (!isSignedIn) {
-      router.push("/sign-in");
-      return;
-    }
-
+    if (!isSignedIn) { router.push("/sign-in"); return; }
     setTopupLoadingId(index);
     try {
       const res = await fetch("/api/polar/topup", {
@@ -133,16 +137,9 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
         body: JSON.stringify({ credits: credits.toString() }),
       });
       const data = await res.json();
-      
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to start checkout");
-      }
-      
-      if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
-      } else {
-        throw new Error("No checkout URL returned");
-      }
+      if (!res.ok) throw new Error(data.error || "Failed to start checkout");
+      if (data.checkoutUrl) window.location.href = data.checkoutUrl;
+      else throw new Error("No checkout URL");
     } catch (err: any) {
       console.error(err);
       alert(err.message || "Failed to start checkout");
@@ -150,68 +147,55 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
     }
   };
 
-  // Don't render anything on server or if not open
-  if (!isOpen) return null;
-  
-  // Handle SSR - don't use portal on server
-  if (typeof window === 'undefined') return null;
+  if (!isOpen || typeof window === 'undefined') return null;
+
+  const getPriceFromProducts = (key: string) => {
+    const product = products.find(p => p.key === key);
+    if (!product) return null;
+    const monthlyPrice = product.monthly?.priceAmount ? product.monthly.priceAmount / 100 : null;
+    const yearlyPrice = product.yearly?.priceAmount ? product.yearly.priceAmount / 100 : null;
+    if (monthlyPrice === null && yearlyPrice === null) return null;
+    const yearlyMonthly = yearlyPrice ? Math.round(yearlyPrice / 12) : monthlyPrice;
+    return {
+      monthly: monthlyPrice ?? yearlyMonthly ?? 0,
+      yearly: yearlyMonthly ?? monthlyPrice ?? 0,
+      yearlyTotal: yearlyPrice ?? (monthlyPrice ? monthlyPrice * 12 : 0),
+    };
+  };
+
+  const plans = [
+    { key: "plus", name: "Plus", prices: getPriceFromProducts("plus"), description: t.unlimitedAICreations, features: [t.upTo20Slides || "Up to 20 slides per presentation", t.credits1000 || "1,000 AI credits/month", t.removeBranding || "Remove PPTMaster branding", t.advancedAIModels || "Advanced AI image models"], highlight: false, badge: null as string | null, badgeGradient: false },
+    { key: "pro", name: "Pro", prices: getPriceFromProducts("pro"), description: t.forPremiumAI, features: [t.upTo60Slides || "Up to 60 slides per presentation", t.credits4000 || "4,000 AI credits/month", t.premiumAIModels || "Premium AI image models", t.customBranding || "Custom branding & fonts"], highlight: true, badge: t.mostPopular, badgeGradient: false },
+    { key: "ultra", name: "Ultra", prices: getPriceFromProducts("ultra"), description: t.for20xMoreAI, features: [t.upTo75Slides || "Up to 75 slides per presentation", t.credits20000 || "20,000 AI credits/month", t.mostAdvancedModels || "Most advanced AI models", t.earlyAccess || "Early access to new features"], highlight: false, badge: t.introductoryPrice, badgeGradient: true },
+  ];
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       
-      {/* Modal */}
-      <div className="relative bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden mx-4">
+      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden mx-4">
         {/* Header */}
-        <div className="sticky top-0 bg-white dark:bg-neutral-900 border-b border-slate-200 dark:border-neutral-800 px-6 py-4 flex items-center justify-between z-10">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500">
-              <Sparkles className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Upgrade Your Plan</h2>
-              <p className="text-sm text-slate-500 dark:text-neutral-400">
-                {currentPlan ? `Current: ${currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)}` : "Choose a plan to unlock more features"}
-              </p>
-            </div>
+        <div className="sticky top-0 bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between z-10">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">{t.upgradeYourPlan}</h2>
+            <p className="text-sm text-slate-500">
+              {currentPlan ? `${t.current}: ${currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)}` : t.choosePlanToUnlock}
+            </p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-neutral-800 dark:hover:text-white transition"
-          >
+          <button onClick={onClose} className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition">
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Tabs */}
         <div className="px-6 pt-4 flex gap-2">
-          <button
-            onClick={() => setActiveTab("plans")}
-            className={cn(
-              "px-4 py-2 rounded-lg text-sm font-semibold transition",
-              activeTab === "plans"
-                ? "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white"
-                : "bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-400 hover:bg-slate-200 dark:hover:bg-neutral-700"
-            )}
-          >
-            Subscription Plans
+          <button onClick={() => setActiveTab("plans")} className={cn("px-4 py-2 rounded-lg text-sm font-medium transition", activeTab === "plans" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-50")}>
+            {t.subscriptionPlans}
           </button>
           {isPaidUser && (
-            <button
-              onClick={() => setActiveTab("topup")}
-              className={cn(
-                "px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2",
-                activeTab === "topup"
-                  ? "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white"
-                  : "bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-400 hover:bg-slate-200 dark:hover:bg-neutral-700"
-              )}
-            >
+            <button onClick={() => setActiveTab("topup")} className={cn("px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2", activeTab === "topup" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-50")}>
               <Zap className="h-4 w-4" />
-              Buy Credits
+              {t.buyCredits}
             </button>
           )}
         </div>
@@ -220,252 +204,112 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
           {activeTab === "plans" && (
             <>
-              {/* Billing Toggle */}
-              <div className="flex items-center justify-center gap-4 mb-8">
-                <span className={cn("text-sm font-semibold", !isAnnual ? "text-slate-900 dark:text-white" : "text-slate-500 dark:text-neutral-500")}>Monthly</span>
-                <button
-                  onClick={() => setIsAnnual(!isAnnual)}
-                  className="relative h-8 w-14 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] p-1 transition-all hover:shadow-lg"
-                >
-                  <div className={cn("h-6 w-6 rounded-full bg-white shadow-md transition-transform", isAnnual ? "translate-x-6" : "translate-x-0")} />
+              {/* Toggle */}
+              <div className="flex items-center justify-center gap-3 mb-6">
+                <span className={cn("text-sm", !isAnnual ? "text-slate-900 font-medium" : "text-slate-400")}>{t.monthly}</span>
+                <button onClick={() => setIsAnnual(!isAnnual)} className="relative h-6 w-11 rounded-full bg-slate-200 transition-colors" style={{ backgroundColor: isAnnual ? '#0ea5e9' : undefined }}>
+                  <div className={cn("absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform", isAnnual ? "translate-x-5" : "translate-x-0.5")} />
                 </button>
-                <span className={cn("text-sm font-semibold", isAnnual ? "text-slate-900 dark:text-white" : "text-slate-500 dark:text-neutral-500")}>
-                  Yearly <span className="text-green-600 font-bold ml-1">Save up to 28%</span>
+                <span className={cn("text-sm", isAnnual ? "text-slate-900 font-medium" : "text-slate-400")}>
+                  {t.yearly} <span className="text-emerald-600 text-xs ml-1">-20%</span>
                 </span>
               </div>
 
-              {/* Error banner (non-blocking) */}
               {error && (
-                <div className="flex items-center justify-between gap-3 mb-4 px-4 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800">
-                  <div className="flex items-center gap-2 text-red-600 dark:text-red-300">
-                    <AlertCircle className="h-4 w-4" />
-                    <span className="text-xs">Could not load latest pricing. Showing defaults.</span>
-                  </div>
-                  <button
-                    onClick={loadProducts}
-                    className="text-xs text-red-600 dark:text-red-300 hover:underline"
-                  >
-                    Try again
-                  </button>
+                <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-red-50 text-red-600 text-sm">
+                  <AlertCircle className="h-4 w-4" />
+                  <span>{t.couldNotLoadPricing}</span>
+                  <button onClick={loadProducts} className="ml-auto text-xs underline">{t.tryAgain}</button>
                 </div>
               )}
 
-              {/* Plans - always rendered; prices use skeleton while loading */}
-              <div className="grid gap-3 md:grid-cols-3">
-                {products.map((product) => {
-                  const priceData = isAnnual ? product.yearly : product.monthly;
-                  const activePrice = priceData || product.monthly || product.yearly;
-                  const isCurrentPlan = currentPlan?.toLowerCase() === product.key.toLowerCase();
-                  const isHighlighted = product.key === 'pro';
-                  const isUltra = product.key === 'ultra';
-
-                  // Get plan-specific features based on pricing page
-                  const getPlanFeatures = (key: string) => {
-                    if (key === 'plus') {
-                      return [
-                        'Create up to 20 cards per prompt',
-                        '1,000 monthly credits',
-                        'Remove PPTMaster branding',
-                        'Advanced AI image models',
-                      ];
-                    } else if (key === 'pro') {
-                      return [
-                        'Create up to 60 cards per prompt',
-                        '4,000 monthly credits',
-                        'Premium AI image models',
-                        'Custom branding & fonts',
-                        'Detailed analytics & advanced sharing',
-                      ];
-                    } else if (key === 'ultra') {
-                      return [
-                        'Create up to 75 cards per prompt',
-                        '20,000 monthly credits',
-                        'Access to the most advanced AI models (text, image, video)',
-                        'Early access to new features',
-                      ];
-                    }
-                    return [];
-                  };
-
-                  const features = getPlanFeatures(product.key);
+              {/* Pricing Cards */}
+              <div className="grid md:grid-cols-3 gap-4">
+                {plans.map((plan) => {
+                  const isCurrentPlan = currentPlan?.toLowerCase() === plan.key.toLowerCase();
+                  const price = plan.prices ? (isAnnual ? plan.prices.yearly : plan.prices.monthly) : null;
+                  const yearlyTotal = plan.prices?.yearlyTotal;
                   
-                  // Get dynamic prices from Polar
-                  const monthlyPrice = product.monthly?.priceAmount ? product.monthly.priceAmount / 100 : null;
-                  const yearlyPrice = product.yearly?.priceAmount ? product.yearly.priceAmount / 100 : null;
-                  const yearlyMonthly = yearlyPrice ? Math.round(yearlyPrice / 12) : monthlyPrice;
-
                   return (
-                    <div
-                      key={product.key}
-                      className={cn(
-                        "relative rounded-lg p-4 border transition-all duration-300 flex flex-col h-full",
-                        isHighlighted
-                          ? "bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white border-transparent shadow-xl scale-[1.02]"
-                          : "bg-white dark:bg-neutral-800 text-slate-900 dark:text-white border-slate-200 dark:border-neutral-700 hover:border-[#06b6d4]",
-                        isCurrentPlan && "ring-2 ring-green-500"
-                      )}
-                    >
-                        {isHighlighted && (
-                          <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-lg whitespace-nowrap">
-                            MOST POPULAR
-                          </div>
-                        )}
-                        {isUltra && !isCurrentPlan && (
-                          <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-lg whitespace-nowrap">
-                            INTRODUCTORY PRICE
-                          </div>
-                        )}
-                        {isCurrentPlan && (
-                          <div className="absolute -top-2.5 right-4 bg-green-500 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-lg">
-                            CURRENT
-                          </div>
-                        )}
-
-                        <div className={cn(isHighlighted || (isUltra && !isCurrentPlan) ? "pt-1" : "")}>
-                          <div className="flex items-center gap-1.5 mb-1">
-                            <span className={cn("text-sm", isHighlighted ? "text-white" : "text-[#06b6d4]")}>✦</span>
-                            <h3 className="text-lg font-bold">{product.name}</h3>
-                          </div>
-                          <p className={cn("text-xs mb-3", isHighlighted ? "text-white/70" : "text-slate-500 dark:text-neutral-400")}>
-                            {product.key === 'plus' ? 'Unlimited AI creations' :
-                             product.key === 'pro' ? 'For premium AI and customization' :
-                             product.key === 'ultra' ? 'For 20× more AI usage' :
-                             product.description?.split('\n')[0] || "Unlock your potential."}
-                          </p>
-
-                          <div className="mb-3">
-                            {loading ? (
-                              <div className="h-6 w-16 rounded bg-slate-200/70 dark:bg-neutral-700 animate-pulse" />
-                            ) : !activePrice || error ? (
-                              <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-neutral-400">
-                                <AlertCircle className="h-3 w-3" />
-                                <span>Pricing unavailable</span>
-                              </div>
-                            ) : isAnnual ? (
-                              <>
-                                <div className="flex items-baseline gap-1">
-                                  <span className="text-2xl font-bold">
-                                    ${yearlyMonthly ?? 0}
-                                  </span>
-                                  <span className={cn("text-xs", isHighlighted ? "text-white/60" : "text-slate-500 dark:text-neutral-500")}>/ seat / month</span>
-                                </div>
-                                <p className={cn("text-xs", isHighlighted ? "text-white/50" : "text-slate-400 dark:text-neutral-500")}>
-                                  ${yearlyPrice?.toLocaleString() ?? 0} per seat, billed annually
-                                </p>
-                              </>
-                            ) : (
-                              <div className="flex items-baseline gap-1">
-                                <span className="text-2xl font-bold">
-                                  ${monthlyPrice ?? 0}
-                                </span>
-                                <span className={cn("text-xs", isHighlighted ? "text-white/60" : "text-slate-500 dark:text-neutral-500")}>/ seat / month</span>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="mt-auto mb-4">
-                            <button
-                              onClick={() => handleSubscribe(product.key)}
-                              disabled={!!checkoutLoadingId || isCurrentPlan}
-                              className={cn(
-                                "w-full rounded-md py-2 px-3 font-medium text-sm transition-all disabled:opacity-70 disabled:cursor-not-allowed",
-                                isHighlighted
-                                  ? "bg-white text-[#1e3a8a] hover:bg-slate-100"
-                                  : "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90",
-                                isCurrentPlan && "!bg-green-500 !text-white"
-                              )}
-                            >
-                              {checkoutLoadingId === product.key ? (
-                                <Loader2 className="h-4 w-4 animate-spin mx-auto" />
-                              ) : isCurrentPlan ? (
-                                "Current Plan"
-                              ) : (
-                                "Get Started"
-                              )}
-                            </button>
-                          </div>
-
-                          {product.key !== 'plus' && (
-                            <p className={cn("text-xs mb-2 font-medium", isHighlighted ? "text-white/70" : "text-slate-500 dark:text-neutral-400")}>
-                              Everything in {product.key === 'pro' ? 'Plus' : 'Pro'}, and:
-                            </p>
-                          )}
-
-                          <ul className="space-y-1.5 flex-1 text-xs">
-                            {features.map((feature, idx) => (
-                              <li key={idx} className="flex items-start gap-1.5">
-                                <span className={cn("text-xs", isHighlighted ? "text-white" : "text-[#06b6d4]")}>✓</span>
-                                <span className={cn(isHighlighted ? "text-white/90" : "text-slate-600 dark:text-neutral-300")}>
-                                  {feature}
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
+                    <div key={plan.key} className={cn("relative rounded-xl p-5 flex flex-col transition-all", plan.highlight ? "bg-slate-900 text-white ring-2 ring-slate-900" : "bg-white border border-slate-200 hover:border-slate-300", isCurrentPlan && !plan.highlight && "ring-2 ring-emerald-500")}>
+                      {plan.badge && (
+                        <div className={cn("absolute -top-2.5 left-1/2 -translate-x-1/2 text-[10px] font-semibold px-2.5 py-0.5 rounded-full", plan.badgeGradient ? "bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white" : "bg-amber-400 text-amber-900")}>
+                          {plan.badge}
                         </div>
+                      )}
+                      {isCurrentPlan && <div className="absolute -top-2.5 right-3 bg-emerald-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">{t.current}</div>}
+
+                      <h3 className={cn("text-base font-semibold mb-1", plan.highlight ? "text-white" : "text-slate-900")}>{plan.name}</h3>
+                      <p className={cn("text-xs mb-3", plan.highlight ? "text-slate-400" : "text-slate-500")}>{plan.description}</p>
+
+                      <div className="mb-4">
+                        {loading || price === null ? (
+                          <div className={cn("h-7 w-16 animate-pulse rounded", plan.highlight ? "bg-white/20" : "bg-slate-100")} />
+                        ) : (
+                          <>
+                            <div className="flex items-baseline gap-1">
+                              <span className={cn("text-2xl font-bold", plan.highlight ? "text-white" : "text-slate-900")}>${price}</span>
+                              <span className={cn("text-xs", plan.highlight ? "text-slate-400" : "text-slate-500")}>/{t.monthly?.toLowerCase()}</span>
+                            </div>
+                            {isAnnual && yearlyTotal && <p className={cn("text-[11px]", plan.highlight ? "text-slate-500" : "text-slate-400")}>${yearlyTotal} {t.billedAnnually}</p>}
+                          </>
+                        )}
                       </div>
-                    );
-                  })}
-                </div>
+
+                      <button onClick={() => handleSubscribe(plan.key)} disabled={!!checkoutLoadingId || isCurrentPlan} className={cn("w-full py-2 rounded-lg text-sm font-medium transition mb-4", plan.highlight ? "bg-white text-slate-900 hover:bg-slate-100" : "bg-slate-900 text-white hover:bg-slate-800", isCurrentPlan && "!bg-emerald-500 !text-white cursor-default", "disabled:opacity-60")}>
+                        {checkoutLoadingId === plan.key ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : isCurrentPlan ? t.currentPlan : t.getStarted}
+                      </button>
+
+                      <ul className="space-y-2 text-xs flex-grow">
+                        {plan.features.map((feature, j) => (
+                          <li key={j} className="flex items-start gap-2">
+                            <span className={plan.highlight ? "text-emerald-400" : "text-emerald-500"}>✓</span>
+                            <span className={plan.highlight ? "text-slate-300" : "text-slate-600"}>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })}
+              </div>
             </>
           )}
 
           {activeTab === "topup" && (
             <>
-              <div className="text-center mb-8">
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Buy More Credits</h3>
-                <p className="text-slate-500 dark:text-neutral-400">One-time purchase, no subscription required</p>
+              <div className="text-center mb-6">
+                <h3 className="text-lg font-semibold text-slate-900 mb-1">{t.buyMoreCredits}</h3>
+                <p className="text-sm text-slate-500">{t.oneTimePurchase}</p>
               </div>
 
-              <div className="grid gap-6 md:grid-cols-3 max-w-3xl mx-auto">
-                {topUpOptions.map((option, i) => (
-                  <div
-                    key={i}
-                    className={cn(
-                      "relative rounded-2xl p-6 border transition-all duration-300 hover:shadow-xl",
-                      option.popular
-                        ? "border-[#06b6d4] bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 scale-105"
-                        : "border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:border-[#06b6d4]"
-                    )}
-                  >
-                    {option.popular && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#06b6d4] text-white text-xs font-bold px-3 py-1 rounded-full">
-                        BEST VALUE
-                      </div>
-                    )}
-
-                    <div className="text-center">
-                      <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white mb-4">
-                        <Plus className="w-7 h-7" />
-                      </div>
-                      <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">{option.credits.toLocaleString()}</div>
-                      <div className="text-sm text-slate-500 dark:text-neutral-400 mb-1">Credits</div>
-                      <div className="text-xs text-slate-400 dark:text-neutral-500 mb-4">
-                        ~{option.slides} slides or ~{option.images} images
-                      </div>
-                      <div className="text-xl font-bold text-[#1e3a8a] dark:text-[#06b6d4] mb-4">{option.price}</div>
-                      <button
-                        onClick={() => handleTopup(option.credits, i)}
-                        disabled={topupLoadingId !== null}
-                        className={cn(
-                          "w-full rounded-xl py-2.5 px-4 font-semibold text-sm transition-all disabled:opacity-70 disabled:cursor-not-allowed",
-                          option.popular
-                            ? "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white shadow-lg hover:shadow-xl"
-                            : "border-2 border-[#06b6d4] text-[#1e3a8a] dark:text-[#06b6d4] hover:bg-cyan-50 dark:hover:bg-cyan-900/20"
-                        )}
-                      >
-                        {topupLoadingId === i ? (
-                          <Loader2 className="h-4 w-4 animate-spin mx-auto" />
-                        ) : (
-                          "Purchase"
-                        )}
-                      </button>
+              {/* Sleek Credit Cards */}
+              <div className="grid md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+                {topupLoading ? (
+                  [0, 1, 2].map((i) => (
+                    <div key={i} className="rounded-xl border border-slate-200 p-5">
+                      <div className="h-6 w-20 bg-slate-100 animate-pulse rounded mb-2 mx-auto" />
+                      <div className="h-8 w-16 bg-slate-100 animate-pulse rounded mb-4 mx-auto" />
+                      <div className="h-9 w-full bg-slate-100 animate-pulse rounded-lg" />
                     </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-6 text-center text-sm text-slate-500 dark:text-neutral-500">
-                <p>Credit costs: <span className="font-medium">4 credits/slide</span> • <span className="font-medium">10 credits/AI image</span> • <span className="font-medium">15 credits/HD image</span></p>
+                  ))
+                ) : (
+                  topupOptions.map((option, i) => {
+                    const isPopular = i === 1;
+                    return (
+                      <div key={i} className={cn("relative rounded-xl p-5 text-center transition-all", isPopular ? "bg-slate-900 text-white ring-2 ring-slate-900" : "border border-slate-200 hover:border-slate-300")}>
+                        {isPopular && <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-amber-400 text-amber-900 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">{t.bestValue}</div>}
+                        
+                        <div className={cn("text-2xl font-bold mb-0.5", isPopular ? "text-white" : "text-slate-900")}>{option.credits.toLocaleString()}</div>
+                        <div className={cn("text-xs mb-3", isPopular ? "text-slate-400" : "text-slate-500")}>{t.credits}</div>
+                        <div className={cn("text-xl font-semibold mb-4", isPopular ? "text-white" : "text-slate-900")}>${option.priceDisplay}</div>
+                        
+                        <button onClick={() => handleTopup(option.credits, i)} disabled={topupLoadingId !== null || !option.available} className={cn("w-full py-2 rounded-lg text-sm font-medium transition", isPopular ? "bg-white text-slate-900 hover:bg-slate-100" : "bg-slate-900 text-white hover:bg-slate-800", "disabled:opacity-60")}>
+                          {topupLoadingId === i ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : t.purchase}
+                        </button>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </>
           )}

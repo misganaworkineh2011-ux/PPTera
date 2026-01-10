@@ -28,6 +28,8 @@ import { UserButton } from "@clerk/nextjs";
 import type { Theme } from "~/lib/themes";
 import { getThemeType } from "./types";
 import { getUIColors } from "./ui-colors";
+import { useLanguage } from "~/contexts/LanguageContext";
+import { dashboardTranslations } from "~/lib/dashboard-translations";
 
 interface HeaderProps {
   title: string;
@@ -113,6 +115,10 @@ export function Header({
   const menuRef = useRef<HTMLDivElement>(null);
   const presentMenuRef = useRef<HTMLDivElement>(null);
 
+  // Get translations
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language] || dashboardTranslations.en;
+
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -143,7 +149,7 @@ export function Header({
           <button
             onClick={onBack}
             className={`p-1.5 rounded-lg transition-colors ${ui.headerHover} ${ui.headerIcon}`}
-            title="Back to Dashboard"
+            title={t.backToDashboard || "Back to Dashboard"}
           >
             <ArrowLeft size={18} />
           </button>
@@ -187,7 +193,7 @@ export function Header({
                 </h1>
                 <div className="flex items-center gap-1.5">
                   <span className={`text-xs ${ui.headerMuted}`}>
-                    {slidesCount} slides
+                    {slidesCount} {t.slides || "slides"}
                   </span>
                   {isSaving && (
                     <span className={`text-xs ${ui.headerMuted} flex items-center gap-1`}>
@@ -215,7 +221,7 @@ export function Header({
               className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${ui.headerHover} ${ui.headerText}`}
             >
               <Palette size={16} />
-              <span>Theme</span>
+              <span>{t.themeBtn || "Theme"}</span>
             </button>
           )}
 
@@ -226,7 +232,7 @@ export function Header({
               className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${ui.headerHover} ${ui.headerText}`}
             >
               <Share2 size={16} />
-              <span>Share</span>
+              <span>{t.shareBtn || "Share"}</span>
             </button>
           )}
 
@@ -241,7 +247,7 @@ export function Header({
               }`}
             >
               <Sparkles size={16} />
-              <span>Agent</span>
+              <span>{t.agentBtn || "Agent"}</span>
               <ChevronDown size={14} />
             </button>
           )}
@@ -253,10 +259,10 @@ export function Header({
                 <button
                   onClick={onExitPresent}
                   className="flex items-center gap-1.5 px-3 sm:px-4 h-full rounded-lg text-sm font-medium transition-colors bg-red-500 hover:bg-red-600 text-white"
-                  title="Exit presentation mode"
+                  title={t.exitPresent || "Exit presentation mode"}
                 >
                   <X size={14} />
-                  <span className="hidden sm:inline">Exit</span>
+                  <span className="hidden sm:inline">{t.exitPresent || "Exit"}</span>
                 </button>
               ) : (
                 <>
@@ -267,10 +273,10 @@ export function Header({
                       backgroundColor: theme.colors.primary,
                       color: themeType === "light" || themeType === "corporate" ? "#ffffff" : "#18181b",
                     }}
-                    title="Present in this tab (Ctrl+Enter)"
+                    title={`${t.presentBtn || "Present"} (Ctrl+Enter)`}
                   >
                     <Play size={14} fill="currentColor" />
-                    <span className="hidden sm:inline">Present</span>
+                    <span className="hidden sm:inline">{t.presentBtn || "Present"}</span>
                   </button>
                   <button
                     onClick={() => setShowPresentMenu(!showPresentMenu)}
@@ -296,7 +302,7 @@ export function Header({
               >
                 {/* Start presenting section */}
                 <div className={`px-4 py-3 border-b ${themeType === "dark" ? "border-white/10" : "border-black/10"}`}>
-                  <p className={`text-sm font-semibold ${ui.headerText}`}>Start presenting</p>
+                  <p className={`text-sm font-semibold ${ui.headerText}`}>{t.startPresenting || "Start presenting"}</p>
                 </div>
 
                 <div className="p-2">
@@ -306,7 +312,7 @@ export function Header({
                   >
                     <div className="flex items-center gap-3">
                       <Monitor size={18} />
-                      <span>In this tab</span>
+                      <span>{t.inThisTab || "In this tab"}</span>
                     </div>
                     <span className={`text-xs ${ui.headerMuted}`}>Ctrl+Enter</span>
                   </button>
@@ -317,7 +323,7 @@ export function Header({
                   >
                     <div className="flex items-center gap-3">
                       <Maximize size={18} />
-                      <span>Full screen</span>
+                      <span>{t.fullScreen || "Full screen"}</span>
                     </div>
                     <span className={`text-xs ${ui.headerMuted}`}>Ctrl+Shift+Enter</span>
                   </button>
@@ -330,8 +336,8 @@ export function Header({
                       <div className="flex items-center gap-3">
                         <FileText size={18} />
                         <div className="text-left">
-                          <span>Presenter view</span>
-                          <p className={`text-xs ${ui.headerMuted}`}>View notes while presenting</p>
+                          <span>{t.presenterView || "Presenter view"}</span>
+                          <p className={`text-xs ${ui.headerMuted}`}>{t.viewNotesWhilePresenting || "View notes while presenting"}</p>
                         </div>
                       </div>
                     </button>
@@ -342,7 +348,7 @@ export function Header({
                 {onShareFollowLink && (
                   <>
                     <div className={`px-4 py-3 border-t ${themeType === "dark" ? "border-white/10" : "border-black/10"}`}>
-                      <p className={`text-sm font-semibold ${ui.headerText}`}>Other ways to share</p>
+                      <p className={`text-sm font-semibold ${ui.headerText}`}>{t.otherWaysToShare || "Other ways to share"}</p>
                     </div>
 
                     <div className="p-2">
@@ -353,8 +359,8 @@ export function Header({
                         <div className="flex items-center gap-3">
                           <Link2 size={18} />
                           <div className="text-left">
-                            <span>Share a follow link</span>
-                            <p className={`text-xs ${ui.headerMuted}`}>People who join will follow you automatically</p>
+                            <span>{t.shareFollowLink || "Share a follow link"}</span>
+                            <p className={`text-xs ${ui.headerMuted}`}>{t.followLinkDesc || "People who join will follow you automatically"}</p>
                           </div>
                         </div>
                       </button>
@@ -370,7 +376,7 @@ export function Header({
             <button
               onClick={() => setShowMoreMenu(!showMoreMenu)}
               className={`p-2 rounded-lg transition-colors ${ui.headerHover} ${ui.headerIcon}`}
-              title="More options"
+              title={t.moreOptions || "More options"}
             >
               <MoreHorizontal size={18} />
             </button>
@@ -387,7 +393,7 @@ export function Header({
                 <div className={`px-4 py-3 border-b ${themeType === "dark" ? "border-white/10" : "border-black/10"}`}>
                   <p className={`text-sm font-medium truncate ${ui.headerText}`}>{title}</p>
                   <p className={`text-xs ${ui.headerMuted} mt-0.5`}>
-                    {slidesCount} slides {mode === "ai" && "• AI Generated"}
+                    {slidesCount} {t.slides || "slides"} {mode === "ai" && `• ${t.aiGenerated || "AI Generated"}`}
                   </p>
                 </div>
 
@@ -402,7 +408,7 @@ export function Header({
                       >
                         <div className="flex items-center gap-3">
                           <Undo2 size={16} />
-                          <span>Undo</span>
+                          <span>{t.undoBtn || "Undo"}</span>
                         </div>
                         <span className={`text-xs ${ui.headerMuted}`}>Ctrl+Z</span>
                       </button>
@@ -413,7 +419,7 @@ export function Header({
                       >
                         <div className="flex items-center gap-3">
                           <Redo2 size={16} />
-                          <span>Redo</span>
+                          <span>{t.redoBtn || "Redo"}</span>
                         </div>
                         <span className={`text-xs ${ui.headerMuted}`}>Ctrl+Y</span>
                       </button>
@@ -427,7 +433,7 @@ export function Header({
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${ui.headerHover} ${ui.headerText}`}
                   >
                     {viewMode === "slides" ? <Grid3X3 size={16} /> : <Eye size={16} />}
-                    <span>{viewMode === "slides" ? "Scroll View" : "Slide View"}</span>
+                    <span>{viewMode === "slides" ? (t.scrollView || "Scroll View") : (t.slideView || "Slide View")}</span>
                   </button>
                   
                   <button
@@ -436,7 +442,7 @@ export function Header({
                   >
                     <div className="flex items-center gap-3">
                       <LayoutGrid size={16} />
-                      <span>Thumbnails</span>
+                      <span>{t.thumbnails || "Thumbnails"}</span>
                     </div>
                     {showThumbnails && <CheckCircle2 size={14} className="text-emerald-500" />}
                   </button>
@@ -447,7 +453,7 @@ export function Header({
                   >
                     <div className="flex items-center gap-3">
                       <Hash size={16} />
-                      <span>Page Numbers</span>
+                      <span>{t.pageNumbers || "Page Numbers"}</span>
                     </div>
                     {showPageNumbers && <CheckCircle2 size={14} className="text-emerald-500" />}
                   </button>
@@ -463,7 +469,7 @@ export function Header({
                           className={`sm:hidden w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${ui.headerHover} ${ui.headerText}`}
                         >
                           <Palette size={16} />
-                          <span>Theme</span>
+                          <span>{t.themeBtn || "Theme"}</span>
                         </button>
                       )}
 
@@ -473,7 +479,7 @@ export function Header({
                         className={`sm:hidden w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${ui.headerHover} ${ui.headerText}`}
                       >
                         <Share2 size={16} />
-                        <span>Share</span>
+                        <span>{t.shareBtn || "Share"}</span>
                       </button>
 
                       <button
@@ -481,7 +487,7 @@ export function Header({
                         className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${ui.headerHover} ${ui.headerText}`}
                       >
                         <Download size={16} />
-                        <span>Export...</span>
+                        <span>{t.exportMenuBtn || "Export..."}</span>
                       </button>
 
                       {/* Mobile-only: Agent */}
@@ -491,7 +497,7 @@ export function Header({
                           className={`sm:hidden w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${ui.headerHover} ${ui.headerText}`}
                         >
                           <Sparkles size={16} />
-                          <span>Agent</span>
+                          <span>{t.agentBtn || "Agent"}</span>
                         </button>
                       )}
                     </>
