@@ -271,8 +271,9 @@ export default function CollaborationPage() {
       )}
 
       {showInviteModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/30" onClick={() => setShowInviteModal(false)}>
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl dark:bg-neutral-900" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowInviteModal(false)} />
+          <div className="relative bg-white rounded-xl p-6 w-full max-w-md shadow-2xl dark:bg-neutral-900" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-[#1e3a8a] mb-4 dark:text-white">{t.inviteCollaborator}</h3>
             <div className="space-y-4">
               <div>

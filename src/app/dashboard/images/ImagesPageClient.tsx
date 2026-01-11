@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
   Grid,
   List as ListIcon,
@@ -346,8 +347,9 @@ export default function ImagesPageClient({
       </div>
 
       {/* AI Image Generator Modal */}
-      {showGenerator && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      {showGenerator && typeof window !== "undefined" && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowGenerator(false)} />
           <div className="relative w-full max-w-lg bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 z-10 bg-white dark:bg-neutral-900 px-6 py-4 border-b border-slate-200 dark:border-neutral-800 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -380,12 +382,14 @@ export default function ImagesPageClient({
               />
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Image Preview Modal */}
-      {selectedImage && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      {selectedImage && typeof window !== "undefined" && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setSelectedImage(null)} />
           <div className="relative max-w-4xl w-full bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-neutral-800">
               <h3 className="font-semibold text-slate-900 dark:text-white truncate pr-4">
@@ -487,13 +491,15 @@ export default function ImagesPageClient({
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Delete Confirmation Modal */}
-      {deleteConfirmId && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl p-6 max-w-sm w-full">
+      {deleteConfirmId && typeof window !== "undefined" && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setDeleteConfirmId(null)} />
+          <div className="relative bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl p-6 max-w-sm w-full">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-full">
                 <Trash2 className="h-6 w-6 text-red-600 dark:text-red-400" />
@@ -529,7 +535,8 @@ export default function ImagesPageClient({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

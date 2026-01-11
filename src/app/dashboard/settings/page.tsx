@@ -455,8 +455,9 @@ export default function SettingsPage() {
 
       {/* Delete Account Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50" onClick={() => setShowDeleteModal(false)}>
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl dark:bg-neutral-900" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowDeleteModal(false)} />
+          <div className="relative bg-white rounded-xl p-6 w-full max-w-md shadow-2xl dark:bg-neutral-900" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-3 mb-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/50">
                 <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
