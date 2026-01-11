@@ -9,21 +9,18 @@ const polarClient = new Polar({
   server: env.POLAR_ENV,
 });
 
-// Credit top-up configurations
-export const TOPUP_OPTIONS = {
+// Credit top-up configurations (credits only, prices fetched from Polar)
+export const TOPUP_PRODUCTS = {
   "500": {
     credits: 500,
-    price: 999, // cents
     productId: env.POLAR_TOPUP_500,
   },
   "1000": {
     credits: 1000,
-    price: 1799,
     productId: env.POLAR_TOPUP_1000,
   },
   "2500": {
     credits: 2500,
-    price: 3999,
     productId: env.POLAR_TOPUP_2500,
   },
 } as const;
@@ -55,7 +52,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { credits } = body;
 
-    const option = TOPUP_OPTIONS[credits as keyof typeof TOPUP_OPTIONS];
+    const option = TOPUP_PRODUCTS[credits as keyof typeof TOPUP_PRODUCTS];
     if (!option) {
       return NextResponse.json(
         { error: "Invalid credit amount" },
@@ -76,7 +73,7 @@ export async function POST(req: Request) {
       productId: option.productId,
     });
 
-    // Create Polar checkout using products array (simpler, more reliable)
+    // Create Polar checkout using products array
     const checkout = await polarClient.checkouts.create({
       products: [option.productId],
       customerEmail: user.email,
@@ -101,13 +98,56 @@ export async function POST(req: Request) {
 }
 
 export async function GET() {
-  // Return available top-up options
-  const options = Object.entries(TOPUP_OPTIONS).map(([key, value]) => ({
-    credits: value.credits,
-    price: value.price,
-    priceDisplay: `$${(value.price / 100).toFixed(2)}`,
-    available: !!value.productId,
-  }));
+  try {
+    // Fetch actual prices from Polar API for each product
+    const options = await Promise.all(
+      Object.entries(TOPUP_PRODUCTS).map(async ([key, value]) => {
+        if (!value.productId) {
+          return {
+            credits: value.credits,
+            price: 0,
+            priceDisplay: "0.00",
+            available: false,
+          };
+        }
 
-  return NextResponse.json({ options });
+        try {
+          const product = await polarClient.products.get({ id: value.productId });
+          
+          // Find the fixed price (same logic as polar-products.ts)
+          const price: any =
+            product.prices?.find((p: any) => p.amountType === "fixed" && !p.isArchived) ??
+            product.prices?.[0];
+          
+          const priceAmount = price?.priceAmount ?? 0;
+          
+          console.log(`[Topup] Product ${value.credits} credits:`, {
+            productId: value.productId,
+            priceAmount,
+            pricesCount: product.prices?.length ?? 0,
+          });
+          
+          return {
+            credits: value.credits,
+            price: priceAmount,
+            priceDisplay: (priceAmount / 100).toFixed(2),
+            available: priceAmount > 0,
+          };
+        } catch (err) {
+          console.error(`[Topup] Failed to fetch product ${value.productId}:`, err);
+          return {
+            credits: value.credits,
+            price: 0,
+            priceDisplay: "0.00",
+            available: false,
+          };
+        }
+      })
+    );
+
+    return NextResponse.json({ options });
+  } catch (error) {
+    console.error("[Topup] Error fetching options:", error);
+    return NextResponse.json({ options: [] });
+  }
 }
