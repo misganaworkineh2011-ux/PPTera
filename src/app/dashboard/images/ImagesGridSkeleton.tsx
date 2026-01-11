@@ -1,6 +1,6 @@
 "use client";
 
-import { Grid, List as ListIcon, Search, Sparkles, Zap } from "lucide-react";
+import { Grid, List as ListIcon, Search, Sparkles } from "lucide-react";
 
 export default function ImagesGridSkeleton() {
   return (
@@ -16,17 +16,13 @@ export default function ImagesGridSkeleton() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {/* Credits Display Skeleton */}
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
-            <Zap className="h-4 w-4 text-amber-500" />
-            <div className="h-4 w-16 bg-amber-200 dark:bg-amber-700 rounded animate-pulse" />
-          </div>
           <button
             disabled
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white rounded-xl font-medium opacity-80"
+            className="flex items-center gap-1.5 md:gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-white shadow-lg shadow-[#06b6d4]/20 opacity-80"
           >
-            <Sparkles className="h-4 w-4" />
-            Generate with AI
+            <Sparkles size={16} className="md:w-[18px] md:h-[18px]" />
+            <span className="hidden sm:inline">Generate with AI</span>
+            <span className="sm:hidden">Generate</span>
           </button>
         </div>
       </div>

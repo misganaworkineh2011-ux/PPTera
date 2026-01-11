@@ -171,7 +171,7 @@ export const dashboardTranslations: Record<Language, Record<string, string>> = {
     // Credit topups
     creditTopups: "Credit Top-ups",
     // Plan features
-    upTo20Slides: "Up to 20 slides per presentation", upTo60Slides: "Up to 60 slides per presentation", upTo75Slides: "Up to 75 slides per presentation", credits1000: "1,000 AI credits/month", credits4000: "4,000 AI credits/month", credits20000: "20,000 AI credits/month", removeBranding: "Remove PPTMaster branding", advancedAIModels: "Advanced AI image models", premiumAIModels: "Premium AI image models", customBranding: "Custom branding & fonts", mostAdvancedModels: "Most advanced AI models", earlyAccess: "Early access to new features", everythingInFree: "Everything in Free, and:",
+    upTo20Slides: "Up to 20 slides per presentation", upTo60Slides: "Up to 60 slides per presentation", upTo75Slides: "Up to 75 slides per presentation", credits1000: "1,000 AI credits/month", credits4000: "4,000 AI credits/month", credits20000: "20,000 AI credits/month", removeBranding: "Remove PPTMaster branding", advancedAIModels: "Advanced AI image models", premiumAIModels: "Premium AI image models", customBranding: "Custom branding & fonts", mostAdvancedModels: "Most advanced AI models", earlyAccess: "Early access to new features", basicAnimations: "Basic slide animations", premiumAnimations: "Premium slide animations", allAnimations: "All slide animations & effects", everythingInFree: "Everything in Free, and:",
     // Additional translations for analytics, charts, images
     trackPerformance: "Track your presentation performance", somethingWentWrong: "Something went wrong", loadingCharts: "Loading charts...", searchCharts: "Search charts...", noChartsFound: "No charts found", noChartsYet: "No charts yet", createFirstChart: "Create your first chart to visualize data in your presentations", createYourFirstChart: "Create Your First Chart", createChart: "Create Chart", editChart: "Edit Chart", tryAdjustingSearch: "Try adjusting your search or filters", dataPoints: "data points", untitledChart: "Untitled Chart", favorite: "Favorite", unfavorite: "Unfavorite",
     // Feedback/Review translations
@@ -264,6 +264,8 @@ export const dashboardTranslations: Record<Language, Record<string, string>> = {
     slidesCountLabel: "Slides:", charactersCount: "Characters:", creditsNeededLabel: "Credits needed:", youHaveCredits: "You have {credits} credits",
     // Recent Outlines
     yourRecentOutlines: "Your Recent Outlines", continueEditingBtn: "Continue Editing", loadOutlineBtn: "Load Outline",
+    // Workspace Menu
+    inviteMembers: "Invite Members", signOut: "Sign Out", upgradePlan: "Upgrade Plan",
   },
 es: {
     // Sidebar
@@ -565,6 +567,9 @@ es: {
     customBranding: "Marca y fuentes personalizadas",
     mostAdvancedModels: "Modelos de IA más avanzados",
     earlyAccess: "Acceso anticipado a nuevas funciones",
+    basicAnimations: "Animaciones básicas de diapositivas",
+    premiumAnimations: "Animaciones premium de diapositivas",
+    allAnimations: "Todas las animaciones y efectos",
     everythingInFree: "Todo en Gratis y:",
     // Additional translations for analytics, charts, images
     trackPerformance: "Rastrea el rendimiento de tu presentación",
@@ -1192,6 +1197,8 @@ es: {
     yourRecentOutlines: "Tus esquemas recientes",
     continueEditingBtn: "Continuar editando",
     loadOutlineBtn: "Cargar esquema",
+    // Workspace Menu
+    inviteMembers: "Invitar miembros", signOut: "Cerrar sesión", upgradePlan: "Mejorar plan",
 },
 fr: {
     // Sidebar
@@ -1493,6 +1500,9 @@ fr: {
     customBranding: "Marque et polices personnalisées",
     mostAdvancedModels: "Modèles IA les plus avancés",
     earlyAccess: "Accès anticipé aux nouvelles fonctions",
+    basicAnimations: "Animations de diapositives basiques",
+    premiumAnimations: "Animations de diapositives premium",
+    allAnimations: "Toutes les animations et effets",
     everythingInFree: "Tout ce qui est gratuit, et :",
     // Additional translations for analytics, charts, images
     trackPerformance: "Suivez la performance de vos présentations",
@@ -2120,6 +2130,8 @@ fr: {
     yourRecentOutlines: "Vos plans récents",
     continueEditingBtn: "Continuer l'édition",
     loadOutlineBtn: "Charger le plan",
+    // Workspace Menu
+    inviteMembers: "Inviter des membres", signOut: "Se déconnecter", upgradePlan: "Améliorer le plan",
 },
 de: {
     // Sidebar
@@ -2421,6 +2433,9 @@ de: {
     customBranding: "Eigenes Branding & Schriften",
     mostAdvancedModels: "Modernste KI-Modelle",
     earlyAccess: "Frühzeitiger Zugriff auf neue Funktionen",
+    basicAnimations: "Basis-Folienanimationen",
+    premiumAnimations: "Premium-Folienanimationen",
+    allAnimations: "Alle Animationen & Effekte",
     everythingInFree: "Alles aus Gratis, und:",
     // Additional translations for analytics, charts, images
     trackPerformance: "Verfolgen Sie die Leistung Ihrer Präsentation",
@@ -3048,6 +3063,8 @@ de: {
     yourRecentOutlines: "Ihre letzten Gliederungen",
     continueEditingBtn: "Weiter bearbeiten",
     loadOutlineBtn: "Gliederung laden",
+    // Workspace Menu
+    inviteMembers: "Mitglieder einladen", signOut: "Abmelden", upgradePlan: "Plan upgraden",
 },
 zh: {
     // 侧边栏
@@ -3215,7 +3232,7 @@ zh: {
     // 积分充值
     creditTopups: "积分充值",
     // 方案功能
-    upTo20Slides: "每个演示文稿最多 20 页", upTo60Slides: "每个演示文稿最多 60 页", upTo75Slides: "每个演示文稿最多 75 页", credits1000: "1,000 AI 积分/月", credits4000: "4,000 AI 积分/月", credits20000: "20,000 AI 积分/月", removeBranding: "移除 PPTMaster 品牌标识", advancedAIModels: "高级 AI 图片模型", premiumAIModels: "旗舰级 AI 图片模型", customBranding: "自定义品牌标识与字体", mostAdvancedModels: "最先进的 AI 模型", earlyAccess: "新功能优先体验权", everythingInFree: "包含 Free 方案的所有功能，以及：",
+    upTo20Slides: "每个演示文稿最多 20 页", upTo60Slides: "每个演示文稿最多 60 页", upTo75Slides: "每个演示文稿最多 75 页", credits1000: "1,000 AI 积分/月", credits4000: "4,000 AI 积分/月", credits20000: "20,000 AI 积分/月", removeBranding: "移除 PPTMaster 品牌标识", advancedAIModels: "高级 AI 图片模型", premiumAIModels: "旗舰级 AI 图片模型", customBranding: "自定义品牌标识与字体", mostAdvancedModels: "最先进的 AI 模型", earlyAccess: "新功能优先体验权", basicAnimations: "基础幻灯片动画", premiumAnimations: "高级幻灯片动画", allAnimations: "所有动画和特效", everythingInFree: "包含 Free 方案的所有功能，以及：",
     // 分析、图表、图片补充
     trackPerformance: "跟踪您的演示文稿性能", somethingWentWrong: "出错了", loadingCharts: "正在加载图表...", searchCharts: "搜索图表...", noChartsFound: "未找到图表", noChartsYet: "暂无图表", createFirstChart: "创建您的第一个图表，在演示文稿中实现数据可视化", createYourFirstChart: "创建您的第一个图表", createChart: "创建图表", editChart: "编辑图表", tryAdjustingSearch: "尝试调整您的搜索或过滤器词", dataPoints: "数据点", untitledChart: "无标题图表", favorite: "收藏", unfavorite: "取消收藏",
     // 反馈与评价
@@ -3308,6 +3325,8 @@ zh: {
     slidesCountLabel: "页数：", charactersCount: "字符数：", creditsNeededLabel: "所需积分：", youHaveCredits: "您拥有 {credits} 积分",
     // 最近的大纲
     yourRecentOutlines: "您最近的大纲", continueEditingBtn: "继续编辑", loadOutlineBtn: "加载大纲",
+    // Workspace Menu
+    inviteMembers: "邀请成员", signOut: "退出登录", upgradePlan: "升级计划",
   },
 pt: {
     // Sidebar
@@ -3475,7 +3494,7 @@ pt: {
     // Credit topups
     creditTopups: "Recargas de Crédito",
     // Plan features
-    upTo20Slides: "Até 20 slides por apresentação", upTo60Slides: "Até 60 slides por apresentação", upTo75Slides: "Até 75 slides por apresentação", credits1000: "1.000 créditos de IA/mês", credits4000: "4.000 créditos de IA/mês", credits20000: "20.000 créditos de IA/mês", removeBranding: "Remover marca do PPTMaster", advancedAIModels: "Modelos de imagem de IA avançados", premiumAIModels: "Modelos de imagem de IA premium", customBranding: "Marca e fontes personalizadas", mostAdvancedModels: "Modelos de IA mais avançados", earlyAccess: "Acesso antecipado a novos recursos", everythingInFree: "Tudo no Grátis e:",
+    upTo20Slides: "Até 20 slides por apresentação", upTo60Slides: "Até 60 slides por apresentação", upTo75Slides: "Até 75 slides por apresentação", credits1000: "1.000 créditos de IA/mês", credits4000: "4.000 créditos de IA/mês", credits20000: "20.000 créditos de IA/mês", removeBranding: "Remover marca do PPTMaster", advancedAIModels: "Modelos de imagem de IA avançados", premiumAIModels: "Modelos de imagem de IA premium", customBranding: "Marca e fontes personalizadas", mostAdvancedModels: "Modelos de IA mais avançados", earlyAccess: "Acesso antecipado a novos recursos", basicAnimations: "Animações básicas de slides", premiumAnimations: "Animações premium de slides", allAnimations: "Todas as animações e efeitos", everythingInFree: "Tudo no Grátis e:",
     // Additional translations for analytics, charts, images
     trackPerformance: "Acompanhe o desempenho da sua apresentação", somethingWentWrong: "Algo deu errado", loadingCharts: "Carregando gráficos...", searchCharts: "Buscar gráficos...", noChartsFound: "Nenhum gráfico encontrado", noChartsYet: "Nenhum gráfico ainda", createFirstChart: "Crie seu primeiro gráfico para visualizar dados em suas apresentações", createYourFirstChart: "Crie seu Primeiro Gráfico", createChart: "Criar Gráfico", editChart: "Editar Gráfico", tryAdjustingSearch: "Tente ajustar sua busca ou filtros", dataPoints: "pontos de dados", untitledChart: "Gráfico Sem Título", favorite: "Favorito", unfavorite: "Desfavoritar",
     // Feedback/Review translations
@@ -3568,6 +3587,8 @@ pt: {
     slidesCountLabel: "Slides:", charactersCount: "Caracteres:", creditsNeededLabel: "Créditos necessários:", youHaveCredits: "Você tem {credits} créditos",
     // Recent Outlines
     yourRecentOutlines: "Seus Esboços Recentes", continueEditingBtn: "Continuar Editando", loadOutlineBtn: "Carregar Esboço",
+    // Workspace Menu
+    inviteMembers: "Convidar Membros", signOut: "Sair", upgradePlan: "Atualizar Plano",
 },
 it: {
     // Sidebar
@@ -3735,7 +3756,7 @@ it: {
     // Credit topups
     creditTopups: "Ricariche Crediti",
     // Plan features
-    upTo20Slides: "Fino a 20 diapositive per presentazione", upTo60Slides: "Fino a 60 diapositive per presentazione", upTo75Slides: "Fino a 75 diapositive per presentazione", credits1000: "1.000 crediti IA/mese", credits4000: "4.000 crediti IA/mese", credits20000: "20.000 crediti IA/mese", removeBranding: "Rimuovi branding PPTMaster", advancedAIModels: "Modelli immagine IA avanzati", premiumAIModels: "Modelli immagine IA premium", customBranding: "Branding e font personalizzati", mostAdvancedModels: "Modelli IA più avanzati", earlyAccess: "Accesso anticipato alle nuove funzioni", everythingInFree: "Tutto quello che c'è in Free, e:",
+    upTo20Slides: "Fino a 20 diapositive per presentazione", upTo60Slides: "Fino a 60 diapositive per presentazione", upTo75Slides: "Fino a 75 diapositive per presentazione", credits1000: "1.000 crediti IA/mese", credits4000: "4.000 crediti IA/mese", credits20000: "20.000 crediti IA/mese", removeBranding: "Rimuovi branding PPTMaster", advancedAIModels: "Modelli immagine IA avanzati", premiumAIModels: "Modelli immagine IA premium", customBranding: "Branding e font personalizzati", mostAdvancedModels: "Modelli IA più avanzati", earlyAccess: "Accesso anticipato alle nuove funzioni", basicAnimations: "Animazioni slide base", premiumAnimations: "Animazioni slide premium", allAnimations: "Tutte le animazioni ed effetti", everythingInFree: "Tutto quello che c'è in Free, e:",
     // Additional translations for analytics, charts, images
     trackPerformance: "Traccia le prestazioni della tua presentazione", somethingWentWrong: "Qualcosa è andato storto", loadingCharts: "Caricamento grafici...", searchCharts: "Cerca grafici...", noChartsFound: "Nessun grafico trovato", noChartsYet: "Ancora nessuna grafico", createFirstChart: "Crea il tuo primo grafico per visualizzare i dati", createYourFirstChart: "Crea il tuo primo grafico", createChart: "Crea Grafico", editChart: "Modifica Grafico", tryAdjustingSearch: "Prova a regolare la ricerca o i filtri", dataPoints: "punti dati", untitledChart: "Grafico senza titolo", favorite: "Preferito", unfavorite: "Rimuovi dai preferiti",
     // Feedback/Review translations
@@ -3828,6 +3849,8 @@ it: {
     slidesCountLabel: "Diapositive:", charactersCount: "Caratteri:", creditsNeededLabel: "Crediti necessari:", youHaveCredits: "Hai {credits} crediti",
     // Recent Outlines
     yourRecentOutlines: "Scalette Recenti", continueEditingBtn: "Continua a modificare", loadOutlineBtn: "Carica Scaletta",
+    // Workspace Menu
+    inviteMembers: "Invita Membri", signOut: "Esci", upgradePlan: "Aggiorna Piano",
 },
 ja: {
     // Sidebar
@@ -3995,7 +4018,7 @@ ja: {
     // Credit topups
     creditTopups: "クレジットのリチャージ",
     // Plan features
-    upTo20Slides: "1プレゼンにつき最大20スライド", upTo60Slides: "1プレゼンにつき最大60スライド", upTo75Slides: "1プレゼンにつき最大75スライド", credits1000: "1,000 AIクレジット / 月", credits4000: "4,000 AIクレジット / 月", credits20000: "20,000 AIクレジット / 月", removeBranding: "PPTMasterのロゴを非表示", advancedAIModels: "高度なAI画像モデル", premiumAIModels: "プレミアムAI画像モデル", customBranding: "カスタムブランディングとフォント", mostAdvancedModels: "最新のAIモデル", earlyAccess: "新機能への早期アクセス", everythingInFree: "Freeプランの全機能、および：",
+    upTo20Slides: "1プレゼンにつき最大20スライド", upTo60Slides: "1プレゼンにつき最大60スライド", upTo75Slides: "1プレゼンにつき最大75スライド", credits1000: "1,000 AIクレジット / 月", credits4000: "4,000 AIクレジット / 月", credits20000: "20,000 AIクレジット / 月", removeBranding: "PPTMasterのロゴを非表示", advancedAIModels: "高度なAI画像モデル", premiumAIModels: "プレミアムAI画像モデル", customBranding: "カスタムブランディングとフォント", mostAdvancedModels: "最新のAIモデル", earlyAccess: "新機能への早期アクセス", basicAnimations: "基本スライドアニメーション", premiumAnimations: "プレミアムスライドアニメーション", allAnimations: "すべてのアニメーションとエフェクト", everythingInFree: "Freeプランの全機能、および：",
     // Additional translations for analytics, charts, images
     trackPerformance: "プレゼンテーションのパフォーマンスを追跡", somethingWentWrong: "エラーが発生しました", loadingCharts: "グラフを読み込み中...", searchCharts: "グラフを検索...", noChartsFound: "グラフが見つかりません", noChartsYet: "グラフがまだありません", createFirstChart: "最初のグラフを作成してデータを可視化しましょう", createYourFirstChart: "最初のグラフを作成", createChart: "グラフを作成", editChart: "グラフを編集", tryAdjustingSearch: "検索条件やフィルターを調整してください", dataPoints: "データポイント", untitledChart: "無題のグラフ", favorite: "お気に入り", unfavorite: "お気に入り解除",
     // Feedback/Review translations
@@ -4088,6 +4111,8 @@ ja: {
     slidesCountLabel: "スライド数:", charactersCount: "文字数:", creditsNeededLabel: "必要クレジット:", youHaveCredits: "所有クレジット: {credits}",
     // Recent Outlines
     yourRecentOutlines: "最近の構成案", continueEditingBtn: "編集を続ける", loadOutlineBtn: "構成案を読み込む",
+    // Workspace Menu
+    inviteMembers: "メンバーを招待", signOut: "ログアウト", upgradePlan: "プランをアップグレード",
 },
 ko: {
     // Sidebar
@@ -4255,7 +4280,7 @@ ko: {
     // Credit topups
     creditTopups: "크레딧 충전",
     // Plan features
-    upTo20Slides: "프레젠테이션당 최대 20슬라이드", upTo60Slides: "프레젠테이션당 최대 60슬라이드", upTo75Slides: "프레젠테이션당 최대 75슬라이드", credits1000: "월 1,000 AI 크레딧", credits4000: "월 4,000 AI 크레딧", credits20000: "월 20,000 AI 크레딧", removeBranding: "PPTMaster 브랜딩 제거", advancedAIModels: "고급 AI 이미지 모델", premiumAIModels: "프리미엄 AI 이미지 모델", customBranding: "커스텀 브랜딩 및 폰트", mostAdvancedModels: "최첨단 AI 모델", earlyAccess: "신기능 우선 체험", everythingInFree: "무료 요금제의 모든 기능 및:",
+    upTo20Slides: "프레젠테이션당 최대 20슬라이드", upTo60Slides: "프레젠테이션당 최대 60슬라이드", upTo75Slides: "프레젠테이션당 최대 75슬라이드", credits1000: "월 1,000 AI 크레딧", credits4000: "월 4,000 AI 크레딧", credits20000: "월 20,000 AI 크레딧", removeBranding: "PPTMaster 브랜딩 제거", advancedAIModels: "고급 AI 이미지 모델", premiumAIModels: "프리미엄 AI 이미지 모델", customBranding: "커스텀 브랜딩 및 폰트", mostAdvancedModels: "최첨단 AI 모델", earlyAccess: "신기능 우선 체험", basicAnimations: "기본 슬라이드 애니메이션", premiumAnimations: "프리미엄 슬라이드 애니메이션", allAnimations: "모든 애니메이션 및 효과", everythingInFree: "무료 요금제의 모든 기능 및:",
     // Additional translations for analytics, charts, images
     trackPerformance: "프레젠테이션 성과 추적", somethingWentWrong: "오류가 발생했습니다", loadingCharts: "차트 불러오는 중...", searchCharts: "차트 검색...", noChartsFound: "차트를 찾을 수 없습니다", noChartsYet: "차트가 없습니다", createFirstChart: "데이터를 시각화하려면 첫 번째 차트를 만들어 보세요", createYourFirstChart: "첫 번째 차트 만들기", createChart: "차트 생성", editChart: "차트 편집", tryAdjustingSearch: "검색어나 필터를 조정해 보세요", dataPoints: "데이터 포인트", untitledChart: "제목 없는 차트", favorite: "즐겨찾기", unfavorite: "즐겨찾기 해제",
     // Feedback/Review translations
@@ -4348,6 +4373,8 @@ ko: {
     slidesCountLabel: "슬라이드:", charactersCount: "글자 수:", creditsNeededLabel: "필요 크레딧:", youHaveCredits: "보유 크레딧: {credits}",
     // Recent Outlines
     yourRecentOutlines: "최근 개요", continueEditingBtn: "계속 편집하기", loadOutlineBtn: "개요 불러오기",
+    // Workspace Menu
+    inviteMembers: "멤버 초대", signOut: "로그아웃", upgradePlan: "플랜 업그레이드",
 },
 ar: {
     // Sidebar
@@ -4515,7 +4542,7 @@ ar: {
     // Credit topups
     creditTopups: "شحن الرصيد",
     // Plan features
-    upTo20Slides: "حتى 20 شريحة لكل عرض", upTo60Slides: "حتى 60 شريحة لكل عرض", upTo75Slides: "حتى 75 شريحة لكل عرض", credits1000: "1,000 رصيد ذكاء اصطناعي/شهر", credits4000: "4,000 رصيد ذكاء اصطناعي/شهر", credits20000: "20,000 رصيد ذكاء اصطناعي/شهر", removeBranding: "إزالة شعار PPTMaster", advancedAIModels: "نماذج صور ذكاء اصطناعي متقدمة", premiumAIModels: "نماذج صور ذكاء اصطناعي متميزة", customBranding: "خطوط وعلامة تجارية مخصصة", mostAdvancedModels: "أكثر نماذج الذكاء الاصطناعي تقدماً",  earlyAccess: "الوصول المبكر للميزات الجديدة", everythingInFree: "كل ما في الخطة المجانية، بالإضافة إلى:",
+    upTo20Slides: "حتى 20 شريحة لكل عرض", upTo60Slides: "حتى 60 شريحة لكل عرض", upTo75Slides: "حتى 75 شريحة لكل عرض", credits1000: "1,000 رصيد ذكاء اصطناعي/شهر", credits4000: "4,000 رصيد ذكاء اصطناعي/شهر", credits20000: "20,000 رصيد ذكاء اصطناعي/شهر", removeBranding: "إزالة شعار PPTMaster", advancedAIModels: "نماذج صور ذكاء اصطناعي متقدمة", premiumAIModels: "نماذج صور ذكاء اصطناعي متميزة", customBranding: "خطوط وعلامة تجارية مخصصة", mostAdvancedModels: "أكثر نماذج الذكاء الاصطناعي تقدماً", earlyAccess: "الوصول المبكر للميزات الجديدة", basicAnimations: "رسوم متحركة أساسية للشرائح", premiumAnimations: "رسوم متحركة مميزة للشرائح", allAnimations: "جميع الرسوم المتحركة والتأثيرات", everythingInFree: "كل ما في الخطة المجانية، بالإضافة إلى:",
     // Additional translations
     trackPerformance: "تتبع أداء عرضك التقديمي", somethingWentWrong: "حدث خطأ ما", loadingCharts: "جاري تحميل الرسوم...", searchCharts: "بحث عن رسوم...", noChartsFound: "لم يتم العثور على رسوم", noChartsYet: "لا توجد رسوم بعد", createFirstChart: "أنشئ رسمك البياني الأول لتمثيل البيانات في عرضك", createYourFirstChart: "أنشئ رسمك الأول", createChart: "إنشاء رسم بياني", editChart: "تعديل الرسم", tryAdjustingSearch: "جرّب تعديل البحث أو الفلاتر", dataPoints: "نقاط البيانات", untitledChart: "رسم بياني بدون عنوان", favorite: "تفضيل", unfavorite: "إزالة التفضيل",
     // Feedback/Review translations
@@ -4608,6 +4635,8 @@ ar: {
     slidesCountLabel: "الشرائح:", charactersCount: "الحروف:", creditsNeededLabel: "الرصيد المطلوب:", youHaveCredits: "لديك {credits} رصيد",
     // Recent Outlines
     yourRecentOutlines: "مخططاتك الأخيرة", continueEditingBtn: "مواصلة التعديل", loadOutlineBtn: "تحميل المخطط",
+    // Workspace Menu
+    inviteMembers: "دعوة الأعضاء", signOut: "تسجيل الخروج", upgradePlan: "ترقية الخطة",
 },
 hi: {
     // Sidebar
@@ -4775,7 +4804,7 @@ hi: {
     // Credit topups
     creditTopups: "क्रेडिट टॉप-अप",
     // Plan features
-    upTo20Slides: "प्रति प्रस्तुति 20 स्लाइड तक", upTo60Slides: "प्रति प्रस्तुति 60 स्लाइड तक", upTo75Slides: "प्रति प्रस्तुति 75 स्लाइड तक", credits1000: "1,000 AI क्रेडिट/माह", credits4000: "4,000 AI क्रेडिट/माह", credits20000: "20,000 AI क्रेडिट/माह", removeBranding: "PPTMaster ब्रांडिंग हटाएँ", advancedAIModels: "उन्नत AI इमेज मॉडल", premiumAIModels: "प्रीमियम AI इमेज मॉडल", customBranding: "कस्टम ब्रांडिंग और फ़ॉन्ट", mostAdvancedModels: "सबसे उन्नत AI मॉडल", earlyAccess: "नई सुविधाओं तक जल्दी पहुँच", everythingInFree: "मुफ़्त में सब कुछ, और:",
+    upTo20Slides: "प्रति प्रस्तुति 20 स्लाइड तक", upTo60Slides: "प्रति प्रस्तुति 60 स्लाइड तक", upTo75Slides: "प्रति प्रस्तुति 75 स्लाइड तक", credits1000: "1,000 AI क्रेडिट/माह", credits4000: "4,000 AI क्रेडिट/माह", credits20000: "20,000 AI क्रेडिट/माह", removeBranding: "PPTMaster ब्रांडिंग हटाएँ", advancedAIModels: "उन्नत AI इमेज मॉडल", premiumAIModels: "प्रीमियम AI इमेज मॉडल", customBranding: "कस्टम ब्रांडिंग और फ़ॉन्ट", mostAdvancedModels: "सबसे उन्नत AI मॉडल", earlyAccess: "नई सुविधाओं तक जल्दी पहुँच", basicAnimations: "बेसिक स्लाइड एनिमेशन", premiumAnimations: "प्रीमियम स्लाइड एनिमेशन", allAnimations: "सभी एनिमेशन और इफ़ेक्ट्स", everythingInFree: "मुफ़्त में सब कुछ, और:",
     // Additional translations for analytics, charts, images
     trackPerformance: "अपनी प्रस्तुति के प्रदर्शन को ट्रैक करें", somethingWentWrong: "कुछ गलत हो गया", loadingCharts: "चार्ट लोड हो रहे हैं...", searchCharts: "चार्ट खोजें...", noChartsFound: "कोई चार्ट नहीं मिला", noChartsYet: "अभी तक कोई चार्ट नहीं", createFirstChart: "अपनी प्रस्तुतियों में डेटा देखने के लिए अपना पहला चार्ट बनाएं", createYourFirstChart: "अपना पहला चार्ट बनाएं", createChart: "चार्ट बनाएं", editChart: "चार्ट संपादित करें", tryAdjustingSearch: "अपनी खोज या फ़िल्टर को समायोजित करने का प्रयास करें", dataPoints: "डेटा बिंदु", untitledChart: "बिना शीर्षक वाला चार्ट", favorite: "पसंदीदा", unfavorite: "पसंदीदा से हटाएँ",
     // Feedback/Review translations
@@ -4868,6 +4897,8 @@ hi: {
     slidesCountLabel: "स्लाइड:", charactersCount: "वर्ण:", creditsNeededLabel: "क्रेडिट आवश्यक:", youHaveCredits: "आपके पास {credits} क्रेडिट हैं",
     // Recent Outlines
     yourRecentOutlines: "आपकी हालिया रूपरेखाएं", continueEditingBtn: "संपादन जारी रखें", loadOutlineBtn: "रूपरेखा लोड करें",
+    // Workspace Menu
+    inviteMembers: "सदस्यों को आमंत्रित करें", signOut: "साइन आउट", upgradePlan: "प्लान अपग्रेड करें",
   },
  ru: {
     // Sidebar (Боковая панель)
@@ -5035,7 +5066,7 @@ hi: {
     // Credit topups
     creditTopups: "Пополнение кредитов",
     // Plan features
-    upTo20Slides: "До 20 слайдов в презентации", upTo60Slides: "До 60 слайдов в презентации", upTo75Slides: "До 75 слайдов в презентации", credits1000: "1,000 ИИ-кредитов/мес", credits4000: "4,000 ИИ-кредитов/мес", credits20000: "20,000 ИИ-кредитов/мес", removeBranding: "Убрать водяной знак PPTMaster", advancedAIModels: "Улучшенные ИИ-модели фото", premiumAIModels: "Премиум ИИ-модели фото", customBranding: "Свой брендинг и шрифты", mostAdvancedModels: "Самые мощные ИИ-модели", earlyAccess: "Ранний доступ к новым функциям", everythingInFree: "Все возможности Free, и:",
+    upTo20Slides: "До 20 слайдов в презентации", upTo60Slides: "До 60 слайдов в презентации", upTo75Slides: "До 75 слайдов в презентации", credits1000: "1,000 ИИ-кредитов/мес", credits4000: "4,000 ИИ-кредитов/мес", credits20000: "20,000 ИИ-кредитов/мес", removeBranding: "Убрать водяной знак PPTMaster", advancedAIModels: "Улучшенные ИИ-модели фото", premiumAIModels: "Премиум ИИ-модели фото", customBranding: "Свой брендинг и шрифты", mostAdvancedModels: "Самые мощные ИИ-модели", earlyAccess: "Ранний доступ к новым функциям", basicAnimations: "Базовые анимации слайдов", premiumAnimations: "Премиум анимации слайдов", allAnimations: "Все анимации и эффекты", everythingInFree: "Все возможности Free, и:",
     // Additional translations
     trackPerformance: "Отслеживайте эффективность презентаций", somethingWentWrong: "Что-то пошло не так", loadingCharts: "Загрузка диаграмм...", searchCharts: "Поиск диаграмм...", noChartsFound: "Диаграмм не найдено", noChartsYet: "Диаграмм пока нет", createFirstChart: "Создайте свою первую диаграмму для визуализации данных", createYourFirstChart: "Создать первую диаграмму", createChart: "Создать диаграмму", editChart: "Изменить диаграмму", tryAdjustingSearch: "Попробуйте изменить запрос или фильтры", dataPoints: "точек данных", untitledChart: "Диаграмма без названия", favorite: "В избранное", unfavorite: "Из избранного",
     // Feedback/Review translations
@@ -5128,6 +5159,8 @@ hi: {
     slidesCountLabel: "Слайдов:", charactersCount: "Символов:", creditsNeededLabel: "Нужно кредитов:", youHaveCredits: "У вас {credits} кредитов",
     // Outlines
     yourRecentOutlines: "Ваши черновики", continueEditingBtn: "Править", loadOutlineBtn: "Загрузить план",
+    // Workspace Menu
+    inviteMembers: "Пригласить участников", signOut: "Выйти", upgradePlan: "Улучшить план",
 },
 };
 

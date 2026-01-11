@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   X,
   BarChart3,
@@ -167,7 +168,7 @@ export default function ChartModal({
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || typeof window === "undefined") return null;
 
   const handleSave = (chart: ChartData) => {
     onInsert(chart);
@@ -188,10 +189,10 @@ export default function ChartModal({
     onClose();
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       {/* Backdrop - click to close */}
-      <div className="absolute inset-0" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
       <div
@@ -439,6 +440,7 @@ export default function ChartModal({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

@@ -2,6 +2,7 @@
 
 import type React from "react";
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Grid, List as ListIcon, Palette, Trash2, MoreHorizontal, X, Eye, Loader2 } from "lucide-react";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
@@ -585,10 +586,13 @@ function ThemePreviewModal({ theme, onClose }: { theme: ThemeData; onClose: () =
 
   const slideShapeStyles = getSlideShapeStyles();
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+  if (typeof window === "undefined") return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div 
-        className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl overflow-hidden"
+        className="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -695,6 +699,7 @@ function ThemePreviewModal({ theme, onClose }: { theme: ThemeData; onClose: () =
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

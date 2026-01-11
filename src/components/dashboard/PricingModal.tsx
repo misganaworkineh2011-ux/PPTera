@@ -164,14 +164,14 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
   };
 
   const plans = [
-    { key: "plus", name: "Plus", prices: getPriceFromProducts("plus"), description: t.unlimitedAICreations, features: [t.upTo20Slides || "Up to 20 slides per presentation", t.credits1000 || "1,000 AI credits/month", t.removeBranding || "Remove PPTMaster branding", t.advancedAIModels || "Advanced AI image models"], highlight: false, badge: null as string | null, badgeGradient: false },
-    { key: "pro", name: "Pro", prices: getPriceFromProducts("pro"), description: t.forPremiumAI, features: [t.upTo60Slides || "Up to 60 slides per presentation", t.credits4000 || "4,000 AI credits/month", t.premiumAIModels || "Premium AI image models", t.customBranding || "Custom branding & fonts"], highlight: true, badge: t.mostPopular, badgeGradient: false },
-    { key: "ultra", name: "Ultra", prices: getPriceFromProducts("ultra"), description: t.for20xMoreAI, features: [t.upTo75Slides || "Up to 75 slides per presentation", t.credits20000 || "20,000 AI credits/month", t.mostAdvancedModels || "Most advanced AI models", t.earlyAccess || "Early access to new features"], highlight: false, badge: t.introductoryPrice, badgeGradient: true },
+    { key: "plus", name: "Plus", prices: getPriceFromProducts("plus"), description: t.unlimitedAICreations, features: [t.upTo20Slides || "Up to 20 slides per presentation", t.credits1000 || "1,000 AI credits/month", t.removeBranding || "Remove PPTMaster branding", t.advancedAIModels || "Advanced AI image models", t.basicAnimations || "Basic slide animations"], highlight: false, badge: null as string | null, badgeGradient: false },
+    { key: "pro", name: "Pro", prices: getPriceFromProducts("pro"), description: t.forPremiumAI, features: [t.upTo60Slides || "Up to 60 slides per presentation", t.credits4000 || "4,000 AI credits/month", t.premiumAIModels || "Premium AI image models", t.customBranding || "Custom branding & fonts", t.premiumAnimations || "Premium slide animations"], highlight: true, badge: t.mostPopular, badgeGradient: false },
+    { key: "ultra", name: "Ultra", prices: getPriceFromProducts("ultra"), description: t.for20xMoreAI, features: [t.upTo75Slides || "Up to 75 slides per presentation", t.credits20000 || "20,000 AI credits/month", t.mostAdvancedModels || "Most advanced AI models", t.allAnimations || "All slide animations & effects", t.earlyAccess || "Early access to new features"], highlight: false, badge: t.introductoryPrice, badgeGradient: true },
   ];
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       
       <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden mx-4">
         {/* Header */}

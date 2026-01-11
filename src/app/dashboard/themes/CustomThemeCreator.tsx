@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   X,
   ChevronLeft,
@@ -357,7 +358,7 @@ export default function CustomThemeCreator({ isOpen, onClose, onSave, subscripti
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen || typeof window === "undefined") return null;
 
   const colors = getCurrentColors();
   const headingFont = getSelectedFont(themeData.headingFont);
@@ -372,10 +373,11 @@ export default function CustomThemeCreator({ isOpen, onClose, onSave, subscripti
     t.themeNameStep || "Name",
   ];
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={handleClose} />
       <div
-        className="flex h-[95vh] max-h-[750px] w-full max-w-5xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl dark:bg-black sm:h-[85vh] sm:rounded-2xl md:flex-row"
+        className="relative flex h-[95vh] max-h-[750px] w-full max-w-5xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl dark:bg-black sm:h-[85vh] sm:rounded-2xl md:flex-row"
       >
         {/* Left Panel - Form */}
         <div className="flex max-h-[60vh] w-full flex-col border-b border-slate-200 dark:border-neutral-800 md:max-h-none md:w-1/2 md:border-b-0 md:border-r">
@@ -489,7 +491,8 @@ export default function CustomThemeCreator({ isOpen, onClose, onSave, subscripti
           />
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
