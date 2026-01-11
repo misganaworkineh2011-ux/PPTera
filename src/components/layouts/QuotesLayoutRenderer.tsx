@@ -106,7 +106,24 @@ interface QuotesLayoutRendererProps {
   onReorderItems?: (fromIndex: number, toIndex: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
+  // Spotlight props
+  spotlightIndex?: number;
+  isSpotlightMode?: boolean;
 }
+
+// Helper function to get spotlight styling for content elements
+const getSpotlightStyle = (itemIndex: number, spotlightIndex?: number, isSpotlightMode?: boolean): React.CSSProperties => {
+  if (!isSpotlightMode || spotlightIndex === undefined) return {};
+  const isHighlighted = spotlightIndex === itemIndex;
+  return {
+    opacity: isHighlighted ? 1 : 0.15,
+    transform: isHighlighted ? 'scale(1.02)' : 'scale(0.98)',
+    transition: 'all 0.4s ease-out',
+    filter: isHighlighted ? 'drop-shadow(0 0 30px rgba(255,255,255,0.4))' : 'blur(2px)',
+    position: 'relative' as const,
+    zIndex: isHighlighted ? 10 : 1,
+  };
+};
 
 export function QuotesLayoutRenderer({
   layoutId,
@@ -129,9 +146,16 @@ export function QuotesLayoutRenderer({
   onReorderItems,
   isOwner = false,
   isHovered = false,
+  spotlightIndex,
+  isSpotlightMode = false,
 }: QuotesLayoutRendererProps & { hasImage?: boolean }) {
   const displayItems = items.slice(0, 6);
   const themeStyles = getThemeStyles(theme, accentColor);
+
+  // Spotlight is controlled only by arrow keys via props - no hover interaction
+  const effectiveSpotlightIndex = isSpotlightMode && spotlightIndex !== undefined
+    ? spotlightIndex 
+    : -1;
   
   // Drag state
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -211,6 +235,7 @@ export function QuotesLayoutRenderer({
         canDrag={canDrag}
         dragProps={dragProps}
         getDragClasses={getDragClasses}
+        highlightedIndex={effectiveSpotlightIndex}
       />
     );
   }
@@ -235,6 +260,7 @@ export function QuotesLayoutRenderer({
       canDrag={canDrag}
       dragProps={dragProps}
       getDragClasses={getDragClasses}
+      highlightedIndex={effectiveSpotlightIndex}
     />
   );
 }
@@ -273,6 +299,7 @@ function BubbleQuotes({
   canDrag = false,
   dragProps,
   getDragClasses,
+  highlightedIndex,
 }: {
   items: QuoteContentItem[];
   themeStyles: ThemeStyles;
@@ -292,7 +319,12 @@ function BubbleQuotes({
   canDrag?: boolean;
   dragProps?: (idx: number) => Record<string, unknown>;
   getDragClasses?: (idx: number) => string;
+  highlightedIndex?: number;
 }) {
+  const getStyle = (index: number) => {
+    return getSpotlightStyle(index, highlightedIndex, highlightedIndex !== undefined && highlightedIndex !== -1);
+  };
+
   // When no image, use row layout with content-driven sizing
   const containerClass = hasImage
     ? `flex flex-wrap gap-8 justify-center items-start ${className}`
@@ -316,13 +348,25 @@ function BubbleQuotes({
         const props = dragProps && !isPresenting ? dragProps(index) : {};
         
         const Wrapper = isPresenting ? motion.div : "div";
-        const wrapperProps = isPresenting ? { variants: quoteVariants } : {};
+        const wrapperStyle = getStyle(index);
+        // No hover handlers - spotlight is controlled by arrow keys only
+        const wrapperProps = isPresenting ? { 
+          variants: quoteVariants,
+        } : {};
+        
+        // Disable hover classes during presentation
+        const wrapperClassName = isPresenting 
+          ? `${itemClass} relative ${dragClasses}`
+          : `${itemClass} relative group/drag-item ${dragClasses}`;
         
         return (
           <Wrapper 
             key={index} 
-            className={`${itemClass} relative group/drag-item ${dragClasses}`}
-            style={{ cursor: canDrag && !isPresenting ? "grab" : "default" }}
+            className={wrapperClassName}
+            style={{ 
+              cursor: canDrag && !isPresenting ? "grab" : "default",
+              ...wrapperStyle
+            }}
             {...wrapperProps}
             {...props}
           >
@@ -335,8 +379,8 @@ function BubbleQuotes({
                 <GripVertical size={14} className="text-current" />
               </div>
             )}
-            {/* Main Bubble Card */}
-            <div className="relative group filter drop-shadow-md transition-transform hover:-translate-y-1">
+            {/* Main Bubble Card - disable hover effects during presentation */}
+            <div className={isPresenting ? "relative filter drop-shadow-md" : "relative group filter drop-shadow-md transition-transform hover:-translate-y-1"}>
               <div
                 className="relative rounded-2xl p-8"
                 style={{
@@ -447,6 +491,7 @@ function MarksQuotes({
   canDrag = false,
   dragProps,
   getDragClasses,
+  highlightedIndex,
 }: {
   items: QuoteContentItem[];
   themeStyles: ThemeStyles;
@@ -466,7 +511,12 @@ function MarksQuotes({
   canDrag?: boolean;
   dragProps?: (idx: number) => Record<string, unknown>;
   getDragClasses?: (idx: number) => string;
+  highlightedIndex?: number;
 }) {
+  const getStyle = (index: number) => {
+    return getSpotlightStyle(index, highlightedIndex, highlightedIndex !== undefined && highlightedIndex !== -1);
+  };
+
   // When no image, use row layout with content-driven sizing
   const containerClass = hasImage
     ? `flex flex-wrap gap-8 justify-center ${className}`
@@ -490,13 +540,25 @@ function MarksQuotes({
         const props = dragProps && !isPresenting ? dragProps(index) : {};
         
         const Wrapper = isPresenting ? motion.div : "div";
-        const wrapperProps = isPresenting ? { variants: quoteVariants } : {};
+        const wrapperStyle = getStyle(index);
+        // No hover handlers - spotlight is controlled by arrow keys only
+        const wrapperProps = isPresenting ? { 
+          variants: quoteVariants,
+        } : {};
+        
+        // Disable hover classes during presentation
+        const wrapperClassName = isPresenting 
+          ? `${itemClass} relative ${dragClasses}`
+          : `${itemClass} relative group/drag-item ${dragClasses}`;
         
         return (
           <Wrapper 
             key={index} 
-            className={`${itemClass} relative group/drag-item ${dragClasses}`}
-            style={{ cursor: canDrag && !isPresenting ? "grab" : "default" }}
+            className={wrapperClassName}
+            style={{ 
+              cursor: canDrag && !isPresenting ? "grab" : "default",
+              ...wrapperStyle
+            }}
             {...wrapperProps}
             {...props}
           >
@@ -510,7 +572,7 @@ function MarksQuotes({
               </div>
             )}
             <div
-              className="h-full rounded-xl p-8 pt-10 relative shadow-sm border hover:shadow-md transition-all"
+              className={isPresenting ? "h-full rounded-xl p-8 pt-10 relative shadow-sm border" : "h-full rounded-xl p-8 pt-10 relative shadow-sm border hover:shadow-md transition-all"}
               style={{
                 backgroundColor: themeStyles.cardBgColor,
                 borderColor: themeStyles.cardBorderColor,

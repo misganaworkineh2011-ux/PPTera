@@ -67,7 +67,24 @@ interface BoxLayoutRendererProps {
   isHovered?: boolean;
   isPresenting?: boolean;
   animationKey?: string;
+  // Spotlight props
+  spotlightIndex?: number; // Which item is highlighted (undefined = no spotlight)
+  isSpotlightMode?: boolean;
 }
+
+// Helper function to get spotlight styling for content elements
+const getSpotlightStyle = (itemIndex: number, spotlightIndex?: number, isSpotlightMode?: boolean): React.CSSProperties => {
+  if (!isSpotlightMode || spotlightIndex === undefined) return {};
+  const isHighlighted = spotlightIndex === itemIndex;
+  return {
+    opacity: isHighlighted ? 1 : 0.15,
+    transform: isHighlighted ? 'scale(1.02)' : 'scale(0.98)',
+    transition: 'all 0.4s ease-out',
+    filter: isHighlighted ? 'drop-shadow(0 0 30px rgba(255,255,255,0.4))' : 'none',
+    position: 'relative' as const,
+    zIndex: isHighlighted ? 10 : 1,
+  };
+};
 
 export default function BoxLayoutRenderer({
   layoutId,
@@ -90,9 +107,12 @@ export default function BoxLayoutRenderer({
   isHovered = false,
   isPresenting = false,
   animationKey,
+  spotlightIndex,
+  isSpotlightMode = false,
 }: BoxLayoutRendererProps & { hasImage?: boolean }) {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [hoveredBoxIndex, setHoveredBoxIndex] = useState<number | null>(null); // New local hover state
   const dragRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const layout = layoutId
@@ -103,6 +123,10 @@ export default function BoxLayoutRenderer({
 
   const gridStyles = getBoxLayoutGridTemplate(items.length, isNarrowSpace, hasImage);
   const baseStyles = getBaseBoxStyles(theme);
+
+  // Determine effective spotlight state (prop or local hover)
+  const effectiveSpotlightIndex = spotlightIndex;
+  const effectiveIsSpotlightMode = isSpotlightMode;
 
   const handleDragStart = (e: React.DragEvent, idx: number) => {
     if (!isOwner || !onReorderItems) return;
@@ -209,7 +233,10 @@ export default function BoxLayoutRenderer({
   };
 
   const renderBox = (item: BoxContentItem, idx: number) => {
-    const commonClasses = "flex flex-col h-full w-full transition-all duration-200 hover:shadow-lg relative";
+    // Disable hover effects during presentation mode
+    const commonClasses = isPresenting 
+      ? "flex flex-col h-full w-full relative"
+      : "flex flex-col h-full w-full transition-all duration-200 relative";
     const isDragging = draggedIndex === idx;
     const isDragOver = dragOverIndex === idx;
     const canDrag = isOwner && onReorderItems && items.length > 1 && !isPresenting;
@@ -224,10 +251,14 @@ export default function BoxLayoutRenderer({
       onDrop: (e: React.DragEvent) => handleDrop(e, idx),
     } : {};
 
-    const wrapperClasses = `relative group/drag-item h-full ${isDragging ? "opacity-50" : ""} ${isDragOver ? "ring-2 ring-blue-500 ring-offset-2" : ""}`;
+    // Disable hover classes during presentation
+    const wrapperClasses = isPresenting 
+      ? `relative h-full ${isDragging ? "opacity-50" : ""} ${isDragOver ? "ring-2 ring-blue-500 ring-offset-2" : ""}`
+      : `relative group/drag-item h-full ${isDragging ? "opacity-50" : ""} ${isDragOver ? "ring-2 ring-blue-500 ring-offset-2" : ""}`;
     const wrapperStyle: React.CSSProperties = { cursor: canDrag ? "grab" : "default" };
 
-    const dragHandle = canDrag && (
+    // No drag handle during presentation
+    const dragHandle = canDrag && !isPresenting && (
       <div 
         className="absolute -left-5 top-1/2 -translate-y-1/2 opacity-0 group-hover/drag-item:opacity-60 transition-opacity cursor-grab z-20"
         title="Drag to reorder"
@@ -327,13 +358,19 @@ export default function BoxLayoutRenderer({
       }
     };
 
+    const handleMouseEnter = () => setHoveredBoxIndex(idx);
+    const handleMouseLeave = () => setHoveredBoxIndex(null);
+
     // When presenting, use motion.div for animations
     if (isPresenting) {
       return (
         <motion.div 
           key={idx} 
           className={wrapperClasses} 
-          style={wrapperStyle}
+          style={{
+            ...wrapperStyle,
+            ...getSpotlightStyle(idx, effectiveSpotlightIndex ?? undefined, effectiveIsSpotlightMode),
+          }}
           variants={boxVariants}
         >
           {getBoxContent()}
@@ -347,7 +384,11 @@ export default function BoxLayoutRenderer({
         key={idx} 
         ref={(el) => { dragRefs.current[idx] = el; }} 
         className={wrapperClasses} 
-        style={wrapperStyle} 
+        style={{
+          ...wrapperStyle,
+          // Apply spotlight effects in editor mode too for consistent behavior
+          ...getSpotlightStyle(idx, effectiveSpotlightIndex ?? undefined, effectiveIsSpotlightMode),
+        }} 
         {...dragProps}
       >
         {dragHandle}

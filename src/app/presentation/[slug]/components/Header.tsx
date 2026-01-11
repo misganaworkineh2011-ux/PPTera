@@ -22,6 +22,10 @@ import {
   Maximize,
   FileText,
   Link2,
+  Minus,
+  Plus,
+  Users,
+  Crown,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { UserButton } from "@clerk/nextjs";
@@ -49,6 +53,10 @@ interface HeaderProps {
   canRedo?: boolean;
   isPresenting?: boolean;
   presenterViewConnected?: boolean;
+  // Presentation mode controls
+  presentZoom?: number;
+  isSpotlightActive?: boolean;
+  currentSlide?: number;
   onBack: () => void;
   onEditTitle: () => void;
   onTitleChange: (v: string) => void;
@@ -68,6 +76,10 @@ interface HeaderProps {
   onRedo?: () => void;
   onOpenThemes?: () => void;
   onOpenAgent?: () => void;
+  // Presentation mode callbacks
+  onZoomChange?: (zoom: number) => void;
+  onSpotlightToggle?: () => void;
+  onUpgrade?: () => void;
 }
 
 export function Header({
@@ -88,6 +100,9 @@ export function Header({
   canRedo = false,
   isPresenting = false,
   presenterViewConnected = false,
+  presentZoom = 100,
+  isSpotlightActive = false,
+  currentSlide = 0,
   onBack,
   onEditTitle,
   onTitleChange,
@@ -107,6 +122,9 @@ export function Header({
   onRedo,
   onOpenThemes,
   onOpenAgent,
+  onZoomChange,
+  onSpotlightToggle,
+  onUpgrade,
 }: HeaderProps) {
   const themeType = getThemeType(theme);
   const ui = getUIColors(themeType);
@@ -134,6 +152,156 @@ export function Header({
       return () => document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [showMoreMenu, showPresentMenu]);
+
+  // Presentation mode header - simplified with zoom, spotlight, share controls
+  if (isPresenting) {
+    return (
+      <header
+        className="backdrop-blur-md border-b px-3 sm:px-4 py-2 sticky top-0 z-50"
+        style={{
+          backgroundColor: `${theme.colors.background}e6`,
+          borderColor: theme.colors.border,
+        }}
+      >
+        <div className="flex items-center justify-between gap-2">
+          {/* Left section - Slide counter */}
+          <div className="flex items-center gap-3">
+            <span className={`text-sm font-medium ${ui.headerText}`}>
+              {currentSlide + 1} / {slidesCount}
+            </span>
+          </div>
+
+          {/* Center section - Zoom, Spotlight, Share */}
+          <div className="flex items-center gap-1">
+            {/* Zoom controls */}
+            <button
+              onClick={() => onZoomChange?.(Math.max(50, presentZoom - 10))}
+              className={`p-2 rounded-lg transition-colors ${ui.headerHover} ${ui.headerIcon}`}
+              title="Zoom out (-)"
+            >
+              <Minus size={18} />
+            </button>
+            
+            {/* Zoom percentage display */}
+            <span className={`px-2 py-1.5 text-sm font-medium min-w-[60px] text-center ${ui.headerText}`}>
+              {presentZoom}%
+            </span>
+            
+            <button
+              onClick={() => onZoomChange?.(Math.min(200, presentZoom + 10))}
+              className={`p-2 rounded-lg transition-colors ${ui.headerHover} ${ui.headerIcon}`}
+              title="Zoom in (+)"
+            >
+              <Plus size={18} />
+            </button>
+            
+            {/* Divider */}
+            <div className={`w-px h-6 mx-2 ${themeType === "dark" ? "bg-white/20" : "bg-black/20"}`} />
+            
+            {/* Spotlight toggle */}
+            <button
+              onClick={onSpotlightToggle}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                isSpotlightActive 
+                  ? 'bg-blue-500/20 text-blue-500' 
+                  : `${ui.headerHover} ${ui.headerText}`
+              }`}
+              title={isSpotlightActive ? "Turn off spotlight (S)" : "Turn on spotlight (S)"}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2v4" />
+                <path d="m4.93 4.93 2.83 2.83" />
+                <path d="M2 12h4" />
+                <path d="m4.93 19.07 2.83-2.83" />
+                <path d="M12 18v4" />
+                <path d="m19.07 19.07-2.83-2.83" />
+                <path d="M22 12h-4" />
+                <path d="m19.07 4.93-2.83 2.83" />
+                <circle cx="12" cy="12" r="4" />
+              </svg>
+              <span className="hidden sm:inline">Spotlight</span>
+            </button>
+            
+            {/* Divider */}
+            <div className={`w-px h-6 mx-2 ${themeType === "dark" ? "bg-white/20" : "bg-black/20"}`} />
+            
+            {/* Share button */}
+            <button
+              onClick={onShare}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${ui.headerHover} ${ui.headerText}`}
+              title="Share presentation"
+            >
+              <Users size={18} />
+              <span className="hidden sm:inline">{t.shareBtn || "Share"}</span>
+            </button>
+          </div>
+
+          {/* Right section - Exit button */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onExitPresent}
+              className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-lg text-sm font-medium transition-colors bg-red-500 hover:bg-red-600 text-white"
+              title="Exit presentation (Esc)"
+            >
+              <X size={14} />
+              <span className="hidden sm:inline">{t.exitPresent || "Exit"}</span>
+            </button>
+            
+            {/* More menu */}
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={() => setShowMoreMenu(!showMoreMenu)}
+                className={`p-2 rounded-lg transition-colors ${ui.headerHover} ${ui.headerIcon}`}
+                title={t.moreOptions || "More options"}
+              >
+                <MoreHorizontal size={18} />
+              </button>
+
+              {showMoreMenu && (
+                <div
+                  className="absolute right-0 top-full mt-2 w-48 rounded-xl shadow-2xl border backdrop-blur-md z-50 overflow-hidden"
+                  style={{ 
+                    backgroundColor: `${theme.colors.background}f5`,
+                    borderColor: theme.colors.border,
+                  }}
+                >
+                  <div className="p-2">
+                    <button
+                      onClick={() => { onOpenThemes?.(); setShowMoreMenu(false); }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${ui.headerHover} ${ui.headerText}`}
+                    >
+                      <Palette size={16} />
+                      <span>{t.themeBtn || "Theme"}</span>
+                    </button>
+                    <button
+                      onClick={() => { onOpenAgent?.(); setShowMoreMenu(false); }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${ui.headerHover} ${ui.headerText}`}
+                    >
+                      <Sparkles size={16} />
+                      <span>{t.agentBtn || "Agent"}</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Profile button */}
+            <div className="hidden sm:block">
+              <UserButton 
+                afterSignOutUrl="/"
+                appearance={{
+                  elements: {
+                    avatarBox: "w-8 h-8 ring-2 ring-offset-1",
+                    userButtonTrigger: "focus:shadow-none",
+                  },
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header
@@ -370,6 +538,18 @@ export function Header({
               </div>
             )}
           </div>
+
+          {/* Upgrade button */}
+          {isOwner && onUpgrade && (
+            <button
+              onClick={onUpgrade}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+              title={t.upgradeBtn || "Upgrade"}
+            >
+              <Crown size={16} />
+              <span>{t.upgradeBtn || "Upgrade"}</span>
+            </button>
+          )}
 
           {/* More menu (three dots) */}
           <div className="relative" ref={menuRef}>

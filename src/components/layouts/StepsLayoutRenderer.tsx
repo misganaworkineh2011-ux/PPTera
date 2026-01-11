@@ -103,7 +103,24 @@ interface StepsLayoutRendererProps {
   onReorderItems?: (fromIndex: number, toIndex: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
+  // Spotlight props
+  spotlightIndex?: number;
+  isSpotlightMode?: boolean;
 }
+
+// Helper function to get spotlight styling for content elements
+const getSpotlightStyle = (itemIndex: number, spotlightIndex?: number, isSpotlightMode?: boolean): React.CSSProperties => {
+  if (!isSpotlightMode || spotlightIndex === undefined) return {};
+  const isHighlighted = spotlightIndex === itemIndex;
+  return {
+    opacity: isHighlighted ? 1 : 0.15,
+    transform: isHighlighted ? 'scale(1.02)' : 'scale(0.98)',
+    transition: 'all 0.4s ease-out',
+    filter: isHighlighted ? 'drop-shadow(0 0 30px rgba(255,255,255,0.4))' : 'blur(2px)',
+    position: 'relative' as const,
+    zIndex: isHighlighted ? 10 : 1,
+  };
+};
 
 export function StepsLayoutRenderer({
   layoutId,
@@ -125,9 +142,16 @@ export function StepsLayoutRenderer({
   onReorderItems,
   isOwner = false,
   isHovered = false,
+  spotlightIndex,
+  isSpotlightMode = false,
 }: StepsLayoutRendererProps) {
   const displayItems = items.slice(0, 6);
   const themeStyles = getThemeStyles(theme, accentColor);
+
+  // Spotlight is controlled only by arrow keys via props - no hover interaction
+  const effectiveSpotlightIndex = isSpotlightMode && spotlightIndex !== undefined
+    ? spotlightIndex 
+    : -1;
   
   // Drag state
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -194,6 +218,7 @@ export function StepsLayoutRenderer({
         isOwner={isOwner}
         isHovered={isHovered}
         {...dragProps}
+        highlightedIndex={effectiveSpotlightIndex}
       />
     );
   }
@@ -216,6 +241,7 @@ export function StepsLayoutRenderer({
         isOwner={isOwner}
         isHovered={isHovered}
         {...dragProps}
+        highlightedIndex={effectiveSpotlightIndex}
       />
     );
   }
@@ -239,6 +265,7 @@ export function StepsLayoutRenderer({
         isOwner={isOwner}
         isHovered={isHovered}
         {...dragProps}
+        highlightedIndex={effectiveSpotlightIndex}
       />
     );
   }
@@ -260,6 +287,7 @@ export function StepsLayoutRenderer({
       isOwner={isOwner}
       isHovered={isHovered}
       {...dragProps}
+      highlightedIndex={effectiveSpotlightIndex}
     />
   );
 }
@@ -319,6 +347,7 @@ function PyramidSteps({
   onDrop,
   onDragEnd,
   canDrag,
+  highlightedIndex,
 }: {
   items: StepContentItem[];
   themeStyles: ThemeStyles;
@@ -334,7 +363,13 @@ function PyramidSteps({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
-} & DragProps) {
+} & DragProps & {
+  highlightedIndex?: number;
+}) {
+  const getStyle = (index: number) => {
+    return getSpotlightStyle(index, highlightedIndex, highlightedIndex !== undefined && highlightedIndex !== -1);
+  };
+
   const itemCount = items.length;
   const pyramidWidth = 280;
   const gap = 15; // Visible gap between sections
@@ -499,10 +534,11 @@ function PyramidSteps({
               style={{
                 minHeight: `${minSectionHeight}px`,
                 paddingLeft: `${staggerPadding}px`,
+                ...getStyle(index),
               }}
             >
               {/* Drag handle */}
-              {canDrag && isHovered && (
+              {canDrag && isHovered && !isPresenting && (
                 <div className="flex-shrink-0 opacity-50 hover:opacity-100 transition-opacity">
                   <GripVertical size={16} style={{ color: themeStyles.bodyColor }} />
                 </div>
@@ -590,6 +626,7 @@ function ArrowSteps({
   onDrop,
   onDragEnd,
   canDrag,
+  highlightedIndex,
 }: {
   items: StepContentItem[];
   themeStyles: ThemeStyles;
@@ -605,7 +642,13 @@ function ArrowSteps({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
-} & DragProps) {
+} & DragProps & {
+  highlightedIndex?: number;
+}) {
+  const getStyle = (index: number) => {
+    return getSpotlightStyle(index, highlightedIndex, highlightedIndex !== undefined && highlightedIndex !== -1);
+  };
+
   const minRowHeight = 60; // Minimum row height
   const contentRefs = React.useRef<(HTMLDivElement | null)[]>([]);
   const [rowHeights, setRowHeights] = React.useState<number[]>(() => 
@@ -772,7 +815,10 @@ function ArrowSteps({
             onDrop={(e) => onDrop(e, index)}
             onDragEnd={onDragEnd}
             className={baseClassName}
-            style={baseStyle}
+            style={{
+               ...baseStyle,
+               ...getStyle(index),
+            }}
           >
             {itemContent}
           </div>
@@ -807,6 +853,7 @@ function CardSteps({
   onDrop,
   onDragEnd,
   canDrag,
+  highlightedIndex,
 }: {
   items: StepContentItem[];
   themeStyles: ThemeStyles;
@@ -823,7 +870,13 @@ function CardSteps({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
-} & DragProps) {
+} & DragProps & {
+  highlightedIndex?: number;
+}) {
+  const getStyle = (index: number) => {
+    return getSpotlightStyle(index, highlightedIndex, highlightedIndex !== undefined && highlightedIndex !== -1);
+  };
+  
   const itemCount = items.length;
   const baseMinHeight = 120;
   const baseMaxHeight = 200;
@@ -892,9 +945,10 @@ function CardSteps({
                 border: `1px solid ${themeStyles.cardBorderColor}`,
                 borderLeftWidth: "3px",
                 borderLeftColor: themeStyles.accentColor,
+                ...getStyle(index),
               }}
             >
-              {canDrag && isHovered && (
+              {canDrag && isHovered && !isPresenting && (
                 <div className="flex justify-end mb-2 opacity-50 hover:opacity-100 transition-opacity">
                   <GripVertical size={16} style={{ color: themeStyles.bodyColor }} />
                 </div>
@@ -973,9 +1027,10 @@ function CardSteps({
               borderLeftWidth: "4px",
               borderLeftColor: themeStyles.accentColor,
               minHeight: `${getHeight(index)}px`,
+              ...getStyle(index),
             }}
           >
-            {canDrag && isHovered && (
+            {canDrag && isHovered && !isPresenting && (
               <div className="flex justify-end mb-2 opacity-50 hover:opacity-100 transition-opacity">
                 <GripVertical size={16} style={{ color: themeStyles.bodyColor }} />
               </div>
@@ -1049,6 +1104,7 @@ function BarSteps({
   onDrop,
   onDragEnd,
   canDrag,
+  highlightedIndex,
 }: {
   items: StepContentItem[];
   themeStyles: ThemeStyles;
@@ -1064,7 +1120,13 @@ function BarSteps({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
-} & DragProps) {
+} & DragProps & {
+  highlightedIndex?: number;
+}) {
+  const getStyle = (index: number) => {
+    return getSpotlightStyle(index, highlightedIndex, highlightedIndex !== undefined && highlightedIndex !== -1);
+  };
+  
   const itemCount = items.length;
   const minBarHeight = 60; // Minimum height for bar
   const contentRefs = React.useRef<(HTMLDivElement | null)[]>([]);
@@ -1127,9 +1189,10 @@ function BarSteps({
             } ${isDragOver ? "ring-2 ring-cyan-500 rounded-lg" : ""} ${
               canDrag ? "cursor-grab active:cursor-grabbing" : ""
             }`}
+             style={getStyle(index)}
           >
             {/* Drag handle */}
-            {canDrag && isHovered && (
+            {canDrag && isHovered && !isPresenting && (
               <div className="flex-shrink-0 opacity-50 hover:opacity-100 transition-opacity">
                 <GripVertical size={16} style={{ color: themeStyles.bodyColor }} />
               </div>

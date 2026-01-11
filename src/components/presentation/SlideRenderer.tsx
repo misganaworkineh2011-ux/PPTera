@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, memo, useRef, useEffect } from "react";
+import { useState, memo } from "react";
 import { motion } from "framer-motion";
 import { ImageIcon, Plus, LayoutGrid } from "lucide-react";
 import { type Theme } from "~/lib/themes";
@@ -53,6 +53,7 @@ interface SlideRendererProps {
   editingText: EditingState | null;
   showPageNumber?: boolean;
   isPresenting?: boolean; // Enable content animations during presentation
+  spotlightIndex?: number; // Which content element is highlighted (undefined = no spotlight)
   onStartEditing: (slideIndex: number, field: string, bulletIndex?: number) => void;
   onUpdateContent: (slideIndex: number, field: string, value: string, bulletIndex?: number) => void;
   onFinishEditing: () => void;
@@ -336,13 +337,14 @@ function getSlideImages(slide: SlideData) {
 
 function SlideRendererComponent({
   slide, index, totalSlides, theme, isOwner, isFullscreen, isHovered, isEditing,
-  editingText, showPageNumber = true, isPresenting = false, onStartEditing, onUpdateContent, onFinishEditing, onAddBullet, onDeleteBullet,
+  editingText, showPageNumber = true, isPresenting = false, spotlightIndex, onStartEditing, onUpdateContent, onFinishEditing, onAddBullet, onDeleteBullet,
   onDeleteTitle, onDeleteSubtitle, onReorderContent, onChangeContentLayout, onOpenContentLayoutPanel, onUpdateChart,
   onOpenImageModal, onRemoveImage, onChangeImageShape, onChangeImagePosition, onReorderImages,
 }: SlideRendererProps) {
   const [showContentLayoutSelector, setShowContentLayoutSelector] = useState(false);
   const [contentHovered, setContentHovered] = useState(false);
   const [hoveredImageIndex, setHoveredImageIndex] = useState<number | null>(null);
+  const [hoveredHeaderIndex, setHoveredHeaderIndex] = useState<number | null>(null);
   const [isDraggingImage, setIsDraggingImage] = useState(false);
   
   const allImages = getSlideImages(slide);
@@ -352,44 +354,33 @@ function SlideRendererComponent({
   const canEdit = isOwner && !isFullscreen;
   const themeType = getThemeType(theme);
   
-  // Use isPresenting or isFullscreen to determine if we should animate content
-  // Also check if contentAnimation is enabled for this slide (defaults to true)
-  const contentAnimationEnabled = slide.contentAnimation !== false;
-  const inPresentationMode = isPresenting || isFullscreen;
+  // Spotlight mode - highlight specific content element
+  const isSpotlightMode = spotlightIndex !== undefined;
   
-  // Track animation state per slide using a stable key
-  // Use a ref to track which slide index has been animated
-  const animatedSlidesRef = useRef<Set<number>>(new Set());
-  const prevPresentingRef = useRef(inPresentationMode);
-  
-  // Reset animation tracking when entering/exiting presentation mode
-  useEffect(() => {
-    if (prevPresentingRef.current !== inPresentationMode) {
-      // Clear animation tracking when presentation mode changes
-      animatedSlidesRef.current.clear();
-      prevPresentingRef.current = inPresentationMode;
+  // Helper function to get spotlight styling for content elements
+  // contentIndex: 0 = title, 1 = subtitle, 2+ = bullet points
+  const getSpotlightStyle = (contentIndex: number): React.CSSProperties => {
+    // If not in spotlight mode or if this is the hovered item or current spotlight, don't blur
+    const effectiveSpotlightIndex = spotlightIndex;
+    
+    if (effectiveSpotlightIndex === undefined || effectiveSpotlightIndex === -1) {
+      if (!isSpotlightMode) return {};
+      return {
+        transition: 'all 0.5s ease',
+      };
     }
-  }, [inPresentationMode]);
-  
-  // Determine if this slide should animate
-  // Only animate if: in presentation mode, animation enabled, and this slide hasn't animated yet
-  const hasAnimatedThisSlide = animatedSlidesRef.current.has(index);
-  const shouldAnimateContent = inPresentationMode && contentAnimationEnabled && !hasAnimatedThisSlide;
-  
-  // Mark this slide as animated after mount (only once per slide per presentation session)
-  useEffect(() => {
-    if (inPresentationMode && contentAnimationEnabled && !hasAnimatedThisSlide) {
-      // Mark as animated after animation completes (use longest animation duration)
-      const timer = setTimeout(() => {
-        animatedSlidesRef.current.add(index);
-      }, 500); // Wait for animation to complete
-      return () => clearTimeout(timer);
-    }
-  }, [inPresentationMode, contentAnimationEnabled, hasAnimatedThisSlide, index]);
-  
-  // Generate a stable animation key for this slide
-  // This prevents re-animation when component re-renders but slide hasn't changed
-  const animationKey = `slide-${index}-${inPresentationMode ? 'presenting' : 'editing'}`;
+
+    const isHighlighted = effectiveSpotlightIndex === contentIndex;
+
+    return {
+      opacity: isHighlighted ? 1 : 0.15,
+      filter: 'none',
+      transform: isHighlighted ? 'scale(1.02)' : 'scale(0.98)',
+      transition: 'all 0.5s ease',
+      zIndex: isHighlighted ? 10 : 1,
+      position: 'relative' as const,
+    };
+  };
   
   // Get image shape from slide (default to arc for backward compatibility)
   const imageShape: ImageShape = slide.imageShape || "arc";
@@ -977,12 +968,10 @@ function SlideRendererComponent({
 
   const SlideDescription = ({ className = "", align = "left" }: { className?: string; align?: "left" | "center" | "right" }) => {
     if (!slide.slideDescription || slide.type === "title") return null;
+    
+    // Use regular div - no animation on title/description to prevent hover replay
     return (
-      <motion.div
-        initial={shouldAnimateContent ? { opacity: 0, y: 10 } : undefined}
-        animate={shouldAnimateContent ? { opacity: 1, y: 0 } : undefined}
-        transition={{ delay: 0.15, duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-      >
+      <div>
         <EditableText
           value={slide.slideDescription}
           isEditing={isEditing && editingText?.field === "slideDescription"}
@@ -999,55 +988,55 @@ function SlideRendererComponent({
           isOwner={canEdit}
           isHovered={isHovered}
         />
-      </motion.div>
+      </div>
     );
   };
 
   const Title = ({ className = "", align = "left", showSubtitle = false }: { className?: string; align?: "left" | "center" | "right"; showSubtitle?: boolean }) => (
-    <motion.div 
-      className={showSubtitle ? "space-y-2" : ""}
-      initial={shouldAnimateContent ? { opacity: 0, y: 20 } : undefined}
-      animate={shouldAnimateContent ? { opacity: 1, y: 0 } : undefined}
-      transition={{ delay: 0.1, duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
-    >
-      <EditableText
-        value={slide.title}
-        isEditing={isEditing && editingText?.field === "title"}
-        onStartEdit={() => onStartEditing(index, "title")}
-        onChange={(val) => onUpdateContent(index, "title", val)}
-        onFinish={onFinishEditing}
-        onDelete={onDeleteTitle ? () => onDeleteTitle(index) : undefined}
-        className={`font-bold leading-tight ${className}`}
-        style={{
-          fontFamily: theme.fonts.heading.family,
-          color: colors.text,
-          letterSpacing: "-0.03em",
-          textAlign: align,
-          fontSize: showSubtitle && isTitleSlide ? "clamp(1.5rem, 4vw + 0.5rem, 4rem)" : "clamp(0.875rem, 2.5vw + 0.25rem, 2.5rem)"
-        }}
-        isOwner={canEdit}
-        isHovered={isHovered}
-      />
-      {showSubtitle && slide.subtitle && (
+    <div className={showSubtitle ? "space-y-2 md:space-y-4" : ""}>
+      {/* No motion animation on title - prevents hover replay during presentation */}
+      <div style={getSpotlightStyle(0)}>
         <EditableText
-          value={slide.subtitle}
-          isEditing={isEditing && editingText?.field === "subtitle"}
-          onStartEdit={() => onStartEditing(index, "subtitle")}
-          onChange={(val) => onUpdateContent(index, "subtitle", val)}
+          value={slide.title}
+          isEditing={isEditing && editingText?.field === "title"}
+          onStartEdit={() => onStartEditing(index, "title")}
+          onChange={(val) => onUpdateContent(index, "title", val)}
           onFinish={onFinishEditing}
-          onDelete={onDeleteSubtitle ? () => onDeleteSubtitle(index) : undefined}
-          className="opacity-80"
+          onDelete={onDeleteTitle ? () => onDeleteTitle(index) : undefined}
+          className={`font-bold leading-tight ${className}`}
           style={{
-            fontFamily: theme.fonts.body.family,
-            color: colors.textMuted,
+            fontFamily: theme.fonts.heading.family,
+            color: colors.text,
+            letterSpacing: "-0.03em",
             textAlign: align,
-            fontSize: "clamp(0.875rem, 1.5vw + 0.25rem, 1.5rem)"
+            fontSize: showSubtitle && isTitleSlide ? "clamp(1.5rem, 4vw + 0.5rem, 4rem)" : "clamp(0.875rem, 2.5vw + 0.25rem, 2.5rem)"
           }}
           isOwner={canEdit}
           isHovered={isHovered}
         />
+      </div>
+      {showSubtitle && slide.subtitle && (
+        <div style={getSpotlightStyle(1)}>
+          <EditableText
+            value={slide.subtitle}
+            isEditing={isEditing && editingText?.field === "subtitle"}
+            onStartEdit={() => onStartEditing(index, "subtitle")}
+            onChange={(val) => onUpdateContent(index, "subtitle", val)}
+            onFinish={onFinishEditing}
+            onDelete={onDeleteSubtitle ? () => onDeleteSubtitle(index) : undefined}
+            className="opacity-80"
+            style={{
+              fontFamily: theme.fonts.body.family,
+              color: colors.textMuted,
+              textAlign: align,
+              fontSize: "clamp(0.875rem, 1.5vw + 0.25rem, 1.5rem)"
+            }}
+            isOwner={canEdit}
+            isHovered={isHovered}
+          />
+        </div>
       )}
-    </motion.div>
+    </div>
   );
 
   const BulletPoints = ({ compact = false }: { compact?: boolean }) => {
@@ -1068,23 +1057,12 @@ function SlideRendererComponent({
     });
 
     return (
-      <motion.div 
-        className={compact ? "space-y-2 sm:space-y-3" : "space-y-3 sm:space-y-4"}
-        initial={shouldAnimateContent ? "hidden" : "visible"}
-        animate="visible"
-        variants={{
-          visible: { transition: { staggerChildren: shouldAnimateContent ? 0.08 : 0, delayChildren: 0.15 } },
-          hidden: {}
-        }}
-      >
+      <div className={compact ? "space-y-2 sm:space-y-3" : "space-y-3 sm:space-y-4"}>
         {parsedBullets.map((item, i) => (
-          <motion.div 
+          <div 
             key={i} 
             className="flex items-start gap-2 sm:gap-3 group/bullet"
-            variants={{
-              hidden: { opacity: 0, x: -15 },
-              visible: { opacity: 1, x: 0, transition: { duration: 0.25, ease: [0.25, 0.1, 0.25, 1] } }
-            }}
+            style={getSpotlightStyle(i + 2)} // +2 because 0=title, 1=subtitle
           >
             <div className={`${compact ? "mt-1.5" : "mt-2"} flex items-center gap-1 sm:gap-2 shrink-0`}>
               <div
@@ -1144,7 +1122,7 @@ function SlideRendererComponent({
                 />
               )}
             </div>
-          </motion.div>
+          </div>
         ))}
         {canEdit && isHovered && (
           <button
@@ -1155,7 +1133,7 @@ function SlideRendererComponent({
             <Plus size={12} className="sm:w-[14px] sm:h-[14px]" /> <span className="hidden sm:inline">Add point</span><span className="sm:hidden">Add</span>
           </button>
         )}
-      </motion.div>
+      </div>
     );
   };
 
@@ -1272,6 +1250,10 @@ function SlideRendererComponent({
       const renderContentLayout = () => {
         // Get accent color from theme for renderers that need it
         const accentColor = theme.colors.accent;
+
+        // Calculate offset for spotlight index based on header visibility
+        // PresentationViewer counts Title, Subtitle, then content items
+        const headerOffset = (slide.title ? 1 : 0) + (slide.subtitle ? 1 : 0);
         
         // Common editing props for all layout renderers
         const editingProps = {
@@ -1286,10 +1268,9 @@ function SlideRendererComponent({
           onReorderItems: canEdit && onReorderContent ? (fromIdx: number, toIdx: number) => onReorderContent(index, fromIdx, toIdx) : undefined,
           isOwner: canEdit,
           isHovered,
-          // Only animate content when in presentation/fullscreen mode and animation hasn't played yet
-          isPresenting: shouldAnimateContent,
-          // Stable animation key to prevent re-animation on re-renders
-          animationKey,
+          // Spotlight props - adjusted by dynamic header offset
+          spotlightIndex: isSpotlightMode ? (spotlightIndex !== undefined ? spotlightIndex - headerOffset : undefined) : undefined,
+          isSpotlightMode,
         };
         
         switch (layoutCategory) {
@@ -1475,13 +1456,10 @@ function SlideRendererComponent({
     const isImageHovered = hoveredImageIndex === imageIndex;
     
     return (
-      <motion.div 
+      <div 
         className={`relative ${sizeClass} ${className}`}
         onMouseEnter={() => canEdit && setHoveredImageIndex(imageIndex)}
         onMouseLeave={() => setHoveredImageIndex(null)}
-        initial={shouldAnimateContent ? { opacity: 0, scale: 0.97, filter: "blur(4px)" } : undefined}
-        animate={shouldAnimateContent ? { opacity: 1, scale: 1, filter: "blur(0px)" } : undefined}
-        transition={{ delay: 0.2, duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
       >
         <div className={`absolute inset-0 bg-gradient-to-br ${colors.accentBorder} rounded-lg`} />
         <div className={`absolute inset-[1px] ${colors.surface} rounded-lg overflow-hidden`}>
@@ -1507,7 +1485,7 @@ function SlideRendererComponent({
             theme={isThemeDark ? "dark" : "light"}
           />
         )}
-      </motion.div>
+      </div>
     );
   };
 
@@ -1900,7 +1878,7 @@ function SlideRendererComponent({
 
           {/* Box Layout Content - Always use box layout for bullets (only for content slides) */}
           {!isTitleSlide && (
-            <div className="flex-1 w-full max-w-5xl mx-auto">
+            <div className="w-full max-w-5xl mx-auto">
               <EnhancedContent />
             </div>
           )}
@@ -1950,7 +1928,7 @@ function SlideRendererComponent({
 
           {/* Box Layout Content - Always use box layout for bullets (only for content slides) */}
           {!isTitleSlide && (
-            <div className="flex-1 w-full max-w-5xl mx-auto">
+            <div className="w-full max-w-5xl mx-auto">
               <EnhancedContent />
             </div>
           )}
@@ -2022,7 +2000,7 @@ function SlideRendererComponent({
     );
   }
 
-  // LAYOUT 3: Centered - Image Top, Content Bottom (or centered when no image)
+  // LAYOUT 3: Centered - Image Top, Content Bottom
   if (layout === "centered") {
     return (
       <div className="h-full relative overflow-hidden">
@@ -2031,7 +2009,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className={`relative h-full flex flex-col items-center justify-center ${hasImage ? "p-4 sm:p-8 md:p-12" : "p-4 sm:p-6 md:p-8"} ${hasImage ? "text-center" : ""} overflow-y-auto`}>
+        <div className={`relative h-full flex flex-col ${hasImage ? "items-center justify-center" : "justify-center"} ${hasImage ? "p-4 sm:p-8 md:p-12" : "p-4 sm:p-6 md:p-8"} pt-12 sm:pt-8 md:pt-12 ${hasImage ? "text-center" : ""} overflow-y-auto`}>
           {hasImage && (
             <div className={`w-full ${hasMultipleImages ? "max-w-4xl" : "max-w-2xl"} mb-4 sm:mb-6 md:mb-8 relative`}>
               {hasMultipleImages ? (
@@ -2044,11 +2022,11 @@ function SlideRendererComponent({
             </div>
           )}
 
-          <Title className={`text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-3 sm:mb-4 md:mb-6 ${hasImage ? "max-w-4xl" : "w-full max-w-5xl"} ${hasImage ? "" : "text-left"}`} align={hasImage ? "center" : "left"} />
-          {!isTitleSlide && <SlideDescription className={`mb-3 sm:mb-4 md:mb-5 ${hasImage ? "" : "text-left w-full max-w-5xl"}`} align={hasImage ? "center" : "left"} />}
+          <Title className={`text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-3 sm:mb-4 md:mb-6 ${hasImage ? "max-w-4xl" : "w-full"} ${hasImage ? "" : "text-left"}`} align={hasImage ? "center" : "left"} />
+          {!isTitleSlide && <SlideDescription className={`mb-3 sm:mb-4 md:mb-5 ${hasImage ? "" : "text-left"}`} align={hasImage ? "center" : "left"} />}
 
-          <div className={`${hasImage ? "max-w-2xl w-full text-left" : "w-full max-w-5xl"} mt-2 sm:mt-3 md:mt-4`}>
-            <EnhancedContent compact={hasImage} />
+          <div className={`${hasImage ? "max-w-2xl w-full text-left" : "w-full"} mt-2 sm:mt-3 md:mt-4`}>
+            <EnhancedContent compact />
           </div>
         </div>
         <div className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${colors.borderLine} to-transparent`} />
@@ -2123,7 +2101,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full flex flex-col justify-end p-12 pb-16">
+        <div className="relative h-full flex flex-col justify-center p-12 pb-16">
           <div className="max-w-3xl">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-2 h-2 rounded-full" style={{ backgroundColor: colors.accent }} />
@@ -2234,8 +2212,8 @@ function SlideRendererComponent({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
                 {bulletPoints.map((point, i) => (
                   <div key={i} className="group relative">
-                    <div className="absolute inset-0 bg-[#00ff41]/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="relative p-3 sm:p-4 md:p-5 rounded-lg border border-[#00ff41]/30 bg-[#0d0d0d]/70 backdrop-blur-sm hover:border-[#00ff41]/50 transition-colors">
+                    <div className="absolute inset-0 bg-[#00ff41]/5 rounded-lg opacity-0 transition-opacity" />
+                    <div className="relative p-3 sm:p-4 md:p-5 rounded-lg border border-[#00ff41]/30 bg-[#0d0d0d]/70 backdrop-blur-sm transition-colors">
                       <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
                         <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded border border-[#00ff41]/40 flex items-center justify-center bg-[#00ff41]/10">
                           <span className="text-[#00ff41] font-mono text-xs sm:text-sm font-bold">{String(i + 1).padStart(2, "0")}</span>
@@ -2280,7 +2258,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 overflow-y-auto">
+        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4 mt-3 sm:mt-4 md:mt-6">
@@ -2335,7 +2313,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 overflow-y-auto">
+        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
@@ -2407,7 +2385,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 overflow-y-auto">
+        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8 text-center" align="center" />
 
           {/* Use EnhancedContent to respect contentLayout (box layout) */}
@@ -2436,7 +2414,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 overflow-y-auto">
+        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-5 max-w-4xl">
@@ -2487,7 +2465,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full p-4 sm:p-8 md:p-12 flex flex-col justify-center overflow-y-auto">
+        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 flex flex-col justify-center overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
@@ -2534,7 +2512,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full p-4 sm:p-8 md:p-12 flex flex-col justify-center overflow-y-auto">
+        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 flex flex-col justify-center overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8 text-center" align="center" />
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
@@ -2585,7 +2563,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full p-4 sm:p-8 md:p-12 flex flex-col justify-center overflow-y-auto">
+        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8 text-center" align="center" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-5xl mx-auto">
@@ -2663,7 +2641,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full p-4 sm:p-8 md:p-12 flex flex-col justify-center overflow-y-auto">
+        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-6 sm:mb-8 md:mb-10 text-center" align="center" />
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6 max-w-5xl mx-auto">
@@ -2793,7 +2771,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full p-4 sm:p-8 md:p-12 flex flex-col justify-center overflow-y-auto">
+        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 flex flex-col justify-center overflow-y-auto">
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 text-center" align="center" />
 
           {/* Centered Image */}
@@ -2853,7 +2831,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full flex flex-col overflow-y-auto">
+        <div className="relative h-full flex flex-col justify-center overflow-y-auto">
           {/* Image header section */}
           {hasImage && firstImage && (
             <div className="relative h-1/3 sm:h-2/5 shrink-0">
@@ -2872,7 +2850,7 @@ function SlideRendererComponent({
           )}
 
           {/* Feature cards section */}
-          <div className="flex-1 p-4 sm:p-6 md:p-8">
+          <div className="p-4 sm:p-6 md:p-8">
             {bulletPoints.length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 max-w-5xl mx-auto">
                 {bulletPoints.map((point, i) => (
@@ -2978,7 +2956,7 @@ function SlideRendererComponent({
           {/* Timeline line */}
           <div className="absolute left-24 top-24 bottom-12 w-px" style={{ backgroundColor: colors.accent, opacity: 0.3 }} />
 
-          <div className="flex-1 p-12 pl-32">
+          <div className="flex-1 p-12 pt-20 pl-32">
             <Title className="text-3xl md:text-4xl mb-10" />
 
             <div className="space-y-6">
@@ -3161,7 +3139,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full p-12 pt-20">
+        <div className="relative h-full flex flex-col justify-center p-12 pt-20">
           <div className="flex items-start gap-8">
             {/* Title section */}
             <div className={`${hasImage ? "w-[50%]" : "w-full"}`}>
@@ -3316,7 +3294,7 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full p-12 pt-20">
+        <div className="relative h-full flex flex-col justify-center p-12 pt-20">
           {/* Title in glass card */}
           <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6 mb-8 max-w-2xl shadow-2xl">
             <Title className="text-3xl md:text-4xl" />
@@ -3326,7 +3304,7 @@ function SlideRendererComponent({
           {bulletPoints.length > 0 && (
             <div className="grid grid-cols-2 gap-4 max-w-4xl">
               {bulletPoints.map((point, i) => (
-                <div key={i} className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-xl p-5 shadow-xl hover:bg-white/10 transition-all group">
+                <div key={i} className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-xl p-5 shadow-xl transition-all group">
                   <div className="flex items-start gap-4">
                     {/* Glowing number */}
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 bg-gradient-to-br from-purple-500/30 to-green-500/20 border border-purple-500/30" style={{ color: colors.accent }}>
@@ -3421,7 +3399,7 @@ function SlideRendererComponent({
             <div className="flex flex-wrap justify-center gap-4 max-w-4xl">
               {bulletPoints.map((point, i) => (
                 <div key={i} className="relative group">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/30 to-green-500/30 rounded-xl blur opacity-50 group-hover:opacity-75 transition-opacity" />
+                  <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/30 to-green-500/30 rounded-xl blur opacity-50 transition-opacity" />
                   <div className={`relative px-6 py-4 rounded-xl backdrop-blur-sm ${colors.cardBg}`}>
                     <EditableText
                       value={point}
@@ -3559,9 +3537,9 @@ function SlideRendererComponent({
               {bulletPoints.map((point, i) => (
                 <div key={i} className="relative group">
                   {/* Card glow on hover */}
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-red-500/0 via-orange-500/0 to-red-500/0 rounded-xl blur opacity-0 group-hover:opacity-50 group-hover:from-red-500/30 group-hover:via-orange-500/20 group-hover:to-red-500/30 transition-all duration-300" />
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-red-500/0 via-orange-500/0 to-red-500/0 rounded-xl blur opacity-0 transition-all duration-300" />
 
-                  <div className={`relative p-5 rounded-xl border backdrop-blur-sm ${colors.cardBg} transition-all group-hover:border-red-500/40`}>
+                  <div className={`relative p-5 rounded-xl border backdrop-blur-sm ${colors.cardBg} transition-all`}>
                     <div className="flex items-start gap-4">
                       {/* Fire icon number */}
                       <div className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 bg-gradient-to-br from-red-500/30 to-orange-500/20 border border-red-500/30" style={{ color: colors.accent }}>
@@ -3795,7 +3773,7 @@ function SlideRendererComponent({
               {bulletPoints.map((point, i) => (
                 <div key={i} className="relative group">
                   {/* Card with botanical corner */}
-                  <div className={`relative p-6 rounded-2xl border backdrop-blur-sm ${colors.cardBg} transition-all group-hover:border-pink-400/40`}>
+                  <div className={`relative p-6 rounded-2xl border backdrop-blur-sm ${colors.cardBg} transition-all`}>
                     {/* Corner botanical accent */}
                     <div className="absolute top-2 right-2 w-8 h-8 opacity-30">
                       <svg viewBox="0 0 30 30" className="w-full h-full">
@@ -4031,7 +4009,7 @@ function SlideRendererComponent({
               {bulletPoints.map((point, i) => (
                 <div key={i} className="relative group">
                   {/* Neon glow on hover */}
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-400/0 to-fuchsia-500/0 rounded-lg blur opacity-0 group-hover:opacity-100 group-hover:from-cyan-400/40 group-hover:to-fuchsia-500/40 transition-all duration-300" />
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-400/0 to-fuchsia-500/0 rounded-lg blur opacity-0 transition-all duration-300" />
 
                   <div className={`relative p-5 rounded-lg border ${colors.cardBg} transition-all`} style={{ borderColor: i % 2 === 0 ? "rgba(0,255,255,0.3)" : "rgba(255,0,255,0.3)" }}>
                     <div className="flex items-start gap-4">
@@ -4112,7 +4090,7 @@ function SlideRendererComponent({
                 {bulletPoints.map((point, i) => (
                   <div key={i} className="relative group">
                     {/* Holographic border effect */}
-                    <div className="absolute -inset-0.5 rounded-lg opacity-60 group-hover:opacity-100 transition-opacity" style={{ background: "linear-gradient(135deg, #00ffff, #ff00ff, #adff2f, #00ffff)", backgroundSize: "300% 300%" }} />
+                    <div className="absolute -inset-0.5 rounded-lg opacity-60 transition-opacity" style={{ background: "linear-gradient(135deg, #00ffff, #ff00ff, #adff2f, #00ffff)", backgroundSize: "300% 300%" }} />
 
                     <div className={`relative p-4 rounded-lg ${colors.cardBg}`}>
                       <div className="flex items-start gap-3">
@@ -4212,7 +4190,7 @@ function SlideRendererComponent({
                 {bulletPoints.map((point, i) => (
                   <div key={i} className="flex items-start gap-4 group">
                     <div className="relative mt-2">
-                      <div className="w-3 h-3 rounded-full border border-lime-400/60 group-hover:bg-lime-400/30 transition-colors" />
+                      <div className="w-3 h-3 rounded-full border border-lime-400/60 transition-colors" />
                       <div className="absolute inset-0 w-3 h-3 rounded-full bg-lime-400/40 animate-ping" style={{ animationDuration: "3s" }} />
                     </div>
                     <EditableText
@@ -4300,7 +4278,7 @@ function SlideRendererComponent({
               {bulletPoints.map((point, i) => (
                 <div key={i} className="relative group">
                   {/* Organic glow */}
-                  <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-lime-400/20 to-emerald-500/10 blur-lg opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-lime-400/20 to-emerald-500/10 blur-lg opacity-0 transition-opacity" />
 
                   <div className={`relative p-5 rounded-2xl ${colors.cardBg} backdrop-blur-sm`} style={{ boxShadow: "0 0 20px rgba(163,255,0,0.1)" }}>
                     {/* Bio indicator */}
@@ -4767,10 +4745,10 @@ function SlideRendererComponent({
               {bulletPoints.map((point, i) => (
                 <div key={i} className="group relative">
                   {/* Card glow */}
-                  <div className="absolute -inset-1 bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 rounded-xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute -inset-1 bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 rounded-xl blur-lg opacity-0 transition-opacity" />
 
                   {/* Card */}
-                  <div className="relative bg-[#120a1f]/70 backdrop-blur-lg rounded-xl border border-violet-500/20 p-6 hover:border-violet-500/40 transition-colors">
+                  <div className="relative bg-[#120a1f]/70 backdrop-blur-lg rounded-xl border border-violet-500/20 p-6 transition-colors">
                     <div className="flex items-start gap-4">
                       <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500/30 to-fuchsia-500/30 flex items-center justify-center border border-violet-500/30">
                         <span className="text-violet-300 font-bold">{i + 1}</span>
@@ -4918,7 +4896,7 @@ function SlideRendererComponent({
               {bulletPoints.length > 0 && (
                 <div className="space-y-4">
                   {bulletPoints.map((point, i) => (
-                    <div key={i} className="flex items-start gap-4 group pl-2 border-l-2 border-violet-500/30 hover:border-violet-500/60 transition-colors">
+                    <div key={i} className="flex items-start gap-4 group pl-2 border-l-2 border-violet-500/30 transition-colors">
                       <EditableText
                         value={point}
                         isEditing={isEditing && editingText?.field === "bullet" && editingText?.bulletIndex === i}
@@ -5531,9 +5509,9 @@ function SlideRendererComponent({
             <div className="grid grid-cols-2 gap-5 max-w-5xl mx-auto">
               {bulletPoints.map((point, i) => (
                 <div key={i} className="group relative">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-fuchsia-500/20 to-pink-400/20 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute -inset-1 bg-gradient-to-r from-fuchsia-500/20 to-pink-400/20 rounded-2xl blur-lg opacity-0 transition-opacity" />
 
-                  <div className="relative bg-[#251f35]/70 backdrop-blur-lg rounded-2xl border border-fuchsia-500/20 p-5 hover:border-fuchsia-500/40 transition-all">
+                  <div className="relative bg-[#251f35]/70 backdrop-blur-lg rounded-2xl border border-fuchsia-500/20 p-5 transition-all">
                     <div className="flex items-start gap-3">
                       <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-fuchsia-400 to-pink-400 flex items-center justify-center shadow-lg shadow-fuchsia-500/20">
                         <span className="text-white text-sm font-medium">{i + 1}</span>
@@ -5786,7 +5764,7 @@ function SlideRendererComponent({
               <div className="space-y-3">
                 {bulletPoints.map((point, i) => (
                   <div key={i} className="group relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/10 to-pink-400/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/10 to-pink-400/10 rounded-xl opacity-0 transition-opacity" />
                     <div className="relative flex items-center gap-4 p-4 rounded-xl border border-fuchsia-500/15 hover:border-fuchsia-500/30 transition-colors">
                       <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-fuchsia-500/30 to-pink-400/30 flex items-center justify-center">
                         <span className="text-fuchsia-200 font-medium">{i + 1}</span>
@@ -5922,7 +5900,7 @@ function SlideRendererComponent({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
               {bulletPoints.map((point, i) => (
                 <div key={i} className="group relative">
-                  <div className="absolute inset-0 bg-[#00ff41]/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0 bg-[#00ff41]/5 rounded-lg opacity-0 transition-opacity" />
                   <div className="relative p-3 sm:p-4 md:p-5 rounded-lg border border-[#00ff41]/30 bg-[#0d0d0d]/70 backdrop-blur-sm hover:border-[#00ff41]/50 transition-colors">
                     <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
                       <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded border border-[#00ff41]/40 flex items-center justify-center bg-[#00ff41]/10">
@@ -6159,7 +6137,7 @@ function SlideRendererComponent({
             <div className="space-y-2 sm:space-y-3 md:space-y-4">
               {bulletPoints.length > 0 && bulletPoints.map((point, i) => (
                 <div key={i} className="group relative">
-                  <div className="absolute -left-2 sm:-left-3 md:-left-4 top-1/2 -translate-y-1/2 w-1.5 h-1.5 sm:w-2 sm:h-2 border border-[#00ff41]/50 rotate-45 group-hover:bg-[#00ff41]/50 transition-colors hidden sm:block" />
+                  <div className="absolute -left-2 sm:-left-3 md:-left-4 top-1/2 -translate-y-1/2 w-1.5 h-1.5 sm:w-2 sm:h-2 border border-[#00ff41]/50 rotate-45 transition-colors hidden sm:block" />
                   <div className="p-3 sm:p-4 border border-[#00ff41]/25 bg-[#0d0d0d]/60 backdrop-blur-sm hover:border-[#00ff41]/50 transition-colors">
                     <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
                       <span className="text-[#00d4ff] font-mono text-[10px] sm:text-xs">NODE_{String(i).padStart(2, "0")}</span>
@@ -6229,7 +6207,7 @@ function SlideRendererComponent({
                 {bulletPoints.map((point, i) => (
                   <div key={i} className="flex items-start gap-2 sm:gap-3 md:gap-4 group">
                     <div className="mt-0.5 sm:mt-1 flex items-center gap-1 sm:gap-2 shrink-0">
-                      <div className="w-5 h-5 sm:w-6 sm:h-6 border border-[#00ff41]/40 flex items-center justify-center bg-[#00ff41]/5 group-hover:bg-[#00ff41]/20 transition-colors">
+                      <div className="w-5 h-5 sm:w-6 sm:h-6 border border-[#00ff41]/40 flex items-center justify-center bg-[#00ff41]/5 transition-colors">
                         <span className="text-[#00ff41] font-mono text-[10px] sm:text-xs">{i + 1}</span>
                       </div>
                       <div className="w-2 sm:w-3 md:w-4 h-px bg-[#00ff41]/40" />

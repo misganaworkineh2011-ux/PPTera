@@ -6,6 +6,11 @@ import { useRouter } from "next/navigation";
 import {
   Minimize2,
   Sparkles,
+  Minus,
+  Plus,
+  ChevronDown,
+  Users,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { getThemeById, getDefaultTheme, type Theme, getSlideShapeStyles } from "~/lib/themes";
@@ -28,7 +33,7 @@ import { RateUsModal, incrementPresentationCount, checkExistingReview } from "~/
 import { ImageEditor, type ImageBlock } from "~/lib/blocks";
 import ChartModal from "~/components/charts/ChartModal";
 import { type ChartData } from "~/lib/charts/types";
-import { useUpgradeModal } from "~/hooks/useUpgradeModal";
+import PricingModal from "~/components/dashboard/PricingModal";
 
 // Import extracted components
 import {
@@ -128,7 +133,7 @@ export default function PresentationViewer({
   subscriptionPlan,
 }: PresentationViewerProps) {
   const router = useRouter();
-  const { showUpgradeModal, UpgradeModal } = useUpgradeModal();
+  const [showPricingModal, setShowPricingModal] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(isPublicView);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -240,6 +245,13 @@ export default function PresentationViewer({
   const [prevThumbnailState, setPrevThumbnailState] = useState(true);
   // Navbar visibility in presentation mode (show on hover)
   const [showNavbarInPresent, setShowNavbarInPresent] = useState(false);
+  // Navbar visibility in fullscreen mode (show on hover)
+  const [showNavbarInFullscreen, setShowNavbarInFullscreen] = useState(false);
+  // Presentation mode zoom level (percentage)
+  const [presentZoom, setPresentZoom] = useState(100);
+  // Spotlight mode for presentation - highlights content one by one
+  const [isSpotlightActive, setIsSpotlightActive] = useState(false);
+  const [spotlightContentIndex, setSpotlightContentIndex] = useState(0); // Which content element is highlighted
   // WYSIWYG Image Editor state
   const [showImageEditor, setShowImageEditor] = useState<{ slideIndex: number; imageIndex: number } | null>(null);
   const slidesRef = useRef<SlideData[]>(presentation.slides);
@@ -938,22 +950,98 @@ export default function PresentationViewer({
       
       if (editingText || isTyping) return;
       
+      // Get current slide's content count for spotlight navigation
+      const currentSlideData = slidesRef.current[currentSlide];
+      const contentCount = currentSlideData ? (currentSlideData.bulletPoints?.length || 0) + (currentSlideData.title ? 1 : 0) + (currentSlideData.subtitle ? 1 : 0) : 0;
+      
       if (e.key === "ArrowRight" || e.key === " ") {
         e.preventDefault();
-        nextSlide();
+        if (isSpotlightActive && (isFullscreen || isPresenting)) {
+          // In spotlight mode, move to next content element
+          if (spotlightContentIndex < contentCount - 1) {
+            setSpotlightContentIndex(prev => prev + 1);
+          } else {
+            // At last content, move to next slide
+            if (currentSlide < slidesRef.current.length - 1) {
+              nextSlide();
+              setSpotlightContentIndex(0);
+            } else {
+              // On last slide, trigger shake
+              setIsShaking(true);
+              setTimeout(() => setIsShaking(false), 500);
+            }
+          }
+        } else {
+          nextSlide();
+        }
       } else if (e.key === "ArrowLeft") {
         e.preventDefault();
-        prevSlide();
+        if (isSpotlightActive && (isFullscreen || isPresenting)) {
+          // In spotlight mode, move to previous content element
+          if (spotlightContentIndex > 0) {
+            setSpotlightContentIndex(prev => prev - 1);
+          } else if (currentSlide > 0) {
+            // At first content, move to previous slide's last content
+            prevSlide();
+            const prevSlideData = slidesRef.current[currentSlide - 1];
+            const prevContentCount = prevSlideData ? (prevSlideData.bulletPoints?.length || 0) + (prevSlideData.title ? 1 : 0) + (prevSlideData.subtitle ? 1 : 0) : 0;
+            setSpotlightContentIndex(Math.max(0, prevContentCount - 1));
+          }
+        } else {
+          prevSlide();
+        }
+      } else if (e.key === "ArrowDown") {
+        // Arrow down also moves spotlight forward
+        if (isSpotlightActive && (isFullscreen || isPresenting)) {
+          e.preventDefault();
+          if (spotlightContentIndex < contentCount - 1) {
+            setSpotlightContentIndex(prev => prev + 1);
+          }
+        }
+      } else if (e.key === "ArrowUp") {
+        // Arrow up moves spotlight backward
+        if (isSpotlightActive && (isFullscreen || isPresenting)) {
+          e.preventDefault();
+          if (spotlightContentIndex > 0) {
+            setSpotlightContentIndex(prev => prev - 1);
+          }
+        }
       } else if (e.key === "Escape") {
         if (isFullscreen) document.exitFullscreen();
+        if (isPresenting) {
+          setIsPresenting(false);
+          setViewMode("scroll");
+          setShowThumbnails(prevThumbnailState);
+          setPresentZoom(100);
+          setIsSpotlightActive(false);
+        }
         setEditingText(null);
       } else if (e.key === "f") {
         toggleFullscreen();
+      } else if ((isFullscreen || isPresenting) && (e.key === "s" || e.key === "S")) {
+        // Toggle spotlight in presentation mode
+        e.preventDefault();
+        setIsSpotlightActive(prev => {
+          if (!prev) setSpotlightContentIndex(0); // Reset to first content when enabling
+          return !prev;
+        });
+      } else if ((isFullscreen || isPresenting) && (e.key === "+" || e.key === "=")) {
+        // Zoom in during presentation
+        e.preventDefault();
+        setPresentZoom(prev => Math.min(200, prev + 10));
+      } else if ((isFullscreen || isPresenting) && e.key === "-") {
+        // Zoom out during presentation
+        e.preventDefault();
+        setPresentZoom(prev => Math.max(50, prev - 10));
+      } else if ((isFullscreen || isPresenting) && e.key === "0") {
+        // Reset zoom to 100%
+        e.preventDefault();
+        setPresentZoom(100);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [nextSlide, prevSlide, isFullscreen, editingText, undo, redo]);
+  }, [nextSlide, prevSlide, isFullscreen, isPresenting, editingText, undo, redo, prevThumbnailState, isSpotlightActive, spotlightContentIndex, currentSlide]);
 
   // Track thumbnail state before fullscreen to restore it after
   const thumbnailsBeforeFullscreenRef = useRef<boolean>(true);
@@ -1481,7 +1569,7 @@ export default function PresentationViewer({
 
 
   // Render slide
-  const renderSlide = (slide: SlideData, index: number, isMain: boolean = false) => {
+  const renderSlide = (slide: SlideData, index: number, isMain: boolean = false, spotlightIndex?: number) => {
     const hasImage = slide.image?.url && slide.image.source !== "placeholder";
     const isImageLoading = imagesLoading.has(index);
     const isImageLoaded = imageLoadedStates[index];
@@ -1797,6 +1885,7 @@ export default function PresentationViewer({
             editingText={editingText}
             showPageNumber={showPageNumbers}
             isPresenting={isPresenting}
+            spotlightIndex={spotlightIndex}
             onStartEditing={startEditing}
             onUpdateContent={updateSlideContent}
             onFinishEditing={() => setEditingText(null)}
@@ -2133,6 +2222,9 @@ export default function PresentationViewer({
             canRedo={canRedo}
             isPresenting={isPresenting}
             presenterViewConnected={presenterViewConnected}
+            presentZoom={presentZoom}
+            isSpotlightActive={isSpotlightActive}
+            currentSlide={currentSlide}
             onBack={() => router.push("/dashboard")}
             onEditTitle={() => setIsEditingTitle(true)}
             onTitleChange={setEditedTitle}
@@ -2157,6 +2249,9 @@ export default function PresentationViewer({
               setViewMode("scroll");
               // Restore previous thumbnail state
               setShowThumbnails(prevThumbnailState);
+              // Reset presentation mode states
+              setPresentZoom(100);
+              setIsSpotlightActive(false);
             }}
             onPresentFullscreen={() => {
               // "In this tab" option - switch to slides view and hide thumbnails
@@ -2179,6 +2274,14 @@ export default function PresentationViewer({
             onRedo={redo}
             onOpenThemes={() => setShowThemeSidebar(true)}
             onOpenAgent={() => setShowAgentPanel(true)}
+            onZoomChange={setPresentZoom}
+            onSpotlightToggle={() => {
+              setIsSpotlightActive(prev => {
+                if (!prev) setSpotlightContentIndex(0);
+                return !prev;
+              });
+            }}
+            onUpgrade={() => setShowPricingModal(true)}
           />
           </div>
         )}
@@ -2230,18 +2333,31 @@ export default function PresentationViewer({
 
                   if (useFixedRatio) {
                     return (
-                      <div className={`relative overflow-hidden ${isFullscreen || isPresenting ? "w-screen h-screen flex items-center justify-center" : `w-full rounded-lg shadow-2xl ring-1 ${getUIColors(getThemeType(theme)).ring}`} ${isShaking ? "animate-shake" : ""}`} style={!isFullscreen && !isPresenting ? { aspectRatio: "16/9", maxHeight: "calc(100vh - 200px)" } : {}}>
-                        <div className={`${isFullscreen || isPresenting ? "w-full h-full" : "w-full h-full"}`}>
-                          <AnimatedSlide
-                            slideKey={currentSlide}
-                            animationId={currentSlideData.animation}
-                            isPresenting={isFullscreen || isPresenting || isPublicView}
+                      <div 
+                        className={`relative overflow-hidden ${isFullscreen || isPresenting ? "w-screen h-screen flex items-center justify-center" : `w-full rounded-lg shadow-2xl ring-1 ${getUIColors(getThemeType(theme)).ring}`} ${isShaking ? "animate-shake" : ""}`} 
+                        style={{
+                          ...(!isFullscreen && !isPresenting ? { aspectRatio: "16/9", maxHeight: "calc(100vh - 200px)" } : {}),
+                        }}
+                      >
+                        <AnimatedSlide
+                          slideKey={currentSlide}
+                          animationId={currentSlideData.animation}
+                          isPresenting={isFullscreen || isPresenting || isPublicView}
+                        >
+                          <div 
+                            className="w-full h-full"
+                            style={{
+                              // Use CSS zoom for content scaling - keeps content within bounds
+                              // Unlike transform: scale(), zoom affects layout and keeps content centered
+                              ...((isFullscreen || isPresenting) && presentZoom !== 100 ? { 
+                                zoom: presentZoom / 100,
+                                transition: 'zoom 0.3s ease',
+                              } : {}),
+                            }}
                           >
-                            <div className="w-full h-full">
-                              {renderSlide(currentSlideData, currentSlide, true)}
-                            </div>
-                          </AnimatedSlide>
-                        </div>
+                            {renderSlide(currentSlideData, currentSlide, true, (isFullscreen || isPresenting) && isSpotlightActive ? spotlightContentIndex : undefined)}
+                          </div>
+                        </AnimatedSlide>
                       </div>
                     );
                   }
@@ -2331,9 +2447,117 @@ export default function PresentationViewer({
         )}
 
         {isFullscreen && !isPublicView && (
-          <button onClick={toggleFullscreen} className="fixed top-2 sm:top-6 right-2 sm:right-6 p-2 sm:p-3 rounded-xl bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-colors z-50">
-            <Minimize2 size={18} className="sm:w-5 sm:h-5" />
-          </button>
+          <>
+            {/* Hover zone to show navbar */}
+            {!showNavbarInFullscreen && (
+              <div 
+                className="fixed top-0 left-0 right-0 h-4 z-50"
+                onMouseEnter={() => setShowNavbarInFullscreen(true)}
+              />
+            )}
+            
+            {/* Fullscreen navbar - hidden unless hovered */}
+            <div 
+              className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-md border-b px-3 sm:px-4 py-2 transition-transform duration-300 ${showNavbarInFullscreen ? 'translate-y-0' : '-translate-y-full'}`}
+              style={{
+                backgroundColor: `${theme.colors.background}e6`,
+                borderColor: theme.colors.border,
+              }}
+              onMouseLeave={() => setShowNavbarInFullscreen(false)}
+            >
+            <div className="flex items-center justify-between gap-2">
+              {/* Left section - Slide counter */}
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium" style={{ color: theme.colors.text }}>
+                  {currentSlide + 1} / {slides.length}
+                </span>
+              </div>
+
+              {/* Center section - Zoom, Spotlight, Share */}
+              <div className="flex items-center gap-1">
+                {/* Zoom controls */}
+                <button
+                  onClick={() => setPresentZoom(Math.max(50, presentZoom - 10))}
+                  className="p-2 rounded-lg transition-colors hover:bg-black/10"
+                  style={{ color: theme.colors.text }}
+                  title="Zoom out (-)"
+                >
+                  <Minus size={18} />
+                </button>
+                
+                <span className="px-2 py-1.5 text-sm font-medium min-w-[60px] text-center" style={{ color: theme.colors.text }}>
+                  {presentZoom}%
+                </span>
+                
+                <button
+                  onClick={() => setPresentZoom(Math.min(200, presentZoom + 10))}
+                  className="p-2 rounded-lg transition-colors hover:bg-black/10"
+                  style={{ color: theme.colors.text }}
+                  title="Zoom in (+)"
+                >
+                  <Plus size={18} />
+                </button>
+                
+                {/* Divider */}
+                <div className="w-px h-6 mx-2 bg-current opacity-20" />
+                
+                {/* Spotlight toggle */}
+                <button
+                  onClick={() => {
+                    setIsSpotlightActive(prev => {
+                      if (!prev) setSpotlightContentIndex(0);
+                      return !prev;
+                    });
+                  }}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    isSpotlightActive ? 'bg-blue-500/20 text-blue-500' : 'hover:bg-black/10'
+                  }`}
+                  style={!isSpotlightActive ? { color: theme.colors.text } : undefined}
+                  title={isSpotlightActive ? "Turn off spotlight (S)" : "Turn on spotlight (S)"}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2v4" />
+                    <path d="m4.93 4.93 2.83 2.83" />
+                    <path d="M2 12h4" />
+                    <path d="m4.93 19.07 2.83-2.83" />
+                    <path d="M12 18v4" />
+                    <path d="m19.07 19.07-2.83-2.83" />
+                    <path d="M22 12h-4" />
+                    <path d="m19.07 4.93-2.83 2.83" />
+                    <circle cx="12" cy="12" r="4" />
+                  </svg>
+                  <span className="hidden sm:inline">Spotlight</span>
+                </button>
+                
+                {/* Divider */}
+                <div className="w-px h-6 mx-2 bg-current opacity-20" />
+                
+                {/* Share button */}
+                <button
+                  onClick={() => setShowShareModal(true)}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors hover:bg-black/10"
+                  style={{ color: theme.colors.text }}
+                  title="Share presentation"
+                >
+                  <Users size={18} />
+                  <span className="hidden sm:inline">Share</span>
+                </button>
+              </div>
+
+              {/* Right section - Exit button */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={toggleFullscreen}
+                  className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-lg text-sm font-medium transition-colors bg-red-500 hover:bg-red-600 text-white"
+                  title="Exit fullscreen (Esc)"
+                >
+                  <X size={14} />
+                  <span className="hidden sm:inline">Exit</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          </>
         )}
 
         {viewMode === "scroll" && !isFullscreen && !isPublicView && showFeedback && <FeedbackSection presentationId={presentation.id} theme={theme} />}
@@ -2433,12 +2657,7 @@ export default function PresentationViewer({
               toast.success(enabled ? "Content animation enabled" : "Content animation disabled");
             }}
             onUpgrade={() => {
-              showUpgradeModal({
-                feature: "Premium Animations",
-                requiredPlan: "plus",
-                currentPlan: subscriptionPlan,
-                description: "Unlock stunning premium animations like Disintegrate, Vortex, Hologram, and more to make your presentations stand out.",
-              });
+              setShowPricingModal(true);
             }}
           />
         )}
@@ -2617,8 +2836,12 @@ export default function PresentationViewer({
         onClose={() => setShowContentLayoutPanel(false)}
       />
 
-      {/* Upgrade Modal for Premium Features */}
-      <UpgradeModal />
+      {/* Pricing Modal for Upgrade */}
+      <PricingModal 
+        isOpen={showPricingModal} 
+        onClose={() => setShowPricingModal(false)} 
+        currentPlan={subscriptionPlan}
+      />
     </>
   );
 }

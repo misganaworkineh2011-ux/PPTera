@@ -6,6 +6,25 @@ import { getTranslations, type Language } from "~/lib/i18n";
 import { Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 
+// Helper to get high-quality Cloudinary URL
+function getHighQualityImageUrl(url: string): string {
+  if (!url || !url.includes("cloudinary.com")) {
+    return url;
+  }
+
+  // Build transformation string for high quality
+  const transforms = "w_800,q_90,f_auto,c_fill";
+
+  // Insert transformations after /upload/
+  const uploadIndex = url.indexOf("/upload/");
+  if (uploadIndex === -1) return url;
+
+  const beforeUpload = url.substring(0, uploadIndex + 8);
+  const afterUpload = url.substring(uploadIndex + 8);
+
+  return `${beforeUpload}${transforms}/${afterUpload}`;
+}
+
 interface InspirationItem {
   id: string;
   title: string;
@@ -163,7 +182,7 @@ export default function InspirationPageClient({ currentLang = "en" }: Inspiratio
                     <div className="aspect-[16/10] relative overflow-hidden bg-slate-100">
                       {item.imageUrl ? (
                         <img
-                          src={item.imageUrl}
+                          src={getHighQualityImageUrl(item.imageUrl)}
                           alt={item.title}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                         />
