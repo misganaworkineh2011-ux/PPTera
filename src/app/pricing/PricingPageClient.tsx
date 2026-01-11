@@ -305,6 +305,7 @@ export function PricingPageClient({ currentLang }: PricingPageClientProps) {
                     <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.monthlyCredits1000}</span></li>
                     <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.removeBranding}</span></li>
                     <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.advancedAIImageModels}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.basicAnimations}</span></li>
                   </ul>
                 </div>
               </div>
@@ -357,6 +358,7 @@ export function PricingPageClient({ currentLang }: PricingPageClientProps) {
                     <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.monthlyCredits4000}</span></li>
                     <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.premiumAIImageModels}</span></li>
                     <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.customBrandingFonts}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.premiumAnimations}</span></li>
                     <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.detailedAnalytics || "Detailed analytics & advanced sharing"}</span></li>
                   </ul>
                 </div>
@@ -406,6 +408,7 @@ export function PricingPageClient({ currentLang }: PricingPageClientProps) {
                     <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.createUpTo75Cards || "Create up to 75 cards per prompt"}</span></li>
                     <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.monthlyCredits20000}</span></li>
                     <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.mostAdvancedAIModels}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.allAnimations}</span></li>
                     <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.earlyAccessFeatures}</span></li>
                   </ul>
                 </div>
