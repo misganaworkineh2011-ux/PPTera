@@ -264,6 +264,8 @@ export const dashboardTranslations: Record<Language, Record<string, string>> = {
     slidesCountLabel: "Slides:", charactersCount: "Characters:", creditsNeededLabel: "Credits needed:", youHaveCredits: "You have {credits} credits",
     // Recent Outlines
     yourRecentOutlines: "Your Recent Outlines", continueEditingBtn: "Continue Editing", loadOutlineBtn: "Load Outline",
+    // Workspace Menu
+    inviteMembers: "Invite Members", signOut: "Sign Out", upgradePlan: "Upgrade Plan",
   },
 es: {
     // Sidebar
@@ -1195,6 +1197,8 @@ es: {
     yourRecentOutlines: "Tus esquemas recientes",
     continueEditingBtn: "Continuar editando",
     loadOutlineBtn: "Cargar esquema",
+    // Workspace Menu
+    inviteMembers: "Invitar miembros", signOut: "Cerrar sesión", upgradePlan: "Mejorar plan",
 },
 fr: {
     // Sidebar
@@ -2126,6 +2130,8 @@ fr: {
     yourRecentOutlines: "Vos plans récents",
     continueEditingBtn: "Continuer l'édition",
     loadOutlineBtn: "Charger le plan",
+    // Workspace Menu
+    inviteMembers: "Inviter des membres", signOut: "Se déconnecter", upgradePlan: "Améliorer le plan",
 },
 de: {
     // Sidebar
@@ -3057,6 +3063,8 @@ de: {
     yourRecentOutlines: "Ihre letzten Gliederungen",
     continueEditingBtn: "Weiter bearbeiten",
     loadOutlineBtn: "Gliederung laden",
+    // Workspace Menu
+    inviteMembers: "Mitglieder einladen", signOut: "Abmelden", upgradePlan: "Plan upgraden",
 },
 zh: {
     // 侧边栏
@@ -3317,6 +3325,8 @@ zh: {
     slidesCountLabel: "页数：", charactersCount: "字符数：", creditsNeededLabel: "所需积分：", youHaveCredits: "您拥有 {credits} 积分",
     // 最近的大纲
     yourRecentOutlines: "您最近的大纲", continueEditingBtn: "继续编辑", loadOutlineBtn: "加载大纲",
+    // Workspace Menu
+    inviteMembers: "邀请成员", signOut: "退出登录", upgradePlan: "升级计划",
   },
 pt: {
     // Sidebar
@@ -3577,6 +3587,8 @@ pt: {
     slidesCountLabel: "Slides:", charactersCount: "Caracteres:", creditsNeededLabel: "Créditos necessários:", youHaveCredits: "Você tem {credits} créditos",
     // Recent Outlines
     yourRecentOutlines: "Seus Esboços Recentes", continueEditingBtn: "Continuar Editando", loadOutlineBtn: "Carregar Esboço",
+    // Workspace Menu
+    inviteMembers: "Convidar Membros", signOut: "Sair", upgradePlan: "Atualizar Plano",
 },
 it: {
     // Sidebar
@@ -3837,6 +3849,8 @@ it: {
     slidesCountLabel: "Diapositive:", charactersCount: "Caratteri:", creditsNeededLabel: "Crediti necessari:", youHaveCredits: "Hai {credits} crediti",
     // Recent Outlines
     yourRecentOutlines: "Scalette Recenti", continueEditingBtn: "Continua a modificare", loadOutlineBtn: "Carica Scaletta",
+    // Workspace Menu
+    inviteMembers: "Invita Membri", signOut: "Esci", upgradePlan: "Aggiorna Piano",
 },
 ja: {
     // Sidebar
@@ -4097,6 +4111,8 @@ ja: {
     slidesCountLabel: "スライド数:", charactersCount: "文字数:", creditsNeededLabel: "必要クレジット:", youHaveCredits: "所有クレジット: {credits}",
     // Recent Outlines
     yourRecentOutlines: "最近の構成案", continueEditingBtn: "編集を続ける", loadOutlineBtn: "構成案を読み込む",
+    // Workspace Menu
+    inviteMembers: "メンバーを招待", signOut: "ログアウト", upgradePlan: "プランをアップグレード",
 },
 ko: {
     // Sidebar
@@ -4357,6 +4373,8 @@ ko: {
     slidesCountLabel: "슬라이드:", charactersCount: "글자 수:", creditsNeededLabel: "필요 크레딧:", youHaveCredits: "보유 크레딧: {credits}",
     // Recent Outlines
     yourRecentOutlines: "최근 개요", continueEditingBtn: "계속 편집하기", loadOutlineBtn: "개요 불러오기",
+    // Workspace Menu
+    inviteMembers: "멤버 초대", signOut: "로그아웃", upgradePlan: "플랜 업그레이드",
 },
 ar: {
     // Sidebar
@@ -4617,6 +4635,8 @@ ar: {
     slidesCountLabel: "الشرائح:", charactersCount: "الحروف:", creditsNeededLabel: "الرصيد المطلوب:", youHaveCredits: "لديك {credits} رصيد",
     // Recent Outlines
     yourRecentOutlines: "مخططاتك الأخيرة", continueEditingBtn: "مواصلة التعديل", loadOutlineBtn: "تحميل المخطط",
+    // Workspace Menu
+    inviteMembers: "دعوة الأعضاء", signOut: "تسجيل الخروج", upgradePlan: "ترقية الخطة",
 },
 hi: {
     // Sidebar
@@ -4877,6 +4897,8 @@ hi: {
     slidesCountLabel: "स्लाइड:", charactersCount: "वर्ण:", creditsNeededLabel: "क्रेडिट आवश्यक:", youHaveCredits: "आपके पास {credits} क्रेडिट हैं",
     // Recent Outlines
     yourRecentOutlines: "आपकी हालिया रूपरेखाएं", continueEditingBtn: "संपादन जारी रखें", loadOutlineBtn: "रूपरेखा लोड करें",
+    // Workspace Menu
+    inviteMembers: "सदस्यों को आमंत्रित करें", signOut: "साइन आउट", upgradePlan: "प्लान अपग्रेड करें",
   },
  ru: {
     // Sidebar (Боковая панель)
@@ -5137,6 +5159,8 @@ hi: {
     slidesCountLabel: "Слайдов:", charactersCount: "Символов:", creditsNeededLabel: "Нужно кредитов:", youHaveCredits: "У вас {credits} кредитов",
     // Outlines
     yourRecentOutlines: "Ваши черновики", continueEditingBtn: "Править", loadOutlineBtn: "Загрузить план",
+    // Workspace Menu
+    inviteMembers: "Пригласить участников", signOut: "Выйти", upgradePlan: "Улучшить план",
 },
 };
 

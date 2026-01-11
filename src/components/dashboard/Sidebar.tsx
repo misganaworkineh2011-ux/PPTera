@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
 import {
   LayoutDashboard,
   Image as ImageIcon,
@@ -8,17 +9,18 @@ import {
   Settings,
   History,
   Users,
-  ChevronLeft,
-  ChevronRight,
   MoreVertical,
   X,
   CreditCard,
   TrendingUp,
+  LogOut,
+  UserPlus,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "~/lib/utils";
-import { UserButton, useUser } from "@clerk/nextjs";
+import { UserButton, useUser, useClerk } from "@clerk/nextjs";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
 
@@ -29,11 +31,48 @@ interface SidebarProps {
   onCloseMobile?: () => void;
 }
 
-export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan, onCloseMobile }: SidebarProps) {
+export default function Sidebar({ isCollapsed, subscriptionPlan, onCloseMobile }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { user } = useUser();
+  const { signOut } = useClerk();
   const { language } = useLanguage();
   const t = dashboardTranslations[language] || dashboardTranslations.en;
+  
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        menuRef.current &&
+        buttonRef.current &&
+        !menuRef.current.contains(event.target as Node) &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        setIsMenuOpen(false);
+      }
+    }
+
+    if (isMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isMenuOpen]);
+
+  const handleSignOut = async () => {
+    setIsMenuOpen(false);
+    await signOut();
+    router.push("/");
+  };
+
+  const handleNavigate = (href: string) => {
+    setIsMenuOpen(false);
+    onCloseMobile?.();
+    router.push(href);
+  };
 
   const navGroups = [
     {
@@ -186,12 +225,16 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
       <div className="border-t border-slate-100 dark:border-zinc-800">
         {/* Show account info on mobile always, on desktop only when not collapsed */}
         <div className={cn(
-          "p-3 lg:p-4",
+          "p-3 lg:p-4 relative",
           isCollapsed && "lg:hidden"
         )}>
-          <button className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white dark:bg-zinc-800 dark:border-zinc-700 p-2.5 lg:p-3 shadow-sm transition hover:border-[#06b6d4] hover:shadow-md">
+          <button
+            ref={buttonRef}
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white dark:bg-zinc-800 dark:border-zinc-700 p-2.5 lg:p-3 shadow-sm transition hover:border-[#06b6d4] hover:shadow-md"
+          >
             <div className="flex items-center gap-2 lg:gap-3 flex-1 min-w-0">
-              <UserButton afterSignOutUrl="/" />
+              <UserButton />
               <div className="flex flex-col items-start overflow-hidden flex-1 min-w-0">
                 <div className="flex items-center justify-between w-full gap-2">
                   <span className="truncate text-sm font-bold text-[#1e3a8a] dark:text-white">
@@ -206,8 +249,51 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
                 </span>
               </div>
             </div>
-            <MoreVertical size={16} className="text-slate-400 dark:text-zinc-500 flex-shrink-0" />
+            <MoreVertical size={16} className={cn(
+              "text-slate-400 dark:text-zinc-500 flex-shrink-0 transition-transform",
+              isMenuOpen && "rotate-90"
+            )} />
           </button>
+
+          {/* Dropdown Menu */}
+          {isMenuOpen && (
+            <div
+              ref={menuRef}
+              className="absolute bottom-full left-3 right-3 lg:left-4 lg:right-4 mb-2 bg-white dark:bg-zinc-800 rounded-xl border border-slate-200 dark:border-zinc-700 shadow-lg overflow-hidden z-50"
+            >
+              <div className="py-1">
+                <button
+                  onClick={() => handleNavigate("/dashboard/billing")}
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-700 transition-colors"
+                >
+                  <Sparkles size={16} className="text-[#06b6d4]" />
+                  <span>{t.billing || "Upgrade Plan"}</span>
+                </button>
+                <button
+                  onClick={() => handleNavigate("/dashboard/collaboration")}
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-700 transition-colors"
+                >
+                  <UserPlus size={16} className="text-slate-500 dark:text-zinc-400" />
+                  <span>{t.inviteMembers || "Invite Members"}</span>
+                </button>
+                <button
+                  onClick={() => handleNavigate("/dashboard/settings")}
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-700 transition-colors"
+                >
+                  <Settings size={16} className="text-slate-500 dark:text-zinc-400" />
+                  <span>{t.settings}</span>
+                </button>
+                <div className="border-t border-slate-100 dark:border-zinc-700 my-1" />
+                <button
+                  onClick={handleSignOut}
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                >
+                  <LogOut size={16} />
+                  <span>{t.signOut || "Sign Out"}</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
         
         {/* Collapsed state: show just the user avatar */}
@@ -215,7 +301,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse, subscriptionPlan,
           "hidden p-3 justify-center",
           isCollapsed && "lg:flex"
         )}>
-          <UserButton afterSignOutUrl="/" />
+          <UserButton />
         </div>
       </div>
     </aside>
