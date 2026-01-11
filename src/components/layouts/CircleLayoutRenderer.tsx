@@ -108,7 +108,24 @@ interface CircleLayoutRendererProps {
   onReorderItems?: (fromIndex: number, toIndex: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
+  // Spotlight props
+  spotlightIndex?: number;
+  isSpotlightMode?: boolean;
 }
+
+// Helper function to get spotlight styling for content elements
+const getSpotlightStyle = (itemIndex: number, spotlightIndex?: number, isSpotlightMode?: boolean): React.CSSProperties => {
+  if (!isSpotlightMode || spotlightIndex === undefined) return {};
+  const isHighlighted = spotlightIndex === itemIndex;
+  return {
+    opacity: isHighlighted ? 1 : 0.15,
+    transform: isHighlighted ? 'scale(1.02)' : 'scale(0.98)',
+    transition: 'all 0.4s ease-out',
+    filter: isHighlighted ? 'drop-shadow(0 0 30px rgba(255,255,255,0.4))' : 'none',
+    position: 'relative' as const,
+    zIndex: isHighlighted ? 10 : 1,
+  };
+};
 
 export function CircleLayoutRenderer({
   layoutId,
@@ -128,9 +145,16 @@ export function CircleLayoutRenderer({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
+  spotlightIndex,
+  isSpotlightMode = false,
 }: CircleLayoutRendererProps) {
   const displayItems = items.slice(0, 8);
   const themeStyles = getThemeStyles(theme, accentColor);
+
+  const effectiveIsSpotlightMode = isSpotlightMode;
+  const effectiveSpotlightIndex = isSpotlightMode && spotlightIndex !== undefined
+    ? spotlightIndex 
+    : undefined;
 
   if (layoutId === "circle-arc") {
     return (
@@ -150,6 +174,8 @@ export function CircleLayoutRenderer({
         onDeleteItem={onDeleteItem}
         isOwner={isOwner}
         isHovered={isHovered}
+        spotlightIndex={effectiveSpotlightIndex}
+        isSpotlightMode={effectiveIsSpotlightMode}
       />
     );
   }
@@ -171,6 +197,8 @@ export function CircleLayoutRenderer({
       onDeleteItem={onDeleteItem}
       isOwner={isOwner}
       isHovered={isHovered}
+      spotlightIndex={effectiveSpotlightIndex}
+      isSpotlightMode={effectiveIsSpotlightMode}
     />
   );
 }
@@ -192,6 +220,9 @@ function ArcLayout({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
+  spotlightIndex,
+  isSpotlightMode = false,
+  onHover,
 }: {
   items: CircleContentItem[];
   themeStyles: ThemeStyles;
@@ -208,6 +239,9 @@ function ArcLayout({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
+  spotlightIndex?: number;
+  isSpotlightMode?: boolean;
+  onHover?: (index: number | null) => void;
 }) {
   const itemCount = items.length;
 
@@ -256,12 +290,11 @@ function ArcLayout({
       >
         {items.slice(0, gridCols).map((item, index) => {
           const pos = getItemPosition(index);
-          // Vertical margin: center items have less top margin (appear higher)
-          // Edge items have more top margin (appear lower) - increased for wing texts
           const topMargin = Math.round((1 - pos.verticalFactor) * 100);
 
           const ItemWrapper = isPresenting ? motion.div : "div";
-          const itemProps = isPresenting ? { variants: circleVariants } : {};
+          const variantsProps = isPresenting ? { variants: circleVariants } : {};
+          const spotlightStyle = isPresenting ? getSpotlightStyle(index, spotlightIndex, isSpotlightMode) : {};
 
           return (
             <ItemWrapper
@@ -270,8 +303,13 @@ function ArcLayout({
               style={{
                 marginTop: `${topMargin}px`,
                 textAlign: pos.textAlign,
+                ...spotlightStyle
               }}
-              {...itemProps}
+              {...(!isPresenting ? {
+                onMouseEnter: () => onHover?.(index),
+                onMouseLeave: () => onHover?.(null),
+              } : {})}
+              {...variantsProps}
             >
               {item.label &&
                 (onStartEditLabel ? (
@@ -345,9 +383,20 @@ function ArcLayout({
             (outerRadius + innerRadius) / 2
           );
           const item = items[index];
+          const style = getSpotlightStyle(index, spotlightIndex, isSpotlightMode);
+          // Remove transform/position properties that don't work well on SVG groups
+          const { transform, position, zIndex, ...svgStyle } = style as any;
 
           return (
-            <g key={index}>
+            <g 
+              key={index}
+              style={{ ...svgStyle, transformOrigin: 'center', transition: 'all 0.4s ease-out' }}
+              {...(!isPresenting ? {
+                onMouseEnter: () => onHover?.(index),
+                onMouseLeave: () => onHover?.(null),
+                cursor: "pointer",
+              } : {})}
+            >
               <path
                 d={path}
                 fill={themeStyles.shapeBgColor}
@@ -426,6 +475,9 @@ function RingLayout({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
+  spotlightIndex,
+  isSpotlightMode = false,
+  onHover,
 }: {
   items: CircleContentItem[];
   themeStyles: ThemeStyles;
@@ -442,6 +494,9 @@ function RingLayout({
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
+  spotlightIndex?: number;
+  isSpotlightMode?: boolean;
+  onHover?: (index: number | null) => void;
 }) {
   const itemCount = items.length;
 
@@ -527,14 +582,19 @@ function RingLayout({
         >
           {items.map((item, index) => {
             const ItemWrapper = isPresenting ? motion.div : "div";
-            const itemProps = isPresenting ? { variants: circleVariants } : {};
+            const variantsProps = isPresenting ? { variants: circleVariants } : {};
+            const spotlightStyle = isPresenting ? getSpotlightStyle(index, spotlightIndex, isSpotlightMode) : {};
             
             return (
               <ItemWrapper
                 key={index}
                 className="p-2 rounded-lg text-center"
-                style={{ backgroundColor: themeStyles.cardBgColor }}
-                {...itemProps}
+                style={{ backgroundColor: themeStyles.cardBgColor, ...spotlightStyle }}
+                {...(!isPresenting ? {
+                  onMouseEnter: () => onHover?.(index),
+                  onMouseLeave: () => onHover?.(null),
+                } : {})}
+                {...variantsProps}
               >
                 {item.label &&
                   (onStartEditLabel ? (
@@ -625,10 +685,19 @@ function RingLayout({
         {leftItems.map((item, idx) => {
           const actualIndex = leftIndices[idx]!;
           const ItemWrapper = isPresenting ? motion.div : "div";
-          const itemProps = isPresenting ? { variants: circleVariants } : {};
+          const variantsProps = isPresenting ? { variants: circleVariants } : {};
+          const spotlightStyle = isPresenting ? getSpotlightStyle(actualIndex, spotlightIndex, isSpotlightMode) : {};
           
           return (
-            <ItemWrapper key={idx} {...itemProps}>
+            <ItemWrapper 
+              key={idx} 
+              style={spotlightStyle}
+              {...(!isPresenting ? {
+                onMouseEnter: () => onHover?.(actualIndex),
+                onMouseLeave: () => onHover?.(null),
+              } : {})}
+              {...variantsProps}
+            >
               {item.label &&
                 (onStartEditLabel ? (
                   <EditableText
@@ -703,9 +772,20 @@ function RingLayout({
             (outerRadius + innerRadius) / 2
           );
           const item = items[index];
+          const style = getSpotlightStyle(index, spotlightIndex, isSpotlightMode);
+          // Remove transform/position properties that don't work well on SVG groups
+          const { transform, position, zIndex, ...svgStyle } = style as any;
 
           return (
-            <g key={index}>
+            <g 
+              key={index}
+              style={{ ...svgStyle, transformOrigin: 'center', transition: 'all 0.4s ease-out' }}
+              {...(!isPresenting ? {
+                onMouseEnter: () => onHover?.(index),
+                onMouseLeave: () => onHover?.(null),
+                cursor: "pointer",
+              } : {})}
+            >
               <path
                 d={path}
                 fill={themeStyles.shapeBgColor}
@@ -755,10 +835,19 @@ function RingLayout({
         {rightItems.map((item, idx) => {
           const actualIndex = rightIndices[idx]!;
           const ItemWrapper = isPresenting ? motion.div : "div";
-          const itemProps = isPresenting ? { variants: circleVariants } : {};
+          const variantsProps = isPresenting ? { variants: circleVariants } : {};
+          const spotlightStyle = isPresenting ? getSpotlightStyle(actualIndex, spotlightIndex, isSpotlightMode) : {};
           
           return (
-            <ItemWrapper key={idx} {...itemProps}>
+            <ItemWrapper 
+              key={idx} 
+              style={spotlightStyle}
+              {...(!isPresenting ? {
+                onMouseEnter: () => onHover?.(actualIndex),
+                onMouseLeave: () => onHover?.(null),
+              } : {})}
+              {...variantsProps}
+            >
               {item.label &&
                 (onStartEditLabel ? (
                   <EditableText

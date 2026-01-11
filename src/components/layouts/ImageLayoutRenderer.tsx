@@ -88,7 +88,24 @@ interface ImageLayoutRendererProps {
   onReorderItems?: (fromIndex: number, toIndex: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
+  // Spotlight props
+  spotlightIndex?: number;
+  isSpotlightMode?: boolean;
 }
+
+// Helper function to get spotlight styling for content elements
+const getSpotlightStyle = (itemIndex: number, spotlightIndex?: number, isSpotlightMode?: boolean): React.CSSProperties => {
+  if (!isSpotlightMode || spotlightIndex === undefined) return {};
+  const isHighlighted = spotlightIndex === itemIndex;
+  return {
+    opacity: isHighlighted ? 1 : 0.15,
+    transform: isHighlighted ? 'scale(1.02)' : 'scale(0.98)',
+    transition: 'all 0.4s ease-out',
+    filter: isHighlighted ? 'drop-shadow(0 0 30px rgba(255,255,255,0.4))' : 'blur(2px)',
+    position: 'relative' as const,
+    zIndex: isHighlighted ? 10 : 1,
+  };
+};
 
 export function ImageLayoutRenderer({
   layoutId,
@@ -111,10 +128,18 @@ export function ImageLayoutRenderer({
   onReorderItems,
   isOwner = false,
   isHovered = false,
+  spotlightIndex,
+  isSpotlightMode = false,
 }: ImageLayoutRendererProps) {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
+  // Spotlight is controlled only by arrow keys via props - no hover interaction
+  const effectiveIsSpotlightMode = isSpotlightMode;
+  const effectiveSpotlightIndex = isSpotlightMode && spotlightIndex !== undefined
+    ? spotlightIndex 
+    : undefined;
+    
   const displayItems = items.slice(0, 6);
   const { columns } = calculateImageGridDimensions(displayItems.length, isNarrowSpace);
   const themeStyles = getThemeStyles(theme, accentColor);
@@ -171,10 +196,12 @@ export function ImageLayoutRenderer({
     outlineOffset: "4px",
   });
 
-  // Drag handle component
+  // Drag handle component - no hover effects during presentation
   const DragHandle = () => canDrag ? (
     <div 
-      className="absolute top-2 left-2 p-1 rounded bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing z-10"
+      className={`absolute top-2 left-2 p-1 rounded bg-black/40 cursor-grab active:cursor-grabbing z-10 ${
+        isPresenting ? "opacity-0" : "opacity-0 group-hover:opacity-100 transition-opacity"
+      }`}
       title="Drag to reorder"
     >
       <GripVertical size={14} className="text-white" />
@@ -266,16 +293,28 @@ export function ImageLayoutRenderer({
             </>
           );
           
+          const spotlightStyle = getSpotlightStyle(idx, effectiveSpotlightIndex, effectiveIsSpotlightMode);
+          
           if (isPresenting) {
             return (
-              <motion.div key={idx} className={baseClassName} variants={imageVariants}>
+              <motion.div 
+                key={idx} 
+                className={baseClassName} 
+                variants={imageVariants}
+                style={spotlightStyle}
+              >
                 {content}
               </motion.div>
             );
           }
           
           return (
-            <div key={idx} className={baseClassName} {...getDragProps(idx)} style={getItemStyle(idx)}>
+            <div 
+              key={idx} 
+              className={baseClassName} 
+              {...getDragProps(idx)} 
+              style={{ ...getItemStyle(idx), ...spotlightStyle }}
+            >
               {content}
             </div>
           );
@@ -362,16 +401,28 @@ export function ImageLayoutRenderer({
             </>
           );
           
+          const spotlightStyle = getSpotlightStyle(idx, effectiveSpotlightIndex, effectiveIsSpotlightMode);
+          
           if (isPresenting) {
             return (
-              <motion.div key={idx} className={baseClassName} variants={imageVariants}>
+              <motion.div 
+                key={idx} 
+                className={baseClassName} 
+                variants={imageVariants}
+                style={spotlightStyle}
+              >
                 {content}
               </motion.div>
             );
           }
           
           return (
-            <div key={idx} className={baseClassName} {...getDragProps(idx)} style={getItemStyle(idx)}>
+            <div 
+              key={idx} 
+              className={baseClassName} 
+              {...getDragProps(idx)} 
+              style={{ ...getItemStyle(idx), ...spotlightStyle }}
+            >
               {content}
             </div>
           );
@@ -457,16 +508,28 @@ export function ImageLayoutRenderer({
             </>
           );
           
+          const spotlightStyle = getSpotlightStyle(idx, effectiveSpotlightIndex, effectiveIsSpotlightMode);
+          
           if (isPresenting) {
             return (
-              <motion.div key={idx} className={baseClassName} variants={imageVariants}>
+              <motion.div 
+                key={idx} 
+                className={baseClassName} 
+                variants={imageVariants}
+                style={spotlightStyle}
+              >
                 {content}
               </motion.div>
             );
           }
           
           return (
-            <div key={idx} className={baseClassName} {...getDragProps(idx)} style={getItemStyle(idx)}>
+            <div 
+              key={idx} 
+              className={baseClassName} 
+              {...getDragProps(idx)} 
+              style={{ ...getItemStyle(idx), ...spotlightStyle }}
+            >
               {content}
             </div>
           );
@@ -553,16 +616,28 @@ export function ImageLayoutRenderer({
           </>
         );
         
+        const spotlightStyle = getSpotlightStyle(idx, effectiveSpotlightIndex, effectiveIsSpotlightMode);
+        
         if (isPresenting) {
           return (
-            <motion.div key={idx} className={baseClassName} variants={imageVariants}>
+            <motion.div 
+              key={idx} 
+              className={baseClassName} 
+              variants={imageVariants}
+              style={spotlightStyle}
+            >
               {content}
             </motion.div>
           );
         }
         
         return (
-          <div key={idx} className={baseClassName} {...getDragProps(idx)} style={getItemStyle(idx)}>
+          <div 
+            key={idx} 
+            className={baseClassName} 
+            {...getDragProps(idx)} 
+            style={{ ...getItemStyle(idx), ...spotlightStyle }}
+          >
             {content}
           </div>
         );

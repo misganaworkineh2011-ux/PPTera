@@ -112,7 +112,24 @@ interface BulletLayoutRendererProps {
   onReorderItems?: (fromIndex: number, toIndex: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
+  // Spotlight props
+  spotlightIndex?: number;
+  isSpotlightMode?: boolean;
 }
+
+// Helper function to get spotlight styling for content elements
+const getSpotlightStyle = (itemIndex: number, spotlightIndex?: number, isSpotlightMode?: boolean): React.CSSProperties => {
+  if (!isSpotlightMode || spotlightIndex === undefined) return {};
+  const isHighlighted = spotlightIndex === itemIndex;
+  return {
+    opacity: isHighlighted ? 1 : 0.15,
+    transform: isHighlighted ? 'scale(1.02)' : 'scale(0.98)',
+    transition: 'all 0.4s ease-out',
+    filter: isHighlighted ? 'drop-shadow(0 0 30px rgba(255,255,255,0.4))' : 'blur(2px)',
+    position: 'relative' as const,
+    zIndex: isHighlighted ? 10 : 1,
+  };
+};
 
 export function BulletLayoutRenderer({
   layoutId,
@@ -134,9 +151,16 @@ export function BulletLayoutRenderer({
   onReorderItems,
   isOwner = false,
   isHovered = false,
+  spotlightIndex,
+  isSpotlightMode = false,
 }: BulletLayoutRendererProps) {
   const displayItems = items.slice(0, 8);
   const themeStyles = getThemeStyles(theme, accentColor);
+
+  // Spotlight is controlled only by arrow keys via props - no hover interaction
+  const effectiveSpotlightIndex = isSpotlightMode && spotlightIndex !== undefined
+    ? spotlightIndex
+    : -1;
   
   // Drag state
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -219,6 +243,7 @@ export function BulletLayoutRenderer({
         canDrag={canDrag}
         dragProps={dragProps}
         getDragClasses={getDragClasses}
+        highlightedIndex={effectiveSpotlightIndex}
       />
     );
   }
@@ -247,6 +272,7 @@ export function BulletLayoutRenderer({
         canDrag={canDrag}
         dragProps={dragProps}
         getDragClasses={getDragClasses}
+        highlightedIndex={effectiveSpotlightIndex}
       />
     );
   }
@@ -275,6 +301,7 @@ export function BulletLayoutRenderer({
         canDrag={canDrag}
         dragProps={dragProps}
         getDragClasses={getDragClasses}
+        highlightedIndex={effectiveSpotlightIndex}
       />
     );
   }
@@ -301,6 +328,7 @@ export function BulletLayoutRenderer({
       canDrag={canDrag}
       dragProps={dragProps}
       getDragClasses={getDragClasses}
+      highlightedIndex={effectiveSpotlightIndex}
     />
   );
 }
@@ -338,6 +366,8 @@ function CardBullets({
   canDrag = false,
   dragProps,
   getDragClasses,
+  highlightedIndex,
+  onHover,
 }: {
   items: BulletContentItem[];
   themeStyles: ThemeStyles;
@@ -359,8 +389,33 @@ function CardBullets({
   canDrag?: boolean;
   dragProps?: (idx: number) => Record<string, unknown>;
   getDragClasses?: (idx: number) => string;
+  highlightedIndex?: number;
+  onHover?: (index: number | null) => void;
 }) {
   const { columns, specialLayout } = calculateBulletGridDimensions(items.length, isNarrowSpace);
+
+  const getSpotlightStyle = (index: number) => {
+    if (highlightedIndex === undefined || highlightedIndex === -1) return {};
+    const isHighlighted = index === highlightedIndex;
+    
+    if (isHighlighted) {
+      return {
+        zIndex: 10,
+        transform: "scale(1.02)",
+        transition: "all 0.3s ease",
+        opacity: 1,
+        filter: "none",
+      };
+    }
+    
+    return {
+      zIndex: 1,
+      transform: "scale(0.98)",
+      transition: "all 0.3s ease",
+      opacity: 0.4,
+      filter: "blur(1px)",
+    };
+  };
 
   // Special 2-1 layout for 3 items
   if (specialLayout === "2-1" && items.length === 3) {
@@ -397,6 +452,9 @@ function CardBullets({
               canDrag={canDrag}
               dragProps={dragProps}
               getDragClasses={getDragClasses}
+              style={getSpotlightStyle(idx)}
+              onMouseEnter={() => onHover?.(idx)}
+              onMouseLeave={() => onHover?.(null)}
             />
           ))}
         </div>
@@ -421,6 +479,9 @@ function CardBullets({
             canDrag={canDrag}
             dragProps={dragProps}
             getDragClasses={getDragClasses}
+            style={getSpotlightStyle(2)}
+            onMouseEnter={() => onHover?.(2)}
+            onMouseLeave={() => onHover?.(null)}
           />
         </div>
       </Container>
@@ -465,6 +526,9 @@ function CardBullets({
           canDrag={canDrag}
           dragProps={dragProps}
           getDragClasses={getDragClasses}
+          style={getSpotlightStyle(idx)}
+          onMouseEnter={() => onHover?.(idx)}
+          onMouseLeave={() => onHover?.(null)}
         />
       ))}
     </Container>
@@ -491,6 +555,9 @@ function BulletCard({
   canDrag = false,
   dragProps,
   getDragClasses,
+  style,
+  onMouseEnter,
+  onMouseLeave,
 }: {
   item: BulletContentItem;
   index: number;
@@ -510,20 +577,30 @@ function BulletCard({
   canDrag?: boolean;
   dragProps?: (idx: number) => Record<string, unknown>;
   getDragClasses?: (idx: number) => string;
+  style?: React.CSSProperties;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
 }) {
   const dragClasses = getDragClasses ? getDragClasses(index) : "";
   const props = dragProps ? dragProps(index) : {};
   
   const Wrapper = isPresenting ? motion.div : "div";
-  const wrapperProps = isPresenting ? { variants: bulletVariants } : {};
+  const itemHandlers = isPresenting ? {} : { onMouseEnter, onMouseLeave };
+  const wrapperProps = isPresenting ? { variants: bulletVariants } : { ...itemHandlers };
+  
+  // Disable hover classes during presentation
+  const wrapperClassName = isPresenting 
+    ? `rounded-2xl p-5 relative ${dragClasses}`
+    : `rounded-2xl p-5 relative group/drag-item ${dragClasses}`;
   
   return (
     <Wrapper
-      className={`rounded-2xl p-5 relative group/drag-item ${dragClasses}`}
+      className={wrapperClassName}
       style={{
         backgroundColor: themeStyles.cardBgColor,
         border: `1px solid ${themeStyles.cardBorderColor}`,
         cursor: canDrag && !isPresenting ? "grab" : "default",
+        ...style,
       }}
       {...wrapperProps}
       {...(isPresenting ? {} : props)}
@@ -622,6 +699,8 @@ function SimpleBullets({
   canDrag = false,
   dragProps,
   getDragClasses,
+  highlightedIndex,
+  onHover,
 }: {
   items: BulletContentItem[];
   themeStyles: ThemeStyles;
@@ -643,7 +722,31 @@ function SimpleBullets({
   canDrag?: boolean;
   dragProps?: (idx: number) => Record<string, unknown>;
   getDragClasses?: (idx: number) => string;
+  highlightedIndex?: number;
+  onHover?: (index: number | null) => void;
 }) {
+  const getSpotlightStyle = (index: number) => {
+    if (highlightedIndex === undefined || highlightedIndex === -1) return {};
+    const isHighlighted = index === highlightedIndex;
+    
+    if (isHighlighted) {
+      return {
+        zIndex: 10,
+        transform: "translateX(8px)",
+        transition: "all 0.3s ease",
+        opacity: 1,
+        filter: "none",
+      };
+    }
+    
+    return {
+      zIndex: 1,
+      transition: "all 0.3s ease",
+      opacity: 0.4,
+      filter: "blur(1px)",
+    };
+  };
+
   const Container = isPresenting ? motion.div : "div";
   const containerProps = isPresenting ? { 
     key: animationKey,
@@ -678,6 +781,9 @@ function SimpleBullets({
               canDrag={canDrag}
               dragProps={dragProps}
               getDragClasses={getDragClasses}
+              style={getSpotlightStyle(idx)}
+              onMouseEnter={() => onHover?.(idx)}
+              onMouseLeave={() => onHover?.(null)}
             />
           ))}
         </div>
@@ -701,6 +807,9 @@ function SimpleBullets({
             canDrag={canDrag}
             dragProps={dragProps}
             getDragClasses={getDragClasses}
+            style={getSpotlightStyle(2)}
+            onMouseEnter={() => onHover?.(2)}
+            onMouseLeave={() => onHover?.(null)}
           />
         </div>
       </Container>
@@ -740,6 +849,9 @@ function SimpleBullets({
           canDrag={canDrag}
           dragProps={dragProps}
           getDragClasses={getDragClasses}
+          style={getSpotlightStyle(idx)}
+          onMouseEnter={() => onHover?.(idx)}
+          onMouseLeave={() => onHover?.(null)}
         />
       ))}
     </Container>
@@ -765,6 +877,9 @@ function SimpleBulletItem({
   canDrag = false,
   dragProps,
   getDragClasses,
+  style,
+  onMouseEnter,
+  onMouseLeave,
 }: {
   item: BulletContentItem;
   index: number;
@@ -783,17 +898,29 @@ function SimpleBulletItem({
   canDrag?: boolean;
   dragProps?: (idx: number) => Record<string, unknown>;
   getDragClasses?: (idx: number) => string;
+  style?: React.CSSProperties;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
 }) {
   const dragClasses = getDragClasses ? getDragClasses(index) : "";
   const props = dragProps ? dragProps(index) : {};
   
   const Wrapper = isPresenting ? motion.div : "div";
-  const wrapperProps = isPresenting ? { variants: bulletVariants } : {};
+  const itemHandlers = isPresenting ? {} : { onMouseEnter, onMouseLeave };
+  const wrapperProps = isPresenting ? { variants: bulletVariants } : { ...itemHandlers };
+  
+  // Disable hover classes during presentation
+  const wrapperClassName = isPresenting 
+    ? `flex items-start gap-3 relative ${dragClasses}`
+    : `flex items-start gap-3 relative group/drag-item ${dragClasses}`;
   
   return (
     <Wrapper 
-      className={`flex items-start gap-3 relative group/drag-item ${dragClasses}`}
-      style={{ cursor: canDrag && !isPresenting ? "grab" : "default" }}
+      className={wrapperClassName}
+      style={{ 
+        cursor: canDrag && !isPresenting ? "grab" : "default",
+        ...style 
+      }}
       {...wrapperProps}
       {...(isPresenting ? {} : props)}
     >
@@ -879,6 +1006,8 @@ function ArrowBullets({
   canDrag = false,
   dragProps,
   getDragClasses,
+  highlightedIndex,
+  onHover,
 }: {
   items: BulletContentItem[];
   themeStyles: ThemeStyles;
@@ -899,7 +1028,31 @@ function ArrowBullets({
   canDrag?: boolean;
   dragProps?: (idx: number) => Record<string, unknown>;
   getDragClasses?: (idx: number) => string;
+  highlightedIndex?: number;
+  onHover?: (index: number | null) => void;
 }) {
+  const getSpotlightStyle = (index: number) => {
+    if (highlightedIndex === undefined || highlightedIndex === -1) return {};
+    const isHighlighted = index === highlightedIndex;
+    
+    if (isHighlighted) {
+      return {
+        zIndex: 10,
+        transform: "translateX(8px)",
+        transition: "all 0.3s ease",
+        opacity: 1,
+        filter: "none",
+      };
+    }
+    
+    return {
+      zIndex: 1,
+      transition: "all 0.3s ease",
+      opacity: 0.4,
+      filter: "blur(1px)",
+    };
+  };
+
   // Vertical list layout
   const columns = isNarrowSpace ? 1 : items.length <= 4 ? 1 : 2;
 
@@ -924,13 +1077,30 @@ function ArrowBullets({
       {items.map((item, idx) => {
         const dragClasses = getDragClasses ? getDragClasses(idx) : "";
         const props = dragProps ? dragProps(idx) : {};
-        const itemProps = isPresenting ? { variants: bulletVariants } : {};
+        
+        const spotlightStyle = getSpotlightStyle(idx);
+        // Disable hover handlers during presentation
+        const itemHandlers = isPresenting ? {} : { 
+          onMouseEnter: () => onHover?.(idx),
+          onMouseLeave: () => onHover?.(null)
+        };
+        const itemProps = isPresenting ? { 
+          variants: bulletVariants,
+        } : { ...itemHandlers };
+        
+        // Disable hover classes during presentation
+        const wrapperClassName = isPresenting 
+          ? `flex items-start gap-3 relative ${dragClasses}`
+          : `flex items-start gap-3 relative group/drag-item ${dragClasses}`;
         
         return (
           <ItemWrapper 
             key={idx} 
-            className={`flex items-start gap-3 relative group/drag-item ${dragClasses}`}
-            style={{ cursor: canDrag && !isPresenting ? "grab" : "default" }}
+            className={wrapperClassName}
+            style={{ 
+              cursor: canDrag && !isPresenting ? "grab" : "default",
+              ...spotlightStyle
+            }}
             {...itemProps}
             {...(isPresenting ? {} : props)}
           >

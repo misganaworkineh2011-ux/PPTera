@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import type { Theme } from "~/lib/themes";
 import type {
@@ -64,7 +65,24 @@ interface SequenceLayoutRendererProps {
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
   isHovered?: boolean;
+  // Spotlight props
+  spotlightIndex?: number;
+  isSpotlightMode?: boolean;
 }
+
+// Helper function to get spotlight styling for content elements
+const getSpotlightStyle = (itemIndex: number, spotlightIndex?: number, isSpotlightMode?: boolean): React.CSSProperties => {
+  if (!isSpotlightMode || spotlightIndex === undefined) return {};
+  const isHighlighted = spotlightIndex === itemIndex;
+  return {
+    opacity: isHighlighted ? 1 : 0.15,
+    transform: isHighlighted ? 'scale(1.02)' : 'scale(0.98)',
+    transition: 'all 0.4s ease-out',
+    filter: isHighlighted ? 'drop-shadow(0 0 30px rgba(255,255,255,0.4))' : 'none',
+    position: 'relative' as const,
+    zIndex: isHighlighted ? 10 : 1,
+  };
+};
 
 export default function SequenceLayoutRenderer({
   layoutId,
@@ -86,7 +104,21 @@ export default function SequenceLayoutRenderer({
   onDeleteItem,
   isOwner = false,
   isHovered = false,
+  spotlightIndex,
+  isSpotlightMode = false,
 }: SequenceLayoutRendererProps) {
+  const [hoveredBoxIndex, setHoveredBoxIndex] = useState<number | null>(null);
+
+  // Determine effective spotlight state (prop or local hover)
+  // Apply spotlight effects in editor mode too when hovering
+  const effectiveIsSpotlightMode = isSpotlightMode;
+  const effectiveSpotlightIndex = spotlightIndex;
+
+  const getStyle = (index: number) => {
+    const spotlightStyle = getSpotlightStyle(index, effectiveSpotlightIndex ?? undefined, effectiveIsSpotlightMode);
+    return spotlightStyle;
+  };
+  
   const layout = layoutId
     ? getSequenceLayoutById(layoutId) || getRecommendedSequenceLayout(items.length, isNarrowSpace)
     : getRecommendedSequenceLayout(items.length, isNarrowSpace);
@@ -232,7 +264,14 @@ export default function SequenceLayoutRenderer({
           <div className="relative flex justify-between items-start">
             {items.map((item, index) => {
               const ItemWrapper = isPresenting ? motion.div : "div";
-              const itemProps = isPresenting ? { variants: sequenceVariants } : {};
+              const itemStyle = getStyle(index);
+              
+              const itemProps = isPresenting ? { 
+                variants: sequenceVariants,
+                style: itemStyle,
+              } : {
+                 style: itemStyle,
+              };
               
               return (
                 <ItemWrapper key={index} className="flex flex-col items-center flex-1" {...itemProps}>
@@ -273,7 +312,14 @@ export default function SequenceLayoutRenderer({
             {items.map((item, index) => {
               const isAbove = index % 2 === 0;
               const ItemWrapper = isPresenting ? motion.div : "div";
-              const itemProps = isPresenting ? { variants: sequenceVariants } : {};
+              const itemStyle = getStyle(index);
+
+              const itemProps = isPresenting ? { 
+                variants: sequenceVariants,
+                style: itemStyle,
+              } : {
+                 style: itemStyle,
+              };
               
               return (
                 <ItemWrapper key={index} className="flex-1 px-2" {...itemProps}>
@@ -341,7 +387,14 @@ export default function SequenceLayoutRenderer({
             {items.map((item, index) => {
               const isAbove = index % 2 === 0;
               const ItemWrapper = isPresenting ? motion.div : "div";
-              const itemProps = isPresenting ? { variants: sequenceVariants } : {};
+              const itemStyle = getStyle(index);
+
+              const itemProps = isPresenting ? { 
+                variants: sequenceVariants,
+                style: itemStyle,
+              } : {
+                 style: itemStyle,
+              };
               
               return (
                 <ItemWrapper key={index} className="flex-1 px-2" {...itemProps}>
@@ -386,7 +439,14 @@ export default function SequenceLayoutRenderer({
           <div className="flex flex-col gap-10">
             {items.map((item, index) => {
               const ItemWrapper = isPresenting ? motion.div : "div";
-              const itemProps = isPresenting ? { variants: sequenceVariants } : {};
+              const itemStyle = getStyle(index);
+
+              const itemProps = isPresenting ? { 
+                variants: sequenceVariants,
+                style: itemStyle,
+              } : {
+                 style: itemStyle,
+              };
               
               return (
                 <ItemWrapper key={index} className="relative flex items-start" {...itemProps}>
@@ -450,7 +510,14 @@ export default function SequenceLayoutRenderer({
             {items.map((item, index) => {
               const isLeft = index % 2 === 0;
               const ItemWrapper = isPresenting ? motion.div : "div";
-              const itemProps = isPresenting ? { variants: sequenceVariants } : {};
+              const itemStyle = getStyle(index);
+
+              const itemProps = isPresenting ? { 
+                variants: sequenceVariants,
+                style: itemStyle,
+              } : {
+                 style: itemStyle,
+              };
               
               return (
                 <ItemWrapper
