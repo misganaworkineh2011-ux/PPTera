@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, Shield, CreditCard, Bell, Monitor, ChevronRight, Loader2, Check, Save, ExternalLink, Sun, Moon, Laptop, AlertTriangle, MessageSquare } from "lucide-react";
+import { User, Shield, CreditCard, Bell, Monitor, ChevronRight, Loader2, Check, Save, ExternalLink, Sun, Moon, Laptop, MessageSquare } from "lucide-react";
 import ReviewWidget from "~/components/dashboard/ReviewWidget";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { useSettings } from "~/contexts/SettingsContext";
@@ -34,21 +34,6 @@ const languageNames: Record<Language, string> = {
   ru: "Русский (Russian)",
 };
 
-const deleteConfirmWords: Record<Language, string> = {
-  en: "DELETE",
-  es: "ELIMINAR",
-  fr: "SUPPRIMER",
-  de: "LÖSCHEN",
-  zh: "删除",
-  pt: "EXCLUIR",
-  it: "ELIMINA",
-  ja: "削除",
-  ko: "삭제",
-  ar: "حذف",
-  hi: "हटाएं",
-  ru: "УДАЛИТЬ",
-};
-
 export default function SettingsPage() {
   const { user: clerkUser, isLoaded: clerkLoaded } = useUser();
   const { signOut, openUserProfile } = useClerk();
@@ -61,11 +46,6 @@ export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [displayName, setDisplayName] = useState("");
-  
-  // Delete account state
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteConfirmation, setDeleteConfirmation] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
   
   // 2FA state
   const [has2FA, setHas2FA] = useState(false);
@@ -116,35 +96,6 @@ export default function SettingsPage() {
       console.error("Error saving settings:", error);
     } finally {
       setIsSaving(false);
-    }
-  };
-
-  const handleDeleteAccount = async () => {
-    const confirmWord = deleteConfirmWords[language];
-    if (deleteConfirmation !== confirmWord) {
-      return;
-    }
-
-    try {
-      setIsDeleting(true);
-      const res = await fetch("/api/account/delete", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ confirmation: deleteConfirmation }),
-      });
-
-      if (res.ok) {
-        // Sign out and redirect to home
-        await signOut({ redirectUrl: "/" });
-      } else {
-        const data = await res.json();
-        alert(data.error || "Failed to delete account");
-      }
-    } catch (error) {
-      console.error("Error deleting account:", error);
-      alert("Failed to delete account");
-    } finally {
-      setIsDeleting(false);
     }
   };
 
@@ -435,13 +386,16 @@ export default function SettingsPage() {
 
                 <div className="p-4 rounded-lg border border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-900/20">
                   <p className="font-medium text-red-700 dark:text-red-400">{t.dangerZone}</p>
-                  <p className="text-xs text-red-600 mb-3 dark:text-red-400">{t.deleteAccountWarning}</p>
-                  <button 
-                    onClick={() => setShowDeleteModal(true)}
-                    className="rounded-lg border border-red-300 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-100 transition dark:border-red-700 dark:hover:bg-red-900/50"
+                  <p className="text-xs text-red-600 mb-3 dark:text-red-400">
+                    {t.deleteAccountContactSupport || "To delete your account, please contact our support team."}
+                  </p>
+                  <a 
+                    href="mailto:support@pptmaster.app?subject=Account%20Deletion%20Request"
+                    className="inline-flex items-center gap-2 rounded-lg border border-red-300 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-100 transition dark:border-red-700 dark:hover:bg-red-900/50"
                   >
-                    {t.deleteAccount}
-                  </button>
+                    <ExternalLink size={14} />
+                    {t.contactSupport || "Contact Support"}
+                  </a>
                 </div>
               </div>
             </div>
@@ -452,55 +406,6 @@ export default function SettingsPage() {
           )}
         </main>
       </div>
-
-      {/* Delete Account Modal */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowDeleteModal(false)} />
-          <div className="relative bg-white rounded-xl p-6 w-full max-w-md shadow-2xl dark:bg-neutral-900" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/50">
-                <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
-              </div>
-              <h3 className="text-lg font-bold text-red-700 dark:text-red-400">{t.deleteConfirmTitle}</h3>
-            </div>
-            <p className="text-sm text-slate-600 mb-4 dark:text-neutral-400">
-              {t.deleteConfirmMessage}
-            </p>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-neutral-300">
-                {t.typeToConfirm}: <span className="font-bold text-red-600">{deleteConfirmWords[language]}</span>
-              </label>
-              <input
-                type="text"
-                value={deleteConfirmation}
-                onChange={(e) => setDeleteConfirmation(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-red-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
-                placeholder={deleteConfirmWords[language]}
-              />
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setShowDeleteModal(false);
-                  setDeleteConfirmation("");
-                }}
-                className="flex-1 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
-              >
-                {t.cancel}
-              </button>
-              <button
-                onClick={handleDeleteAccount}
-                disabled={isDeleting || deleteConfirmation !== deleteConfirmWords[language]}
-                className="flex-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {isDeleting && <Loader2 size={14} className="animate-spin" />}
-                {isDeleting ? t.deleting : t.deleteAccount}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
