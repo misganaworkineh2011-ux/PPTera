@@ -1379,7 +1379,7 @@ export default function CreatePresentationClient({
                           // For custom themes, use the background color from colors, not preview.titleBg (which might be a URL)
                           const previewBgColor = hasBackgroundImage 
                             ? theme.colors.background 
-                            : (typeof theme.preview.titleBg === 'string' && !theme.preview.titleBg.startsWith('url(') 
+                            : (typeof theme.preview?.titleBg === 'string' && !theme.preview.titleBg.startsWith('url(') 
                                 ? theme.preview.titleBg 
                                 : theme.colors.background);
                           
@@ -1408,7 +1408,7 @@ export default function CreatePresentationClient({
                                     backgroundColor: previewBgColor,
                                     backgroundImage: hasBackgroundImage
                                       ? `url(${bgImageUrl})`
-                                      : theme.slideStyles.title.pattern || "none",
+                                      : theme.slideStyles?.title?.pattern || "none",
                                     backgroundSize: "cover",
                                     backgroundPosition: "center",
                                   }}

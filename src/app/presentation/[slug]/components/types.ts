@@ -30,6 +30,11 @@ function isColorDark(hexColor: string): boolean {
 }
 
 export function getThemeType(theme: Theme): ThemeType {
+  // Safety check for malformed theme
+  if (!theme?.colors?.background) {
+    return "dark";
+  }
+  
   // Check for custom themes first
   if (theme.id.startsWith("custom-")) {
     return isColorDark(theme.colors.background) ? "custom-dark" : "custom-light";

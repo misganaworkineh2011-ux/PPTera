@@ -192,7 +192,7 @@ export default function ThemeSelector({
                 // For custom themes, use the background color from colors, not preview.titleBg (which might be a URL)
                 const previewBgColor = hasBackgroundImage 
                   ? theme.colors.background 
-                  : (typeof theme.preview.titleBg === 'string' && !theme.preview.titleBg.startsWith('url(') 
+                  : (typeof theme.preview?.titleBg === 'string' && !theme.preview.titleBg.startsWith('url(') 
                       ? theme.preview.titleBg 
                       : theme.colors.background);
                 
@@ -214,7 +214,7 @@ export default function ThemeSelector({
                           backgroundColor: previewBgColor,
                           backgroundImage: hasBackgroundImage
                             ? `url(${bgImageUrl})`
-                            : theme.slideStyles.title.pattern || "none",
+                            : theme.slideStyles?.title?.pattern || "none",
                           backgroundSize: "cover",
                           backgroundPosition: "center",
                         }}
@@ -335,12 +335,12 @@ export default function ThemeSelector({
                 ? previewTheme.colors.background
                 : (previewTheme.previewBackgroundImage 
                   ? "transparent" 
-                  : previewTheme.slideStyles.title.background),
+                  : previewTheme.slideStyles?.title?.background || previewTheme.colors.background),
               backgroundImage: previewTheme.backgroundImage 
                 ? `url(${previewTheme.backgroundImage})`
                 : (previewTheme.previewBackgroundImage 
                   ? `url(${previewTheme.previewBackgroundImage})` 
-                  : (previewTheme.slideStyles.title.pattern || "none")),
+                  : (previewTheme.slideStyles?.title?.pattern || "none")),
               backgroundSize: (previewTheme.backgroundImage || previewTheme.previewBackgroundImage) ? "cover" : "auto",
               backgroundPosition: (previewTheme.backgroundImage || previewTheme.previewBackgroundImage) ? "center" : "center",
             }}
@@ -374,10 +374,10 @@ export default function ThemeSelector({
                   // For themes with background images, use card background instead of slide background
                   background: previewTheme.backgroundImage 
                     ? (previewTheme.cardBox?.background || `${previewTheme.colors.background}ee`)
-                    : previewTheme.slideStyles.title.background,
+                    : previewTheme.slideStyles?.title?.background || previewTheme.colors.background,
                   backgroundImage: previewTheme.backgroundImage 
                     ? "none"
-                    : (previewTheme.slideStyles.title.pattern || "none"),
+                    : (previewTheme.slideStyles?.title?.pattern || "none"),
                   border: `1px solid ${previewTheme.colors.border}`,
                   backdropFilter: previewTheme.backgroundImage ? "blur(12px)" : "none",
                   ...getSlideShapeStyles(previewTheme.slideShape),
