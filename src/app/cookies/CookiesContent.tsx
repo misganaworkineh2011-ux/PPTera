@@ -117,8 +117,8 @@ export function CookiesContent() {
               <h2 className="text-3xl font-bold text-slate-900 mb-4 mt-0">Questions</h2>
               <p className="text-slate-700 leading-relaxed mb-0">
                 If you have any questions about this Cookie Notice, please contact us by email at{" "}
-                <a href="mailto:privacy@pptmaster.com" className="text-[#06b6d4] hover:underline font-semibold">
-                  privacy@pptmaster.com
+                <a href="mailto:pptmaster.app@gmail.com" className="text-[#06b6d4] hover:underline font-semibold">
+                  pptmaster.app@gmail.com
                 </a>.
               </p>
             </div>

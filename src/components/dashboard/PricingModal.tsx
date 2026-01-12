@@ -161,7 +161,8 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
     const monthlyPrice = product.monthly?.priceAmount ? product.monthly.priceAmount / 100 : null;
     const yearlyPrice = product.yearly?.priceAmount ? product.yearly.priceAmount / 100 : null;
     if (monthlyPrice === null && yearlyPrice === null) return null;
-    const yearlyMonthly = yearlyPrice ? Math.round(yearlyPrice / 12) : monthlyPrice;
+    // Show decimal for yearly monthly price (don't round)
+    const yearlyMonthly = yearlyPrice ? Number((yearlyPrice / 12).toFixed(2)) : monthlyPrice;
     return {
       monthly: monthlyPrice ?? yearlyMonthly ?? 0,
       yearly: yearlyMonthly ?? monthlyPrice ?? 0,

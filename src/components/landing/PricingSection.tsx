@@ -37,7 +37,7 @@ function getPriceFromProducts(
     : null;
   if (monthlyPrice === null && yearlyPrice === null) return null;
   const yearlyMonthly = yearlyPrice
-    ? Math.round(yearlyPrice / 12)
+    ? Number((yearlyPrice / 12).toFixed(2))
     : monthlyPrice;
   return {
     monthly: monthlyPrice ?? yearlyMonthly ?? 0,

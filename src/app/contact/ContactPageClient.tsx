@@ -88,7 +88,7 @@ export function ContactPageClient({ currentLang }: ContactPageClientProps) {
     {
       icon: Mail,
       title: t.email || "Email",
-      value: "support@pptmaster.com",
+      value: "pptmaster.app@gmail.com",
       description: t.emailDesc || "We'll respond within 24 hours",
       color: "from-[#1e3a8a] to-[#06b6d4]",
     },

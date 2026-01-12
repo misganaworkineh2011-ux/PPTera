@@ -114,6 +114,25 @@ import { copperSpiceTheme } from "./copper-spice";
 import { mintTangerineTheme } from "./mint-tangerine";
 import { vintageCreamTheme } from "./vintage-cream";
 import { oceanPeachTheme } from "./ocean-peach";
+// New themes from color palettes
+import { sageOliveTheme } from "./sage-olive";
+import { forestMistTheme } from "./forest-mist";
+import { oceanDepthTheme } from "./ocean-depth";
+import { coralTealTheme } from "./coral-teal";
+import { tealNavyTheme } from "./teal-navy";
+import { warmCrimsonTheme } from "./warm-crimson";
+import { springPastelTheme } from "./spring-pastel";
+import { earthForestTheme } from "./earth-forest";
+import { tropicalSunsetTheme } from "./tropical-sunset";
+import { goldenSageTheme } from "./golden-sage";
+import { fireGradientTheme } from "./fire-gradient";
+import { modernSlateTheme } from "./modern-slate";
+import { neonPopTheme } from "./neon-pop";
+import { royalPurpleTheme } from "./royal-purple";
+import { sunsetWarmTheme } from "./sunset-warm";
+import { dustyRoseTheme } from "./dusty-rose";
+import { oceanBlueSerenityTheme } from "./ocean-blue-serenity";
+import { watermelonSorbetTheme } from "./watermelon-sorbet";
 
 // Re-export themes for direct imports
 export {
@@ -169,64 +188,147 @@ export {
   mintTangerineTheme,
   vintageCreamTheme,
   oceanPeachTheme,
+  // New themes from color palettes
+  sageOliveTheme,
+  forestMistTheme,
+  oceanDepthTheme,
+  coralTealTheme,
+  tealNavyTheme,
+  warmCrimsonTheme,
+  springPastelTheme,
+  earthForestTheme,
+  tropicalSunsetTheme,
+  goldenSageTheme,
+  fireGradientTheme,
+  modernSlateTheme,
+  neonPopTheme,
+  royalPurpleTheme,
+  sunsetWarmTheme,
+  dustyRoseTheme,
+  oceanBlueSerenityTheme,
+  watermelonSorbetTheme,
 };
 
-// All themes array - alternating non-image and image background themes for variety
-export const themes = [
-  // Non-image, Image, Non-image, Image pattern
-  corporateCleanTheme,        // non-image
-  oceanPeachTheme,            // image
-  blackGoldLuxuryTheme,       // non-image
-  japaneseGardenTheme,        // image
-  sageGardenTheme,            // non-image
-  nauticalEleganceTheme,      // image
-  lavenderDreamTheme,         // non-image
-  springBlossomTheme,         // image
-  paperCraftTheme,            // non-image
-  autumnSunsetTheme,          // image
-  skyBlueTheme,               // non-image
-  royalVelvetTheme,           // image
-  coastalBreezeTheme,         // non-image
-  midnightGoldTheme,          // image
-  frostTheme,                 // non-image
-  cherryBlossomTheme,         // image
-  nebulaTheme,                // non-image
-  primaryBoldTheme,           // image
-  emberTheme,                 // non-image
-  violetDreamTheme,           // image
-  auroraTheme,                // non-image
-  rusticEarthTheme,           // image
-  sakuraTheme,                // non-image
-  copperSpiceTheme,           // image
-  terracottaTheme,            // non-image
-  mintTangerineTheme,         // image
-  obsidianTheme,              // non-image
-  vintageCreamTheme,          // image
-  midnightTheme,              // non-image
-  retroMotorbikeTheme,        // image
-  sunsetGradientTheme,        // non-image
-  roseStripesTheme,           // image
-  hackerTerminalTheme,        // non-image
-  botanicalGardenTheme,       // image
-  cyberpunkNeonTheme,         // non-image
-  cozyCottageTheme,           // image
-  neonMatrixTheme,            // non-image
-  urbanBuildingTheme,         // image
-  midnightBorderTheme,        // non-image
-  sunsetCoastTheme,           // image
-  dnaBlueprintTheme,          // non-image
-  goldenHorizonTheme,         // image
-  animeDreamscapeTheme,       // non-image
-  lavenderFieldsTheme,        // image
-  auroraBorealisTechTheme,    // non-image
-  desertSandTheme,            // image
-  mistyForestTheme,           // image
-  tropicalJungleTheme,        // image
-  citrusSplashTheme,          // image
-  vintageWineTheme,           // image
-  sunnyBeachTheme,            // image
-  industrialSteelTheme,       // image
+// Themes with background images (need to be distributed evenly)
+const themesWithBgImage = [
+  retroMotorbikeTheme,      // vintage-botanical
+  roseStripesTheme,         // rose-garden
+  botanicalGardenTheme,     // golden-meadow
+  cozyCottageTheme,         // autumn-harvest
+  urbanBuildingTheme,
+  sunsetCoastTheme,
+  goldenHorizonTheme,
+  lavenderFieldsTheme,
+  desertSandTheme,
+  mistyForestTheme,
+  tropicalJungleTheme,
+  citrusSplashTheme,
+  vintageWineTheme,
+  sunnyBeachTheme,
+  industrialSteelTheme,
+  japaneseGardenTheme,
+  nauticalEleganceTheme,
+  springBlossomTheme,
+  autumnSunsetTheme,
+  royalVelvetTheme,
+  midnightGoldTheme,
+  cherryBlossomTheme,
 ];
+
+// Themes without background images (solid colors/gradients only)
+const themesWithoutBgImage = [
+  corporateCleanTheme,
+  watermelonSorbetTheme,
+  oceanBlueSerenityTheme,
+  forestMistTheme,
+  blackGoldLuxuryTheme,
+  coralTealTheme,
+  modernSlateTheme,
+  sageGardenTheme,
+  tropicalSunsetTheme,
+  royalPurpleTheme,
+  lavenderDreamTheme,
+  oceanDepthTheme,
+  fireGradientTheme,
+  paperCraftTheme,
+  tealNavyTheme,
+  goldenSageTheme,
+  skyBlueTheme,
+  warmCrimsonTheme,
+  sageOliveTheme,
+  coastalBreezeTheme,
+  neonPopTheme,
+  springPastelTheme,
+  frostTheme,
+  earthForestTheme,
+  dustyRoseTheme,
+  nebulaTheme,
+  sunsetWarmTheme,
+  primaryBoldTheme,
+  oceanPeachTheme,
+  emberTheme,
+  violetDreamTheme,
+  auroraTheme,
+  rusticEarthTheme,
+  sakuraTheme,
+  copperSpiceTheme,
+  terracottaTheme,
+  mintTangerineTheme,
+  obsidianTheme,
+  vintageCreamTheme,
+  midnightTheme,
+  sunsetGradientTheme,
+  hackerTerminalTheme,
+  cyberpunkNeonTheme,
+  neonMatrixTheme,
+  midnightBorderTheme,
+  dnaBlueprintTheme,
+  animeDreamscapeTheme,
+  auroraBorealisTechTheme,
+];
+
+// Interleave themes: distribute bg image themes evenly among non-bg themes
+// Pattern: 2-3 non-bg themes, then 1 bg theme (with occasional 2 consecutive bg themes for variety)
+function interleaveThemes() {
+  const result: typeof corporateCleanTheme[] = [];
+  const bgThemes = [...themesWithBgImage];
+  const nonBgThemes = [...themesWithoutBgImage];
+  
+  let bgIndex = 0;
+  let nonBgIndex = 0;
+  let patternCounter = 0;
+  
+  while (bgIndex < bgThemes.length || nonBgIndex < nonBgThemes.length) {
+    // Add 2-3 non-bg themes
+    const nonBgCount = patternCounter % 5 === 0 ? 2 : 3; // Vary between 2 and 3
+    for (let i = 0; i < nonBgCount && nonBgIndex < nonBgThemes.length; i++) {
+      const theme = nonBgThemes[nonBgIndex];
+      if (theme) result.push(theme);
+      nonBgIndex++;
+    }
+    
+    // Add 1 bg theme (occasionally 2 for variety - every 4th pattern)
+    if (bgIndex < bgThemes.length) {
+      const theme = bgThemes[bgIndex];
+      if (theme) result.push(theme);
+      bgIndex++;
+      
+      // Every 4th pattern, add a second consecutive bg theme if available
+      if (patternCounter % 4 === 3 && bgIndex < bgThemes.length) {
+        const theme2 = bgThemes[bgIndex];
+        if (theme2) result.push(theme2);
+        bgIndex++;
+      }
+    }
+    
+    patternCounter++;
+  }
+  
+  return result;
+}
+
+// All themes array - interleaved for even distribution of bg image themes
+export const themes = interleaveThemes();
 
 // Helper functions
 export const getThemeById = (id: string) => {

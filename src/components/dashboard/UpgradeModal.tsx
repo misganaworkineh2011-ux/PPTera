@@ -87,7 +87,7 @@ export default function UpgradeModal({
   // Get dynamic price from Polar
   const product = products.find(p => p.key === requiredPlan);
   const yearlyPrice = product?.yearly?.priceAmount ? product.yearly.priceAmount / 100 : null;
-  const yearlyMonthly = yearlyPrice ? Math.round(yearlyPrice / 12) : null;
+  const yearlyMonthly = yearlyPrice ? Number((yearlyPrice / 12).toFixed(2)) : null;
 
   const handleUpgrade = () => {
     setIsNavigating(true);
