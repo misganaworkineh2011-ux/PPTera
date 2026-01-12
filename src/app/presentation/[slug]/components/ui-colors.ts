@@ -515,5 +515,5 @@ export function getUIColors(themeType: ThemeType) {
       navDot: "bg-black/20 hover:bg-black/30",
     },
   };
-  return colors[themeType];
+  return colors[themeType] || colors.dark;
 }
