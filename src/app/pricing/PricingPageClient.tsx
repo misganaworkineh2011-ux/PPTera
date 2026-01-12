@@ -63,8 +63,8 @@ function getPriceFromProducts(products: PolarProduct[], key: string): { monthly:
   
   if (monthlyPrice === null && yearlyPrice === null) return null;
   
-  // For yearly, calculate monthly equivalent (yearly price / 12)
-  const yearlyMonthly = yearlyPrice ? Math.round(yearlyPrice / 12) : monthlyPrice;
+  // For yearly, calculate monthly equivalent (yearly price / 12) - show decimals
+  const yearlyMonthly = yearlyPrice ? Number((yearlyPrice / 12).toFixed(2)) : monthlyPrice;
   
   return {
     monthly: monthlyPrice ?? yearlyMonthly ?? 0,

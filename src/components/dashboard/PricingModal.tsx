@@ -8,6 +8,7 @@ import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
+import { trackViewPricing, trackSelectPlan, trackBeginCheckout } from "~/components/GoogleAnalytics";
 
 type PolarProduct = {
   key: string;
@@ -81,6 +82,7 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
       const res = await fetch("/api/polar/products");
       if (!res.ok) throw new Error("Failed to load pricing");
       setProducts(await res.json());
+      trackViewPricing();
     } catch (err) {
       console.error(err);
       setError("Could not load pricing plans.");
@@ -110,8 +112,12 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
     const priceData = isAnnual ? product.yearly : product.monthly;
     if (!priceData) return;
 
+    const price = priceData.priceAmount / 100;
+    trackSelectPlan(productKey, price, isAnnual);
+
     setCheckoutLoadingId(productKey);
     try {
+      trackBeginCheckout(productKey, price, isAnnual);
       const res = await fetch("/api/polar/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -140,9 +146,9 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
       if (!res.ok) throw new Error(data.error || "Failed to start checkout");
       if (data.checkoutUrl) window.location.href = data.checkoutUrl;
       else throw new Error("No checkout URL");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      alert(err.message || "Failed to start checkout");
+      alert(err instanceof Error ? err.message : "Failed to start checkout");
       setTopupLoadingId(null);
     }
   };
@@ -155,7 +161,8 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
     const monthlyPrice = product.monthly?.priceAmount ? product.monthly.priceAmount / 100 : null;
     const yearlyPrice = product.yearly?.priceAmount ? product.yearly.priceAmount / 100 : null;
     if (monthlyPrice === null && yearlyPrice === null) return null;
-    const yearlyMonthly = yearlyPrice ? Math.round(yearlyPrice / 12) : monthlyPrice;
+    // Show decimal for yearly monthly price (don't round)
+    const yearlyMonthly = yearlyPrice ? Number((yearlyPrice / 12).toFixed(2)) : monthlyPrice;
     return {
       monthly: monthlyPrice ?? yearlyMonthly ?? 0,
       yearly: yearlyMonthly ?? monthlyPrice ?? 0,
@@ -164,110 +171,225 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
   };
 
   const plans = [
-    { key: "plus", name: "Plus", prices: getPriceFromProducts("plus"), description: t.unlimitedAICreations, features: [t.upTo20Slides || "Up to 20 slides per presentation", t.credits1000 || "1,000 AI credits/month", t.removeBranding || "Remove PPTMaster branding", t.advancedAIModels || "Advanced AI image models", t.basicAnimations || "Basic slide animations"], highlight: false, badge: null as string | null, badgeGradient: false },
-    { key: "pro", name: "Pro", prices: getPriceFromProducts("pro"), description: t.forPremiumAI, features: [t.upTo60Slides || "Up to 60 slides per presentation", t.credits4000 || "4,000 AI credits/month", t.premiumAIModels || "Premium AI image models", t.customBranding || "Custom branding & fonts", t.premiumAnimations || "Premium slide animations"], highlight: true, badge: t.mostPopular, badgeGradient: false },
-    { key: "ultra", name: "Ultra", prices: getPriceFromProducts("ultra"), description: t.for20xMoreAI, features: [t.upTo75Slides || "Up to 75 slides per presentation", t.credits20000 || "20,000 AI credits/month", t.mostAdvancedModels || "Most advanced AI models", t.allAnimations || "All slide animations & effects", t.earlyAccess || "Early access to new features"], highlight: false, badge: t.introductoryPrice, badgeGradient: true },
+    { 
+      key: "plus", 
+      name: "Plus", 
+      prices: getPriceFromProducts("plus"), 
+      description: t.unlimitedAICreations || "Unlimited AI creations", 
+      features: [
+        t.upTo20Slides || "Up to 20 slides per presentation", 
+        t.credits1000 || "1,000 AI credits/month", 
+        t.removeBranding || "Remove PPTMaster branding", 
+        t.advancedAIModels || "Advanced AI image models"
+      ], 
+      highlight: false, 
+      badge: null as string | null, 
+      badgeGradient: false 
+    },
+    { 
+      key: "pro", 
+      name: "Pro", 
+      prices: getPriceFromProducts("pro"), 
+      description: t.forPremiumAI || "For premium AI and customization", 
+      features: [
+        t.upTo60Slides || "Up to 60 slides per presentation", 
+        t.credits4000 || "4,000 AI credits/month", 
+        t.premiumAIModels || "Premium AI image models", 
+        t.customBranding || "Custom branding & fonts",
+        t.detailedAnalytics || "Detailed analytics"
+      ], 
+      highlight: true, 
+      badge: t.mostPopular || "MOST POPULAR", 
+      badgeGradient: false 
+    },
+    { 
+      key: "ultra", 
+      name: "Ultra", 
+      prices: getPriceFromProducts("ultra"), 
+      description: t.for20xMoreAI || "For 20× more AI usage", 
+      features: [
+        t.upTo75Slides || "Up to 75 slides per presentation", 
+        t.credits20000 || "20,000 AI credits/month", 
+        t.mostAdvancedModels || "Most advanced AI models", 
+        t.earlyAccess || "Early access to new features"
+      ], 
+      highlight: false, 
+      badge: t.introductoryPrice || "INTRODUCTORY PRICE", 
+      badgeGradient: true 
+    },
   ];
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       
-      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden mx-4">
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between z-10">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">{t.upgradeYourPlan}</h2>
+            <h2 className="text-xl font-bold text-slate-900">{t.upgradeYourPlan || "Upgrade Your Plan"}</h2>
             <p className="text-sm text-slate-500">
-              {currentPlan ? `${t.current}: ${currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)}` : t.choosePlanToUnlock}
+              {currentPlan ? `${t.current || "Current"}: ${currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)}` : t.choosePlanToUnlock || "Choose a plan to unlock more features"}
             </p>
           </div>
-          <button onClick={onClose} className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition">
+          <button onClick={onClose} className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition">
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Tabs */}
         <div className="px-6 pt-4 flex gap-2">
-          <button onClick={() => setActiveTab("plans")} className={cn("px-4 py-2 rounded-lg text-sm font-medium transition", activeTab === "plans" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-50")}>
-            {t.subscriptionPlans}
+          <button 
+            onClick={() => setActiveTab("plans")} 
+            className={cn(
+              "px-4 py-2 rounded-lg text-sm font-semibold transition",
+              activeTab === "plans" 
+                ? "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white" 
+                : "text-slate-600 hover:bg-slate-100 border border-slate-200"
+            )}
+          >
+            {t.subscriptionPlans || "Subscription Plans"}
           </button>
           {isPaidUser && (
-            <button onClick={() => setActiveTab("topup")} className={cn("px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2", activeTab === "topup" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-50")}>
+            <button 
+              onClick={() => setActiveTab("topup")} 
+              className={cn(
+                "px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2",
+                activeTab === "topup" 
+                  ? "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white" 
+                  : "text-slate-600 hover:bg-slate-100 border border-slate-200"
+              )}
+            >
               <Zap className="h-4 w-4" />
-              {t.buyCredits}
+              {t.buyCredits || "Buy Credits"}
             </button>
           )}
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+        <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)] min-h-[420px]">
           {activeTab === "plans" && (
             <>
               {/* Toggle */}
-              <div className="flex items-center justify-center gap-3 mb-6">
-                <span className={cn("text-sm", !isAnnual ? "text-slate-900 font-medium" : "text-slate-400")}>{t.monthly}</span>
-                <button onClick={() => setIsAnnual(!isAnnual)} className="relative h-6 w-11 rounded-full bg-slate-200 transition-colors" style={{ backgroundColor: isAnnual ? '#0ea5e9' : undefined }}>
-                  <div className={cn("absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform", isAnnual ? "translate-x-5" : "translate-x-0.5")} />
+              <div className="flex items-center justify-center gap-4 mb-6">
+                <span className={cn("text-sm font-semibold", !isAnnual ? "text-slate-900" : "text-slate-500")}>{t.monthly || "Monthly"}</span>
+                <button 
+                  onClick={() => setIsAnnual(!isAnnual)} 
+                  className="relative h-8 w-14 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] p-1 transition-all hover:shadow-lg"
+                >
+                  <div className={cn("h-6 w-6 rounded-full bg-white shadow-md transition-transform", isAnnual ? "translate-x-6" : "translate-x-0")} />
                 </button>
-                <span className={cn("text-sm", isAnnual ? "text-slate-900 font-medium" : "text-slate-400")}>
-                  {t.yearly} <span className="text-emerald-600 text-xs ml-1">-20%</span>
+                <span className={cn("text-sm font-semibold", isAnnual ? "text-slate-900" : "text-slate-500")}>
+                  {t.yearly || "Yearly"} <span className="text-green-600 font-bold ml-1">-20%</span>
                 </span>
               </div>
 
               {error && (
-                <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-red-50 text-red-600 text-sm">
+                <div className="flex items-center gap-2 mb-4 px-4 py-3 rounded-lg bg-red-50 text-red-600 text-sm">
                   <AlertCircle className="h-4 w-4" />
-                  <span>{t.couldNotLoadPricing}</span>
-                  <button onClick={loadProducts} className="ml-auto text-xs underline">{t.tryAgain}</button>
+                  <span>{t.couldNotLoadPricing || "Could not load pricing"}</span>
+                  <button onClick={loadProducts} className="ml-auto text-xs underline font-medium">{t.tryAgain || "Try again"}</button>
                 </div>
               )}
 
-              {/* Pricing Cards */}
-              <div className="grid md:grid-cols-3 gap-4">
+              {/* Pricing Cards - Matching pricing page style */}
+              <div className="grid md:grid-cols-3 gap-3">
                 {plans.map((plan) => {
                   const isCurrentPlan = currentPlan?.toLowerCase() === plan.key.toLowerCase();
                   const price = plan.prices ? (isAnnual ? plan.prices.yearly : plan.prices.monthly) : null;
                   const yearlyTotal = plan.prices?.yearlyTotal;
                   
                   return (
-                    <div key={plan.key} className={cn("relative rounded-xl p-5 flex flex-col transition-all", plan.highlight ? "bg-slate-900 text-white ring-2 ring-slate-900" : "bg-white border border-slate-200 hover:border-slate-300", isCurrentPlan && !plan.highlight && "ring-2 ring-emerald-500")}>
+                    <div 
+                      key={plan.key} 
+                      className={cn(
+                        "relative rounded-lg flex flex-col transition-all mt-4",
+                        plan.highlight 
+                          ? "border-2 border-[#06b6d4] bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-lg" 
+                          : "border border-slate-200 bg-white hover:border-[#06b6d4]",
+                        isCurrentPlan && !plan.highlight && "ring-2 ring-green-500"
+                      )}
+                    >
+                      {/* Badge */}
                       {plan.badge && (
-                        <div className={cn("absolute -top-2.5 left-1/2 -translate-x-1/2 text-[10px] font-semibold px-2.5 py-0.5 rounded-full", plan.badgeGradient ? "bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white" : "bg-amber-400 text-amber-900")}>
-                          {plan.badge}
+                        <div className={cn(
+                          "absolute -top-2.5 left-1/2 -translate-x-1/2 text-[10px] font-bold px-2 py-0.5 rounded shadow-lg whitespace-nowrap",
+                          plan.badgeGradient 
+                            ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white" 
+                            : "bg-gradient-to-r from-amber-400 to-orange-500 text-white"
+                        )}>
+                          {plan.badge.toUpperCase()}
                         </div>
                       )}
-                      {isCurrentPlan && <div className="absolute -top-2.5 right-3 bg-emerald-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">{t.current}</div>}
+                      {isCurrentPlan && (
+                        <div className="absolute -top-2.5 right-3 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">
+                          {t.current || "CURRENT"}
+                        </div>
+                      )}
 
-                      <h3 className={cn("text-base font-semibold mb-1", plan.highlight ? "text-white" : "text-slate-900")}>{plan.name}</h3>
-                      <p className={cn("text-xs mb-3", plan.highlight ? "text-slate-400" : "text-slate-500")}>{plan.description}</p>
+                      <div className="p-4 flex flex-col h-full">
+                        {/* Plan name */}
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <span className={cn("text-sm", plan.highlight ? "text-white" : "text-[#06b6d4]")}>✦</span>
+                          <h3 className="text-lg font-bold">{plan.name}</h3>
+                        </div>
+                        <p className={cn("text-xs mb-3", plan.highlight ? "text-white/70" : "text-slate-500")}>{plan.description}</p>
 
-                      <div className="mb-4">
-                        {loading || price === null ? (
-                          <div className={cn("h-7 w-16 animate-pulse rounded", plan.highlight ? "bg-white/20" : "bg-slate-100")} />
-                        ) : (
-                          <>
-                            <div className="flex items-baseline gap-1">
-                              <span className={cn("text-2xl font-bold", plan.highlight ? "text-white" : "text-slate-900")}>${price}</span>
-                              <span className={cn("text-xs", plan.highlight ? "text-slate-400" : "text-slate-500")}>/{t.monthly?.toLowerCase()}</span>
-                            </div>
-                            {isAnnual && yearlyTotal && <p className={cn("text-[11px]", plan.highlight ? "text-slate-500" : "text-slate-400")}>${yearlyTotal} {t.billedAnnually}</p>}
-                          </>
-                        )}
+                        {/* Price */}
+                        <div className="mb-3">
+                          {loading || price === null ? (
+                            <div className={cn("h-6 w-12 animate-pulse rounded", plan.highlight ? "bg-white/20" : "bg-slate-200")} />
+                          ) : (
+                            <>
+                              <div className="flex items-baseline gap-1">
+                                <span className="text-2xl font-bold">${price}</span>
+                                <span className={cn("text-xs", plan.highlight ? "text-white/60" : "text-slate-500")}>/ {(t.monthly || "month").toLowerCase()}</span>
+                              </div>
+                              {isAnnual && yearlyTotal && (
+                                <p className={cn("text-xs", plan.highlight ? "text-white/50" : "text-slate-400")}>
+                                  ${yearlyTotal} {t.billedAnnually || "billed annually"}
+                                </p>
+                              )}
+                            </>
+                          )}
+                        </div>
+
+                        {/* Button */}
+                        <div className="mt-auto mb-4">
+                          <button 
+                            onClick={() => handleSubscribe(plan.key)} 
+                            disabled={!!checkoutLoadingId || isCurrentPlan} 
+                            className={cn(
+                              "w-full rounded-md py-2 px-3 font-medium text-sm transition disabled:opacity-50",
+                              plan.highlight 
+                                ? "bg-white text-[#1e3a8a] hover:bg-slate-100" 
+                                : "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90",
+                              isCurrentPlan && "!bg-green-500 !text-white cursor-default"
+                            )}
+                          >
+                            {checkoutLoadingId === plan.key ? (
+                              <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+                            ) : isCurrentPlan ? (
+                              t.currentPlan || "Current Plan"
+                            ) : (
+                              t.getStarted || "Get Started"
+                            )}
+                          </button>
+                        </div>
+
+                        {/* Features */}
+                        <p className={cn("text-xs mb-2 font-medium", plan.highlight ? "text-white/70" : "text-slate-500")}>
+                          {t.includes || "Includes:"}
+                        </p>
+                        <ul className="space-y-1.5 text-xs flex-grow">
+                          {plan.features.map((feature, j) => (
+                            <li key={j} className="flex items-start gap-1.5">
+                              <span className={cn("text-xs", plan.highlight ? "text-white" : "text-[#06b6d4]")}>✓</span>
+                              <span className={plan.highlight ? "text-white/90" : "text-slate-600"}>{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
-
-                      <button onClick={() => handleSubscribe(plan.key)} disabled={!!checkoutLoadingId || isCurrentPlan} className={cn("w-full py-2 rounded-lg text-sm font-medium transition mb-4", plan.highlight ? "bg-white text-slate-900 hover:bg-slate-100" : "bg-slate-900 text-white hover:bg-slate-800", isCurrentPlan && "!bg-emerald-500 !text-white cursor-default", "disabled:opacity-60")}>
-                        {checkoutLoadingId === plan.key ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : isCurrentPlan ? t.currentPlan : t.getStarted}
-                      </button>
-
-                      <ul className="space-y-2 text-xs flex-grow">
-                        {plan.features.map((feature, j) => (
-                          <li key={j} className="flex items-start gap-2">
-                            <span className={plan.highlight ? "text-emerald-400" : "text-emerald-500"}>✓</span>
-                            <span className={plan.highlight ? "text-slate-300" : "text-slate-600"}>{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
                     </div>
                   );
                 })}
@@ -276,42 +398,90 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
           )}
 
           {activeTab === "topup" && (
-            <>
-              <div className="text-center mb-6">
-                <h3 className="text-lg font-semibold text-slate-900 mb-1">{t.buyMoreCredits}</h3>
-                <p className="text-sm text-slate-500">{t.oneTimePurchase}</p>
+            <div className="flex flex-col">
+              <div className="text-center mb-8">
+                <h3 className="text-xl font-bold text-slate-900 mb-2">{t.buyMoreCredits || "Need More Credits?"}</h3>
+                <p className="text-sm text-slate-500">{t.oneTimePurchase || "One-time purchase, use anytime"}</p>
               </div>
 
-              {/* Sleek Credit Cards */}
-              <div className="grid md:grid-cols-3 gap-4 max-w-2xl mx-auto">
-                {topupLoading ? (
-                  [0, 1, 2].map((i) => (
-                    <div key={i} className="rounded-xl border border-slate-200 p-5">
-                      <div className="h-6 w-20 bg-slate-100 animate-pulse rounded mb-2 mx-auto" />
-                      <div className="h-8 w-16 bg-slate-100 animate-pulse rounded mb-4 mx-auto" />
-                      <div className="h-9 w-full bg-slate-100 animate-pulse rounded-lg" />
-                    </div>
-                  ))
-                ) : (
-                  topupOptions.map((option, i) => {
-                    const isPopular = i === 1;
-                    return (
-                      <div key={i} className={cn("relative rounded-xl p-5 text-center transition-all", isPopular ? "bg-slate-900 text-white ring-2 ring-slate-900" : "border border-slate-200 hover:border-slate-300")}>
-                        {isPopular && <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-amber-400 text-amber-900 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">{t.bestValue}</div>}
-                        
-                        <div className={cn("text-2xl font-bold mb-0.5", isPopular ? "text-white" : "text-slate-900")}>{option.credits.toLocaleString()}</div>
-                        <div className={cn("text-xs mb-3", isPopular ? "text-slate-400" : "text-slate-500")}>{t.credits}</div>
-                        <div className={cn("text-xl font-semibold mb-4", isPopular ? "text-white" : "text-slate-900")}>${option.priceDisplay}</div>
-                        
-                        <button onClick={() => handleTopup(option.credits, i)} disabled={topupLoadingId !== null || !option.available} className={cn("w-full py-2 rounded-lg text-sm font-medium transition", isPopular ? "bg-white text-slate-900 hover:bg-slate-100" : "bg-slate-900 text-white hover:bg-slate-800", "disabled:opacity-60")}>
-                          {topupLoadingId === i ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : t.purchase}
-                        </button>
+              {/* Credit Cards */}
+              <div className="grid md:grid-cols-3 gap-5 mt-4">
+                {[
+                  { credits: 500, index: 0 },
+                  { credits: 1000, index: 1 },
+                  { credits: 2500, index: 2 },
+                ].map(({ credits, index }) => {
+                  const isPopular = index === 1;
+                  const option = topupOptions.find(o => o.credits === credits);
+                  
+                  return (
+                    <div 
+                      key={index} 
+                      className={cn(
+                        "relative rounded-lg p-6 text-center transition-all flex flex-col",
+                        isPopular
+                          ? "border-2 border-[#06b6d4] bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-lg mt-0"
+                          : "border border-slate-200 bg-white hover:border-[#06b6d4] hover:shadow-md mt-3"
+                      )}
+                    >
+                      {isPopular && (
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg">
+                          {t.bestValue || "BEST VALUE"}
+                        </div>
+                      )}
+
+                      {/* Icon */}
+                      <div className={cn(
+                        "w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-4",
+                        isPopular ? "bg-white/20" : "bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4]"
+                      )}>
+                        <Zap className={cn("w-5 h-5", isPopular ? "text-cyan-300" : "text-white")} />
                       </div>
-                    );
-                  })
-                )}
+
+                      {/* Credits */}
+                      <div className={cn("text-3xl font-bold", isPopular ? "text-white" : "text-slate-900")}>
+                        {credits.toLocaleString()}
+                      </div>
+                      <div className={cn("text-sm mb-4", isPopular ? "text-white/70" : "text-slate-500")}>
+                        {t.credits || "credits"}
+                      </div>
+
+                      {/* Price - only this part shows skeleton */}
+                      <div className={cn("text-2xl font-bold mb-5", isPopular ? "text-white" : "text-[#1e3a8a]")}>
+                        {topupLoading || !option ? (
+                          <span className={cn("inline-block h-7 w-16 animate-pulse rounded", isPopular ? "bg-white/30" : "bg-slate-200")} />
+                        ) : (
+                          `$${option.priceDisplay}`
+                        )}
+                      </div>
+                      
+                      {/* Button */}
+                      <button 
+                        onClick={() => option && handleTopup(option.credits, index)} 
+                        disabled={topupLoadingId !== null || topupLoading || !option?.available} 
+                        className={cn(
+                          "w-full py-2.5 rounded-md text-sm font-semibold transition disabled:opacity-50 mt-auto",
+                          isPopular
+                            ? "bg-white text-[#1e3a8a] hover:bg-slate-100"
+                            : "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90"
+                        )}
+                      >
+                        {topupLoadingId === index ? (
+                          <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+                        ) : (
+                          t.purchase || "Purchase"
+                        )}
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
-            </>
+
+              {/* Info text */}
+              <p className="text-center text-xs text-slate-400 mt-8">
+                Credits never expire and can be used for AI generations
+              </p>
+            </div>
           )}
         </div>
       </div>

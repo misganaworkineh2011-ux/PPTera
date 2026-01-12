@@ -47,7 +47,7 @@ export default function ChartCreator({ initialChart, onSave, onCancel, theme }: 
   const applyTemplate = (id: string) => { const t = CHART_TEMPLATES.find(x => x.id === id); if (t) setChart({ type: t.type, title: t.name, data: [...t.sampleData], config: { ...t.defaultConfig } }); };
 
   return (
-    <div className="bg-white dark:bg-neutral-900 rounded-xl">
+    <div className="dark:bg-neutral-900 rounded-xl">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-base font-bold text-slate-800 dark:text-white">{initialChart ? "Edit Chart" : "Create Chart"}</h2>
