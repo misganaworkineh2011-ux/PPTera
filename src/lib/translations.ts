@@ -798,6 +798,14 @@ export const translations = {
     animationDone: "Done",
     animationPremiumBadge: "PREMIUM",
     animationEffectsBadge: "FX",
+    
+    // Prompt Section
+    aiPowered: "AI-Powered",
+    promptSectionTitle: "Create Your Presentation Now",
+    promptSectionSubtitle: "Describe your idea and let AI do the rest",
+    generatorPlaceholder: "Describe your presentation idea...",
+    generate: "Generate",
+    generatorHint: "Try: \"Create a pitch deck for my AI startup\" or \"Design a quarterly report presentation\"",
   },
 
 "es": {
@@ -1591,6 +1599,14 @@ export const translations = {
     animationDone: "Listo",
     animationPremiumBadge: "PREMIUM",
     animationEffectsBadge: "FX",
+    
+    // Prompt Section
+    aiPowered: "Impulsado por IA",
+    promptSectionTitle: "Crea Tu Presentación Ahora",
+    promptSectionSubtitle: "Describe tu idea y deja que la IA haga el resto",
+    generatorPlaceholder: "Describe tu idea de presentación...",
+    generate: "Generar",
+    generatorHint: "Prueba: \"Crea un pitch deck para mi startup de IA\" o \"Diseña una presentación de informe trimestral\"",
 },
   
   // French - Complete professional translation
@@ -2385,6 +2401,14 @@ export const translations = {
     animationDone: "Terminé",
     animationPremiumBadge: "PREMIUM",
     animationEffectsBadge: "FX",
+    
+    // Prompt Section
+    aiPowered: "Propulsé par l'IA",
+    promptSectionTitle: "Créez Votre Présentation Maintenant",
+    promptSectionSubtitle: "Décrivez votre idée et laissez l'IA faire le reste",
+    generatorPlaceholder: "Décrivez votre idée de présentation...",
+    generate: "Générer",
+    generatorHint: "Essayez: \"Créer un pitch deck pour ma startup IA\" ou \"Concevoir une présentation de rapport trimestriel\"",
   },
 
 "de": {
@@ -3178,6 +3202,14 @@ export const translations = {
     animationDone: "Fertig",
     animationPremiumBadge: "PREMIUM",
     animationEffectsBadge: "FX",
+    
+    // Prompt Section
+    aiPowered: "KI-gestützt",
+    promptSectionTitle: "Erstellen Sie Jetzt Ihre Präsentation",
+    promptSectionSubtitle: "Beschreiben Sie Ihre Idee und lassen Sie die KI den Rest erledigen",
+    generatorPlaceholder: "Beschreiben Sie Ihre Präsentationsidee...",
+    generate: "Generieren",
+    generatorHint: "Versuchen Sie: \"Erstelle ein Pitch Deck für mein KI-Startup\" oder \"Gestalte eine Quartalsbericht-Präsentation\"",
   },
 
 "zh": {
@@ -3971,6 +4003,14 @@ export const translations = {
     animationDone: "完成",
     animationPremiumBadge: "高级",
     animationEffectsBadge: "特效",
+    
+    // Prompt Section
+    aiPowered: "AI驱动",
+    promptSectionTitle: "立即创建您的演示文稿",
+    promptSectionSubtitle: "描述您的想法，让AI完成其余工作",
+    generatorPlaceholder: "描述您的演示文稿想法...",
+    generate: "生成",
+    generatorHint: "试试: \"为我的AI创业公司创建一个路演演示\" 或 \"设计一个季度报告演示\"",
 },
   // Portuguese - uses English as base with key overrides
 "pt": {
@@ -4764,6 +4804,14 @@ export const translations = {
     animationDone: "Concluído",
     animationPremiumBadge: "PREMIUM",
     animationEffectsBadge: "FX",
+    
+    // Prompt Section
+    aiPowered: "Impulsionado por IA",
+    promptSectionTitle: "Crie Sua Apresentação Agora",
+    promptSectionSubtitle: "Descreva sua ideia e deixe a IA fazer o resto",
+    generatorPlaceholder: "Descreva sua ideia de apresentação...",
+    generate: "Gerar",
+    generatorHint: "Tente: \"Criar um pitch deck para minha startup de IA\" ou \"Projetar uma apresentação de relatório trimestral\"",
   },
   // Italian
 "it": {
@@ -5557,6 +5605,14 @@ export const translations = {
     animationDone: "Fatto",
     animationPremiumBadge: "PREMIUM",
     animationEffectsBadge: "FX",
+    
+    // Prompt Section
+    aiPowered: "Alimentato dall'IA",
+    promptSectionTitle: "Crea la Tua Presentazione Ora",
+    promptSectionSubtitle: "Descrivi la tua idea e lascia che l'IA faccia il resto",
+    generatorPlaceholder: "Descrivi la tua idea di presentazione...",
+    generate: "Genera",
+    generatorHint: "Prova: \"Crea un pitch deck per la mia startup AI\" o \"Progetta una presentazione di report trimestrale\"",
   },
 
   // Japanese
@@ -6351,6 +6407,14 @@ export const translations = {
     animationDone: "完了",
     animationPremiumBadge: "プレミアム",
     animationEffectsBadge: "FX",
+    
+    // Prompt Section
+    aiPowered: "AI搭載",
+    promptSectionTitle: "今すぐプレゼンテーションを作成",
+    promptSectionSubtitle: "アイデアを説明して、AIに残りを任せましょう",
+    generatorPlaceholder: "プレゼンテーションのアイデアを説明してください...",
+    generate: "生成",
+    generatorHint: "試してみてください: 「AIスタートアップのピッチデッキを作成」または「四半期レポートのプレゼンテーションをデザイン」",
   },
 
   // Korean
@@ -7145,6 +7209,14 @@ export const translations = {
     animationDone: "완료",
     animationPremiumBadge: "프리미엄",
     animationEffectsBadge: "FX",
+    
+    // Prompt Section
+    aiPowered: "AI 기반",
+    promptSectionTitle: "지금 프레젠테이션 만들기",
+    promptSectionSubtitle: "아이디어를 설명하고 AI가 나머지를 처리하게 하세요",
+    generatorPlaceholder: "프레젠테이션 아이디어를 설명하세요...",
+    generate: "생성",
+    generatorHint: "시도해 보세요: \"AI 스타트업을 위한 피치 덱 만들기\" 또는 \"분기별 보고서 프레젠테이션 디자인\"",
   },
 
   // Arabic
@@ -7941,6 +8013,14 @@ export const translations = {
     animationDone: "تم",
     animationPremiumBadge: "مميز",
     animationEffectsBadge: "مؤثرات",
+    
+    // Prompt Section
+    aiPowered: "مدعوم بالذكاء الاصطناعي",
+    promptSectionTitle: "أنشئ عرضك التقديمي الآن",
+    promptSectionSubtitle: "صف فكرتك ودع الذكاء الاصطناعي يقوم بالباقي",
+    generatorPlaceholder: "صف فكرة عرضك التقديمي...",
+    generate: "إنشاء",
+    generatorHint: "جرب: \"أنشئ عرض تقديمي لشركتي الناشئة في الذكاء الاصطناعي\" أو \"صمم عرض تقرير ربع سنوي\"",
 },
 
   // Hindi
@@ -8736,6 +8816,14 @@ export const translations = {
     animationDone: "हो गया",
     animationPremiumBadge: "प्रीमियम",
     animationEffectsBadge: "FX",
+    
+    // Prompt Section
+    aiPowered: "AI संचालित",
+    promptSectionTitle: "अभी अपनी प्रेजेंटेशन बनाएं",
+    promptSectionSubtitle: "अपने विचार का वर्णन करें और AI को बाकी काम करने दें",
+    generatorPlaceholder: "अपनी प्रेजेंटेशन का विचार बताएं...",
+    generate: "बनाएं",
+    generatorHint: "कोशिश करें: \"मेरी AI स्टार्टअप के लिए पिच डेक बनाएं\" या \"तिमाही रिपोर्ट प्रेजेंटेशन डिज़ाइन करें\"",
 },
 
   // Russian
@@ -9532,6 +9620,14 @@ export const translations = {
     animationDone: "Готово",
     animationPremiumBadge: "ПРЕМИУМ",
     animationEffectsBadge: "FX",
+    
+    // Prompt Section
+    aiPowered: "На базе ИИ",
+    promptSectionTitle: "Создайте презентацию прямо сейчас",
+    promptSectionSubtitle: "Опишите свою идею, и ИИ сделает остальное",
+    generatorPlaceholder: "Опишите идею вашей презентации...",
+    generate: "Создать",
+    generatorHint: "Попробуйте: \"Создать питч-дек для моего ИИ-стартапа\" или \"Разработать презентацию квартального отчета\"",
 },
 } as const;
 
