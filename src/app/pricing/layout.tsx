@@ -3,7 +3,7 @@ import { Breadcrumbs } from "~/components/Breadcrumbs";
 
 export const metadata: Metadata = {
   title: "Pricing",
-  description: "Choose the perfect PPTMaster (PPT Master) plan for your needs. Free tier available. Flexible plans for unlimited AI PowerPoint generation with the best PowerPoint generator.",
+  description: "Choose the perfect plan for your needs. Free tier available. Flexible plans for unlimited AI PowerPoint generation with the best PowerPoint generator.",
   keywords: ["pricing", "plans", "subscription", "free presentation maker", "PPT pricing", "affordable AI", "presentation plans", "PPTMaster", "PPT Master", "PowerPoint pricing", "AI PowerPoint plans", "best PowerPoint generator"],
   alternates: {
     canonical: "/pricing",
