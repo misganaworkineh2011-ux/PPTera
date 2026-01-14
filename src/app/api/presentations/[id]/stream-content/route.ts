@@ -63,7 +63,8 @@ function sendEvent(
     return true;
   } catch (error) {
     // Controller is closed (client disconnected), mark as closed and return false
-    console.log(`[stream-content] sendEvent(${event}): ERROR - client disconnected`, error);
+    // This is normal when user navigates away - not an actual error
+    console.log(`[stream-content] sendEvent(${event}): client disconnected (normal)`);
     isClosed.value = true;
     return false;
   }

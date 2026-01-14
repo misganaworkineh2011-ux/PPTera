@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ArrowLeft, Loader2, GripVertical, Trash2, Edit3, Check, X, Upload, Lock, ChevronDown, Sparkles } from "lucide-react";
+import { ArrowLeft, Loader2, GripVertical, Trash2, Edit3, Check, X, Upload, Lock, ChevronDown, Sparkles, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { useOutlineStream, type Slide, type OutlineMetadata } from "~/lib/dashboard/hooks/useOutlineStream";
 import { themes, getThemeById, type Theme } from "~/lib/themes";
@@ -275,8 +275,8 @@ export default function CreatePresentationClient({
     setIsMounted(true);
   }, []);
 
-  // View state: 'form' | 'streaming' | 'completed'
-  const [view, setView] = useState<"form" | "streaming" | "completed">(
+  // View state: 'form' | 'streaming' | 'completed' | 'navigating'
+  const [view, setView] = useState<"form" | "streaming" | "completed" | "navigating">(
     existingOutline ? "completed" : "form"
   );
 
@@ -552,8 +552,9 @@ export default function CreatePresentationClient({
   };
 
   const handleStartOver = () => {
+    // Show loading screen immediately to avoid flash of empty content
+    setView("navigating");
     reset();
-    setView("form");
     setSlides([]);
     setOutlineId(null);
     router.push(`/createpresentation?mode=${mode}`);
@@ -739,7 +740,16 @@ export default function CreatePresentationClient({
       {/* Fixed Header with Back Button */}
       <div className="fixed top-0 left-0 right-0 z-20 px-6 pt-6 pb-4">
         <button
-          onClick={() => (showOutline ? handleStartOver() : router.back())}
+          onClick={() => {
+            if (showOutline) {
+              // On outline page: "Start Over" goes back to form
+              handleStartOver();
+            } else {
+              // On form page: "Back" goes to dashboard (not browser history)
+              setView("navigating");
+              router.push("/dashboard");
+            }
+          }}
           className="flex items-center gap-2 rounded-full bg-white/90 backdrop-blur-sm px-4 py-2 text-sm font-medium text-slate-700 shadow-md transition-all hover:bg-white hover:text-[#1e3a8a] hover:shadow-lg"
         >
           <ArrowLeft size={16} /> {showOutline ? t.startOver : t.backBtn}
@@ -748,8 +758,18 @@ export default function CreatePresentationClient({
 
       {/* Scrollable Content Area */}
       <div className="relative z-10 h-screen overflow-y-auto pt-20">
+        {/* Navigating Loading Screen */}
+        {view === "navigating" && (
+          <div className="flex items-center justify-center h-[calc(100vh-5rem)]">
+            <div className="flex flex-col items-center gap-4">
+              <Loader2 className="w-8 h-8 animate-spin text-[#06b6d4]" />
+              <p className="text-slate-600 text-sm">Loading...</p>
+            </div>
+          </div>
+        )}
+
         {/* Error Message - Minimal, at the top */}
-        {hasError && streamState.error && (
+        {view !== "navigating" && hasError && streamState.error && (
           <div className="px-4 sm:px-6 lg:px-8 mb-4">
             <div className="max-w-4xl mx-auto">
               <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
@@ -769,6 +789,7 @@ export default function CreatePresentationClient({
         )}
 
         {/* Form Section - Compact when streaming/completed */}
+        {view !== "navigating" && (
         <div className={`px-4 sm:px-6 lg:px-8 ${showOutline ? "pb-4" : "pb-12"}`}>
           <div className={`mx-auto ${showOutline ? "max-w-4xl" : "max-w-3xl"}`}>
             {!showOutline && (
@@ -824,62 +845,101 @@ export default function CreatePresentationClient({
                   {/* Docs Mode - File upload and paste area */}
                   {mode === "docs" && !showOutline && (
                     <div className="space-y-4">
-                      <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center hover:border-[#06b6d4] transition-colors bg-slate-50/50">
-                        <Upload className="mx-auto h-10 w-10 text-slate-400 mb-2" />
-                        <input
-                          type="file"
-                          id="file-upload"
-                          accept=".pdf,.doc,.docx,.txt,.ppt,.pptx"
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              setUploadedFile(file);
+                      {/* File Upload Area */}
+                      {!uploadedFile ? (
+                        <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center hover:border-[#06b6d4] transition-colors bg-slate-50/50">
+                          <Upload className="mx-auto h-10 w-10 text-slate-400 mb-2" />
+                          <input
+                            type="file"
+                            id="file-upload"
+                            accept=".pdf,.doc,.docx,.txt,.ppt,.pptx"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                setUploadedFile(file);
 
-                              const formData = new FormData();
-                              formData.append("file", file);
+                                const formData = new FormData();
+                                formData.append("file", file);
 
-                              const loadingToast = toast.loading(t.parsingDocument);
+                                const loadingToast = toast.loading(t.parsingDocument);
 
-                              try {
-                                const response = await fetch("/api/parse-document", {
-                                  method: "POST",
-                                  body: formData,
-                                });
+                                try {
+                                  const response = await fetch("/api/parse-document", {
+                                    method: "POST",
+                                    body: formData,
+                                  });
 
-                                if (!response.ok) {
-                                  const text = await response.text();
-                                  console.error(`Upload failed: ${response.status} ${response.statusText}`, text);
+                                  if (!response.ok) {
+                                    const text = await response.text();
+                                    console.error(`Upload failed: ${response.status} ${response.statusText}`, text);
 
-                                  try {
-                                    const errorData = JSON.parse(text);
-                                    throw new Error(errorData.error || `Upload failed: ${response.status}`);
-                                  } catch (e) {
-                                    throw new Error(`Server error (${response.status}): Check console for details.`);
+                                    try {
+                                      const errorData = JSON.parse(text);
+                                      throw new Error(errorData.error || `Upload failed: ${response.status}`);
+                                    } catch (e) {
+                                      throw new Error(`Server error (${response.status}): Check console for details.`);
+                                    }
                                   }
-                                }
 
-                                const data = await response.json();
-                                handleChange("description", data.text);
-                                setPastedContent(data.text);
-                                toast.success(t.documentParsedSuccess, { id: loadingToast });
-                              } catch (error) {
-                                console.error("Parsing error:", error);
-                                toast.error(error instanceof Error ? error.message : "Failed to parse document", { id: loadingToast });
+                                  const data = await response.json();
+                                  handleChange("description", data.text);
+                                  setPastedContent(data.text);
+                                  toast.success(t.documentParsedSuccess, { id: loadingToast });
+                                } catch (error) {
+                                  console.error("Parsing error:", error);
+                                  toast.error(error instanceof Error ? error.message : "Failed to parse document", { id: loadingToast });
+                                  setUploadedFile(null);
+                                }
                               }
-                            }
-                          }}
-                          className="hidden"
-                        />
-                        <label
-                          htmlFor="file-upload"
-                          className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-[#06b6d4] transition-all"
-                        >
-                          {t.chooseFile}
-                        </label>
-                        <p className="mt-2 text-xs text-slate-500">
-                          {uploadedFile ? uploadedFile.name : t.pdfWordPptText}
-                        </p>
-                      </div>
+                            }}
+                            className="hidden"
+                          />
+                          <label
+                            htmlFor="file-upload"
+                            className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-[#06b6d4] transition-all"
+                          >
+                            {t.chooseFile}
+                          </label>
+                          <p className="mt-2 text-xs text-slate-500">
+                            {t.pdfWordPptText}
+                          </p>
+                        </div>
+                      ) : (
+                        /* Uploaded File Display */
+                        <div className="border-2 border-[#06b6d4] rounded-xl p-4 bg-gradient-to-br from-[#06b6d4]/5 to-[#1e3a8a]/5">
+                          <div className="flex items-center gap-4">
+                            {/* File Icon */}
+                            <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center shadow-lg">
+                              <FileText className="w-7 h-7 text-white" />
+                            </div>
+                            {/* File Info */}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-[#1e3a8a] truncate">
+                                {uploadedFile.name}
+                              </p>
+                              <p className="text-xs text-slate-500 mt-0.5">
+                                {(uploadedFile.size / 1024).toFixed(1)} KB • {uploadedFile.name.split('.').pop()?.toUpperCase() || 'Document'}
+                              </p>
+                              <div className="flex items-center gap-1.5 mt-1">
+                                <Check className="w-3.5 h-3.5 text-emerald-500" />
+                                <span className="text-xs font-medium text-emerald-600">Document uploaded successfully</span>
+                              </div>
+                            </div>
+                            {/* Remove Button */}
+                            <button
+                              onClick={() => {
+                                setUploadedFile(null);
+                                setPastedContent("");
+                                handleChange("description", "");
+                              }}
+                              className="flex-shrink-0 p-2 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                              title="Remove file"
+                            >
+                              <X className="w-5 h-5" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
                       <div className="flex items-center gap-3">
                         <div className="flex-1 h-px bg-slate-200"></div>
                         <span className="text-xs text-slate-400 font-medium">{t.orDivider}</span>
@@ -1211,9 +1271,8 @@ export default function CreatePresentationClient({
                   {isStreaming ? (
                     mode === "scratch" ? t.creatingDots : isSamePrompt ? t.regeneratingDots : t.generatingDots
                   ) : (
-                    mode === "ai" ? (isSamePrompt ? t.regenerateOutlineBtn : t.generateOutlineBtn) :
-                      mode === "docs" ? t.transformToPresentation :
-                        mode === "scratch" ? t.createPresentation : t.createPresentation
+                    mode === "scratch" ? t.createPresentation :
+                      isSamePrompt ? t.regenerateOutlineBtn : t.generateOutlineBtn
                   )}
                 </button>
               </div>
@@ -1225,9 +1284,10 @@ export default function CreatePresentationClient({
             )}
           </div>
         </div>
+        )}
 
         {/* Outline Section */}
-        {
+        {view !== "navigating" &&
           showOutline && (
             <div className={`flex-1 px-4 sm:px-6 lg:px-8 ${isCompleted ? "pb-[140px]" : "pb-12"}`}>
               <div className="mx-auto max-w-4xl">
