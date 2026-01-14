@@ -1548,11 +1548,14 @@ export default function PresentationViewer({
     }
 
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
-        <div className="text-center text-white">
-          <Sparkles size={48} className="mx-auto mb-4 opacity-50" />
-          <p className="text-xl">No slides found in this presentation.</p>
-          <button onClick={() => router.push("/dashboard")} className="mt-4 px-6 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="text-center">
+          <Sparkles size={48} className="mx-auto mb-4 text-[#06b6d4] opacity-70" />
+          <p className="text-xl text-[#1e3a8a] font-medium">No slides found in this presentation.</p>
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="mt-6 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold shadow-lg shadow-cyan-500/25 transition-all hover:opacity-90 hover:shadow-xl hover:scale-105 active:scale-95"
+          >
             Back to Dashboard
           </button>
         </div>

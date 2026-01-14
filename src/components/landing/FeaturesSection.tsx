@@ -19,63 +19,63 @@ function getLocalizedPath(path: string, lang: Language): string {
 }
 
 // Cloudinary demo video URL - replace with your own when ready
-const FEATURE_DEMO_VIDEO = "https://res.cloudinary.com/di76ibrro/video/upload/v1767877229/2026-01-0804-48-10online-video-cutter.com1-ezgif_iclikm.mp4";
+const FEATURE_DEMO_VIDEO = "https://res.cloudinary.com/di76ibrro/video/upload/v1768416896/2026-01-14_09-50-35_online-video-cutter.com_3_iqp480.mp4";
 
-// Presentation images for the inspiration cards - optimized with auto format and quality
+// Presentation images for the inspiration cards - high quality with larger dimensions
 const INSPIRATION_IMAGES = [
-  "https://res.cloudinary.com/di76ibrro/image/upload/f_auto,q_auto,w_800/v1766152567/Architectural_pptmaster_a18ccs.png",
-  "https://res.cloudinary.com/di76ibrro/image/upload/f_auto,q_auto,w_800/v1766152472/corporate_pptmaster_gcvo7p.png",
-  "https://res.cloudinary.com/di76ibrro/image/upload/f_auto,q_auto,w_800/v1766152111/alien_pptmaster_ldo5wm.png",
+  "https://res.cloudinary.com/di76ibrro/image/upload/f_auto,q_100,w_1200/v1766152567/Architectural_pptmaster_a18ccs.png",
+  "https://res.cloudinary.com/di76ibrro/image/upload/f_auto,q_100,w_1200/v1766152472/corporate_pptmaster_gcvo7p.png",
+  "https://res.cloudinary.com/di76ibrro/image/upload/f_auto,q_100,w_1200/v1766152111/alien_pptmaster_ldo5wm.png",
 ];
 
-// Best 5 themes for preview
+// Theme previews based on actual themes in the project
 const THEME_PREVIEWS = [
   {
     id: "corporate-clean",
     name: "Corporate Clean",
-    bg: "#ffffff",
-    titleBg: "linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%)",
-    textColor: "#374151",
-    headingColor: "#111827",
-    accentColor: "#2563eb",
-    borderColor: "#e5e7eb",
+    bg: "#fafafa",
+    titleBg: "linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)",
+    textColor: "#1a1a2e",
+    headingColor: "#0d0d1a",
+    accentColor: "#4f46e5",
+    borderColor: "#e5e5ea",
   },
   {
-    id: "elegant-noir",
-    name: "Elegant Noir",
-    bg: "#0a0a0b",
-    titleBg: "linear-gradient(135deg, #1a1a1d 0%, #27272a 100%)",
-    textColor: "#e4e4e7",
-    headingColor: "#fafafa",
-    accentColor: "#f59e0b",
-    borderColor: "#27272a",
-  },
-  {
-    id: "cyber-neon",
-    name: "Cyber Neon",
-    bg: "#0a0a0f",
-    titleBg: "linear-gradient(135deg, #0f0f18 0%, #1a1a2e 100%)",
-    textColor: "#e0f0ff",
+    id: "nebula",
+    name: "Nebula",
+    bg: "#0a0a1a",
+    titleBg: "linear-gradient(135deg, #1a1a35 0%, #2a1a45 100%)",
+    textColor: "#e8e8f0",
     headingColor: "#ffffff",
-    accentColor: "#00ffff",
-    borderColor: "#1a1a2e",
+    accentColor: "#8b5cf6",
+    borderColor: "#2a2a50",
+  },
+  {
+    id: "cyberpunk-neon",
+    name: "Cyberpunk Neon",
+    bg: "#0f0f1a",
+    titleBg: "linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%)",
+    textColor: "#f0e6ff",
+    headingColor: "#ffffff",
+    accentColor: "#ff00ff",
+    borderColor: "#3d2066",
   },
   {
     id: "sunset-gradient",
     name: "Sunset Gradient",
-    bg: "#1c1017",
-    titleBg: "linear-gradient(135deg, #2d1a24 0%, #4c1d3d 100%)",
+    bg: "#1a0f1e",
+    titleBg: "linear-gradient(135deg, #1a0f1e 0%, #2e1a32 100%)",
     textColor: "#fce7f3",
     headingColor: "#ffffff",
-    accentColor: "#f472b6",
-    borderColor: "#4c1d3d",
+    accentColor: "#f97316",
+    borderColor: "#4a2850",
   },
   {
-    id: "ocean-depths",
-    name: "Ocean Depths",
-    bg: "#0a1628",
-    titleBg: "linear-gradient(135deg, #0d1f35 0%, #1e3a5f 100%)",
-    textColor: "#e0f2fe",
+    id: "ocean-depth",
+    name: "Ocean Depth",
+    bg: "#BDE8F5",
+    titleBg: "linear-gradient(135deg, #0F2854 0%, #1C4D8D 100%)",
+    textColor: "#0F2854",
     headingColor: "#ffffff",
     accentColor: "#14b8a6",
     borderColor: "#1e3a5f",
@@ -99,9 +99,9 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
           <div className="mt-12 relative">
             <div className="rounded-2xl overflow-hidden border border-zinc-200 bg-white shadow-xl">
               {/* App Interface */}
-              <div className="grid lg:grid-cols-[300px_1fr]">
-                {/* Left Panel - AI Chat */}
-                <div className="border-r border-zinc-200 p-6 bg-white">
+              <div className="flex flex-col lg:grid lg:grid-cols-[300px_1fr]">
+                {/* Left Panel - AI Chat - Hidden on mobile, shown on desktop */}
+                <div className="hidden lg:block border-r border-zinc-200 p-6 bg-white">
                   <div className="flex items-center gap-2 mb-6">
                     <div className="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center">
                       <Sparkles className="w-4 h-4 text-white" />
@@ -110,10 +110,6 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
                   </div>
                   
                   <div className="space-y-4">
-                    <div className="p-3 bg-zinc-50 rounded-lg">
-                      <p className="text-sm text-zinc-600">{t.featuresDemoPrompt || "Create a 10-slide pitch deck for my SaaS startup with modern design."}</p>
-                    </div>
-                    
                     <div className="space-y-2">
                       <p className="text-xs text-zinc-600 font-medium">{t.generating || "Generating"}</p>
                       <p className="text-xs text-zinc-600">{t.creatingSlides || "Creating professional slides with consistent branding and smart layouts..."}</p>
@@ -131,10 +127,10 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
                 </div>
                 
                 {/* Right Panel - Video (lazy loaded Cloudinary) */}
-                <div className="relative aspect-video overflow-hidden bg-zinc-900">
+                <div className="relative w-full aspect-video lg:aspect-auto lg:min-h-[500px] overflow-hidden bg-zinc-900">
                   <LazyVideo
                     src={FEATURE_DEMO_VIDEO}
-                    className="absolute inset-0 w-full h-full"
+                    className="absolute inset-0 w-full h-full object-cover"
                     title="PPT Master AI presentation demo"
                   />
                 </div>
@@ -430,20 +426,20 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
             </div>
 
             {/* Floating Profile Card */}
-            <div className="absolute -right-4 top-8 bg-purple-600 rounded-xl p-4 w-48 text-white shadow-xl">
-              <div className="text-xs text-purple-100 mb-3">PPT Master / {t.export || "Export"}</div>
+            <div className="absolute -right-4 top-8 bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] rounded-xl p-4 w-48 text-white shadow-xl">
+              <div className="text-xs text-cyan-100 mb-3">PPT Master / {t.export || "Export"}</div>
               <div className="flex flex-col items-center">
-                <div className="w-14 h-14 rounded-full bg-purple-400 mb-2 flex items-center justify-center">
+                <div className="w-14 h-14 rounded-full bg-white/20 mb-2 flex items-center justify-center">
                   <Share2 className="w-6 h-6 text-white" />
                 </div>
                 <p className="font-medium">{t.readyToShare || "Ready to Share"}</p>
-                <p className="text-xs text-purple-100">10 {t.slides || "slides"}</p>
+                <p className="text-xs text-cyan-100">10 {t.slides || "slides"}</p>
                 <div className="flex gap-2 mt-3">
                   <SignInButton mode="modal">
-                    <button className="px-3 py-1 bg-white text-purple-600 text-xs rounded-md font-medium hover:bg-purple-50 transition" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>{t.export || "Export"}</button>
+                    <button className="px-3 py-1 bg-white text-[#1e3a8a] text-xs rounded-md font-medium hover:bg-cyan-50 transition" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>{t.export || "Export"}</button>
                   </SignInButton>
                   <SignInButton mode="modal">
-                    <button className="px-3 py-1 border border-purple-300 text-xs rounded-md hover:bg-purple-500 transition" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>{t.share || "Share"}</button>
+                    <button className="px-3 py-1 border border-cyan-300 text-xs rounded-md hover:bg-white/10 transition" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>{t.share || "Share"}</button>
                   </SignInButton>
                 </div>
               </div>

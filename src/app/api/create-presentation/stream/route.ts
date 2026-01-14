@@ -101,6 +101,38 @@ function sendEvent(controller: ReadableStreamDefaultController, event: string, d
   controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
 }
 
+// Sanitize error messages to never expose internal details to clients
+function getSanitizedErrorMessage(error: unknown): string {
+  if (!(error instanceof Error)) {
+    return "Something went wrong. Please try again.";
+  }
+  
+  const message = error.message.toLowerCase();
+  
+  // Map internal errors to user-friendly messages
+  if (message.includes("rate limit") || message.includes("429")) {
+    return "We're experiencing high demand. Please wait a moment and try again.";
+  }
+  if (message.includes("timeout") || message.includes("timed out")) {
+    return "The request took too long. Please try again.";
+  }
+  if (message.includes("api key") || message.includes("unauthorized") || message.includes("401")) {
+    return "Service configuration error. Please contact support.";
+  }
+  if (message.includes("quota") || message.includes("billing")) {
+    return "Service temporarily unavailable. Please try again later.";
+  }
+  if (message.includes("network") || message.includes("fetch")) {
+    return "Connection error. Please check your internet and try again.";
+  }
+  if (message.includes("pexels") || message.includes("image")) {
+    return "Failed to load images. Please try again.";
+  }
+  
+  // Default generic message - never expose raw error
+  return "Failed to create presentation. Please try again.";
+}
+
 // Process images in batches
 async function processImageBatch(
   slideIndices: number[],
@@ -601,10 +633,12 @@ export async function POST(request: Request) {
 
         controller.close();
       } catch (error) {
+        // Log detailed error for debugging (server-side only)
         console.error("[create-presentation/stream] Error:", error);
-        sendEvent(controller, "error", {
-          message: error instanceof Error ? error.message : "Failed to create presentation",
-        });
+        
+        // Sanitize error message for client - never expose internal details
+        const sanitizedMessage = getSanitizedErrorMessage(error);
+        sendEvent(controller, "error", { message: sanitizedMessage });
         controller.close();
       }
     },

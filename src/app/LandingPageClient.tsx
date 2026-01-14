@@ -12,6 +12,7 @@ import {
   CTASection,
   TemplatesSection,
   PricingSection,
+  PromptSection,
 } from "~/components/landing";
 
 interface LandingPageClientProps {
@@ -27,6 +28,7 @@ export function LandingPageClient({ currentLang }: LandingPageClientProps) {
       <main className="relative">
         <HeroSection t={t} currentLang={currentLang} />
         <TrustedBySection />
+        <PromptSection t={t} currentLang={currentLang} />
         <FeaturesSection t={t} currentLang={currentLang} />
         <HowItWorksSection t={t} currentLang={currentLang} />
         <PricingSection t={t} currentLang={currentLang} />

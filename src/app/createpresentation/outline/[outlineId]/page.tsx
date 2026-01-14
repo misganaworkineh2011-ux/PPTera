@@ -1,6 +1,6 @@
 import { requireAuth } from "~/lib/clerk-server";
 import { db } from "~/server/db";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import CreatePresentationClient from "../../CreatePresentationClient";
 import type { Slide } from "~/lib/dashboard/hooks/useOutlineStream";
 
@@ -63,6 +63,12 @@ export default async function OutlinePage({ params, searchParams }: OutlinePageP
     notFound();
   }
 
+  // Redirect to create page if outline has no content (empty slides)
+  const storedSlides = outline.slides as StoredSlide[];
+  if (!storedSlides || storedSlides.length === 0) {
+    redirect(`/createpresentation?mode=${mode || "ai"}`);
+  }
+
   // Determine max slides based on subscription plan
   const getMaxSlides = (plan: string | null | undefined): number => {
     if (!plan) return 10;
@@ -83,7 +89,6 @@ export default async function OutlinePage({ params, searchParams }: OutlinePageP
   };
 
   // Parse slides with full visual metadata
-  const storedSlides = outline.slides as StoredSlide[];
   const slides: Slide[] = storedSlides.map(slide => ({
     type: slide.type,
     title: slide.title,

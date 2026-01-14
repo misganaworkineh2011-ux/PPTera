@@ -42,6 +42,41 @@ function sendEvent(
   controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
 }
 
+// Sanitize error messages to never expose internal details to clients
+function getSanitizedErrorMessage(error: unknown): string {
+  if (!(error instanceof Error)) {
+    return "Something went wrong. Please try again.";
+  }
+  
+  const message = error.message.toLowerCase();
+  
+  // Map internal errors to user-friendly messages
+  if (message.includes("ai_service_unavailable")) {
+    return "Our AI service is temporarily unavailable. Please try again in a moment.";
+  }
+  if (message.includes("rate limit") || message.includes("429")) {
+    return "We're experiencing high demand. Please wait a moment and try again.";
+  }
+  if (message.includes("timeout") || message.includes("timed out")) {
+    return "The request took too long. Please try again.";
+  }
+  if (message.includes("api key") || message.includes("unauthorized") || message.includes("401")) {
+    return "Service configuration error. Please contact support.";
+  }
+  if (message.includes("quota") || message.includes("billing")) {
+    return "Service temporarily unavailable. Please try again later.";
+  }
+  if (message.includes("invalid") && message.includes("json")) {
+    return "Failed to generate outline. Please try again.";
+  }
+  if (message.includes("network") || message.includes("fetch")) {
+    return "Connection error. Please check your internet and try again.";
+  }
+  
+  // Default generic message - never expose raw error
+  return "Something went wrong. Please try again.";
+}
+
 export async function POST(req: Request) {
   // 1. Check authentication
   const { userId } = await auth();
@@ -63,6 +98,9 @@ export async function POST(req: Request) {
       { status: 404, headers: { "Content-Type": "application/json" } }
     );
   }
+
+  // Note: Outline generation is FREE - no credit check needed
+  // Credits are only deducted when creating the actual presentation
 
   // 3. Parse request body
   let body;
@@ -149,41 +187,15 @@ export async function POST(req: Request) {
   }
 
   // 8. Build the prompt for OpenAI
-  // Map tone to detailed description for better LLM understanding
-  const toneDescriptions: Record<string, string> = {
-    // Business tones
-    professional: "professional and polished - clear, authoritative, and business-appropriate",
-    formal: "formal and sophisticated - structured, respectful, and ceremonial",
-    corporate: "corporate and strategic - business-focused, data-driven, and executive-level",
-    executive: "executive and commanding - high-level, decisive, and leadership-oriented",
-    // Friendly tones
-    casual: "casual and relaxed - approachable, easy-going, and conversational",
-    friendly: "friendly and warm - welcoming, personable, and engaging",
-    conversational: "conversational and natural - like talking to a colleague or friend",
-    warm: "warm and inviting - empathetic, supportive, and encouraging",
-    // Creative tones
-    creative: "creative and imaginative - innovative, artistic, and thought-provoking",
-    playful: "playful and fun - lighthearted, witty, and entertaining",
-    bold: "bold and daring - confident, impactful, and attention-grabbing",
-    inspirational: "inspirational and uplifting - motivating, visionary, and empowering",
-    // Educational tones
-    educational: "educational and instructive - clear, structured, and learning-focused",
-    informative: "informative and factual - detailed, accurate, and knowledge-sharing",
-    technical: "technical and precise - detailed, accurate, and expert-level",
-    academic: "academic and scholarly - research-based, analytical, and rigorous",
-    // Persuasive tones
-    persuasive: "persuasive and compelling - convincing, influential, and action-oriented",
-    confident: "confident and assertive - self-assured, strong, and decisive",
-    motivational: "motivational and energizing - inspiring action, enthusiasm, and drive",
-    compelling: "compelling and captivating - engaging, powerful, and memorable",
-  };
-  const toneDescription = toneDescriptions[tone || "professional"] || tone || "professional";
+  const toneDescription = tone || "professional";
   const languageDescription = language || "english";
   const contentSlides = numberOfSlides - 1;
 
   const systemPrompt = `You are an expert presentation creator and content strategist. Your task is to create a detailed, high-quality presentation outline in JSON format.
 
 CRITICAL QUALITY STANDARDS:
+0. ALWAYS CALL WEB SEARCH FIRST: Before writing any slides, you MUST invoke the \`web_search_preview\` tool to gather the most recent, trustworthy information about the topic. Read and internalize the results, then write the outline in your own words — do NOT copy snippets verbatim, do NOT list raw URLs, and NEVER mention web search, tools, or how you got the information in the output. The web search is only a research step; the outline itself must read like a native, well‑researched presentation.
+
 1. Professional expertise and clarity: Write the outline as if you are a master/expert in the specific field or topic. The content should demonstrate deep knowledge and professional understanding, but remain accessible and easy to understand - like a well-crafted PowerPoint presentation. Use clear, concise language that balances expertise with clarity. Avoid jargon unless necessary, and when using technical terms, ensure the context makes them understandable. The outline should feel authoritative and professional while being digestible for the intended audience.
 
 2. Adaptive narrative flow: Structure MUST adapt organically to the specific topic.
@@ -195,15 +207,14 @@ CRITICAL QUALITY STANDARDS:
    OUTPUT CLEANLINESS - CRITICAL:
    - NEVER reference these instructions, templates, or any prompt guidance in the output
       
-3. Real-time data and statistics: When appropriate for the topic, include current data, statistics, or real-time information. NOT all topics need this - use judgment:
-   - Topics about prevalence, trends, or current events: Include relevant statistics
-   - Educational "what is" and How-to or process topics: May not need statistics
-   - CRITICAL DATA REQUIREMENTS:
-     * ALWAYS use the MOST RECENT data available — prioritize studies from 2023-2025
-     * ALWAYS cite data in this format: "Statistic or number (Source Name, Year)"
-     * Include specific numbers, percentages, and metrics — avoid vague statements
+3. Real-time data and statistics: Use data sparingly and strategically — NOT every slide needs statistics.
+   - include data when it genuinely strengthens the point being made
+   - When data is relevant, try to provide the latest available information
+   - Don't overwhelm slides with data — understand the data and distill it into clear insights
+   - Prefer rewriting data into meaningful takeaways rather than listing raw statistics
+   - If citing specific numbers, use format: "Statistic (Source Name, Year)" (DON'T USE LINKS OR URLS) — but only when the number itself adds value
+   - Topics like how-to guides, processes, or conceptual explanations often don't need statistics at all
      * Data MUST come from trustworthy, authoritative sources relevant to the topic's domain
-     * If recent data is unavailable, use the latest available and note the year clearly
    
 4. Scientific and evidence-based content: When solutions, tools, methods, or examples are provided, use scientific, evidence-based approaches when the topic requires it (health, science, research, etc.). Examples should be realistic and demonstrate actual utilization. Make it practical and applicable to real-world scenarios.
 
@@ -309,23 +320,12 @@ Each slide MUST include (IN THIS ORDER):
    - "semanticIntent": core meaning label (free-form, e.g., "process", "comparison", "framework")
    - "visualStrategy": { primary, pattern, emphasis } describing visual expression
    - "contentLayoutHint": Category suggestion from: "boxes", "bullets", "sequence", "steps", "quotes", "circles", or "numbers" based on content analysis
-   - "bulletPoints": Use your judgment to determine the optimal number of bullets for each slide:
-     * IDEAL: 3 bullets is the sweet spot for most slides — clean, focused, memorable
-     * ACCEPTABLE: 2, 4, or 5 bullets ONLY when the content genuinely requires it
-     * MAXIMUM: 6 bullets (use sparingly, only for comprehensive lists)
-     * MINIMUM: 2 bullets (use for high-impact, focused slides)
-     * BE SMART: Let the content dictate the count — don't pad with filler or cut essential points
-     * FORBIDDEN FORMAT — NEVER USE: "Label: explanation" pattern (colon after a short label)
-       ✗ WRONG: "Combatting Tilt: Utilize brief timeouts..."
-       ✗ WRONG: "Pre-Game Visualization: Mentally rehearse..."
-       ✗ WRONG: "Handle Pressure: Reframe high-stakes..."
-       ✗ WRONG: "Emotional Control: Recognize the signs..."
-       ✓ RIGHT: "Utilize brief, structured timeouts after mistakes to reset cognitive load."
-       ✓ RIGHT: "Mentally rehearse successful strategies before games to reduce anxiety."
-       ✓ RIGHT: "Reframe high-stakes situations as opportunities rather than threats."
-       ✓ RIGHT: "Recognize physical and mental signs of frustration before they escalate."
-     * Write flowing sentences that start directly with the action or insight — NO labels, NO prefixes
-     * LENGTH: 25 words max per bullet
+   - "bulletPoints": Each bullet must be a complete, informative statement that delivers real value:
+     * QUALITY: Write descriptive, self-contained statements — each bullet should explain, describe, or inform about the slide's topic
+     * NOT commands ("Do this"), NOT labels ("Key point:"), NOT fragments — full sentences with substance
+     * Each bullet should stand alone as useful information, not just hint at a concept
+     * COUNT: 3 bullets ideal, 2-5 acceptable, 6 max — let content dictate, no filler
+     * LENGTH: 15-25 words per bullet — enough to convey real information
 
 3. Narrative structure:
    - FIRST (opening):
@@ -508,26 +508,48 @@ Return ONLY a valid JSON object in this exact structure:
         return fullContent;
       }
 
-      // OpenAI streaming generator
+      // OpenAI Responses API streaming generator with web search
       async function* openaiStream(): AsyncIterable<string> {
-        const completion = await openai.chat.completions.create({
+        const response = await openai.responses.create({
           model: "gpt-4o",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt },
+          input: [
+            {
+              role: "system",
+              content: [{ type: "input_text", text: systemPrompt }],
+            },
+            {
+              role: "user",
+              content: [{ type: "input_text", text: userPrompt }],
+            },
           ],
-          response_format: { type: "json_object" },
+      
+          include: ["web_search_call.action.sources" as any],
+      
+          tools: [
+            {
+              type: "web_search_preview",
+              search_context_size: "medium",
+            },
+          ],
+      
+          tool_choice: {
+            type: "web_search_preview",
+          },
+      
           temperature: 1,
-          max_tokens: 16000,
+          max_output_tokens: 12000,
           stream: true,
         });
-
-        for await (const chunk of completion) {
-          const content = chunk.choices[0]?.delta?.content || "";
-          if (content) yield content;
+      
+        for await (const event of response) {
+          if (event.type === "response.output_text.delta") {
+            if (event.delta) yield event.delta;
+          }
+      
+          if (event.type === "response.completed") return;
         }
       }
-
+      
       // Gemini streaming generator
       async function* geminiStream(): AsyncIterable<string> {
         if (!gemini) throw new Error("Gemini API not configured");
@@ -536,7 +558,7 @@ Return ONLY a valid JSON object in this exact structure:
           model: "gemini-flash-latest",
           generationConfig: {
             temperature: 1,
-            maxOutputTokens: 16000,
+            maxOutputTokens: 14000,
             responseMimeType: "application/json",
           },
         });
@@ -612,22 +634,44 @@ Return ONLY a valid JSON object in this exact structure:
         try {
           fullContent = await processStream(openaiStream(), "openai");
         } catch (openaiError) {
-          console.error("OpenAI failed, trying Gemini fallback:", openaiError);
+          // Log detailed error for debugging (server-side only)
+          console.error("Primary AI provider failed:", openaiError);
           
           // Try Gemini as fallback
           if (gemini) {
             useGeminiFallback = true;
-            sendEvent(controller, "info", { message: "Switching to backup provider..." });
-            fullContent = await processStream(geminiStream(), "gemini");
+            sendEvent(controller, "info", { message: "Optimizing generation..." });
+            try {
+              fullContent = await processStream(geminiStream(), "gemini");
+            } catch (geminiError) {
+              // Log detailed error for debugging (server-side only)
+              console.error("Backup AI provider failed:", geminiError);
+              throw new Error("AI_SERVICE_UNAVAILABLE");
+            }
           } else {
-            throw openaiError; // Re-throw if no Gemini available
+            throw new Error("AI_SERVICE_UNAVAILABLE");
           }
         }
 
-        // Parse final result
+        // Parse final result (defensively handle markdown fences / extra text)
         let finalOutline;
         try {
-          finalOutline = JSON.parse(fullContent);
+          let jsonText = fullContent.trim();
+
+          // If the model wrapped JSON in markdown fences (```json ... ```), strip them
+          if (jsonText.startsWith("```")) {
+            // Remove leading ```json or ``` and trailing ```
+            jsonText = jsonText.replace(/^```[a-zA-Z]*\s*/, "").replace(/```$/, "").trim();
+          }
+
+          // As a fallback, extract from first '{' to last '}' to ignore any prose around the JSON
+          const firstBrace = jsonText.indexOf("{");
+          const lastBrace = jsonText.lastIndexOf("}");
+          if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+            jsonText = jsonText.slice(firstBrace, lastBrace + 1);
+          }
+
+          finalOutline = JSON.parse(jsonText);
         } catch (parseError) {
           // Try to repair truncated JSON (common with Gemini)
           console.warn("Initial parse failed, attempting JSON repair...");
@@ -677,25 +721,25 @@ Return ONLY a valid JSON object in this exact structure:
           },
         });
 
-        // Send completion event WITHOUT deducting credits for outline generation
+        // Note: No credit deduction for outline generation - it's free
+        // Credits are only deducted when creating the actual presentation
+
+        // Send completion event (don't expose provider info to client)
         sendEvent(controller, "outlineDone", {
           outlineId: outline.id,
           slides: finalOutline.slides,
           metadata: finalOutline.metadata,
-          // Keep response shape compatible but do not deduct credits
           creditsRemaining: user.credits,
-          provider: useGeminiFallback ? "gemini" : "openai",
         });
 
         controller.close();
       } catch (error) {
+        // Log detailed error for debugging (server-side only)
         console.error("Streaming error:", error);
-        sendEvent(controller, "error", {
-          message:
-            error instanceof Error
-              ? error.message
-              : "An unexpected error occurred",
-        });
+        
+        // Sanitize error message for client - never expose internal details
+        const sanitizedMessage = getSanitizedErrorMessage(error);
+        sendEvent(controller, "error", { message: sanitizedMessage });
 
         // Update outline status to failed
         try {
