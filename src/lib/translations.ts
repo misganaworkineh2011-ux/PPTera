@@ -341,7 +341,7 @@ export const translations = {
     viewOpenPositions: "View Open Positions",
     
     // Pricing Page
-    pricingTitle: "Simple pricing for PPTMaster.",
+    pricingTitle: "Pricing.",
     pricingSubtitle: "Start creating PowerPoint presentations for free, upgrade when you love it.",
     monthly: "Monthly",
     yearly: "Yearly",
