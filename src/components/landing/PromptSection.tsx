@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkles } from "lucide-react";
 import { SignedIn, SignedOut, SignInButton, useUser } from "@clerk/nextjs";
-import { motion } from "framer-motion";
 import { type Language } from "~/lib/i18n";
 
 interface PromptSectionProps {
@@ -51,27 +50,17 @@ export function PromptSection({ t }: PromptSectionProps) {
       <div className="absolute inset-0 bg-gradient-to-br from-[#1e3a8a]/10 via-cyan-50 to-[#06b6d4]/10" />
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#06b6d412_1px,transparent_1px),linear-gradient(to_bottom,#06b6d412_1px,transparent_1px)] bg-[size:32px_32px]" />
 
-      <div className="absolute top-10 left-1/4 w-48 md:w-96 h-48 md:h-96 bg-cyan-200/30 rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-10 right-1/4 w-40 md:w-80 h-40 md:h-80 bg-indigo-300/20 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute top-10 left-1/4 w-48 md:w-96 h-48 md:h-96 bg-cyan-200/30 rounded-full blur-3xl" />
+      <div className="absolute bottom-10 right-1/4 w-40 md:w-80 h-40 md:h-80 bg-indigo-300/20 rounded-full blur-3xl" />
 
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="relative mx-auto max-w-3xl w-full"
-      >
+      <div className="relative mx-auto max-w-3xl w-full">
         <div className="text-center mb-8 md:mb-10">
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-white/80 backdrop-blur border border-cyan-200 shadow-sm mb-4 md:mb-6"
-          >
-            <Sparkles className="w-3 h-3 md:w-4 md:h-4 text-cyan-500 animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-white/80 backdrop-blur border border-cyan-200 shadow-sm mb-4 md:mb-6">
+            <Sparkles className="w-3 h-3 md:w-4 md:h-4 text-cyan-500" />
             <span className="text-xs md:text-sm font-medium text-slate-700">
               {t.aiPowered || "AI-Powered"}
             </span>
-          </motion.div>
+          </div>
 
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-3 md:mb-4 px-2">
             {t.promptSectionTitle || "Create Your Presentation Now"}
@@ -83,17 +72,17 @@ export function PromptSection({ t }: PromptSectionProps) {
         </div>
 
         {/* Input - Stacked on mobile, inline on desktop */}
-        <motion.div
-          animate={{
+        <div
+          className="relative rounded-2xl transition-shadow duration-300"
+          style={{
             boxShadow: focused
               ? "0 0 40px rgba(6,182,212,0.45)"
               : "0 0 20px rgba(6,182,212,0.15)",
           }}
-          className="relative rounded-2xl"
         >
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-2 bg-white rounded-2xl border-2 border-cyan-200 p-3 transition-all">
             <div className="flex items-center gap-2 flex-1">
-              <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-cyan-500 ml-1 sm:ml-3 animate-pulse flex-shrink-0" />
+              <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-cyan-500 ml-1 sm:ml-3 flex-shrink-0" />
               <input
                 type="text"
                 value={generatorPrompt}
@@ -107,45 +96,38 @@ export function PromptSection({ t }: PromptSectionProps) {
             </div>
 
             <SignedIn>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+              <button
                 onClick={handleGenerate}
                 disabled={!generatorPrompt.trim()}
-                className="w-full sm:w-auto px-5 sm:px-6 py-3 bg-gradient-to-r from-[#06b6d4] to-[#1e3a8a] text-white font-semibold rounded-xl shadow-lg shadow-cyan-500/30 flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full sm:w-auto px-5 sm:px-6 py-3 bg-gradient-to-r from-[#06b6d4] to-[#1e3a8a] text-white font-semibold rounded-xl shadow-lg shadow-cyan-500/30 flex items-center justify-center gap-2 disabled:opacity-50 hover:opacity-90 active:scale-[0.98] transition-all"
+                style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}
               >
                 <Sparkles className="w-4 h-4 md:w-5 md:h-5" />
                 {t.generate || "Generate"}
-              </motion.button>
+              </button>
             </SignedIn>
 
             <SignedOut>
               <SignInButton mode="modal">
-                <motion.button
+                <button
                   id="generator-signin-btn"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
                   onClick={handleSignInClick}
-                  className="w-full sm:w-auto px-5 sm:px-6 py-3 bg-gradient-to-r from-[#06b6d4] to-[#1e3a8a] text-white font-semibold rounded-xl shadow-lg shadow-cyan-500/30 flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto px-5 sm:px-6 py-3 bg-gradient-to-r from-[#06b6d4] to-[#1e3a8a] text-white font-semibold rounded-xl shadow-lg shadow-cyan-500/30 flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all"
+                  style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}
                 >
                   <Sparkles className="w-4 h-4 md:w-5 md:h-5" />
                   {t.generate || "Generate"}
-                </motion.button>
+                </button>
               </SignInButton>
             </SignedOut>
           </div>
-        </motion.div>
+        </div>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="text-xs sm:text-sm text-slate-500 mt-3 md:mt-4 text-center px-2"
-        >
+        <p className="text-xs sm:text-sm text-slate-500 mt-3 md:mt-4 text-center px-2">
           {t.generatorHint ||
             'Try: "Create a pitch deck for my AI startup" or "Design a quarterly report presentation"'}
-        </motion.p>
-      </motion.div>
+        </p>
+      </div>
     </section>
   );
 }
