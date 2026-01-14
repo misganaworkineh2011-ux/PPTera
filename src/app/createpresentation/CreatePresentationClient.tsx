@@ -770,7 +770,7 @@ export default function CreatePresentationClient({
 
         {/* Form Section - Compact when streaming/completed */}
         <div className={`px-4 sm:px-6 lg:px-8 ${showOutline ? "pb-4" : "pb-12"}`}>
-          <div className={`mx-auto ${showOutline ? "max-w-4xl" : "max-w-xl"}`}>
+          <div className={`mx-auto ${showOutline ? "max-w-4xl" : "max-w-3xl"}`}>
             {!showOutline && (
               <div className="flex flex-col items-center justify-center mb-8">
                 <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#1e3a8a] mb-2 text-center">
@@ -1197,7 +1197,7 @@ export default function CreatePresentationClient({
               )}
 
               {/* Primary generate / regenerate button */}
-              <div className={`flex items-center justify-center ${!showOutline ? "pt-2" : "pt-4"}`}>
+              <div className={`flex items-center justify-center ${!showOutline ? "pt-6" : "pt-4"}`}>
                 <button
                   type="submit"
                   disabled={!formData.description.trim() || isStreaming}
