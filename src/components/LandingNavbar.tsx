@@ -174,8 +174,8 @@ export const LandingNavbar = ({ currentLang }: LandingNavbarProps) => {
                 </button>
               </SignInButton>
               <SignInButton mode="modal">
-                <button className="px-5 py-2.5 text-[15px] font-medium text-white bg-zinc-900 rounded-lg hover:bg-zinc-800 transition">
-                  {t.navGetStarted || "Get started for free"}
+                <button className="px-5 py-2.5 text-[15px] font-medium text-white bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] rounded-lg hover:opacity-90 transition">
+                  Sign up
                 </button>
               </SignInButton>
             </SignedOut>
@@ -306,10 +306,10 @@ export const LandingNavbar = ({ currentLang }: LandingNavbarProps) => {
               <SignedOut>
                 <SignInButton mode="modal">
                   <button 
-                    className="w-full py-3 text-base font-medium text-white bg-zinc-900 rounded-lg"
+                    className="w-full py-3 text-base font-medium text-white bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] rounded-lg hover:opacity-90"
                     onClick={() => setMobileOpen(false)}
                   >
-                    {t.navGetStarted || "Get started free"}
+                    Sign up
                   </button>
                 </SignInButton>
               </SignedOut>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Check } from "lucide-react";
 import { SignInButton } from "@clerk/nextjs";
 import { LoadingLink } from "~/components/LoadingLink";
 import { type Language } from "~/lib/i18n";
@@ -189,53 +188,54 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3 items-stretch">
           {plans.map((plan, i) => (
             <div
               key={i}
-              className={`relative rounded-2xl p-5 flex flex-col ${
+              className={`relative rounded-lg p-4 flex flex-col h-full mt-4 ${
                 plan.highlight
-                  ? "bg-zinc-900 text-white ring-2 ring-zinc-900"
-                  : "bg-white border border-zinc-200"
+                  ? "border-2 border-[#06b6d4] bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-lg"
+                  : "border border-slate-200 bg-white hover:border-[#06b6d4] transition-all"
               }`}
             >
               {plan.badge && (
                 <div
-                  className={`absolute -top-3 left-1/2 -translate-x-1/2 text-white text-[10px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap ${
+                  className={`absolute -top-2.5 left-1/2 -translate-x-1/2 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg whitespace-nowrap ${
                     plan.badgeGradient
                       ? "bg-gradient-to-r from-purple-500 to-pink-500"
-                      : "bg-emerald-500"
+                      : "bg-gradient-to-r from-amber-400 to-orange-500"
                   }`}
                 >
                   {plan.badge}
                 </div>
               )}
 
-              <div className="mb-3">
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className={`text-sm ${plan.highlight ? "text-white" : "text-[#06b6d4]"}`}>✦</span>
                 <h3
-                  className={`text-lg font-bold ${plan.highlight ? "text-white" : "text-zinc-900"}`}
+                  className={`text-lg font-bold ${plan.highlight ? "text-white" : "text-slate-900"}`}
                 >
                   {plan.name}
                 </h3>
-                <p
-                  className={`text-xs mt-1 ${plan.highlight ? "text-zinc-400" : "text-zinc-500"}`}
-                >
-                  {plan.description}
-                </p>
               </div>
+              <p
+                className={`text-xs mb-3 ${plan.highlight ? "text-white/70" : "text-slate-500"}`}
+              >
+                {plan.description}
+              </p>
 
-              <div className="mb-5">
+              <div className="mb-3">
                 {plan.price === null ? (
-                  <div className="h-9 w-16 bg-zinc-200 animate-pulse rounded" />
+                  <div className={`h-6 w-12 animate-pulse rounded ${plan.highlight ? "bg-white/30" : "bg-slate-200"}`} />
                 ) : (
                   <div className="flex items-baseline gap-1">
                     <span
-                      className={`text-3xl font-bold ${plan.highlight ? "text-white" : "text-zinc-900"}`}
+                      className={`text-2xl font-bold ${plan.highlight ? "text-white" : "text-slate-900"}`}
                     >
                       {plan.price}
                     </span>
                     <span
-                      className={`text-xs ${plan.highlight ? "text-zinc-400" : "text-zinc-500"}`}
+                      className={`text-xs ${plan.highlight ? "text-white/60" : "text-slate-500"}`}
                     >
                       {plan.period}
                     </span>
@@ -243,44 +243,47 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
                 )}
               </div>
 
-              <ul className="space-y-2.5 mb-6 flex-grow">
+              <div className="mt-auto mb-4">
+                {i === 0 ? (
+                  <SignInButton mode="modal">
+                    <button
+                      className="w-full rounded-md py-2 px-3 font-medium text-sm bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90"
+                      style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}
+                    >
+                      {plan.cta}
+                    </button>
+                  </SignInButton>
+                ) : (
+                  <SignInButton mode="modal">
+                    <button
+                      className={`w-full rounded-md py-2 px-3 font-medium text-sm transition ${
+                        plan.highlight
+                          ? "bg-white text-[#1e3a8a] hover:bg-slate-100"
+                          : "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90"
+                      }`}
+                      style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}
+                    >
+                      {plan.cta}
+                    </button>
+                  </SignInButton>
+                )}
+              </div>
+
+              <p className={`text-xs mb-2 font-medium ${plan.highlight ? "text-white/70" : "text-slate-500"}`}>
+                {i === 0 ? (t.freeIncludes || "Free includes:") : (t.everythingInPrevious || "Includes:")}
+              </p>
+              <ul className="space-y-1.5 text-xs flex-grow">
                 {plan.features.map((feature, j) => (
-                  <li key={j} className="flex items-start gap-2 text-xs">
-                    <Check
-                      className={`w-3.5 h-3.5 mt-0.5 flex-shrink-0 ${plan.highlight ? "text-emerald-400" : "text-emerald-500"}`}
-                    />
+                  <li key={j} className="flex items-start gap-1.5">
+                    <span className={`text-xs ${plan.highlight ? "text-white" : "text-[#06b6d4]"}`}>✓</span>
                     <span
-                      className={plan.highlight ? "text-zinc-300" : "text-zinc-600"}
+                      className={plan.highlight ? "text-white/90" : "text-slate-600"}
                     >
                       {feature}
                     </span>
                   </li>
                 ))}
               </ul>
-
-              {i === 0 ? (
-                <SignInButton mode="modal">
-                  <button
-                    className="w-full py-2.5 px-4 rounded-lg font-semibold text-sm border-2 border-zinc-900 text-zinc-900 hover:bg-zinc-900 hover:text-white transition"
-                    style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}
-                  >
-                    {plan.cta}
-                  </button>
-                </SignInButton>
-              ) : (
-                <SignInButton mode="modal">
-                  <button
-                    className={`w-full py-2.5 px-4 rounded-lg font-semibold text-sm transition ${
-                      plan.highlight
-                        ? "bg-white text-zinc-900 hover:bg-zinc-100"
-                        : "bg-zinc-900 text-white hover:bg-zinc-800"
-                    }`}
-                    style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}
-                  >
-                    {plan.cta}
-                  </button>
-                </SignInButton>
-              )}
             </div>
           ))}
         </div>

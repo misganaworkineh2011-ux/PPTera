@@ -6,4 +6,5 @@ export { TestimonialsSection } from "./TestimonialsSection";
 export { CTASection } from "./CTASection";
 export { TemplatesSection } from "./TemplatesSection";
 export { PricingSection } from "./PricingSection";
+export { PromptSection } from "./PromptSection";
 export { LazyVideo } from "./LazyVideo";

@@ -319,10 +319,10 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center lg:min-h-[calc(100vh-160px)]">
           {/* Left Column */}
           <div className="flex flex-col justify-center max-w-xl">
-            <div className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-zinc-900 leading-[1.1] mb-6" role="heading" aria-level={2}>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-zinc-900 leading-[1.1] mb-6">
               {t.heroTitle} <br />
               <span className="text-zinc-400">{t.heroSubtitle}</span>
-            </div>
+            </h1>
 
             <p className="text-lg text-zinc-600 mb-8 leading-relaxed">
               {t.heroDescription}
@@ -354,9 +354,9 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
                 <SignInButton mode="modal">
                   <button
                     style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}
-                    className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-zinc-900 rounded-lg hover:bg-zinc-800 transition-all shadow-lg hover:shadow-zinc-900/20"
+                    className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] rounded-lg hover:opacity-90 transition-all shadow-lg"
                   >
-                    {t.getStarted} <ArrowRight className="w-5 h-5" />
+                    {t.getStartedBtn || "Get Started"} <ArrowRight className="w-5 h-5" />
                   </button>
                 </SignInButton>
               </SignedOut>
