@@ -60,6 +60,20 @@
     @apply bg-background text-foreground;
   }
   
+  /* Landing page zoom-resistant layout */
+  /* Uses a fixed design width and scales to fit viewport */
+  .landing-page-container {
+    min-width: 1280px;
+    width: 100%;
+  }
+  
+  /* On smaller viewports, allow horizontal scroll or scale */
+  @media (max-width: 1279px) {
+    .landing-page-container {
+      min-width: 100%;
+    }
+  }
+  
   /* Custom cursors - ONLY for landing/public pages (not dashboard) */
   /* Applied via .landing-page class on the root container */
   .landing-page,
