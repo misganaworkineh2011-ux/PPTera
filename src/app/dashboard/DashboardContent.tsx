@@ -859,8 +859,8 @@ export default function DashboardContent({ presentations: propPresentations, use
       </div>
 
       {/* Rename Dialog */}
-      {showRenameDialog && (
-        <div className="fixed inset-0 flex items-center justify-center z-[10000] bg-black/30 p-4" onClick={() => setShowRenameDialog(null)}>
+      {showRenameDialog && typeof window !== "undefined" && createPortal(
+        <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: 99999, isolation: 'isolate', backgroundColor: 'rgba(0, 0, 0, 0.5)' }} onClick={() => setShowRenameDialog(null)}>
           <div className="bg-white rounded-lg sm:rounded-md p-4 sm:p-6 w-full max-w-md shadow-2xl border border-slate-200 dark:bg-neutral-900 dark:border-neutral-800" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-base sm:text-lg font-bold text-[#1e3a8a] mb-3 sm:mb-4 dark:text-white">{t.renamePresentation || "Rename Presentation"}</h3>
             <input
@@ -894,12 +894,13 @@ export default function DashboardContent({ presentations: propPresentations, use
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Delete Confirmation Dialog */}
-      {showDeleteDialog && (
-        <div className="fixed inset-0 flex items-center justify-center z-[10000] bg-black/30 p-4" onClick={() => setShowDeleteDialog(null)}>
+      {showDeleteDialog && typeof window !== "undefined" && createPortal(
+        <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: 99999, isolation: 'isolate', backgroundColor: 'rgba(0, 0, 0, 0.5)' }} onClick={() => setShowDeleteDialog(null)}>
           <div className="bg-white rounded-lg sm:rounded-md p-4 sm:p-6 w-full max-w-md shadow-2xl border border-slate-200 dark:bg-neutral-900 dark:border-neutral-800" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
               <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-md bg-red-100 dark:bg-red-900/50">
@@ -926,7 +927,8 @@ export default function DashboardContent({ presentations: propPresentations, use
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Share Modal */}

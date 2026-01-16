@@ -4,11 +4,11 @@ import { requireAuth } from "~/lib/clerk-server";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authUser = await requireAuth();
-    const { id } = params;
+    const { id } = await params;
 
     // Check if presentation exists and belongs to user
     const presentation = await db.presentation.findUnique({
