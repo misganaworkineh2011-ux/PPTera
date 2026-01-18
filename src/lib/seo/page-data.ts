@@ -65,8 +65,21 @@ export const USE_CASES = [
     { slug: 'workshop', name: 'Workshop', description: 'Interactive session materials' },
 ] as const;
 
-// Tool/keyword variations
+// Tool/keyword variations (from keywords.txt - high volume search terms)
 export const TOOLS = [
+    // High-volume keywords from keywords.txt (>100 searches)
+    { slug: 'best-free-ai-powerpoint-generator', keyword: 'best free ai powerpoint generator', title: 'Best Free AI PowerPoint Generator' },
+    { slug: 'ai-powerpoint-slide-generator', keyword: 'ai powerpoint slide generator', title: 'AI PowerPoint Slide Generator' },
+    { slug: 'ai-powerpoint-presentation-generator', keyword: 'ai powerpoint presentation generator', title: 'AI PowerPoint Presentation Generator' },
+    { slug: 'best-free-ai-powerpoint-generator-2024', keyword: 'best free ai powerpoint generator 2024', title: 'Best Free AI PowerPoint Generator 2024' },
+    { slug: 'ai-powerpoint-maker-free', keyword: 'ai powerpoint maker free', title: 'AI PowerPoint Maker Free' },
+    { slug: 'ai-powerpoint-summarizer', keyword: 'ai powerpoint summarizer', title: 'AI PowerPoint Summarizer' },
+    { slug: 'free-ai-powerpoint-presentation-generator', keyword: 'free ai powerpoint presentation generator', title: 'Free AI PowerPoint Presentation Generator' },
+    { slug: 'ai-powerpoint-generator-from-text', keyword: 'ai powerpoint generator from text', title: 'AI PowerPoint Generator from Text' },
+    { slug: 'free-ai-powerpoint-presentation-maker', keyword: 'free ai powerpoint presentation maker', title: 'Free AI PowerPoint Presentation Maker' },
+    { slug: 'best-ai-powerpoint-generator-2025', keyword: 'best ai powerpoint generator 2025', title: 'Best AI PowerPoint Generator 2025' },
+    
+    // Original keywords
     { slug: 'ai-powerpoint-generator', keyword: 'ai powerpoint generator', title: 'AI PowerPoint Generator' },
     { slug: 'ai-presentation-maker', keyword: 'ai presentation maker', title: 'AI Presentation Maker' },
     { slug: 'ai-slide-creator', keyword: 'ai slide creator', title: 'AI Slide Creator' },
