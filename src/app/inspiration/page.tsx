@@ -2,15 +2,15 @@ import InspirationPageClient from "./InspirationPageClient";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Inspiration Gallery | PPTMaster – PowerPoint Design Examples",
-  description: "Browse hundreds of professionally designed presentation examples. Get inspired by stunning AI-generated slides from PPTMaster (PPT Master). Explore business, marketing, and design templates.",
+  title: "Inspiration Gallery - AI PowerPoint Examples & Templates | PPTMaster",
+  description: "Browse 1000+ stunning AI-generated PowerPoint examples. Get inspired by professional presentation designs, business slides, and creative templates from PPTMaster.",
   keywords: "presentation inspiration, PowerPoint examples, slide design, presentation templates, PPTMaster gallery, AI presentations, design inspiration",
   alternates: {
     canonical: "https://www.pptmaster.app/inspiration",
   },
   openGraph: {
-    title: "Inspiration | PPTMaster – PowerPoint Examples",
-    description: "Browse hundreds of professionally designed presentation examples. Get inspired by stunning AI-generated slides.",
+    title: "Inspiration Gallery - AI PowerPoint Examples | PPTMaster",
+    description: "Browse 1000+ stunning AI-generated PowerPoint examples. Get inspired by professional presentation designs.",
     url: "https://www.pptmaster.app/inspiration",
     type: "website",
     images: [
@@ -24,8 +24,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Inspiration | PPTMaster – PowerPoint Examples",
-    description: "Browse hundreds of professionally designed presentation examples. Get inspired by stunning AI-generated slides.",
+    title: "Inspiration Gallery - AI PowerPoint Examples | PPTMaster",
+    description: "Browse 1000+ stunning AI-generated PowerPoint examples. Get inspired by professional designs.",
     images: ["https://www.pptmaster.app/og-image.jpeg"],
   },
   robots: {
