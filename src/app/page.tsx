@@ -97,25 +97,7 @@ async function DashboardContent({ userId }: { userId: string }) {
 
 // Server-rendered landing page with critical SEO content
 function LandingPageServer() {
-  return (
-    <>
-      {/* Critical SEO content - server-rendered for Google */}
-      <div className="sr-only" aria-hidden="false">
-        <p>
-          PPTMaster is your free AI-powered design partner for creating stunning presentations effortlessly. 
-          No coding or design skills required. Just describe your idea and let AI build professional slides for you.
-        </p>
-        <ul>
-          <li>AI-powered presentation generation</li>
-          <li>Professional PowerPoint templates</li>
-          <li>Export to PPTX, PDF, Google Slides</li>
-          <li>Free to use, no credit card required</li>
-        </ul>
-      </div>
-      {/* Interactive landing page */}
-      <LandingPageClient currentLang="en" />
-    </>
-  );
+  return <LandingPageClient currentLang="en" />;
 }
 
 export default async function HomePage() {

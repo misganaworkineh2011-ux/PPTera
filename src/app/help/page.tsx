@@ -5,15 +5,14 @@ import { getTranslations } from "~/lib/i18n";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Help Center",
-  description:
-    "Get help with PPTMaster (PPT Master). Find answers to common questions and learn how to use our AI presentation generator effectively.",
+  title: "Help Center - AI PowerPoint Generator Support | PPTMaster",
+  description: "Get help with PPTMaster AI PowerPoint generator. Find tutorials, FAQs, troubleshooting guides, and learn how to create stunning presentations with AI.",
   alternates: {
     canonical: "https://www.pptmaster.app/help",
   },
   openGraph: {
-    title: "Help Center | PPTMaster",
-    description: "Get help with PPTMaster. Find answers to common questions and learn how to use our AI presentation generator.",
+    title: "Help Center - AI PowerPoint Generator Support | PPTMaster",
+    description: "Get help with PPTMaster AI PowerPoint generator. Find tutorials, FAQs, and troubleshooting guides.",
     url: "/help",
     type: "website",
     images: [
@@ -27,8 +26,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Help Center | PPTMaster",
-    description: "Get help with PPTMaster. Find answers to common questions about our AI presentation generator.",
+    title: "Help Center - AI PowerPoint Generator Support | PPTMaster",
+    description: "Get help with PPTMaster. Find tutorials, FAQs, and troubleshooting guides.",
     images: ["/og-image.jpeg"],
   },
 };
