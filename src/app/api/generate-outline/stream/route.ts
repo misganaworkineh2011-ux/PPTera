@@ -77,6 +77,88 @@ function getSanitizedErrorMessage(error: unknown): string {
   return "Something went wrong. Please try again.";
 }
 
+/**
+ * Validate and normalize slide metadata for smart layout selection
+ * Ensures all required fields are present with fallback values
+ */
+function validateAndNormalizeSlideMetadata(slide: any): any {
+  const normalized = { ...slide };
+  let hasWarnings = false;
+  
+  // Only validate content slides (title slides don't need layout metadata)
+  if (slide.type !== "content") {
+    return normalized;
+  }
+  
+  // Validate and normalize semanticIntent
+  if (!normalized.semanticIntent || typeof normalized.semanticIntent !== "string") {
+    console.warn(`[outline-validation] Slide "${slide.title}" missing semanticIntent, using fallback`);
+    normalized.semanticIntent = "inform";
+    hasWarnings = true;
+  }
+  
+  // Validate and normalize visualStrategy
+  if (!normalized.visualStrategy || typeof normalized.visualStrategy !== "object") {
+    console.warn(`[outline-validation] Slide "${slide.title}" missing visualStrategy, using fallback`);
+    normalized.visualStrategy = {
+      primary: "text-focused",
+      pattern: "cards",
+      emphasis: "clarity"
+    };
+    hasWarnings = true;
+  } else {
+    // Ensure all visualStrategy fields are present
+    if (!normalized.visualStrategy.primary) {
+      normalized.visualStrategy.primary = "text-focused";
+      hasWarnings = true;
+    }
+    if (!normalized.visualStrategy.pattern) {
+      normalized.visualStrategy.pattern = "cards";
+      hasWarnings = true;
+    }
+    if (!normalized.visualStrategy.emphasis) {
+      normalized.visualStrategy.emphasis = "clarity";
+      hasWarnings = true;
+    }
+  }
+  
+  // Validate contentLayoutHint (optional but log if missing)
+  if (!normalized.contentLayoutHint) {
+    console.warn(`[outline-validation] Slide "${slide.title}" missing contentLayoutHint`);
+    // Don't set fallback - this is truly optional and will be determined by content analysis
+  }
+  
+  // Validate assets/image metadata (optional)
+  if (normalized.assets?.image) {
+    if (typeof normalized.assets.image.required !== "boolean") {
+      normalized.assets.image.required = false;
+    }
+    if (!normalized.assets.image.orientation) {
+      normalized.assets.image.orientation = "landscape";
+    }
+  }
+  
+  if (hasWarnings) {
+    console.warn(`[outline-validation] Slide "${slide.title}" had incomplete metadata, applied fallbacks`);
+  }
+  
+  return normalized;
+}
+
+/**
+ * Validate entire outline and normalize all slides
+ */
+function validateAndNormalizeOutline(outline: any): any {
+  if (!outline.slides || !Array.isArray(outline.slides)) {
+    throw new Error("Invalid outline structure: missing slides array");
+  }
+  
+  return {
+    ...outline,
+    slides: outline.slides.map(validateAndNormalizeSlideMetadata)
+  };
+}
+
 export async function POST(req: Request) {
   // 1. Check authentication
   const { userId } = await auth();
@@ -695,6 +777,22 @@ Return ONLY a valid JSON object in this exact structure:
 
         // Validate outline structure
         if (!finalOutline.slides || !Array.isArray(finalOutline.slides)) {
+          sendEvent(controller, "error", { message: "Invalid outline structure" });
+
+          await db.outline.update({
+            where: { id: outline.id },
+            data: { status: "failed" },
+          });
+
+          controller.close();
+          return;
+        }
+
+        // Validate and normalize metadata for all slides
+        try {
+          finalOutline = validateAndNormalizeOutline(finalOutline);
+        } catch (validationError) {
+          console.error("Outline validation failed:", validationError);
           sendEvent(controller, "error", { message: "Invalid outline structure" });
 
           await db.outline.update({

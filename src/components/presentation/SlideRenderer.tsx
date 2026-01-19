@@ -390,6 +390,11 @@ function SlideRendererComponent({
   const hasChart = !!slide.chart;
   let effectiveSlideLayout: string | undefined = slide.slideLayout || slide.layout;
   
+  // DEBUG: Log slideLayout values
+  if (hasImage) {
+    console.log(`[SlideRenderer] Slide ${index}: slideLayout="${slide.slideLayout}", layout="${slide.layout}", effective="${effectiveSlideLayout}"`);
+  }
+  
   // If slide has a chart and no image, ALWAYS use a chart layout
   // This ensures charts are displayed on the side, not below content
   if (hasChart && !hasImage) {

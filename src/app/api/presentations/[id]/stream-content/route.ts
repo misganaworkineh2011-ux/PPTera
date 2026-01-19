@@ -10,9 +10,8 @@ import { db } from "~/server/db";
 import { fetchImagesForSlides, type SlideWithVisualMetadata } from "~/lib/pexels";
 import {
   generateImagesForSlides as generateAIImages,
-  planSlideLayout,
-  extractPlannerInput,
 } from "~/lib/presentation";
+import { selectLayout, type LayoutSelectionContext } from "~/lib/presentation/smart-layout";
 import { env } from "~/env.js";
 import OpenAI from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -436,6 +435,18 @@ export async function GET(
         const finalSlides: Record<string, unknown>[] = [];
         // Store images separately to merge at the end (since they load in parallel)
         const imageMap = new Map<number, Record<string, unknown>>();
+        
+        // Initialize layout selection context for tracking across slides
+        const layoutContext: LayoutSelectionContext = {
+          slideIndex: 0,
+          totalSlides: pendingSlides.length,
+          previousLayouts: [],
+          presentationTone: metadata?.tone || "professional",
+          presentationLanguage: metadata?.language || "English",
+          themeStyle: "professional",
+          categoryUsage: new Map(),
+          styleUsage: new Map(),
+        };
 
         console.log(`[stream-content] Starting stream for ${pendingSlides.length} slides`);
         console.log(`[stream-content] Image source: ${imageSource}, Text density: ${textDensity}`);
@@ -658,51 +669,96 @@ export async function GET(
           }
 
           // ==========================================
-          // SMART LAYOUT PLANNING (applied after bullets are known)
-          // This is the key fix: previously this endpoint always forced box layouts.
-          // Now we compute slideLayout + contentLayout using the planner, using:
-          // - transformed bullets (for density)
-          // - outline hints (contentLayoutHint, semanticIntent, visualStrategy)
-          // - image requirements (assets.image.required / title image.required)
+          // SMART LAYOUT SELECTION
+          // Uses the new smart layout selection system to jointly select:
+          // - slideLayout (image position): left/right/top/bottom/no-image
+          // - imageSize: small/medium/large
+          // - contentLayout: specific style (e.g., "box-style-1", "sequence-style-2")
+          // - contentLayoutCategory: category (e.g., "boxes", "sequence")
+          // The system considers content analysis, LLM metadata, and presentation context
           // ==========================================
-          try {
-            const plannerInput = extractPlannerInput(
-              {
-                type: slide.type === "title" ? "title" : "content",
-                title: slideData.title as string | undefined,
-                bulletPoints: slideData.bulletPoints as string[] | undefined,
-                semanticIntent: (slide as { semanticIntent?: string }).semanticIntent,
-                visualStrategy: (slide as { visualStrategy?: { pattern?: string } }).visualStrategy,
-                assets: slide.assets,
-                image: slide.image,
-                contentLayoutHint:
-                  (slide as { contentLayoutHint?: string }).contentLayoutHint ||
-                  (slide as { contentLayout?: string }).contentLayout,
-              },
-              i,
-              pendingSlides.length
-            );
+          
+          // Update context for current slide
+          layoutContext.slideIndex = i;
+          
+          // Perform smart layout selection
+          const layoutSelection = await selectLayout({
+            slide: {
+              type: slide.type as "title" | "content",
+              title: slideData.title as string,
+              subtitle: slideData.subtitle as string | undefined,
+              bulletPoints: slideData.bulletPoints as string[] | undefined,
+              sections: slideData.sections as Array<{ heading: string; description: string }> | undefined,
+              semanticIntent: (slide as { semanticIntent?: string }).semanticIntent,
+              visualStrategy: (slide as { visualStrategy?: { pattern?: string } }).visualStrategy as { primary: string; pattern: string; emphasis: string } | undefined,
+              contentLayoutHint: (slide as { contentLayoutHint?: string }).contentLayoutHint ||
+                                 (slide as { contentLayout?: string }).contentLayout,
+              // Convert image metadata to expected format
+              image: slide.image ? {
+                required: slide.image.required ?? true,
+                orientation: "landscape" as const,
+                pexelsPromptHint: "",
+                aiPromptHint: "",
+              } : undefined,
+              assets: slide.assets ? {
+                image: slide.assets.image ? {
+                  required: slide.assets.image.required ?? false,
+                  orientation: "landscape" as const,
+                  pexelsPromptHint: "",
+                  aiPromptHint: "",
+                } : undefined,
+              } : undefined,
+            },
+            context: layoutContext,
+            options: {
+              timeout: 50,
+              enablePerformanceLogging: false,
+              enableDebugLogging: true, // Enable debug logging to see layout decisions
+            },
+          });
 
-            const plan = await planSlideLayout(plannerInput);
+          // Track selection for context (for next slides)
+          layoutContext.previousLayouts.push({
+            slideIndex: i,
+            category: layoutSelection.category,
+            style: layoutSelection.style,
+            slideLayout: layoutSelection.slideLayout,
+          });
+          
+          // Update category and style usage statistics
+          const categoryCount = layoutContext.categoryUsage.get(layoutSelection.category) ?? 0;
+          layoutContext.categoryUsage.set(layoutSelection.category, categoryCount + 1);
+          
+          const styleCount = layoutContext.styleUsage.get(layoutSelection.style) ?? 0;
+          layoutContext.styleUsage.set(layoutSelection.style, styleCount + 1);
 
-            // Canonical image placement fields
-            slideData.slideLayout = plan.slideLayout;
-            slideData.imageSize = plan.imageSize;
-
-            // Legacy layout string (SlideRenderer understands this too)
-            slideData.layout = plan.legacyLayout;
-
-            // Content layout choice (this is what prevents “boxes only”)
-            slideData.contentLayout = plan.contentLayout;
-            slideData.contentLayoutCategory = plan.contentLayoutCategory;
-          } catch (e) {
-            console.warn("[stream-content] Layout planner failed, falling back to defaults:", e);
-            // If planner fails, keep legacy behavior: centered if no image, else left/right.
-            const hasImage = slide.type === "title" ? (slide.image?.required ?? true) : (slide.assets?.image?.required ?? false);
-            slideData.layout = hasImage ? (i % 2 === 0 ? "right-content" : "left-content") : "centered";
-            slideData.contentLayout = "box-style-1";
-            slideData.contentLayoutCategory = "boxes";
+          // Check if image was overridden by layout compatibility rules
+          const imageWasOverridden = layoutSelection.imageOverridden ?? false;
+          const imageOverrideReason = layoutSelection.imageOverrideReason;
+          
+          // Log when image is overridden for debugging
+          if (imageWasOverridden) {
+            console.log(`[stream-content] Slide ${i}: Image overridden - ${imageOverrideReason}`);
+            // Don't fetch image for this slide
+            imageMap.delete(i);
           }
+
+          // Apply selected layout to slide data
+          slideData.slideLayout = layoutSelection.slideLayout;
+          slideData.imageSize = layoutSelection.imageSize;
+          slideData.imageShape = layoutSelection.imageShape;
+          
+          // Legacy layout for renderer compatibility
+          slideData.layout = layoutSelection.slideLayout === "no-image" ? "no-image" : 
+                            layoutSelection.slideLayout === "image-left" ? "image-left" :
+                            layoutSelection.slideLayout === "image-right" ? "image-right" :
+                            layoutSelection.slideLayout === "image-top" ? "image-top" :
+                            layoutSelection.slideLayout === "image-bottom" ? "image-bottom" :
+                            "no-image";
+          
+          // Content layout from smart selection
+          slideData.contentLayout = layoutSelection.style;
+          slideData.contentLayoutCategory = layoutSelection.category;
 
           finalSlides.push(slideData);
           sendEvent(controller, "slideComplete", { slideIndex: i, slide: slideData }, isClosed);

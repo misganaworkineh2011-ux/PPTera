@@ -262,14 +262,50 @@ export async function requireAuth() {
     redirect("/sign-in");
   }
 
-  // Try to find user in database
-  let user = await db.user.findUnique({
-    where: { clerkId: userId },
-  });
+  // Try to find user in database with retry logic
+  let user = null;
+  let retries = 3;
+  let lastError: Error | null = null;
+
+  while (retries > 0 && !user) {
+    try {
+      user = await db.user.findUnique({
+        where: { clerkId: userId },
+      });
+      break; // Success, exit retry loop
+    } catch (error) {
+      lastError = error as Error;
+      retries--;
+      
+      if (retries > 0) {
+        // Wait before retrying (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, 100 * (4 - retries)));
+        console.warn(`[requireAuth] Database query failed, retrying... (${retries} attempts left)`, error);
+      } else {
+        console.error("[requireAuth] Database query failed after all retries:", error);
+        // Log more details for debugging
+        console.error("[requireAuth] Error details:", {
+          message: lastError?.message,
+          name: lastError?.name,
+          stack: lastError?.stack,
+        });
+      }
+    }
+  }
+
+  // If database query failed after all retries, show error
+  if (!user && lastError) {
+    throw new Error(`Failed to fetch user from database: ${lastError.message}`);
+  }
 
   // If not found, try to create from Clerk data (fallback for webhook failures)
   if (!user) {
-    user = await ensureUserInDatabase(userId);
+    try {
+      user = await ensureUserInDatabase(userId);
+    } catch (error) {
+      console.error("[requireAuth] Failed to create user in database:", error);
+      redirect("/sign-in?error=user_creation_failed");
+    }
 
     // If creation failed, redirect to sign-in with error message
     if (!user) {
