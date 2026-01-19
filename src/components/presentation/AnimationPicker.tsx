@@ -215,7 +215,9 @@ export default function AnimationPicker({
 
   // Theme-aware colors - use actual theme colors
   const bgPrimary = theme.colors.background;
-  const bgSecondary = theme.pageBackground || theme.colors.background;
+  // If pageBackground is a gradient, use background color instead for modal
+  const isGradient = theme.pageBackground?.includes("gradient");
+  const bgSecondary = isGradient ? theme.colors.backgroundAlt || theme.colors.background : (theme.pageBackground || theme.colors.background);
   const textPrimary = theme.colors.heading;
   const textSecondary = theme.colors.textMuted || theme.colors.text;
   const borderColor = `${theme.colors.accent}30`;
