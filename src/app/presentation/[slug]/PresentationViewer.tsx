@@ -324,9 +324,13 @@ export default function PresentationViewer({
         const newSlides = [...prev];
         // Add the new slide at the correct index with default layout
         // This prevents the visual "jump" when slideComplete arrives with the final layout
-        const defaultSlideLayout = data.hasImage 
-          ? (data.slideIndex % 2 === 0 ? "image-right" : "image-left")
-          : "no-image";
+        // Use true randomness for initial placeholder (will be updated by layoutUpdate event)
+        let defaultSlideLayout = "no-image";
+        if (data.hasImage) {
+          // True random selection - no pattern, just pure randomness
+          const positions: ("image-left" | "image-right")[] = ["image-left", "image-right"];
+          defaultSlideLayout = positions[Math.floor(Math.random() * positions.length)]!;
+        }
         newSlides[data.slideIndex] = {
           type: data.type,
           title: "",

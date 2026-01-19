@@ -10,9 +10,8 @@ import { db } from "~/server/db";
 import { fetchImagesForSlides, type SlideWithVisualMetadata } from "~/lib/pexels";
 import {
   generateImagesForSlides as generateAIImages,
-  planSlideLayout,
-  extractPlannerInput,
 } from "~/lib/presentation";
+import { selectLayout, type LayoutSelectionContext } from "~/lib/presentation/smart-layout";
 import { env } from "~/env.js";
 import OpenAI from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -436,6 +435,18 @@ export async function GET(
         const finalSlides: Record<string, unknown>[] = [];
         // Store images separately to merge at the end (since they load in parallel)
         const imageMap = new Map<number, Record<string, unknown>>();
+        
+        // Initialize layout selection context for tracking across slides
+        const layoutContext: LayoutSelectionContext = {
+          slideIndex: 0,
+          totalSlides: pendingSlides.length,
+          previousLayouts: [],
+          presentationTone: metadata?.tone || "professional",
+          presentationLanguage: metadata?.language || "English",
+          themeStyle: "professional",
+          categoryUsage: new Map(),
+          styleUsage: new Map(),
+        };
 
         console.log(`[stream-content] Starting stream for ${pendingSlides.length} slides`);
         console.log(`[stream-content] Image source: ${imageSource}, Text density: ${textDensity}`);
@@ -447,114 +458,8 @@ export async function GET(
         }
         console.log("[stream-content] Sent start event");
 
-        // Start image fetching in parallel (don't await - let it run alongside text streaming)
-        let imagePromise: Promise<void> | null = null;
-        if (imageSource === "stock-photos" || imageSource === "ai-generated") {
-          const slidesNeedingImages = pendingSlides
-            .map((slide, index) => ({ slide, index }))
-            .filter(({ slide }) => {
-              if (slide.type === "title") return slide.image?.required ?? true;
-              return slide.assets?.image?.required ?? false;
-            });
-
-          if (slidesNeedingImages.length > 0) {
-            sendEvent(controller, "imagesStart", { count: slidesNeedingImages.length }, isClosed);
-
-            // Process images in parallel batches
-            imagePromise = (async () => {
-              const BATCH_SIZE = 4;
-              for (let i = 0; i < slidesNeedingImages.length; i += BATCH_SIZE) {
-                if (isClosed.value) break; // Stop if controller is closed
-                
-                const batch = slidesNeedingImages.slice(i, i + BATCH_SIZE);
-                
-                if (imageSource === "stock-photos") {
-                  const slidesWithMetadata: SlideWithVisualMetadata[] = batch.map(({ slide }) => ({
-                    type: slide.type as "title" | "content",
-                    title: slide.title,
-                    subtitle: slide.subtitle,
-                    bulletPoints: slide.bulletPoints,
-                    assets: slide.assets as SlideWithVisualMetadata["assets"],
-                    image: slide.image as SlideWithVisualMetadata["image"],
-                  }));
-
-                  const fetchedImages = await fetchImagesForSlides(slidesWithMetadata);
-
-                  let mapIndex = 0;
-                  for (const { index } of batch) {
-                    if (isClosed.value) break;
-                    const photo = fetchedImages.get(mapIndex);
-                    if (photo) {
-                      const image = {
-                        url: photo.src.large,
-                        alt: photo.alt || pendingSlides[index]!.title,
-                        photographer: photo.photographer,
-                        photographerUrl: photo.photographer_url,
-                        source: "pexels",
-                      };
-                      // Store in imageMap for later merging
-                      imageMap.set(index, image);
-                      // Also update finalSlides if it exists
-                      if (finalSlides[index]) {
-                        finalSlides[index]!.image = image;
-                      }
-                      sendEvent(controller, "imageReady", { slideIndex: index, image }, isClosed);
-                    }
-                    mapIndex++;
-                  }
-                } else if (imageSource === "ai-generated") {
-                  console.log("[stream-content] Generating AI images for batch:", batch.map(b => b.index), "model:", imageModel, "artStyle:", imageArtStyle);
-                  const slidesWithMetadata = batch.map(({ slide }) => ({
-                    type: slide.type,
-                    title: slide.title,
-                    assets: slide.assets,
-                    image: slide.image,
-                  }));
-
-                  // Determine the effective art style to use
-                  const effectiveArtStyle = imageArtStyle === "custom" && customArtStyleText 
-                    ? customArtStyleText 
-                    : imageArtStyle;
-
-                  const generatedImages = await generateAIImages(
-                    slidesWithMetadata as Parameters<typeof generateAIImages>[0], 
-                    imageModel as Parameters<typeof generateAIImages>[1],
-                    effectiveArtStyle
-                  );
-                  console.log("[stream-content] Generated images count:", generatedImages.size);
-
-                  let mapIndex = 0;
-                  for (const { index } of batch) {
-                    if (isClosed.value) break;
-                    const result = generatedImages.get(mapIndex);
-                    console.log(`[stream-content] Image result for slide ${index}:`, {
-                      hasResult: !!result,
-                      hasUrl: !!result?.url,
-                      source: result?.source,
-                    });
-                    if (result && result.url) {
-                      const image = {
-                        url: result.url,
-                        alt: result.alt || pendingSlides[index]!.title,
-                        source: "ai",
-                      };
-                      // Store in imageMap for later merging
-                      imageMap.set(index, image);
-                      console.log(`[stream-content] Stored image in imageMap for slide ${index}`);
-                      // Also update finalSlides if it exists
-                      if (finalSlides[index]) {
-                        finalSlides[index]!.image = image;
-                        console.log(`[stream-content] Updated finalSlides[${index}] with image`);
-                      }
-                      sendEvent(controller, "imageReady", { slideIndex: index, image }, isClosed);
-                    }
-                    mapIndex++;
-                  }
-                }
-              }
-            })();
-          }
-        }
+        // Track image loading promises per slide (for parallel loading)
+        const imagePromises: Promise<void>[] = [];
 
         // Process each slide (text streaming)
         console.log(`[stream-content] Starting to process ${pendingSlides.length} slides`);
@@ -567,11 +472,16 @@ export async function GET(
           const slide = pendingSlides[i]!;
           console.log(`[stream-content] Processing slide ${i}/${pendingSlides.length}: "${slide.title}" (type: ${slide.type})`);
           
+          // Check if this slide needs an image
+          const needsImage = slide.type === "title" 
+            ? (slide.image?.required ?? true) 
+            : (slide.assets?.image?.required ?? false);
+          
           // Send slide start
           const slideStartSent = sendEvent(controller, "slideStart", { 
             slideIndex: i, 
             type: slide.type,
-            hasImage: slide.type === "title" ? (slide.image?.required ?? true) : (slide.assets?.image?.required ?? false)
+            hasImage: needsImage
           }, isClosed);
           
           if (!slideStartSent) {
@@ -579,6 +489,81 @@ export async function GET(
             break;
           }
           console.log(`[stream-content] Sent slideStart for slide ${i}`);
+
+          // Start loading image for this slide immediately (in parallel with text streaming)
+          if (needsImage && (imageSource === "stock-photos" || imageSource === "ai-generated")) {
+            const imagePromise = (async () => {
+              try {
+                if (imageSource === "stock-photos") {
+                  const slidesWithMetadata: SlideWithVisualMetadata[] = [{
+                    type: slide.type as "title" | "content",
+                    title: slide.title,
+                    subtitle: slide.subtitle,
+                    bulletPoints: slide.bulletPoints,
+                    assets: slide.assets as SlideWithVisualMetadata["assets"],
+                    image: slide.image as SlideWithVisualMetadata["image"],
+                  }];
+
+                  const fetchedImages = await fetchImagesForSlides(slidesWithMetadata);
+                  const photo = fetchedImages.get(0);
+                  
+                  if (photo && !isClosed.value) {
+                    const image = {
+                      url: photo.src.large,
+                      alt: photo.alt || slide.title,
+                      photographer: photo.photographer,
+                      photographerUrl: photo.photographer_url,
+                      source: "pexels",
+                    };
+                    imageMap.set(i, image);
+                    if (finalSlides[i]) {
+                      finalSlides[i]!.image = image;
+                    }
+                    sendEvent(controller, "imageReady", { slideIndex: i, image }, isClosed);
+                    console.log(`[stream-content] Image ready for slide ${i}`);
+                  }
+                } else if (imageSource === "ai-generated") {
+                  console.log(`[stream-content] Generating AI image for slide ${i}, model: ${imageModel}, artStyle: ${imageArtStyle}`);
+                  const slidesWithMetadata = [{
+                    type: slide.type,
+                    title: slide.title,
+                    assets: slide.assets,
+                    image: slide.image,
+                  }];
+
+                  // Determine the effective art style to use
+                  const effectiveArtStyle = imageArtStyle === "custom" && customArtStyleText 
+                    ? customArtStyleText 
+                    : imageArtStyle;
+
+                  const generatedImages = await generateAIImages(
+                    slidesWithMetadata as Parameters<typeof generateAIImages>[0], 
+                    imageModel as Parameters<typeof generateAIImages>[1],
+                    effectiveArtStyle
+                  );
+
+                  const result = generatedImages.get(0);
+                  if (result && result.url && !isClosed.value) {
+                    const image = {
+                      url: result.url,
+                      alt: result.alt || slide.title,
+                      source: "ai",
+                    };
+                    imageMap.set(i, image);
+                    if (finalSlides[i]) {
+                      finalSlides[i]!.image = image;
+                    }
+                    sendEvent(controller, "imageReady", { slideIndex: i, image }, isClosed);
+                    console.log(`[stream-content] AI image ready for slide ${i}`);
+                  }
+                }
+              } catch (error) {
+                console.error(`[stream-content] Error loading image for slide ${i}:`, error);
+                // Don't throw - continue with other slides
+              }
+            })();
+            imagePromises.push(imagePromise);
+          }
 
           // Build slide data
           const slideData: Record<string, unknown> = {
@@ -658,51 +643,105 @@ export async function GET(
           }
 
           // ==========================================
-          // SMART LAYOUT PLANNING (applied after bullets are known)
-          // This is the key fix: previously this endpoint always forced box layouts.
-          // Now we compute slideLayout + contentLayout using the planner, using:
-          // - transformed bullets (for density)
-          // - outline hints (contentLayoutHint, semanticIntent, visualStrategy)
-          // - image requirements (assets.image.required / title image.required)
+          // SMART LAYOUT SELECTION
+          // Uses the new smart layout selection system to jointly select:
+          // - slideLayout (image position): left/right/top/bottom/no-image
+          // - imageSize: small/medium/large
+          // - contentLayout: specific style (e.g., "box-style-1", "sequence-style-2")
+          // - contentLayoutCategory: category (e.g., "boxes", "sequence")
+          // The system considers content analysis, LLM metadata, and presentation context
           // ==========================================
-          try {
-            const plannerInput = extractPlannerInput(
-              {
-                type: slide.type === "title" ? "title" : "content",
-                title: slideData.title as string | undefined,
-                bulletPoints: slideData.bulletPoints as string[] | undefined,
-                semanticIntent: (slide as { semanticIntent?: string }).semanticIntent,
-                visualStrategy: (slide as { visualStrategy?: { pattern?: string } }).visualStrategy,
-                assets: slide.assets,
-                image: slide.image,
-                contentLayoutHint:
-                  (slide as { contentLayoutHint?: string }).contentLayoutHint ||
-                  (slide as { contentLayout?: string }).contentLayout,
-              },
-              i,
-              pendingSlides.length
-            );
+          
+          // Update context for current slide
+          layoutContext.slideIndex = i;
+          
+          // Perform smart layout selection
+          const layoutSelection = await selectLayout({
+            slide: {
+              type: slide.type as "title" | "content",
+              title: slideData.title as string,
+              subtitle: slideData.subtitle as string | undefined,
+              bulletPoints: slideData.bulletPoints as string[] | undefined,
+              sections: slideData.sections as Array<{ heading: string; description: string }> | undefined,
+              semanticIntent: (slide as { semanticIntent?: string }).semanticIntent,
+              visualStrategy: (slide as { visualStrategy?: { pattern?: string } }).visualStrategy as { primary: string; pattern: string; emphasis: string } | undefined,
+              contentLayoutHint: (slide as { contentLayoutHint?: string }).contentLayoutHint ||
+                                 (slide as { contentLayout?: string }).contentLayout,
+              // Convert image metadata to expected format
+              image: slide.image ? {
+                required: slide.image.required ?? true,
+                orientation: "landscape" as const,
+                pexelsPromptHint: "",
+                aiPromptHint: "",
+              } : undefined,
+              assets: slide.assets ? {
+                image: slide.assets.image ? {
+                  required: slide.assets.image.required ?? false,
+                  orientation: "landscape" as const,
+                  pexelsPromptHint: "",
+                  aiPromptHint: "",
+                } : undefined,
+              } : undefined,
+            },
+            context: layoutContext,
+            options: {
+              timeout: 50,
+              enablePerformanceLogging: false,
+              enableDebugLogging: true, // Enable debug logging to see layout decisions
+            },
+          });
 
-            const plan = await planSlideLayout(plannerInput);
+          // Track selection for context (for next slides)
+          layoutContext.previousLayouts.push({
+            slideIndex: i,
+            category: layoutSelection.category,
+            style: layoutSelection.style,
+            slideLayout: layoutSelection.slideLayout,
+          });
+          
+          // Update category and style usage statistics
+          const categoryCount = layoutContext.categoryUsage.get(layoutSelection.category) ?? 0;
+          layoutContext.categoryUsage.set(layoutSelection.category, categoryCount + 1);
+          
+          const styleCount = layoutContext.styleUsage.get(layoutSelection.style) ?? 0;
+          layoutContext.styleUsage.set(layoutSelection.style, styleCount + 1);
 
-            // Canonical image placement fields
-            slideData.slideLayout = plan.slideLayout;
-            slideData.imageSize = plan.imageSize;
-
-            // Legacy layout string (SlideRenderer understands this too)
-            slideData.layout = plan.legacyLayout;
-
-            // Content layout choice (this is what prevents “boxes only”)
-            slideData.contentLayout = plan.contentLayout;
-            slideData.contentLayoutCategory = plan.contentLayoutCategory;
-          } catch (e) {
-            console.warn("[stream-content] Layout planner failed, falling back to defaults:", e);
-            // If planner fails, keep legacy behavior: centered if no image, else left/right.
-            const hasImage = slide.type === "title" ? (slide.image?.required ?? true) : (slide.assets?.image?.required ?? false);
-            slideData.layout = hasImage ? (i % 2 === 0 ? "right-content" : "left-content") : "centered";
-            slideData.contentLayout = "box-style-1";
-            slideData.contentLayoutCategory = "boxes";
+          // Check if image was overridden by layout compatibility rules
+          const imageWasOverridden = layoutSelection.imageOverridden ?? false;
+          const imageOverrideReason = layoutSelection.imageOverrideReason;
+          
+          // Log when image is overridden for debugging
+          if (imageWasOverridden) {
+            console.log(`[stream-content] Slide ${i}: Image overridden - ${imageOverrideReason}`);
+            // Don't fetch image for this slide
+            imageMap.delete(i);
           }
+
+          // Apply selected layout to slide data
+          slideData.slideLayout = layoutSelection.slideLayout;
+          slideData.imageSize = layoutSelection.imageSize;
+          slideData.imageShape = layoutSelection.imageShape;
+          
+          // Legacy layout for renderer compatibility
+          slideData.layout = layoutSelection.slideLayout === "no-image" ? "no-image" : 
+                            layoutSelection.slideLayout === "image-left" ? "image-left" :
+                            layoutSelection.slideLayout === "image-right" ? "image-right" :
+                            layoutSelection.slideLayout === "image-top" ? "image-top" :
+                            layoutSelection.slideLayout === "image-bottom" ? "image-bottom" :
+                            "no-image";
+          
+          // Content layout from smart selection
+          slideData.contentLayout = layoutSelection.style;
+          slideData.contentLayoutCategory = layoutSelection.category;
+
+          // Send layout update immediately so placeholders appear in correct position
+          sendEvent(controller, "layoutUpdate", {
+            slideIndex: i,
+            slideLayout: layoutSelection.slideLayout,
+            contentLayout: layoutSelection.style,
+            imageSize: layoutSelection.imageSize,
+            imageShape: layoutSelection.imageShape,
+          }, isClosed);
 
           finalSlides.push(slideData);
           sendEvent(controller, "slideComplete", { slideIndex: i, slide: slideData }, isClosed);
@@ -711,11 +750,16 @@ export async function GET(
 
         console.log(`[stream-content] All slides processed, finalSlides: ${finalSlides.length}`);
 
-        // Wait for images to finish loading (they've been processing in parallel)
-        if (imagePromise) {
-          console.log("[stream-content] Waiting for images to finish loading...");
-          await imagePromise;
-          console.log("[stream-content] Images finished loading");
+        // Wait for all images to finish loading (they've been processing in parallel)
+        if (imagePromises.length > 0) {
+          console.log(`[stream-content] Waiting for ${imagePromises.length} image(s) to finish loading...`);
+          try {
+            await Promise.all(imagePromises);
+            console.log("[stream-content] All images finished loading");
+          } catch (error) {
+            console.error("[stream-content] Some images failed to load:", error);
+            // Continue anyway - some images may have loaded successfully
+          }
         }
 
         // Merge images from imageMap into finalSlides (in case they weren't set during streaming)

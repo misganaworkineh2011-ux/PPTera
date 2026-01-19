@@ -19,7 +19,29 @@ export interface OutlineSlide {
   title: string;
   subtitle?: string;
   bulletPoints?: string[];
+  // Smart layout selection metadata (from LLM)
+  semanticIntent?: string;
+  visualStrategy?: {
+    primary: string;
+    pattern: string;
+    emphasis: string;
+  };
   contentLayoutHint?: string;
+  // Image metadata
+  image?: {
+    required: boolean;
+    orientation: "landscape" | "portrait";
+    pexelsPromptHint: string;
+    aiPromptHint: string;
+  };
+  assets?: {
+    image?: {
+      required: boolean;
+      orientation: "landscape" | "portrait";
+      pexelsPromptHint: string;
+      aiPromptHint: string;
+    };
+  };
 }
 
 export interface TransformedSlide {

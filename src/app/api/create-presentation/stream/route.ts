@@ -18,6 +18,7 @@ import type { ContentLayoutCategory } from "~/lib/layouts/content";
 import type { SlideLayoutType, ImageSize, ImageShape } from "~/lib/layouts/slide";
 import type { SlideImage as OutlineSlideImage } from "~/lib/dashboard/hooks/useOutlineStream";
 import { generateSlug } from "~/lib/utils";
+import { selectLayout, type LayoutSelectionContext } from "~/lib/presentation/smart-layout";
 
 interface SlideInput {
   type: "title" | "content";
@@ -250,6 +251,21 @@ export async function POST(request: Request) {
       try {
         // Initialize presentation slides array
         const presentationSlides: PresentationSlide[] = [];
+        
+        // Track which slides had their images overridden by layout compatibility rules
+        const imageOverriddenSlides = new Set<number>();
+
+        // Initialize layout selection context for tracking across slides
+        const layoutContext: LayoutSelectionContext = {
+          slideIndex: 0,
+          totalSlides: slides.length,
+          previousLayouts: [],
+          presentationTone: metadata.tone,
+          presentationLanguage: metadata.language,
+          themeStyle: "professional", // TODO: Derive from theme
+          categoryUsage: new Map(),
+          styleUsage: new Map(),
+        };
 
         // Create presentation in DB first (without images)
         // Note: outlineId field requires Prisma client regeneration after schema update
@@ -305,35 +321,79 @@ export async function POST(request: Request) {
           const originalSlide = slides[slideIndex]!;
 
           // ==========================================
-          // SMART LAYOUT PLANNING
-          // Uses the layout planner to jointly select:
+          // SMART LAYOUT SELECTION
+          // Uses the new smart layout selection system to jointly select:
           // - slideLayout (image position): left/right/top/bottom/no-image
           // - imageSize: small/medium/large
           // - contentLayout: specific style (e.g., "box-style-1", "sequence-style-2")
           // - contentLayoutCategory: category (e.g., "boxes", "sequence")
-          // The planner considers content density and applies fallback rules
+          // The system considers content analysis, LLM metadata, and presentation context
           // ==========================================
           
-          // Extract planner input from the transformed slide (uses transformed bullets for density)
-          const plannerInput = extractPlannerInput(
-            {
+          // Update context for current slide
+          layoutContext.slideIndex = slideIndex;
+          
+          // Perform smart layout selection
+          const layoutSelection = await selectLayout({
+            slide: {
               type: transformedSlide.type,
               title: transformedSlide.title,
+              subtitle: transformedSlide.subtitle,
               bulletPoints: transformedSlide.bulletPoints,
+              sections: transformedSlide.sections,
               semanticIntent: originalSlide.semanticIntent,
               visualStrategy: originalSlide.visualStrategy,
-              assets: originalSlide.assets,
-              image: originalSlide.image,
               contentLayoutHint: originalSlide.contentLayoutHint,
+              // Convert image metadata to expected format
+              image: originalSlide.image ? {
+                required: originalSlide.image.required,
+                orientation: "landscape" as const,
+                pexelsPromptHint: originalSlide.image.pexelsPromptHint || originalSlide.image.promptHint || "",
+                aiPromptHint: originalSlide.image.aiPromptHint || originalSlide.image.promptHint || "",
+              } : undefined,
+              assets: originalSlide.assets ? {
+                image: originalSlide.assets.image ? {
+                  required: originalSlide.assets.image.required,
+                  orientation: "landscape" as const,
+                  pexelsPromptHint: originalSlide.assets.image.pexelsPromptHint || originalSlide.assets.image.promptHint || "",
+                  aiPromptHint: originalSlide.assets.image.aiPromptHint || originalSlide.assets.image.promptHint || "",
+                } : undefined,
+              } : undefined,
             },
-            slideIndex,
-            slides.length
-          );
-          
-          // Get the planned layout
-          const layoutPlan = await planSlideLayout(plannerInput);
+            context: layoutContext,
+            options: {
+              timeout: 50,
+              enablePerformanceLogging: false,
+              enableDebugLogging: false,
+            },
+          });
 
-          // Create slide object with planned layout
+          // Track selection for context (for next slides)
+          layoutContext.previousLayouts.push({
+            slideIndex,
+            category: layoutSelection.category,
+            style: layoutSelection.style,
+            slideLayout: layoutSelection.slideLayout,
+          });
+          
+          // Update category and style usage statistics
+          const categoryCount = layoutContext.categoryUsage.get(layoutSelection.category) ?? 0;
+          layoutContext.categoryUsage.set(layoutSelection.category, categoryCount + 1);
+          
+          const styleCount = layoutContext.styleUsage.get(layoutSelection.style) ?? 0;
+          layoutContext.styleUsage.set(layoutSelection.style, styleCount + 1);
+
+          // Check if image was overridden by layout compatibility rules
+          const imageWasOverridden = layoutSelection.imageOverridden ?? false;
+          const imageOverrideReason = layoutSelection.imageOverrideReason;
+          
+          // Log when image is overridden for debugging
+          if (imageWasOverridden) {
+            console.log(`[create-presentation] Slide ${slideIndex}: Image overridden - ${imageOverrideReason}`);
+            imageOverriddenSlides.add(slideIndex);
+          }
+
+          // Create slide object with selected layout
           const presentationSlide: PresentationSlide = {
             type: transformedSlide.type,
             title: transformedSlide.title,
@@ -347,27 +407,46 @@ export async function POST(request: Request) {
             chart: null,
             icons: undefined,
             image: null,
-            // New canonical slide layout system
-            slideLayout: layoutPlan.slideLayout,
-            imageSize: layoutPlan.imageSize,
-            imageShape: layoutPlan.imageShape,
+            // New canonical slide layout system from smart selection
+            slideLayout: layoutSelection.slideLayout,
+            imageSize: layoutSelection.imageSize,
+            imageShape: layoutSelection.imageShape,
             // Legacy layout for renderer compatibility
-            layout: layoutPlan.legacyLayout,
-            // Content layout from planner
-            contentLayout: layoutPlan.contentLayout,
-            contentLayoutCategory: layoutPlan.contentLayoutCategory,
+            layout: layoutSelection.slideLayout === "no-image" ? "no-image" : 
+                    layoutSelection.slideLayout === "image-left" ? "image-left" :
+                    layoutSelection.slideLayout === "image-right" ? "image-right" :
+                    layoutSelection.slideLayout === "image-top" ? "image-top" :
+                    layoutSelection.slideLayout === "image-bottom" ? "image-bottom" :
+                    "no-image",
+            // Content layout from smart selection
+            contentLayout: layoutSelection.style,
+            contentLayoutCategory: layoutSelection.category,
             semanticIntent: originalSlide.semanticIntent,
             visualStrategy: originalSlide.visualStrategy,
           };
 
           presentationSlides.push(presentationSlide);
 
-          // Send slide start event (with placeholder for image)
+          // Determine if this slide should show an image placeholder
+          // Don't show placeholder if image was overridden by layout compatibility
+          const shouldShowImagePlaceholder = imageSource !== "no-images" && !imageWasOverridden;
+
+          // Send slide start event (with placeholder for image if applicable)
           sendEvent(controller, "slideStart", {
             slideIndex,
             slide: {
               ...presentationSlide,
-              image: imageSource !== "no-images" ? { url: "", alt: "Loading...", source: "placeholder" } : null,
+              image: shouldShowImagePlaceholder ? { url: "", alt: "Loading...", source: "placeholder" } : null,
+            },
+            // Include layout selection metadata for debugging
+            layoutSelection: {
+              category: layoutSelection.category,
+              style: layoutSelection.style,
+              confidence: layoutSelection.confidence,
+              score: layoutSelection.score,
+              explanation: layoutSelection.explanation,
+              imageOverridden: imageWasOverridden,
+              imageOverrideReason: imageOverrideReason,
             },
           });
 
@@ -402,14 +481,32 @@ export async function POST(request: Request) {
           }
 
           // Send slide complete
-          sendEvent(controller, "slideComplete", { slideIndex, slide: presentationSlide });
+          sendEvent(controller, "slideComplete", { 
+            slideIndex, 
+            slide: presentationSlide,
+            // Include layout selection metadata for debugging
+            layoutSelection: {
+              category: layoutSelection.category,
+              style: layoutSelection.style,
+              confidence: layoutSelection.confidence,
+              score: layoutSelection.score,
+              imageOverridden: imageWasOverridden,
+              imageOverrideReason: imageOverrideReason,
+            },
+          });
         }
 
         // Process images in batches of 4-5
         if (imageSource === "stock-photos" || imageSource === "ai-generated") {
           const slidesNeedingImages = slides
             .map((slide, index) => ({ slide, index }))
-            .filter(({ slide }) => {
+            .filter(({ slide, index }) => {
+              // Skip slides where image was overridden by layout compatibility rules
+              if (imageOverriddenSlides.has(index)) {
+                console.log(`[create-presentation] Skipping image for slide ${index}: Layout compatibility override`);
+                return false;
+              }
+              
               if (slide.type === "title") {
                 return slide.image?.required ?? true;
               }
@@ -568,6 +665,12 @@ export async function POST(request: Request) {
           // Add placeholder markers
           for (let i = 0; i < slides.length; i++) {
             const slide = slides[i]!;
+            
+            // Skip slides where image was overridden by layout compatibility rules
+            if (imageOverriddenSlides.has(i)) {
+              continue;
+            }
+            
             const requiresImage = slide.type === "title"
               ? (slide.image?.required ?? true)
               : (slide.assets?.image?.required ?? false);
