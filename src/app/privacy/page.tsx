@@ -4,14 +4,14 @@ import { PrivacyContent } from "./PrivacyContent";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy",
-  description: "Read PPTMaster's (PPT Master) privacy policy. Learn how we collect, use, and protect your data when using our AI presentation tools.",
+  title: "Privacy Policy - Data Protection & Security | PPTMaster",
+  description: "Read PPTMaster's privacy policy. Learn how we collect, use, protect your data, and ensure security when using our AI PowerPoint generator.",
   alternates: {
     canonical: "https://www.pptmaster.app/privacy",
   },
   openGraph: {
-    title: "Privacy Policy | PPTMaster",
-    description: "Read PPTMaster's privacy policy. Learn how we collect, use, and protect your data when using our AI presentation tools.",
+    title: "Privacy Policy - Data Protection & Security | PPTMaster",
+    description: "Learn how PPTMaster collects, uses, and protects your data when using our AI PowerPoint generator.",
     url: "/privacy",
     type: "website",
     images: [

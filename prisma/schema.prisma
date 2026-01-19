@@ -400,3 +400,66 @@ model Referral {
   @@index([referrerId, hasPurchased])
   @@map("referral")
 }
+
+// ============================================
+// PROGRAMMATIC SEO MODELS
+// ============================================
+
+model SEOPage {
+  id                String    @id @default(cuid())
+  slug              String    @unique
+  pageType          String    // tool, industry, usecase, template, combo, howto
+  primaryKeyword    String
+  secondaryKeywords String[]
+  topic             String?
+  industry          String?
+  useCase           String?
+  
+  // SEO Meta
+  title             String
+  metaTitle         String
+  metaDescription   String
+  h1Title           String
+  
+  // Content sections (JSON for flexibility)
+  heroContent       Json?
+  features          Json?
+  howItWorks        Json?
+  templates         String[]  // Related template slugs
+  faqs              Json?
+  relatedPages      String[]  // Related page slugs for internal linking
+  
+  // Stats & Status
+  searchVolume      Int       @default(0)
+  views             Int       @default(0)
+  isPublished       Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@index([pageType, isPublished])
+  @@index([industry])
+  @@index([useCase])
+  @@index([topic])
+  @@map("seo_page")
+}
+
+model SEOTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  category    String
+  thumbnail   String
+  description String?
+  slideCount  Int      @default(10)
+  tags        String[]
+  industries  String[]
+  useCases    String[]
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([category])
+  @@index([isPublished])
+  @@map("seo_template")
+}
+

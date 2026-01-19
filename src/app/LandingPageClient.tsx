@@ -12,6 +12,7 @@ import {
   CTASection,
   TemplatesSection,
   PricingSection,
+  PromptSection,
 } from "~/components/landing";
 
 interface LandingPageClientProps {
@@ -22,11 +23,12 @@ export function LandingPageClient({ currentLang }: LandingPageClientProps) {
   const t = getTranslations(currentLang);
 
   return (
-    <div className="landing-page min-h-screen bg-white font-sans text-zinc-900 selection:bg-black selection:text-white overflow-x-hidden">
+    <div className="landing-page landing-page-container min-h-screen bg-white font-sans text-zinc-900 selection:bg-black selection:text-white overflow-x-hidden">
       <LandingNavbar currentLang={currentLang} />
       <main className="relative">
         <HeroSection t={t} currentLang={currentLang} />
         <TrustedBySection />
+        <PromptSection t={t} currentLang={currentLang} />
         <FeaturesSection t={t} currentLang={currentLang} />
         <HowItWorksSection t={t} currentLang={currentLang} />
         <PricingSection t={t} currentLang={currentLang} />

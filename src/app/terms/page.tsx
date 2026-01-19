@@ -4,14 +4,14 @@ import { TermsContent } from "./TermsContent";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms of Service",
-  description: "Read PPTMaster's (PPT Master) terms of service. Understand the rules, user responsibilities, and policies for our AI platform.",
+  title: "Terms of Service - AI PowerPoint Generator Rules | PPTMaster",
+  description: "Read PPTMaster's terms of service. Understand user rights, responsibilities, and policies for using our AI PowerPoint generator platform.",
   alternates: {
     canonical: "https://www.pptmaster.app/terms",
   },
   openGraph: {
-    title: "Terms of Service | PPTMaster",
-    description: "Read PPTMaster's terms of service. Understand the rules, user responsibilities, and policies for our AI platform.",
+    title: "Terms of Service - AI PowerPoint Generator | PPTMaster",
+    description: "Read PPTMaster's terms of service. Understand user rights, responsibilities, and policies for our AI platform.",
     url: "/terms",
     type: "website",
     images: [

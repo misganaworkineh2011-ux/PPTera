@@ -4,14 +4,14 @@ import { PromptGuideContent } from "./PromptGuideContent";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Prompt Guide",
-  description: "Master AI prompt writing for stunning presentations. Get tips, examples, and best practices for PPTMaster (PPT Master) slides.",
+  title: "AI Prompt Guide - Write Better PowerPoint Prompts | PPTMaster",
+  description: "Master AI prompt writing for stunning PowerPoint presentations. Learn tips, examples, and best practices to create professional slides with PPTMaster AI generator.",
   alternates: {
     canonical: "https://www.pptmaster.app/prompt-guide",
   },
   openGraph: {
-    title: "Prompt Guide | PPTMaster",
-    description: "Master AI prompt writing for stunning presentations. Get tips, examples, and best practices for PPTMaster slides.",
+    title: "AI Prompt Guide - Write Better PowerPoint Prompts | PPTMaster",
+    description: "Master AI prompt writing for stunning PowerPoint presentations. Learn tips, examples, and best practices.",
     url: "/prompt-guide",
     type: "website",
     images: [
@@ -25,8 +25,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Prompt Guide | PPTMaster",
-    description: "Master AI prompt writing for stunning presentations.",
+    title: "AI Prompt Guide - Write Better Prompts | PPTMaster",
+    description: "Master AI prompt writing for stunning PowerPoint presentations.",
     images: ["/og-image.jpeg"],
   },
 };

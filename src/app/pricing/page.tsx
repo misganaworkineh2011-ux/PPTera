@@ -2,14 +2,15 @@ import { PricingPageClient } from "./PricingPageClient";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Pricing",
-  description: "Choose the perfect PPTMaster (PPT Master) plan. Compare free and premium AI presentation features, credits, and pricing options.",
+  title: "Pricing Plans - Free AI PowerPoint Generator | PPTMaster",
+  description: "Compare PPTMaster pricing plans. Start free with 200 credits. Upgrade to Plus ($9/mo), Pro ($19/mo), or Ultra ($49/mo) for more AI PowerPoint features and credits.",
+  keywords: ["pricing", "plans", "subscription", "free presentation maker", "PPT pricing", "affordable AI", "presentation plans", "PPTMaster", "PPT Master", "PowerPoint pricing", "AI PowerPoint plans", "best PowerPoint generator"],
   alternates: {
     canonical: "https://www.pptmaster.app/pricing",
   },
   openGraph: {
-    title: "Pricing | PPTMaster – AI PowerPoint Plans",
-    description: "Choose the perfect PPTMaster plan. Compare free and premium AI presentation features, credits, and pricing options.",
+    title: "Pricing Plans - Free AI PowerPoint Generator | PPTMaster",
+    description: "Compare PPTMaster pricing plans. Start free with 200 credits. Upgrade for more AI PowerPoint features and credits.",
     url: "/pricing",
     type: "website",
     images: [
@@ -23,8 +24,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Pricing | PPTMaster – AI PowerPoint Plans",
-    description: "Choose the perfect PPTMaster plan. Compare free and premium AI presentation features.",
+    title: "Pricing Plans - Free AI PowerPoint Generator | PPTMaster",
+    description: "Compare PPTMaster pricing plans. Start free with 200 credits. Upgrade for more AI PowerPoint features.",
     images: ["/og-image.jpeg"],
   },
 };

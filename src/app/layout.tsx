@@ -16,17 +16,23 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://www.pptmaster.app'),
   title: {
-    default: "PPTMaster: Best AI Presentation Generator & Designer",
+    default: "PPTMaster: Free Stunning PowerPoint Generator",
     template: "%s | PPTMaster"
   },
-  description: "Create stunning AI presentations in seconds. PPTMaster is your free AI-powered PowerPoint generator - no design skills required. Transform ideas into professional slides instantly.",
+  description: "PPTMaster creates professional presentations in seconds with AI. Free slide generator with 100+ themes. No design skills needed.",
   keywords: [
     "PPTMaster",
+    "best free ai powerpoint generator",
+    "ai powerpoint slide generator",
+    "ai powerpoint presentation generator",
+    "ai powerpoint maker free",
+    "free ai powerpoint presentation generator",
+    "ai powerpoint generator from text",
+    "free ai powerpoint presentation maker",
+    "best ai powerpoint generator 2025",
     "AI presentation generator",
     "PowerPoint generator",
     "AI PowerPoint",
-    "best PowerPoint generator",
-    "AI PowerPoint generator",
     "free PowerPoint maker",
     "PPT maker",
     "AI slide creator",
@@ -35,12 +41,12 @@ export const metadata: Metadata = {
     "automatic presentation creator",
     "slide design AI",
     "presentation software",
-    "AI document generator",
     "free presentation maker",
     "create presentations online",
     "AI powered slides",
-    "PowerPoint AI",
-    "best AI PowerPoint"
+    "PowerPoint template",
+    "PowerPoint slides",
+    "PowerPoint backgrounds"
   ],
   authors: [{ name: "PPTMaster" }],
   creator: "PPTMaster",
@@ -82,28 +88,28 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "/",
     siteName: "PPT Master",
-    title: "PPT Master: AI PowerPoint Generator | Best Free PowerPoint Maker",
-    description: "Create stunning AI presentations in seconds. Transform your ideas into professional slides with PPT Master.",
+    title: "PPTMaster: Free Stunning PowerPoint Generator",
+    description: "PPTMaster creates professional presentations in seconds with AI. Free slide generator with 100+ themes.",
     images: [
       {
         url: "/og-image.jpeg",
         width: 1200,
         height: 630,
-        alt: "PPTMaster - AI PowerPoint Generator | Best Free PowerPoint Maker",
+        alt: "PPTMaster - Free AI PowerPoint Generator",
         type: "image/jpeg",
       }
     ]
   },
   twitter: {
     card: "summary_large_image",
-    title: "PPT Master: AI PowerPoint Generator | Best Free PowerPoint Maker",
-    description: "Create professional AI presentations in seconds. Transform ideas into stunning slides with PPT Master.",
+    title: "PPTMaster: Free Stunning PowerPoint Generator",
+    description: "PPTMaster creates professional presentations in seconds with AI. Free slide generator with 100+ themes.",
     images: [
       {
         url: "/og-image.jpeg",
         width: 1200,
         height: 630,
-        alt: "PPT Master - AI PowerPoint Generator",
+        alt: "PPT Master - Free AI PowerPoint Generator",
       }
     ],
     site: "@pptmaster",
