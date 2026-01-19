@@ -458,114 +458,8 @@ export async function GET(
         }
         console.log("[stream-content] Sent start event");
 
-        // Start image fetching in parallel (don't await - let it run alongside text streaming)
-        let imagePromise: Promise<void> | null = null;
-        if (imageSource === "stock-photos" || imageSource === "ai-generated") {
-          const slidesNeedingImages = pendingSlides
-            .map((slide, index) => ({ slide, index }))
-            .filter(({ slide }) => {
-              if (slide.type === "title") return slide.image?.required ?? true;
-              return slide.assets?.image?.required ?? false;
-            });
-
-          if (slidesNeedingImages.length > 0) {
-            sendEvent(controller, "imagesStart", { count: slidesNeedingImages.length }, isClosed);
-
-            // Process images in parallel batches
-            imagePromise = (async () => {
-              const BATCH_SIZE = 4;
-              for (let i = 0; i < slidesNeedingImages.length; i += BATCH_SIZE) {
-                if (isClosed.value) break; // Stop if controller is closed
-                
-                const batch = slidesNeedingImages.slice(i, i + BATCH_SIZE);
-                
-                if (imageSource === "stock-photos") {
-                  const slidesWithMetadata: SlideWithVisualMetadata[] = batch.map(({ slide }) => ({
-                    type: slide.type as "title" | "content",
-                    title: slide.title,
-                    subtitle: slide.subtitle,
-                    bulletPoints: slide.bulletPoints,
-                    assets: slide.assets as SlideWithVisualMetadata["assets"],
-                    image: slide.image as SlideWithVisualMetadata["image"],
-                  }));
-
-                  const fetchedImages = await fetchImagesForSlides(slidesWithMetadata);
-
-                  let mapIndex = 0;
-                  for (const { index } of batch) {
-                    if (isClosed.value) break;
-                    const photo = fetchedImages.get(mapIndex);
-                    if (photo) {
-                      const image = {
-                        url: photo.src.large,
-                        alt: photo.alt || pendingSlides[index]!.title,
-                        photographer: photo.photographer,
-                        photographerUrl: photo.photographer_url,
-                        source: "pexels",
-                      };
-                      // Store in imageMap for later merging
-                      imageMap.set(index, image);
-                      // Also update finalSlides if it exists
-                      if (finalSlides[index]) {
-                        finalSlides[index]!.image = image;
-                      }
-                      sendEvent(controller, "imageReady", { slideIndex: index, image }, isClosed);
-                    }
-                    mapIndex++;
-                  }
-                } else if (imageSource === "ai-generated") {
-                  console.log("[stream-content] Generating AI images for batch:", batch.map(b => b.index), "model:", imageModel, "artStyle:", imageArtStyle);
-                  const slidesWithMetadata = batch.map(({ slide }) => ({
-                    type: slide.type,
-                    title: slide.title,
-                    assets: slide.assets,
-                    image: slide.image,
-                  }));
-
-                  // Determine the effective art style to use
-                  const effectiveArtStyle = imageArtStyle === "custom" && customArtStyleText 
-                    ? customArtStyleText 
-                    : imageArtStyle;
-
-                  const generatedImages = await generateAIImages(
-                    slidesWithMetadata as Parameters<typeof generateAIImages>[0], 
-                    imageModel as Parameters<typeof generateAIImages>[1],
-                    effectiveArtStyle
-                  );
-                  console.log("[stream-content] Generated images count:", generatedImages.size);
-
-                  let mapIndex = 0;
-                  for (const { index } of batch) {
-                    if (isClosed.value) break;
-                    const result = generatedImages.get(mapIndex);
-                    console.log(`[stream-content] Image result for slide ${index}:`, {
-                      hasResult: !!result,
-                      hasUrl: !!result?.url,
-                      source: result?.source,
-                    });
-                    if (result && result.url) {
-                      const image = {
-                        url: result.url,
-                        alt: result.alt || pendingSlides[index]!.title,
-                        source: "ai",
-                      };
-                      // Store in imageMap for later merging
-                      imageMap.set(index, image);
-                      console.log(`[stream-content] Stored image in imageMap for slide ${index}`);
-                      // Also update finalSlides if it exists
-                      if (finalSlides[index]) {
-                        finalSlides[index]!.image = image;
-                        console.log(`[stream-content] Updated finalSlides[${index}] with image`);
-                      }
-                      sendEvent(controller, "imageReady", { slideIndex: index, image }, isClosed);
-                    }
-                    mapIndex++;
-                  }
-                }
-              }
-            })();
-          }
-        }
+        // Track image loading promises per slide (for parallel loading)
+        const imagePromises: Promise<void>[] = [];
 
         // Process each slide (text streaming)
         console.log(`[stream-content] Starting to process ${pendingSlides.length} slides`);
@@ -578,11 +472,16 @@ export async function GET(
           const slide = pendingSlides[i]!;
           console.log(`[stream-content] Processing slide ${i}/${pendingSlides.length}: "${slide.title}" (type: ${slide.type})`);
           
+          // Check if this slide needs an image
+          const needsImage = slide.type === "title" 
+            ? (slide.image?.required ?? true) 
+            : (slide.assets?.image?.required ?? false);
+          
           // Send slide start
           const slideStartSent = sendEvent(controller, "slideStart", { 
             slideIndex: i, 
             type: slide.type,
-            hasImage: slide.type === "title" ? (slide.image?.required ?? true) : (slide.assets?.image?.required ?? false)
+            hasImage: needsImage
           }, isClosed);
           
           if (!slideStartSent) {
@@ -590,6 +489,81 @@ export async function GET(
             break;
           }
           console.log(`[stream-content] Sent slideStart for slide ${i}`);
+
+          // Start loading image for this slide immediately (in parallel with text streaming)
+          if (needsImage && (imageSource === "stock-photos" || imageSource === "ai-generated")) {
+            const imagePromise = (async () => {
+              try {
+                if (imageSource === "stock-photos") {
+                  const slidesWithMetadata: SlideWithVisualMetadata[] = [{
+                    type: slide.type as "title" | "content",
+                    title: slide.title,
+                    subtitle: slide.subtitle,
+                    bulletPoints: slide.bulletPoints,
+                    assets: slide.assets as SlideWithVisualMetadata["assets"],
+                    image: slide.image as SlideWithVisualMetadata["image"],
+                  }];
+
+                  const fetchedImages = await fetchImagesForSlides(slidesWithMetadata);
+                  const photo = fetchedImages.get(0);
+                  
+                  if (photo && !isClosed.value) {
+                    const image = {
+                      url: photo.src.large,
+                      alt: photo.alt || slide.title,
+                      photographer: photo.photographer,
+                      photographerUrl: photo.photographer_url,
+                      source: "pexels",
+                    };
+                    imageMap.set(i, image);
+                    if (finalSlides[i]) {
+                      finalSlides[i]!.image = image;
+                    }
+                    sendEvent(controller, "imageReady", { slideIndex: i, image }, isClosed);
+                    console.log(`[stream-content] Image ready for slide ${i}`);
+                  }
+                } else if (imageSource === "ai-generated") {
+                  console.log(`[stream-content] Generating AI image for slide ${i}, model: ${imageModel}, artStyle: ${imageArtStyle}`);
+                  const slidesWithMetadata = [{
+                    type: slide.type,
+                    title: slide.title,
+                    assets: slide.assets,
+                    image: slide.image,
+                  }];
+
+                  // Determine the effective art style to use
+                  const effectiveArtStyle = imageArtStyle === "custom" && customArtStyleText 
+                    ? customArtStyleText 
+                    : imageArtStyle;
+
+                  const generatedImages = await generateAIImages(
+                    slidesWithMetadata as Parameters<typeof generateAIImages>[0], 
+                    imageModel as Parameters<typeof generateAIImages>[1],
+                    effectiveArtStyle
+                  );
+
+                  const result = generatedImages.get(0);
+                  if (result && result.url && !isClosed.value) {
+                    const image = {
+                      url: result.url,
+                      alt: result.alt || slide.title,
+                      source: "ai",
+                    };
+                    imageMap.set(i, image);
+                    if (finalSlides[i]) {
+                      finalSlides[i]!.image = image;
+                    }
+                    sendEvent(controller, "imageReady", { slideIndex: i, image }, isClosed);
+                    console.log(`[stream-content] AI image ready for slide ${i}`);
+                  }
+                }
+              } catch (error) {
+                console.error(`[stream-content] Error loading image for slide ${i}:`, error);
+                // Don't throw - continue with other slides
+              }
+            })();
+            imagePromises.push(imagePromise);
+          }
 
           // Build slide data
           const slideData: Record<string, unknown> = {
@@ -760,6 +734,15 @@ export async function GET(
           slideData.contentLayout = layoutSelection.style;
           slideData.contentLayoutCategory = layoutSelection.category;
 
+          // Send layout update immediately so placeholders appear in correct position
+          sendEvent(controller, "layoutUpdate", {
+            slideIndex: i,
+            slideLayout: layoutSelection.slideLayout,
+            contentLayout: layoutSelection.style,
+            imageSize: layoutSelection.imageSize,
+            imageShape: layoutSelection.imageShape,
+          }, isClosed);
+
           finalSlides.push(slideData);
           sendEvent(controller, "slideComplete", { slideIndex: i, slide: slideData }, isClosed);
           console.log(`[stream-content] Slide ${i} fully complete, finalSlides count: ${finalSlides.length}`);
@@ -767,11 +750,16 @@ export async function GET(
 
         console.log(`[stream-content] All slides processed, finalSlides: ${finalSlides.length}`);
 
-        // Wait for images to finish loading (they've been processing in parallel)
-        if (imagePromise) {
-          console.log("[stream-content] Waiting for images to finish loading...");
-          await imagePromise;
-          console.log("[stream-content] Images finished loading");
+        // Wait for all images to finish loading (they've been processing in parallel)
+        if (imagePromises.length > 0) {
+          console.log(`[stream-content] Waiting for ${imagePromises.length} image(s) to finish loading...`);
+          try {
+            await Promise.all(imagePromises);
+            console.log("[stream-content] All images finished loading");
+          } catch (error) {
+            console.error("[stream-content] Some images failed to load:", error);
+            // Continue anyway - some images may have loaded successfully
+          }
         }
 
         // Merge images from imageMap into finalSlides (in case they weren't set during streaming)

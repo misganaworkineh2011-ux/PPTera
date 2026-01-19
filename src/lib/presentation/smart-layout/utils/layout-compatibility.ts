@@ -667,34 +667,52 @@ export function determineOptimalSlideLayout(
   }
   
   // ========================================================================
-  // RULE 9: Apply variety with smart randomness
-  // Use simple random selection with recent position avoidance
+  // RULE 9: Apply true randomness with repetition limit
+  // If same side (left/right) appears 3+ times in a row, inhibit that side
+  // Then randomly select from remaining options
   // ========================================================================
   
-  // Get last 2 slide layouts
-  const recentLayouts = previousSlideLayouts.slice(-2);
-  const lastLayout = recentLayouts[recentLayouts.length - 1];
+  // Get last 3 slide layouts to check for repetition
+  const lastThreeLayouts = previousSlideLayouts.slice(-3);
+  
+  // Check if we have 3 consecutive same-side images
+  let inhibitedSide: "image-left" | "image-right" | null = null;
+  if (lastThreeLayouts.length >= 3) {
+    const allLeft = lastThreeLayouts.every(l => l === "image-left");
+    const allRight = lastThreeLayouts.every(l => l === "image-right");
+    
+    if (allLeft) {
+      inhibitedSide = "image-left";
+      console.log(`[determineOptimalSlideLayout] Inhibiting image-left (3+ consecutive)`);
+    } else if (allRight) {
+      inhibitedSide = "image-right";
+      console.log(`[determineOptimalSlideLayout] Inhibiting image-right (3+ consecutive)`);
+    }
+  }
   
   let selectedLayout: SlideLayoutType;
   
-  // If we have multiple options, use smart random selection
-  if (preferredLayouts.length > 1) {
-    // Filter out the last used layout to avoid immediate repetition
-    let candidateLayouts = preferredLayouts.filter(l => l !== lastLayout);
-    
-    // If filtering removed all options, use all preferred layouts
+  // Filter out inhibited side if applicable
+  let candidateLayouts = preferredLayouts;
+  if (inhibitedSide && preferredLayouts.length > 1) {
+    candidateLayouts = preferredLayouts.filter(l => l !== inhibitedSide);
+    // If filtering removed all options, use all preferred layouts (fallback)
     if (candidateLayouts.length === 0) {
       candidateLayouts = preferredLayouts;
+      console.log(`[determineOptimalSlideLayout] Warning: All options were inhibited, using all preferred layouts`);
     }
-    
-    // Simple random selection from candidates
+  }
+  
+  // Use random selection from candidate layouts
+  if (candidateLayouts.length > 1) {
+    // True random selection from available candidates
     const randomIndex = Math.floor(Math.random() * candidateLayouts.length);
     selectedLayout = candidateLayouts[randomIndex]!;
     
-    console.log(`[determineOptimalSlideLayout] Random selection: chose ${selectedLayout} from [${candidateLayouts.join(', ')}], avoiding ${lastLayout}`);
+    console.log(`[determineOptimalSlideLayout] Random selection: chose ${selectedLayout} from [${candidateLayouts.join(', ')}]${inhibitedSide ? ` (inhibited ${inhibitedSide})` : ''}`);
   } else {
     // Only one option available
-    selectedLayout = preferredLayouts[0]!;
+    selectedLayout = candidateLayouts[0]!;
     console.log(`[determineOptimalSlideLayout] Single option: ${selectedLayout}`);
   }
   

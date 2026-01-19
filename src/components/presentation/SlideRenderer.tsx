@@ -148,6 +148,10 @@ interface SlideImageProps {
 }
 
 function SlideImg({ image, alt, className = "", style = {}, draggable, onDragStart, onDragEnd }: SlideImageProps) {
+  // Don't render if image is a placeholder or has no URL
+  if (image.source === "placeholder" || !image.url) {
+    return null;
+  }
   const imageStyles = getImageStyle(image);
   return (
     // eslint-disable-next-line @next/next/no-img-element
@@ -326,13 +330,20 @@ function getLayoutVariant(index: number, themeType: ThemeType, slideLayout?: str
 }
 
 // Helper to get all images from a slide (combines legacy image with images array)
+// Includes placeholder images so they appear immediately with correct layout during streaming
 function getSlideImages(slide: SlideData) {
   const images = [...(slide.images || [])];
   // Include legacy single image if it exists and isn't already in images array
-  if (slide.image?.url && slide.image.source !== "placeholder" && !images.some(img => img.url === slide.image?.url)) {
+  // Include placeholders so they render with correct layout during streaming
+  if (slide.image && !images.some(img => 
+    img.url === slide.image?.url && 
+    img.source === slide.image?.source &&
+    img.source === "placeholder"
+  )) {
     images.unshift(slide.image);
   }
-  return images.filter(img => img.url && img.source !== "placeholder");
+  // Return all images including placeholders - they'll be handled in rendering
+  return images;
 }
 
 function SlideRendererComponent({
@@ -1459,6 +1470,7 @@ function SlideRendererComponent({
     if (!img) return null;
     const sizeClass = size === "small" ? "max-h-[50%]" : size === "medium" ? "max-h-[70%]" : "max-h-[85%]";
     const isImageHovered = hoveredImageIndex === imageIndex;
+    const isPlaceholder = img.source === "placeholder" || !img.url;
     
     return (
       <div 
@@ -1468,12 +1480,24 @@ function SlideRendererComponent({
       >
         <div className={`absolute inset-0 bg-gradient-to-br ${colors.accentBorder} rounded-lg`} />
         <div className={`absolute inset-[1px] ${colors.surface} rounded-lg overflow-hidden`}>
-          <SlideImg image={img} alt={img.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
-          <div className={`absolute inset-0 bg-gradient-to-t ${colors.overlay} via-transparent to-transparent`} />
+          {isPlaceholder ? (
+            // Loading placeholder with spinner
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-zinc-800/50 to-zinc-900/50">
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-6 h-6 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
+                <span className="text-xs text-zinc-400">Loading image...</span>
+              </div>
+            </div>
+          ) : (
+            <>
+              <SlideImg image={img} alt={img.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
+              <div className={`absolute inset-0 bg-gradient-to-t ${colors.overlay} via-transparent to-transparent`} />
+            </>
+          )}
         </div>
         
-        {/* Image Hover Toolbar */}
-        {canEdit && isImageHovered && onOpenImageModal && onRemoveImage && onChangeImageShape && (
+        {/* Image Hover Toolbar - only show when not a placeholder */}
+        {!isPlaceholder && canEdit && isImageHovered && onOpenImageModal && onRemoveImage && onChangeImageShape && (
           <ImageHoverToolbar
             slideIndex={index}
             imageIndex={imageIndex}
@@ -1507,14 +1531,23 @@ function SlideRendererComponent({
     if (galleryLayout === "row") {
       return (
         <div className={`flex gap-3 ${className}`}>
-          {allImages.slice(0, 3).map((img, idx) => (
-            <div key={idx} className="flex-1 relative rounded-lg overflow-hidden" style={{ aspectRatio: "4/3" }}>
-              <div className={`absolute inset-0 bg-gradient-to-br ${colors.accentBorder} rounded-lg`} />
-              <div className={`absolute inset-[1px] ${colors.surface} rounded-lg overflow-hidden`}>
-                <SlideImg image={img} alt={img.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
+          {allImages.slice(0, 3).map((img, idx) => {
+            const isPlaceholder = img.source === "placeholder" || !img.url;
+            return (
+              <div key={idx} className="flex-1 relative rounded-lg overflow-hidden" style={{ aspectRatio: "4/3" }}>
+                <div className={`absolute inset-0 bg-gradient-to-br ${colors.accentBorder} rounded-lg`} />
+                <div className={`absolute inset-[1px] ${colors.surface} rounded-lg overflow-hidden`}>
+                  {isPlaceholder ? (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-zinc-800/50 to-zinc-900/50">
+                      <div className="w-5 h-5 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
+                    </div>
+                  ) : (
+                    <SlideImg image={img} alt={img.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       );
     }
@@ -1523,21 +1556,30 @@ function SlideRendererComponent({
       // Stacked/overlapping style
       return (
         <div className={`relative ${className}`} style={{ height: "100%" }}>
-          {allImages.slice(0, 3).map((img, idx) => (
-            <div
-              key={idx}
-              className={`absolute rounded-lg overflow-hidden shadow-xl border ${colors.border}`}
-              style={{
-                width: `${85 - idx * 10}%`,
-                height: `${85 - idx * 10}%`,
-                top: `${idx * 8}%`,
-                left: `${idx * 8}%`,
-                zIndex: allImages.length - idx,
-              }}
-            >
-              <SlideImg image={img} alt={img.alt || slide.title} className="w-full h-full object-cover" />
-            </div>
-          ))}
+          {allImages.slice(0, 3).map((img, idx) => {
+            const isPlaceholder = img.source === "placeholder" || !img.url;
+            return (
+              <div
+                key={idx}
+                className={`absolute rounded-lg overflow-hidden shadow-xl border ${colors.border}`}
+                style={{
+                  width: `${85 - idx * 10}%`,
+                  height: `${85 - idx * 10}%`,
+                  top: `${idx * 8}%`,
+                  left: `${idx * 8}%`,
+                  zIndex: allImages.length - idx,
+                }}
+              >
+                {isPlaceholder ? (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-zinc-800/50 to-zinc-900/50">
+                    <div className="w-5 h-5 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
+                  </div>
+                ) : (
+                  <SlideImg image={img} alt={img.alt || slide.title} className="w-full h-full object-cover" />
+                )}
+              </div>
+            );
+          })}
         </div>
       );
     }
@@ -1546,14 +1588,23 @@ function SlideRendererComponent({
     const gridCols = allImages.length === 2 ? "grid-cols-2" : allImages.length === 3 ? "grid-cols-3" : "grid-cols-2";
     return (
       <div className={`grid ${gridCols} gap-3 ${className}`}>
-        {allImages.slice(0, 4).map((img, idx) => (
-          <div key={idx} className="relative rounded-lg overflow-hidden" style={{ aspectRatio: allImages.length <= 2 ? "16/9" : "4/3" }}>
-            <div className={`absolute inset-0 bg-gradient-to-br ${colors.accentBorder} rounded-lg`} />
-            <div className={`absolute inset-[1px] ${colors.surface} rounded-lg overflow-hidden`}>
-              <SlideImg image={img} alt={img.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
+        {allImages.slice(0, 4).map((img, idx) => {
+          const isPlaceholder = img.source === "placeholder" || !img.url;
+          return (
+            <div key={idx} className="relative rounded-lg overflow-hidden" style={{ aspectRatio: allImages.length <= 2 ? "16/9" : "4/3" }}>
+              <div className={`absolute inset-0 bg-gradient-to-br ${colors.accentBorder} rounded-lg`} />
+              <div className={`absolute inset-[1px] ${colors.surface} rounded-lg overflow-hidden`}>
+                {isPlaceholder ? (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-zinc-800/50 to-zinc-900/50">
+                    <div className="w-5 h-5 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
+                  </div>
+                ) : (
+                  <SlideImg image={img} alt={img.alt || slide.title} className="absolute inset-0 w-full h-full object-cover" />
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     );
   };
