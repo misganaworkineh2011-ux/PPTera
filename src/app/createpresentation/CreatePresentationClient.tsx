@@ -337,6 +337,7 @@ export default function CreatePresentationClient({
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
+  const [isImageSourceDropdownOpen, setIsImageSourceDropdownOpen] = useState(false);
   const [isCreatingPresentation, setIsCreatingPresentation] = useState(false);
 
   // Close model dropdown when pressing Escape
@@ -345,10 +346,13 @@ export default function CreatePresentationClient({
       if (e.key === "Escape" && isModelDropdownOpen) {
         setIsModelDropdownOpen(false);
       }
+      if (e.key === "Escape" && isImageSourceDropdownOpen) {
+        setIsImageSourceDropdownOpen(false);
+      }
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isModelDropdownOpen]);
+  }, [isModelDropdownOpen, isImageSourceDropdownOpen]);
 
   // Track recently selected themes for quick access (6 themes for 3x2 grid)
   // Filter to only include unique theme IDs that exist
@@ -391,6 +395,9 @@ export default function CreatePresentationClient({
 
   // Track if we've started a new generation (to override existingOutline behavior)
   const [hasStartedGeneration, setHasStartedGeneration] = useState(false);
+  
+  // Track if the current operation is a regeneration (for loading text)
+  const [isRegenerating, setIsRegenerating] = useState(false);
 
   // Update view based on stream state
   useEffect(() => {
@@ -472,6 +479,13 @@ export default function CreatePresentationClient({
 
     // Determine which outline ID to use (reuse existing when present)
     const idForStream = outlineId || existingOutline?.id || null;
+    
+    // Check if this is a regeneration - same logic as the button text
+    // Button shows "Regenerate" when isSamePrompt is true, so loading should show "Regenerating..." in that case
+    const normalizedCurrent = trimmed;
+    const normalizedLast = lastDescription.trim();
+    const isRegen = normalizedCurrent !== "" && normalizedCurrent === normalizedLast;
+    setIsRegenerating(isRegen);
 
     // Remember the prompt we are generating from (for button label logic)
     setLastDescription(trimmed);
@@ -1269,7 +1283,9 @@ export default function CreatePresentationClient({
                   className="w-full sm:w-auto px-10 py-3 rounded-xl bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold shadow-lg transition-all hover:opacity-90 hover:shadow-xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm"
                 >
                   {isStreaming ? (
-                    mode === "scratch" ? t.creatingDots : isSamePrompt ? t.regeneratingDots : t.generatingDots
+                    mode === "scratch" ? t.creatingDots : 
+                    // Show "Regenerating..." only when this is actually a regeneration
+                    isRegenerating ? t.regeneratingDots : t.generatingDots
                   ) : (
                     mode === "scratch" ? t.createPresentation :
                       isSamePrompt ? t.regenerateOutlineBtn : t.generateOutlineBtn
@@ -1540,24 +1556,145 @@ export default function CreatePresentationClient({
                       <p className="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">
                         Image Style
                       </p>
-                      <select
-                        id="imageSource-outline"
-                        value={formData.imageSource}
-                        onChange={(e) => handleChange("imageSource", e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all"
-                      >
-                        <option value="no-images">No Images (Text-Only Slides)</option>
-                        <option value="placeholders">Image Placeholders (Edit Later)</option>
-                        <option value="ai-generated">AI-Generated Images</option>
-                        <option value="stock-photos">Stock Photos (Pexels)</option>
-                        <option value="illustrations">Illustrations (Pictographic Style)</option>
-                        <option value="web-images">Web Images (Public Search)</option>
-                      </select>
+                      <div className="relative z-[100]">
+                        {/* Selected Option Button */}
+                        <button
+                          type="button"
+                          onClick={() => setIsImageSourceDropdownOpen(!isImageSourceDropdownOpen)}
+                          className="w-full flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all"
+                        >
+                          <div className="flex items-center gap-2">
+                            {formData.imageSource === "no-images" && (
+                              <>
+                                <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                                <span>No Images (Text-Only Slides)</span>
+                              </>
+                            )}
+                            {formData.imageSource === "placeholders" && (
+                              <>
+                                <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <span>Image Placeholders (Edit Later)</span>
+                              </>
+                            )}
+                            {formData.imageSource === "ai-generated" && (
+                              <>
+                                <Sparkles size={16} className="text-violet-500" />
+                                <span>AI-Generated Images</span>
+                              </>
+                            )}
+                            {formData.imageSource === "stock-photos" && (
+                              <>
+                                <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span>Stock Photos (Pexels)</span>
+                              </>
+                            )}
+                            {formData.imageSource === "illustrations" && (
+                              <>
+                                <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                                </svg>
+                                <span>Illustrations (Pictographic Style)</span>
+                              </>
+                            )}
+                          </div>
+                          <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${isImageSourceDropdownOpen ? "rotate-180" : ""}`} />
+                        </button>
+
+                        {/* Dropdown Menu - Smart positioning */}
+                        {isImageSourceDropdownOpen && (
+                          <>
+                            {/* Backdrop to close dropdown */}
+                            <div
+                              className="fixed inset-0 z-[9998] bg-transparent"
+                              onClick={() => setIsImageSourceDropdownOpen(false)}
+                              onMouseDown={() => setIsImageSourceDropdownOpen(false)}
+                            />
+                            <div className="absolute bottom-full left-0 right-0 mb-1 bg-white rounded-xl border border-slate-200 shadow-2xl z-[9999] max-h-[300px] overflow-y-auto">
+                              <div className="p-2">
+                                {[
+                                  { 
+                                    id: "no-images", 
+                                    label: "No Images (Text-Only Slides)",
+                                    icon: (
+                                      <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                      </svg>
+                                    )
+                                  },
+                                  { 
+                                    id: "placeholders", 
+                                    label: "Image Placeholders (Edit Later)",
+                                    icon: (
+                                      <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                      </svg>
+                                    )
+                                  },
+                                  { 
+                                    id: "ai-generated", 
+                                    label: "AI-Generated Images",
+                                    icon: <Sparkles size={16} className="text-violet-500" />
+                                  },
+                                  { 
+                                    id: "stock-photos", 
+                                    label: "Stock Photos (Pexels)",
+                                    icon: (
+                                      <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                      </svg>
+                                    )
+                                  },
+                                  { 
+                                    id: "illustrations", 
+                                    label: "Illustrations (Pictographic Style)",
+                                    icon: (
+                                      <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                                      </svg>
+                                    )
+                                  },
+                                ].map((option) => (
+                                  <button
+                                    key={option.id}
+                                    type="button"
+                                    onClick={() => {
+                                      handleChange("imageSource", option.id);
+                                      setIsImageSourceDropdownOpen(false);
+                                    }}
+                                    className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left transition-colors ${
+                                      formData.imageSource === option.id
+                                        ? "bg-[#06b6d4]/10 text-[#06b6d4]"
+                                        : "hover:bg-slate-50 text-slate-700"
+                                    }`}
+                                  >
+                                    {formData.imageSource === option.id ? (
+                                      <Check size={16} className="text-[#06b6d4] flex-shrink-0" />
+                                    ) : (
+                                      <div className="flex-shrink-0">{option.icon}</div>
+                                    )}
+                                    <span className={`text-sm ${formData.imageSource === option.id ? "font-medium" : ""}`}>
+                                      {option.label}
+                                    </span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </div>
                     </div>
 
-                    {/* Second selector: AI model (for AI images) or licensing (for external images) */}
+                    {/* Second selector: AI model (for AI images) */}
                     <div>
-                      {formData.imageSource === "ai-generated" ? (
+                      {formData.imageSource === "ai-generated" && (
                         <>
                           {/* AI Model Selection - Gamma Style Custom Dropdown */}
                           <p className="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">
@@ -1864,50 +2001,6 @@ export default function CreatePresentationClient({
                               <p className="text-[10px] text-slate-500 mt-1">
                                 Be specific! E.g., &quot;vintage oil painting&quot;, &quot;anime style&quot;, &quot;neon cyberpunk&quot;, &quot;watercolor sketch&quot;
                               </p>
-                            </div>
-                          )}
-                        </>
-                      ) : (
-                        <>
-                          <div className="relative">
-                            <select
-                              id="imageLicensing-outline"
-                              value={formData.imageLicensing}
-                              onChange={(e) => handleChange("imageLicensing", e.target.value)}
-                              disabled={formData.imageSource === "no-images" || formData.imageSource === "placeholders"}
-                              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all disabled:opacity-50 disabled:cursor-not-allowed appearance-none"
-                            >
-                              <option value="all-images">All images</option>
-                              <option value="free-to-use">Free to use</option>
-                              <option value="free-commercial">Free to use commercially</option>
-                            </select>
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                              <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                              </svg>
-                            </div>
-                          </div>
-
-                          {/* Licensing Info Tooltip */}
-                          {formData.imageLicensing !== "all-images" && formData.imageSource !== "no-images" && formData.imageSource !== "placeholders" && (
-                            <div className="mt-2 p-2 rounded-lg bg-blue-50 border border-blue-100">
-                              <div className="flex items-start gap-2">
-                                <svg className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                                </svg>
-                                <div className="text-[10px] text-blue-700 leading-relaxed">
-                                  {formData.imageLicensing === "free-to-use" && (
-                                    <span>
-                                      <strong>Free to use:</strong> Only use images licensed for personal use, like a school project.
-                                    </span>
-                                  )}
-                                  {formData.imageLicensing === "free-commercial" && (
-                                    <span>
-                                      <strong>Free to use commercially:</strong> Only use images licensed for commercial use, like a sales pitch.
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
                             </div>
                           )}
                         </>
