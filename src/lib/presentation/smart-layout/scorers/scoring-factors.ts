@@ -15,15 +15,18 @@ import type {
 import { calculateContentDensity, isDensityCompatible } from "./capacity-evaluator";
 
 /**
- * Score content type compatibility (40 points max)
+ * Score content type compatibility (45 points max)
  * 
  * Uses the layout's contentTypeAffinity to determine how well
  * the layout matches the detected content type. Multiplies base
  * score by affinity multiplier (0-2).
  * 
+ * Increased from 40 to 45 to give more weight to content type matching,
+ * reducing reliance on bullets as default.
+ * 
  * @param layout - Layout definition with content type affinity scores
  * @param input - Scoring input with content analysis
- * @returns Score 0-80 (40 * affinity multiplier up to 2.0)
+ * @returns Score 0-90 (45 * affinity multiplier up to 2.0)
  */
 export function scoreContentType(
   layout: LayoutDefinition,
@@ -32,20 +35,23 @@ export function scoreContentType(
   const contentType = input.analysis.contentType;
   const affinity = layout.contentTypeAffinity[contentType] || 0;
   
-  // Base score is 40 points, multiplied by affinity
-  return 40 * affinity;
+  // Base score is 45 points, multiplied by affinity
+  return 45 * affinity;
 }
 
 /**
- * Score structural pattern match (35 points max)
+ * Score structural pattern match (40 points max)
  * 
  * Uses the layout's patternAffinity to determine how well
  * the layout matches the detected bullet pattern. Multiplies
  * base score by affinity multiplier (0-2).
  * 
+ * Increased from 35 to 40 to give more weight to pattern matching,
+ * helping specialized layouts (steps, sequence, quotes) score higher.
+ * 
  * @param layout - Layout definition with pattern affinity scores
  * @param input - Scoring input with content analysis
- * @returns Score 0-70 (35 * affinity multiplier up to 2.0)
+ * @returns Score 0-80 (40 * affinity multiplier up to 2.0)
  */
 export function scorePattern(
   layout: LayoutDefinition,
@@ -54,51 +60,57 @@ export function scorePattern(
   const pattern = input.analysis.pattern;
   const affinity = layout.patternAffinity[pattern] || 0;
   
-  // Base score is 35 points, multiplied by affinity
-  return 35 * affinity;
+  // Base score is 40 points, multiplied by affinity
+  return 40 * affinity;
 }
 
 /**
- * Score capacity fit (30 points max)
+ * Score capacity fit (35 points max)
  * 
  * Scores based on how well the content utilizes the layout's
- * capacity. Optimal utilization (50-70%) gets full points.
- * Lower or higher utilization gets reduced scores.
+ * capacity. Optimal utilization (40-80%) gets full points.
+ * More lenient than before to allow borderline cases.
+ * 
+ * GAMMA-STYLE: More forgiving, allows layouts to compete even
+ * if capacity isn't perfect.
  * 
  * @param utilization - Capacity utilization (0-1)
- * @returns Score 0-30 based on utilization
+ * @returns Score 0-35 based on utilization
  */
 export function scoreCapacity(utilization: number): number {
-  // Optimal utilization is 50-70%
-  // Below 50%: content is too sparse
-  // Above 70%: content is getting cramped
-  // Above 90%: rejected (handled in capacity evaluator)
+  // Optimal utilization is 40-80% (wider range than before)
+  // Below 40%: content is sparse but acceptable
+  // Above 80%: content is cramped but acceptable
+  // Only extreme cases get penalized heavily
   
-  if (utilization >= 0.5 && utilization <= 0.7) {
-    // Optimal range: full 30 points
-    return 30;
-  } else if (utilization < 0.5) {
-    // Too sparse: scale linearly from 0 to 30
-    // 0% utilization = 0 points
-    // 50% utilization = 30 points
-    return 30 * (utilization / 0.5);
+  if (utilization >= 0.4 && utilization <= 0.8) {
+    // Optimal range: full 35 points
+    return 35;
+  } else if (utilization < 0.4) {
+    // Too sparse: scale linearly from 15 to 35
+    // 0% utilization = 15 points (still some credit)
+    // 40% utilization = 35 points
+    return 15 + (20 * (utilization / 0.4));
   } else {
-    // Too cramped: scale linearly from 30 to 0
-    // 70% utilization = 30 points
-    // 90% utilization = 0 points
-    return 30 * (1 - (utilization - 0.7) / 0.2);
+    // Too cramped: scale linearly from 35 to 15
+    // 80% utilization = 35 points
+    // 100% utilization = 15 points (still some credit)
+    return 35 - (20 * ((utilization - 0.8) / 0.2));
   }
 }
 
 /**
- * Score semantic intent alignment (25 points max)
+ * Score semantic intent alignment (30 points max)
  * 
  * Checks if the slide's semantic intent is compatible with
- * the layout. Returns full points if compatible, zero otherwise.
+ * the layout. Returns full points if compatible, partial if close.
+ * 
+ * GAMMA-STYLE: More lenient - give partial credit for close matches
+ * instead of all-or-nothing.
  * 
  * @param layout - Layout definition with semantic intent compatibility
  * @param input - Scoring input with semantic intent
- * @returns Score 0 or 25
+ * @returns Score 0-30
  */
 export function scoreSemanticIntent(
   layout: LayoutDefinition,
@@ -108,19 +120,41 @@ export function scoreSemanticIntent(
     input.semanticIntent
   );
   
-  return isCompatible ? 25 : 0;
+  if (isCompatible) {
+    return 30; // Full points for exact match
+  }
+  
+  // Partial credit for common semantic intent pairs
+  // e.g., "inform" and "emphasize" are often compatible
+  const intentGroups: Record<string, string[]> = {
+    "inform": ["emphasize", "analyze", "compare"],
+    "instruct": ["demonstrate", "inform"],
+    "emphasize": ["inform", "narrate"],
+    "compare": ["analyze", "inform"],
+    "narrate": ["inform", "emphasize"],
+  };
+  
+  const compatibleIntents = intentGroups[input.semanticIntent] || [];
+  if (compatibleIntents.some(intent => layout.semanticIntentCompatibility.includes(intent))) {
+    return 15; // Partial credit for compatible intent
+  }
+  
+  return 0; // No match
 }
 
 /**
- * Score visual strategy alignment (25 points max)
+ * Score visual strategy alignment (30 points max)
  * 
  * Checks if the slide's visual strategy matches the layout's
  * compatible strategies. Scores based on how many strategy
  * components match (primary, pattern, emphasis).
  * 
+ * GAMMA-STYLE: Pattern match gets extra weight since it's
+ * the strongest indicator of layout suitability.
+ * 
  * @param layout - Layout definition with visual strategy compatibility
  * @param input - Scoring input with visual strategy
- * @returns Score 0-25 based on strategy match
+ * @returns Score 0-30 based on strategy match
  */
 export function scoreVisualStrategy(
   layout: LayoutDefinition,
@@ -131,6 +165,7 @@ export function scoreVisualStrategy(
   
   let matchCount = 0;
   let totalChecks = 0;
+  let patternMatch = false;
   
   // Check primary strategy
   if (compatibility.primary) {
@@ -140,11 +175,12 @@ export function scoreVisualStrategy(
     }
   }
   
-  // Check pattern strategy
+  // Check pattern strategy (most important - gets extra weight)
   if (compatibility.pattern) {
     totalChecks++;
     if (compatibility.pattern.includes(strategy.pattern)) {
       matchCount++;
+      patternMatch = true; // Track pattern match separately
     }
   }
   
@@ -158,11 +194,18 @@ export function scoreVisualStrategy(
   
   // If no compatibility rules defined, give partial credit
   if (totalChecks === 0) {
-    return 12.5;
+    return 15;
   }
   
-  // Score proportional to matches
-  return 25 * (matchCount / totalChecks);
+  // Base score proportional to matches
+  let baseScore = 30 * (matchCount / totalChecks);
+  
+  // Bonus for pattern match (strong indicator)
+  if (patternMatch) {
+    baseScore += 5; // Extra 5 points for pattern match
+  }
+  
+  return Math.min(30, baseScore); // Cap at 30
 }
 
 /**
@@ -202,13 +245,16 @@ export function scoreDensity(
  * 
  * Evaluates image presence and space requirements:
  * - Image scoring: boost if layout supports images when present,
- *   penalize if layout requires images when absent
+ *   apply light penalty (not rejection) if layout doesn't support images
  * - Space scoring: check if layout's space requirement matches
  *   available space
  * 
+ * GAMMA-STYLE: More lenient - layouts without image support get
+ * light penalty instead of zero score, allowing them to compete.
+ * 
  * @param layout - Layout definition with media constraints
  * @param input - Scoring input with media flags
- * @returns Object with image and space scores (0-15 each)
+ * @returns Object with image and space scores (0-15 each, can be negative)
  */
 export function scoreMediaConstraints(
   layout: LayoutDefinition,
@@ -217,7 +263,7 @@ export function scoreMediaConstraints(
   let imageScore = 0;
   let spaceScore = 0;
   
-  // Image scoring
+  // Image scoring - more lenient approach
   if (input.hasImage) {
     // Has image: boost layouts that support images
     if (layout.capacity.supportsImage) {
@@ -228,8 +274,9 @@ export function scoreMediaConstraints(
         imageScore = 30; // Double points for image layouts
       }
     } else {
-      // Layout doesn't support images: no points
-      imageScore = 0;
+      // Layout doesn't support images: light penalty instead of zero
+      // This allows sequence/timeline layouts to still compete
+      imageScore = -10; // Light penalty, not rejection
     }
   } else {
     // No image: penalize layouts that require images
@@ -241,14 +288,14 @@ export function scoreMediaConstraints(
     }
   }
   
-  // Space scoring
+  // Space scoring - more lenient
   if (input.isNarrowSpace) {
     // Narrow space: prefer narrow-compatible layouts
     if (layout.capacity.spaceRequirement === "narrow-compatible") {
       spaceScore = 15;
     } else {
-      // Full-width-only in narrow space: penalty
-      spaceScore = 0;
+      // Full-width-only in narrow space: light penalty instead of zero
+      spaceScore = 5; // Reduced but not zero
     }
   } else {
     // Full width available: all layouts work, slight preference for full-width
@@ -389,4 +436,70 @@ export function calculateRepetitionPenalty(
   } else {
     return 0; // No repetition
   }
+}
+
+/**
+ * Score content layout hint from LLM (50-60 points max)
+ * 
+ * Gives significant weight to the LLM's contentLayoutHint suggestion,
+ * but allows rules to override if the hint doesn't fit capacity or other constraints.
+ * 
+ * Scoring strategy:
+ * - Exact match: +60 points (strong preference for LLM suggestion)
+ * - Partial match (e.g., "box" matches "boxes"): +50 points
+ * - No hint provided: 0 points
+ * - Hint doesn't match: 0 points (allows rules to override)
+ * 
+ * This ensures the LLM hint has strong influence but can still be overridden
+ * by capacity constraints, image requirements, or other critical rules.
+ * 
+ * @param layout - Layout definition being scored
+ * @param input - Scoring input with contentLayoutHint
+ * @returns Score 0-60 based on hint match
+ */
+export function scoreContentLayoutHint(
+  layout: LayoutDefinition,
+  input: LayoutScoringInput
+): number {
+  const hint = input.contentLayoutHint;
+  
+  // No hint provided - neutral
+  if (!hint) {
+    return 0;
+  }
+  
+  // Normalize hint to lowercase for comparison
+  const normalizedHint = hint.toLowerCase().trim();
+  const layoutCategory = layout.category.toLowerCase();
+  
+  // Exact match: full bonus
+  if (normalizedHint === layoutCategory) {
+    return 60;
+  }
+  
+  // Partial match: check if hint contains category or vice versa
+  // e.g., "box" matches "boxes", "step" matches "steps"
+  if (normalizedHint.includes(layoutCategory) || layoutCategory.includes(normalizedHint)) {
+    return 50;
+  }
+  
+  // Check for common aliases/variations
+  const hintAliases: Record<string, string[]> = {
+    "boxes": ["box", "card", "cards", "grid"],
+    "bullets": ["bullet", "list", "points"],
+    "sequence": ["sequence", "timeline", "ordered", "numbered"],
+    "steps": ["step", "process", "flow", "procedure"],
+    "quotes": ["quote", "testimonial", "testimonials"],
+    "circles": ["circle", "cycle", "circular"],
+    "images": ["image", "gallery", "photo", "photos"],
+    "numbers": ["number", "stat", "stats", "statistics", "metrics"],
+  };
+  
+  const aliases = hintAliases[layoutCategory];
+  if (aliases && aliases.some(alias => normalizedHint.includes(alias) || alias.includes(normalizedHint))) {
+    return 50;
+  }
+  
+  // No match - return 0 (allows other factors to determine score)
+  return 0;
 }

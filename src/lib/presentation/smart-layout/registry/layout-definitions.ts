@@ -148,7 +148,7 @@ export const LAYOUT_DEFINITIONS: LayoutDefinition[] = [
       emphasis: ["clarity", "hierarchy"],
     },
     
-    priority: "fallback",
+    priority: "low", // Changed from "fallback" to reduce bias - bullets should compete fairly
     
     styles: [
       {
@@ -194,7 +194,7 @@ export const LAYOUT_DEFINITIONS: LayoutDefinition[] = [
       avgBulletLength: { min: 5, max: 25 },
       maxBulletLength: { min: 10, max: 40 },
       density: "medium",
-      supportsImage: false,
+      supportsImage: true, // Changed: sequence layouts can work with images (timeline visuals)
       spaceRequirement: "full-width-only",
     },
     
@@ -211,12 +211,12 @@ export const LAYOUT_DEFINITIONS: LayoutDefinition[] = [
       [BulletPattern.INSTRUCTIONAL]: 1.5,
     },
     
-    semanticIntentCompatibility: ["narrate", "instruct", "inform"],
+    semanticIntentCompatibility: ["narrate", "instruct", "inform", "emphasize"], // Added "emphasize" for timeline emphasis
     
     visualStrategyCompatibility: {
-      primary: ["diagram", "mixed"],
+      primary: ["diagram", "mixed", "image"], // Added "image" - timelines often have images
       pattern: ["flow", "timeline", "cards"],
-      emphasis: ["progression", "hierarchy"],
+      emphasis: ["progression", "hierarchy", "clarity"], // Added "clarity"
     },
     
     priority: "high",

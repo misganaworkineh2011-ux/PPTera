@@ -30,6 +30,7 @@ import {
   calculatePriorityBonus,
   calculateConfidenceBonus,
   calculateRepetitionPenalty,
+  scoreContentLayoutHint,
 } from "./scoring-factors";
 
 // ============================================================================
@@ -64,6 +65,7 @@ const EMPTY_BREAKDOWN: ScoreBreakdown = Object.freeze({
   priority: 0,
   confidenceBonus: 0,
   repetitionPenalty: 0,
+  hintBonus: 0,
 });
 
 /**
@@ -106,33 +108,55 @@ export function scoreLayout(
   input: LayoutScoringInput,
   enableLogging: boolean = false
 ): LayoutMatch {
-  // EARLY REJECTION: Check capacity first (Task 16.4)
+  // GAMMA-STYLE APPROACH: Evaluate capacity but don't reject immediately
+  // Instead, apply penalties for poor capacity fit, allowing all layouts to compete
+  // This ensures LLM hints and other factors can still influence selection
+  
   const capacityEval = evaluateCapacity(layout.capacity, input.analysis);
   
+  // Calculate capacity penalty if content doesn't fit perfectly
+  let capacityPenalty = 0;
   if (!capacityEval.fits) {
-    // Content doesn't fit - return zero score immediately
-    // Use pre-allocated empty breakdown to avoid allocation
-    if (enableLogging) {
-      console.log(
-        `[layout-scorer] Layout '${layout.category}' rejected: ` +
-        `Capacity exceeded (utilization: ${(capacityEval.utilization * 100).toFixed(1)}%, ` +
-        `bulletCount: ${input.analysis.bulletCount}/${layout.capacity.bulletCount.max})`
-      );
+    // Hard rejection only for extreme cases (way outside bounds)
+    // Otherwise, apply heavy penalty but still allow scoring
+    const utilization = capacityEval.utilization;
+    
+    // If utilization is extremely high (>1.2), reject completely
+    if (utilization > 1.2) {
+      if (enableLogging) {
+        console.log(
+          `[layout-scorer] Layout '${layout.category}' rejected: ` +
+          `Capacity severely exceeded (utilization: ${(utilization * 100).toFixed(1)}%, ` +
+          `bulletCount: ${input.analysis.bulletCount}/${layout.capacity.bulletCount.max})`
+        );
+      }
+      
+      return {
+        category: layout.category,
+        score: 0,
+        confidence: "low",
+        scoreBreakdown: EMPTY_BREAKDOWN as ScoreBreakdown,
+      };
     }
     
-    return {
-      category: layout.category,
-      score: 0,
-      confidence: "low",
-      scoreBreakdown: EMPTY_BREAKDOWN as ScoreBreakdown,
-    };
+    // Apply heavy penalty for poor fit, but still score
+    capacityPenalty = -100 * (utilization - 1.0); // Penalty increases with overage
+    if (enableLogging) {
+      console.log(
+        `[layout-scorer] Layout '${layout.category}' capacity warning: ` +
+        `Poor fit (utilization: ${(utilization * 100).toFixed(1)}%, penalty: ${capacityPenalty.toFixed(1)})`
+      );
+    }
   }
   
   // Calculate all scoring factors
+  // NOTE: hintBonus is calculated early to ensure it's always applied
+  const hintBonus = scoreContentLayoutHint(layout, input);
+  
   const breakdown: ScoreBreakdown = {
     contentType: scoreContentType(layout, input),
     pattern: scorePattern(layout, input),
-    capacity: scoreCapacity(capacityEval.utilization),
+    capacity: capacityEval.fits ? scoreCapacity(capacityEval.utilization) : 0, // No capacity score if doesn't fit
     semanticIntent: scoreSemanticIntent(layout, input),
     visualStrategy: scoreVisualStrategy(layout, input),
     density: scoreDensity(layout, input.analysis),
@@ -141,13 +165,14 @@ export function scoreLayout(
     priority: calculatePriorityBonus(layout),
     confidenceBonus: calculateConfidenceBonus(input.analysis.contentTypeConfidence),
     repetitionPenalty: calculateRepetitionPenalty(layout.category, input.previousLayouts),
+    hintBonus, // LLM hint gets significant weight - always applied
   };
   
   // Calculate media constraints score (image + space)
   const mediaScores = scoreMediaConstraints(layout, input);
   breakdown.media = mediaScores.image + mediaScores.space;
   
-  // Calculate total score
+  // Calculate total score (including capacity penalty if applicable)
   const totalScore = 
     breakdown.contentType +
     breakdown.pattern +
@@ -159,7 +184,9 @@ export function scoreLayout(
     breakdown.bulletLength +
     breakdown.priority +
     breakdown.confidenceBonus +
-    breakdown.repetitionPenalty;
+    breakdown.repetitionPenalty +
+    breakdown.hintBonus +
+    capacityPenalty; // Apply capacity penalty (negative value)
   
   // Determine confidence level based on score
   let confidence: "high" | "medium" | "low";

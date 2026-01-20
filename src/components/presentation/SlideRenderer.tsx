@@ -117,20 +117,9 @@ function getImageStyle(image: SlideImage): React.CSSProperties {
     }
   }
   
-  // Apply object fit - always apply if set, default to contain for better image display
-  if (image.objectFit) {
+  // Apply object fit
+  if (image.objectFit && image.objectFit !== "cover") {
     style.objectFit = image.objectFit;
-  } else {
-    // Default to contain to show full image without cropping
-    style.objectFit = "contain";
-  }
-  
-  // Ensure images fill full height when using contain
-  // Set min-height to 100% to ensure images always fill container height
-  if (style.objectFit === "contain") {
-    style.minHeight = "100%";
-    style.height = "100%";
-    style.width = "100%";
   }
   
   // Apply crop (using object-position and transform)
@@ -175,7 +164,7 @@ function SlideImg({ image, alt, className = "", style = {}, draggable, onDragSta
   const objectFitClass = image.objectFit === "contain" ? "object-contain" : 
                          image.objectFit === "fill" ? "object-fill" :
                          image.objectFit === "none" ? "object-none" :
-                         "object-contain"; // Default to contain instead of cover
+                         "object-cover"; // Default back to cover
   
   // Remove any existing object-* classes from className
   const cleanedClassName = className

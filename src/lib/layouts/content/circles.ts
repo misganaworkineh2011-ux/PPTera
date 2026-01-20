@@ -111,64 +111,15 @@ export function getBaseCircleStyles(theme: Theme) {
   };
 }
 
-// SVG path generators for the arc segments
+// SVG path generators for arc segments with arrow-shaped gaps (matching reference design)
 export function getArcSegmentPath(
   index: number,
   totalSegments: number = 3,
-  outerRadius: number = 150,
-  innerRadius: number = 80,
-  gapAngle: number = 8 // degrees gap between segments
+  outerRadius: number = 300,
+  innerRadius: number = 160,
+  gapAngle: number = 4 // small gap between segments
 ): string {
-  // Arc spans from -180 to 0 degrees (bottom half of circle, opening upward)
-  const totalArcAngle = 180 - (totalSegments - 1) * gapAngle;
-  const segmentAngle = totalArcAngle / totalSegments;
-  
-  const startAngle = -180 + index * (segmentAngle + gapAngle);
-  const endAngle = startAngle + segmentAngle;
-  
-  // Convert to radians
-  const startRad = (startAngle * Math.PI) / 180;
-  const endRad = (endAngle * Math.PI) / 180;
-  
-  // Calculate points
-  const outerStart = {
-    x: outerRadius * Math.cos(startRad),
-    y: outerRadius * Math.sin(startRad),
-  };
-  const outerEnd = {
-    x: outerRadius * Math.cos(endRad),
-    y: outerRadius * Math.sin(endRad),
-  };
-  const innerStart = {
-    x: innerRadius * Math.cos(startRad),
-    y: innerRadius * Math.sin(startRad),
-  };
-  const innerEnd = {
-    x: innerRadius * Math.cos(endRad),
-    y: innerRadius * Math.sin(endRad),
-  };
-  
-  // Create path: outer arc, line to inner, inner arc (reverse), close
-  const largeArc = segmentAngle > 180 ? 1 : 0;
-  
-  return `
-    M ${outerStart.x} ${outerStart.y}
-    A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${outerEnd.x} ${outerEnd.y}
-    L ${innerEnd.x} ${innerEnd.y}
-    A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${innerStart.x} ${innerStart.y}
-    Z
-  `.trim();
-}
-
-// SVG path generators for the ring segments
-export function getRingSegmentPath(
-  index: number,
-  totalSegments: number = 3,
-  outerRadius: number = 120,
-  innerRadius: number = 60,
-  gapAngle: number = 12 // degrees gap between segments
-): string {
-  // Full circle divided into segments
+  // Full circle divided into arc segments
   const totalAngle = 360 - totalSegments * gapAngle;
   const segmentAngle = totalAngle / totalSegments;
   
@@ -180,7 +131,7 @@ export function getRingSegmentPath(
   const startRad = (startAngle * Math.PI) / 180;
   const endRad = (endAngle * Math.PI) / 180;
   
-  // Calculate points
+  // Calculate the 4 corner points of a basic arc
   const outerStart = {
     x: outerRadius * Math.cos(startRad),
     y: outerRadius * Math.sin(startRad),
@@ -198,13 +149,109 @@ export function getRingSegmentPath(
     y: innerRadius * Math.sin(endRad),
   };
   
+  // Arrow-shaped gap: create chevron points at the midpoint of the radial edges
+  const midRadius = (outerRadius + innerRadius) / 2;
+  const chevronDepth = gapAngle * 0.8; // How far the chevron points inward (in degrees)
+  
+  // Start edge: chevron points INWARD (receiving the previous segment's arrow)
+  const startChevronRad = ((startAngle + chevronDepth) * Math.PI) / 180;
+  const startChevron = {
+    x: midRadius * Math.cos(startChevronRad),
+    y: midRadius * Math.sin(startChevronRad),
+  };
+  
+  // End edge: chevron points OUTWARD (arrow tip pointing to next segment)
+  const endChevronRad = ((endAngle - chevronDepth) * Math.PI) / 180;
+  const endChevron = {
+    x: midRadius * Math.cos(endChevronRad),
+    y: midRadius * Math.sin(endChevronRad),
+  };
+  
   const largeArc = segmentAngle > 180 ? 1 : 0;
   
+  // Path with arrow-shaped edges:
+  // Start: outer corner -> chevron point -> inner corner
+  // End: inner corner -> chevron point -> outer corner
   return `
     M ${outerStart.x} ${outerStart.y}
     A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${outerEnd.x} ${outerEnd.y}
+    L ${endChevron.x} ${endChevron.y}
     L ${innerEnd.x} ${innerEnd.y}
     A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${innerStart.x} ${innerStart.y}
+    L ${startChevron.x} ${startChevron.y}
+    Z
+  `.trim();
+}
+
+// SVG path generators for ring segments with arrow-shaped gaps (matching reference design)
+export function getRingSegmentPath(
+  index: number,
+  totalSegments: number = 3,
+  outerRadius: number = 240,
+  innerRadius: number = 120,
+  gapAngle: number = 4, // small gap between segments
+  startOffset: number = -90 // rotation offset (default: start from top)
+): string {
+  // Full circle divided into arc segments
+  const totalAngle = 360 - totalSegments * gapAngle;
+  const segmentAngle = totalAngle / totalSegments;
+  
+  // Start from specified offset and go clockwise
+  const startAngle = startOffset + index * (segmentAngle + gapAngle);
+  const endAngle = startAngle + segmentAngle;
+  
+  // Convert to radians
+  const startRad = (startAngle * Math.PI) / 180;
+  const endRad = (endAngle * Math.PI) / 180;
+  
+  // Calculate the 4 corner points of a basic arc
+  const outerStart = {
+    x: outerRadius * Math.cos(startRad),
+    y: outerRadius * Math.sin(startRad),
+  };
+  const outerEnd = {
+    x: outerRadius * Math.cos(endRad),
+    y: outerRadius * Math.sin(endRad),
+  };
+  const innerStart = {
+    x: innerRadius * Math.cos(startRad),
+    y: innerRadius * Math.sin(startRad),
+  };
+  const innerEnd = {
+    x: innerRadius * Math.cos(endRad),
+    y: innerRadius * Math.sin(endRad),
+  };
+  
+  // Arrow-shaped gap: create chevron points at the midpoint of the radial edges
+  const midRadius = (outerRadius + innerRadius) / 2;
+  const chevronDepth = gapAngle * 0.8; // How far the chevron points inward (in degrees)
+  
+  // Start edge: chevron points INWARD (receiving the previous segment's arrow)
+  const startChevronRad = ((startAngle + chevronDepth) * Math.PI) / 180;
+  const startChevron = {
+    x: midRadius * Math.cos(startChevronRad),
+    y: midRadius * Math.sin(startChevronRad),
+  };
+  
+  // End edge: chevron points OUTWARD (arrow tip pointing to next segment)
+  const endChevronRad = ((endAngle - chevronDepth) * Math.PI) / 180;
+  const endChevron = {
+    x: midRadius * Math.cos(endChevronRad),
+    y: midRadius * Math.sin(endChevronRad),
+  };
+  
+  const largeArc = segmentAngle > 180 ? 1 : 0;
+  
+  // Path with arrow-shaped edges:
+  // Start: outer corner -> chevron point -> inner corner
+  // End: inner corner -> chevron point -> outer corner
+  return `
+    M ${outerStart.x} ${outerStart.y}
+    A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${outerEnd.x} ${outerEnd.y}
+    L ${endChevron.x} ${endChevron.y}
+    L ${innerEnd.x} ${innerEnd.y}
+    A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${innerStart.x} ${innerStart.y}
+    L ${startChevron.x} ${startChevron.y}
     Z
   `.trim();
 }
@@ -213,11 +260,13 @@ export function getRingSegmentPath(
 export function getArcIconPosition(
   index: number,
   totalSegments: number = 3,
-  radius: number = 115 // midpoint between inner and outer
+  radius: number = 230,
+  gapAngle: number = 4
 ): { x: number; y: number } {
-  const totalArcAngle = 180 - (totalSegments - 1) * 8;
-  const segmentAngle = totalArcAngle / totalSegments;
-  const midAngle = -180 + index * (segmentAngle + 8) + segmentAngle / 2;
+  const totalAngle = 360 - totalSegments * gapAngle;
+  const segmentAngle = totalAngle / totalSegments;
+  const startAngle = -90 + index * (segmentAngle + gapAngle);
+  const midAngle = startAngle + segmentAngle / 2;
   const rad = (midAngle * Math.PI) / 180;
   
   return {
@@ -230,11 +279,14 @@ export function getArcIconPosition(
 export function getRingIconPosition(
   index: number,
   totalSegments: number = 3,
-  radius: number = 90 // midpoint between inner and outer
+  radius: number = 180,
+  gapAngle: number = 4,
+  startOffset: number = -90
 ): { x: number; y: number } {
-  const totalAngle = 360 - totalSegments * 12;
+  const totalAngle = 360 - totalSegments * gapAngle;
   const segmentAngle = totalAngle / totalSegments;
-  const midAngle = -90 + index * (segmentAngle + 12) + segmentAngle / 2;
+  const startAngle = startOffset + index * (segmentAngle + gapAngle);
+  const midAngle = startAngle + segmentAngle / 2;
   const rad = (midAngle * Math.PI) / 180;
   
   return {

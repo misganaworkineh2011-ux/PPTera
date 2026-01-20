@@ -82,30 +82,74 @@ export function calculateConfidence(score: number): "high" | "medium" | "low" {
 /**
  * Get fallback layout based on content characteristics
  * 
- * - Choose "bullets" for text-heavy content (bulletCount > 4)
- * - Choose "boxes" for short content (bulletCount <= 4)
- * - Always returns a valid layout
+ * Smart fallback selection that considers multiple factors:
+ * - Content type (prefer specialized layouts when detected)
+ * - Bullet count (use appropriate capacity layouts)
+ * - Pattern detection (match structural patterns)
+ * - Less biased toward bullets - considers all layout types
  * 
- * @param analysis - Content analysis with bullet count
+ * @param analysis - Content analysis with content type, pattern, and bullet count
  * @returns Fallback layout category
  * 
  * @example
  * ```typescript
- * const analysis = { bulletCount: 6, ... };
- * getFallbackLayout(analysis); // "bullets"
+ * const analysis = { contentType: "TIMELINE", bulletCount: 4, ... };
+ * getFallbackLayout(analysis); // "sequence" (matches content type)
  * 
- * const analysis2 = { bulletCount: 3, ... };
- * getFallbackLayout(analysis2); // "boxes"
+ * const analysis2 = { contentType: "STEPS", bulletCount: 3, ... };
+ * getFallbackLayout(analysis2); // "steps" (matches content type)
  * ```
  */
 export function getFallbackLayout(analysis: ContentAnalysis): ContentLayoutCategory {
-  // Text-heavy content (more than 4 bullets) → use bullets layout
-  if (analysis.bulletCount > 4) {
-    return "bullets";
+  // Content type-based fallback (prefer specialized layouts)
+  switch (analysis.contentType) {
+    case "TIMELINE":
+    case "PROCESS":
+      return "sequence";
+    case "STEPS":
+    case "HOW_TO":
+      return analysis.bulletCount <= 5 ? "steps" : "sequence";
+    case "TESTIMONIAL":
+      return "quotes";
+    case "STATISTICS":
+      return analysis.bulletCount <= 4 ? "numbers" : "boxes";
+    case "CYCLE":
+      return "circles";
+    case "FEATURES":
+    case "CATEGORIES":
+    case "COMPARISON":
+      return analysis.bulletCount <= 6 ? "boxes" : "bullets";
+    default:
+      // Generic content - use smart selection based on pattern and count
+      break;
   }
   
-  // Short content (4 or fewer bullets) → use boxes layout
-  return "boxes";
+  // Pattern-based fallback
+  if (analysis.pattern === "numbered-steps" || analysis.pattern === "sequential") {
+    return analysis.bulletCount <= 5 ? "steps" : "sequence";
+  }
+  if (analysis.pattern === "quoted-text") {
+    return "quotes";
+  }
+  if (analysis.pattern === "numeric") {
+    return "numbers";
+  }
+  if (analysis.pattern === "distinct-concepts" || analysis.pattern === "categorical") {
+    return analysis.bulletCount <= 6 ? "boxes" : "bullets";
+  }
+  
+  // Bullet count-based fallback (less biased, considers all options)
+  if (analysis.bulletCount === 1) {
+    return "quotes"; // Single item works well as quote
+  } else if (analysis.bulletCount === 2) {
+    return "boxes"; // Two items work well in boxes
+  } else if (analysis.bulletCount >= 3 && analysis.bulletCount <= 6) {
+    // Medium count - prefer boxes for visual appeal, bullets for text-heavy
+    return analysis.avgBulletLength > 20 ? "bullets" : "boxes";
+  } else {
+    // High count (7+) - bullets is most appropriate
+    return "bullets";
+  }
 }
 
 /**
@@ -383,6 +427,14 @@ function getFactorExplanation(
     case "repetitionPenalty":
       if (score < 0) {
         return `Layout used recently in previous slides`;
+      }
+      return "";
+      
+    case "hintBonus":
+      if (score >= 50) {
+        return `LLM suggested this layout type (strong match)`;
+      } else if (score > 0) {
+        return `LLM suggested similar layout type (partial match)`;
       }
       return "";
       

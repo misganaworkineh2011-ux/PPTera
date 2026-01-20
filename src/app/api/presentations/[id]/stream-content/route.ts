@@ -517,7 +517,6 @@ export async function GET(
                       photographer: photo.photographer,
                       photographerUrl: photo.photographer_url,
                       source: "pexels",
-                      objectFit: "contain" as const,
                     };
                     imageMap.set(i, image);
                     if (finalSlides[i]) {
@@ -552,7 +551,6 @@ export async function GET(
                       url: result.url,
                       alt: result.alt || slide.title,
                       source: "ai",
-                      objectFit: "contain" as const,
                     };
                     imageMap.set(i, image);
                     if (finalSlides[i]) {

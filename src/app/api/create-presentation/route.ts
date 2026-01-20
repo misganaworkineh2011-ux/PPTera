@@ -290,7 +290,6 @@ export async function POST(request: Request) {
               photographer: photo.photographer,
               photographerUrl: photo.photographer_url,
               source: "pexels" as const,
-              objectFit: "contain" as const,
             },
           };
         }
@@ -316,7 +315,6 @@ export async function POST(request: Request) {
               url: result.url,
               alt: result.alt || slide.title,
               source: "ai" as const,
-              objectFit: "contain" as const,
             },
           };
         }

@@ -237,6 +237,7 @@ export interface ScoreBreakdown {
   priority: number;
   confidenceBonus: number;
   repetitionPenalty: number;
+  hintBonus: number; // Bonus for matching contentLayoutHint from LLM
 }
 
 /**

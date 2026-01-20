@@ -169,7 +169,6 @@ async function processImageBatch(
           photographer: photo.photographer,
           photographerUrl: photo.photographer_url,
           source: "pexels" as const,
-          objectFit: "contain" as const,
         };
         presentationSlides[slideIndex]!.image = image;
         sendEvent(controller, "imageLoaded", { slideIndex, image });
@@ -197,7 +196,6 @@ async function processImageBatch(
           url: result.url,
           alt: result.alt || slides[slideIndex]!.title,
           source: "ai" as const,
-          objectFit: "contain" as const,
         };
         presentationSlides[slideIndex]!.image = image;
         sendEvent(controller, "imageLoaded", { slideIndex, image });
