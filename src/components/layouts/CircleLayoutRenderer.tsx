@@ -13,6 +13,7 @@ import {
   getRingIconPosition,
 } from "~/lib/layouts/content/circles";
 import EditableText from "~/components/presentation/EditableText";
+import { CONTENT_FONT_SIZE } from "~/components/presentation/SlideRenderer";
 import type { Theme } from "~/lib/themes";
 
 // Animation variants for staggered circle animations
@@ -734,15 +735,15 @@ function RingLayout({
                   onChange={(val) => onUpdateText?.(actualIndex, val)}
                   onFinish={onFinishEditing || (() => {})}
                   onDelete={onDeleteItem ? () => onDeleteItem(actualIndex) : undefined}
-                  className="text-sm leading-relaxed"
-                  style={{ color: themeStyles.bodyColor }}
+                  className="leading-relaxed"
+                  style={{ color: themeStyles.bodyColor, fontSize: CONTENT_FONT_SIZE.compact }}
                   isOwner={isOwner}
                   isHovered={isHovered}
                 />
               ) : (
                 <p
-                  className="text-sm leading-relaxed"
-                  style={{ color: themeStyles.bodyColor }}
+                  className="leading-relaxed"
+                  style={{ color: themeStyles.bodyColor, fontSize: CONTENT_FONT_SIZE.compact }}
                 >
                   {item.text}
                 </p>
@@ -884,15 +885,15 @@ function RingLayout({
                   onChange={(val) => onUpdateText?.(actualIndex, val)}
                   onFinish={onFinishEditing || (() => {})}
                   onDelete={onDeleteItem ? () => onDeleteItem(actualIndex) : undefined}
-                  className="text-sm leading-relaxed"
-                  style={{ color: themeStyles.bodyColor }}
+                  className="leading-relaxed"
+                  style={{ color: themeStyles.bodyColor, fontSize: CONTENT_FONT_SIZE.compact }}
                   isOwner={isOwner}
                   isHovered={isHovered}
                 />
               ) : (
                 <p
-                  className="text-sm leading-relaxed"
-                  style={{ color: themeStyles.bodyColor }}
+                  className="leading-relaxed"
+                  style={{ color: themeStyles.bodyColor, fontSize: CONTENT_FONT_SIZE.compact }}
                 >
                   {item.text}
                 </p>

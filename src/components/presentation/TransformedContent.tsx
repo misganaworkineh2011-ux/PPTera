@@ -2,6 +2,7 @@
 
 import type { TransformedContent } from "~/lib/presentation/types";
 import { type Theme } from "~/lib/themes";
+import { CONTENT_FONT_SIZE } from "./SlideRenderer";
 
 interface TransformedContentRendererProps {
   content: TransformedContent;
@@ -34,8 +35,8 @@ export default function TransformedContentRenderer({
       {/* Intro paragraph */}
       {intro && (
         <p 
-          className={`${compact ? "text-sm" : "text-base"} leading-relaxed opacity-90`}
-          style={{ color: textColor }}
+          className="leading-relaxed opacity-90"
+          style={{ color: textColor, fontSize: compact ? CONTENT_FONT_SIZE.compact : CONTENT_FONT_SIZE.normal }}
         >
           {intro}
         </p>
@@ -95,8 +96,8 @@ function TransformedItem({
         
         {/* Text content */}
         <div 
-          className={`flex-1 ${compact ? "text-sm" : "text-base"} leading-relaxed`}
-          style={{ color: textColor }}
+          className="flex-1 leading-relaxed"
+          style={{ color: textColor, fontSize: compact ? CONTENT_FONT_SIZE.compact : CONTENT_FONT_SIZE.normal }}
         >
           {item.text}
         </div>

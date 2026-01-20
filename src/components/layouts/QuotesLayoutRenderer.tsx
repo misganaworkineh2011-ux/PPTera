@@ -9,6 +9,7 @@ import type {
 } from "~/lib/layouts/content/quotes";
 import EditableText from "~/components/presentation/EditableText";
 import type { Theme } from "~/lib/themes";
+import { CONTENT_FONT_SIZE } from "~/components/presentation/SlideRenderer";
 
 // Animation variants for staggered quote animations
 const containerVariants = {
@@ -427,7 +428,8 @@ function BubbleQuotes({
                       onChange={(val) => onUpdateText?.(index, val)}
                       onFinish={onFinishEditing || (() => {})}
                       onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                      className="text-base leading-relaxed font-medium"
+                      className="leading-relaxed font-medium"
+                      style={{ fontSize: CONTENT_FONT_SIZE.normal }}
                       isOwner={isOwner}
                       isHovered={isHovered}
                     />
@@ -623,14 +625,16 @@ function MarksQuotes({
                     onChange={(val) => onUpdateText?.(index, val)}
                     onFinish={onFinishEditing || (() => {})}
                     onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                    className="text-base leading-relaxed italic flex-1"
+                    className="leading-relaxed italic flex-1"
+                    style={{ fontSize: CONTENT_FONT_SIZE.normal }}
                     style={{ color: themeStyles.bodyColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
                   />
                 ) : (
                   <p
-                    className="text-base leading-relaxed italic flex-1"
+                    className="leading-relaxed italic flex-1"
+                    style={{ fontSize: CONTENT_FONT_SIZE.normal }}
                     style={{ color: themeStyles.bodyColor }}
                   >
                     {item.text}

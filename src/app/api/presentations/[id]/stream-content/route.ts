@@ -377,9 +377,12 @@ export async function GET(
   const textDensity = content?.textDensity as string | undefined;
   const streamingComplete = content?.streamingComplete as boolean | undefined;
 
+  // Obfuscate imageModel to avoid exposing internal model details
+  const obfuscatedImageModel = imageModel ? "pptmaster-image-engine" : undefined;
+  
   console.log("[stream-content] Content parsed:", {
     imageSource,
-    imageModel,
+    imageModel: obfuscatedImageModel, // Obfuscated for security
     imageArtStyle,
     customArtStyleText,
     textDensity,
@@ -514,6 +517,7 @@ export async function GET(
                       photographer: photo.photographer,
                       photographerUrl: photo.photographer_url,
                       source: "pexels",
+                      objectFit: "contain" as const,
                     };
                     imageMap.set(i, image);
                     if (finalSlides[i]) {
@@ -523,7 +527,7 @@ export async function GET(
                     console.log(`[stream-content] Image ready for slide ${i}`);
                   }
                 } else if (imageSource === "ai-generated") {
-                  console.log(`[stream-content] Generating AI image for slide ${i}, model: ${imageModel}, artStyle: ${imageArtStyle}`);
+                  console.log(`[stream-content] Generating AI image for slide ${i}, model: pptmaster-image-engine, artStyle: ${imageArtStyle}`);
                   const slidesWithMetadata = [{
                     type: slide.type,
                     title: slide.title,
@@ -548,6 +552,7 @@ export async function GET(
                       url: result.url,
                       alt: result.alt || slide.title,
                       source: "ai",
+                      objectFit: "contain" as const,
                     };
                     imageMap.set(i, image);
                     if (finalSlides[i]) {

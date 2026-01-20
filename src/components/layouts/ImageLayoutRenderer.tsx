@@ -7,6 +7,7 @@ import type { ImageLayoutType, ImageContentItem } from "~/lib/layouts/content/im
 import { calculateImageGridDimensions } from "~/lib/layouts/content/images";
 import type { Theme } from "~/lib/themes";
 import EditableText from "~/components/presentation/EditableText";
+import { CONTENT_FONT_SIZE } from "~/components/presentation/SlideRenderer";
 
 // Animation variants for staggered image animations
 const containerVariants = {
@@ -279,13 +280,13 @@ export function ImageLayoutRenderer({
                     onChange={(val) => onUpdateText?.(idx, val)}
                     onFinish={onFinishEditing || (() => {})}
                     onDelete={onDeleteItem ? () => onDeleteItem(idx) : undefined}
-                    className="text-sm leading-relaxed"
-                    style={{ color: themeStyles.bodyColor }}
+                    className="leading-relaxed"
+                    style={{ color: themeStyles.bodyColor, fontSize: CONTENT_FONT_SIZE.compact }}
                     isOwner={isOwner}
                     isHovered={isHovered}
                   />
                 ) : (
-                  <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
+                  <p className="leading-relaxed" style={{ color: themeStyles.bodyColor, fontSize: CONTENT_FONT_SIZE.compact }}>
                     {item.text}
                   </p>
                 )}
@@ -387,13 +388,13 @@ export function ImageLayoutRenderer({
                     onChange={(val) => onUpdateText?.(idx, val)}
                     onFinish={onFinishEditing || (() => {})}
                     onDelete={onDeleteItem ? () => onDeleteItem(idx) : undefined}
-                    className="text-sm leading-relaxed"
-                    style={{ color: themeStyles.bodyColor }}
+                    className="leading-relaxed"
+                    style={{ color: themeStyles.bodyColor, fontSize: CONTENT_FONT_SIZE.compact }}
                     isOwner={isOwner}
                     isHovered={isHovered}
                   />
                 ) : (
-                  <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
+                  <p className="leading-relaxed" style={{ color: themeStyles.bodyColor, fontSize: CONTENT_FONT_SIZE.compact }}>
                     {item.text}
                   </p>
                 )}

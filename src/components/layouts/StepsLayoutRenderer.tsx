@@ -6,6 +6,7 @@ import { GripVertical } from "lucide-react";
 import type { StepsLayoutType, StepContentItem } from "~/lib/layouts/content/steps";
 import EditableText from "~/components/presentation/EditableText";
 import type { Theme } from "~/lib/themes";
+import { CONTENT_FONT_SIZE } from "~/components/presentation/SlideRenderer";
 
 // Animation variants for staggered step animations
 const containerVariants = {
@@ -579,15 +580,15 @@ function PyramidSteps({
                     onChange={(val) => onUpdateText?.(index, val)}
                     onFinish={onFinishEditing || (() => {})}
                     onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                    className="text-sm leading-relaxed"
-                    style={{ color: themeStyles.bodyColor }}
+                    className="leading-relaxed"
+                    style={{ color: themeStyles.bodyColor, fontSize: CONTENT_FONT_SIZE.compact }}
                     isOwner={isOwner}
                     isHovered={isHovered}
                   />
                 ) : (
                   <p
-                    className="text-sm leading-relaxed"
-                    style={{ color: themeStyles.bodyColor }}
+                    className="leading-relaxed"
+                    style={{ color: themeStyles.bodyColor, fontSize: CONTENT_FONT_SIZE.compact }}
                   >
                     {item.text}
                   </p>
@@ -773,7 +774,7 @@ function ArrowSteps({
                   isHovered={isHovered}
                 />
               ) : (
-                <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
+                <p className="leading-relaxed" style={{ color: themeStyles.bodyColor, fontSize: CONTENT_FONT_SIZE.compact }}>
                   {item.text}
                 </p>
               )}
@@ -987,7 +988,7 @@ function CardSteps({
                   isHovered={isHovered}
                 />
               ) : (
-                <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
+                <p className="leading-relaxed" style={{ color: themeStyles.bodyColor, fontSize: CONTENT_FONT_SIZE.compact }}>
                   {item.text}
                 </p>
               )}
@@ -1261,7 +1262,7 @@ function BarSteps({
                   isHovered={isHovered}
                 />
               ) : (
-                <p className="text-sm leading-relaxed" style={{ color: themeStyles.bodyColor }}>
+                <p className="leading-relaxed" style={{ color: themeStyles.bodyColor, fontSize: CONTENT_FONT_SIZE.compact }}>
                   {item.text}
                 </p>
               )}

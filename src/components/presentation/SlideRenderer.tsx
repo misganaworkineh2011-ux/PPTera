@@ -91,6 +91,12 @@ function isColorDark(hexColor: string): boolean {
 // Helper to generate image styles from SlideImage properties
 import type { SlideImage } from "./types";
 
+// Shared font size constants - using bullet points layout as the standard
+export const CONTENT_FONT_SIZE = {
+  compact: "clamp(0.75rem, 1.2vw + 0.15rem, 0.9rem)",
+  normal: "clamp(0.875rem, 1.4vw + 0.15rem, 1rem)",
+};
+
 function getImageStyle(image: SlideImage): React.CSSProperties {
   const style: React.CSSProperties = {};
   
@@ -111,9 +117,20 @@ function getImageStyle(image: SlideImage): React.CSSProperties {
     }
   }
   
-  // Apply object fit
-  if (image.objectFit && image.objectFit !== "cover") {
+  // Apply object fit - always apply if set, default to contain for better image display
+  if (image.objectFit) {
     style.objectFit = image.objectFit;
+  } else {
+    // Default to contain to show full image without cropping
+    style.objectFit = "contain";
+  }
+  
+  // Ensure images fill full height when using contain
+  // Set min-height to 100% to ensure images always fill container height
+  if (style.objectFit === "contain") {
+    style.minHeight = "100%";
+    style.height = "100%";
+    style.width = "100%";
   }
   
   // Apply crop (using object-position and transform)
@@ -153,12 +170,26 @@ function SlideImg({ image, alt, className = "", style = {}, draggable, onDragSta
     return null;
   }
   const imageStyles = getImageStyle(image);
+  
+  // Remove hardcoded object-cover/object-contain from className and use image's objectFit instead
+  const objectFitClass = image.objectFit === "contain" ? "object-contain" : 
+                         image.objectFit === "fill" ? "object-fill" :
+                         image.objectFit === "none" ? "object-none" :
+                         "object-contain"; // Default to contain instead of cover
+  
+  // Remove any existing object-* classes from className
+  const cleanedClassName = className
+    .replace(/\bobject-(cover|contain|fill|none)\b/g, "")
+    .trim();
+  
+  const finalClassName = `${cleanedClassName} ${objectFitClass}`.trim();
+  
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img 
       src={image.url} 
       alt={alt} 
-      className={className}
+      className={finalClassName}
       style={{ ...style, ...imageStyles }}
       draggable={draggable}
       onDragStart={onDragStart}
@@ -431,13 +462,26 @@ function SlideRendererComponent({
     (slide.bulletPoints && slide.bulletPoints.length > 0)
   );
   
+  // Helper function to remove word counts from text
+  const removeWordCounts = (text: string): string => {
+    if (!text) return text;
+    let cleaned = text;
+    // Remove patterns like "(26 words)", "(max 30 words)", "(30 words)", "(visually equal length)", etc.
+    cleaned = cleaned.replace(/\(max\s+\d+\s+words?[^)]*\)/gi, "").trim();
+    cleaned = cleaned.replace(/\(\d+\s+words?[^)]*\)/gi, "").trim();
+    cleaned = cleaned.replace(/\(visually\s+equal\s+length[^)]*\)/gi, "").trim();
+    cleaned = cleaned.replace(/\(words?[^)]*\)/gi, "").trim(); // Catch any remaining word-related patterns
+    cleaned = cleaned.replace(/\s+/g, " ").trim(); // Clean up extra spaces
+    return cleaned;
+  };
+
   // Convert slide content to BoxContentItem format
   const getBoxContentItems = (): BoxContentItem[] => {
     // Prefer sections if available
     if (slide.sections && slide.sections.length > 0) {
       return slide.sections.map((section, i) => ({
         label: section.heading,
-        text: section.description,
+        text: removeWordCounts(section.description || ""),
         icon: slide.icons?.[i]?.placeholder,
       }));
     }
@@ -447,20 +491,23 @@ function SlideRendererComponent({
         .filter(item => item.label)
         .map((item, i) => ({
           label: item.label,
-          text: item.text,
+          text: removeWordCounts(item.text || ""),
           icon: slide.icons?.[i]?.placeholder,
         }));
     }
     // Fall back to regular bullet points - convert them to box items
     if (slide.bulletPoints && slide.bulletPoints.length > 0) {
       return slide.bulletPoints.map((bullet, i) => {
+        // Remove word count references like "(max 30 words)", "(30 words)", "(26 words)", etc.
+        let cleanBullet = removeWordCounts(bullet);
+        
         // Try to extract label and text from bullet point
         // Format: "Label: Text" or just "Text"
-        const colonIndex = bullet.indexOf(":");
+        const colonIndex = cleanBullet.indexOf(":");
         if (colonIndex > 0 && colonIndex < 50) {
           // Only split if colon is reasonably early (likely a label:text format)
-          const label = bullet.substring(0, colonIndex).trim();
-          const text = bullet.substring(colonIndex + 1).trim();
+          const label = cleanBullet.substring(0, colonIndex).trim();
+          const text = cleanBullet.substring(colonIndex + 1).trim();
           if (label && text) {
             return {
               label,
@@ -471,10 +518,10 @@ function SlideRendererComponent({
         }
         // If no label format, use the bullet text as both label and text
         // Take first few words as label, rest as text
-        const words = bullet.split(" ");
+        const words = cleanBullet.split(" ");
         if (words.length > 5) {
           const label = words.slice(0, 3).join(" ");
-          const text = bullet;
+          const text = cleanBullet;
           return {
             label,
             text,
@@ -483,8 +530,8 @@ function SlideRendererComponent({
         }
         // Short bullet - use as both
         return {
-          label: bullet,
-          text: bullet,
+          label: cleanBullet,
+          text: cleanBullet,
           icon: slide.icons?.[i]?.placeholder,
         };
       });
@@ -1061,15 +1108,17 @@ function SlideRendererComponent({
 
     // Parse bullet points to extract label/text if present
     const parsedBullets = bulletPoints.map((bullet) => {
-      const colonIndex = bullet.indexOf(":");
+      // Remove word counts first
+      const cleanBullet = removeWordCounts(bullet);
+      const colonIndex = cleanBullet.indexOf(":");
       if (colonIndex > 0 && colonIndex < 50) {
-        const label = bullet.substring(0, colonIndex).trim();
-        const text = bullet.substring(colonIndex + 1).trim();
+        const label = cleanBullet.substring(0, colonIndex).trim();
+        const text = cleanBullet.substring(colonIndex + 1).trim();
         if (label && text) {
-          return { label, text, full: bullet };
+          return { label, text, full: cleanBullet };
         }
       }
-      return { label: null, text: bullet, full: bullet };
+      return { label: null, text: cleanBullet, full: cleanBullet };
     });
 
     return (
@@ -1111,7 +1160,7 @@ function SlideRendererComponent({
                     style={{
                       fontFamily: theme.fonts.body.family,
                       color: colors.textMuted,
-                      fontSize: compact ? "clamp(0.75rem, 1.2vw + 0.15rem, 0.9rem)" : "clamp(0.875rem, 1.4vw + 0.15rem, 1rem)"
+                      fontSize: compact ? CONTENT_FONT_SIZE.compact : CONTENT_FONT_SIZE.normal
                     }}
                     isOwner={canEdit}
                     isHovered={isHovered}
@@ -1127,11 +1176,11 @@ function SlideRendererComponent({
                   onChange={(val) => onUpdateContent(index, "bullet", val, i)}
                   onFinish={onFinishEditing}
                   className="leading-relaxed"
-                  style={{
-                    fontFamily: theme.fonts.body.family,
-                    color: colors.textMuted,
-                    fontSize: compact ? "clamp(0.75rem, 1.2vw + 0.15rem, 1rem)" : "clamp(0.875rem, 1.5vw + 0.2rem, 1.125rem)"
-                  }}
+                    style={{
+                      fontFamily: theme.fonts.body.family,
+                      color: colors.textMuted,
+                      fontSize: compact ? CONTENT_FONT_SIZE.compact : CONTENT_FONT_SIZE.normal
+                    }}
                   isOwner={canEdit}
                   isHovered={isHovered}
                   onDelete={() => onDeleteBullet(index, i)}

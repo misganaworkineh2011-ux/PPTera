@@ -14,6 +14,7 @@ import {
   getRecommendedSequenceLayout,
 } from "~/lib/layouts/content/sequence";
 import EditableText from "./EditableText";
+import { CONTENT_FONT_SIZE } from "./SlideRenderer";
 
 // Animation variants for staggered sequence animations
 const containerVariants = {
@@ -224,7 +225,7 @@ export default function SequenceLayoutRenderer({
             onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
             style={{
               color: baseStyles.dimColor,
-              fontSize: compact ? "0.85rem" : "0.95rem",
+              fontSize: compact ? CONTENT_FONT_SIZE.compact : CONTENT_FONT_SIZE.normal,
               lineHeight: 1.6,
               textAlign: align,
               width: "100%",
