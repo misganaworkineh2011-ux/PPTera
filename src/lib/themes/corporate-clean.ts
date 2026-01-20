@@ -175,6 +175,12 @@ export const corporateCleanTheme: Theme = {
 
   // Page background - subtle gradient
   pageBackground: "linear-gradient(180deg, #fafafa 0%, #f5f5f7 50%, #f0f0f2 100%)",
+
+  // CSS variable overrides for special effects
+  cssVariables: {
+    "--corporate-shadow": "0 2px 8px rgba(0, 0, 0, 0.04)",
+    "--corporate-border": "rgba(229, 229, 234, 1)",
+  },
 };
 
 export default corporateCleanTheme;
