@@ -325,10 +325,10 @@ export default function PresentationViewer({
         // Add the new slide at the correct index with default layout
         // This prevents the visual "jump" when slideComplete arrives with the final layout
         // Use true randomness for initial placeholder (will be updated by layoutUpdate event)
-        let defaultSlideLayout = "no-image";
+        let defaultSlideLayout: SlideLayoutType = "no-image";
         if (data.hasImage) {
           // True random selection - no pattern, just pure randomness
-          const positions: ("image-left" | "image-right")[] = ["image-left", "image-right"];
+          const positions: SlideLayoutType[] = ["image-left", "image-right"];
           defaultSlideLayout = positions[Math.floor(Math.random() * positions.length)]!;
         }
         newSlides[data.slideIndex] = {
@@ -2813,7 +2813,13 @@ export default function PresentationViewer({
           // 3. Fall back to bullet points with smart label extraction
           if (slide.bulletPoints && slide.bulletPoints.length > 0) {
             return slide.bulletPoints.map((bullet) => {
-              const bp = typeof bullet === "string" ? bullet : (bullet as { text?: string }).text || "";
+              let bp = typeof bullet === "string" ? bullet : (bullet as { text?: string }).text || "";
+              // Remove word count references like "(max 30 words)", "(30 words)", etc.
+              bp = bp.replace(/\(max\s+\d+\s+words?[^)]*\)/gi, "").trim();
+              bp = bp.replace(/\(\d+\s+words?[^)]*\)/gi, "").trim();
+              bp = bp.replace(/\(visually\s+equal\s+length[^)]*\)/gi, "").trim();
+              bp = bp.replace(/\s+/g, " ").trim(); // Clean up extra spaces
+              
               // Try to extract label and text from "Label: Text" format
               const colonIndex = bp.indexOf(":");
               if (colonIndex > 0 && colonIndex < 50) {

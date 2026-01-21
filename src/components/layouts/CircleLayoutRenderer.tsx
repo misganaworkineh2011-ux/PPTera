@@ -13,6 +13,7 @@ import {
   getRingIconPosition,
 } from "~/lib/layouts/content/circles";
 import EditableText from "~/components/presentation/EditableText";
+import { CONTENT_FONT_SIZE } from "~/components/presentation/SlideRenderer";
 import type { Theme } from "~/lib/themes";
 
 // Animation variants for staggered circle animations
@@ -203,7 +204,7 @@ export function CircleLayoutRenderer({
   );
 }
 
-// Arc Layout - Text positioned above each arc segment following the curve
+// Arc Layout - Content-aware positioning based on item count
 function ArcLayout({
   items,
   themeStyles,
@@ -245,150 +246,303 @@ function ArcLayout({
 }) {
   const itemCount = items.length;
 
-  // Arc sizes - bigger arc
-  const outerRadius = itemCount <= 3 ? 170 : itemCount <= 5 ? 150 : 130;
-  const innerRadius = itemCount <= 3 ? 95 : itemCount <= 5 ? 82 : 70;
-  const gapAngle = itemCount <= 3 ? 10 : itemCount <= 5 ? 8 : 6;
+  // Arc sizes - fixed size regardless of item count (reduced by ~10%)
+  const outerRadius = 252; // 280 * 0.9
+  const innerRadius = 135; // 150 * 0.9
+  const gapAngle = 5;
 
-  const fontSize = itemCount <= 4 ? "0.875rem" : "0.75rem";
-  const labelSize = itemCount <= 4 ? "1rem" : "0.875rem";
+  const fontSize = "0.875rem";
+  const labelSize = "1.125rem";
 
-  // Calculate position info for each item
-  const getItemPosition = (index: number) => {
-    const totalArcAngle = 180 - (itemCount - 1) * gapAngle;
-    const segmentAngle = totalArcAngle / itemCount;
-    const startAngle = -180 + index * (segmentAngle + gapAngle);
-    const midAngle = startAngle + segmentAngle / 2;
+  // Content position type
+  type ContentPosition = "left" | "right" | "top-right" | "bottom-right" | "top-left" | "bottom-left";
 
-    // Normalize to 0-1 range where 0 = leftmost (-180°), 1 = rightmost (0°)
-    const normalizedPos = (midAngle + 180) / 180;
+  // Determine layout configuration based on item count
+  let startOffset = -90;
+  let contentPositions: ContentPosition[] = [];
 
-    // Calculate vertical offset - center items are higher (smaller offset), edge items are lower
-    // Using sine curve: edges (0, 1) have sin close to 0, center (0.5) has sin = 1
-    const verticalFactor = Math.sin(normalizedPos * Math.PI);
+  if (itemCount === 2) {
+    // 2 items: One arc left, one arc right - gaps at top/bottom
+    startOffset = 0; // Start from right, so gaps are at top and bottom
+    contentPositions = ["right", "left"];
+  } else if (itemCount === 3) {
+    // 3 items: One arc fully on LEFT, two arcs on RIGHT
+    // For first arc centered at 180° (left): startOffset = 180 - (segmentAngle/2)
+    // segmentAngle = (360 - 3*5) / 3 = 115°, half = 57.5°
+    startOffset = 122; // First arc centered on left (180°)
+    contentPositions = ["left", "top-right", "bottom-right"];
+  } else if (itemCount === 4) {
+    // 4 items: One in each quadrant
+    startOffset = -45; // Rotate so arcs are in corners
+    contentPositions = ["top-right", "bottom-right", "bottom-left", "top-left"];
+  } else {
+    // 5+ items: Default to top-start
+    startOffset = -90;
+    contentPositions = items.map((_, i) => 
+      i === 0 ? "top-right" : i === 1 ? "right" : i === 2 ? "bottom-right" : "left"
+    ) as ContentPosition[];
+  }
 
-    let textAlign: "left" | "center" | "right" = "center";
-    if (midAngle < -120) textAlign = "right";
-    else if (midAngle > -60) textAlign = "left";
+  // Render content item
+  const renderContentItem = (item: CircleContentItem, index: number, position: ContentPosition) => {
+    const ItemWrapper = isPresenting ? motion.div : "div";
+    const variantsProps = isPresenting ? { variants: circleVariants } : {};
+    const spotlightStyle = isPresenting ? getSpotlightStyle(index, spotlightIndex, isSpotlightMode) : {};
 
-    return { normalizedPos, verticalFactor, textAlign };
+    return (
+      <ItemWrapper
+        key={index}
+        className="flex flex-col"
+        style={spotlightStyle}
+        {...(!isPresenting ? {
+          onMouseEnter: () => onHover?.(index),
+          onMouseLeave: () => onHover?.(null),
+        } : {})}
+        {...variantsProps}
+      >
+        {item.label &&
+          (onStartEditLabel ? (
+            <EditableText
+              value={item.label}
+              isEditing={isEditing && editingText?.field === `content-label-${index}`}
+              onStartEdit={() => onStartEditLabel(index)}
+              onChange={(val) => onUpdateLabel?.(index, val)}
+              onFinish={onFinishEditing || (() => {})}
+              onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
+              className="font-semibold mb-2 leading-tight"
+              style={{ fontSize: labelSize, color: themeStyles.titleColor }}
+              isOwner={isOwner}
+              isHovered={isHovered}
+            />
+          ) : (
+            <h3 className="font-semibold mb-2 leading-tight" style={{ fontSize: labelSize, color: themeStyles.titleColor }}>
+              {item.label}
+            </h3>
+          ))}
+        {onStartEditText ? (
+          <EditableText
+            value={item.text}
+            isEditing={isEditing && editingText?.field === `content-text-${index}`}
+            onStartEdit={() => onStartEditText(index)}
+            onChange={(val) => onUpdateText?.(index, val)}
+            onFinish={onFinishEditing || (() => {})}
+            onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
+            className="leading-relaxed"
+            style={{ fontSize, color: themeStyles.bodyColor }}
+            isOwner={isOwner}
+            isHovered={isHovered}
+          />
+        ) : (
+          <p className="leading-relaxed" style={{ fontSize, color: themeStyles.bodyColor }}>
+            {item.text}
+          </p>
+        )}
+      </ItemWrapper>
+    );
   };
 
-  // Grid columns based on item count
-  const gridCols = Math.min(itemCount, 6);
+  // For 3 items: special layout with left content + circle + right content (stacked)
+  if (itemCount === 3) {
+    const content = (
+      <div className="w-full flex items-center justify-center gap-8">
+        {/* Left content - single item */}
+        <div className="flex-1 max-w-[35%] min-w-[280px] text-right pr-4">
+          {renderContentItem(items[0]!, 0, "left")}
+        </div>
 
+        {/* Circle SVG */}
+        <svg
+          width="500"
+          height="500"
+          viewBox="-250 -250 500 500"
+          className="flex-shrink-0"
+          style={{ width: "500px", height: "500px", flexShrink: 0 }}
+          suppressHydrationWarning
+        >
+          {[0, 1, 2].map((segmentIndex) => {
+            const path = getArcSegmentPath(segmentIndex, 3, outerRadius, innerRadius, gapAngle, startOffset);
+            const iconPos = getArcIconPosition(segmentIndex, 3, (outerRadius + innerRadius) / 2, gapAngle, startOffset);
+            const item = items[segmentIndex];
+            const style = getSpotlightStyle(segmentIndex, spotlightIndex, isSpotlightMode);
+            const { transform, position, zIndex, ...svgStyle } = style as any;
+
+            return (
+              <g
+                key={segmentIndex}
+                style={{ ...svgStyle, transformOrigin: 'center', transition: 'all 0.4s ease-out' }}
+                {...(!isPresenting ? {
+                  onMouseEnter: () => onHover?.(segmentIndex),
+                  onMouseLeave: () => onHover?.(null),
+                  cursor: "pointer",
+                } : {})}
+              >
+                <path
+                  d={path}
+                  fill={themeStyles.shapeBgColor}
+                  stroke={themeStyles.shapeBorderColor}
+                  strokeWidth="1"
+                  suppressHydrationWarning
+                />
+                <circle
+                  cx={iconPos.x}
+                  cy={iconPos.y}
+                  r={28}
+                  fill="white"
+                  stroke={`${themeStyles.accentColor}40`}
+                  strokeWidth="2"
+                  suppressHydrationWarning
+                />
+                {item?.icon ? (
+                  <text
+                    x={iconPos.x}
+                    y={iconPos.y}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fontSize="22"
+                    fill={themeStyles.accentColor}
+                    suppressHydrationWarning
+                  >
+                    {item.icon}
+                  </text>
+                ) : (
+                  <circle cx={iconPos.x} cy={iconPos.y} r={5} fill={`${themeStyles.accentColor}40`} suppressHydrationWarning />
+                )}
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* Right content - two items stacked */}
+        <div className="flex-1 max-w-[35%] min-w-[280px] flex flex-col justify-center gap-24 pl-4 text-left">
+          {renderContentItem(items[1]!, 1, "top-right")}
+          {renderContentItem(items[2]!, 2, "bottom-right")}
+        </div>
+      </div>
+    );
+
+    const containerClassName = `w-full flex items-center justify-center ${className}`;
+
+    if (isPresenting) {
+      return (
+        <motion.div key={animationKey} className={containerClassName} variants={containerVariants} initial="hidden" animate="visible">
+          {content}
+        </motion.div>
+      );
+    }
+    return <div className={containerClassName}>{content}</div>;
+  }
+
+  // For 2 items: left and right
+  if (itemCount === 2) {
+    const content = (
+      <div className="w-full flex items-center justify-center gap-8">
+        {/* Left content */}
+        <div className="flex-1 max-w-[35%] min-w-[280px] text-right pr-4">
+          {renderContentItem(items[0]!, 0, "left")}
+        </div>
+
+        {/* Circle SVG - fixed size (reduced by ~10%) */}
+        <svg
+          width="450"
+          height="450"
+          viewBox="-225 -225 450 450"
+          className="flex-shrink-0"
+          style={{ width: "450px", height: "450px", flexShrink: 0 }}
+          suppressHydrationWarning
+        >
+          {[0, 1].map((segmentIndex) => {
+            const path = getArcSegmentPath(segmentIndex, 2, outerRadius, innerRadius, gapAngle, startOffset);
+            const iconPos = getArcIconPosition(segmentIndex, 2, (outerRadius + innerRadius) / 2, gapAngle, startOffset);
+            const item = items[segmentIndex];
+            const style = getSpotlightStyle(segmentIndex, spotlightIndex, isSpotlightMode);
+            const { transform, position, zIndex, ...svgStyle } = style as any;
+
+            return (
+              <g
+                key={segmentIndex}
+                style={{ ...svgStyle, transformOrigin: 'center', transition: 'all 0.4s ease-out' }}
+                {...(!isPresenting ? {
+                  onMouseEnter: () => onHover?.(segmentIndex),
+                  onMouseLeave: () => onHover?.(null),
+                  cursor: "pointer",
+                } : {})}
+              >
+                <path
+                  d={path}
+                  fill={themeStyles.shapeBgColor}
+                  stroke={themeStyles.shapeBorderColor}
+                  strokeWidth="1"
+                  suppressHydrationWarning
+                />
+                <circle
+                  cx={iconPos.x}
+                  cy={iconPos.y}
+                  r={28}
+                  fill="white"
+                  stroke={`${themeStyles.accentColor}40`}
+                  strokeWidth="2"
+                  suppressHydrationWarning
+                />
+                {item?.icon ? (
+                  <text
+                    x={iconPos.x}
+                    y={iconPos.y}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fontSize="22"
+                    fill={themeStyles.accentColor}
+                    suppressHydrationWarning
+                  >
+                    {item.icon}
+                  </text>
+                ) : (
+                  <circle cx={iconPos.x} cy={iconPos.y} r={5} fill={`${themeStyles.accentColor}40`} suppressHydrationWarning />
+                )}
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* Right content */}
+        <div className="flex-1 max-w-[35%] min-w-[280px] text-left pl-4">
+          {renderContentItem(items[1]!, 1, "right")}
+        </div>
+      </div>
+    );
+
+    const containerClassName = `w-full flex items-center justify-center ${className}`;
+
+    if (isPresenting) {
+      return (
+        <motion.div key={animationKey} className={containerClassName} variants={containerVariants} initial="hidden" animate="visible">
+          {content}
+        </motion.div>
+      );
+    }
+    return <div className={containerClassName}>{content}</div>;
+  }
+
+  // Default layout for 4+ items - grid below circle
   const containerClassName = `w-full flex flex-col items-center justify-center ${className}`;
 
   const content = (
     <>
-      {/* Text row - items spread horizontally, with vertical offset following arc curve */}
-      <div
-        className="w-full grid gap-2 px-4"
-        style={{
-          gridTemplateColumns: `repeat(${gridCols}, 1fr)`,
-        }}
-      >
-        {items.slice(0, gridCols).map((item, index) => {
-          const pos = getItemPosition(index);
-          const topMargin = Math.round((1 - pos.verticalFactor) * 100);
-
-          const ItemWrapper = isPresenting ? motion.div : "div";
-          const variantsProps = isPresenting ? { variants: circleVariants } : {};
-          const spotlightStyle = isPresenting ? getSpotlightStyle(index, spotlightIndex, isSpotlightMode) : {};
-
-          return (
-            <ItemWrapper
-              key={index}
-              className="flex flex-col"
-              style={{
-                marginTop: `${topMargin}px`,
-                textAlign: pos.textAlign,
-                ...spotlightStyle
-              }}
-              {...(!isPresenting ? {
-                onMouseEnter: () => onHover?.(index),
-                onMouseLeave: () => onHover?.(null),
-              } : {})}
-              {...variantsProps}
-            >
-              {item.label &&
-                (onStartEditLabel ? (
-                  <EditableText
-                    value={item.label}
-                    isEditing={
-                      isEditing &&
-                      editingText?.field === `content-label-${index}`
-                    }
-                    onStartEdit={() => onStartEditLabel(index)}
-                    onChange={(val) => onUpdateLabel?.(index, val)}
-                    onFinish={onFinishEditing || (() => {})}
-                    onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                    className="font-semibold mb-1 leading-tight"
-                    style={{ fontSize: labelSize, color: themeStyles.titleColor }}
-                    isOwner={isOwner}
-                    isHovered={isHovered}
-                  />
-                ) : (
-                  <h3
-                    className="font-semibold mb-1 leading-tight"
-                    style={{ fontSize: labelSize, color: themeStyles.titleColor }}
-                  >
-                    {item.label}
-                  </h3>
-                ))}
-              {onStartEditText ? (
-                <EditableText
-                  value={item.text}
-                  isEditing={
-                    isEditing && editingText?.field === `content-text-${index}`
-                  }
-                  onStartEdit={() => onStartEditText(index)}
-                  onChange={(val) => onUpdateText?.(index, val)}
-                  onFinish={onFinishEditing || (() => {})}
-                  onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                  className="leading-snug"
-                  style={{ fontSize, color: themeStyles.bodyColor }}
-                  isOwner={isOwner}
-                  isHovered={isHovered}
-                />
-              ) : (
-                <p className="leading-snug" style={{ fontSize, color: themeStyles.bodyColor }}>
-                  {item.text}
-                </p>
-              )}
-            </ItemWrapper>
-          );
-        })}
-      </div>
-
-      {/* Arc SVG */}
       <svg
-        width="480"
-        height="250"
-        viewBox="-240 -240 480 250"
-        className="flex-shrink-0 -mt-20"
+        width="500"
+        height="500"
+        viewBox="-250 -250 500 500"
+        className="flex-shrink-0"
+        style={{ width: "500px", height: "500px", flexShrink: 0 }}
         suppressHydrationWarning
       >
-        {Array.from({ length: itemCount }).map((_, index) => {
-          const path = getArcSegmentPath(
-            index,
-            itemCount,
-            outerRadius,
-            innerRadius,
-            gapAngle
-          );
-          const iconPos = getArcIconPosition(
-            index,
-            itemCount,
-            (outerRadius + innerRadius) / 2
-          );
-          const item = items[index];
+        {items.map((item, index) => {
+          const path = getArcSegmentPath(index, itemCount, outerRadius, innerRadius, gapAngle, startOffset);
+          const iconPos = getArcIconPosition(index, itemCount, (outerRadius + innerRadius) / 2, gapAngle, startOffset);
           const style = getSpotlightStyle(index, spotlightIndex, isSpotlightMode);
-          // Remove transform/position properties that don't work well on SVG groups
           const { transform, position, zIndex, ...svgStyle } = style as any;
 
           return (
-            <g 
+            <g
               key={index}
               style={{ ...svgStyle, transformOrigin: 'center', transition: 'all 0.4s ease-out' }}
               {...(!isPresenting ? {
@@ -407,10 +561,10 @@ function ArcLayout({
               <circle
                 cx={iconPos.x}
                 cy={iconPos.y}
-                r={itemCount <= 4 ? 16 : 13}
+                r={24}
                 fill="white"
                 stroke={`${themeStyles.accentColor}40`}
-                strokeWidth="1"
+                strokeWidth="2"
                 suppressHydrationWarning
               />
               {item?.icon ? (
@@ -419,37 +573,58 @@ function ArcLayout({
                   y={iconPos.y}
                   textAnchor="middle"
                   dominantBaseline="central"
-                  fontSize="12"
+                  fontSize="20"
                   fill={themeStyles.accentColor}
                   suppressHydrationWarning
                 >
                   {item.icon}
                 </text>
               ) : (
-                <circle
-                  cx={iconPos.x}
-                  cy={iconPos.y}
-                  r={3}
-                  fill={`${themeStyles.accentColor}40`}
-                  suppressHydrationWarning
-                />
+                <circle cx={iconPos.x} cy={iconPos.y} r={4} fill={`${themeStyles.accentColor}40`} suppressHydrationWarning />
               )}
             </g>
           );
         })}
       </svg>
+
+      <div
+        className="w-full grid gap-4 px-4 mt-4"
+        style={{ gridTemplateColumns: `repeat(${Math.min(itemCount, 4)}, 1fr)` }}
+      >
+        {items.map((item, index) => {
+          const ItemWrapper = isPresenting ? motion.div : "div";
+          const variantsProps = isPresenting ? { variants: circleVariants } : {};
+          const spotlightStyle = isPresenting ? getSpotlightStyle(index, spotlightIndex, isSpotlightMode) : {};
+
+          return (
+            <ItemWrapper
+              key={index}
+              className="text-center"
+              style={spotlightStyle}
+              {...(!isPresenting ? {
+                onMouseEnter: () => onHover?.(index),
+                onMouseLeave: () => onHover?.(null),
+              } : {})}
+              {...variantsProps}
+            >
+              {item.label && (
+                <h3 className="font-semibold mb-1" style={{ fontSize: "0.875rem", color: themeStyles.titleColor }}>
+                  {item.label}
+                </h3>
+              )}
+              <p className="leading-snug" style={{ fontSize: "0.75rem", color: themeStyles.bodyColor }}>
+                {item.text}
+              </p>
+            </ItemWrapper>
+          );
+        })}
+      </div>
     </>
   );
 
   if (isPresenting) {
     return (
-      <motion.div
-        key={animationKey}
-        className={containerClassName}
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
+      <motion.div key={animationKey} className={containerClassName} variants={containerVariants} initial="hidden" animate="visible">
         {content}
       </motion.div>
     );
@@ -500,10 +675,12 @@ function RingLayout({
 }) {
   const itemCount = items.length;
 
-  const outerRadius = itemCount <= 4 ? 100 : itemCount <= 6 ? 85 : 75;
-  const innerRadius = itemCount <= 4 ? 50 : itemCount <= 6 ? 42 : 36;
-  const svgSize = itemCount <= 4 ? 240 : itemCount <= 6 ? 200 : 180;
-  const gapAngle = itemCount <= 4 ? 15 : itemCount <= 6 ? 12 : 10;
+  // Ring sizes - fixed size regardless of item count (reduced by ~10%)
+  const outerRadius = 180; // 200 * 0.9
+  const innerRadius = 90; // 100 * 0.9
+  const svgSize = 432; // 480 * 0.9 - Fixed size
+  // Smaller gaps so segments visually connect (reference has very tight joins)
+  const gapAngle = itemCount <= 4 ? 6 : itemCount <= 6 ? 5 : 4;
 
   // For more than 4 items, use grid below
   if (itemCount > 4) {
@@ -526,7 +703,8 @@ function RingLayout({
             const iconPos = getRingIconPosition(
               index,
               itemCount,
-              (outerRadius + innerRadius) / 2
+              (outerRadius + innerRadius) / 2,
+              gapAngle
             );
             const item = items[index];
 
@@ -536,16 +714,18 @@ function RingLayout({
                   d={path}
                   fill={themeStyles.shapeBgColor}
                   stroke={themeStyles.shapeBorderColor}
-                  strokeWidth="1"
+                  strokeWidth="1.25"
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
                   suppressHydrationWarning
                 />
                 <circle
                   cx={iconPos.x}
                   cy={iconPos.y}
-                  r={11}
+                  r={22}
                   fill="white"
                   stroke={`${themeStyles.accentColor}40`}
-                  strokeWidth="1"
+                  strokeWidth="2"
                   suppressHydrationWarning
                 />
                 {item?.icon ? (
@@ -554,7 +734,7 @@ function RingLayout({
                     y={iconPos.y}
                     textAnchor="middle"
                     dominantBaseline="central"
-                    fontSize="10"
+                    fontSize="20"
                     fill={themeStyles.accentColor}
                     suppressHydrationWarning
                   >
@@ -564,7 +744,7 @@ function RingLayout({
                   <circle
                     cx={iconPos.x}
                     cy={iconPos.y}
-                    r={2}
+                    r={4}
                     fill={`${themeStyles.accentColor}40`}
                     suppressHydrationWarning
                   />
@@ -671,16 +851,34 @@ function RingLayout({
   }
 
   // Standard layout - content on sides
-  const leftItems = items.filter((_, i) => i % 2 === 0);
-  const rightItems = items.filter((_, i) => i % 2 === 1);
-  const leftIndices = items.map((_, i) => i).filter((i) => i % 2 === 0);
-  const rightIndices = items.map((_, i) => i).filter((i) => i % 2 === 1);
+  // For 3 items: 1 on left, 2 on right (matching the arc orientation)
+  // For other counts: alternate left/right
+  let leftItems: CircleContentItem[];
+  let rightItems: CircleContentItem[];
+  let leftIndices: number[];
+  let rightIndices: number[];
+  let startOffset = -90; // Default rotation
+
+  if (itemCount === 3) {
+    // Special case: 1 item left, 2 items right
+    leftItems = [items[0]!];
+    rightItems = [items[1]!, items[2]!];
+    leftIndices = [0];
+    rightIndices = [1, 2];
+    // Rotate circle so first arc is on left (centered at 180°)
+    startOffset = 122;
+  } else {
+    leftItems = items.filter((_, i) => i % 2 === 0);
+    rightItems = items.filter((_, i) => i % 2 === 1);
+    leftIndices = items.map((_, i) => i).filter((i) => i % 2 === 0);
+    rightIndices = items.map((_, i) => i).filter((i) => i % 2 === 1);
+  }
 
   const standardContent = (
     <>
       <div
         className="flex flex-col justify-center items-end text-right space-y-4"
-        style={{ maxWidth: "180px" }}
+        style={{ maxWidth: "35%", minWidth: "280px" }}
       >
         {leftItems.map((item, idx) => {
           const actualIndex = leftIndices[idx]!;
@@ -734,15 +932,15 @@ function RingLayout({
                   onChange={(val) => onUpdateText?.(actualIndex, val)}
                   onFinish={onFinishEditing || (() => {})}
                   onDelete={onDeleteItem ? () => onDeleteItem(actualIndex) : undefined}
-                  className="text-sm leading-relaxed"
-                  style={{ color: themeStyles.bodyColor }}
+                  className="leading-relaxed"
+                  style={{ color: themeStyles.bodyColor, fontSize: CONTENT_FONT_SIZE.compact }}
                   isOwner={isOwner}
                   isHovered={isHovered}
                 />
               ) : (
                 <p
-                  className="text-sm leading-relaxed"
-                  style={{ color: themeStyles.bodyColor }}
+                  className="leading-relaxed"
+                  style={{ color: themeStyles.bodyColor, fontSize: CONTENT_FONT_SIZE.compact }}
                 >
                   {item.text}
                 </p>
@@ -756,6 +954,7 @@ function RingLayout({
         width={svgSize}
         height={svgSize}
         viewBox={`${-svgSize / 2} ${-svgSize / 2} ${svgSize} ${svgSize}`}
+        style={{ width: `${svgSize}px`, height: `${svgSize}px`, flexShrink: 0 }}
         suppressHydrationWarning
       >
         {Array.from({ length: itemCount }).map((_, index) => {
@@ -764,12 +963,15 @@ function RingLayout({
             itemCount,
             outerRadius,
             innerRadius,
-            15
+            gapAngle,
+            startOffset
           );
           const iconPos = getRingIconPosition(
             index,
             itemCount,
-            (outerRadius + innerRadius) / 2
+            (outerRadius + innerRadius) / 2,
+            gapAngle,
+            startOffset
           );
           const item = items[index];
           const style = getSpotlightStyle(index, spotlightIndex, isSpotlightMode);
@@ -796,10 +998,10 @@ function RingLayout({
               <circle
                 cx={iconPos.x}
                 cy={iconPos.y}
-                r="14"
+                r="28"
                 fill="white"
                 stroke={`${themeStyles.accentColor}40`}
-                strokeWidth="1"
+                strokeWidth="2"
                 suppressHydrationWarning
               />
               {item?.icon ? (
@@ -808,7 +1010,7 @@ function RingLayout({
                   y={iconPos.y}
                   textAnchor="middle"
                   dominantBaseline="central"
-                  fontSize="11"
+                  fontSize="22"
                   fill={themeStyles.accentColor}
                   suppressHydrationWarning
                 >
@@ -818,7 +1020,7 @@ function RingLayout({
                 <circle
                   cx={iconPos.x}
                   cy={iconPos.y}
-                  r="3"
+                  r="6"
                   fill={`${themeStyles.accentColor}40`}
                   suppressHydrationWarning
                 />
@@ -829,8 +1031,8 @@ function RingLayout({
       </svg>
 
       <div
-        className="flex flex-col justify-center items-start text-left space-y-4"
-        style={{ maxWidth: "180px" }}
+        className="flex flex-col justify-center items-start text-left space-y-16"
+        style={{ maxWidth: "35%", minWidth: "280px" }}
       >
         {rightItems.map((item, idx) => {
           const actualIndex = rightIndices[idx]!;
@@ -884,15 +1086,15 @@ function RingLayout({
                   onChange={(val) => onUpdateText?.(actualIndex, val)}
                   onFinish={onFinishEditing || (() => {})}
                   onDelete={onDeleteItem ? () => onDeleteItem(actualIndex) : undefined}
-                  className="text-sm leading-relaxed"
-                  style={{ color: themeStyles.bodyColor }}
+                  className="leading-relaxed"
+                  style={{ color: themeStyles.bodyColor, fontSize: CONTENT_FONT_SIZE.compact }}
                   isOwner={isOwner}
                   isHovered={isHovered}
                 />
               ) : (
                 <p
-                  className="text-sm leading-relaxed"
-                  style={{ color: themeStyles.bodyColor }}
+                  className="leading-relaxed"
+                  style={{ color: themeStyles.bodyColor, fontSize: CONTENT_FONT_SIZE.compact }}
                 >
                   {item.text}
                 </p>

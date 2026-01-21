@@ -91,6 +91,12 @@ function isColorDark(hexColor: string): boolean {
 // Helper to generate image styles from SlideImage properties
 import type { SlideImage } from "./types";
 
+// Shared font size constants - using bullet points layout as the standard
+export const CONTENT_FONT_SIZE = {
+  compact: "clamp(0.75rem, 1.2vw + 0.15rem, 0.9rem)",
+  normal: "clamp(0.875rem, 1.4vw + 0.15rem, 1rem)",
+};
+
 function getImageStyle(image: SlideImage): React.CSSProperties {
   const style: React.CSSProperties = {};
   
@@ -148,17 +154,41 @@ interface SlideImageProps {
 }
 
 function SlideImg({ image, alt, className = "", style = {}, draggable, onDragStart, onDragEnd }: SlideImageProps) {
-  // Don't render if image is a placeholder or has no URL
+  // Render a visible placeholder frame if image is missing/unresolved.
+  // This keeps layout geometry identical to AI/Pexels, even without a real URL.
   if (image.source === "placeholder" || !image.url) {
-    return null;
+    return (
+      <div className={className} style={style}>
+        <div className="w-full h-full rounded-lg border border-gray-300 bg-gray-200 flex items-center justify-center">
+          <div className="flex flex-col items-center justify-center text-center px-4">
+            <ImageIcon size={34} className="text-gray-400 mb-2" />
+            <span className="text-sm font-medium text-gray-500">Image placeholder</span>
+          </div>
+        </div>
+      </div>
+    );
   }
   const imageStyles = getImageStyle(image);
+  
+  // Remove hardcoded object-cover/object-contain from className and use image's objectFit instead
+  const objectFitClass = image.objectFit === "contain" ? "object-contain" : 
+                         image.objectFit === "fill" ? "object-fill" :
+                         image.objectFit === "none" ? "object-none" :
+                         "object-cover"; // Default back to cover
+  
+  // Remove any existing object-* classes from className
+  const cleanedClassName = className
+    .replace(/\bobject-(cover|contain|fill|none)\b/g, "")
+    .trim();
+  
+  const finalClassName = `${cleanedClassName} ${objectFitClass}`.trim();
+  
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img 
       src={image.url} 
       alt={alt} 
-      className={className}
+      className={finalClassName}
       style={{ ...style, ...imageStyles }}
       draggable={draggable}
       onDragStart={onDragStart}
@@ -359,7 +389,7 @@ function SlideRendererComponent({
   const [isDraggingImage, setIsDraggingImage] = useState(false);
   
   const allImages = getSlideImages(slide);
-  const hasImage = allImages.length > 0;
+  const hasAnyImage = allImages.length > 0;
   const hasMultipleImages = allImages.length > 1;
   const bulletPoints = slide.bulletPoints || [];
   const canEdit = isOwner && !isFullscreen;
@@ -400,19 +430,23 @@ function SlideRendererComponent({
   // Auto-detect chart slides and use chart-right layout by default
   const hasChart = !!slide.chart;
   let effectiveSlideLayout: string | undefined = slide.slideLayout || slide.layout;
-  
-  // DEBUG: Log slideLayout values
-  if (hasImage) {
-    console.log(`[SlideRenderer] Slide ${index}: slideLayout="${slide.slideLayout}", layout="${slide.layout}", effective="${effectiveSlideLayout}"`);
-  }
-  
+
   // If slide has a chart and no image, ALWAYS use a chart layout
   // This ensures charts are displayed on the side, not below content
-  if (hasChart && !hasImage) {
+  if (hasChart && !hasAnyImage) {
     // Force chart-right layout for slides with charts but no images
     effectiveSlideLayout = "chart-right";
   }
   
+  // If the chosen layout is explicitly "no-image", don't let placeholder state
+  // affect typography/alignment (prevents "weird centered" behavior).
+  const hasImage = hasAnyImage && effectiveSlideLayout !== "no-image";
+
+  // DEBUG: Log slideLayout values
+  if (hasImage) {
+    console.log(`[SlideRenderer] Slide ${index}: slideLayout="${slide.slideLayout}", layout="${slide.layout}", effective="${effectiveSlideLayout}"`);
+  }
+
   // Use slideLayout (canonical) first, then fall back to layout (legacy)
   const layout = getLayoutVariant(index, themeType, effectiveSlideLayout);
   
@@ -431,13 +465,26 @@ function SlideRendererComponent({
     (slide.bulletPoints && slide.bulletPoints.length > 0)
   );
   
+  // Helper function to remove word counts from text
+  const removeWordCounts = (text: string): string => {
+    if (!text) return text;
+    let cleaned = text;
+    // Remove patterns like "(26 words)", "(max 30 words)", "(30 words)", "(visually equal length)", etc.
+    cleaned = cleaned.replace(/\(max\s+\d+\s+words?[^)]*\)/gi, "").trim();
+    cleaned = cleaned.replace(/\(\d+\s+words?[^)]*\)/gi, "").trim();
+    cleaned = cleaned.replace(/\(visually\s+equal\s+length[^)]*\)/gi, "").trim();
+    cleaned = cleaned.replace(/\(words?[^)]*\)/gi, "").trim(); // Catch any remaining word-related patterns
+    cleaned = cleaned.replace(/\s+/g, " ").trim(); // Clean up extra spaces
+    return cleaned;
+  };
+
   // Convert slide content to BoxContentItem format
   const getBoxContentItems = (): BoxContentItem[] => {
     // Prefer sections if available
     if (slide.sections && slide.sections.length > 0) {
       return slide.sections.map((section, i) => ({
         label: section.heading,
-        text: section.description,
+        text: removeWordCounts(section.description || ""),
         icon: slide.icons?.[i]?.placeholder,
       }));
     }
@@ -447,20 +494,23 @@ function SlideRendererComponent({
         .filter(item => item.label)
         .map((item, i) => ({
           label: item.label,
-          text: item.text,
+          text: removeWordCounts(item.text || ""),
           icon: slide.icons?.[i]?.placeholder,
         }));
     }
     // Fall back to regular bullet points - convert them to box items
     if (slide.bulletPoints && slide.bulletPoints.length > 0) {
       return slide.bulletPoints.map((bullet, i) => {
+        // Remove word count references like "(max 30 words)", "(30 words)", "(26 words)", etc.
+        let cleanBullet = removeWordCounts(bullet);
+        
         // Try to extract label and text from bullet point
         // Format: "Label: Text" or just "Text"
-        const colonIndex = bullet.indexOf(":");
+        const colonIndex = cleanBullet.indexOf(":");
         if (colonIndex > 0 && colonIndex < 50) {
           // Only split if colon is reasonably early (likely a label:text format)
-          const label = bullet.substring(0, colonIndex).trim();
-          const text = bullet.substring(colonIndex + 1).trim();
+          const label = cleanBullet.substring(0, colonIndex).trim();
+          const text = cleanBullet.substring(colonIndex + 1).trim();
           if (label && text) {
             return {
               label,
@@ -471,10 +521,10 @@ function SlideRendererComponent({
         }
         // If no label format, use the bullet text as both label and text
         // Take first few words as label, rest as text
-        const words = bullet.split(" ");
+        const words = cleanBullet.split(" ");
         if (words.length > 5) {
           const label = words.slice(0, 3).join(" ");
-          const text = bullet;
+          const text = cleanBullet;
           return {
             label,
             text,
@@ -483,8 +533,8 @@ function SlideRendererComponent({
         }
         // Short bullet - use as both
         return {
-          label: bullet,
-          text: bullet,
+          label: cleanBullet,
+          text: cleanBullet,
           icon: slide.icons?.[i]?.placeholder,
         };
       });
@@ -1061,15 +1111,17 @@ function SlideRendererComponent({
 
     // Parse bullet points to extract label/text if present
     const parsedBullets = bulletPoints.map((bullet) => {
-      const colonIndex = bullet.indexOf(":");
+      // Remove word counts first
+      const cleanBullet = removeWordCounts(bullet);
+      const colonIndex = cleanBullet.indexOf(":");
       if (colonIndex > 0 && colonIndex < 50) {
-        const label = bullet.substring(0, colonIndex).trim();
-        const text = bullet.substring(colonIndex + 1).trim();
+        const label = cleanBullet.substring(0, colonIndex).trim();
+        const text = cleanBullet.substring(colonIndex + 1).trim();
         if (label && text) {
-          return { label, text, full: bullet };
+          return { label, text, full: cleanBullet };
         }
       }
-      return { label: null, text: bullet, full: bullet };
+      return { label: null, text: cleanBullet, full: cleanBullet };
     });
 
     return (
@@ -1111,7 +1163,7 @@ function SlideRendererComponent({
                     style={{
                       fontFamily: theme.fonts.body.family,
                       color: colors.textMuted,
-                      fontSize: compact ? "clamp(0.75rem, 1.2vw + 0.15rem, 0.9rem)" : "clamp(0.875rem, 1.4vw + 0.15rem, 1rem)"
+                      fontSize: compact ? CONTENT_FONT_SIZE.compact : CONTENT_FONT_SIZE.normal
                     }}
                     isOwner={canEdit}
                     isHovered={isHovered}
@@ -1127,11 +1179,11 @@ function SlideRendererComponent({
                   onChange={(val) => onUpdateContent(index, "bullet", val, i)}
                   onFinish={onFinishEditing}
                   className="leading-relaxed"
-                  style={{
-                    fontFamily: theme.fonts.body.family,
-                    color: colors.textMuted,
-                    fontSize: compact ? "clamp(0.75rem, 1.2vw + 0.15rem, 1rem)" : "clamp(0.875rem, 1.5vw + 0.2rem, 1.125rem)"
-                  }}
+                    style={{
+                      fontFamily: theme.fonts.body.family,
+                      color: colors.textMuted,
+                      fontSize: compact ? CONTENT_FONT_SIZE.compact : CONTENT_FONT_SIZE.normal
+                    }}
                   isOwner={canEdit}
                   isHovered={isHovered}
                   onDelete={() => onDeleteBullet(index, i)}
@@ -1609,15 +1661,6 @@ function SlideRendererComponent({
     );
   };
 
-  const Placeholder = () => (
-    <div className={`w-full h-full rounded-lg border border-dashed ${colors.border} flex items-center justify-center ${colors.surfaceAlt}`}>
-      <div className={`text-center ${colors.indicatorMuted}`}>
-        <ImageIcon size={40} className="mx-auto mb-2 opacity-40" />
-        <p className="text-sm">Image placeholder</p>
-      </div>
-    </div>
-  );
-
   // CHART LAYOUTS - Check these FIRST before other layouts
   // LAYOUT: Chart Left - Chart on left (55%), content on right (45%)
   if (layout === "chart-left" && slide.chart) {
@@ -1759,7 +1802,6 @@ function SlideRendererComponent({
               )}
             </div>
           )}
-          {slide.image?.source === "placeholder" && <div className="w-full sm:w-[40%] p-4 sm:p-8"><Placeholder /></div>}
         </div>
         {/* Image Drag Zones - shown when dragging image */}
         {isDraggingImage && onChangeImagePosition && (
@@ -1839,7 +1881,6 @@ function SlideRendererComponent({
               )}
             </div>
           )}
-          {slide.image?.source === "placeholder" && <div className="w-full sm:w-[40%] p-4 sm:p-8"><Placeholder /></div>}
 
           {/* Content Area */}
           <div className={`flex flex-col justify-center pt-4 sm:pt-16 md:pt-20 pb-4 sm:pb-8 md:pb-12 pl-4 sm:pl-6 md:pl-8 pr-4 sm:pr-8 md:pr-12 ${hasImage ? "w-full sm:w-[60%]" : "w-full"}`}>
@@ -2058,6 +2099,7 @@ function SlideRendererComponent({
 
   // LAYOUT 3: Centered - Image Top, Content Bottom
   if (layout === "centered") {
+    const shouldCenterTitleSlide = isTitleSlide && !hasImage;
     return (
       <div className="h-full relative overflow-hidden">
         <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-b ${colors.bg}` : ''}`} style={customBgStyle} />
@@ -2065,7 +2107,21 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className={`relative h-full flex flex-col ${hasImage ? "items-center justify-center" : "justify-center"} ${hasImage ? "p-4 sm:p-8 md:p-12" : "p-4 sm:p-6 md:p-8"} pt-12 sm:pt-8 md:pt-12 ${hasImage ? "text-center" : ""} overflow-y-auto`}>
+        <div
+          className={`relative h-full flex flex-col ${
+            hasImage || shouldCenterTitleSlide ? "items-center justify-center" : "justify-center"
+          } ${
+            // Title slide with no image: true vertical centering + higher horizontal padding
+            shouldCenterTitleSlide
+              ? "px-10 sm:px-16 md:px-24 lg:px-32 py-10 sm:py-14 md:py-16"
+              : hasImage
+                ? "p-4 sm:p-8 md:p-12 pt-12 sm:pt-8 md:pt-12"
+                : "p-4 sm:p-6 md:p-8 pt-12 sm:pt-8 md:pt-12"
+          } ${hasImage || shouldCenterTitleSlide ? "text-center" : ""} ${
+            // Avoid scroll container affecting centering on title slides
+            shouldCenterTitleSlide ? "" : "overflow-y-auto"
+          }`}
+        >
           {hasImage && (
             <div className={`w-full ${hasMultipleImages ? "max-w-4xl" : "max-w-2xl"} mb-4 sm:mb-6 md:mb-8 relative`}>
               {hasMultipleImages ? (
@@ -2078,12 +2134,18 @@ function SlideRendererComponent({
             </div>
           )}
 
-          <Title className={`text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-3 sm:mb-4 md:mb-6 ${hasImage ? "max-w-4xl" : "w-full"} ${hasImage ? "" : "text-left"}`} align={hasImage ? "center" : "left"} />
+          <Title
+            className={`text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-3 sm:mb-4 md:mb-6 ${hasImage || shouldCenterTitleSlide ? "max-w-4xl" : "w-full"} ${hasImage || shouldCenterTitleSlide ? "" : "text-left"}`}
+            align={hasImage || shouldCenterTitleSlide ? "center" : "left"}
+            showSubtitle={isTitleSlide}
+          />
           {!isTitleSlide && <SlideDescription className={`mb-3 sm:mb-4 md:mb-5 ${hasImage ? "" : "text-left"}`} align={hasImage ? "center" : "left"} />}
 
-          <div className={`${hasImage ? "max-w-2xl w-full text-left" : "w-full"} mt-2 sm:mt-3 md:mt-4`}>
-            <EnhancedContent compact />
-          </div>
+          {!isTitleSlide && (
+            <div className={`${hasImage ? "max-w-2xl w-full text-left" : "w-full"} mt-2 sm:mt-3 md:mt-4`}>
+              <EnhancedContent compact />
+            </div>
+          )}
         </div>
         <div className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${colors.borderLine} to-transparent`} />
       </div>

@@ -32,13 +32,20 @@ export function getModalColors(theme: Theme) {
   const hasBgImage = hasBackgroundImage(theme);
   const isDark = isColorDark(theme.colors.background);
   
+  // Determine modal background:
+  // - If theme has background image, use semi-transparent background
+  // - If pageBackground is a gradient (contains "gradient"), use solid background instead
+  // - Otherwise use pageBackground or fallback to background
+  const isGradient = theme.pageBackground?.includes("gradient");
+  const modalBg = hasBgImage 
+    ? hexToRgba(theme.colors.background, 0.97)
+    : (isGradient ? theme.colors.surface : (theme.pageBackground || theme.colors.background));
+  
   // For ALL themes (including background image themes), use the theme's actual colors
   // This ensures modals, drawers, and dropdowns match the theme's color palette
   return {
     // Use theme's background with high opacity for modals
-    bg: hasBgImage 
-      ? hexToRgba(theme.colors.background, 0.97)
-      : (theme.pageBackground || theme.colors.background),
+    bg: modalBg,
     surface: theme.colors.surface,
     surfaceHover: theme.colors.surfaceHover || (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)"),
     border: theme.colors.border,

@@ -377,9 +377,12 @@ export async function GET(
   const textDensity = content?.textDensity as string | undefined;
   const streamingComplete = content?.streamingComplete as boolean | undefined;
 
+  // Obfuscate imageModel to avoid exposing internal model details
+  const obfuscatedImageModel = imageModel ? "pptmaster-image-engine" : undefined;
+  
   console.log("[stream-content] Content parsed:", {
     imageSource,
-    imageModel,
+    imageModel: obfuscatedImageModel, // Obfuscated for security
     imageArtStyle,
     customArtStyleText,
     textDensity,
@@ -476,12 +479,15 @@ export async function GET(
           const needsImage = slide.type === "title" 
             ? (slide.image?.required ?? true) 
             : (slide.assets?.image?.required ?? false);
+
+          // "No Images" mode: never reserve image space on client.
+          const shouldHaveImageSlot = imageSource !== "no-images" && needsImage;
           
           // Send slide start
           const slideStartSent = sendEvent(controller, "slideStart", { 
             slideIndex: i, 
             type: slide.type,
-            hasImage: needsImage
+            hasImage: shouldHaveImageSlot
           }, isClosed);
           
           if (!slideStartSent) {
@@ -523,7 +529,7 @@ export async function GET(
                     console.log(`[stream-content] Image ready for slide ${i}`);
                   }
                 } else if (imageSource === "ai-generated") {
-                  console.log(`[stream-content] Generating AI image for slide ${i}, model: ${imageModel}, artStyle: ${imageArtStyle}`);
+                  console.log(`[stream-content] Generating AI image for slide ${i}, model: pptmaster-image-engine, artStyle: ${imageArtStyle}`);
                   const slidesWithMetadata = [{
                     type: slide.type,
                     title: slide.title,
@@ -717,17 +723,30 @@ export async function GET(
             imageMap.delete(i);
           }
 
+          // If user selected "placeholders", persist a placeholder image so the
+          // slide continues to reserve the image area after streaming completes.
+          // Also respect layout overrides (if image is overridden, do NOT include placeholder).
+          if (imageSource === "placeholders" && needsImage && !imageWasOverridden) {
+            slideData.image = {
+              url: "",
+              alt: "Image placeholder",
+              source: "placeholder",
+            };
+          }
+
           // Apply selected layout to slide data
-          slideData.slideLayout = layoutSelection.slideLayout;
+          // In "no-images" mode, always force a no-image layout so content uses full width.
+          const effectiveSlideLayout = imageSource === "no-images" ? "no-image" : layoutSelection.slideLayout;
+          slideData.slideLayout = effectiveSlideLayout;
           slideData.imageSize = layoutSelection.imageSize;
           slideData.imageShape = layoutSelection.imageShape;
           
           // Legacy layout for renderer compatibility
-          slideData.layout = layoutSelection.slideLayout === "no-image" ? "no-image" : 
-                            layoutSelection.slideLayout === "image-left" ? "image-left" :
-                            layoutSelection.slideLayout === "image-right" ? "image-right" :
-                            layoutSelection.slideLayout === "image-top" ? "image-top" :
-                            layoutSelection.slideLayout === "image-bottom" ? "image-bottom" :
+          slideData.layout = effectiveSlideLayout === "no-image" ? "no-image" : 
+                            effectiveSlideLayout === "image-left" ? "image-left" :
+                            effectiveSlideLayout === "image-right" ? "image-right" :
+                            effectiveSlideLayout === "image-top" ? "image-top" :
+                            effectiveSlideLayout === "image-bottom" ? "image-bottom" :
                             "no-image";
           
           // Content layout from smart selection
@@ -737,7 +756,7 @@ export async function GET(
           // Send layout update immediately so placeholders appear in correct position
           sendEvent(controller, "layoutUpdate", {
             slideIndex: i,
-            slideLayout: layoutSelection.slideLayout,
+            slideLayout: effectiveSlideLayout,
             contentLayout: layoutSelection.style,
             imageSize: layoutSelection.imageSize,
             imageShape: layoutSelection.imageShape,

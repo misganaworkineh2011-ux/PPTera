@@ -16,6 +16,7 @@ import {
   getRecommendedBoxLayout,
 } from "~/lib/layouts/content/boxes";
 import EditableText from "./EditableText";
+import { CONTENT_FONT_SIZE } from "./SlideRenderer";
 
 // Animation variants for staggered box animations
 const containerVariants = {
@@ -209,7 +210,7 @@ export default function BoxLayoutRenderer({
         onDelete={onDeleteItem ? () => onDeleteItem(idx) : undefined}
         style={{
           color: baseStyles.bodyColor,
-          fontSize: compact ? "1rem" : "1.1rem",
+          fontSize: compact ? CONTENT_FONT_SIZE.compact : CONTENT_FONT_SIZE.normal,
           lineHeight: 1.5,
           textAlign: "center",
         }}
@@ -220,7 +221,7 @@ export default function BoxLayoutRenderer({
       <p
         style={{
           color: baseStyles.bodyColor,
-          fontSize: compact ? "1rem" : "1.1rem",
+          fontSize: compact ? CONTENT_FONT_SIZE.compact : CONTENT_FONT_SIZE.normal,
           lineHeight: 1.5,
           textAlign: "center",
         }}

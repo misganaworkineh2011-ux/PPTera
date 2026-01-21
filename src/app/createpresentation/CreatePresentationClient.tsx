@@ -311,7 +311,7 @@ export default function CreatePresentationClient({
       | "openai"                           // DALL-E 3 ~$0.04/image
       | "openai-hd",                       // DALL-E 3 HD ~$0.08/image
     // Image art style (like Gamma)
-    imageArtStyle: "photo" as "illustration" | "photo" | "abstract" | "3d" | "line-art" | "custom",
+    imageArtStyle: "photo" as "photo" | "abstract" | "3d" | "line-art" | "custom",
     // Custom art style text (when imageArtStyle is "custom")
     customArtStyleText: "",
   });
@@ -1595,14 +1595,6 @@ export default function CreatePresentationClient({
                                 <span>Stock Photos (Pexels)</span>
                               </>
                             )}
-                            {formData.imageSource === "illustrations" && (
-                              <>
-                                <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                                </svg>
-                                <span>Illustrations (Pictographic Style)</span>
-                              </>
-                            )}
                           </div>
                           <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${isImageSourceDropdownOpen ? "rotate-180" : ""}`} />
                         </button>
@@ -1649,15 +1641,6 @@ export default function CreatePresentationClient({
                                       <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                                      </svg>
-                                    )
-                                  },
-                                  { 
-                                    id: "illustrations", 
-                                    label: "Illustrations (Pictographic Style)",
-                                    icon: (
-                                      <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
                                       </svg>
                                     )
                                   },
@@ -1944,7 +1927,6 @@ export default function CreatePresentationClient({
                           </p>
                           <div className="flex gap-2 mb-2 overflow-x-auto pb-1">
                             {[
-                              { id: "illustration", label: "Illustration", image: "https://img.freepik.com/premium-vector/stylish-woman-wearing-sunglasses-blazer_999679-23054.jpg" },
                               { id: "photo", label: "Photo", image: "https://static.vecteezy.com/vite/assets/photo-masthead-375-BoK_p8LG.webp" },
                               { id: "3d", label: "3D", image: "https://www.sculpteo.com/wp-content/uploads/elementor/thumbs/dice-final-o8x1hxsg7y9mnjtmpd7pzj7cjzv8qseogaahdmgq20.png" },
                               { id: "line-art", label: "Line Art", image: "https://img.freepik.com/free-vector/abstract-waves-black-white-line-art-decoration-set-wallpaper-wall-art-design_79020-172.jpg" },
