@@ -112,6 +112,7 @@ export default async function IndustryPage({
             <SEOCTASection
                 title={`Create ${industry.name} Presentations Now`}
                 subtitle={`Join ${industry.name.toLowerCase()} professionals using AI to create better presentations.`}
+                ctaLink="https://www.pptmaster.app/sign-up"
             />
 
             <LandingFooter currentLang="en" />

@@ -117,6 +117,7 @@ export default async function AlternativePage({
             <SEOCTASection
                 title={`Switch from ${alt.name} Today`}
                 subtitle="Create better presentations with AI, for free."
+                ctaLink="https://www.pptmaster.app/sign-up"
             />
 
             <LandingFooter currentLang="en" />

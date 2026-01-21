@@ -116,6 +116,7 @@ export default async function TemplatePage({
             <SEOCTASection
                 title={`Use the ${template.name} Template`}
                 subtitle="Start creating your presentation in seconds."
+                ctaLink="https://www.pptmaster.app/sign-up"
             />
 
             <LandingFooter currentLang="en" />

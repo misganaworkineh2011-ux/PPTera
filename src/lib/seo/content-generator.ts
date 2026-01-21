@@ -26,6 +26,7 @@ export interface SEOPageContent {
     features: Feature[];
     faqs: FAQ[];
     keywords: string[];
+    contentSections?: ContentSection[];
 }
 
 interface Feature {
@@ -39,11 +40,125 @@ interface FAQ {
     answer: string;
 }
 
+interface ContentSection {
+    title: string;
+    body: string;
+    bullets?: string[];
+}
+
 // ============================================
 // TOOL PAGES CONTENT
 // ============================================
 
 export function generateToolPageContent(tool: Tool): SEOPageContent {
+    const keyword = tool.keyword.toLowerCase();
+    const isFree = keyword.includes("free");
+    const isFromText = keyword.includes("from text") || keyword.includes("text to");
+    const isDetector = keyword.includes("detector");
+    const isUpdates = keyword.includes("updates") || keyword.includes("news");
+    const isGamma = keyword.includes("gamma");
+    const isCanva = keyword.includes("canva");
+    const isChatGpt = keyword.includes("chat gpt") || keyword.includes("chatgpt");
+    const isMicrosoft = keyword.includes("microsoft");
+    const isSlide = keyword.includes("slide") || keyword.includes("deck");
+    const isBuilder = keyword.includes("builder") || keyword.includes("creator") || keyword.includes("maker");
+    const isBrand = keyword.includes("pptmaster");
+
+    const primaryUse = isDetector
+        ? "detecting AI-assisted slide content"
+        : isFromText
+        ? "turning text outlines into slides"
+        : isUpdates
+        ? "tracking new capabilities and release notes"
+        : "creating presentations faster";
+
+    const contentSections: ContentSection[] = [
+        {
+            title: `What is ${tool.title}?`,
+            body: `${tool.title} is a ${tool.keyword}-focused workflow for ${primaryUse}. PPTMaster helps you go from idea to presentation quickly with editable slides, consistent styling, and export-ready files.`,
+        },
+        {
+            title: "Who it’s for",
+            body: "Designed for founders, marketers, educators, analysts, and teams who need clear, polished slides without spending hours on formatting.",
+            bullets: [
+                "Busy professionals who need reliable, on-brand slides",
+                "Teams collaborating on decks with consistent layouts",
+                "Creators who want fast drafts that are fully editable",
+            ],
+        },
+    ];
+
+    if (isFromText) {
+        contentSections.push({
+            title: "Turn text into slides",
+            body: "Paste bullet points or a brief outline and generate a structured deck. PPTMaster maps sections to slide layouts and keeps the narrative flow intact.",
+            bullets: [
+                "Import outlines, briefs, or meeting notes",
+                "Auto-generate slide structure and headings",
+                "Edit content inline without breaking layout",
+            ],
+        });
+    }
+
+    if (isDetector) {
+        contentSections.push({
+            title: "AI detection considerations",
+            body: "AI detection tools can produce false positives. Use them as a signal, not a final verdict, and always review content quality, sourcing, and factual accuracy.",
+            bullets: [
+                "Treat detection as a heuristic, not a guarantee",
+                "Validate claims with human review",
+                "Prefer transparency over over-reliance on scores",
+            ],
+        });
+    }
+
+    if (isUpdates) {
+        contentSections.push({
+            title: "How to evaluate AI PowerPoint updates",
+            body: "Focus on changes that improve structure, editing control, collaboration, and export reliability. Track improvements that save time or reduce rework.",
+            bullets: [
+                "Template variety and layout stability",
+                "Export fidelity to .pptx and PDF",
+                "Editing speed and collaboration support",
+            ],
+        });
+    }
+
+    if (isGamma || isCanva) {
+        contentSections.push({
+            title: `Comparing ${tool.title} to alternatives`,
+            body: "If you’re evaluating tools, compare output quality, editability, and export options. PPTMaster focuses on clean slide structure and fast iteration.",
+            bullets: [
+                "Look for editable, layout-safe slide outputs",
+                "Check template depth and brand customization",
+                "Ensure export quality for PowerPoint workflows",
+            ],
+        });
+    }
+
+    if (isFree) {
+        contentSections.push({
+            title: "Free usage and upgrades",
+            body: "Start with free credits to test the workflow. Upgrade when you need more generations, custom branding, or team collaboration features.",
+            bullets: [
+                "Free credits for quick trials",
+                "Pay only when you need higher volume",
+                "Keep all outputs fully editable",
+            ],
+        });
+    }
+
+    if (isChatGpt || isMicrosoft || isSlide || isBuilder || isBrand) {
+        contentSections.push({
+            title: "What makes a good AI slide tool",
+            body: "Prioritize clarity, export stability, and editing control. A strong tool generates a clean structure and lets you refine each slide without layout drift.",
+            bullets: [
+                "Consistent typography and spacing",
+                "Editable content blocks and layouts",
+                "Reliable .pptx export for PowerPoint",
+            ],
+        });
+    }
     return {
         title: `${tool.title} - Create Stunning Presentations | PPTMaster`,
         metaTitle: `${tool.title} - Free AI Presentation Creator | PPTMaster`,
@@ -94,8 +209,30 @@ export function generateToolPageContent(tool: Tool): SEOPageContent {
                 question: 'What formats can I export to?',
                 answer: 'You can export your presentations as PowerPoint (.pptx), PDF, or share them directly via a link. Perfect for any presentation need.',
             },
-        ],
+        ].concat(
+            isDetector
+                ? [{
+                    question: "Are AI detectors always accurate for slides?",
+                    answer: "No. AI detectors can be inconsistent across models and content types. Use them as guidance and validate with human review.",
+                }]
+                : [],
+        ).concat(
+            isFromText
+                ? [{
+                    question: "Can I create a deck from an outline?",
+                    answer: "Yes. Paste an outline or bullet list and PPTMaster will generate structured slides you can edit and export.",
+                }]
+                : [],
+        ).concat(
+            isGamma || isCanva
+                ? [{
+                    question: `How is PPTMaster different from ${isGamma ? "Gamma" : "Canva"}?`,
+                    answer: "PPTMaster focuses on structured slide output, fast editing, and clean PowerPoint exports so teams can refine slides quickly.",
+                }]
+                : [],
+        ),
         keywords: [tool.keyword, 'ai presentation', 'powerpoint generator', 'slide maker', 'ppt creator'],
+        contentSections,
     };
 }
 
