@@ -9,7 +9,7 @@ const THEME_ID = "desert-sand";
 
 export const desertSandTheme: Theme = {
   id: THEME_ID,
-  name: "Desert Sand",
+  name: "Estate Professional",
   description: "Warm earthy theme with olive brown, golden tan, and soft cream accents",
   category: "creative",
 

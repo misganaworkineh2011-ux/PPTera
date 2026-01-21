@@ -10,7 +10,7 @@ const THEME_ID = "dna-blueprint";
 
 export const dnaBlueprintTheme: Theme = {
   id: THEME_ID,
-  name: "DNA Blueprint",
+  name: "Midnight Teal (or Cyber Streamline)",
   description: "Scientific theme with molecular aesthetics, deep teals, and bio-luminescent accents",
   category: "dark",
 

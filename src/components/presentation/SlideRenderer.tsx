@@ -383,7 +383,6 @@ function SlideRendererComponent({
   onOpenImageModal, onRemoveImage, onChangeImageShape, onChangeImagePosition, onReorderImages,
 }: SlideRendererProps) {
   const [showContentLayoutSelector, setShowContentLayoutSelector] = useState(false);
-  const [contentHovered, setContentHovered] = useState(false);
   const [hoveredImageIndex, setHoveredImageIndex] = useState<number | null>(null);
   const [hoveredHeaderIndex, setHoveredHeaderIndex] = useState<number | null>(null);
   const [isDraggingImage, setIsDraggingImage] = useState(false);
@@ -1018,15 +1017,45 @@ function SlideRendererComponent({
     );
   };
 
+  // Change Layout button that appears on slide hover
+  const ChangeLayoutButton = ({ placement = "inline" }: { placement?: "inline" }) => {
+    if (!canEdit || !hasBoxContent) return null;
+    const placementClasses = "mt-2 sm:mt-3 self-start";
+    return (
+      <button
+        onClick={() => {
+          if (onOpenContentLayoutPanel) {
+            onOpenContentLayoutPanel();
+          } else {
+            setShowContentLayoutSelector(true);
+          }
+        }}
+        className={`z-30 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all shadow-md ${placementClasses} opacity-0 pointer-events-none group-hover:opacity-90 group-hover:pointer-events-auto hover:opacity-100`}
+        style={{
+          backgroundColor: theme.colors.surface,
+          color: theme.colors.text,
+          border: `1px solid ${theme.colors.border}`,
+        }}
+        tabIndex={-1}
+      >
+        <LayoutGrid size={14} />
+        <span className="hidden sm:inline">Change Layout</span>
+      </button>
+    );
+  };
+
   const SlideIndicator = ({ position = "top-left" }: { position?: "top-left" | "top-right" }) => {
-    if (!showPageNumber) return null;
     const posClass = position === "top-left" ? "top-2 left-2 sm:top-4 sm:left-4 md:top-8 md:left-8" : "top-2 right-2 sm:top-4 sm:right-4 md:top-8 md:right-8";
     return (
-      <div className={`absolute ${posClass} flex items-center gap-1 sm:gap-2 md:gap-3 z-10`}>
-        <span className="font-mono font-medium" style={{ color: colors.accent, fontSize: "clamp(0.5rem, 1.2vw + 0.15rem, 0.875rem)" }}>{String(index + 1).padStart(2, "0")}</span>
-        <div className={`w-4 sm:w-8 md:w-12 h-px bg-gradient-to-r ${colors.accentLine} to-transparent`} />
-        <span className={`font-medium uppercase tracking-widest ${colors.indicatorMuted}`} style={{ fontSize: "clamp(0.4rem, 1vw + 0.1rem, 0.75rem)" }}>/ {String(totalSlides).padStart(2, "0")}</span>
-      </div>
+      <>
+        {showPageNumber && (
+          <div className={`absolute ${posClass} flex items-center gap-1 sm:gap-2 md:gap-3 z-10`}>
+            <span className="font-mono font-medium" style={{ color: colors.accent, fontSize: "clamp(0.5rem, 1.2vw + 0.15rem, 0.875rem)" }}>{String(index + 1).padStart(2, "0")}</span>
+            <div className={`w-4 sm:w-8 md:w-12 h-px bg-gradient-to-r ${colors.accentLine} to-transparent`} />
+            <span className={`font-medium uppercase tracking-widest ${colors.indicatorMuted}`} style={{ fontSize: "clamp(0.4rem, 1vw + 0.1rem, 0.75rem)" }}>/ {String(totalSlides).padStart(2, "0")}</span>
+          </div>
+        )}
+      </>
     );
   };
 
@@ -1192,44 +1221,22 @@ function SlideRendererComponent({
             </div>
           </div>
         ))}
-        {canEdit && isHovered && (
-          <button
-            onClick={() => onAddBullet(index)}
-            className={`flex items-center gap-1 sm:gap-2 ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors ml-4 sm:ml-5`}
-            style={{ fontSize: "clamp(0.625rem, 1.2vw + 0.15rem, 0.875rem)" }}
-          >
-            <Plus size={12} className="sm:w-[14px] sm:h-[14px]" /> <span className="hidden sm:inline">Add point</span><span className="sm:hidden">Add</span>
-          </button>
+        {canEdit && (
+          <div className={`transition-opacity duration-200 ${isHovered ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+            <button
+              onClick={() => onAddBullet(index)}
+              className={`flex items-center gap-1 sm:gap-2 ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors ml-4 sm:ml-5`}
+              style={{ fontSize: "clamp(0.625rem, 1.2vw + 0.15rem, 0.875rem)" }}
+              tabIndex={isHovered ? 0 : -1}
+            >
+              <Plus size={12} className="sm:w-[14px] sm:h-[14px]" /> <span className="hidden sm:inline">Add point</span><span className="sm:hidden">Add</span>
+            </button>
+          </div>
         )}
       </div>
     );
   };
 
-  // Change Layout button that appears on hover
-  const ChangeLayoutButton = () => {
-    if (!canEdit || !hasBoxContent || !isHovered || !contentHovered) return null;
-    
-    return (
-      <button
-        onClick={() => {
-          if (onOpenContentLayoutPanel) {
-            onOpenContentLayoutPanel();
-          } else {
-            setShowContentLayoutSelector(true);
-          }
-        }}
-        className="absolute top-2 right-2 z-10 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all opacity-90 hover:opacity-100 shadow-md"
-        style={{
-          backgroundColor: theme.colors.surface,
-          color: theme.colors.text,
-          border: `1px solid ${theme.colors.border}`,
-        }}
-      >
-        <LayoutGrid size={14} />
-        <span className="hidden sm:inline">Change Layout</span>
-      </button>
-    );
-  };
 
   // Enhanced content rendering with transformed content
   const EnhancedContent = ({ compact = false }: { compact?: boolean }) => {
@@ -1237,12 +1244,8 @@ function SlideRendererComponent({
 
     // Wrapper to handle hover for change layout button
     const ContentWrapper = ({ children }: { children: React.ReactNode }) => (
-      <div
-        className="relative"
-        onMouseEnter={() => setContentHovered(true)}
-        onMouseLeave={() => setContentHovered(false)}
-      >
-        <ChangeLayoutButton />
+      <div className="relative">
+        <ChangeLayoutButton placement="inline" />
         {children}
       </div>
     );
@@ -2555,7 +2558,6 @@ function SlideRendererComponent({
                     className="text-sm sm:text-base leading-relaxed"
                     style={{ fontFamily: theme.fonts.body.family, color: colors.textMuted }}
                     isOwner={canEdit}
-                    isHovered={isHovered}
                     onDelete={() => onDeleteBullet(index, i)}
                   />
                 </div>
@@ -2563,11 +2565,13 @@ function SlideRendererComponent({
             })}
           </div>
 
-          {canEdit && isHovered && bulletPoints.length < 4 && (
-            <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+          {canEdit && bulletPoints.length < 4 && (
+          <div className={`transition-opacity duration-200 ${isHovered ? "opacity-100" : "opacity-0"} ${isHovered ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className={`mt-4 flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
               <Plus size={14} /> Add card
             </button>
-          )}
+          </div>
+        )}
         </div>
       </div>
     );
@@ -2611,11 +2615,13 @@ function SlideRendererComponent({
             })}
           </div>
 
-          {canEdit && isHovered && bulletPoints.length < 2 && (
-            <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+          {canEdit && bulletPoints.length < 2 && (
+          <div className={`transition-opacity duration-200 ${isHovered ? "opacity-100" : "opacity-0"} ${isHovered ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className={`mt-4 flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
               <Plus size={14} /> Add card
             </button>
-          )}
+          </div>
+        )}
         </div>
       </div>
     );
@@ -2658,11 +2664,13 @@ function SlideRendererComponent({
             })}
           </div>
 
-          {canEdit && isHovered && bulletPoints.length < 3 && (
-            <button onClick={() => onAddBullet(index)} className={`mt-4 mx-auto flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+          {canEdit && bulletPoints.length < 3 && (
+          <div className={`transition-opacity duration-200 ${isHovered ? "opacity-100" : "opacity-0"} ${isHovered ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className={`mt-4 mx-auto flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
               <Plus size={14} /> Add card
             </button>
-          )}
+          </div>
+        )}
         </div>
       </div>
     );
@@ -2866,13 +2874,16 @@ function SlideRendererComponent({
             </div>
           )}
 
-          {canEdit && isHovered && !isTitleSlide && (
+          {canEdit && !isTitleSlide && (
+          <div className={`transition-opacity duration-200 ${isHovered ? "opacity-100" : "opacity-0"} ${isHovered ? "" : "pointer-events-none"}`}>
             <button 
-              onClick={() => onAddBullet(index)} 
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} 
               className={`mt-6 flex items-center gap-2 text-sm sm:text-base ${hasImage ? "text-white/80 hover:text-white" : `${colors.indicatorMuted} ${colors.hoverAccent}`} transition-colors`}
             >
               <Plus size={16} /> Add point
             </button>
+          </div>
           )}
         </div>
       </div>
@@ -3305,11 +3316,13 @@ function SlideRendererComponent({
             </div>
           )}
 
-          {canEdit && isHovered && bulletPoints.length > 0 && (
-            <button onClick={() => onAddBullet(index)} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
+          {canEdit && bulletPoints.length > 0 && (
+          <div className={`transition-opacity duration-200 ${isHovered ? "opacity-100" : "opacity-0"} ${isHovered ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className={`mt-4 flex items-center gap-2 text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`}>
               <Plus size={14} /> Add card
             </button>
-          )}
+          </div>
+        )}
         </div>
       </div>
     );
@@ -4555,12 +4568,12 @@ function SlideRendererComponent({
         <div className="relative flex items-start p-4 sm:p-6 md:p-8 lg:p-10 z-10">
           {/* Content side */}
           <div className={`${hasImage ? "w-[55%]" : "w-full"} flex flex-col py-4 sm:py-6`}>
-            <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-3 sm:mb-4 md:mb-5" />
-            <EnhancedContent compact={false} />
-            {canEdit && isHovered && !slide.contentLayout && (
-              <button onClick={() => onAddBullet(index)} className={`mt-3 flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`} style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            {canEdit && !slide.contentLayout && (
+            <div className={`transition-opacity duration-200 ${isHovered ? "opacity-100" : "opacity-0"} ${isHovered ? "" : "pointer-events-none"}`}>
+              <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className={`mt-3 flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors`} style={{ fontFamily: "'DM Sans', sans-serif" }}>
                 <Plus size={14} /> Add point
               </button>
+            </div>
             )}
           </div>
 
@@ -4603,15 +4616,13 @@ function SlideRendererComponent({
           <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-5 text-center shrink-0" align="center" />
 
           {/* Content area */}
-          <div className="w-full max-w-5xl mx-auto">
-            <EnhancedContent compact={false} />
-          </div>
-
-          {canEdit && isHovered && !slide.contentLayout && (
-            <button onClick={() => onAddBullet(index)} className={`mt-4 mx-auto flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors shrink-0`} style={{ fontFamily: "'DM Sans', sans-serif" }}>
+          {canEdit && !slide.contentLayout && (
+          <div className={`transition-opacity duration-200 ${isHovered ? "opacity-100" : "opacity-0"} ${isHovered ? "" : "pointer-events-none"}`}>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className={`mt-4 mx-auto flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors shrink-0`} style={{ fontFamily: "'DM Sans', sans-serif" }}>
               <Plus size={14} /> Add card
             </button>
-          )}
+          </div>
+        )}
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-slate-300 to-transparent pointer-events-none" />
@@ -4657,14 +4668,12 @@ function SlideRendererComponent({
               <span className="text-blue-600 text-xs font-semibold uppercase tracking-widest" style={{ fontFamily: "'DM Sans', sans-serif" }}>Overview</span>
             </div>
 
-            <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-3 sm:mb-4 shrink-0" />
-
-            <EnhancedContent compact={false} />
-
-            {canEdit && isHovered && !slide.contentLayout && (
-              <button onClick={() => onAddBullet(index)} className={`mt-2 sm:mt-3 flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors shrink-0`} style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            {canEdit && !slide.contentLayout && (
+            <div className={`transition-opacity duration-200 ${isHovered ? "opacity-100" : "opacity-0"} ${isHovered ? "" : "pointer-events-none"}`}>
+              <button type="button" onClick={(e) => { e.stopPropagation(); onAddBullet(index) }} className={`mt-2 sm:mt-3 flex items-center gap-2 text-xs sm:text-sm ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors shrink-0`} style={{ fontFamily: "'DM Sans', sans-serif" }}>
                 <Plus size={14} /> Add point
               </button>
+            </div>
             )}
           </div>
         </div>
@@ -6415,21 +6424,23 @@ function SlideRendererComponent({
   );
 }
 
-// Memoize SlideRenderer to prevent re-renders when only isHovered changes during editing
+// Memoize SlideRenderer to prevent re-renders when only isHovered changes
 const SlideRenderer = memo(SlideRendererComponent, (prevProps, nextProps) => {
-  // If editing text, ignore isHovered changes to prevent unmounting EditableText
-  if (nextProps.editingText !== null) {
-    return (
-      prevProps.slide === nextProps.slide &&
-      prevProps.editingText === nextProps.editingText &&
-      prevProps.isEditing === nextProps.isEditing &&
-      prevProps.theme === nextProps.theme
-      // Intentionally NOT checking isHovered during editing
-    );
-  }
-  
-  // When not editing, allow normal re-renders
-  return false; // Always re-render when not editing
+  // Skip re-render when only hover state changes
+  return (
+    prevProps.slide === nextProps.slide &&
+    prevProps.index === nextProps.index &&
+    prevProps.totalSlides === nextProps.totalSlides &&
+    prevProps.theme === nextProps.theme &&
+    prevProps.isOwner === nextProps.isOwner &&
+    prevProps.isFullscreen === nextProps.isFullscreen &&
+    prevProps.isEditing === nextProps.isEditing &&
+    prevProps.editingText === nextProps.editingText &&
+    prevProps.showPageNumber === nextProps.showPageNumber &&
+    prevProps.isPresenting === nextProps.isPresenting &&
+    prevProps.spotlightIndex === nextProps.spotlightIndex &&
+    prevProps.isHovered === nextProps.isHovered
+  );
 });
 
 SlideRenderer.displayName = "SlideRenderer";

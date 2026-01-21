@@ -1581,7 +1581,7 @@ export default function PresentationViewer({
     const isImageLoading = imagesLoading.has(index);
     const isImageLoaded = imageLoadedStates[index];
     const isTitle = slide.type === "title";
-    const isHovered = activeSlideIndex === index;
+    const isHovered = activeSlideIndex === index || editingText?.slideIndex === index;
     const isEditing = editingText?.slideIndex === index;
     const isCurrentlyStreaming = streamingStatus === "streaming" && streamingSlideIndex === index;
 

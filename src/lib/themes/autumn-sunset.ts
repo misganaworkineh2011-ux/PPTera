@@ -9,7 +9,7 @@ const THEME_ID = "autumn-sunset";
 
 export const autumnSunsetTheme: Theme = {
   id: THEME_ID,
-  name: "Autumn Sunset",
+  name: "Mediterranean Heritage (or Tuscan Prof.)",
   description: "Warm theme with vibrant red, soft cream, and golden amber",
   category: "creative",
 

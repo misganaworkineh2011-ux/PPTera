@@ -7,7 +7,7 @@ import type { Theme } from "./types";
 
 export const sunsetWarmTheme: Theme = {
   id: "sunset-warm",
-  name: "Sunset Warm",
+  name: "Artisan Heritage (or Editorial Gold)",
   description: "Warm sunset colors with orange, coral, and golden hues",
   category: "creative",
 

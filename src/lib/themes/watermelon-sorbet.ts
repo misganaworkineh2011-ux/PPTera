@@ -9,7 +9,7 @@ const THEME_ID = "watermelon-sorbet";
 
 export const watermelonSorbetTheme: Theme = {
   id: THEME_ID,
-  name: "Watermelon Sorbet",
+  name: "Executive Clarity",
   description: "Fresh watermelon pink with teal and golden accents",
   category: "creative",
 
@@ -109,6 +109,12 @@ export const watermelonSorbetTheme: Theme = {
     shadow: "0 4px 12px rgba(7, 59, 76, 0.15)",
   },
 
+  layoutElements: {
+    background: "#E8F5F3",
+    borderColor: "#06D6A0",
+    hoverBackground: "#DFF2EF",
+  },
+
   gradients: {
     primary: "linear-gradient(135deg, #EF476F 0%, #FFD166 33%, #06D6A0 66%, #118AB2 100%)",
     secondary: "linear-gradient(135deg, #F8FFFE 0%, #E8F5F3 100%)",
@@ -117,7 +123,7 @@ export const watermelonSorbetTheme: Theme = {
   },
 
   preview: {
-    titleBg: "#EF476F",
+    titleBg: "#F8FFFE",
     bodyBg: "#F8FFFE",
     textColor: "#073B4C",
     accentColor: "#FFD166",

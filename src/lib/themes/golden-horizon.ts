@@ -9,7 +9,7 @@ const THEME_ID = "golden-horizon";
 
 export const goldenHorizonTheme: Theme = {
   id: THEME_ID,
-  name: "Golden Horizon",
+  name: "Artisan Classic",
   description: "Warm vibrant theme with steel blue, burnt orange, and golden yellow accents",
   category: "creative",
 

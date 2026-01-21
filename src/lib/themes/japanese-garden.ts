@@ -9,7 +9,7 @@ const THEME_ID = "japanese-garden";
 
 export const japaneseGardenTheme: Theme = {
   id: THEME_ID,
-  name: "Japanese Garden",
+  name: "Precision Velocity (or Executive Drive)",
   description: "Serene theme with teal, red accents, and soft mint tones",
   category: "creative",
 

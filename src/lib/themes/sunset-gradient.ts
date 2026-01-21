@@ -10,7 +10,7 @@ const THEME_ID = "sunset-gradient";
 
 export const sunsetGradientTheme: Theme = {
   id: THEME_ID,
-  name: "Sunset Gradient",
+  name: "Obsidian Creative (or Midnight Velvet)",
   description: "Warm sunset theme with rich oranges, pinks, and purple gradients",
   category: "creative",
 
