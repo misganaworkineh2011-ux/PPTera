@@ -152,6 +152,7 @@ export default async function HowToPage({
             <SEOCTASection
                 title="Ready to Try It Yourself?"
                 subtitle="Create your first AI-powered presentation now."
+                ctaLink="https://www.pptmaster.app/sign-up"
             />
 
             <LandingFooter currentLang="en" />

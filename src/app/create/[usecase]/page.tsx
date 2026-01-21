@@ -125,6 +125,7 @@ export default async function UseCasePage({
             <SEOCTASection
                 title={`Create Your ${useCase.name} Now`}
                 subtitle="Professional results in under a minute with AI."
+                ctaLink="https://www.pptmaster.app/sign-up"
             />
 
             <LandingFooter currentLang="en" />

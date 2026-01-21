@@ -9,6 +9,7 @@ import {
     SEOHowItWorks,
     SEOCTASection,
     SEORelatedPages,
+    SEOContentSection,
 } from "~/components/seo";
 import { TOOLS, getToolBySlug } from "~/lib/seo/page-data";
 import { generateToolPageContent, getRelatedPages } from "~/lib/seo/content-generator";
@@ -106,6 +107,11 @@ export default async function ToolPage({
                 badge="AI-Powered Tool"
             />
 
+            <SEOContentSection
+                sections={content.contentSections || []}
+                heading={`About ${tool.title}`}
+            />
+
             <SEOFeatureGrid
                 features={content.features}
                 title={`Why Use Our ${tool.title}?`}
@@ -124,6 +130,7 @@ export default async function ToolPage({
             <SEOCTASection
                 title={`Try Our ${tool.title} Free`}
                 subtitle="Create your first AI-powered presentation in under a minute."
+                ctaLink="https://www.pptmaster.app/sign-up"
             />
 
             <LandingFooter currentLang="en" />

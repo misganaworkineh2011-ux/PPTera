@@ -139,6 +139,7 @@ export default async function ComboPage({
             <SEOCTASection
                 title={`Create Your ${industry.name} ${useCase.name}`}
                 subtitle="Professional AI-generated slides in under a minute."
+                ctaLink="https://www.pptmaster.app/sign-up"
             />
 
             <LandingFooter currentLang="en" />
