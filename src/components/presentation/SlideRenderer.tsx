@@ -154,9 +154,19 @@ interface SlideImageProps {
 }
 
 function SlideImg({ image, alt, className = "", style = {}, draggable, onDragStart, onDragEnd }: SlideImageProps) {
-  // Don't render if image is a placeholder or has no URL
+  // Render a visible placeholder frame if image is missing/unresolved.
+  // This keeps layout geometry identical to AI/Pexels, even without a real URL.
   if (image.source === "placeholder" || !image.url) {
-    return null;
+    return (
+      <div className={className} style={style}>
+        <div className="w-full h-full rounded-lg border border-gray-300 bg-gray-200 flex items-center justify-center">
+          <div className="flex flex-col items-center justify-center text-center px-4">
+            <ImageIcon size={34} className="text-gray-400 mb-2" />
+            <span className="text-sm font-medium text-gray-500">Image placeholder</span>
+          </div>
+        </div>
+      </div>
+    );
   }
   const imageStyles = getImageStyle(image);
   
@@ -379,7 +389,7 @@ function SlideRendererComponent({
   const [isDraggingImage, setIsDraggingImage] = useState(false);
   
   const allImages = getSlideImages(slide);
-  const hasImage = allImages.length > 0;
+  const hasAnyImage = allImages.length > 0;
   const hasMultipleImages = allImages.length > 1;
   const bulletPoints = slide.bulletPoints || [];
   const canEdit = isOwner && !isFullscreen;
@@ -420,19 +430,23 @@ function SlideRendererComponent({
   // Auto-detect chart slides and use chart-right layout by default
   const hasChart = !!slide.chart;
   let effectiveSlideLayout: string | undefined = slide.slideLayout || slide.layout;
-  
-  // DEBUG: Log slideLayout values
-  if (hasImage) {
-    console.log(`[SlideRenderer] Slide ${index}: slideLayout="${slide.slideLayout}", layout="${slide.layout}", effective="${effectiveSlideLayout}"`);
-  }
-  
+
   // If slide has a chart and no image, ALWAYS use a chart layout
   // This ensures charts are displayed on the side, not below content
-  if (hasChart && !hasImage) {
+  if (hasChart && !hasAnyImage) {
     // Force chart-right layout for slides with charts but no images
     effectiveSlideLayout = "chart-right";
   }
   
+  // If the chosen layout is explicitly "no-image", don't let placeholder state
+  // affect typography/alignment (prevents "weird centered" behavior).
+  const hasImage = hasAnyImage && effectiveSlideLayout !== "no-image";
+
+  // DEBUG: Log slideLayout values
+  if (hasImage) {
+    console.log(`[SlideRenderer] Slide ${index}: slideLayout="${slide.slideLayout}", layout="${slide.layout}", effective="${effectiveSlideLayout}"`);
+  }
+
   // Use slideLayout (canonical) first, then fall back to layout (legacy)
   const layout = getLayoutVariant(index, themeType, effectiveSlideLayout);
   
@@ -1647,15 +1661,6 @@ function SlideRendererComponent({
     );
   };
 
-  const Placeholder = () => (
-    <div className={`w-full h-full rounded-lg border border-dashed ${colors.border} flex items-center justify-center ${colors.surfaceAlt}`}>
-      <div className={`text-center ${colors.indicatorMuted}`}>
-        <ImageIcon size={40} className="mx-auto mb-2 opacity-40" />
-        <p className="text-sm">Image placeholder</p>
-      </div>
-    </div>
-  );
-
   // CHART LAYOUTS - Check these FIRST before other layouts
   // LAYOUT: Chart Left - Chart on left (55%), content on right (45%)
   if (layout === "chart-left" && slide.chart) {
@@ -1797,7 +1802,6 @@ function SlideRendererComponent({
               )}
             </div>
           )}
-          {slide.image?.source === "placeholder" && <div className="w-full sm:w-[40%] p-4 sm:p-8"><Placeholder /></div>}
         </div>
         {/* Image Drag Zones - shown when dragging image */}
         {isDraggingImage && onChangeImagePosition && (
@@ -1877,7 +1881,6 @@ function SlideRendererComponent({
               )}
             </div>
           )}
-          {slide.image?.source === "placeholder" && <div className="w-full sm:w-[40%] p-4 sm:p-8"><Placeholder /></div>}
 
           {/* Content Area */}
           <div className={`flex flex-col justify-center pt-4 sm:pt-16 md:pt-20 pb-4 sm:pb-8 md:pb-12 pl-4 sm:pl-6 md:pl-8 pr-4 sm:pr-8 md:pr-12 ${hasImage ? "w-full sm:w-[60%]" : "w-full"}`}>
@@ -2096,6 +2099,7 @@ function SlideRendererComponent({
 
   // LAYOUT 3: Centered - Image Top, Content Bottom
   if (layout === "centered") {
+    const shouldCenterTitleSlide = isTitleSlide && !hasImage;
     return (
       <div className="h-full relative overflow-hidden">
         <div className={`absolute inset-0 ${useGradientClasses ? `bg-gradient-to-b ${colors.bg}` : ''}`} style={customBgStyle} />
@@ -2103,7 +2107,21 @@ function SlideRendererComponent({
 
         <SlideIndicator position="top-left" />
 
-        <div className={`relative h-full flex flex-col ${hasImage ? "items-center justify-center" : "justify-center"} ${hasImage ? "p-4 sm:p-8 md:p-12" : "p-4 sm:p-6 md:p-8"} pt-12 sm:pt-8 md:pt-12 ${hasImage ? "text-center" : ""} overflow-y-auto`}>
+        <div
+          className={`relative h-full flex flex-col ${
+            hasImage || shouldCenterTitleSlide ? "items-center justify-center" : "justify-center"
+          } ${
+            // Title slide with no image: true vertical centering + higher horizontal padding
+            shouldCenterTitleSlide
+              ? "px-10 sm:px-16 md:px-24 lg:px-32 py-10 sm:py-14 md:py-16"
+              : hasImage
+                ? "p-4 sm:p-8 md:p-12 pt-12 sm:pt-8 md:pt-12"
+                : "p-4 sm:p-6 md:p-8 pt-12 sm:pt-8 md:pt-12"
+          } ${hasImage || shouldCenterTitleSlide ? "text-center" : ""} ${
+            // Avoid scroll container affecting centering on title slides
+            shouldCenterTitleSlide ? "" : "overflow-y-auto"
+          }`}
+        >
           {hasImage && (
             <div className={`w-full ${hasMultipleImages ? "max-w-4xl" : "max-w-2xl"} mb-4 sm:mb-6 md:mb-8 relative`}>
               {hasMultipleImages ? (
@@ -2116,12 +2134,18 @@ function SlideRendererComponent({
             </div>
           )}
 
-          <Title className={`text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-3 sm:mb-4 md:mb-6 ${hasImage ? "max-w-4xl" : "w-full"} ${hasImage ? "" : "text-left"}`} align={hasImage ? "center" : "left"} />
+          <Title
+            className={`text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-3 sm:mb-4 md:mb-6 ${hasImage || shouldCenterTitleSlide ? "max-w-4xl" : "w-full"} ${hasImage || shouldCenterTitleSlide ? "" : "text-left"}`}
+            align={hasImage || shouldCenterTitleSlide ? "center" : "left"}
+            showSubtitle={isTitleSlide}
+          />
           {!isTitleSlide && <SlideDescription className={`mb-3 sm:mb-4 md:mb-5 ${hasImage ? "" : "text-left"}`} align={hasImage ? "center" : "left"} />}
 
-          <div className={`${hasImage ? "max-w-2xl w-full text-left" : "w-full"} mt-2 sm:mt-3 md:mt-4`}>
-            <EnhancedContent compact />
-          </div>
+          {!isTitleSlide && (
+            <div className={`${hasImage ? "max-w-2xl w-full text-left" : "w-full"} mt-2 sm:mt-3 md:mt-4`}>
+              <EnhancedContent compact />
+            </div>
+          )}
         </div>
         <div className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${colors.borderLine} to-transparent`} />
       </div>
