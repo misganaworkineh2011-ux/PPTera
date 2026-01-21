@@ -9,7 +9,7 @@ const THEME_ID = "vintage-wine";
 
 export const vintageWineTheme: Theme = {
   id: THEME_ID,
-  name: "Vintage Wine",
+  name: "Crimson Heritage (or Scholarly Maroon)",
   description: "Rich elegant theme with warm beige, deep brown, and burgundy red accents",
   category: "creative",
 

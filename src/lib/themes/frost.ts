@@ -11,7 +11,7 @@ const THEME_ID = "frost";
 
 export const frostTheme: Theme = {
   id: THEME_ID,
-  name: "Frost",
+  name: "Azure Clarity (or Corporate Azure)",
   description: "Crystal clear winter theme with icy blues and crisp whites",
   category: "light",
 

@@ -9,7 +9,7 @@ const THEME_ID = "rustic-earth";
 
 export const rusticEarthTheme: Theme = {
   id: THEME_ID,
-  name: "Rustic Earth",
+  name: "Botanical Fusion (or Organic Vibrant)",
   description: "Earthy theme with dark brown, olive green, and burnt orange",
   category: "creative",
 

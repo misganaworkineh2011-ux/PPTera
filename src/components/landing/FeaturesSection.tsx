@@ -62,7 +62,7 @@ const THEME_PREVIEWS = [
   },
   {
     id: "sunset-gradient",
-    name: "Sunset Gradient",
+    name: "Obsidian Creative (or Midnight Velvet)",
     bg: "#1a0f1e",
     titleBg: "linear-gradient(135deg, #1a0f1e 0%, #2e1a32 100%)",
     textColor: "#fce7f3",

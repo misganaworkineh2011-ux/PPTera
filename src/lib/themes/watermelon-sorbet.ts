@@ -9,7 +9,7 @@ const THEME_ID = "watermelon-sorbet";
 
 export const watermelonSorbetTheme: Theme = {
   id: THEME_ID,
-  name: "Watermelon Sorbet",
+  name: "Executive Clarity",
   description: "Fresh watermelon pink with teal and golden accents",
   category: "creative",
 

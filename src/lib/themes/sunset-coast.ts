@@ -9,7 +9,7 @@ const THEME_ID = "sunset-coast";
 
 export const sunsetCoastTheme: Theme = {
   id: THEME_ID,
-  name: "Sunset Coast",
+  name: "Onyx & Ember",
   description: "Warm coastal theme with vibrant orange, charcoal, and ocean blue accents",
   category: "creative",
 

@@ -9,7 +9,7 @@ const THEME_ID = "copper-spice";
 
 export const copperSpiceTheme: Theme = {
   id: THEME_ID,
-  name: "Copper Spice",
+  name: "Legacy Bronze (or Sienna Classic)",
   description: "Warm theme with terracotta orange, golden amber, and deep mahogany",
   category: "creative",
 

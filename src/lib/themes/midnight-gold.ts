@@ -9,7 +9,7 @@ const THEME_ID = "midnight-gold";
 
 export const midnightGoldTheme: Theme = {
   id: THEME_ID,
-  name: "Midnight Gold",
+  name: "Heritage Modern (or Amber & Slate)",
   description: "Sophisticated dark theme with steel gray, deep black, and golden amber",
   category: "dark",
 
