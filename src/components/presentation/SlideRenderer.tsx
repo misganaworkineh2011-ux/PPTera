@@ -1017,15 +1017,45 @@ function SlideRendererComponent({
     );
   };
 
+  // Change Layout button that appears on slide hover
+  const ChangeLayoutButton = ({ placement = "inline" }: { placement?: "inline" }) => {
+    if (!canEdit || !hasBoxContent) return null;
+    const placementClasses = "mt-2 sm:mt-3 self-start";
+    return (
+      <button
+        onClick={() => {
+          if (onOpenContentLayoutPanel) {
+            onOpenContentLayoutPanel();
+          } else {
+            setShowContentLayoutSelector(true);
+          }
+        }}
+        className={`z-30 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all shadow-md ${placementClasses} opacity-0 pointer-events-none group-hover:opacity-90 group-hover:pointer-events-auto hover:opacity-100`}
+        style={{
+          backgroundColor: theme.colors.surface,
+          color: theme.colors.text,
+          border: `1px solid ${theme.colors.border}`,
+        }}
+        tabIndex={-1}
+      >
+        <LayoutGrid size={14} />
+        <span className="hidden sm:inline">Change Layout</span>
+      </button>
+    );
+  };
+
   const SlideIndicator = ({ position = "top-left" }: { position?: "top-left" | "top-right" }) => {
-    if (!showPageNumber) return null;
     const posClass = position === "top-left" ? "top-2 left-2 sm:top-4 sm:left-4 md:top-8 md:left-8" : "top-2 right-2 sm:top-4 sm:right-4 md:top-8 md:right-8";
     return (
-      <div className={`absolute ${posClass} flex items-center gap-1 sm:gap-2 md:gap-3 z-10`}>
-        <span className="font-mono font-medium" style={{ color: colors.accent, fontSize: "clamp(0.5rem, 1.2vw + 0.15rem, 0.875rem)" }}>{String(index + 1).padStart(2, "0")}</span>
-        <div className={`w-4 sm:w-8 md:w-12 h-px bg-gradient-to-r ${colors.accentLine} to-transparent`} />
-        <span className={`font-medium uppercase tracking-widest ${colors.indicatorMuted}`} style={{ fontSize: "clamp(0.4rem, 1vw + 0.1rem, 0.75rem)" }}>/ {String(totalSlides).padStart(2, "0")}</span>
-      </div>
+      <>
+        {showPageNumber && (
+          <div className={`absolute ${posClass} flex items-center gap-1 sm:gap-2 md:gap-3 z-10`}>
+            <span className="font-mono font-medium" style={{ color: colors.accent, fontSize: "clamp(0.5rem, 1.2vw + 0.15rem, 0.875rem)" }}>{String(index + 1).padStart(2, "0")}</span>
+            <div className={`w-4 sm:w-8 md:w-12 h-px bg-gradient-to-r ${colors.accentLine} to-transparent`} />
+            <span className={`font-medium uppercase tracking-widest ${colors.indicatorMuted}`} style={{ fontSize: "clamp(0.4rem, 1vw + 0.1rem, 0.75rem)" }}>/ {String(totalSlides).padStart(2, "0")}</span>
+          </div>
+        )}
+      </>
     );
   };
 
@@ -1207,34 +1237,6 @@ function SlideRendererComponent({
     );
   };
 
-  // Change Layout button that appears on hover
-  const ChangeLayoutButton = () => {
-    if (!canEdit || !hasBoxContent) return null;
-    
-    const isVisible = isHovered;
-
-    return (
-      <button
-        onClick={() => {
-          if (onOpenContentLayoutPanel) {
-            onOpenContentLayoutPanel();
-          } else {
-            setShowContentLayoutSelector(true);
-          }
-        }}
-        className={`absolute top-2 right-2 z-10 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all shadow-md ${isVisible ? "opacity-90 hover:opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
-        style={{
-          backgroundColor: theme.colors.surface,
-          color: theme.colors.text,
-          border: `1px solid ${theme.colors.border}`,
-        }}
-        tabIndex={isVisible ? 0 : -1}
-      >
-        <LayoutGrid size={14} />
-        <span className="hidden sm:inline">Change Layout</span>
-      </button>
-    );
-  };
 
   // Enhanced content rendering with transformed content
   const EnhancedContent = ({ compact = false }: { compact?: boolean }) => {
@@ -1243,7 +1245,7 @@ function SlideRendererComponent({
     // Wrapper to handle hover for change layout button
     const ContentWrapper = ({ children }: { children: React.ReactNode }) => (
       <div className="relative">
-        <ChangeLayoutButton />
+        <ChangeLayoutButton placement="inline" />
         {children}
       </div>
     );
@@ -6436,7 +6438,8 @@ const SlideRenderer = memo(SlideRendererComponent, (prevProps, nextProps) => {
     prevProps.editingText === nextProps.editingText &&
     prevProps.showPageNumber === nextProps.showPageNumber &&
     prevProps.isPresenting === nextProps.isPresenting &&
-    prevProps.spotlightIndex === nextProps.spotlightIndex
+    prevProps.spotlightIndex === nextProps.spotlightIndex &&
+    prevProps.isHovered === nextProps.isHovered
   );
 });
 
