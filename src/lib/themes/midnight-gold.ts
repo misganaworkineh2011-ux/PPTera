@@ -112,7 +112,7 @@ export const midnightGoldTheme: Theme = {
   },
 
   cardBox: {
-    background: "#ffffff",
+    background: "#1a2628",
     borderColor: "#2d3e42",
     titleColor: "#E6A835",
     bodyColor: "#e8eced",

@@ -304,9 +304,7 @@ function EditableTextComponent({
   const editorRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // Hover state (using ref to avoid re-renders)
-  const isHoveredRef = useRef(false);
-  const [hoverTrigger, setHoverTrigger] = useState(0);
+  // Hover UI handled via CSS group-hover to avoid re-renders
   
   // Toolbar state
   const [showToolbar, setShowToolbar] = useState(false);
@@ -583,20 +581,6 @@ function EditableTextComponent({
     }
   }, []);
 
-  // Hover handlers (non-re-rendering)
-  const handleMouseEnter = useCallback(() => {
-    if (isOwner && !isEditing) {
-      isHoveredRef.current = true;
-      setHoverTrigger(prev => prev + 1);
-    }
-  }, [isOwner, isEditing]);
-
-  const handleMouseLeave = useCallback(() => {
-    if (!isEditing) {
-      isHoveredRef.current = false;
-      setHoverTrigger(prev => prev + 1);
-    }
-  }, [isEditing]);
 
   // Render editing mode
   if (isEditing) {
@@ -626,6 +610,7 @@ function EditableTextComponent({
             minHeight: "1.5em",
             position: "relative",
             zIndex: 100,
+            color: "#1e293b",
           }}
         />
         {showToolbar && createPortal(
@@ -641,22 +626,16 @@ function EditableTextComponent({
   }
 
   // Render display mode
-  const isHovered = isHoveredRef.current;
-
   return (
-    <div
-      className="relative group/editable"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
+    <div className="relative group/editable">
       <div
-        className={`${className} ${isOwner && isHovered ? "cursor-text ring-2 ring-white/30 ring-offset-2 ring-offset-transparent rounded" : ""} ${!isOwner ? "pointer-events-none select-none" : ""}`}
+        className={`${className} px-2 py-1 rounded min-h-[1.5em] ${isOwner ? "cursor-text group-hover/editable:ring-1 group-hover/editable:ring-white/30" : ""} ${!isOwner ? "pointer-events-none select-none" : ""}`}
         style={style}
         onMouseDown={isOwner ? (e) => { e.stopPropagation(); onStartEdit(); } : undefined}
         dangerouslySetInnerHTML={{ __html: displayContent }}
       />
-      {isOwner && onDelete && isHovered && (
-        <div className="absolute top-0 right-0 flex gap-1 z-50">
+      {isOwner && onDelete && (
+        <div className="absolute top-0 right-0 flex gap-1 z-50 transition-opacity duration-200 opacity-0 pointer-events-none group-hover/editable:opacity-100 group-hover/editable:pointer-events-auto">
           <button
             type="button"
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onStartEdit(); }}
