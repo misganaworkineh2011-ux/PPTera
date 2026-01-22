@@ -281,7 +281,7 @@ export const LAYOUT_SCENARIOS: LayoutScenarios = {
         excludePattern: ["instructional", "numbered-steps", "quoted-text", "sequential"], // Never use for these
       },
       priority: "medium",
-      recommendedStyle: "circle-arc",
+      recommendedStyle: "circle-ring",
     },
   ],
 

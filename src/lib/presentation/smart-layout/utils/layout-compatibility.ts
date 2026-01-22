@@ -233,10 +233,6 @@ export const CONTENT_LAYOUT_COMPATIBILITY: Record<ContentLayoutCategory, Content
     orientation: "flexible",
     fullSlideSpace: true, // Arc/ring takes entire slide
     styleOverrides: {
-      "circle-arc": {
-        best: ["no-image"],
-        avoid: ["image-left", "image-right", "image-top", "image-bottom", "image-background", "image-full"],
-      },
       "circle-ring": {
         best: ["no-image"],
         avoid: ["image-left", "image-right", "image-top", "image-bottom", "image-background", "image-full"],

@@ -101,7 +101,7 @@ const LAYOUT_STYLES: Record<ContentLayoutCategory, ContentLayoutStyle[]> = {
   sequence: ["sequence-style-1", "sequence-style-2", "sequence-style-3", "sequence-style-4"],
   steps: ["steps-pyramid", "steps-arrows", "steps-cards", "steps-bars"],
   quotes: ["quote-bubble", "quote-marks"],
-  circles: ["circle-arc", "circle-ring"],
+  circles: ["circle-ring"],
   images: ["image-style-1", "image-style-2", "image-style-3", "image-style-4"],
   numbers: ["box-style-1", "box-style-2"], // Numbers use box layouts
 };
@@ -229,7 +229,7 @@ function isSafeCombination(
   const hasArcClip = slideLayout === "image-left" || slideLayout === "image-right" || 
                      slideLayout === "image-top" || slideLayout === "image-bottom";
   
-  // Rule 1: Circle-arc + arc-clipped image = too many curves
+  // Rule 1: Circle layouts + arc-clipped image = too many curves
   if (category === "circles" && hasArcClip) {
     return false;
   }

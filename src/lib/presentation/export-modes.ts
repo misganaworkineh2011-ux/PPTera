@@ -39,7 +39,6 @@ export interface SlideExportMeta {
 
 // Features that require rasterization in PPTX
 export const PPTX_RASTERIZE_TRIGGERS = [
-  "circle-arc",      // Arc layouts are complex
   "circle-ring",     // Ring layouts are complex
   "clip-path-arc",   // CSS clip-path not supported in PPTX
   "gradient-text",   // Gradient text not well supported
@@ -70,7 +69,7 @@ export function shouldRasterizeForPptx(
   }
   
   // Specific layouts that are complex
-  if (contentLayout === "circle-arc" || contentLayout === "circle-ring") {
+  if (contentLayout === "circle-ring") {
     return true;
   }
   
@@ -95,7 +94,7 @@ export function getSlideExportMeta(
   const unsupportedFeatures: string[] = [];
   
   if (contentLayoutCategory === "circles") {
-    unsupportedFeatures.push("circle-arc", "circle-ring");
+    unsupportedFeatures.push("circle-ring");
   }
   
   if (hasClipPath) {

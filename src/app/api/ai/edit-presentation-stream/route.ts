@@ -27,7 +27,7 @@ const CONTENT_LAYOUTS = {
     "quote-testimonial"
   ],
   circles: [
-    "circle-radial", "circle-orbit", "circle-arc", "circle-connected",
+    "circle-radial", "circle-orbit", "circle-connected",
     "circle-venn"
   ],
   sequence: [

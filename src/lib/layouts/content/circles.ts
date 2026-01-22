@@ -1,5 +1,5 @@
 // Circle Layout Definitions
-// 2 specific circular arrangement styles - FULLY DYNAMIC for any item count
+// 1 specific circular arrangement style - FULLY DYNAMIC for any item count
 
 import type { Theme } from "~/lib/themes";
 
@@ -33,26 +33,9 @@ export interface CircleLayout {
   };
 }
 
-// 2 Specific Circle Layout Definitions - Now fully dynamic
+// 1 Specific Circle Layout Definition - Now fully dynamic
 export const circleLayouts: CircleLayout[] = [
-  // Style 1: Arc Layout - Dynamic segments
-  {
-    id: "circle-arc",
-    name: "Arc Flow",
-    description: "Dynamic curved segments in an arc with content positioned around the edges",
-    category: "circles",
-    minItems: 1,
-    maxItems: 8, // Now supports up to 8 items
-    idealItems: 3,
-    adaptive: true,
-    supportsIcons: true,
-    preview: {
-      shape: "arc",
-      segments: 3,
-    },
-  },
-
-  // Style 2: Ring Layout - Dynamic segments
+  // Style 1: Ring Layout - Dynamic segments
   {
     id: "circle-ring",
     name: "Ring Cycle",
@@ -85,12 +68,7 @@ export function getRecommendedCircleLayout(
   itemCount: number,
   isNarrowSpace: boolean = false
 ): CircleLayout {
-  // Ring layout works better in narrow spaces (vertical arrangement)
-  if (isNarrowSpace) {
-    return circleLayouts[1]!; // Ring
-  }
-  // Arc layout for wider spaces
-  return circleLayouts[0]!; // Arc
+  return circleLayouts[0]!; // Ring
 }
 
 // Base styles helper for circle components
