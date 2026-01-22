@@ -522,7 +522,99 @@ function ArcLayout({
     return <div className={containerClassName}>{content}</div>;
   }
 
-  // Default layout for 4+ items - grid below circle
+  // Use side-by-side distribution for 4-8 items (prevent linear grid)
+  if (itemCount >= 4 && itemCount <= 8) {
+    const leftIndices = items.map((_, i) => i).filter(i => i % 2 === 0);
+    const rightIndices = items.map((_, i) => i).filter(i => i % 2 === 1);
+    
+    const content = (
+      <div className="w-full flex items-center justify-center gap-8">
+        {/* Left content */}
+        <div className="flex-1 max-w-[35%] min-w-[280px] text-right pr-4 flex flex-col justify-center gap-12">
+          {leftIndices.map(idx => renderContentItem(items[idx]!, idx, "left"))}
+        </div>
+
+        {/* Circle SVG */}
+        <svg
+          width="480"
+          height="480"
+          viewBox="-240 -240 480 480"
+          className="flex-shrink-0"
+          style={{ width: "480px", height: "480px", flexShrink: 0 }}
+          suppressHydrationWarning
+        >
+          {items.map((item, segmentIndex) => {
+            const path = getArcSegmentPath(segmentIndex, itemCount, outerRadius, innerRadius, gapAngle, startOffset);
+            const iconPos = getArcIconPosition(segmentIndex, itemCount, (outerRadius + innerRadius) / 2, gapAngle, startOffset);
+            const style = getSpotlightStyle(segmentIndex, spotlightIndex, isSpotlightMode);
+            const { transform, position, zIndex, ...svgStyle } = style as any;
+
+            return (
+              <g
+                key={segmentIndex}
+                style={{ ...svgStyle, transformOrigin: 'center', transition: 'all 0.4s ease-out' }}
+                {...(!isPresenting ? {
+                  onMouseEnter: () => onHover?.(segmentIndex),
+                  onMouseLeave: () => onHover?.(null),
+                  cursor: "pointer",
+                } : {})}
+              >
+                <path
+                  d={path}
+                  fill={themeStyles.shapeBgColor}
+                  stroke={themeStyles.shapeBorderColor}
+                  strokeWidth="1"
+                  suppressHydrationWarning
+                />
+                <circle
+                  cx={iconPos.x}
+                  cy={iconPos.y}
+                  r={24}
+                  fill="white"
+                  stroke={`${themeStyles.accentColor}40`}
+                  strokeWidth="2"
+                  suppressHydrationWarning
+                />
+                {item?.icon ? (
+                  <text
+                    x={iconPos.x}
+                    y={iconPos.y}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fontSize="20"
+                    fill={themeStyles.accentColor}
+                    suppressHydrationWarning
+                  >
+                    {item.icon}
+                  </text>
+                ) : (
+                  <circle cx={iconPos.x} cy={iconPos.y} r={4} fill={`${themeStyles.accentColor}40`} suppressHydrationWarning />
+                )}
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* Right content */}
+        <div className="flex-1 max-w-[35%] min-w-[280px] text-left pl-4 flex flex-col justify-center gap-12">
+          {rightIndices.map(idx => renderContentItem(items[idx]!, idx, "right"))}
+        </div>
+      </div>
+    );
+
+    const containerClassName = `w-full flex items-center justify-center ${className}`;
+
+    if (isPresenting) {
+      return (
+        <motion.div key={animationKey} className={containerClassName} variants={containerVariants} initial="hidden" animate="visible">
+          {content}
+        </motion.div>
+      );
+    }
+    return <div className={containerClassName}>{content}</div>;
+  }
+
+    // Default layout for 9+ items - grid below circle
   const containerClassName = `w-full flex flex-col items-center justify-center ${className}`;
 
   const content = (
@@ -682,8 +774,8 @@ function RingLayout({
   // Smaller gaps so segments visually connect (reference has very tight joins)
   const gapAngle = itemCount <= 4 ? 6 : itemCount <= 6 ? 5 : 4;
 
-  // For more than 4 items, use grid below
-  if (itemCount > 4) {
+  // For more than 8 items, use grid below
+  if (itemCount > 8) {
     const gridContent = (
       <>
         <svg
