@@ -287,19 +287,45 @@ const themesWithoutBgImage = [
   auroraBorealisTechTheme,
 ];
 
+// Preferred front themes order: Corporate Clean first, then distinct/cool styles
+const frontThemesOrder = [
+  corporateCleanTheme,
+  // 3 distinct image themes mixed into the top 6
+  urbanBuildingTheme,
+  cyberpunkNeonTheme,
+  midnightGoldTheme,
+  neonPopTheme,
+  mistyForestTheme,
+  // Other visually distinct / "cool" themes
+  neonMatrixTheme,
+  animeDreamscapeTheme,
+  hackerTerminalTheme,
+  nebulaTheme,
+  auroraTheme,
+  auroraBorealisTechTheme,
+  obsidianTheme,
+  midnightTheme,
+  sunsetGradientTheme,
+  dnaBlueprintTheme,
+  royalPurpleTheme,
+  blackGoldLuxuryTheme,
+];
+
 // Interleave themes: distribute bg image themes evenly among non-bg themes
 // Pattern: 2-3 non-bg themes, then 1 bg theme (with occasional 2 consecutive bg themes for variety)
-function interleaveThemes() {
+function interleaveThemes(
+  nonBgThemesInput: typeof corporateCleanTheme[],
+  bgThemesInput: typeof corporateCleanTheme[],
+) {
   const result: typeof corporateCleanTheme[] = [];
-  const bgThemes = [...themesWithBgImage];
-  const nonBgThemes = [...themesWithoutBgImage];
+  const bgThemes = [...bgThemesInput];
+  const nonBgThemes = [...nonBgThemesInput];
   
   let bgIndex = 0;
   let nonBgIndex = 0;
   let patternCounter = 0;
   
   while (bgIndex < bgThemes.length || nonBgIndex < nonBgThemes.length) {
-    // Add 2-3 non-bg themes
     const nonBgCount = patternCounter % 5 === 0 ? 2 : 3; // Vary between 2 and 3
     for (let i = 0; i < nonBgCount && nonBgIndex < nonBgThemes.length; i++) {
       const theme = nonBgThemes[nonBgIndex];
@@ -307,13 +333,11 @@ function interleaveThemes() {
       nonBgIndex++;
     }
     
-    // Add 1 bg theme (occasionally 2 for variety - every 4th pattern)
     if (bgIndex < bgThemes.length) {
       const theme = bgThemes[bgIndex];
       if (theme) result.push(theme);
       bgIndex++;
       
-      // Every 4th pattern, add a second consecutive bg theme if available
       if (patternCounter % 4 === 3 && bgIndex < bgThemes.length) {
         const theme2 = bgThemes[bgIndex];
         if (theme2) result.push(theme2);
@@ -327,8 +351,15 @@ function interleaveThemes() {
   return result;
 }
 
-// All themes array - interleaved for even distribution of bg image themes
-export const themes = interleaveThemes();
+// Build themes: front themes first, then interleaved remainder for balanced distribution
+const frontIds = new Set(frontThemesOrder.map((t) => t.id));
+const remainingNonBg = themesWithoutBgImage.filter((t) => !frontIds.has(t.id));
+const remainingBg = themesWithBgImage.filter((t) => !frontIds.has(t.id));
+
+export const themes = [
+  ...frontThemesOrder,
+  ...interleaveThemes(remainingNonBg, remainingBg),
+];
 
 // Helper functions
 export const getThemeById = (id: string) => {

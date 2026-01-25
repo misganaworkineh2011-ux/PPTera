@@ -125,7 +125,7 @@ async function callOpenAI(prompt: string): Promise<string> {
   }
 
   const completion = await openai.chat.completions.create({
-    model: "gpt-4o", // Same model as outline generation
+    model: "gpt-4o-mini", // Use cheaper model for content generation
     messages: [
       { role: "system", content: SYSTEM_PROMPT },
       { role: "user", content: prompt },

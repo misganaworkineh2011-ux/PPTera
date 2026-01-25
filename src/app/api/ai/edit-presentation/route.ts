@@ -5,6 +5,7 @@ import { db } from "~/server/db";
 import { env } from "~/env";
 import { searchPexelsPhotos } from "~/lib/pexels";
 import { slideLayouts, type LayoutType } from "~/lib/slide-layouts";
+import { QUALITY_GUIDELINES } from "~/lib/presentation/transform-outline-to-presentation";
 
 const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
 
@@ -21,6 +22,7 @@ interface SlideContent {
   title: string;
   subtitle?: string;
   bulletPoints?: string[];
+  speakerNotes?: string[];
   sections?: Array<{ heading: string; description: string }>;
   introText?: string;
   tagline?: string;
@@ -123,6 +125,8 @@ ${JSON.stringify(layoutOptions, null, 2)}
 - "medium": 40% of slide (default)
 - "large": 50% of slide
 - "full": 60% of slide
+
+${QUALITY_GUIDELINES}
 
 ## RESPONSE FORMAT:
 Return a JSON object with a "slides" array containing ALL slides (even unchanged ones).

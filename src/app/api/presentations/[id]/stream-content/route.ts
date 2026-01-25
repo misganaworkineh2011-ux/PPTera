@@ -229,7 +229,7 @@ DO NOT output any [TITLE] tag - the title is fixed and will not change.`;
     if (env.OPENAI_API_KEY) {
       try {
         const completion = await openai.chat.completions.create({
-          model: "gpt-4o", // Same model as outline generation
+          model: "gpt-4o-mini", // Use mini for content generation
           messages: [
             {
               role: "system",

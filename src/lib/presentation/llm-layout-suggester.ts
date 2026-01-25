@@ -34,7 +34,7 @@ const AVAILABLE_LAYOUTS = {
   sequence: ["sequence-style-1", "sequence-style-2", "sequence-style-3", "sequence-style-4"],
   steps: ["steps-pyramid", "steps-arrows", "steps-cards", "steps-bars"],
   quotes: ["quote-bubble", "quote-marks"],
-  circles: ["circle-arc", "circle-ring"],
+  circles: ["circle-ring"],
   numbers: ["box-style-1", "box-style-2"], // Numbers use box layouts
   images: ["image-style-1", "image-style-2", "image-style-3", "image-style-4"],
 };
@@ -69,8 +69,7 @@ const LAYOUT_DESCRIPTIONS = {
     "quote-marks": "Quote cards - best for statements",
   },
   circles: {
-    "circle-arc": "Arc flow - best for cycles in wide space",
-    "circle-ring": "Ring cycle - best for cycles in narrow space",
+    "circle-ring": "Ring cycle - best for cycles",
   },
   numbers: {
     "box-style-1": "Side accent - best for statistics",
@@ -100,7 +99,7 @@ async function callOpenAIForLayout(prompt: string): Promise<string> {
       "Authorization": `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: "gpt-4o",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
