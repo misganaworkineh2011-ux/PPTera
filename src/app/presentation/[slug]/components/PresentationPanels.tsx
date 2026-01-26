@@ -1,0 +1,143 @@
+"use client";
+
+import ContentLayoutPanel from "~/components/presentation/ContentLayoutPanel";
+import PricingModal from "~/components/dashboard/PricingModal";
+import type { SlideData } from "~/components/presentation/types";
+import type { Theme } from "~/lib/themes";
+import { ThemeSidebar } from "./ThemeSidebar";
+import { AgentPanel } from "./AgentPanel";
+
+interface PresentationPanelsProps {
+  theme: Theme;
+  currentThemeId: string;
+  presentationId: string;
+  presentationTitle: string;
+  subscriptionPlan?: string | null;
+  slidesData: SlideData[];
+  activeSlideIndex: number | null;
+  showContentLayoutPanel: boolean;
+  showThemeSidebar: boolean;
+  showAgentPanel: boolean;
+  showPricingModal: boolean;
+  lastHoveredSlideIndex: number;
+  onThemeChange: (themeId: string) => void;
+  onCloseThemeSidebar: () => void;
+  onCloseAgentPanel: () => void;
+  onCloseContentLayoutPanel: () => void;
+  onUpdateSlide: (index: number, slide: SlideData) => void;
+  onSetEditingSlide: (index: number | null) => void;
+  onSelectContentLayout: (layoutId: string) => void;
+  onClosePricingModal: () => void;
+}
+
+export function PresentationPanels({
+  theme,
+  currentThemeId,
+  presentationId,
+  presentationTitle,
+  subscriptionPlan,
+  slidesData,
+  activeSlideIndex,
+  showContentLayoutPanel,
+  showThemeSidebar,
+  showAgentPanel,
+  showPricingModal,
+  lastHoveredSlideIndex,
+  onThemeChange,
+  onCloseThemeSidebar,
+  onCloseAgentPanel,
+  onCloseContentLayoutPanel,
+  onUpdateSlide,
+  onSetEditingSlide,
+  onSelectContentLayout,
+  onClosePricingModal,
+}: PresentationPanelsProps) {
+  return (
+    <>
+      <ThemeSidebar
+        isOpen={showThemeSidebar}
+        onClose={onCloseThemeSidebar}
+        currentThemeId={currentThemeId}
+        onThemeChange={onThemeChange}
+        presentationId={presentationId}
+        theme={theme}
+      />
+
+      <AgentPanel
+        isOpen={showAgentPanel}
+        onClose={onCloseAgentPanel}
+        theme={theme}
+        slides={slidesData}
+        currentSlideIndex={lastHoveredSlideIndex}
+        presentationTitle={presentationTitle}
+        presentationId={presentationId}
+        onUpdateSlide={onUpdateSlide}
+        onSetEditingSlide={onSetEditingSlide}
+      />
+
+      <ContentLayoutPanel
+        isOpen={showContentLayoutPanel && activeSlideIndex !== null}
+        currentContentLayout={activeSlideIndex !== null ? (slidesData[activeSlideIndex]?.contentLayout || "box-style-1") : "box-style-1"}
+        contentItems={(() => {
+          if (activeSlideIndex === null) return [];
+          const slide = slidesData[activeSlideIndex];
+          if (!slide) return [];
+
+          if (slide.sections && slide.sections.length > 0) {
+            return slide.sections.map((section) => ({
+              label: section.heading,
+              text: section.description,
+            }));
+          }
+
+          if (slide.transformedContent?.items) {
+            return slide.transformedContent.items
+              .filter(item => item.label)
+              .map((item) => ({
+                label: item.label,
+                text: item.text,
+              }));
+          }
+
+          if (slide.bulletPoints && slide.bulletPoints.length > 0) {
+            return slide.bulletPoints.map((bullet) => {
+              let bp = typeof bullet === "string" ? bullet : (bullet as { text?: string }).text || "";
+              bp = bp.replace(/\(max\s+\d+\s+words?[^)]*\)/gi, "").trim();
+              bp = bp.replace(/\(\d+\s+words?[^)]*\)/gi, "").trim();
+              bp = bp.replace(/\(visually\s+equal\s+length[^)]*\)/gi, "").trim();
+              bp = bp.replace(/\s+/g, " ").trim();
+
+              const colonIndex = bp.indexOf(":");
+              if (colonIndex > 0 && colonIndex < 50) {
+                const label = bp.substring(0, colonIndex).trim();
+                const text = bp.substring(colonIndex + 1).trim();
+                if (label && text) {
+                  return { label, text };
+                }
+              }
+              const words = bp.split(" ");
+              if (words.length > 5) {
+                return { label: words.slice(0, 3).join(" "), text: bp };
+              }
+              return { label: bp, text: bp };
+            });
+          }
+          return [];
+        })()}
+        theme={theme}
+        onSelectContentLayout={(layoutId) => {
+          if (activeSlideIndex !== null) {
+            onSelectContentLayout(layoutId);
+          }
+        }}
+        onClose={onCloseContentLayoutPanel}
+      />
+
+      <PricingModal
+        isOpen={showPricingModal}
+        onClose={onClosePricingModal}
+        currentPlan={subscriptionPlan}
+      />
+    </>
+  );
+}

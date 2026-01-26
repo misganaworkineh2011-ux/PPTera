@@ -43,118 +43,86 @@ export function evaluateCapacity(
   capacity: LayoutCapacity,
   content: ContentAnalysis
 ): CapacityEvaluation {
-  // GAMMA-STYLE APPROACH: Check hard bounds first, then calculate utilization
-  // Only reject if content is clearly outside acceptable range
-  // Allow borderline cases to be scored (they'll get penalized in scoring, not rejected)
-  
-  // Check bullet count constraint (hard limit - must be within range)
   if (content.bulletCount < capacity.bulletCount.min) {
-    const utilization = content.bulletCount / capacity.bulletCount.min;
     return {
       fits: false,
-      utilization,
+      utilization: 0,
       reason: `Too few bullets: ${content.bulletCount} < ${capacity.bulletCount.min}`,
     };
   }
-  
+
   if (content.bulletCount > capacity.bulletCount.max) {
-    const utilization = content.bulletCount / capacity.bulletCount.max;
     return {
       fits: false,
-      utilization,
+      utilization: 1,
       reason: `Too many bullets: ${content.bulletCount} > ${capacity.bulletCount.max}`,
     };
   }
-  
-  // Check average bullet length constraint (if specified) - be lenient, allow 20% overage
+
   if (capacity.avgBulletLength) {
-    const maxAllowed = capacity.avgBulletLength.max * 1.2; // Allow 20% overage
-    if (content.avgBulletLength < capacity.avgBulletLength.min * 0.8) {
-      // Too short - reject
+    if (content.avgBulletLength > capacity.avgBulletLength.max) {
       return {
         fits: false,
-        utilization: 0.5,
-        reason: `Bullets too short: avg ${content.avgBulletLength} < ${capacity.avgBulletLength.min}`,
-      };
-    }
-    
-    if (content.avgBulletLength > maxAllowed) {
-      // Too long - reject
-      return {
-        fits: false,
-        utilization: 1.0,
+        utilization: 1,
         reason: `Bullets too long: avg ${content.avgBulletLength} > ${capacity.avgBulletLength.max}`,
       };
     }
   }
-  
-  // Check maximum bullet length constraint (if specified) - be lenient, allow 30% overage
+
   if (capacity.maxBulletLength) {
-    const maxAllowed = capacity.maxBulletLength.max * 1.3; // Allow 30% overage for single long bullet
-    if (content.maxBulletLength > maxAllowed) {
+    if (content.maxBulletLength > capacity.maxBulletLength.max) {
       return {
         fits: false,
-        utilization: 1.0,
+        utilization: 1,
         reason: `Longest bullet too long: ${content.maxBulletLength} > ${capacity.maxBulletLength.max}`,
       };
     }
   }
-  
-  // Calculate capacity utilization for scoring (not rejection)
-  // This helps score layouts but doesn't reject them
-  
-  // Bullet count utilization (0-1 scale)
-  let bulletCountUtilization = 0;
-  if (content.bulletCount <= capacity.bulletCount.min) {
-    bulletCountUtilization = 0.2; // Below min, but still acceptable
-  } else if (content.bulletCount >= capacity.bulletCount.max) {
-    bulletCountUtilization = 0.9; // At max, but still acceptable
-  } else {
-    // Normalize to 0-1 range
-    bulletCountUtilization = 
-      (content.bulletCount - capacity.bulletCount.min) / 
-      (capacity.bulletCount.max - capacity.bulletCount.min);
-    // Scale to 0.3-0.9 range (never perfect 0 or 1, always some room)
-    bulletCountUtilization = 0.3 + (bulletCountUtilization * 0.6);
-  }
-  
-  // Average length utilization (0-1 scale)
-  let avgLengthUtilization = 0.5; // Default if not specified
-  if (capacity.avgBulletLength) {
-    const min = capacity.avgBulletLength.min;
-    const max = capacity.avgBulletLength.max;
-    if (content.avgBulletLength <= min) {
-      avgLengthUtilization = 0.3; // Below ideal, but acceptable
-    } else if (content.avgBulletLength >= max) {
-      avgLengthUtilization = 0.8; // At max, but acceptable
-    } else {
-      // Normalize to 0-1 range
-      avgLengthUtilization = (content.avgBulletLength - min) / (max - min);
-      // Scale to 0.4-0.8 range
-      avgLengthUtilization = 0.4 + (avgLengthUtilization * 0.4);
-    }
-  }
-  
-  // Max length utilization (0-1 scale)
-  let maxLengthUtilization = 0.5; // Default if not specified
-  if (capacity.maxBulletLength) {
-    const max = capacity.maxBulletLength.max;
-    // Cap at 0.9 even if slightly over (we already checked hard limit above)
-    maxLengthUtilization = Math.min(0.9, content.maxBulletLength / max);
-  }
-  
-  // Overall utilization is weighted average of factors
-  // Bullet count is most important (50%), then avg length (30%), then max length (20%)
-  const utilization = 
-    bulletCountUtilization * 0.5 + 
-    avgLengthUtilization * 0.3 + 
+
+  const bulletCountUtilization = normalizeRange(
+    content.bulletCount,
+    capacity.bulletCount.min,
+    capacity.bulletCount.max
+  );
+
+  const avgLengthUtilization = capacity.avgBulletLength
+    ? normalizeRange(
+        content.avgBulletLength,
+        capacity.avgBulletLength.min,
+        capacity.avgBulletLength.max
+      )
+    : 0.5;
+
+  const maxLengthUtilization = capacity.maxBulletLength
+    ? Math.min(1, content.maxBulletLength / capacity.maxBulletLength.max)
+    : 0.5;
+
+  const utilization =
+    bulletCountUtilization * 0.5 +
+    avgLengthUtilization * 0.3 +
     maxLengthUtilization * 0.2;
-  
-  // All checks passed - content fits (may not be optimal, but fits)
+
+  if (utilization > 0.9) {
+    return {
+      fits: false,
+      utilization,
+      reason: `utilization too high: ${(utilization * 100).toFixed(1)}%`,
+    };
+  }
+
   return {
     fits: true,
     utilization,
   };
+}
+
+function normalizeRange(value: number, min: number, max: number): number {
+  if (max <= min) {
+    return value >= max ? 1 : 0;
+  }
+
+  const normalized = (value - min) / (max - min);
+  return Math.min(1, Math.max(0, normalized));
 }
 
 /**

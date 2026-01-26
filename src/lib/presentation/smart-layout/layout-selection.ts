@@ -373,7 +373,7 @@ async function selectLayoutInternal(
     
     // Skip layout selection for title slides
     if (input.slide.type === "title") {
-      const hasImage = input.slide.image?.required ?? true;
+      const hasImage = input.slide.image?.required ?? input.slide.assets?.image?.required ?? false;
       return createTitleSlideSelection(input.context, hasImage, enablePerformanceLogging);
     }
     

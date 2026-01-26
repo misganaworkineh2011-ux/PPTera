@@ -16,7 +16,7 @@ import {
   getRecommendedBoxLayout,
 } from "~/lib/layouts/content/boxes";
 import EditableText from "./EditableText";
-import { CONTENT_FONT_SIZE } from "./SlideRenderer";
+import { CONTENT_FONT_SIZE } from "./slide-typography";
 
 // Animation variants for staggered box animations
 const containerVariants = {

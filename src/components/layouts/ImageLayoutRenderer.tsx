@@ -7,7 +7,7 @@ import type { ImageLayoutType, ImageContentItem } from "~/lib/layouts/content/im
 import { calculateImageGridDimensions } from "~/lib/layouts/content/images";
 import type { Theme } from "~/lib/themes";
 import EditableText from "~/components/presentation/EditableText";
-import { CONTENT_FONT_SIZE } from "~/components/presentation/SlideRenderer";
+import { CONTENT_FONT_SIZE } from "~/components/presentation/slide-typography";
 
 // Animation variants for staggered image animations
 const containerVariants = {

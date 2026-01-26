@@ -30,7 +30,6 @@ import {
   calculatePriorityBonus,
   calculateConfidenceBonus,
   calculateRepetitionPenalty,
-  scoreContentLayoutHint,
 } from "./scoring-factors";
 
 // ============================================================================
@@ -108,55 +107,26 @@ export function scoreLayout(
   input: LayoutScoringInput,
   enableLogging: boolean = false
 ): LayoutMatch {
-  // GAMMA-STYLE APPROACH: Evaluate capacity but don't reject immediately
-  // Instead, apply penalties for poor capacity fit, allowing all layouts to compete
-  // This ensures LLM hints and other factors can still influence selection
-  
   const capacityEval = evaluateCapacity(layout.capacity, input.analysis);
-  
-  // Calculate capacity penalty if content doesn't fit perfectly
-  let capacityPenalty = 0;
   if (!capacityEval.fits) {
-    // Hard rejection only for extreme cases (way outside bounds)
-    // Otherwise, apply heavy penalty but still allow scoring
-    const utilization = capacityEval.utilization;
-    
-    // If utilization is extremely high (>1.2), reject completely
-    if (utilization > 1.2) {
-      if (enableLogging) {
-        console.log(
-          `[layout-scorer] Layout '${layout.category}' rejected: ` +
-          `Capacity severely exceeded (utilization: ${(utilization * 100).toFixed(1)}%, ` +
-          `bulletCount: ${input.analysis.bulletCount}/${layout.capacity.bulletCount.max})`
-        );
-      }
-      
-      return {
-        category: layout.category,
-        score: 0,
-        confidence: "low",
-        scoreBreakdown: EMPTY_BREAKDOWN as ScoreBreakdown,
-      };
-    }
-    
-    // Apply heavy penalty for poor fit, but still score
-    capacityPenalty = -100 * (utilization - 1.0); // Penalty increases with overage
     if (enableLogging) {
       console.log(
-        `[layout-scorer] Layout '${layout.category}' capacity warning: ` +
-        `Poor fit (utilization: ${(utilization * 100).toFixed(1)}%, penalty: ${capacityPenalty.toFixed(1)})`
+        `[layout-scorer] Layout '${layout.category}' rejected: ${capacityEval.reason ?? "capacity overflow"}`
       );
     }
+
+    return {
+      category: layout.category,
+      score: 0,
+      confidence: "low",
+      scoreBreakdown: EMPTY_BREAKDOWN as ScoreBreakdown,
+    };
   }
-  
-  // Calculate all scoring factors
-  // NOTE: hintBonus is calculated early to ensure it's always applied
-  const hintBonus = scoreContentLayoutHint(layout, input);
   
   const breakdown: ScoreBreakdown = {
     contentType: scoreContentType(layout, input),
     pattern: scorePattern(layout, input),
-    capacity: capacityEval.fits ? scoreCapacity(capacityEval.utilization) : 0, // No capacity score if doesn't fit
+    capacity: scoreCapacity(capacityEval.utilization),
     semanticIntent: scoreSemanticIntent(layout, input),
     visualStrategy: scoreVisualStrategy(layout, input),
     density: scoreDensity(layout, input.analysis),
@@ -165,7 +135,7 @@ export function scoreLayout(
     priority: calculatePriorityBonus(layout),
     confidenceBonus: calculateConfidenceBonus(input.analysis.contentTypeConfidence),
     repetitionPenalty: calculateRepetitionPenalty(layout.category, input.previousLayouts),
-    hintBonus, // LLM hint gets significant weight - always applied
+    hintBonus: 0,
   };
   
   // Calculate media constraints score (image + space)
@@ -184,9 +154,7 @@ export function scoreLayout(
     breakdown.bulletLength +
     breakdown.priority +
     breakdown.confidenceBonus +
-    breakdown.repetitionPenalty +
-    breakdown.hintBonus +
-    capacityPenalty; // Apply capacity penalty (negative value)
+    breakdown.repetitionPenalty;
   
   // Determine confidence level based on score
   let confidence: "high" | "medium" | "low";

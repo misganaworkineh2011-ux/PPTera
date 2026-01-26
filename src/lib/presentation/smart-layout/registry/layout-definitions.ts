@@ -148,7 +148,7 @@ export const LAYOUT_DEFINITIONS: LayoutDefinition[] = [
       emphasis: ["clarity", "hierarchy"],
     },
     
-    priority: "low", // Changed from "fallback" to reduce bias - bullets should compete fairly
+    priority: "fallback",
     
     styles: [
       {
