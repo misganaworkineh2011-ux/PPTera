@@ -9,6 +9,7 @@ import type { StreamingStatus } from "../hooks";
 import { AddSlideButtons } from "./AddSlideButtons";
 import { getThemeType, type ThemeType } from "./types";
 import { getUIColors } from "./ui-colors";
+import FeedbackSection from "~/components/presentation/FeedbackSection";
 
 interface ScrollableSlidesViewProps {
   slides: SlideData[];
@@ -28,6 +29,8 @@ interface ScrollableSlidesViewProps {
   onAddSlideAt: (index: number) => void;
   onAddAISlide: (index: number, prompt: string) => Promise<void>;
   presentationTitle: string;
+  showFeedback?: boolean;
+  presentationId?: string;
 }
 
 export function ScrollableSlidesView({
@@ -43,6 +46,8 @@ export function ScrollableSlidesView({
   onAddSlideAt,
   onAddAISlide,
   presentationTitle,
+  showFeedback,
+  presentationId,
 }: ScrollableSlidesViewProps) {
   const ui = getUIColors(getThemeType(theme));
   const isCurrentlyStreaming = streamingStatus === "streaming";

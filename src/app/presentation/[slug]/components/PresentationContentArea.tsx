@@ -114,11 +114,11 @@ export function PresentationContentArea({
             : {}),
         }}
       >
-        <div
-          className={`${isFullscreen || isPresenting ? "" : "px-0 sm:px-2 md:px-4 py-4 sm:py-8"} max-w-full ${showContentLayoutPanel ? "pb-20" : ""}`}
-        >
-          {viewMode === "scroll" && !isFullscreen ? (
-            <>
+        {viewMode === "scroll" && !isFullscreen ? (
+          <>
+            <div
+              className={`px-0 sm:px-2 md:px-4 py-4 sm:py-8 max-w-full ${showContentLayoutPanel ? "pb-20" : ""}`}
+            >
               {showThumbnails && !isPublicView && !isMobile && (
                 <ThumbnailSidebar
                   slides={slides}
@@ -149,8 +149,17 @@ export function PresentationContentArea({
                   presentationTitle={presentationTitle}
                 />
               </div>
-            </>
-          ) : (
+            </div>
+            {showFeedback && (
+              <div className="w-full">
+                <FeedbackSection presentationId={presentationId} theme={theme} />
+              </div>
+            )}
+          </>
+        ) : (
+          <div
+            className={`${isFullscreen || isPresenting ? "" : "px-0 sm:px-2 md:px-4 py-4 sm:py-8"} max-w-full ${showContentLayoutPanel ? "pb-20" : ""}`}
+          >
             <div
               className={`flex gap-6 ${isFullscreen || isPublicView || isPresenting ? "h-screen w-screen" : "mx-auto"} overflow-x-hidden`}
               style={!isFullscreen && !isPublicView && !isPresenting ? { maxWidth: "1800px" } : {}}
@@ -219,7 +228,7 @@ export function PresentationContentArea({
                   return (
                     <div
                       className={`relative overflow-hidden w-full rounded-lg shadow-2xl ring-1 ${ui.ring} ${isShaking ? "animate-shake" : ""}`}
-                      style={{ height: `min(${dynamicHeight}px, calc(100vh - 200px))` }}
+                      style={{ height: 'auto', minHeight: '600px', aspectRatio: '16/9' }}
                     >
                       <AnimatedSlide
                         slideKey={currentSlide}
@@ -258,8 +267,8 @@ export function PresentationContentArea({
                 )}
               </div>
             </div>
+          </div>
           )}
-        </div>
       </div>
 
       {isPublicView && (
@@ -290,7 +299,7 @@ export function PresentationContentArea({
       )}
 
       {viewMode === "scroll" && !isFullscreen && !isPublicView && showFeedback && (
-        <FeedbackSection presentationId={presentationId} theme={theme} />
+        <></>
       )}
     </>
   );
