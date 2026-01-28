@@ -87,7 +87,8 @@ TRANSFORMATION RULES:
 4. EXPAND AND ELABORATE: Each generated item should be MORE detailed than the corresponding outline item. Add context, examples, implications, causes, effects, or specific details.
 5. VISUAL EQUALITY: All items should have visually similar length (approximately equal word count/size) so they look balanced. Maximum 30 words per text item.
 6. AVOID QUOTE-HEAVY LAYOUTS: Create proper content with actionable statements, not just quotes or citations (unless using quote layout).
-7. CREATE TWO VERSIONS OF EACH ITEM:
+7. TITLE SLIDE EXCELLENCE: For title slides, create LONGER, MORE COMPELLING subtitles (40-60 words) and powerful taglines (10-15 words) that make an amazing first impression.
+8. CREATE TWO VERSIONS OF EACH ITEM:
    - Content items: Well-crafted slide text (max 30 words each, visually equal length) - what appears on the slide
    - "speakerNotes": Even more detailed explanations (1-3 sentences each) - what the presenter reads
    
@@ -96,9 +97,9 @@ For each slide, return:
 {
   "type": "title" or "content",
   "title": "EXACT original title - DO NOT MODIFY",
-  "subtitle": "For title slides only - enhanced subtitle",
-  "tagline": "For title slides only - a compelling one-liner",
-  "slideDescription": "OPTIONAL - brief 1-2 sentence factual statement between title and content (omit if not needed)",
+  "subtitle": "For title slides: ENHANCED 40-60 word compelling subtitle | For content: brief subtitle if needed",
+  "tagline": "For title slides: POWERFUL 10-15 word tagline that crystallizes the message",
+  "slideDescription": "OPTIONAL - For title slides: 2-3 sentences (40-60 words) providing rich context | For content slides: brief 1-2 sentence factual statement",
   "bulletPoints": ["Well-crafted bullet 1 (max 30 words, visually equal length)", "Well-crafted bullet 2", ...] OR null if using sections,
   "speakerNotes": ["Detailed note for bullet 1 (1-3 sentences)", "Detailed note for bullet 2", ...],
   "sections": [{"heading": "Section Title", "description": "Brief description"}] OR null if using bullets,
@@ -301,10 +302,33 @@ REQUIREMENTS:
 CRITICAL: The "title" field in your response MUST be exactly: "${slide.title}"
 
 ${slide.type === "title" ? `
-For this TITLE slide:
+For this TITLE slide (FIRST IMPRESSION - MAKE IT AMAZING):
 - Keep the title EXACTLY as provided: "${slide.title}"
-- Create an engaging subtitle that sets up the presentation
-- Add a memorable tagline (short, impactful phrase)
+- Create an ENHANCED, COMPELLING subtitle (40-60 words) that:
+  * Expands on the title with rich context and depth
+  * Sets the stage for the entire presentation
+  * Creates anticipation and engagement
+  * Uses vivid, descriptive language
+  * Captures the essence and value proposition
+  * Makes the audience want to learn more
+- Add a POWERFUL tagline (10-15 words):
+  * Memorable and impactful
+  * Crystallizes the core message
+  * Uses strong, active language
+  * Creates emotional resonance
+- OPTIONAL: Add a "slideDescription" field (2-3 sentences, 40-60 words total) that:
+  * Provides additional context about what the presentation covers
+  * Highlights key benefits or outcomes
+  * Sets expectations for the audience
+  * Uses engaging, professional language
+  
+TITLE SLIDE EXCELLENCE:
+- The subtitle should be SUBSTANTIALLY LONGER and more detailed than typical (40-60 words)
+- Use descriptive, evocative language that paints a picture
+- Focus on value, benefits, and transformation
+- Make it feel premium and professional
+- Create excitement and curiosity
+- The slideDescription (if included) should complement the subtitle with additional depth
 ` : `
 For this CONTENT slide:
 - Keep the title EXACTLY as provided: "${slide.title}"

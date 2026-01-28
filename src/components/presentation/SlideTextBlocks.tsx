@@ -127,7 +127,7 @@ export function SlideDescriptionBlock({
   align = "left",
   isTitleSlide,
 }: SlideDescriptionBlockProps) {
-  if (!slide.slideDescription || isTitleSlide) return null;
+  if (!slide.slideDescription) return null;
   return (
     <div>
       <EditableText
