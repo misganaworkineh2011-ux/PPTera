@@ -10,6 +10,7 @@ import {
   ALTERNATIVES,
   getAllComboSlugs
 } from "~/lib/seo/page-data";
+import { ALL_KEYWORDS } from "~/lib/seo/keyword-data";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://www.pptmaster.app";
@@ -113,6 +114,52 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // ============================================
+  // KEYWORD-BASED pSEO PAGES (10k+ pages)
+  // ============================================
+
+  // Individual keyword pages (~400+ pages from keywords.txt)
+  const keywordPages: MetadataRoute.Sitemap = ALL_KEYWORDS.map((keyword) => ({
+    url: `${baseUrl}/k/${keyword.slug}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly" as const,
+    priority: keyword.priority,
+  }));
+
+  // Keyword + Use Case combo pages (~10,000+ pages)
+  // Only generate for high-value keywords to keep sitemap manageable
+  const highValueKeywords = ALL_KEYWORDS.filter(k => 
+    k.category === 'ai-tools' || 
+    k.category === 'powerpoint' || 
+    k.category === 'presentation-tools' ||
+    k.priority >= 0.6
+  );
+
+  const keywordUseCasePages: MetadataRoute.Sitemap = [];
+  for (const keyword of highValueKeywords) {
+    for (const useCase of USE_CASES) {
+      keywordUseCasePages.push({
+        url: `${baseUrl}/use/${keyword.slug}/${useCase.slug}`,
+        lastModified: new Date(),
+        changeFrequency: "weekly" as const,
+        priority: 0.6,
+      });
+    }
+  }
+
+  // Keyword + Industry combo pages (ALL keywords for maximum coverage)
+  const keywordIndustryPages: MetadataRoute.Sitemap = [];
+  for (const keyword of ALL_KEYWORDS) {
+    for (const industry of INDUSTRIES) {
+      keywordIndustryPages.push({
+        url: `${baseUrl}/for/${keyword.slug}/${industry.slug}`,
+        lastModified: new Date(),
+        changeFrequency: "weekly" as const,
+        priority: 0.6,
+      });
+    }
+  }
+
+  // ============================================
   // DYNAMIC DATABASE CONTENT
   // ============================================
 
@@ -193,6 +240,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...howToPages,
     ...alternativePages,
     ...comboPages,
+    // Keyword-based pSEO pages (10k+)
+    ...keywordPages,
+    ...keywordUseCasePages,
+    ...keywordIndustryPages,
     // Dynamic content
     ...inspirationPages,
     ...insightPages,

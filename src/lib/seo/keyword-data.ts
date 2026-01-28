@@ -1,331 +1,97 @@
+// ============================================
+// Keyword Data - All parsed keywords from keywords.txt
+// ============================================
 
-ppt to pdf
+import { parseKeywords, type KeywordData } from './keyword-parser';
+
+// Export KeywordData type
+export type { KeywordData } from './keyword-parser';
+
+// Raw keywords from keywords.txt
+const KEYWORDS_RAW = `ppt to pdf
 ai ppt
-
-
-
 convert ppt to pdf
-
-
-
 ppt template
-
-
-
 what is ppt
-
-
-
 gamma ppt
-
-
-
 google ppt
-
-
-
 ppt ai
-
-
-
 ai ppt maker
-
-
-
 ai ppt generator
-
-
-
 kimi ppt
-
-
 gamma ppt ai
-
-
-
 2 images for ppt ai
-
-
 best ai ppt generator
-
-
-
 gamma ai ppt maker
-
-
-gamma ai ppt maker
-
-
-
 free ppt maker online
-
-
-free ppt maker online
-
-
 ppt slide size
-
-
 ppt slide backgrounds
-
-
-
 ppt slide dimensions
-
-
-
 agenda ppt slide
-
-
 church ppt background
-
-
-
 aesthetic ppt background
-
 christmas ppt background
-
-
 presentation techniques
-
-
-
 canva presentation
-
-
-
 presentation synonym
-
-
-
 google presentation
-
-
-
 best wireless presentation clickers
-
-
-
 google slides presentation
-
-
 power point presentation
-
-
-
 presentation backgrounds
-
-
-
 presentation software
-
-
-
 microsoft presentation
-
-
-
 free ai presentation maker
-
-
-
 untitled presentation
-
-
-
 presentation maker
-
-
 gamma ai presentation tool
-
-
-
 best ai presentation tools 2025
-
-
-
 tome ai presentation tool
-
-
-
 canva ai presentation
-
-
-
 gamma.app ai presentation tool
-
-
 ai presentation tools news
-
-
-
 best free ai presentation maker
-
-
-
 free ai presentation maker online
-
-
-
 ai presentation tools
-
-
-
 canva ai presentation maker
-
-
-
 gamma ai presentation builder gamma.app
-
-
-free ai presentation maker online
-
-
-
 free ai presentation tool
-
-
-
-free ai presentation tools
-
-
-
 best free ai presentation tools
-
-
-
 free ai presentation maker tools
-
-
 best free ai presentation maker 2024
-
-
-
 best free ai presentation maker 2025
-
-
-
 best free ai presentation generator
-
-
-
 best free ai presentation tools 2025
-
-
-
 free ai presentation software
-
-
-
 best free ai presentation tools 2024
-
-
-
 gamma ai presentation tool
-
-
-
 tome ai presentation tool
-
-
-
 gamma.app ai presentation tool
-
-
-
 gamma ai presentation tool features
-
-
 free ai presentation tool
-
-
-
 gamma.app presentation tool
-
-
-
 beautiful.ai presentation tool
-
-
-
 gamma app ai presentation tool
-
-
-
 gamma ai presentation tool gamma.app
-
-
-
 presentation tool
-
-
-
 online presentation tool
-
-
-
 gamma presentation tool
-
-
-
 prezi presentation tool history and development
-
-
-
 ai presentation tool news
-
-
-
 gamma app presentation tool
-
-
-
 beautiful.ai ai presentation tool
-
-
-
 best ai presentation tool
-
-
-
 tome.app ai presentation tool
-
-
 gamma app ai presentation features
-
-
 tools for creating unique presentation images
-
-
-
 tools for creating presentation images
-
-
-
 tools to create presentation images
-
-
-
 presentation images
-
-
-
 free online tools to create presentation images
-
-
-
 conceptual presentation images
-
 presentation background images
-
-
 presentation idea
-
-
-
 presentation slides topic 2025
-
-
 chatgpt presentation slides
 unspecified presentation slides 2025
 presentation slides examples
@@ -400,7 +166,6 @@ ai presentation generator from text
 gamma ai presentation generator
 faq templates
 project planning templates
-faq templates
 contract templates
 avery templates
 google slide templates
@@ -418,676 +183,210 @@ ai ppt maker like gamma
 free ai ppt maker like gamma
 ppt maker like gamma
 microsoft powerpoint interface
-
-
-
 microsoft powerpoint logo
-
-
-
 microsoft powerpoint for mac
-
-
-
 microsoft powerpoint update news
-
-
-
 microsoft powerpoint free download
-
-
-
 is microsoft powerpoint free
-
-
 what is microsoft powerpoint
-
-
-
 microsoft powerpoint copilot
-
-
-
 free microsoft powerpoint
-
-
-
 microsoft powerpoint presentation
-
-
-
 how to use microsoft powerpoint
-
-
-
-
 free google slides themes
-
-
 google slides template
-
-
-
 how to add audio to google slides
-
-
-
 how to add music to google slides
-
-
 google slides presentation
-
-
-
 google slides theme
-
-
-
 templates for google slides
-
-
-
 how to add a video to google slides
-
-
-
 cute google slides themes
-
-
-
 backgrounds for google slides
-
-
-
 prezi presentation
-
-
-
 prezi free
-
 prezi templates
-
-
 what is prezi
-
-
-
 prezi log in
-
-
-
-
-
 prezi powerpoint
-
-
-
 prezi presentation example
-
-
-
 is prezi free
-
-
-
 prezi website
-
-
-
 prezi presentations
-
-
-
 what is a prezi
-
-
-
 prezi video
-
-
-
 prezi app
-
-
 prezi pricing
-
-
-
 prezi presentation software
-
-
-
 prezi examples
-
-
-
 prezi presentation tool history and development
-
-
-
-
 donwload slideshare
-
-
-
 six sigma project slideshare
-
-
 wishpond 2013 pinterest marketing tips slideshare
-
-
-
 what is slideshare
-
-
-
 wishpond pinterest marketing tips 2013 slideshare
-
-
-
 is slideshare safe
-
-
-
 vision and mission slideshare
-
-
 slideshare
-
-
 microsoft forms
-
-
-
 microsoft stock price
-
-
-
 microsoft rewards
-
-
-
 microsoft store
-
-
-
 microsoft office
-
-
-
 microsoft edge
-
-
-
 microsoft news
-
-
-
 microsoft outlook login
-
-
-
 microsoft ai
-
-
-
 teams microsoft
-
-
-
 sway bar link
-
-
-
 owala free sip sway
-
-
-
 sway markets
-
-
-
 sway bar
-
-
-
 owala sway
-
-
-
 faze sway
-
-
-
 owala freesip sway
-
-
-
 microsoft sway
-
-
-
 sway bar link replacement cost
-
-
-
 sway back
-
-
-
 graco simple sway swing
-
-
-
 sway bar links
-
-
-
 sway house members
-
-
-
 sway bar bushings
-
-
-
 sway meaning
-
-
-
 graco soothe and sway
-
-
-
 sway back posture
-
-
-
 sway bar link replacement
-
-
-
 how sway
-
-
 flowvella
-
-
 flowvella alternatives
-
-
-
 gamma jack
-
-
-
 gamma 11s
-
-
-
 sigma gamma rho
-
-
-
 stalker gamma
-
-
-
 gamma distribution
-
-
-
 pokemon gamma emerald
-
-
-
 gamma blue 11s
-
-
-
 gamma globulin
-
-
-
 gamma function
-
-
-
 nike gamma force
-
-
 gamma radiation
-
-
 gamma ai presentations
-
-
-
 gamma male
-
-
-
 gamma knife
-
-
 gamma blue 11
-
-
 beautiful.ai free plan
-
-
-
 beautiful.ai pricing free plan
-
-
-
 beautiful.ai free plan features
-
-
-
 beautiful.ai pricing 2025
-
-
-
 beautiful.ai pricing
-
-
-
 beautiful.ai promo code
-
-
-
 beautiful.ai presentation tool
-
-
-
 beautiful.ai free plan 2025
-
-
-
 beautiful.ai login
-
-
-
 beautiful.ai ai presentation tool
-
-
-
 beautiful.ai official website
-
-
-
 beautiful.ai free plan pricing
-
-
-
 beautiful.ai ai presentation maker
-
-
-
 beautiful.ai review
-
-
-
 beautiful.ai reviews
-
-
-
 beautiful.ai presentation software
-
-
-
 beautiful.ai free
-
-
-
 beautiful.ai news
-
-
-
 beautiful.ai logo
-
-
-
 tome ai presentation tool
-
-
 tome ai presentation
-
-
-
 tome ai presentation generator
-
-
-
 tome ai presentations official site
-
-
-
 tome ai pricing 2025
-
-
-
 tome ai presentation tool features
-
-
-
 tome ai export to powerpoint pptx
-
-
-
 tome ai presentation maker
-
-
-
-
 presentations.ai pricing
-
-
-
 garmin connect plus ai subscription
-
-
-
-
 plus ai for powerpoint
-
-
-
-
 plus ai pricing
-
-
 disney plus ai
-
-
 video plus ai
-
-
-
 slidesai pricing
-
-
-
 slidesai free plan
-
-
-
 visme ai presentation maker
-
-
-
 visme pricing
-
-
-
 visme alternatives
-
-
-
 visme free plan features
-
-
-
 what is visme
-
-
-
 visme free
-
-
-
 visme vs canva
-
-
-
 visme vs prezi
-
-
 visme free plan
-
-
-
 canva templates
-
-
-
 canva free
-
-
-
 canva coupon code
-
-
 how much is canva pro
-
-
-
 canva app
-
-
 canva logo png
-
-
-
 is canva free
-
-
-
 how to cancel canva subscription
-
-
 canva ai image generator
-
-
-
 canva design
-
-
 canva magic design how to use
-
-
-
 canva magic design pricing
-
-
-
 canva magic design feature
-
-
 zoho show
-
-
-
 is slidesgo safe
-
-
-
 slidesgo free powerpoint templates
-
-
-
 slidesgo login
-
-
-
 slidesgo.
-
-
-
 slidesgo alternative
-
-
-
 slidesgo]
-
-
-
 slidesgo'
-
-
-
 free slidesgo
-
-
-
 websites like slidesgo
-
-
 curipod
-
-
-
 curipod join
-
-
-
 curipod live
-
-
-
 curipod logo
-
-
-
 curipod code
-
-
-
 curipod join code
-
-
-
 curipod login
-
-
-
 curipod ai teacher tools reviews
-
-
 what is curipod
-
-
 classpoint
-
-
 classpoint app
-
-
-
 classpoint ai
-
-
 deckrobot
-
-
-
 designs.ai pricing
-
-
 chatslide
-
 chatslide ai
+easy slides shoes`;
 
+// Parse all keywords
+export const ALL_KEYWORDS: KeywordData[] = parseKeywords(KEYWORDS_RAW);
 
-easy slides shoes
+// Export by category for easy access
+export const KEYWORD_CATEGORIES = {
+  'ai-tools': ALL_KEYWORDS.filter(k => k.category === 'ai-tools'),
+  'presentation-tools': ALL_KEYWORDS.filter(k => k.category === 'presentation-tools'),
+  'powerpoint': ALL_KEYWORDS.filter(k => k.category === 'powerpoint'),
+  'slides': ALL_KEYWORDS.filter(k => k.category === 'slides'),
+  'templates': ALL_KEYWORDS.filter(k => k.category === 'templates'),
+  'alternatives': ALL_KEYWORDS.filter(k => k.category === 'alternatives'),
+  'guides': ALL_KEYWORDS.filter(k => k.category === 'guides'),
+  'features': ALL_KEYWORDS.filter(k => k.category === 'features'),
+  'conversion': ALL_KEYWORDS.filter(k => k.category === 'conversion'),
+  'online-tools': ALL_KEYWORDS.filter(k => k.category === 'online-tools'),
+  'microsoft': ALL_KEYWORDS.filter(k => k.category === 'microsoft'),
+  'google': ALL_KEYWORDS.filter(k => k.category === 'google'),
+  'general': ALL_KEYWORDS.filter(k => k.category === 'general'),
+};
+
+// High-priority keywords for main landing pages
+export const HIGH_PRIORITY_KEYWORDS = ALL_KEYWORDS.filter(k => k.priority >= 0.6);
+
+// Get unique slugs (remove duplicates)
+export const UNIQUE_KEYWORD_SLUGS = Array.from(new Set(ALL_KEYWORDS.map(k => k.slug)));
+
+// Total count
+export const TOTAL_KEYWORDS = ALL_KEYWORDS.length;
+export const TOTAL_UNIQUE_SLUGS = UNIQUE_KEYWORD_SLUGS.length;
+
+console.log(`Parsed ${TOTAL_KEYWORDS} keywords into ${TOTAL_UNIQUE_SLUGS} unique pages`);
