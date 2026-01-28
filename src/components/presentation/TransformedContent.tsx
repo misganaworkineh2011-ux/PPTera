@@ -2,7 +2,7 @@
 
 import type { TransformedContent } from "~/lib/presentation/types";
 import { type Theme } from "~/lib/themes";
-import { CONTENT_FONT_SIZE } from "./SlideRenderer";
+import { CONTENT_FONT_SIZE } from "./slide-typography";
 
 interface TransformedContentRendererProps {
   content: TransformedContent;

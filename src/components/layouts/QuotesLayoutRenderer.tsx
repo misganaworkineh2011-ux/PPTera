@@ -9,7 +9,7 @@ import type {
 } from "~/lib/layouts/content/quotes";
 import EditableText from "~/components/presentation/EditableText";
 import type { Theme } from "~/lib/themes";
-import { CONTENT_FONT_SIZE } from "~/components/presentation/SlideRenderer";
+import { CONTENT_FONT_SIZE } from "~/components/presentation/slide-typography";
 
 // Animation variants for staggered quote animations
 const containerVariants = {

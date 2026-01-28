@@ -101,55 +101,7 @@ export function calculateConfidence(score: number): "high" | "medium" | "low" {
  * ```
  */
 export function getFallbackLayout(analysis: ContentAnalysis): ContentLayoutCategory {
-  // Content type-based fallback (prefer specialized layouts)
-  switch (analysis.contentType) {
-    case "TIMELINE":
-    case "PROCESS":
-      return "sequence";
-    case "STEPS":
-    case "HOW_TO":
-      return analysis.bulletCount <= 5 ? "steps" : "sequence";
-    case "TESTIMONIAL":
-      return "quotes";
-    case "STATISTICS":
-      return analysis.bulletCount <= 4 ? "numbers" : "boxes";
-    case "CYCLE":
-      return "circles";
-    case "FEATURES":
-    case "CATEGORIES":
-    case "COMPARISON":
-      return analysis.bulletCount <= 6 ? "boxes" : "bullets";
-    default:
-      // Generic content - use smart selection based on pattern and count
-      break;
-  }
-  
-  // Pattern-based fallback
-  if (analysis.pattern === "numbered-steps" || analysis.pattern === "sequential") {
-    return analysis.bulletCount <= 5 ? "steps" : "sequence";
-  }
-  if (analysis.pattern === "quoted-text") {
-    return "quotes";
-  }
-  if (analysis.pattern === "numeric") {
-    return "numbers";
-  }
-  if (analysis.pattern === "distinct-concepts" || analysis.pattern === "categorical") {
-    return analysis.bulletCount <= 6 ? "boxes" : "bullets";
-  }
-  
-  // Bullet count-based fallback (less biased, considers all options)
-  if (analysis.bulletCount === 1) {
-    return "quotes"; // Single item works well as quote
-  } else if (analysis.bulletCount === 2) {
-    return "boxes"; // Two items work well in boxes
-  } else if (analysis.bulletCount >= 3 && analysis.bulletCount <= 6) {
-    // Medium count - prefer boxes for visual appeal, bullets for text-heavy
-    return analysis.avgBulletLength > 20 ? "bullets" : "boxes";
-  } else {
-    // High count (7+) - bullets is most appropriate
-    return "bullets";
-  }
+  return analysis.bulletCount > 4 ? "bullets" : "boxes";
 }
 
 /**

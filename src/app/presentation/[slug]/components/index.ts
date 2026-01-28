@@ -9,6 +9,14 @@ export { ThemeSidebar } from "./ThemeSidebar";
 export { AgentPanel } from "./AgentPanel";
 export { SlideNoteButton } from "./SlideNoteButton";
 export { AddSlideButtons } from "./AddSlideButtons";
+export { PresentationSlide } from "./PresentationSlide";
+export { ScrollableSlidesView } from "./ScrollableSlidesView";
+export { PublicViewControls, FullscreenNavbar } from "./PresentationViewControls";
+export { PresentationModals } from "./PresentationModals";
+export { PresentationPanels } from "./PresentationPanels";
+export { ExportIndicator } from "./ExportIndicator";
+export { PresentationGlobalStyles } from "./PresentationGlobalStyles";
+export { PresentationContentArea } from "./PresentationContentArea";
 
 // Re-export types and utilities
 export { getThemeType, getGoogleFontsUrl, type ThemeType } from "./types";

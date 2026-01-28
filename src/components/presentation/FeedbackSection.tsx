@@ -67,7 +67,7 @@ export default function FeedbackSection({ presentationId, theme }: FeedbackSecti
 
   return (
     <div 
-      className="w-full mt-16"
+      className="w-full"
       style={{
         background: colors.bg,
         borderTop: `1px solid ${colors.border}`,

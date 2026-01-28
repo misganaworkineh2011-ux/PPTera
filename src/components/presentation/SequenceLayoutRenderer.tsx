@@ -14,7 +14,7 @@ import {
   getRecommendedSequenceLayout,
 } from "~/lib/layouts/content/sequence";
 import EditableText from "./EditableText";
-import { CONTENT_FONT_SIZE } from "./SlideRenderer";
+import { CONTENT_FONT_SIZE } from "./slide-typography";
 
 // Animation variants for staggered sequence animations
 const containerVariants = {

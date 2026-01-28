@@ -13,7 +13,7 @@ import {
   getRingIconPosition,
 } from "~/lib/layouts/content/circles";
 import EditableText from "~/components/presentation/EditableText";
-import { CONTENT_FONT_SIZE } from "~/components/presentation/SlideRenderer";
+import { CONTENT_FONT_SIZE } from "~/components/presentation/slide-typography";
 import type { Theme } from "~/lib/themes";
 
 // Animation variants for staggered circle animations
