@@ -349,6 +349,26 @@ model Notification {
   @@map("notification")
 }
 
+model ExportJob {
+  id             String    @id @default(cuid())
+  userId         String
+  presentationId String
+  format         String    // pdf, pptx, images
+  status         String    @default("pending") // pending, processing, completed, failed
+  fileUrl        String?   // Temporary download URL
+  fileSize       Int?      // File size in bytes
+  error          String?   // Error message if failed
+  expiresAt      DateTime? // When the file will be deleted
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  completedAt    DateTime?
+
+  @@index([userId, status])
+  @@index([status, createdAt])
+  @@index([expiresAt])
+  @@map("export_job")
+}
+
 model Review {
   id         String   @id @default(cuid())
   userId     String?

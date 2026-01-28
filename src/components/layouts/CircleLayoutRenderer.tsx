@@ -15,6 +15,9 @@ import {
 import EditableText from "~/components/presentation/EditableText";
 import { CONTENT_FONT_SIZE } from "~/components/presentation/slide-typography";
 import type { Theme } from "~/lib/themes";
+import { CircularWorkflowRenderer } from "./CircularWorkflowRenderer";
+import { CircularFocusRenderer } from "./CircularFocusRenderer";
+import { CircularPetalRenderer } from "./CircularPetalRenderer";
 
 // Animation variants for staggered circle animations
 const containerVariants = {
@@ -162,6 +165,81 @@ export function CircleLayoutRenderer({
       <ArcLayout
         items={displayItems}
         themeStyles={themeStyles}
+        className={className}
+        isPresenting={isPresenting}
+        animationKey={animationKey}
+        isEditing={isEditing}
+        editingText={editingText}
+        onStartEditLabel={onStartEditLabel}
+        onStartEditText={onStartEditText}
+        onUpdateLabel={onUpdateLabel}
+        onUpdateText={onUpdateText}
+        onFinishEditing={onFinishEditing}
+        onDeleteItem={onDeleteItem}
+        isOwner={isOwner}
+        isHovered={isHovered}
+        spotlightIndex={effectiveSpotlightIndex}
+        isSpotlightMode={effectiveIsSpotlightMode}
+      />
+    );
+  }
+
+  if (layoutId === "circle-workflow") {
+    return (
+      <CircularWorkflowRenderer
+        items={displayItems}
+        theme={theme}
+        accentColor={accentColor}
+        className={className}
+        isPresenting={isPresenting}
+        animationKey={animationKey}
+        isEditing={isEditing}
+        editingText={editingText}
+        onStartEditLabel={onStartEditLabel}
+        onStartEditText={onStartEditText}
+        onUpdateLabel={onUpdateLabel}
+        onUpdateText={onUpdateText}
+        onFinishEditing={onFinishEditing}
+        onDeleteItem={onDeleteItem}
+        isOwner={isOwner}
+        isHovered={isHovered}
+        spotlightIndex={effectiveSpotlightIndex}
+        isSpotlightMode={effectiveIsSpotlightMode}
+      />
+    );
+  }
+
+  if (layoutId === "circle-focus") {
+    return (
+      <CircularFocusRenderer
+        items={displayItems}
+        theme={theme}
+        accentColor={accentColor}
+        className={className}
+        isPresenting={isPresenting}
+        animationKey={animationKey}
+        isEditing={isEditing}
+        editingText={editingText}
+        onStartEditLabel={onStartEditLabel}
+        onStartEditText={onStartEditText}
+        onUpdateLabel={onUpdateLabel}
+        onUpdateText={onUpdateText}
+        onFinishEditing={onFinishEditing}
+        onDeleteItem={onDeleteItem}
+        isOwner={isOwner}
+        isHovered={isHovered}
+        spotlightIndex={effectiveSpotlightIndex}
+        isSpotlightMode={effectiveIsSpotlightMode}
+      />
+    );
+  }
+
+  if (layoutId === "circle-petal") {
+    return (
+      <CircularPetalRenderer
+        items={displayItems}
+        theme={theme}
+        accentColor={accentColor}
         className={className}
         isPresenting={isPresenting}
         animationKey={animationKey}
