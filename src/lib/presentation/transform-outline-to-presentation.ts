@@ -72,17 +72,23 @@ export interface TransformOptions {
   textDensity?: "minimal" | "concise" | "detailed" | "extensive";
 }
 
-const SYSTEM_PROMPT = `You are an expert presentation content writer. Your task is to transform outline bullet points into presentation-ready content with WELL-CRAFTED, DETAILED slide bullets and DETAILED speaker notes.
+/**
+ * Generate system prompt with dynamic max items based on presentation length
+ */
+function getSystemPrompt(maxItems: number): string {
+  return `You are an expert presentation content writer. Your task is to transform outline content into presentation-ready slides with WELL-CRAFTED, DETAILED content and DETAILED speaker notes.
 
 CRITICAL RULE: NEVER change slide titles. Keep them EXACTLY as provided. Only transform the content.
 
 TRANSFORMATION RULES:
 1. KEEP TITLES UNCHANGED - use the exact original title provided
-2. EXPLAIN ALL BULLETS: Every single bullet point from the outline MUST be transformed into a well-crafted, detailed bullet. Do not skip or omit any outline bullets.
-3. EXPAND AND ELABORATE: Each generated bullet should be MORE detailed than the corresponding outline bullet. Add context, examples, implications, causes, effects, or specific details. Make the content richer and more explanatory.
-4. VISUAL EQUALITY: All bullet points should have visually similar length (approximately equal word count) so they look balanced on the slide. Maximum 30 words per bullet.
-5. CREATE TWO VERSIONS OF EACH BULLET:
-   - "bulletPoints": Well-crafted slide text (max 30 words each, visually equal length) - what appears on the slide
+2. EXPLAIN ALL CONTENT: Every single item from the outline MUST be transformed. Consolidate related points if needed to respect maximum item count of ${maxItems}.
+3. ADAPTIVE ITEM COUNT: This presentation allows up to ${maxItems} items per slide based on its length
+4. EXPAND AND ELABORATE: Each generated item should be MORE detailed than the corresponding outline item. Add context, examples, implications, causes, effects, or specific details.
+5. VISUAL EQUALITY: All items should have visually similar length (approximately equal word count/size) so they look balanced. Maximum 30 words per text item.
+6. AVOID QUOTE-HEAVY LAYOUTS: Create proper content with actionable statements, not just quotes or citations (unless using quote layout).
+7. CREATE TWO VERSIONS OF EACH ITEM:
+   - Content items: Well-crafted slide text (max 30 words each, visually equal length) - what appears on the slide
    - "speakerNotes": Even more detailed explanations (1-3 sentences each) - what the presenter reads
    
 OUTPUT FORMAT (JSON):
@@ -99,9 +105,14 @@ For each slide, return:
   "suggestedLayout": "bullets" | "sections" | "two-column" | "three-cards"
 }
 
-BULLET POINT GUIDELINES:
-- Slide bullets: Maximum 30 words each, visually equal length, well-crafted with expanded detail
-- Ensure ALL outline bullets are transformed - none should be skipped
+CONTENT ITEM GUIDELINES:
+- ITEM COUNT: Generate 2-${maxItems} items per slide (maximum ${maxItems} items)
+- MAXIMUM 30 WORDS: Each item should be concise but detailed (20-30 words ideal for text items)
+- VISUALLY EQUAL LENGTH: All items should have similar word count/size for visual balance
+- PROPER FORMAT: Use direct, actionable statements - NOT quotes or citations (except for quote layouts)
+- AVOID SINGLE ITEMS: Never create slides with only 1 item (minimum 2 items)
+- CONSOLIDATE WHEN NEEDED: If outline has many items, consolidate related points into fewer comprehensive items
+- Ensure ALL outline content is transformed - consolidate if needed to respect maximum of ${maxItems}
 - Speaker notes: Full explanation with context, examples, data, implications
 
 LAYOUT GUIDELINES:
@@ -109,17 +120,28 @@ LAYOUT GUIDELINES:
 - Use "bullets" for sequential steps, lists, or supporting details
 - Use "two-column" for comparisons or before/after content
 - Use "three-cards" for exactly 3 key points that are equally important
+- RESPECT MAXIMUM ITEMS: All layouts must respect the maximum item count of ${maxItems}
+  * Boxes: max ${maxItems} boxes
+  * Bullets: max ${maxItems} bullets
+  * Sections: max ${maxItems} sections
+  * Sequence: max ${maxItems} sequence items
+  * Steps: max ${maxItems} steps
+  * Numbers: max ${maxItems} stat items
+  * Circles: max ${maxItems} circle items
+  * Quotes: max ${maxItems} quotes
+  * Images: max ${maxItems} images
 
 WRITING STYLE:
 - Professional but engaging
 - Active voice preferred
 - Concrete and specific over vague
-- Slide bullets are well-crafted and detailed; speaker notes are comprehensive`;
+- Slide content is well-crafted and detailed; speaker notes are comprehensive`;
+}
 
 /**
  * Call OpenAI API (using OpenAI SDK - same as outline generation)
  */
-async function callOpenAI(prompt: string): Promise<string> {
+async function callOpenAI(prompt: string, maxItems: number): Promise<string> {
   if (!env.OPENAI_API_KEY) {
     throw new Error("OPENAI_API_KEY not configured");
   }
@@ -127,7 +149,7 @@ async function callOpenAI(prompt: string): Promise<string> {
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini", // Use cheaper model for content generation
     messages: [
-      { role: "system", content: SYSTEM_PROMPT },
+      { role: "system", content: getSystemPrompt(maxItems) },
       { role: "user", content: prompt },
     ],
     temperature: 0.7,
@@ -140,7 +162,7 @@ async function callOpenAI(prompt: string): Promise<string> {
 /**
  * Call Gemini API (fallback - using GoogleGenerativeAI SDK - same as outline generation)
  */
-async function callGemini(prompt: string): Promise<string> {
+async function callGemini(prompt: string, maxItems: number): Promise<string> {
   if (!gemini) {
     throw new Error("GEMINI_API_KEY not configured");
   }
@@ -153,7 +175,7 @@ async function callGemini(prompt: string): Promise<string> {
     },
   });
 
-  const result = await model.generateContent(SYSTEM_PROMPT + "\n\n" + prompt);
+  const result = await model.generateContent(getSystemPrompt(maxItems) + "\n\n" + prompt);
   const response = await result.response;
 
   return response.text() || "";
@@ -162,12 +184,12 @@ async function callGemini(prompt: string): Promise<string> {
 /**
  * Call LLM with OpenAI primary, Gemini fallback
  */
-async function callLLM(prompt: string): Promise<string> {
+async function callLLM(prompt: string, maxItems: number): Promise<string> {
   // Try OpenAI first
   if (env.OPENAI_API_KEY) {
     try {
       console.log("[transform-outline] Using OpenAI API...");
-      return await callOpenAI(prompt);
+      return await callOpenAI(prompt, maxItems);
     } catch (error) {
       console.warn("[transform-outline] OpenAI failed, falling back to Gemini:", error);
     }
@@ -176,7 +198,7 @@ async function callLLM(prompt: string): Promise<string> {
   // Fallback to Gemini
   if (env.GEMINI_API_KEY) {
     console.log("[transform-outline] Using Gemini API (fallback)...");
-    return await callGemini(prompt);
+    return await callGemini(prompt, maxItems);
   }
 
   throw new Error("No API keys configured (OPENAI_API_KEY or GEMINI_API_KEY)");
@@ -205,6 +227,20 @@ function parseJsonResponse(text: string): TransformedSlide {
 
 
 /**
+ * Calculate maximum items per slide based on total presentation length
+ * Applies to ALL content layouts: bullets, boxes, sections, steps, sequence, numbers, circles, quotes, images
+ * Shorter presentations = more items per slide
+ * Longer presentations = fewer items per slide (better distribution)
+ */
+function calculateMaxBullets(totalSlides: number): number {
+  if (totalSlides <= 5) return 6;  // Very short: up to 6 items
+  if (totalSlides <= 10) return 5; // Short: up to 5 items
+  if (totalSlides <= 15) return 4; // Medium: up to 4 items
+  if (totalSlides <= 25) return 3; // Long: up to 3 items
+  return 3; // Very long: max 3 items (keep slides focused)
+}
+
+/**
  * Transform a single slide's content using LLM
  */
 async function transformSlideContent(
@@ -225,6 +261,9 @@ async function transformSlideContent(
     };
   }
 
+  // Calculate max bullets based on presentation length
+  const maxBullets = calculateMaxBullets(totalSlides);
+
   // Text density affects SPEAKER NOTES detail level
   const notesDetailGuidance = {
     minimal: "Speaker notes: 1 brief sentence per bullet with key facts only",
@@ -242,12 +281,16 @@ ${slide.subtitle ? `Subtitle: ${slide.subtitle}` : ""}
 ${slide.bulletPoints ? `Bullet Points:\n${slide.bulletPoints.map((b, i) => `${i + 1}. ${b}`).join("\n")}` : ""}
 
 CRITICAL REQUIREMENTS:
-- Transform ALL ${slide.bulletPoints?.length || 0} outline bullets - do not skip or omit any
-- Each generated bullet must be well-crafted and detailed, expanding on the outline with context, examples, implications
-- Maximum 30 words per bullet
-- All bullets should have visually similar length (approximately equal word count) for visual balance
-- EXPAND and ELABORATE on the outline bullets - add context, examples, implications, causes, effects, or specific details
+- MAXIMUM ${maxBullets} ITEMS: Generate no more than ${maxBullets} content items for this ${totalSlides}-slide presentation
+- Transform ALL ${slide.bulletPoints?.length || 0} outline items - consolidate if needed to stay under ${maxBullets} items
+- Each generated item must be well-crafted and detailed, expanding on the outline with context, examples, implications
+- Maximum 30 words per text item (20-30 words ideal)
+- All items should have visually similar length (approximately equal word count/size) for visual balance
+- PROPER FORMAT: Use direct statements, NOT quotes or citations (unless using quote layout)
+- AVOID SINGLE ITEMS: Never generate slides with only 1 item (minimum 2-3 items)
+- EXPAND and ELABORATE on the outline items - add context, examples, implications, causes, effects, or specific details
 - Make the generated content MORE detailed and explanatory than the outline
+- If outline has more than ${maxBullets} items, consolidate related points into comprehensive items
 
 REQUIREMENTS:
 - Tone: ${options.tone || "professional"}
@@ -280,25 +323,78 @@ For this CONTENT slide:
      * "Effective leadership requires clear communication and decisive action."
    - The description should read like a Wikipedia opening sentence - direct, factual, informative
    - Maximum 2 sentences. If not needed, omit it entirely (set to null or don't include)
-- Create DETAILED bulletPoints (max 30 words each, visually equal length) - transform ALL ${slide.bulletPoints?.length || 0} outline bullets, expanding each with more detail
+- Create DETAILED content with MAXIMUM ${maxBullets} ITEMS (max 30 words each for text, visually equal length)
+   - Transform ALL ${slide.bulletPoints?.length || 0} outline items
+   - If outline has more than ${maxBullets} items, consolidate related points into ${maxBullets} comprehensive items
+   - If outline has fewer items, expand each one with more detail (but don't exceed ${maxBullets} total)
+   - Use DIRECT STATEMENTS, not quotes or citations (unless using quote layout)
+   - NEVER create slides with only 1 item (minimum 2-3 items)
+   - Choose appropriate format: bulletPoints, sections, or other content structure
 - Create DETAILED speakerNotes (1+ sentences each) - what the presenter reads
-- The speakerNotes array must have the same length as bulletPoints (one note per bullet)
-- Ensure ALL outline bullets are transformed - none should be skipped
-- Decide if content works better as bullets OR titled sections
-- If using sections, each section gets a heading and brief description
+- The speakerNotes array must have the same length as content items (one note per item)
+- Ensure ALL outline items are transformed - consolidate if needed to respect the ${maxBullets} item maximum
+- Decide if content works better as bullets, sections, boxes, steps, sequence, numbers, circles, quotes, or images
+- ALL LAYOUTS must respect the ${maxBullets} item maximum
 `}
 
 Return ONLY valid JSON matching the format specified. No markdown, no explanation.`;
 
   try {
-    const text = await callLLM(prompt);
-    const transformed = parseJsonResponse(text);
+    const text = await callLLM(prompt, maxBullets);
+    let transformed = parseJsonResponse(text);
     
     // Ensure type is preserved
     transformed.type = slide.type;
     
     // CRITICAL: Always use the original title - never let LLM change it
     transformed.title = slide.title;
+    
+    // VALIDATION: Enforce maximum items and avoid single items for all layouts
+    if (transformed.type === "content") {
+      const bulletCount = transformed.bulletPoints?.length || 0;
+      const sectionCount = transformed.sections?.length || 0;
+      const totalItems = Math.max(bulletCount, sectionCount);
+      
+      // Check if only 1 item (not allowed)
+      if (totalItems === 1) {
+        console.warn(`[transform-outline] Slide ${slideIndex + 1} has only 1 item, retrying...`);
+        const retryPrompt = prompt + `\n\nIMPORTANT: The previous response had only 1 item. You MUST generate 2-${maxBullets} items. Expand or split the content.`;
+        const retryText = await callLLM(retryPrompt, maxBullets);
+        const retryTransformed = parseJsonResponse(retryText);
+        retryTransformed.type = slide.type;
+        retryTransformed.title = slide.title;
+        
+        const retryBulletCount = retryTransformed.bulletPoints?.length || 0;
+        const retrySectionCount = retryTransformed.sections?.length || 0;
+        const retryTotalItems = Math.max(retryBulletCount, retrySectionCount);
+        
+        // If still only 1 item, use fallback
+        if (retryTotalItems < 2) {
+          console.warn(`[transform-outline] Retry still has < 2 items, using fallback`);
+          return {
+            type: slide.type,
+            title: slide.title,
+            subtitle: slide.subtitle,
+            bulletPoints: slide.bulletPoints?.slice(0, maxBullets) || [],
+            suggestedLayout: "bullets"
+          };
+        }
+        
+        transformed = retryTransformed;
+      }
+      
+      // Enforce maximum items for all content types
+      if (bulletCount > maxBullets) {
+        console.warn(`[transform-outline] Slide ${slideIndex + 1} has ${bulletCount} bullets, trimming to ${maxBullets}`);
+        transformed.bulletPoints = transformed.bulletPoints?.slice(0, maxBullets);
+        transformed.speakerNotes = transformed.speakerNotes?.slice(0, maxBullets);
+      }
+      
+      if (sectionCount > maxBullets) {
+        console.warn(`[transform-outline] Slide ${slideIndex + 1} has ${sectionCount} sections, trimming to ${maxBullets}`);
+        transformed.sections = transformed.sections?.slice(0, maxBullets);
+      }
+    }
     
     return transformed;
   } catch (error) {
