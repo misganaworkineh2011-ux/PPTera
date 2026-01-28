@@ -1443,7 +1443,7 @@ export function renderLayoutSetF(props: SlideLayoutSetFProps): ReactNode | null 
         <div className="relative h-full flex flex-col justify-center p-12">
           <div className="mb-10">
             <Title className="text-4xl md:text-5xl font-black uppercase tracking-tight text-center" align="center" />
-            {!isTitleSlide && <SlideDescription className="mt-4 text-center" align="center" />}
+            <SlideDescription className="mt-4 text-center" align="center" />
           </div>
 
           {bulletPoints.length > 0 && (
