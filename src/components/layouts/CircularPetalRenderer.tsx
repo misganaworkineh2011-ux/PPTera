@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useRef, useLayoutEffect } from "react";
 import { motion } from "framer-motion";
 import type { Theme } from "~/lib/themes";
 import type { CircleContentItem } from "~/lib/layouts/content/circles";
@@ -12,7 +12,7 @@ const containerVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.12,
+      staggerChildren: 0.1,
       delayChildren: 0.1,
     },
   },
@@ -21,10 +21,12 @@ const containerVariants = {
 const itemVariants = {
   hidden: { 
     opacity: 0, 
-    scale: 0.85,
+    y: 10, 
+    scale: 0.95 
   },
   visible: { 
     opacity: 1, 
+    y: 0, 
     scale: 1,
     transition: {
       duration: 0.4,
@@ -36,7 +38,7 @@ const itemVariants = {
 interface ThemeStyles {
   petalColors: string[];
   centerBg: string;
-  centerBorder: string;
+  centerIcon: string;
   numberBg: string;
   numberText: string;
   accentColor: string;
@@ -48,12 +50,21 @@ interface ThemeStyles {
 function getThemeStyles(theme?: Theme, accentColor?: string): ThemeStyles {
   const defaultAccent = accentColor || "#10b981";
 
+  // Image-inspired vibrant colors
+  const defaultColors = [
+    "#84cc16", // Lime Green
+    "#10b981", // Emerald
+    "#06b6d4", // Cyan
+    "#3b82f6", // Blue
+    "#0f172a", // Navy
+  ];
+
   if (!theme) {
     return {
-      petalColors: ["#10b981", "#14b8a6", "#0ea5e9", "#1e40af", "#7c3aed"],
-      centerBg: "#1e293b",
-      centerBorder: "#334155",
-      numberBg: "#1e293b",
+      petalColors: defaultColors,
+      centerBg: "#0f172a", // Dark center like image
+      centerIcon: "#ffffff",
+      numberBg: "#0f172a",
       numberText: "#ffffff",
       accentColor: defaultAccent,
       titleColor: "#1e293b",
@@ -64,19 +75,10 @@ function getThemeStyles(theme?: Theme, accentColor?: string): ThemeStyles {
 
   const accent = accentColor || theme.colors.accent;
   
-  // Generate petal colors with gradient effect
-  const petalColors = [
-    accent,
-    theme.colors.secondary || `${accent}dd`,
-    theme.colors.primary || `${accent}bb`,
-    `${accent}99`,
-    `${accent}77`,
-  ];
-
   return {
-    petalColors,
-    centerBg: theme.colors.heading,
-    centerBorder: theme.colors.border,
+    petalColors: defaultColors, // Keep specific image colors as they look good
+    centerBg: theme.colors.heading, // Or fixed dark?
+    centerIcon: theme.colors.background,
     numberBg: theme.colors.heading,
     numberText: theme.colors.background,
     accentColor: accent,
@@ -116,7 +118,7 @@ export function CircularPetalRenderer({
   className = "",
   isPresenting = false,
   animationKey,
-  centerText = "Cycle\nFlow",
+  centerText = "Iterative Cycle Flow",
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -130,41 +132,53 @@ export function CircularPetalRenderer({
   spotlightIndex,
   isSpotlightMode = false,
 }: CircularPetalRendererProps) {
-  const displayItems = items.slice(0, 5); // Max 5 items for petal layout
+  const displayItems = items.slice(0, 6);
   const themeStyles = getThemeStyles(theme, accentColor);
   const itemCount = displayItems.length;
-
-  // Petal dimensions
-  const petalRadius = 85;
-  const centerRadius = 50;
-  const svgSize = 450;
+  
+  // Layout Dimensions
+  const svgSize = 500;
   const centerX = svgSize / 2;
   const centerY = svgSize / 2;
-  const orbitRadius = 110; // Distance from center to petal centers
+  
+  // Adjusted radii to match image proportions
+  const orbitRadius = 100; // Distance from center to petal center
+  const petalSize = 130;   // Length of petal
+  const petalWidth = 110;  // Width of petal
+  
+  const contentRadius = 260; // Radius where content starts
 
-  // Calculate petal positions (arranged in a circle)
-  const getPetalPosition = (index: number) => {
-    const angle = (index * 360) / itemCount - 90; // Start from top
-    const rad = (angle * Math.PI) / 180;
-    return {
-      x: centerX + orbitRadius * Math.cos(rad),
-      y: centerY + orbitRadius * Math.sin(rad),
-      angle,
-    };
+  // Helper to get angle for each item
+  const getAngle = (index: number) => {
+    // Start from left-ish to match image numbering flow?
+    // Image: 1 (Left), 2 (Bottom Left), 3 (Bottom Right), 4 (Right), 5 (Top)
+    // This is basically counter-clockwise starting from Left?
+    // Let's use standard clockwise for simplicity, but rotated so 1 is at Left.
+    // 1 at 180 deg?
+    // Let's distribute evenly.
+    return (index * 360) / itemCount + 180; 
   };
 
-  // Get content box position (left or right side)
-  const getContentPosition = (index: number) => {
-    const angle = (index * 360) / itemCount - 90;
-    const normalizedAngle = ((angle % 360) + 360) % 360;
+  const getPetalPath = () => {
+    // Teardrop / Leaf shape
+    // Pointing RIGHT (0 deg)
+    // Tip at (petalSize/2, 0)
+    // Base at (-petalSize/2, 0)
     
-    // Determine if content should be on left or right
-    const isRight = normalizedAngle < 180;
+    const len = petalSize;
+    const wid = petalWidth;
     
-    return {
-      isRight,
-      angle: normalizedAngle,
-    };
+    // M base
+    // C control1, control2, tip
+    // C control3, control4, base
+    
+    // A nice bulbous leaf shape
+    return `
+      M ${-len * 0.4} 0
+      C ${-len * 0.4} ${-wid * 0.6}, ${len * 0.2} ${-wid * 0.6}, ${len * 0.6} 0
+      C ${len * 0.2} ${wid * 0.6}, ${-len * 0.4} ${wid * 0.6}, ${-len * 0.4} 0
+      Z
+    `;
   };
 
   const getSpotlightStyle = (index: number): React.CSSProperties => {
@@ -185,214 +199,195 @@ export function CircularPetalRenderer({
   } : {};
 
   return (
-    <Container className={`w-full flex items-center justify-center gap-12 ${className}`} {...containerProps}>
-      {/* Left content boxes */}
-      <div className="flex-1 max-w-[350px] flex flex-col gap-8 max-h-[500px] overflow-y-auto">
-        {displayItems.map((item, index) => {
-          const contentPos = getContentPosition(index);
-          if (contentPos.isRight) return null;
-
-          const ItemWrapper = isPresenting ? motion.div : "div";
-          const variantsProps = isPresenting ? { variants: itemVariants } : {};
-
-          return (
-            <ItemWrapper
-              key={`left-${index}`}
-              className="flex items-start gap-3"
-              style={getSpotlightStyle(index)}
-              {...variantsProps}
-            >
-              {/* Number badge */}
-              <div
-                className="flex-shrink-0 w-11 h-11 rounded-lg flex items-center justify-center font-bold text-xl"
-                style={{
-                  backgroundColor: themeStyles.numberBg,
-                  color: themeStyles.numberText,
-                }}
-              >
-                {index + 1}
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 max-h-[240px] overflow-hidden">
-                {item.label && (
-                  onStartEditLabel ? (
-                    <EditableText
-                      value={item.label}
-                      isEditing={isEditing && editingText?.field === `content-label-${index}`}
-                      onStartEdit={() => onStartEditLabel(index)}
-                      onChange={(val) => onUpdateLabel?.(index, val)}
-                      onFinish={onFinishEditing || (() => {})}
-                      onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                      className="font-semibold text-lg mb-2 line-clamp-1"
-                      style={{ color: themeStyles.titleColor }}
-                      isOwner={isOwner}
-                      isHovered={isHovered}
-                    />
-                  ) : (
-                    <h3
-                      className="font-semibold text-lg mb-2 line-clamp-1"
-                      style={{ color: themeStyles.titleColor }}
-                    >
-                      {item.label}
-                    </h3>
-                  )
-                )}
-                {onStartEditText ? (
-                  <EditableText
-                    value={item.text}
-                    isEditing={isEditing && editingText?.field === `content-text-${index}`}
-                    onStartEdit={() => onStartEditText(index)}
-                    onChange={(val) => onUpdateText?.(index, val)}
-                    onFinish={onFinishEditing || (() => {})}
-                    onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                    className="text-base leading-relaxed line-clamp-4"
-                    style={{ color: themeStyles.bodyColor }}
-                    isOwner={isOwner}
-                    isHovered={isHovered}
-                  />
-                ) : (
-                  <p
-                    className="text-base leading-relaxed line-clamp-4"
-                    style={{ color: themeStyles.bodyColor }}
-                  >
-                    {item.text}
-                  </p>
-                )}
-              </div>
-            </ItemWrapper>
-          );
-        })}
-      </div>
-
-      {/* Center SVG with petals */}
-      <div className="relative flex-shrink-0" style={{ width: `${svgSize}px`, height: `${svgSize}px` }}>
+    <Container className={`relative w-full h-full min-h-[600px] flex items-center justify-center ${className}`} {...containerProps}>
+      {/* Central SVG Diagram */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <svg
           width={svgSize}
           height={svgSize}
           viewBox={`0 0 ${svgSize} ${svgSize}`}
-          className="absolute inset-0"
+          style={{ overflow: "visible" }}
         >
-          {/* Draw petals */}
-          {displayItems.map((item, index) => {
-            const pos = getPetalPosition(index);
-            const color = themeStyles.petalColors[index % themeStyles.petalColors.length];
-            
-            return (
-              <g key={`petal-${index}`} style={getSpotlightStyle(index)}>
-                {/* Petal circle */}
-                <circle
-                  cx={pos.x}
-                  cy={pos.y}
-                  r={petalRadius}
-                  fill={color}
-                  opacity="0.9"
-                />
-                
-                {/* Icon */}
-                {item.icon && (
-                  <text
-                    x={pos.x}
-                    y={pos.y}
-                    textAnchor="middle"
-                    dominantBaseline="central"
-                    fontSize="32"
-                    fill={themeStyles.iconColor}
-                  >
-                    {item.icon}
-                  </text>
-                )}
-              </g>
-            );
-          })}
-
-          {/* Center circle */}
+          {/* Center Dark Circle (Hub) */}
           <circle
             cx={centerX}
             cy={centerY}
-            r={centerRadius}
+            r={50}
             fill={themeStyles.centerBg}
-            stroke={themeStyles.centerBorder}
-            strokeWidth="2"
           />
+           {/* Center Icon/Refresh Symbol */}
+           <g transform={`translate(${centerX}, ${centerY})`}>
+              <path 
+                d="M -15 0 A 15 15 0 1 1 15 0" // Half circle
+                fill="none" 
+                stroke={themeStyles.centerIcon} 
+                strokeWidth="3"
+                strokeLinecap="round"
+                transform="rotate(-45)"
+                opacity="0.5"
+              />
+               {/* Just a simple refresh icon path */}
+               <path
+                 d="M 0 -12 A 12 12 0 1 1 -8 10 M 0 -12 L 4 -8 M 0 -12 L -4 -8"
+                 fill="none"
+                 stroke={themeStyles.centerIcon}
+                 strokeWidth="2.5"
+                 strokeLinecap="round"
+                 strokeLinejoin="round"
+                 transform="rotate(0)"
+               />
+           </g>
+
+          {/* Petals */}
+          {displayItems.map((item, index) => {
+            const angle = getAngle(index);
+            const rad = (angle * Math.PI) / 180;
+            
+            // Position of petal center
+            const x = centerX + orbitRadius * Math.cos(rad);
+            const y = centerY + orbitRadius * Math.sin(rad);
+            
+            // Rotation: Point OUTWARDS from center
+            // So rotation = angle
+            
+            const color = themeStyles.petalColors[index % themeStyles.petalColors.length];
+            
+            return (
+              <g 
+                key={`petal-${index}`} 
+                transform={`translate(${x}, ${y}) rotate(${angle})`}
+                style={getSpotlightStyle(index)}
+              >
+                <path
+                  d={getPetalPath()}
+                  fill={color}
+                  stroke="white"
+                  strokeWidth="2"
+                  className="drop-shadow-sm"
+                />
+                {/* Icon inside petal - counter-rotate to keep upright */}
+                <g transform={`rotate(${-angle})`}>
+                   {item.icon ? (
+                     <text
+                       x="0"
+                       y="0"
+                       textAnchor="middle"
+                       dominantBaseline="central"
+                       fontSize="32"
+                       fill="white"
+                       style={{ filter: "drop-shadow(0px 1px 2px rgba(0,0,0,0.2))" }}
+                     >
+                       {item.icon}
+                     </text>
+                   ) : (
+                     <circle r="6" fill="white" fillOpacity="0.8" />
+                   )}
+                </g>
+              </g>
+            );
+          })}
         </svg>
       </div>
 
-      {/* Right content boxes */}
-      <div className="flex-1 max-w-[350px] flex flex-col gap-8 max-h-[500px] overflow-y-auto">
+      {/* Content Blocks - Absolutely Positioned */}
+      <div className="absolute inset-0 w-full h-full pointer-events-none">
         {displayItems.map((item, index) => {
-          const contentPos = getContentPosition(index);
-          if (!contentPos.isRight) return null;
+          const angle = getAngle(index);
+          const rad = (angle * Math.PI) / 180;
+          
+          // Determine position quadrant for alignment
+          const normalizedAngle = ((angle % 360) + 360) % 360;
+          const isLeft = normalizedAngle > 90 && normalizedAngle < 270;
+          const isRight = !isLeft;
+          
+          // Calculate position using fixed pixels from center to ensure consistent gap
+          // Layout radius is roughly 180px, so we anchor content slightly outside that
+          const contentRadiusPx = 220; 
+          const xOffset = contentRadiusPx * Math.cos(rad);
+          const yOffset = contentRadiusPx * Math.sin(rad);
+          
+          // Alignment styles
+          const alignClass = isLeft ? "flex-row-reverse text-right" : "flex-row text-left";
+          
+          // Dynamic offset with calc to maintain fixed distance from center regardless of container size
+          // Also constraint max-width to ensure content doesn't overflow screen edges
+          // Available space to edge = 50% width - absolute x offset - padding
+          const maxWidthStyle = `calc(50% - ${Math.abs(xOffset)}px - 32px)`;
+          
+          const style: React.CSSProperties = {
+            left: `calc(50% + ${xOffset}px)`,
+            top: `calc(50% + ${yOffset}px)`,
+            transform: `translate(${isLeft ? "-100%" : "0"}, -50%)`,
+            maxWidth: maxWidthStyle,
+            width: "max-content", // Allow it to shrink/grow but cap at maxWidth
+            ...getSpotlightStyle(index)
+          };
 
           const ItemWrapper = isPresenting ? motion.div : "div";
           const variantsProps = isPresenting ? { variants: itemVariants } : {};
 
           return (
-            <ItemWrapper
-              key={`right-${index}`}
-              className="flex items-start gap-3"
-              style={getSpotlightStyle(index)}
-              {...variantsProps}
+            <div
+              key={`content-${index}`}
+              className="absolute pointer-events-auto"
+              style={style}
             >
-              {/* Number badge */}
-              <div
-                className="flex-shrink-0 w-11 h-11 rounded-lg flex items-center justify-center font-bold text-xl"
-                style={{
-                  backgroundColor: themeStyles.numberBg,
-                  color: themeStyles.numberText,
-                }}
+              <ItemWrapper
+                className={`flex items-start gap-4 ${alignClass} w-full`}
+                {...variantsProps}
               >
-                {index + 1}
-              </div>
+                {/* Number Badge */}
+                <div 
+                  className="flex-shrink-0 w-8 h-8 rounded bg-gray-900 text-white flex items-center justify-center font-bold text-sm shadow-md mt-1"
+                  style={{ backgroundColor: themeStyles.numberBg, color: themeStyles.numberText }}
+                >
+                  {index + 1}
+                </div>
 
-              {/* Content */}
-              <div className="flex-1 max-h-[240px] overflow-hidden">
-                {item.label && (
-                  onStartEditLabel ? (
-                    <EditableText
-                      value={item.label}
-                      isEditing={isEditing && editingText?.field === `content-label-${index}`}
-                      onStartEdit={() => onStartEditLabel(index)}
-                      onChange={(val) => onUpdateLabel?.(index, val)}
-                      onFinish={onFinishEditing || (() => {})}
-                      onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                      className="font-semibold text-lg mb-2 line-clamp-1"
-                      style={{ color: themeStyles.titleColor }}
-                      isOwner={isOwner}
-                      isHovered={isHovered}
-                    />
-                  ) : (
-                    <h3
-                      className="font-semibold text-lg mb-2 line-clamp-1"
-                      style={{ color: themeStyles.titleColor }}
-                    >
-                      {item.label}
-                    </h3>
-                  )
-                )}
-                {onStartEditText ? (
-                  <EditableText
-                    value={item.text}
-                    isEditing={isEditing && editingText?.field === `content-text-${index}`}
-                    onStartEdit={() => onStartEditText(index)}
-                    onChange={(val) => onUpdateText?.(index, val)}
-                    onFinish={onFinishEditing || (() => {})}
-                    onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                    className="text-base leading-relaxed line-clamp-4"
-                    style={{ color: themeStyles.bodyColor }}
-                    isOwner={isOwner}
-                    isHovered={isHovered}
-                  />
-                ) : (
-                  <p
-                    className="text-base leading-relaxed line-clamp-4"
-                    style={{ color: themeStyles.bodyColor }}
-                  >
-                    {item.text}
-                  </p>
-                )}
-              </div>
-            </ItemWrapper>
+                {/* Text Content */}
+                <div className="flex-1 min-w-0">
+                   {item.label && (
+                      onStartEditLabel ? (
+                        <div className={`w-full ${isLeft ? "flex justify-end" : ""}`}>
+                          <EditableText
+                            value={item.label}
+                            isEditing={isEditing && editingText?.field === `content-label-${index}`}
+                            onStartEdit={() => onStartEditLabel(index)}
+                            onChange={(val) => onUpdateLabel?.(index, val)}
+                            onFinish={onFinishEditing || (() => {})}
+                            className="font-bold text-base mb-1 block"
+                            style={{ color: themeStyles.titleColor }}
+                            isOwner={isOwner}
+                          />
+                        </div>
+                      ) : (
+                        <h3 className="font-bold text-base mb-1" style={{ color: themeStyles.titleColor }}>
+                          {item.label}
+                        </h3>
+                      )
+                    )}
+                    
+                    <div className={isLeft ? "ml-auto" : ""}>
+                      {onStartEditText ? (
+                        <EditableText
+                          value={item.text}
+                          isEditing={isEditing && editingText?.field === `content-text-${index}`}
+                          onStartEdit={() => onStartEditText(index)}
+                          onChange={(val) => onUpdateText?.(index, val)}
+                          onFinish={onFinishEditing || (() => {})}
+                          className="text-sm leading-relaxed opacity-90"
+                          style={{ color: themeStyles.bodyColor }}
+                          isOwner={isOwner}
+                        />
+                      ) : (
+                        <p className="text-sm leading-relaxed opacity-90" style={{ color: themeStyles.bodyColor }}>
+                          {item.text}
+                        </p>
+                      )}
+                    </div>
+                </div>
+              </ItemWrapper>
+            </div>
           );
         })}
       </div>
