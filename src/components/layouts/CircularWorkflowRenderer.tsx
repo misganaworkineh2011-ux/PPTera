@@ -162,8 +162,15 @@ export function CircularWorkflowRenderer({
     return { x, y };
   };
 
-  // Generate gradient colors for circle segments
+  // Generate gradient colors for circle segments using theme colors
   const getSegmentColor = (index: number) => {
+    // Use theme colors if available, otherwise fallback to default gradient
+    if (theme && accentColor) {
+      // Create variations of the accent color
+      return accentColor;
+    }
+    
+    // Fallback: default color gradient
     const colors = [
       "#10b981", // green
       "#14b8a6", // teal

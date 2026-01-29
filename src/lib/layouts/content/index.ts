@@ -9,7 +9,13 @@ export type ContentLayoutCategory =
   | "numbers"
   | "circles"
   | "quotes"
-  | "steps";
+  | "steps"
+  | "cascading"
+  | "chevron"
+  | "funnel"
+  | "proscons"
+  | "beforeafter"
+  | "comparison";
 
 export interface ContentLayoutCategoryDef {
   id: ContentLayoutCategory;
@@ -58,6 +64,36 @@ export const contentLayoutCategories: ContentLayoutCategoryDef[] = [
     name: "Steps",
     description: "Step-by-step process flow",
   },
+  {
+    id: "cascading",
+    name: "Cascading",
+    description: "Staggered workflow with numbered items",
+  },
+  {
+    id: "chevron",
+    name: "Chevron",
+    description: "Horizontal chevron arrows with numbered steps",
+  },
+  {
+    id: "funnel",
+    name: "Funnel",
+    description: "Funnel-style bars with icons and side content",
+  },
+  {
+    id: "proscons",
+    name: "Pros & Cons",
+    description: "Split circle diagram with pros and cons",
+  },
+  {
+    id: "beforeafter",
+    name: "Before & After",
+    description: "Circular comparison diagram showing transformation",
+  },
+  {
+    id: "comparison",
+    name: "VS Comparison",
+    description: "Vertical split comparison with items on both sides",
+  },
 ];
 
 // Export box layouts
@@ -80,3 +116,21 @@ export * from "./steps";
 
 // Export quotes layouts
 export * from "./quotes";
+
+// Export cascading layouts
+export * from "./cascading";
+
+// Export chevron layouts
+export * from "./chevron";
+
+// Export funnel layouts
+export * from "./funnel";
+
+// Export pros/cons layouts
+export * from "./proscons";
+
+// Export before/after layouts
+export * from "./beforeafter";
+
+// Export comparison layouts
+export * from "./comparison";

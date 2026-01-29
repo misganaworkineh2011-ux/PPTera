@@ -438,8 +438,8 @@ function ArcLayout({
           suppressHydrationWarning
         >
           {[0, 1, 2].map((segmentIndex) => {
-            const path = getArcSegmentPath(segmentIndex, 3, outerRadius, innerRadius, gapAngle, startOffset);
-            const iconPos = getArcIconPosition(segmentIndex, 3, (outerRadius + innerRadius) / 2, gapAngle, startOffset);
+            const path = getArcSegmentPath(segmentIndex, 3, outerRadius, innerRadius, gapAngle);
+            const iconPos = getArcIconPosition(segmentIndex, 3, (outerRadius + innerRadius) / 2, gapAngle);
             const item = items[segmentIndex];
             const style = getSpotlightStyle(segmentIndex, spotlightIndex, isSpotlightMode);
             const { transform, position, zIndex, ...svgStyle } = style as any;
@@ -529,8 +529,8 @@ function ArcLayout({
           suppressHydrationWarning
         >
           {[0, 1].map((segmentIndex) => {
-            const path = getArcSegmentPath(segmentIndex, 2, outerRadius, innerRadius, gapAngle, startOffset);
-            const iconPos = getArcIconPosition(segmentIndex, 2, (outerRadius + innerRadius) / 2, gapAngle, startOffset);
+            const path = getArcSegmentPath(segmentIndex, 2, outerRadius, innerRadius, gapAngle);
+            const iconPos = getArcIconPosition(segmentIndex, 2, (outerRadius + innerRadius) / 2, gapAngle);
             const item = items[segmentIndex];
             const style = getSpotlightStyle(segmentIndex, spotlightIndex, isSpotlightMode);
             const { transform, position, zIndex, ...svgStyle } = style as any;
@@ -622,8 +622,8 @@ function ArcLayout({
           suppressHydrationWarning
         >
           {items.map((item, segmentIndex) => {
-            const path = getArcSegmentPath(segmentIndex, itemCount, outerRadius, innerRadius, gapAngle, startOffset);
-            const iconPos = getArcIconPosition(segmentIndex, itemCount, (outerRadius + innerRadius) / 2, gapAngle, startOffset);
+            const path = getArcSegmentPath(segmentIndex, itemCount, outerRadius, innerRadius, gapAngle);
+            const iconPos = getArcIconPosition(segmentIndex, itemCount, (outerRadius + innerRadius) / 2, gapAngle);
             const style = getSpotlightStyle(segmentIndex, spotlightIndex, isSpotlightMode);
             const { transform, position, zIndex, ...svgStyle } = style as any;
 
@@ -706,8 +706,8 @@ function ArcLayout({
         suppressHydrationWarning
       >
         {items.map((item, index) => {
-          const path = getArcSegmentPath(index, itemCount, outerRadius, innerRadius, gapAngle, startOffset);
-          const iconPos = getArcIconPosition(index, itemCount, (outerRadius + innerRadius) / 2, gapAngle, startOffset);
+          const path = getArcSegmentPath(index, itemCount, outerRadius, innerRadius, gapAngle);
+          const iconPos = getArcIconPosition(index, itemCount, (outerRadius + innerRadius) / 2, gapAngle);
           const style = getSpotlightStyle(index, spotlightIndex, isSpotlightMode);
           const { transform, position, zIndex, ...svgStyle } = style as any;
 
