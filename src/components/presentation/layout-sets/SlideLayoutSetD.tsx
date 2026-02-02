@@ -44,6 +44,7 @@ interface SlideLayoutSetDProps {
   onAddBullet: (slideIndex: number) => void;
   onDeleteBullet: (slideIndex: number, bulletIndex: number) => void;
   renderTitle: (props: { className?: string; align?: "left" | "center" | "right"; showSubtitle?: boolean }) => ReactNode;
+  renderDescription: (props?: { className?: string; align?: "left" | "center" | "right" }) => ReactNode;
   renderEnhanced: (props?: { compact?: boolean }) => ReactNode;
   renderIndicator: (position: "top-left" | "top-right") => ReactNode;
 }
@@ -72,6 +73,7 @@ export function renderLayoutSetD(props: SlideLayoutSetDProps): ReactNode | null 
     onAddBullet,
     onDeleteBullet,
     renderTitle,
+    renderDescription,
     renderEnhanced,
     renderIndicator,
   } = props;
@@ -105,7 +107,8 @@ export function renderLayoutSetD(props: SlideLayoutSetDProps): ReactNode | null 
               <div className={`w-24 h-0.5 bg-gradient-to-r ${colors.accentLine} to-transparent`} />
             </div>
 
-            {renderTitle({ className: "text-4xl md:text-5xl mb-8" })}
+            {renderTitle({ className: "text-4xl md:text-5xl mb-8", showSubtitle: isTitleSlide })}
+            {!isTitleSlide && renderDescription({ className: "mb-6" })}
             {renderEnhanced({})}
           </div>
         </div>
@@ -131,7 +134,8 @@ export function renderLayoutSetD(props: SlideLayoutSetDProps): ReactNode | null 
 
         <div className="relative h-full flex items-center">
           <div className="w-[55%] flex flex-col justify-center p-12">
-            {renderTitle({ className: "text-4xl md:text-5xl mb-8" })}
+            {renderTitle({ className: "text-4xl md:text-5xl mb-8", showSubtitle: isTitleSlide })}
+            {!isTitleSlide && renderDescription({ className: "mb-6" })}
             {renderEnhanced({})}
           </div>
 

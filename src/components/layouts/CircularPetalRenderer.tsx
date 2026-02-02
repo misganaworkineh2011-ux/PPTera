@@ -50,19 +50,16 @@ interface ThemeStyles {
 function getThemeStyles(theme?: Theme, accentColor?: string): ThemeStyles {
   const defaultAccent = accentColor || "#10b981";
 
-  // Image-inspired vibrant colors
-  const defaultColors = [
-    "#84cc16", // Lime Green
-    "#10b981", // Emerald
-    "#06b6d4", // Cyan
-    "#3b82f6", // Blue
-    "#0f172a", // Navy
-  ];
-
   if (!theme) {
     return {
-      petalColors: defaultColors,
-      centerBg: "#0f172a", // Dark center like image
+      petalColors: [
+        defaultAccent,
+        `${defaultAccent}dd`,
+        `${defaultAccent}bb`,
+        `${defaultAccent}99`,
+        `${defaultAccent}77`,
+      ],
+      centerBg: "#0f172a",
       centerIcon: "#ffffff",
       numberBg: "#0f172a",
       numberText: "#ffffff",
@@ -75,16 +72,25 @@ function getThemeStyles(theme?: Theme, accentColor?: string): ThemeStyles {
 
   const accent = accentColor || theme.colors.accent;
   
+  // Generate petal colors based on theme accent with varying opacity
+  const petalColors = [
+    accent,
+    theme.colors.secondary || `${accent}dd`,
+    theme.colors.primary || `${accent}bb`,
+    `${accent}99`,
+    `${accent}77`,
+  ];
+  
   return {
-    petalColors: defaultColors, // Keep specific image colors as they look good
-    centerBg: theme.colors.heading, // Or fixed dark?
+    petalColors,
+    centerBg: theme.colors.heading,
     centerIcon: theme.colors.background,
     numberBg: theme.colors.heading,
     numberText: theme.colors.background,
     accentColor: accent,
     titleColor: theme.colors.heading,
     bodyColor: theme.colors.textMuted,
-    iconColor: "#ffffff",
+    iconColor: theme.colors.background,
   };
 }
 
@@ -261,7 +267,7 @@ export function CircularPetalRenderer({
                 <path
                   d={getPetalPath()}
                   fill={color}
-                  stroke="white"
+                  stroke={themeStyles.centerIcon}
                   strokeWidth="2"
                   className="drop-shadow-sm"
                 />
@@ -274,13 +280,13 @@ export function CircularPetalRenderer({
                        textAnchor="middle"
                        dominantBaseline="central"
                        fontSize="32"
-                       fill="white"
+                       fill={themeStyles.iconColor}
                        style={{ filter: "drop-shadow(0px 1px 2px rgba(0,0,0,0.2))" }}
                      >
                        {item.icon}
                      </text>
                    ) : (
-                     <circle r="6" fill="white" fillOpacity="0.8" />
+                     <circle r="6" fill={themeStyles.iconColor} fillOpacity="0.8" />
                    )}
                 </g>
               </g>
@@ -338,7 +344,7 @@ export function CircularPetalRenderer({
               >
                 {/* Number Badge */}
                 <div 
-                  className="flex-shrink-0 w-8 h-8 rounded bg-gray-900 text-white flex items-center justify-center font-bold text-sm shadow-md mt-1"
+                  className="flex-shrink-0 w-8 h-8 rounded flex items-center justify-center font-bold text-sm shadow-md mt-1"
                   style={{ backgroundColor: themeStyles.numberBg, color: themeStyles.numberText }}
                 >
                   {index + 1}

@@ -94,7 +94,7 @@ export default function SlideSideImageLayouts({
           <>
             <div className={`flex flex-col justify-center pt-12 sm:pt-16 md:pt-20 pb-4 sm:pb-8 md:pb-12 pl-4 sm:pl-8 md:pl-12 pr-4 sm:pr-6 md:pr-8 ${hasImage ? "w-full sm:w-[60%]" : "w-full"}`}>
               {renderTitle("text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-4 sm:mb-6 md:mb-8")}
-              {!isTitleSlide && renderDescription ? renderDescription() : null}
+              {renderDescription ? renderDescription() : null}
               {!isTitleSlide && renderEnhanced()}
             </div>
             {hasImage && firstImage && (
@@ -180,6 +180,7 @@ export default function SlideSideImageLayouts({
             )}
             <div className={`flex flex-col justify-center pt-4 sm:pt-16 md:pt-20 pb-4 sm:pb-8 md:pb-12 pl-4 sm:pl-6 md:pl-8 pr-4 sm:pr-8 md:pr-12 ${hasImage ? "w-full sm:w-[60%]" : "w-full"}`}>
               {renderTitle("text-xl sm:text-3xl md:text-4xl lg:text-5xl mb-4 sm:mb-6 md:mb-8")}
+              {renderDescription ? renderDescription() : null}
               {!isTitleSlide && renderEnhanced()}
             </div>
           </>

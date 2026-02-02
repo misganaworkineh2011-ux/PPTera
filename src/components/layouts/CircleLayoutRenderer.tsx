@@ -465,8 +465,8 @@ function ArcLayout({
                   cx={iconPos.x}
                   cy={iconPos.y}
                   r={28}
-                  fill="white"
-                  stroke={`${themeStyles.accentColor}40`}
+                  fill={themeStyles.shapeBgColor}
+                  stroke={themeStyles.shapeBorderColor}
                   strokeWidth="2"
                   suppressHydrationWarning
                 />
@@ -556,8 +556,8 @@ function ArcLayout({
                   cx={iconPos.x}
                   cy={iconPos.y}
                   r={28}
-                  fill="white"
-                  stroke={`${themeStyles.accentColor}40`}
+                  fill={themeStyles.shapeBgColor}
+                  stroke={themeStyles.shapeBorderColor}
                   strokeWidth="2"
                   suppressHydrationWarning
                 />
@@ -648,8 +648,8 @@ function ArcLayout({
                   cx={iconPos.x}
                   cy={iconPos.y}
                   r={24}
-                  fill="white"
-                  stroke={`${themeStyles.accentColor}40`}
+                  fill={themeStyles.shapeBgColor}
+                  stroke={themeStyles.shapeBorderColor}
                   strokeWidth="2"
                   suppressHydrationWarning
                 />
@@ -732,8 +732,8 @@ function ArcLayout({
                 cx={iconPos.x}
                 cy={iconPos.y}
                 r={24}
-                fill="white"
-                stroke={`${themeStyles.accentColor}40`}
+                fill={themeStyles.shapeBgColor}
+                stroke={themeStyles.shapeBorderColor}
                 strokeWidth="2"
                 suppressHydrationWarning
               />
@@ -893,8 +893,8 @@ function RingLayout({
                   cx={iconPos.x}
                   cy={iconPos.y}
                   r={22}
-                  fill="white"
-                  stroke={`${themeStyles.accentColor}40`}
+                  fill={themeStyles.shapeBgColor}
+                  stroke={themeStyles.shapeBorderColor}
                   strokeWidth="2"
                   suppressHydrationWarning
                 />
@@ -1169,8 +1169,8 @@ function RingLayout({
                 cx={iconPos.x}
                 cy={iconPos.y}
                 r="28"
-                fill="white"
-                stroke={`${themeStyles.accentColor}40`}
+                fill={themeStyles.shapeBgColor}
+                stroke={themeStyles.shapeBorderColor}
                 strokeWidth="2"
                 suppressHydrationWarning
               />

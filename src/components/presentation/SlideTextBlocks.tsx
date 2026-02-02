@@ -127,14 +127,19 @@ export function SlideDescriptionBlock({
   align = "left",
   isTitleSlide,
 }: SlideDescriptionBlockProps) {
-  if (!slide.slideDescription) return null;
+  // For title slides, use subtitle; for content slides, use slideDescription
+  const description = isTitleSlide ? slide.subtitle : slide.slideDescription;
+  const fieldName = isTitleSlide ? "subtitle" : "slideDescription";
+  
+  if (!description) return null;
+  
   return (
     <div>
       <EditableText
-        value={slide.slideDescription}
-        isEditing={isEditing && editingText?.field === "slideDescription"}
-        onStartEdit={() => onStartEditing(index, "slideDescription")}
-        onChange={(val) => onUpdateContent(index, "slideDescription", val)}
+        value={description}
+        isEditing={isEditing && editingText?.field === fieldName}
+        onStartEdit={() => onStartEditing(index, fieldName)}
+        onChange={(val) => onUpdateContent(index, fieldName, val)}
         onFinish={onFinishEditing}
         className={`text-sm sm:text-base md:text-lg leading-relaxed mb-3 sm:mb-4 md:mb-5 ${className}`}
         style={{

@@ -47,20 +47,16 @@ interface ThemeStyles {
 function getThemeStyles(theme?: Theme, accentColor?: string): ThemeStyles {
   const defaultAccent = accentColor || "#10b981";
 
-  // Gradient-like colors from the image (Green -> Blue -> Navy)
-  // We'll map these to the segments
-  const defaultColors = [
-    "#4ade80", // bright green
-    "#2dd4bf", // teal
-    "#0ea5e9", // sky blue
-    "#0284c7", // blue
-    "#0f172a", // slate/navy
-    "#6366f1", // indigo (fallback)
-  ];
-
   if (!theme) {
     return {
-      segmentColors: defaultColors,
+      segmentColors: [
+        defaultAccent,
+        `${defaultAccent}dd`,
+        `${defaultAccent}bb`,
+        `${defaultAccent}99`,
+        `${defaultAccent}77`,
+        `${defaultAccent}55`,
+      ],
       centerBg: "#ffffff",
       centerBorder: "#e5e7eb",
       cardBg: "#ffffff",
@@ -73,16 +69,18 @@ function getThemeStyles(theme?: Theme, accentColor?: string): ThemeStyles {
 
   const accent = accentColor || theme.colors.accent;
   
-  // Try to generate a palette based on accent or use defaults if accent matches green/blue
-  // For this specific layout request ("exact one in image"), we should prefer the image colors 
-  // but respecting theme if totally different. 
-  // However, the user asked to "fix it to make it look exactly as in the image".
-  // The image has specific colors. I will use the image-inspired colors but allow theme overrides if needed.
-  // Actually, let's mix the theme accent into the palette or just use the fixed palette if it looks good.
-  // Let's use the fixed palette for the "Workflow" look, as it implies a process progression.
+  // Generate gradient-like colors based on theme accent for workflow progression
+  const segmentColors = [
+    accent,
+    theme.colors.secondary || `${accent}dd`,
+    theme.colors.primary || `${accent}bb`,
+    `${accent}99`,
+    `${accent}77`,
+    `${accent}55`,
+  ];
   
   return {
-    segmentColors: defaultColors,
+    segmentColors,
     centerBg: theme.colors.background,
     centerBorder: theme.colors.border,
     cardBg: theme.cardBox?.background || theme.colors.background,
@@ -277,7 +275,7 @@ export function CircularWorkflowRenderer({
                 <path
                   d={path}
                   fill={color}
-                  stroke="white"
+                  stroke={themeStyles.centerBg}
                   strokeWidth="3"
                 />
                 {/* Icon */}
@@ -290,13 +288,13 @@ export function CircularWorkflowRenderer({
                        textAnchor="middle"
                        dominantBaseline="central"
                        fontSize="32"
-                       fill="white"
+                       fill={themeStyles.centerBg}
                        style={{ filter: "drop-shadow(0px 1px 2px rgba(0,0,0,0.2))" }}
                      >
                        {item.icon}
                      </text>
                    ) : (
-                     <circle r="6" fill="white" fillOpacity="0.8" />
+                     <circle r="6" fill={themeStyles.centerBg} fillOpacity="0.8" />
                    )}
                 </g>
               </g>
@@ -360,9 +358,10 @@ export function CircularWorkflowRenderer({
               <div className="flex items-center gap-3">
                 {/* Arrow Header Badge */}
                 <div 
-                  className="relative h-10 px-4 pr-8 flex items-center text-white font-bold text-sm uppercase tracking-wide shadow-sm"
+                  className="relative h-10 px-4 pr-8 flex items-center font-bold text-sm uppercase tracking-wide shadow-sm"
                   style={{ 
                     backgroundColor: color,
+                    color: themeStyles.centerBg,
                     clipPath: "polygon(0% 0%, 85% 0%, 100% 50%, 85% 100%, 0% 100%)",
                     width: "fit-content",
                     minWidth: "120px"
@@ -377,8 +376,8 @@ export function CircularWorkflowRenderer({
                            onStartEdit={() => onStartEditLabel(index)}
                            onChange={(val) => onUpdateLabel?.(index, val)}
                            onFinish={onFinishEditing || (() => {})}
-                           className="text-white w-full"
-                           style={{ color: "white" }}
+                           className="w-full"
+                           style={{ color: themeStyles.centerBg }}
                            isOwner={isOwner}
                          />
                        </div>

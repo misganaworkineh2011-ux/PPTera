@@ -55,12 +55,12 @@ function getThemeStyles(theme?: Theme, accentColor?: string): ThemeStyles {
 
   if (!theme) {
     return {
-      segmentColors: ["#10b981", "#14b8a6", "#0ea5e9", "#1e293b"],
+      segmentColors: [defaultAccent, `${defaultAccent}dd`, `${defaultAccent}bb`, `${defaultAccent}99`],
       centerBg: "#ffffff",
       centerBorder: "#e5e7eb",
       calloutBg: "#ffffff",
       calloutBorder: "#e5e7eb",
-      numberBg: "#10b981",
+      numberBg: defaultAccent,
       numberText: "#ffffff",
       accentColor: defaultAccent,
       titleColor: "#1e293b",
@@ -71,12 +71,12 @@ function getThemeStyles(theme?: Theme, accentColor?: string): ThemeStyles {
 
   const accent = accentColor || theme.colors.accent;
   
-  // Generate segment colors based on theme
+  // Generate segment colors based on theme accent
   const segmentColors = [
     accent,
     theme.colors.secondary || `${accent}dd`,
     theme.colors.primary || `${accent}bb`,
-    theme.colors.heading || "#1e293b",
+    `${accent}99`,
   ];
 
   return {
@@ -90,7 +90,7 @@ function getThemeStyles(theme?: Theme, accentColor?: string): ThemeStyles {
     accentColor: accent,
     titleColor: theme.colors.heading,
     bodyColor: theme.colors.textMuted,
-    iconColor: "#ffffff",
+    iconColor: theme.colors.background,
   };
 }
 
