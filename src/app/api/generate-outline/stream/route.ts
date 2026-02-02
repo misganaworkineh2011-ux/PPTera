@@ -590,10 +590,31 @@ Return ONLY a valid JSON object in this exact structure:
         return fullContent;
       }
 
+      async function* geminiStream(): AsyncIterable<string> {
+        if (!gemini) throw new Error("Gemini API not configured");
+        
+        const model = gemini.getGenerativeModel({ 
+          model: "gemini-flash-latest",
+          generationConfig: {
+            temperature: 1,
+            maxOutputTokens: 14000,
+            responseMimeType: "application/json",
+          },
+        });
+
+        const prompt = `${systemPrompt}\n\n${userPrompt}`;
+        const result = await model.generateContentStream(prompt);
+
+        for await (const chunk of result.stream) {
+          const text = chunk.text();
+          if (text) yield text;
+        }
+      }
+
       // OpenAI Responses API streaming generator with web search
       async function* openaiStream(): AsyncIterable<string> {
         const response = await openai.responses.create({
-          model: "gpt-4o",
+          model: "gpt-4o-mini", // Using 4o-mini as fallback
           input: [
             {
               role: "system",
@@ -629,28 +650,6 @@ Return ONLY a valid JSON object in this exact structure:
           }
       
           if (event.type === "response.completed") return;
-        }
-      }
-      
-      // Gemini streaming generator
-      async function* geminiStream(): AsyncIterable<string> {
-        if (!gemini) throw new Error("Gemini API not configured");
-        
-        const model = gemini.getGenerativeModel({ 
-          model: "gemini-flash-latest",
-          generationConfig: {
-            temperature: 1,
-            maxOutputTokens: 14000,
-            responseMimeType: "application/json",
-          },
-        });
-
-        const prompt = `${systemPrompt}\n\n${userPrompt}`;
-        const result = await model.generateContentStream(prompt);
-
-        for await (const chunk of result.stream) {
-          const text = chunk.text();
-          if (text) yield text;
         }
       }
 
@@ -712,22 +711,22 @@ Return ONLY a valid JSON object in this exact structure:
 
         let fullContent = "";
 
-        // Try OpenAI first
+        // Try Gemini first
         try {
-          fullContent = await processStream(openaiStream(), "openai");
-        } catch (openaiError) {
+          fullContent = await processStream(geminiStream(), "gemini");
+        } catch (geminiError) {
           // Log detailed error for debugging (server-side only)
-          console.error("Primary AI provider failed:", openaiError);
+          console.error("Primary AI provider (Gemini) failed:", geminiError);
           
-          // Try Gemini as fallback
-          if (gemini) {
-            useGeminiFallback = true;
-            sendEvent(controller, "info", { message: "Optimizing generation..." });
+          // Try OpenAI as fallback
+          if (openai) {
+            useGeminiFallback = false; // Actually using OpenAI as fallback
+            sendEvent(controller, "info", { message: "Switching to backup provider..." });
             try {
-              fullContent = await processStream(geminiStream(), "gemini");
-            } catch (geminiError) {
+              fullContent = await processStream(openaiStream(), "openai");
+            } catch (openaiError) {
               // Log detailed error for debugging (server-side only)
-              console.error("Backup AI provider failed:", geminiError);
+              console.error("Backup AI provider (OpenAI) failed:", openaiError);
               throw new Error("AI_SERVICE_UNAVAILABLE");
             }
           } else {

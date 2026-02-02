@@ -1,12 +1,33 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { db } from "~/server/db";
 import { env } from "~/env";
 import { searchPexelsPhotos } from "~/lib/pexels";
 import { type LayoutType, slideLayouts } from "~/lib/slide-layouts";
 
 const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
+const gemini = env.GEMINI_API_KEY ? new GoogleGenerativeAI(env.GEMINI_API_KEY) : null;
+
+// Helper to clean and parse JSON from AI responses (handles markdown fences)
+function parseAIJson<T>(responseText: string): T {
+  let jsonText = responseText.trim();
+  
+  // Remove markdown code fences if present (```json ... ``` or ``` ... ```)
+  if (jsonText.startsWith("```")) {
+    jsonText = jsonText.replace(/^```[a-zA-Z]*\s*/, "").replace(/```\s*$/, "").trim();
+  }
+  
+  // Extract JSON from first { to last } (handles extra text before/after)
+  const firstBrace = jsonText.indexOf("{");
+  const lastBrace = jsonText.lastIndexOf("}");
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    jsonText = jsonText.slice(firstBrace, lastBrace + 1);
+  }
+  
+  return JSON.parse(jsonText);
+}
 
 interface SlideImage {
   url: string;
@@ -150,29 +171,66 @@ ${isTitleSlide ? `For TITLE slides:
 
 ${currentContent}`;
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: systemPrompt,
-        },
-        {
-          role: "user",
-          content: `User's edit request: "${prompt}"\n\nEdit the slide according to this request. Return the complete updated slide as JSON.`,
-        },
-      ],
-      response_format: { type: "json_object" },
-      max_tokens: 2000,
-      temperature: 0.7,
-    });
+    let responseText: string;
+    
+    // Try Gemini first
+    if (gemini) {
+      try {
+        console.log("[edit-slide] Using Gemini API...");
+        const model = gemini.getGenerativeModel({ 
+          model: "gemini-flash-latest",
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 2000,
+            responseMimeType: "application/json",
+          },
+        });
 
-    const responseText = completion.choices[0]?.message?.content?.trim() || "{}";
+        const geminiPrompt = `${systemPrompt}\n\nUser's edit request: "${prompt}"\n\nEdit the slide according to this request. Return the complete updated slide as JSON.`;
+        const result = await model.generateContent(geminiPrompt);
+        const response = await result.response;
+        responseText = response.text()?.trim() || "{}";
+      } catch (geminiError) {
+        console.warn("[edit-slide] Gemini failed, falling back to OpenAI:", geminiError);
+        // Fallback to OpenAI
+        const completion = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: systemPrompt },
+            {
+              role: "user",
+              content: `User's edit request: "${prompt}"\n\nEdit the slide according to this request. Return the complete updated slide as JSON.`,
+            },
+          ],
+          response_format: { type: "json_object" },
+          max_tokens: 2000,
+          temperature: 0.7,
+        });
+        responseText = completion.choices[0]?.message?.content?.trim() || "{}";
+      }
+    } else {
+      // No Gemini, use OpenAI
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: systemPrompt },
+          {
+            role: "user",
+            content: `User's edit request: "${prompt}"\n\nEdit the slide according to this request. Return the complete updated slide as JSON.`,
+          },
+        ],
+        response_format: { type: "json_object" },
+        max_tokens: 2000,
+        temperature: 0.7,
+      });
+      responseText = completion.choices[0]?.message?.content?.trim() || "{}";
+    }
     
     let editedSlide: SlideContent;
     try {
-      editedSlide = JSON.parse(responseText);
-    } catch {
+      editedSlide = parseAIJson<SlideContent>(responseText);
+    } catch (parseError) {
+      console.error("Failed to parse AI response:", parseError, "Response:", responseText);
       return NextResponse.json(
         { error: "Failed to parse AI response" },
         { status: 500 }

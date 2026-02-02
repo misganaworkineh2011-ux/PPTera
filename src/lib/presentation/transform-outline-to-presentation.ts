@@ -183,21 +183,21 @@ async function callGemini(prompt: string, maxItems: number): Promise<string> {
 }
 
 /**
- * Call LLM with OpenAI primary, Gemini fallback
+ * Call LLM with Gemini primary, OpenAI fallback
  */
 async function callLLM(prompt: string, maxItems: number): Promise<string> {
-  // Try OpenAI first
-  if (env.OPENAI_API_KEY) {
+  // Try Gemini first
+  if (env.GEMINI_API_KEY) {
     try {
-      console.log("[transform-outline] Using OpenAI API...");
-      return await callOpenAI(prompt, maxItems);
+      console.log("[transform-outline] Using Gemini API...");
+      return await callGemini(prompt, maxItems);
     } catch (error) {
-      console.warn("[transform-outline] OpenAI failed, falling back to Gemini:", error);
+      console.warn("[transform-outline] Gemini failed, falling back to OpenAI:", error);
     }
   }
 
-  // Fallback to Gemini
-  if (env.GEMINI_API_KEY) {
+  // Fallback to OpenAI
+  if (env.OPENAI_API_KEY) {
     console.log("[transform-outline] Using Gemini API (fallback)...");
     return await callGemini(prompt, maxItems);
   }
