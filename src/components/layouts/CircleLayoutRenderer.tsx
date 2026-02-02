@@ -100,6 +100,7 @@ interface CircleLayoutRendererProps {
   className?: string;
   isPresenting?: boolean;
   animationKey?: string;
+  centerText?: string; // Optional center text for workflow/focus/petal layouts
   // Editing props
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
@@ -107,6 +108,8 @@ interface CircleLayoutRendererProps {
   onStartEditText?: (index: number) => void;
   onUpdateLabel?: (index: number, value: string) => void;
   onUpdateText?: (index: number, value: string) => void;
+  onStartEditCenterText?: () => void;
+  onUpdateCenterText?: (value: string) => void;
   onFinishEditing?: () => void;
   onDeleteItem?: (index: number) => void;
   onReorderItems?: (fromIndex: number, toIndex: number) => void;
@@ -139,12 +142,15 @@ export function CircleLayoutRenderer({
   className = "",
   isPresenting = false,
   animationKey,
+  centerText,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
   onStartEditText,
   onUpdateLabel,
   onUpdateText,
+  onStartEditCenterText,
+  onUpdateCenterText,
   onFinishEditing,
   onDeleteItem,
   isOwner = false,
@@ -193,12 +199,15 @@ export function CircleLayoutRenderer({
         className={className}
         isPresenting={isPresenting}
         animationKey={animationKey}
+        centerText={centerText}
         isEditing={isEditing}
         editingText={editingText}
         onStartEditLabel={onStartEditLabel}
         onStartEditText={onStartEditText}
         onUpdateLabel={onUpdateLabel}
         onUpdateText={onUpdateText}
+        onStartEditCenterText={onStartEditCenterText}
+        onUpdateCenterText={onUpdateCenterText}
         onFinishEditing={onFinishEditing}
         onDeleteItem={onDeleteItem}
         isOwner={isOwner}
@@ -218,12 +227,15 @@ export function CircleLayoutRenderer({
         className={className}
         isPresenting={isPresenting}
         animationKey={animationKey}
+        centerText={centerText}
         isEditing={isEditing}
         editingText={editingText}
         onStartEditLabel={onStartEditLabel}
         onStartEditText={onStartEditText}
         onUpdateLabel={onUpdateLabel}
         onUpdateText={onUpdateText}
+        onStartEditCenterText={onStartEditCenterText}
+        onUpdateCenterText={onUpdateCenterText}
         onFinishEditing={onFinishEditing}
         onDeleteItem={onDeleteItem}
         isOwner={isOwner}
@@ -243,12 +255,15 @@ export function CircleLayoutRenderer({
         className={className}
         isPresenting={isPresenting}
         animationKey={animationKey}
+        centerText={centerText}
         isEditing={isEditing}
         editingText={editingText}
         onStartEditLabel={onStartEditLabel}
         onStartEditText={onStartEditText}
         onUpdateLabel={onUpdateLabel}
         onUpdateText={onUpdateText}
+        onStartEditCenterText={onStartEditCenterText}
+        onUpdateCenterText={onUpdateCenterText}
         onFinishEditing={onFinishEditing}
         onDeleteItem={onDeleteItem}
         isOwner={isOwner}

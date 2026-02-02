@@ -106,6 +106,8 @@ interface CircularWorkflowRendererProps {
   onStartEditText?: (index: number) => void;
   onUpdateLabel?: (index: number, value: string) => void;
   onUpdateText?: (index: number, value: string) => void;
+  onStartEditCenterText?: () => void;
+  onUpdateCenterText?: (value: string) => void;
   onFinishEditing?: () => void;
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
@@ -128,6 +130,8 @@ export function CircularWorkflowRenderer({
   onStartEditText,
   onUpdateLabel,
   onUpdateText,
+  onStartEditCenterText,
+  onUpdateCenterText,
   onFinishEditing,
   onDeleteItem,
   isOwner = false,
@@ -309,26 +313,37 @@ export function CircularWorkflowRenderer({
             fill={themeStyles.centerBg}
             fillOpacity="0.9"
           />
-          <text
-            x={centerX}
-            y={centerY}
-            textAnchor="middle"
-            dominantBaseline="central"
-            fontSize="28"
-            fontWeight="800"
-            fill={themeStyles.titleColor}
-            className="select-none"
+          <foreignObject
+            x={centerX - (innerRadius - 20)}
+            y={centerY - (innerRadius - 20)}
+            width={(innerRadius - 20) * 2}
+            height={(innerRadius - 20) * 2}
           >
-            {centerText.split('\n').map((line, i, arr) => (
-              <tspan
-                key={i}
-                x={centerX}
-                dy={i === 0 ? -(arr.length - 1) * 16 : 32}
-              >
-                {line}
-              </tspan>
-            ))}
-          </text>
+            <div className="w-full h-full flex items-center justify-center">
+              {onStartEditCenterText && onUpdateCenterText ? (
+                <EditableText
+                  value={centerText.replace(/\n/g, ' ')}
+                  isEditing={isEditing && editingText?.field === 'introText'}
+                  onStartEdit={onStartEditCenterText}
+                  onChange={onUpdateCenterText}
+                  onFinish={onFinishEditing || (() => {})}
+                  className="text-center font-extrabold text-2xl leading-tight px-2"
+                  style={{ color: themeStyles.titleColor }}
+                  isOwner={isOwner}
+                  isHovered={isHovered}
+                />
+              ) : (
+                <div
+                  className="text-center font-extrabold text-2xl leading-tight px-2 select-none"
+                  style={{ color: themeStyles.titleColor }}
+                >
+                  {centerText.split('\n').map((line, i) => (
+                    <div key={i}>{line}</div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </foreignObject>
         </svg>
       </div>
 

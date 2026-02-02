@@ -109,6 +109,8 @@ interface CircularFocusRendererProps {
   onStartEditText?: (index: number) => void;
   onUpdateLabel?: (index: number, value: string) => void;
   onUpdateText?: (index: number, value: string) => void;
+  onStartEditCenterText?: () => void;
+  onUpdateCenterText?: (value: string) => void;
   onFinishEditing?: () => void;
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
@@ -131,6 +133,8 @@ export function CircularFocusRenderer({
   onStartEditText,
   onUpdateLabel,
   onUpdateText,
+  onStartEditCenterText,
+  onUpdateCenterText,
   onFinishEditing,
   onDeleteItem,
   isOwner = false,
@@ -142,7 +146,7 @@ export function CircularFocusRenderer({
   const themeStyles = getThemeStyles(theme, accentColor);
   const itemCount = Math.max(2, Math.min(6, displayItems.length));
   const boxRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [boxSize, setBoxSize] = useState<{ w: number } | null>(null);
+  const [boxSize, setBoxSize] = useState<{ w: number; h: number } | null>(null);
 
   const centerRadius = 52;
   const segmentInnerRadius = 64;
@@ -320,25 +324,37 @@ export function CircularFocusRenderer({
           />
           
           {/* Center text */}
-          <text
-            x={centerX}
-            y={centerY}
-            textAnchor="middle"
-            dominantBaseline="central"
-            fontSize="13"
-            fontWeight="600"
-            fill={themeStyles.titleColor}
+          <foreignObject
+            x={centerX - centerRadius + 5}
+            y={centerY - centerRadius + 5}
+            width={(centerRadius - 5) * 2}
+            height={(centerRadius - 5) * 2}
           >
-            {centerText.split('\n').map((line, i, arr) => (
-              <tspan
-                key={i}
-                x={centerX}
-                dy={i === 0 ? -(arr.length - 1) * 12 : 24}
-              >
-                {line}
-              </tspan>
-            ))}
-          </text>
+            <div className="w-full h-full flex items-center justify-center">
+              {onStartEditCenterText && onUpdateCenterText ? (
+                <EditableText
+                  value={centerText.replace(/\n/g, ' ')}
+                  isEditing={isEditing && editingText?.field === 'introText'}
+                  onStartEdit={onStartEditCenterText}
+                  onChange={onUpdateCenterText}
+                  onFinish={onFinishEditing || (() => {})}
+                  className="text-center font-semibold text-xs leading-tight px-1"
+                  style={{ color: themeStyles.titleColor }}
+                  isOwner={isOwner}
+                  isHovered={isHovered}
+                />
+              ) : (
+                <div
+                  className="text-center font-semibold text-xs leading-tight px-1 select-none"
+                  style={{ color: themeStyles.titleColor }}
+                >
+                  {centerText.split('\n').map((line, i) => (
+                    <div key={i}>{line}</div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </foreignObject>
 
           {/* Connecting lines: segment edge → callout box */}
           {displayItems.map((_, index) => {

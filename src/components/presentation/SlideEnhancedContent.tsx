@@ -232,7 +232,10 @@ export default function SlideEnhancedContent({
               theme={theme}
               accentColor={accentColor}
               className="w-full min-h-[300px]"
+              centerText={slide.introText || slide.title}
               {...editingProps}
+              onStartEditCenterText={canEdit ? () => onStartEditing(index, 'introText') : undefined}
+              onUpdateCenterText={canEdit ? (value: string) => onUpdateContent(index, 'introText', value) : undefined}
             />
           );
 

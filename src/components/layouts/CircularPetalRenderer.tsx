@@ -109,6 +109,8 @@ interface CircularPetalRendererProps {
   onStartEditText?: (index: number) => void;
   onUpdateLabel?: (index: number, value: string) => void;
   onUpdateText?: (index: number, value: string) => void;
+  onStartEditCenterText?: () => void;
+  onUpdateCenterText?: (value: string) => void;
   onFinishEditing?: () => void;
   onDeleteItem?: (index: number) => void;
   isOwner?: boolean;
@@ -131,6 +133,8 @@ export function CircularPetalRenderer({
   onStartEditText,
   onUpdateLabel,
   onUpdateText,
+  onStartEditCenterText,
+  onUpdateCenterText,
   onFinishEditing,
   onDeleteItem,
   isOwner = false,
@@ -221,28 +225,37 @@ export function CircularPetalRenderer({
             r={50}
             fill={themeStyles.centerBg}
           />
-           {/* Center Icon/Refresh Symbol */}
-           <g transform={`translate(${centerX}, ${centerY})`}>
-              <path 
-                d="M -15 0 A 15 15 0 1 1 15 0" // Half circle
-                fill="none" 
-                stroke={themeStyles.centerIcon} 
-                strokeWidth="3"
-                strokeLinecap="round"
-                transform="rotate(-45)"
-                opacity="0.5"
-              />
-               {/* Just a simple refresh icon path */}
-               <path
-                 d="M 0 -12 A 12 12 0 1 1 -8 10 M 0 -12 L 4 -8 M 0 -12 L -4 -8"
-                 fill="none"
-                 stroke={themeStyles.centerIcon}
-                 strokeWidth="2.5"
-                 strokeLinecap="round"
-                 strokeLinejoin="round"
-                 transform="rotate(0)"
-               />
-           </g>
+          
+          {/* Center Text (Editable) */}
+          <foreignObject
+            x={centerX - 45}
+            y={centerY - 45}
+            width={90}
+            height={90}
+          >
+            <div className="w-full h-full flex items-center justify-center">
+              {onStartEditCenterText && onUpdateCenterText ? (
+                <EditableText
+                  value={centerText}
+                  isEditing={isEditing && editingText?.field === 'introText'}
+                  onStartEdit={onStartEditCenterText}
+                  onChange={onUpdateCenterText}
+                  onFinish={onFinishEditing || (() => {})}
+                  className="text-center font-bold text-xs leading-tight px-1"
+                  style={{ color: themeStyles.centerIcon }}
+                  isOwner={isOwner}
+                  isHovered={isHovered}
+                />
+              ) : (
+                <div
+                  className="text-center font-bold text-xs leading-tight px-1 select-none"
+                  style={{ color: themeStyles.centerIcon }}
+                >
+                  {centerText}
+                </div>
+              )}
+            </div>
+          </foreignObject>
 
           {/* Petals */}
           {displayItems.map((item, index) => {
