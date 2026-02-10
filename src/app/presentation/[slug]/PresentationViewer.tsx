@@ -61,6 +61,9 @@ export default function PresentationViewer({
   totalSlidesForStreaming = 0,
   subscriptionPlan,
   shouldShowUpgradeModal = false,
+  isFreeUserLimited = false,
+  freeSlideLimit,
+  halfBlurredSlideIndex,
 }: PresentationViewerProps) {
   const router = useRouter();
   const [showPricingModal, setShowPricingModal] = useState(shouldShowUpgradeModal);
@@ -283,6 +286,9 @@ export default function PresentationViewer({
     setIsAnimating,
     setCurrentSlide,
     setIsShaking,
+    isFreeUserLimited,
+    halfBlurredSlideIndex,
+    onUpgrade: () => setShowPricingModal(true),
   });
 
   // Update lastHoveredSlideIndex when a slide is hovered
@@ -458,6 +464,8 @@ export default function PresentationViewer({
       addSlideAt={addSlideAt}
       moveSlide={moveSlide}
       deleteSlide={deleteSlide}
+      subscriptionPlan={subscriptionPlan}
+      onUpgrade={() => setShowPricingModal(true)}
     />
   );
 
@@ -516,6 +524,7 @@ export default function PresentationViewer({
             presentZoom={presentZoom}
             isSpotlightActive={isSpotlightActive}
             currentSlide={currentSlide}
+            subscriptionPlan={subscriptionPlan}
             onBack={() => router.push("/dashboard")}
             onEditTitle={() => setIsEditingTitle(true)}
             onTitleChange={setEditedTitle}
@@ -623,6 +632,10 @@ export default function PresentationViewer({
           onHideNavbarInFullscreen={() => setShowNavbarInFullscreen(false)}
           onShare={() => setShowShareModal(true)}
           subscriptionPlan={subscriptionPlan}
+          isFreeUserLimited={isFreeUserLimited}
+          freeSlideLimit={freeSlideLimit}
+          halfBlurredSlideIndex={halfBlurredSlideIndex}
+          onUpgrade={() => setShowPricingModal(true)}
         />
 
         <PresentationModals

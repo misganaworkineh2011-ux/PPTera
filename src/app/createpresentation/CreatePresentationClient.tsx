@@ -57,7 +57,16 @@ export default function CreatePresentationClient({
 
   // Credit check state (only for presentation creation, not outline generation)
   const [showCreditWarning, setShowCreditWarning] = useState(false);
-  const isFreeUser = !subscriptionPlan || subscriptionPlan === 'free';
+  const isFreeUser = !subscriptionPlan || subscriptionPlan.toLowerCase() === 'free';
+
+  // Debug logging
+  useEffect(() => {
+    console.log("[CreatePresentation] User plan check:", {
+      subscriptionPlan,
+      isFreeUser,
+      type: typeof subscriptionPlan,
+    });
+  }, [subscriptionPlan, isFreeUser]);
 
   // Client-side mount state for SVG noise filter (prevents hydration mismatch)
   const [isMounted, setIsMounted] = useState(false);

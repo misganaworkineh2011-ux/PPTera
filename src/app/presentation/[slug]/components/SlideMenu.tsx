@@ -18,6 +18,7 @@ import {
   Send,
   BarChart3,
   Wand2,
+  Lock,
 } from "lucide-react";
 import { type LayoutType } from "~/lib/slide-layouts";
 import type { Theme } from "~/lib/themes";
@@ -75,6 +76,8 @@ interface SlideMenuProps {
   onOpenAnimationPicker?: () => void;
   isAIEditing?: boolean;
   onAIEditingChange?: (isEditing: boolean) => void;
+  subscriptionPlan?: string | null;
+  onUpgrade?: () => void;
 }
 
 type ActivePanel = "none" | "more" | "styling" | "ai";
@@ -346,6 +349,17 @@ function StylingPanel({
   );
 }
 
+interface AIPanelProps {
+  slideContent?: SlideContent;
+  colors: ThemeColors;
+  t: Record<string, string>;
+  onAIEdit?: (editedSlide: SlideContent) => void;
+  onClose: () => void;
+  onLoadingChange?: (isLoading: boolean) => void;
+  isFreeUser?: boolean;
+  onUpgrade?: () => void;
+}
+
 function AIPanel({
   slideContent,
   colors,
@@ -353,14 +367,9 @@ function AIPanel({
   onAIEdit,
   onClose,
   onLoadingChange,
-}: {
-  slideContent?: SlideContent;
-  colors: ThemeColors;
-  t: Record<string, string>;
-  onAIEdit?: (editedSlide: SlideContent) => void;
-  onClose: () => void;
-  onLoadingChange?: (isLoading: boolean) => void;
-}) {
+  isFreeUser = false,
+  onUpgrade,
+}: AIPanelProps) {
   const [prompt, setPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -371,7 +380,12 @@ function AIPanel({
   }, []);
 
   const handleSubmit = async () => {
-    if (!prompt.trim() || !slideContent || !onAIEdit) return;
+    if (!prompt.trim() || !slideContent || !onAIEdit || isFreeUser) return;
+    
+    if (isFreeUser) {
+      onUpgrade?.();
+      return;
+    }
 
     setIsLoading(true);
     onLoadingChange?.(true);
@@ -439,9 +453,18 @@ function AIPanel({
         </div>
         <div>
           <p className="text-sm font-semibold" style={{ color: colors.text }}>{t.editWithAIBtn || "Edit with AI"}</p>
-          <p className="text-[11px]" style={{ color: colors.textMuted }}>{t.creditsPerEdit || "2 credits per edit"}</p>
+          <p className="text-[11px]" style={{ color: colors.textMuted }}>
+            {isFreeUser ? "Upgrade to unlock" : (t.creditsPerEdit || "2 credits per edit")}
+          </p>
         </div>
       </div>
+
+      {isFreeUser && (
+        <div className="mb-2 px-3 py-2 text-xs bg-blue-50 rounded-lg flex items-center gap-2" style={{ color: colors.text }}>
+          <Lock size={12} />
+          <span>Upgrade to use AI editing features</span>
+        </div>
+      )}
 
       {error && (
         <div className="mb-2 px-3 py-2 text-xs text-red-600 bg-red-50 rounded-lg">
@@ -468,11 +491,13 @@ function AIPanel({
         />
         <button
           className="absolute bottom-2.5 right-2.5 w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center"
-          onClick={handleSubmit}
+          onClick={() => isFreeUser ? onUpgrade?.() : handleSubmit()}
           disabled={isLoading || !prompt.trim()}
         >
           {isLoading ? (
             <Loader2 size={14} className="text-white animate-spin" />
+          ) : isFreeUser ? (
+            <Lock size={14} className="text-white" />
           ) : (
             <Send size={14} className="text-white" />
           )}
@@ -523,6 +548,8 @@ export function SlideMenu({
   onAIEdit,
   onAIEditingChange,
   onOpenAnimationPicker,
+  subscriptionPlan,
+  onUpgrade,
 }: SlideMenuProps) {
   const [activePanel, setActivePanel] = useState<ActivePanel>("none");
   const [panelPosition, setPanelPosition] = useState({ top: 0, left: 0 });
@@ -535,6 +562,9 @@ export function SlideMenu({
   
   // Get theme colors
   const colors = getThemeColors(theme);
+
+  // Check if user is free
+  const isFreeUser = !subscriptionPlan || subscriptionPlan.toLowerCase() === 'free';
 
   useEffect(() => {
     setPortalContainer(document.body);
@@ -623,6 +653,8 @@ export function SlideMenu({
               onAIEdit={onAIEdit}
               onClose={closePanel}
               onLoadingChange={onAIEditingChange}
+              isFreeUser={isFreeUser}
+              onUpgrade={onUpgrade}
             />
           );
         default:
@@ -689,11 +721,13 @@ export function SlideMenu({
             className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${
               activePanel === "ai"
                 ? "bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white"
-                : "text-slate-600 hover:bg-violet-50 hover:text-violet-600"
+                : isFreeUser
+                  ? "text-slate-400 hover:bg-slate-100 cursor-not-allowed"
+                  : "text-slate-600 hover:bg-violet-50 hover:text-violet-600"
             }`}
-            title={t.editWithAIBtn || "Edit with AI"}
+            title={isFreeUser ? "Upgrade to unlock AI editing" : (t.editWithAIBtn || "Edit with AI")}
           >
-            <Sparkles size={16} />
+            {isFreeUser ? <Lock size={16} /> : <Sparkles size={16} />}
           </button>
         </div>
       </div>

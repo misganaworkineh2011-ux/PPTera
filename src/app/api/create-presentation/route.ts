@@ -129,15 +129,17 @@ export async function POST(request: Request) {
       );
     }
 
-    // Free user check: Limit to 5 slides (but allow outline generation for all slides)
-    const isFreeUser = !user.subscriptionPlan || user.subscriptionPlan === 'free';
+    // Free user check: Generate ALL slides but mark locked ones
+    const isFreeUser = !user.subscriptionPlan || user.subscriptionPlan.toLowerCase() === 'free';
     const requestedSlideCount = slides.length;
     
-    // For free users, only create first 5 slides
-    const slidesToCreate = isFreeUser && requestedSlideCount > 5 
-      ? slides.slice(0, 5) 
-      : slides;
+    // For free users: generate all slides, but mark which are locked
+    // Show first half fully, one slide half-blurred, rest hidden
+    const freeSlideLimit = Math.floor(requestedSlideCount / 2); // e.g., 5 for 10 slides, 4 for 8 slides
+    const halfBlurredSlideIndex = freeSlideLimit; // The slide after the free ones (0-indexed)
     
+    // All slides will be created, but we'll mark the locked state
+    const slidesToCreate = slides; // Generate ALL slides
     const actualSlideCount = slidesToCreate.length;
 
     console.log("[create-presentation] Slide limiting:", {
@@ -145,7 +147,9 @@ export async function POST(request: Request) {
       subscriptionPlan: user.subscriptionPlan,
       requestedSlideCount,
       actualSlideCount,
-      willLimit: isFreeUser && requestedSlideCount > 5,
+      freeSlideLimit,
+      halfBlurredSlideIndex,
+      willShowBlurred: isFreeUser && requestedSlideCount > freeSlideLimit,
     });
 
     // Credit check: 4 credits per slide (only for slides we're actually creating)
@@ -193,14 +197,15 @@ export async function POST(request: Request) {
             textDensity,
             metadata,
             createdFrom: "outline",
-            // Store slides for streaming processing (only the slides we're creating)
+            // Store slides for streaming processing (ALL slides)
             pendingSlides: slidesToCreate,
             streamingComplete: false,
-            // Store info about locked slides for free users
-            ...(isFreeUser && requestedSlideCount > 5 ? {
-              lockedSlides: slides.slice(5), // Store the locked slides
-              totalRequestedSlides: requestedSlideCount,
+            // Store lock information for free users
+            ...(isFreeUser && requestedSlideCount > freeSlideLimit ? {
               isFreeUserLimited: true,
+              freeSlideLimit, // Number of fully visible slides
+              halfBlurredSlideIndex, // Index of the half-blurred slide
+              totalRequestedSlides: requestedSlideCount,
             } : {}),
           },
           slides: [], // Empty - will be populated by streaming
@@ -223,7 +228,7 @@ export async function POST(request: Request) {
         hasLockedSlides: isFreeUser && requestedSlideCount > 5,
       });
 
-      const redirectUrl = `/presentation/${slug}-${presentation.id}?mode=ai&streaming=true${isFreeUser && requestedSlideCount > 5 ? '&showUpgrade=true' : ''}`;
+      const redirectUrl = `/presentation/${slug}-${presentation.id}?mode=ai&streaming=true${isFreeUser && requestedSlideCount > freeSlideLimit ? '&showUpgrade=true' : ''}`;
 
       return NextResponse.json({
         success: true,
@@ -232,12 +237,14 @@ export async function POST(request: Request) {
         slug,
         redirectUrl,
         streaming: true,
-        isLimited: isFreeUser && requestedSlideCount > 5,
+        isLimited: isFreeUser && requestedSlideCount > freeSlideLimit,
         createdSlides: actualSlideCount,
         totalSlides: requestedSlideCount,
+        freeSlideLimit: isFreeUser ? freeSlideLimit : undefined,
+        halfBlurredSlideIndex: isFreeUser ? halfBlurredSlideIndex : undefined,
         // Include info about locked slides
-        ...(isFreeUser && requestedSlideCount > 5 ? {
-          lockedSlidesCount: requestedSlideCount - 5,
+        ...(isFreeUser && requestedSlideCount > freeSlideLimit ? {
+          lockedSlidesCount: requestedSlideCount - freeSlideLimit - 1, // -1 for the half-blurred slide
           showUpgradePrompt: true,
         } : {}),
       });

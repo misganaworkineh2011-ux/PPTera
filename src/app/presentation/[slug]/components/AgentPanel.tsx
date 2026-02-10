@@ -10,6 +10,7 @@ import {
   Languages,
   FileText,
   Minimize2,
+  Lock,
 } from "lucide-react";
 import type { Theme } from "~/lib/themes";
 import type { SlideData } from "~/components/presentation/types";
@@ -443,86 +444,7 @@ export function AgentPanel({
     accent: theme.colors.primary,
   };
 
-  // Show locked state for free users
-  if (isFreeUser) {
-    return (
-      <>
-        {/* Backdrop */}
-        <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
 
-        {/* Panel */}
-        <div
-          className="fixed top-16 right-4 w-[420px] max-w-[calc(100vw-2rem)] rounded-2xl shadow-2xl border z-50"
-          style={{
-            background: themeStyles.bg,
-            borderColor: themeStyles.border,
-          }}
-        >
-          {/* Header */}
-          <div
-            className="flex items-center justify-between p-4 border-b"
-            style={{ borderColor: themeStyles.border }}
-          >
-            <div className="flex items-center gap-2">
-              <div 
-                className="p-1.5 rounded-lg"
-                style={{ backgroundColor: themeStyles.accentBg }}
-              >
-                <Sparkles size={18} style={{ color: themeStyles.accent }} />
-              </div>
-              <div>
-                <h3 
-                  className="font-semibold"
-                  style={{ color: themeStyles.text }}
-                >
-                  {t.editAllCards || "Edit all cards"}
-                </h3>
-              </div>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-1.5 rounded-lg transition-colors"
-              style={{ color: themeStyles.textMuted }}
-            >
-              <X size={18} />
-            </button>
-          </div>
-
-          {/* Locked Content */}
-          <div className="p-6 flex flex-col items-center justify-center text-center space-y-4">
-            <div 
-              className="w-16 h-16 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: themeStyles.accentBg }}
-            >
-              <Lock size={32} style={{ color: themeStyles.accent }} />
-            </div>
-            <div>
-              <h4 className="text-lg font-bold mb-2" style={{ color: themeStyles.text }}>
-                AI Agent Locked
-              </h4>
-              <p className="text-sm" style={{ color: themeStyles.textMuted }}>
-                Upgrade to Plus, Pro, or Ultra to use the AI agent to edit and enhance your presentations.
-              </p>
-            </div>
-            <button
-              onClick={() => setShowUpgradeModal(true)}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white rounded-xl font-semibold hover:opacity-90 transition"
-            >
-              <Sparkles size={18} />
-              Upgrade Now
-            </button>
-          </div>
-        </div>
-
-        {/* Pricing Modal */}
-        <PricingModal
-          isOpen={showUpgradeModal}
-          onClose={() => setShowUpgradeModal(false)}
-          currentPlan={subscriptionPlan}
-        />
-      </>
-    );
-  }
 
   return (
     <>
@@ -556,6 +478,12 @@ export function AgentPanel({
               >
                 {t.editAllCards || "Edit all cards"}
               </h3>
+              {isFreeUser && (
+                <p className="text-xs flex items-center gap-1" style={{ color: themeStyles.textMuted }}>
+                  <Lock size={12} />
+                  Upgrade to unlock
+                </p>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -669,7 +597,7 @@ export function AgentPanel({
                 <span className="text-lg">+</span>
               </button>
               <button
-                onClick={() => handleSubmitStreaming()}
+                onClick={() => isFreeUser ? setShowUpgradeModal(true) : handleSubmitStreaming()}
                 disabled={!prompt.trim() || isLoading}
                 className="p-2 rounded-lg transition-colors"
                 style={{
@@ -680,6 +608,8 @@ export function AgentPanel({
               >
                 {isLoading ? (
                   <Loader2 size={16} className="animate-spin" />
+                ) : isFreeUser ? (
+                  <Lock size={16} />
                 ) : (
                   <Send size={16} />
                 )}
@@ -709,8 +639,8 @@ export function AgentPanel({
                   .map((action) => (
                     <button
                       key={action.id}
-                      onClick={() => handleQuickAction(action)}
-                      disabled={isLoading}
+                      onClick={() => isFreeUser ? setShowUpgradeModal(true) : handleQuickAction(action)}
+                      disabled={isLoading || isFreeUser}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-colors disabled:opacity-50"
                       style={{ 
                         backgroundColor: themeStyles.pillBg, 
@@ -735,8 +665,8 @@ export function AgentPanel({
                   .map((action) => (
                     <button
                       key={action.id}
-                      onClick={() => handleQuickAction(action)}
-                      disabled={isLoading}
+                      onClick={() => isFreeUser ? setShowUpgradeModal(true) : handleQuickAction(action)}
+                      disabled={isLoading || isFreeUser}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-colors disabled:opacity-50"
                       style={{ 
                         backgroundColor: themeStyles.pillBg, 
@@ -752,6 +682,13 @@ export function AgentPanel({
           )}
         </div>
       </div>
+
+      {/* Pricing Modal */}
+      <PricingModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        currentPlan={subscriptionPlan}
+      />
     </>
   );
 }
