@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/cleanup-exports",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/reset-credits",
+      "schedule": "0 0 * * *"
+    }
+  ]
+}

@@ -64,6 +64,8 @@ interface PresentationSlideProps {
   addSlideAt: (index: number) => void;
   moveSlide: (index: number, direction: "up" | "down") => void;
   deleteSlide: (index: number) => void;
+  subscriptionPlan?: string | null;
+  onUpgrade?: () => void;
 }
 
 export function PresentationSlide({
@@ -116,6 +118,8 @@ export function PresentationSlide({
   addSlideAt,
   moveSlide,
   deleteSlide,
+  subscriptionPlan,
+  onUpgrade,
 }: PresentationSlideProps) {
   const hasImage = slide.image?.url && slide.image.source !== "placeholder";
   const isImageLoading = imagesLoading.has(index);
@@ -335,6 +339,8 @@ export function PresentationSlide({
           onAIEditingChange={(isEditing) => {
             setAiEditingSlideIndex(isEditing ? index : null);
           }}
+          subscriptionPlan={subscriptionPlan}
+          onUpgrade={onUpgrade}
           onAIEdit={(editedSlide) => {
             const newSlides = [...slidesData];
             const existingSlide = newSlides[index];

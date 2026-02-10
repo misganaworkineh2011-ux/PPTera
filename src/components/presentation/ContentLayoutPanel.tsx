@@ -12,6 +12,12 @@ import { quotesLayouts } from "~/lib/layouts/content/quotes";
 import { imageLayouts } from "~/lib/layouts/content/images";
 import { circleLayouts } from "~/lib/layouts/content/circles";
 import { sequenceLayouts } from "~/lib/layouts/content/sequence";
+import { cascadingLayouts } from "~/lib/layouts/content/cascading";
+import { chevronLayouts } from "~/lib/layouts/content/chevron";
+import { funnelLayouts } from "~/lib/layouts/content/funnel";
+import { prosConsLayouts } from "~/lib/layouts/content/proscons";
+import { beforeAfterLayouts } from "~/lib/layouts/content/beforeafter";
+import { comparisonLayouts } from "~/lib/layouts/content/comparison";
 import type { ContentLayoutType } from "./types";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
@@ -23,6 +29,12 @@ import { StepsLayoutRenderer } from "~/components/layouts/StepsLayoutRenderer";
 import { QuotesLayoutRenderer } from "~/components/layouts/QuotesLayoutRenderer";
 import { CircleLayoutRenderer } from "~/components/layouts/CircleLayoutRenderer";
 import SequenceLayoutRenderer from "./SequenceLayoutRenderer";
+import { CascadingWorkflowRenderer } from "~/components/layouts/CascadingWorkflowRenderer";
+import { ChevronFlowRenderer } from "~/components/layouts/ChevronFlowRenderer";
+import { FunnelStepsRenderer } from "~/components/layouts/FunnelStepsRenderer";
+import { ProsConsRenderer } from "~/components/layouts/ProsConsRenderer";
+import { BeforeAfterRenderer } from "~/components/layouts/BeforeAfterRenderer";
+import { ComparisonRenderer } from "~/components/layouts/ComparisonRenderer";
 
 import type { BoxLayoutType, BoxContentItem } from "~/lib/layouts/content/boxes";
 import type { BulletLayoutType, BulletContentItem } from "~/lib/layouts/content/bullets";
@@ -30,6 +42,12 @@ import type { StepsLayoutType, StepContentItem } from "~/lib/layouts/content/ste
 import type { QuotesLayoutType, QuoteContentItem } from "~/lib/layouts/content/quotes";
 import type { CircleLayoutType, CircleContentItem } from "~/lib/layouts/content/circles";
 import type { SequenceLayoutType, SequenceContentItem } from "~/lib/layouts/content/sequence";
+import type { CascadingLayoutType, CascadingContentItem } from "~/lib/layouts/content/cascading";
+import type { ChevronLayoutType, ChevronContentItem } from "~/lib/layouts/content/chevron";
+import type { FunnelLayoutType, FunnelContentItem } from "~/lib/layouts/content/funnel";
+import type { ProsConsLayoutType, ProsConsContentItem } from "~/lib/layouts/content/proscons";
+import type { BeforeAfterLayoutType, BeforeAfterContentItem } from "~/lib/layouts/content/beforeafter";
+import type { ComparisonLayoutType, ComparisonContentItem } from "~/lib/layouts/content/comparison";
 
 // Panel width constant - used for both panel and main content offset
 export const CONTENT_LAYOUT_PANEL_WIDTH = 420;
@@ -40,7 +58,7 @@ const HEADER_HEIGHT = 53;
 export type ContentLayoutId = ContentLayoutType;
 
 // Layout category definition
-type LayoutCategory = "boxes" | "steps" | "bullets" | "quotes" | "images" | "circles" | "sequence";
+type LayoutCategory = "boxes" | "steps" | "bullets" | "quotes" | "images" | "circles" | "sequence" | "cascading" | "chevron" | "funnel" | "proscons" | "beforeafter" | "comparison";
 
 interface LayoutCategoryConfig {
   id: LayoutCategory;
@@ -66,6 +84,12 @@ function getCategoryFromLayoutId(layoutId: string): LayoutCategory {
   if (layoutId.startsWith("image-")) return "images";
   if (layoutId.startsWith("circle-")) return "circles";
   if (layoutId.startsWith("sequence-")) return "sequence";
+  if (layoutId.startsWith("cascading-")) return "cascading";
+  if (layoutId.startsWith("chevron-")) return "chevron";
+  if (layoutId.startsWith("funnel-")) return "funnel";
+  if (layoutId.startsWith("proscons-")) return "proscons";
+  if (layoutId.startsWith("beforeafter-")) return "beforeafter";
+  if (layoutId.startsWith("comparison-")) return "comparison";
   return "boxes";
 }
 
@@ -112,6 +136,42 @@ const allCategories: LayoutCategoryConfig[] = [
     name: "Sequence & Timeline",
     description: "Sequential process and timeline flows",
     layouts: sequenceLayouts.map(l => ({ ...l, id: l.id, supportsIcons: true })),
+  },
+  {
+    id: "cascading",
+    name: "Cascading Workflow",
+    description: "Staggered workflow with numbered items",
+    layouts: cascadingLayouts.map(l => ({ ...l, id: l.id, supportsIcons: true })),
+  },
+  {
+    id: "chevron",
+    name: "Chevron Flow",
+    description: "Horizontal chevron arrows with numbered steps",
+    layouts: chevronLayouts.map(l => ({ ...l, id: l.id, supportsIcons: true })),
+  },
+  {
+    id: "funnel",
+    name: "Funnel Steps",
+    description: "Funnel-style bars with icons and side content",
+    layouts: funnelLayouts.map(l => ({ ...l, id: l.id, supportsIcons: true })),
+  },
+  {
+    id: "proscons",
+    name: "Pros & Cons",
+    description: "Split circle diagram with pros and cons",
+    layouts: prosConsLayouts.map(l => ({ ...l, id: l.id, supportsIcons: true })),
+  },
+  {
+    id: "beforeafter",
+    name: "Before & After",
+    description: "Circular comparison diagram showing transformation",
+    layouts: beforeAfterLayouts.map(l => ({ ...l, id: l.id, supportsIcons: true })),
+  },
+  {
+    id: "comparison",
+    name: "VS Comparison",
+    description: "Vertical split comparison with items on both sides",
+    layouts: comparisonLayouts.map(l => ({ ...l, id: l.id, supportsIcons: true })),
   },
 ];
 
@@ -197,6 +257,7 @@ function ScaledLayoutPreview({
           <CircleLayoutRenderer
             layoutId={layoutId as CircleLayoutType}
             items={items as CircleContentItem[]}
+            theme={theme}
             accentColor={accentColor}
           />
         );
@@ -207,6 +268,60 @@ function ScaledLayoutPreview({
             layoutId={layoutId as SequenceLayoutType}
             items={items as SequenceContentItem[]}
             theme={theme}
+          />
+        );
+      
+      case "cascading":
+        return (
+          <CascadingWorkflowRenderer
+            items={items as CascadingContentItem[]}
+            theme={theme}
+            accentColor={accentColor}
+          />
+        );
+      
+      case "chevron":
+        return (
+          <ChevronFlowRenderer
+            items={items as ChevronContentItem[]}
+            theme={theme}
+            accentColor={accentColor}
+          />
+        );
+      
+      case "funnel":
+        return (
+          <FunnelStepsRenderer
+            items={items as FunnelContentItem[]}
+            theme={theme}
+            accentColor={accentColor}
+          />
+        );
+      
+      case "proscons":
+        return (
+          <ProsConsRenderer
+            items={items as ProsConsContentItem[]}
+            theme={theme}
+            accentColor={accentColor}
+          />
+        );
+      
+      case "beforeafter":
+        return (
+          <BeforeAfterRenderer
+            items={items as BeforeAfterContentItem[]}
+            theme={theme}
+            accentColor={accentColor}
+          />
+        );
+      
+      case "comparison":
+        return (
+          <ComparisonRenderer
+            items={items as ComparisonContentItem[]}
+            theme={theme}
+            accentColor={accentColor}
           />
         );
       
@@ -307,6 +422,12 @@ export default function ContentLayoutPanel({
     images: t.imageGallery || "Image Gallery",
     circles: t.circularLayouts || "Circular Layouts",
     sequence: t.sequenceTimeline || "Sequence & Timeline",
+    cascading: t.cascadingWorkflow || "Cascading Workflow",
+    chevron: t.chevronFlow || "Chevron Flow",
+    funnel: t.funnelSteps || "Funnel Steps",
+    proscons: t.prosCons || "Pros & Cons",
+    beforeafter: t.beforeAfter || "Before & After",
+    comparison: t.comparison || "VS Comparison",
   };
 
   // Sort categories to put current category first

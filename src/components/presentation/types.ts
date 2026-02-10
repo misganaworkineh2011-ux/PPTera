@@ -11,6 +11,13 @@ import type { BulletLayoutType } from "~/lib/layouts/content/bullets";
 import type { QuotesLayoutType } from "~/lib/layouts/content/quotes";
 import type { ImageLayoutType } from "~/lib/layouts/content/images";
 import type { CircleLayoutType } from "~/lib/layouts/content/circles";
+import type { SequenceLayoutType } from "~/lib/layouts/content/sequence";
+import type { CascadingLayoutType } from "~/lib/layouts/content/cascading";
+import type { ChevronLayoutType } from "~/lib/layouts/content/chevron";
+import type { FunnelLayoutType } from "~/lib/layouts/content/funnel";
+import type { ProsConsLayoutType } from "~/lib/layouts/content/proscons";
+import type { BeforeAfterLayoutType } from "~/lib/layouts/content/beforeafter";
+import type { ComparisonLayoutType } from "~/lib/layouts/content/comparison";
 import type { SlideLayoutType, ImageSize, ImageShape } from "~/lib/layouts/slide";
 import type { ChartData, ChartConfig } from "~/lib/charts/types";
 
@@ -24,7 +31,14 @@ export type ContentLayoutType =
   | BulletLayoutType 
   | QuotesLayoutType 
   | ImageLayoutType 
-  | CircleLayoutType;
+  | CircleLayoutType
+  | SequenceLayoutType
+  | CascadingLayoutType
+  | ChevronLayoutType
+  | FunnelLayoutType
+  | ProsConsLayoutType
+  | BeforeAfterLayoutType
+  | ComparisonLayoutType;
 
 export interface SlideImage {
   url: string;

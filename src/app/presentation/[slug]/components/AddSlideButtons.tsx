@@ -2,20 +2,23 @@
 
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Plus, Sparkles, Send, Loader2, X, Image, LayoutGrid } from "lucide-react";
+import { Plus, Sparkles, Send, Loader2, X, Image, LayoutGrid, Lock } from "lucide-react";
 import type { Theme } from "~/lib/themes";
 import { getThemeType } from "./types";
 import { getModalColors } from "./ui-colors";
+import PricingModal from "~/components/dashboard/PricingModal";
 
 interface AddSlideButtonsProps {
   onAddSlide: () => void;
   onAddAISlide: (prompt: string) => Promise<void>;
   presentationContext?: string;
   theme?: Theme;
+  subscriptionPlan?: string | null;
 }
 
-export function AddSlideButtons({ onAddSlide, onAddAISlide, presentationContext, theme }: AddSlideButtonsProps) {
+export function AddSlideButtons({ onAddSlide, onAddAISlide, presentationContext, theme, subscriptionPlan }: AddSlideButtonsProps) {
   const [showAIPanel, setShowAIPanel] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,6 +26,9 @@ export function AddSlideButtons({ onAddSlide, onAddAISlide, presentationContext,
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Check if user is free
+  const isFreeUser = !subscriptionPlan || subscriptionPlan.toLowerCase() === 'free';
 
   // Theme-aware styling using the helper
   const colors = theme ? getModalColors(theme) : null;
@@ -78,6 +84,11 @@ export function AddSlideButtons({ onAddSlide, onAddAISlide, presentationContext,
   const handleSubmit = async () => {
     if (!prompt.trim() || isLoading) return;
     
+    if (isFreeUser) {
+      setShowUpgradeModal(true);
+      return;
+    }
+    
     setIsLoading(true);
     setError(null);
     
@@ -116,18 +127,27 @@ export function AddSlideButtons({ onAddSlide, onAddAISlide, presentationContext,
         {/* Add AI slide button */}
         <button
           ref={buttonRef}
-          onClick={() => showAIPanel ? setShowAIPanel(false) : openAIPanel()}
+          onClick={() => {
+            showAIPanel ? setShowAIPanel(false) : openAIPanel();
+          }}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full shadow-md border transition-all text-xs font-medium ${
             showAIPanel
               ? "bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white border-violet-400"
               : "bg-white/95 hover:bg-violet-50 text-slate-600 hover:text-violet-600 border-slate-200 ring-1 ring-black/5"
           }`}
-          title="Add slide with AI (4 credits)"
+          title={isFreeUser ? "Upgrade to unlock AI slide generation" : "Add slide with AI (4 credits)"}
         >
-          <Sparkles size={14} />
+          {isFreeUser ? <Lock size={14} /> : <Sparkles size={14} />}
           <span>+AI</span>
         </button>
       </div>
+
+      {/* Pricing Modal */}
+      <PricingModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        currentPlan={subscriptionPlan}
+      />
 
       {/* AI Panel - rendered via portal */}
       {showAIPanel &&
@@ -154,7 +174,9 @@ export function AddSlideButtons({ onAddSlide, onAddAISlide, presentationContext,
                 </div>
                 <div>
                   <p className="text-sm font-semibold" style={{ color: textColor }}>Generate Slide with AI</p>
-                  <p className="text-xs" style={{ color: mutedColor }}>4 credits per slide</p>
+                  <p className="text-xs" style={{ color: mutedColor }}>
+                    {isFreeUser ? "Upgrade to unlock" : "4 credits per slide"}
+                  </p>
                 </div>
               </div>
               <button
@@ -172,14 +194,23 @@ export function AddSlideButtons({ onAddSlide, onAddAISlide, presentationContext,
               className="flex items-center gap-3 mb-3 px-2 py-1.5 rounded-lg"
               style={{ backgroundColor: surfaceColor }}
             >
-              <div className="flex items-center gap-1 text-xs" style={{ color: mutedColor }}>
-                <Image size={12} />
-                <span>Pexels images</span>
-              </div>
-              <div className="flex items-center gap-1 text-xs" style={{ color: mutedColor }}>
-                <LayoutGrid size={12} />
-                <span>Smart layout</span>
-              </div>
+              {isFreeUser ? (
+                <div className="flex items-center gap-1 text-xs" style={{ color: mutedColor }}>
+                  <Lock size={12} />
+                  <span>Upgrade to unlock</span>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-1 text-xs" style={{ color: mutedColor }}>
+                    <Image size={12} />
+                    <span>Pexels images</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-xs" style={{ color: mutedColor }}>
+                    <LayoutGrid size={12} />
+                    <span>Smart layout</span>
+                  </div>
+                </>
+              )}
             </div>
 
             {error && (
@@ -213,11 +244,13 @@ export function AddSlideButtons({ onAddSlide, onAddAISlide, presentationContext,
               />
               <button
                 className="absolute bottom-2.5 right-2.5 w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center"
-                onClick={handleSubmit}
+                onClick={() => isFreeUser ? setShowUpgradeModal(true) : handleSubmit()}
                 disabled={isLoading || !prompt.trim()}
               >
                 {isLoading ? (
                   <Loader2 size={14} className="text-white animate-spin" />
+                ) : isFreeUser ? (
+                  <Lock size={14} className="text-white" />
                 ) : (
                   <Send size={14} className="text-white" />
                 )}
@@ -243,7 +276,7 @@ export function AddSlideButtons({ onAddSlide, onAddAISlide, presentationContext,
             </div>
 
             <p className="text-[11px] mt-3 text-center" style={{ color: mutedColor }}>
-              Press Enter to generate • Includes image from Pexels
+              {isFreeUser ? "Upgrade to generate AI slides with images" : "Press Enter to generate • Includes image from Pexels"}
             </p>
           </div>,
           document.body

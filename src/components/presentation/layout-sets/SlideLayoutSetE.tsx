@@ -43,6 +43,7 @@ interface SlideLayoutSetEProps {
   onAddBullet: (slideIndex: number) => void;
   onDeleteBullet: (slideIndex: number, bulletIndex: number) => void;
   renderTitle: (props: { className?: string; align?: "left" | "center" | "right"; showSubtitle?: boolean }) => ReactNode;
+  renderDescription: (props?: { className?: string; align?: "left" | "center" | "right" }) => ReactNode;
   renderEnhanced: (props?: { compact?: boolean }) => ReactNode;
   renderIndicator: (position: "top-left" | "top-right") => ReactNode;
 }
@@ -70,6 +71,7 @@ export function renderLayoutSetE(props: SlideLayoutSetEProps): ReactNode | null 
     onAddBullet,
     onDeleteBullet,
     renderTitle,
+    renderDescription,
     renderEnhanced,
     renderIndicator,
   } = props;
@@ -102,7 +104,8 @@ export function renderLayoutSetE(props: SlideLayoutSetEProps): ReactNode | null 
               <div className={`w-20 h-0.5 bg-gradient-to-r ${colors.accentLine} to-transparent`} />
             </div>
 
-            {renderTitle({ className: "text-4xl md:text-5xl mb-8" })}
+            {renderTitle({ className: "text-4xl md:text-5xl mb-8", showSubtitle: isTitleSlide })}
+            {!isTitleSlide && renderDescription({ className: "mb-6" })}
             {renderEnhanced({})}
           </div>
 

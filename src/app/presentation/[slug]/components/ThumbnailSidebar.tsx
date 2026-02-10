@@ -31,6 +31,9 @@ interface ThumbnailSidebarProps {
     isMain: boolean
   ) => React.ReactNode;
   theme: Theme;
+  isFreeUserLimited?: boolean;
+  freeSlideLimit?: number;
+  halfBlurredSlideIndex?: number;
 }
 
 export function ThumbnailSidebar({
@@ -40,11 +43,22 @@ export function ThumbnailSidebar({
   onClose,
   renderSlide,
   theme,
+  isFreeUserLimited = false,
+  freeSlideLimit,
+  halfBlurredSlideIndex,
 }: ThumbnailSidebarProps) {
   const themeType = getThemeType(theme);
   const ui = getUIColors(themeType);
   const modalColors = getModalColors(theme);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  
+  // Filter slides based on lock status
+  const visibleSlides = slides.filter((_, index) => {
+    if (!isFreeUserLimited) return true;
+    if (freeSlideLimit === undefined || halfBlurredSlideIndex === undefined) return true;
+    // Show slides up to and including the half-blurred slide
+    return index <= halfBlurredSlideIndex;
+  });
   
   // Check if theme has a background image
   const hasBgImage = !!(theme.backgroundImage || theme.previewBackgroundImage);
@@ -107,34 +121,38 @@ export function ThumbnailSidebar({
 
           {/* Slide list */}
           <div className="space-y-0.5 max-h-[60vh] overflow-y-auto scrollbar-thin">
-            {slides.map((slide, index) => (
-              <button
-                key={index}
-                onClick={() => onSlideClick(index)}
-                className="w-full flex items-center gap-1.5"
-              >
-                <div
-                  className="w-5 h-5 shrink-0 flex items-center justify-center rounded text-[10px] font-semibold transition-colors"
-                  style={
-                    currentSlide === index
-                      ? { backgroundColor: modalColors.accent, color: "#ffffff" }
-                      : { backgroundColor: modalColors.surface, color: modalColors.textMuted }
-                  }
+            {visibleSlides.map((slide, visibleIndex) => {
+              // Get the original index from the full slides array
+              const originalIndex = slides.indexOf(slide);
+              return (
+                <button
+                  key={originalIndex}
+                  onClick={() => onSlideClick(originalIndex)}
+                  className="w-full flex items-center gap-1.5"
                 >
-                  {index + 1}
-                </div>
-                <div
-                  className="flex-1 text-left py-1 px-1.5 rounded text-xs truncate transition-colors"
-                  style={
-                    currentSlide === index
-                      ? { backgroundColor: modalColors.surface, color: modalColors.accent }
-                      : { color: modalColors.text }
-                  }
-                >
-                  {slide.title || slide.subtitle || `Slide ${index + 1}`}
-                </div>
-              </button>
-            ))}
+                  <div
+                    className="w-5 h-5 shrink-0 flex items-center justify-center rounded text-[10px] font-semibold transition-colors"
+                    style={
+                      currentSlide === originalIndex
+                        ? { backgroundColor: modalColors.accent, color: "#ffffff" }
+                        : { backgroundColor: modalColors.surface, color: modalColors.textMuted }
+                    }
+                  >
+                    {originalIndex + 1}
+                  </div>
+                  <div
+                    className="flex-1 text-left py-1 px-1.5 rounded text-xs truncate transition-colors"
+                    style={
+                      currentSlide === originalIndex
+                        ? { backgroundColor: modalColors.surface, color: modalColors.accent }
+                        : { color: modalColors.text }
+                    }
+                  >
+                    {slide.title || slide.subtitle || `Slide ${originalIndex + 1}`}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </aside>
       </div>
@@ -191,35 +209,39 @@ export function ThumbnailSidebar({
       <div
         className={`flex-1 overflow-y-auto px-2 pb-2 scrollbar-thin ${ui.scrollbar} space-y-1.5`}
       >
-        {slides.map((slide, index) => (
-          <button
-            key={index}
-            onClick={() => onSlideClick(index)}
-            className="w-full group relative"
-          >
-            <div
-              className="aspect-video overflow-hidden rounded ring-1"
-              style={{
-                boxShadow: currentSlide === index ? `0 0 0 2px ${modalColors.accent}` : undefined,
-                ["--tw-ring-color" as string]: currentSlide === index 
-                  ? modalColors.accent 
-                  : modalColors.border,
-                willChange: "box-shadow",
-              }}
+        {visibleSlides.map((slide, visibleIndex) => {
+          // Get the original index from the full slides array
+          const originalIndex = slides.indexOf(slide);
+          return (
+            <button
+              key={originalIndex}
+              onClick={() => onSlideClick(originalIndex)}
+              className="w-full group relative"
             >
-              {renderSlide(slide, index, false)}
-            </div>
-            <div
-              className="absolute bottom-1 left-1 px-1 py-0.5 rounded text-[8px] font-semibold"
-              style={{ 
-                backgroundColor: modalColors.isDark ? "rgba(0, 0, 0, 0.7)" : "rgba(255, 255, 255, 0.9)",
-                color: modalColors.text
-              }}
-            >
-              {index + 1}
-            </div>
-          </button>
-        ))}
+              <div
+                className="aspect-video overflow-hidden rounded ring-1"
+                style={{
+                  boxShadow: currentSlide === originalIndex ? `0 0 0 2px ${modalColors.accent}` : undefined,
+                  ["--tw-ring-color" as string]: currentSlide === originalIndex 
+                    ? modalColors.accent 
+                    : modalColors.border,
+                  willChange: "box-shadow",
+                }}
+              >
+                {renderSlide(slide, originalIndex, false)}
+              </div>
+              <div
+                className="absolute bottom-1 left-1 px-1 py-0.5 rounded text-[8px] font-semibold"
+                style={{ 
+                  backgroundColor: modalColors.isDark ? "rgba(0, 0, 0, 0.7)" : "rgba(255, 255, 255, 0.9)",
+                  color: modalColors.text
+                }}
+              >
+                {originalIndex + 1}
+              </div>
+            </button>
+          );
+        })}
       </div>
     </aside>
   );

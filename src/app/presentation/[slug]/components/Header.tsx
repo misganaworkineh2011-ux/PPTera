@@ -57,6 +57,7 @@ interface HeaderProps {
   presentZoom?: number;
   isSpotlightActive?: boolean;
   currentSlide?: number;
+  subscriptionPlan?: string | null;
   onBack: () => void;
   onEditTitle: () => void;
   onTitleChange: (v: string) => void;
@@ -103,6 +104,7 @@ export function Header({
   presentZoom = 100,
   isSpotlightActive = false,
   currentSlide = 0,
+  subscriptionPlan,
   onBack,
   onEditTitle,
   onTitleChange,
@@ -136,6 +138,9 @@ export function Header({
   // Get translations
   const { language } = useLanguage();
   const t = dashboardTranslations[language] || dashboardTranslations.en;
+
+  // Check if user is free
+  const isFreeUser = !subscriptionPlan || subscriptionPlan.toLowerCase() === 'free';
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -267,14 +272,28 @@ export function Header({
                 >
                   <div className="p-2">
                     <button
-                      onClick={() => { onOpenThemes?.(); setShowMoreMenu(false); }}
+                      onClick={() => { 
+                        if (isFreeUser) {
+                          onUpgrade?.();
+                        } else {
+                          onOpenThemes?.();
+                        }
+                        setShowMoreMenu(false);
+                      }}
                       className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${ui.headerHover} ${ui.headerText}`}
                     >
                       <Palette size={16} />
                       <span>{t.themeBtn || "Theme"}</span>
                     </button>
                     <button
-                      onClick={() => { onOpenAgent?.(); setShowMoreMenu(false); }}
+                      onClick={() => { 
+                        if (isFreeUser) {
+                          onUpgrade?.();
+                        } else {
+                          onOpenAgent?.();
+                        }
+                        setShowMoreMenu(false);
+                      }}
                       className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${ui.headerHover} ${ui.headerText}`}
                     >
                       <Sparkles size={16} />
@@ -407,12 +426,19 @@ export function Header({
           {/* Agent button - icon + text with dropdown arrow */}
           {isOwner && onOpenAgent && (
             <button
-              onClick={onOpenAgent}
+              onClick={() => {
+                if (isFreeUser) {
+                  onUpgrade?.();
+                } else {
+                  onOpenAgent();
+                }
+              }}
               className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors border ${
                 themeType === "light" || themeType === "corporate"
                   ? "bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200"
                   : "bg-zinc-800 border-zinc-700 text-zinc-200 hover:bg-zinc-700"
               }`}
+              title={isFreeUser ? "Upgrade to unlock AI Agent" : undefined}
             >
               <Sparkles size={16} />
               <span>{t.agentBtn || "Agent"}</span>
@@ -673,8 +699,16 @@ export function Header({
                       {/* Mobile-only: Agent */}
                       {onOpenAgent && (
                         <button
-                          onClick={() => { onOpenAgent(); setShowMoreMenu(false); }}
+                          onClick={() => { 
+                            if (isFreeUser) {
+                              onUpgrade?.();
+                            } else {
+                              onOpenAgent();
+                            }
+                            setShowMoreMenu(false);
+                          }}
                           className={`sm:hidden w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${ui.headerHover} ${ui.headerText}`}
+                          title={isFreeUser ? "Upgrade to unlock AI Agent" : undefined}
                         >
                           <Sparkles size={16} />
                           <span>{t.agentBtn || "Agent"}</span>

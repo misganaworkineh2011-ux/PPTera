@@ -12,6 +12,12 @@ export function getLayoutCategory(layoutId: string): ContentLayoutCategory {
   if (layoutId.startsWith("steps-")) return "steps";
   if (layoutId.startsWith("quote-")) return "quotes";
   if (layoutId.startsWith("circle-")) return "circles";
+  if (layoutId.startsWith("cascading-")) return "cascading";
+  if (layoutId.startsWith("chevron-")) return "chevron";
+  if (layoutId.startsWith("funnel-")) return "funnel";
+  if (layoutId.startsWith("proscons-")) return "proscons";
+  if (layoutId.startsWith("beforeafter-")) return "beforeafter";
+  if (layoutId.startsWith("comparison-")) return "comparison";
   if (layoutId.startsWith("image-style-")) return "images";
   return "boxes";
 }

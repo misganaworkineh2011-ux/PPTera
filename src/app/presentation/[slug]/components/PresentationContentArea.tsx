@@ -57,6 +57,11 @@ interface PresentationContentAreaProps {
   onShowNavbarInFullscreen: () => void;
   onHideNavbarInFullscreen: () => void;
   onShare: () => void;
+  subscriptionPlan?: string | null;
+  isFreeUserLimited?: boolean;
+  freeSlideLimit?: number;
+  halfBlurredSlideIndex?: number;
+  onUpgrade?: () => void;
 }
 
 export function PresentationContentArea({
@@ -97,6 +102,11 @@ export function PresentationContentArea({
   onShowNavbarInFullscreen,
   onHideNavbarInFullscreen,
   onShare,
+  subscriptionPlan,
+  isFreeUserLimited = false,
+  freeSlideLimit,
+  halfBlurredSlideIndex,
+  onUpgrade,
 }: PresentationContentAreaProps) {
   const ui = getUIColors(getThemeType(theme));
 
@@ -131,6 +141,9 @@ export function PresentationContentArea({
                   onClose={onCloseThumbnails}
                   renderSlide={renderSlide}
                   theme={theme}
+                  isFreeUserLimited={isFreeUserLimited}
+                  freeSlideLimit={freeSlideLimit}
+                  halfBlurredSlideIndex={halfBlurredSlideIndex}
                 />
               )}
               <div className="mx-auto" style={{ maxWidth: "1300px" }}>
@@ -147,6 +160,11 @@ export function PresentationContentArea({
                   onAddSlideAt={onAddSlideAt}
                   onAddAISlide={onAddAISlide}
                   presentationTitle={presentationTitle}
+                  subscriptionPlan={subscriptionPlan}
+                  isFreeUserLimited={isFreeUserLimited}
+                  freeSlideLimit={freeSlideLimit}
+                  halfBlurredSlideIndex={halfBlurredSlideIndex}
+                  onUpgrade={onUpgrade}
                 />
               </div>
             </div>
@@ -172,6 +190,9 @@ export function PresentationContentArea({
                   onClose={onCloseThumbnails}
                   renderSlide={renderSlide}
                   theme={theme}
+                  isFreeUserLimited={isFreeUserLimited}
+                  freeSlideLimit={freeSlideLimit}
+                  halfBlurredSlideIndex={halfBlurredSlideIndex}
                 />
               )}
 

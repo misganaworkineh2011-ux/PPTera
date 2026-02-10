@@ -10,12 +10,14 @@ import {
   Languages,
   FileText,
   Minimize2,
+  Lock,
 } from "lucide-react";
 import type { Theme } from "~/lib/themes";
 import type { SlideData } from "~/components/presentation/types";
 import { getModalColors } from "./ui-colors";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
+import PricingModal from "~/components/dashboard/PricingModal";
 
 interface AgentPanelProps {
   isOpen: boolean;
@@ -27,6 +29,7 @@ interface AgentPanelProps {
   presentationId: string;
   onUpdateSlide: (index: number, slide: SlideData) => void;
   onSetEditingSlide?: (index: number | null) => void;
+  subscriptionPlan?: string | null;
 }
 
 interface QuickAction {
@@ -110,6 +113,7 @@ export function AgentPanel({
   presentationId,
   onUpdateSlide,
   onSetEditingSlide,
+  subscriptionPlan,
 }: AgentPanelProps) {
   const [prompt, setPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -117,11 +121,15 @@ export function AgentPanel({
   const [credits, setCredits] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [slideProgress, setSlideProgress] = useState<SlideProgress[]>([]);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
   // Get translations
   const { language } = useLanguage();
   const t = dashboardTranslations[language] || dashboardTranslations.en;
+  
+  // Check if user is free
+  const isFreeUser = !subscriptionPlan || subscriptionPlan === 'free';
   
   // Keep a ref to track the latest slides during streaming
   const slidesRef = useRef<SlideData[]>(slides);
@@ -436,6 +444,8 @@ export function AgentPanel({
     accent: theme.colors.primary,
   };
 
+
+
   return (
     <>
       {/* Backdrop */}
@@ -468,6 +478,12 @@ export function AgentPanel({
               >
                 {t.editAllCards || "Edit all cards"}
               </h3>
+              {isFreeUser && (
+                <p className="text-xs flex items-center gap-1" style={{ color: themeStyles.textMuted }}>
+                  <Lock size={12} />
+                  Upgrade to unlock
+                </p>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -581,7 +597,7 @@ export function AgentPanel({
                 <span className="text-lg">+</span>
               </button>
               <button
-                onClick={() => handleSubmitStreaming()}
+                onClick={() => isFreeUser ? setShowUpgradeModal(true) : handleSubmitStreaming()}
                 disabled={!prompt.trim() || isLoading}
                 className="p-2 rounded-lg transition-colors"
                 style={{
@@ -592,6 +608,8 @@ export function AgentPanel({
               >
                 {isLoading ? (
                   <Loader2 size={16} className="animate-spin" />
+                ) : isFreeUser ? (
+                  <Lock size={16} />
                 ) : (
                   <Send size={16} />
                 )}
@@ -621,8 +639,8 @@ export function AgentPanel({
                   .map((action) => (
                     <button
                       key={action.id}
-                      onClick={() => handleQuickAction(action)}
-                      disabled={isLoading}
+                      onClick={() => isFreeUser ? setShowUpgradeModal(true) : handleQuickAction(action)}
+                      disabled={isLoading || isFreeUser}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-colors disabled:opacity-50"
                       style={{ 
                         backgroundColor: themeStyles.pillBg, 
@@ -647,8 +665,8 @@ export function AgentPanel({
                   .map((action) => (
                     <button
                       key={action.id}
-                      onClick={() => handleQuickAction(action)}
-                      disabled={isLoading}
+                      onClick={() => isFreeUser ? setShowUpgradeModal(true) : handleQuickAction(action)}
+                      disabled={isLoading || isFreeUser}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-colors disabled:opacity-50"
                       style={{ 
                         backgroundColor: themeStyles.pillBg, 
@@ -664,6 +682,13 @@ export function AgentPanel({
           )}
         </div>
       </div>
+
+      {/* Pricing Modal */}
+      <PricingModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        currentPlan={subscriptionPlan}
+      />
     </>
   );
 }

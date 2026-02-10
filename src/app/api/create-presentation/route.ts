@@ -16,6 +16,12 @@ import type { BoxLayoutType } from "~/lib/layouts/content/boxes";
 import { generateSlug } from "~/lib/utils";
 import type { ChartData } from "~/lib/blocks";
 
+// Icon placeholder type (for future icon support)
+interface IconPlaceholder {
+  name: string;
+  position?: string;
+}
+
 interface SlideInput {
   type: "title" | "content";
   title: string;
@@ -123,9 +129,31 @@ export async function POST(request: Request) {
       );
     }
 
-    // Credit check: 4 credits per slide (no charge for outline)
+    // Free user check: Generate ALL slides but mark locked ones
+    const isFreeUser = !user.subscriptionPlan || user.subscriptionPlan.toLowerCase() === 'free';
     const requestedSlideCount = slides.length;
-    const creditsNeeded = calculateSlideCredits(requestedSlideCount);
+    
+    // For free users: generate all slides, but mark which are locked
+    // Show first half fully, one slide half-blurred, rest hidden
+    const freeSlideLimit = Math.floor(requestedSlideCount / 2); // e.g., 5 for 10 slides, 4 for 8 slides
+    const halfBlurredSlideIndex = freeSlideLimit; // The slide after the free ones (0-indexed)
+    
+    // All slides will be created, but we'll mark the locked state
+    const slidesToCreate = slides; // Generate ALL slides
+    const actualSlideCount = slidesToCreate.length;
+
+    console.log("[create-presentation] Slide limiting:", {
+      isFreeUser,
+      subscriptionPlan: user.subscriptionPlan,
+      requestedSlideCount,
+      actualSlideCount,
+      freeSlideLimit,
+      halfBlurredSlideIndex,
+      willShowBlurred: isFreeUser && requestedSlideCount > freeSlideLimit,
+    });
+
+    // Credit check: 4 credits per slide (only for slides we're actually creating)
+    const creditsNeeded = calculateSlideCredits(actualSlideCount);
 
     if (user.credits < creditsNeeded) {
       return NextResponse.json(
@@ -144,8 +172,8 @@ export async function POST(request: Request) {
 
     // STREAMING MODE: Create presentation immediately with pending slides, redirect to page
     if (streaming) {
-      const presentationTitle = slides[0]?.type === "title" && slides[0]?.title
-        ? slides[0].title
+      const presentationTitle = slidesToCreate[0]?.type === "title" && slidesToCreate[0]?.title
+        ? slidesToCreate[0].title
         : metadata.topic || "Untitled Presentation";
       const slug = generateSlug(presentationTitle);
 
@@ -169,26 +197,38 @@ export async function POST(request: Request) {
             textDensity,
             metadata,
             createdFrom: "outline",
-            // Store slides for streaming processing
-            pendingSlides: slides,
+            // Store slides for streaming processing (ALL slides)
+            pendingSlides: slidesToCreate,
             streamingComplete: false,
+            // Store lock information for free users
+            ...(isFreeUser && requestedSlideCount > freeSlideLimit ? {
+              isFreeUserLimited: true,
+              freeSlideLimit, // Number of fully visible slides
+              halfBlurredSlideIndex, // Index of the half-blurred slide
+              totalRequestedSlides: requestedSlideCount,
+            } : {}),
           },
           slides: [], // Empty - will be populated by streaming
           userId: user.id,
         },
       });
 
-      // Deduct credits based on requested slide count (4 credits per slide)
+      // Deduct credits based on actual slides created (4 credits per slide)
       // Outline generation itself is free; we only charge when presentation is created
-      const creditsUsed = calculateSlideCredits(requestedSlideCount);
+      const creditsUsed = calculateSlideCredits(actualSlideCount);
       await db.user.update({
         where: { id: user.id },
         data: { credits: { decrement: creditsUsed } },
       });
 
-      console.log("[create-presentation] Created presentation with outlineId:", validOutlineId);
+      console.log("[create-presentation] Created presentation with outlineId:", validOutlineId, {
+        isFreeUser,
+        requestedSlides: requestedSlideCount,
+        createdSlides: actualSlideCount,
+        hasLockedSlides: isFreeUser && requestedSlideCount > 5,
+      });
 
-      const redirectUrl = `/presentation/${slug}-${presentation.id}?mode=ai&streaming=true`;
+      const redirectUrl = `/presentation/${slug}-${presentation.id}?mode=ai&streaming=true${isFreeUser && requestedSlideCount > freeSlideLimit ? '&showUpgrade=true' : ''}`;
 
       return NextResponse.json({
         success: true,
@@ -197,12 +237,22 @@ export async function POST(request: Request) {
         slug,
         redirectUrl,
         streaming: true,
+        isLimited: isFreeUser && requestedSlideCount > freeSlideLimit,
+        createdSlides: actualSlideCount,
+        totalSlides: requestedSlideCount,
+        freeSlideLimit: isFreeUser ? freeSlideLimit : undefined,
+        halfBlurredSlideIndex: isFreeUser ? halfBlurredSlideIndex : undefined,
+        // Include info about locked slides
+        ...(isFreeUser && requestedSlideCount > freeSlideLimit ? {
+          lockedSlidesCount: requestedSlideCount - freeSlideLimit - 1, // -1 for the half-blurred slide
+          showUpgradePrompt: true,
+        } : {}),
       });
     }
 
     // NON-STREAMING MODE: Process everything before responding (legacy)
-    // Step 1: Transform slides with all visual enhancements
-    let presentationSlides: PresentationSlide[] = slides.map((slide) => {
+    // Step 1: Transform slides with all visual enhancements (only for slides we're creating)
+    let presentationSlides: PresentationSlide[] = slidesToCreate.map((slide) => {
       // Transform bullet points based on semantic intent and visual strategy
       const transformedContent = slide.type === "content" 
         ? transformBullets(slide, textDensity)
@@ -268,7 +318,7 @@ export async function POST(request: Request) {
     // Step 2: Handle images based on image source
     if (imageSource === "stock-photos") {
       // Use enhanced Pexels search with promptHint
-      const slidesWithMetadata: SlideWithVisualMetadata[] = slides.map(slide => ({
+      const slidesWithMetadata: SlideWithVisualMetadata[] = slidesToCreate.map(slide => ({
         type: slide.type,
         title: slide.title,
         subtitle: slide.subtitle,
@@ -297,7 +347,7 @@ export async function POST(request: Request) {
       });
     } else if (imageSource === "ai-generated") {
       // Use Gemini / Imagen AI for image generation (backed by Cloudinary for persistence)
-      const slidesWithMetadata = slides.map(slide => ({
+      const slidesWithMetadata = slidesToCreate.map(slide => ({
         type: slide.type,
         title: slide.title,
         assets: slide.assets,
@@ -323,7 +373,7 @@ export async function POST(request: Request) {
     } else if (imageSource === "placeholders") {
       // Add placeholder markers for slides that require images
       presentationSlides = presentationSlides.map((slide, index) => {
-        const originalSlide = slides[index];
+        const originalSlide = slidesToCreate[index];
         const requiresImage = originalSlide?.type === "title"
           ? (originalSlide.image?.required ?? true)
           : (originalSlide?.assets?.image?.required ?? false);
@@ -383,6 +433,12 @@ export async function POST(request: Request) {
           textDensity: textDensity,
           metadata: metadata,
           createdFrom: "outline",
+          // Store info about locked slides for free users
+          ...(isFreeUser && requestedSlideCount > 5 ? {
+            lockedSlides: slides.slice(5), // Store the locked slides
+            totalRequestedSlides: requestedSlideCount,
+            isFreeUserLimited: true,
+          } : {}),
         },
         slides: presentationSlides,
         userId: user.id,
@@ -397,8 +453,7 @@ export async function POST(request: Request) {
     });
 
     // Deduct credits based on actual slide count (4 credits per slide)
-    const actualSlideCount = presentationSlides.length;
-    const creditsUsed = calculateSlideCredits(actualSlideCount);
+    const creditsUsed = calculateSlideCredits(presentationSlides.length);
 
     await db.user.update({
       where: { id: user.id },
@@ -431,7 +486,7 @@ export async function POST(request: Request) {
 
     // Generate the redirect URL
     // Format: /presentation/{slug}-{id}?mode=ai
-    const redirectUrl = `/presentation/${slug}-${presentation.id}?mode=ai`;
+    const redirectUrl = `/presentation/${slug}-${presentation.id}?mode=ai${isFreeUser && requestedSlideCount > 5 ? '&showUpgrade=true' : ''}`;
 
     return NextResponse.json({
       success: true,
@@ -443,6 +498,9 @@ export async function POST(request: Request) {
       imagesAdded: presentationSlides.filter((s) => s.image?.url).length,
       chartsAdded: presentationSlides.filter((s) => s.chart).length,
       iconsAdded: presentationSlides.filter((s) => s.icons?.length).length,
+      isLimited: isFreeUser && requestedSlideCount > 5,
+      createdSlides: actualSlideCount,
+      totalSlides: requestedSlideCount,
     });
   } catch (error) {
     console.error("Error creating presentation:", error);

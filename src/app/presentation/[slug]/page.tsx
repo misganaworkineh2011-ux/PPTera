@@ -12,6 +12,7 @@ interface PresentationPageProps {
   searchParams: Promise<{
     mode?: string;
     streaming?: string;
+    showUpgrade?: string;
   }>;
 }
 
@@ -46,8 +47,9 @@ export default async function PresentationPage({
   searchParams,
 }: PresentationPageProps) {
   const { slug } = await params;
-  const { mode, streaming } = await searchParams;
+  const { mode, streaming, showUpgrade } = await searchParams;
   const isStreaming = streaming === "true";
+  const shouldShowUpgrade = showUpgrade === "true";
   
   // requireAuth() returns the database user directly
   const user = await requireAuth();
@@ -182,6 +184,12 @@ export default async function PresentationPage({
   const pendingSlides = (content as Record<string, unknown>)?.pendingSlides as unknown[] | undefined;
   const totalSlidesForStreaming = pendingSlides?.length || slides.length;
 
+  // Extract lock metadata for free users
+  const contentData = content as Record<string, unknown>;
+  const isFreeUserLimited = contentData?.isFreeUserLimited === true;
+  const freeSlideLimit = typeof contentData?.freeSlideLimit === 'number' ? contentData.freeSlideLimit : undefined;
+  const halfBlurredSlideIndex = typeof contentData?.halfBlurredSlideIndex === 'number' ? contentData.halfBlurredSlideIndex : undefined;
+
   return (
     <PresentationViewer
       presentation={{
@@ -202,6 +210,10 @@ export default async function PresentationPage({
       isStreaming={isStreaming}
       totalSlidesForStreaming={totalSlidesForStreaming}
       subscriptionPlan={user.subscriptionPlan}
+      shouldShowUpgradeModal={shouldShowUpgrade}
+      isFreeUserLimited={isFreeUserLimited}
+      freeSlideLimit={freeSlideLimit}
+      halfBlurredSlideIndex={halfBlurredSlideIndex}
     />
   );
 }

@@ -13,7 +13,10 @@ export interface CircleContentItem {
 // Circle layout type identifier
 export type CircleLayoutType =
   | "circle-arc" // Arc/semi-circle with dynamic segments, content around edges
-  | "circle-ring"; // Full ring with dynamic segments, content distributed around
+  | "circle-ring" // Full ring with dynamic segments, content distributed around
+  | "circle-workflow" // Circular workflow with arrows and numbered steps
+  | "circle-focus" // Core focus areas with radiating segments and callouts
+  | "circle-petal"; // Iterative cycle with overlapping petal circles
 
 // Circle layout definition interface
 export interface CircleLayout {
@@ -33,7 +36,7 @@ export interface CircleLayout {
   };
 }
 
-// 1 Specific Circle Layout Definition - Now fully dynamic
+// Specific Circle Layout Definitions - Now fully dynamic
 export const circleLayouts: CircleLayout[] = [
   // Style 1: Ring Layout - Dynamic segments
   {
@@ -49,6 +52,54 @@ export const circleLayouts: CircleLayout[] = [
     preview: {
       shape: "ring",
       segments: 3,
+    },
+  },
+  // Style 2: Workflow Layout - Circular process with arrows
+  {
+    id: "circle-workflow",
+    name: "Workflow Process",
+    description: "Circular workflow with arrows and numbered steps on the side",
+    category: "circles",
+    minItems: 2,
+    maxItems: 6,
+    idealItems: 5,
+    adaptive: true,
+    supportsIcons: true,
+    preview: {
+      shape: "ring",
+      segments: 5,
+    },
+  },
+  // Style 3: Focus Areas - Radiating segments with callouts
+  {
+    id: "circle-focus",
+    name: "Core Focus Areas",
+    description: "Radiating segments from center with numbered callout boxes",
+    category: "circles",
+    minItems: 2,
+    maxItems: 4,
+    idealItems: 3,
+    adaptive: true,
+    supportsIcons: true,
+    preview: {
+      shape: "ring",
+      segments: 3,
+    },
+  },
+  // Style 4: Petal Cycle - Overlapping circles in flower pattern
+  {
+    id: "circle-petal",
+    name: "Iterative Cycle",
+    description: "Overlapping petal circles with side content boxes for cyclical processes",
+    category: "circles",
+    minItems: 3,
+    maxItems: 5,
+    idealItems: 5,
+    adaptive: true,
+    supportsIcons: true,
+    preview: {
+      shape: "ring",
+      segments: 5,
     },
   },
 ];

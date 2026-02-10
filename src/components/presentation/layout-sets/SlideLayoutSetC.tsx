@@ -40,6 +40,7 @@ interface SlideLayoutSetCProps {
   onAddBullet: (slideIndex: number) => void;
   onDeleteBullet: (slideIndex: number, bulletIndex: number) => void;
   renderTitle: (props: { className?: string; align?: "left" | "center" | "right"; showSubtitle?: boolean }) => ReactNode;
+  renderDescription: (props?: { className?: string; align?: "left" | "center" | "right" }) => ReactNode;
   renderIndicator: (position: "top-left" | "top-right") => ReactNode;
   renderImageBlock: (props: { className?: string; size?: "small" | "medium" | "large"; imageIndex?: number }) => ReactNode;
 }
@@ -67,6 +68,7 @@ export function renderLayoutSetC(props: SlideLayoutSetCProps): ReactNode | null 
     onAddBullet,
     onDeleteBullet,
     renderTitle,
+    renderDescription,
     renderIndicator,
     renderImageBlock,
   } = props;
@@ -92,7 +94,8 @@ export function renderLayoutSetC(props: SlideLayoutSetCProps): ReactNode | null 
 
           {!hasImage && (
             <div className="p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20">
-              {renderTitle({ className: "text-xl sm:text-2xl md:text-3xl lg:text-4xl text-center", align: "center" })}
+              {renderTitle({ className: "text-xl sm:text-2xl md:text-3xl lg:text-4xl text-center", align: "center", showSubtitle: isTitleSlide })}
+              {!isTitleSlide && renderDescription({ className: "mt-3 sm:mt-4", align: "center" })}
             </div>
           )}
 
@@ -149,7 +152,8 @@ export function renderLayoutSetC(props: SlideLayoutSetCProps): ReactNode | null 
               "
             </div>
 
-            {renderTitle({ className: "text-3xl md:text-4xl lg:text-5xl mb-8 italic", align: "center" })}
+            {renderTitle({ className: "text-3xl md:text-4xl lg:text-5xl mb-8 italic", align: "center", showSubtitle: isTitleSlide })}
+            {!isTitleSlide && renderDescription({ className: "mt-4", align: "center" })}
 
             {bulletPoints.length > 0 && (
               <div className="mt-8 space-y-2">
@@ -200,7 +204,8 @@ export function renderLayoutSetC(props: SlideLayoutSetCProps): ReactNode | null 
           <div className="absolute left-24 top-24 bottom-12 w-px" style={{ backgroundColor: colors.accent, opacity: 0.3 }} />
 
           <div className="flex-1 p-12 pt-20 pl-32">
-            {renderTitle({ className: "text-3xl md:text-4xl mb-10" })}
+            {renderTitle({ className: "text-3xl md:text-4xl mb-10", showSubtitle: isTitleSlide })}
+            {!isTitleSlide && renderDescription({ className: "mb-6" })}
 
             <div className="space-y-6">
               {bulletPoints.map((point, i) => (

@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { db } from "~/server/db";
 import { env } from "~/env";
 import { searchPexelsPhotos } from "~/lib/pexels";
@@ -8,6 +9,26 @@ import { type LayoutType, slideLayouts } from "~/lib/slide-layouts";
 import { CHART_TEMPLATES, type ChartType, type ChartDataPoint } from "~/lib/charts/types";
 
 const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
+const gemini = env.GEMINI_API_KEY ? new GoogleGenerativeAI(env.GEMINI_API_KEY) : null;
+
+// Helper to clean and parse JSON from AI responses (handles markdown fences)
+function parseAIJson<T>(responseText: string): T {
+  let jsonText = responseText.trim();
+  
+  // Remove markdown code fences if present (```json ... ``` or ``` ... ```)
+  if (jsonText.startsWith("```")) {
+    jsonText = jsonText.replace(/^```[a-zA-Z]*\s*/, "").replace(/```\s*$/, "").trim();
+  }
+  
+  // Extract JSON from first { to last } (handles extra text before/after)
+  const firstBrace = jsonText.indexOf("{");
+  const lastBrace = jsonText.lastIndexOf("}");
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    jsonText = jsonText.slice(firstBrace, lastBrace + 1);
+  }
+  
+  return JSON.parse(jsonText);
+}
 
 interface SlideImage {
   url: string;
@@ -276,23 +297,60 @@ Use an IMAGE instead when:
 10. For categorical comparisons, use bar charts with descriptive labels
 11. For proportions that sum to 100%, use pie/donut charts`;
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: `Create a slide: "${prompt}"` },
-      ],
-      response_format: { type: "json_object" },
-      max_tokens: 2000,
-      temperature: 0.7,
-    });
+    let responseText: string;
+    
+    // Try Gemini first
+    if (gemini) {
+      try {
+        console.log("[generate-slide] Using Gemini API...");
+        const model = gemini.getGenerativeModel({ 
+          model: "gemini-flash-latest",
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 2000,
+            responseMimeType: "application/json",
+          },
+        });
 
-    const responseText = completion.choices[0]?.message?.content?.trim() || "{}";
+        const geminiPrompt = `${systemPrompt}\n\nCreate a slide: "${prompt}"`;
+        const result = await model.generateContent(geminiPrompt);
+        const response = await result.response;
+        responseText = response.text()?.trim() || "{}";
+      } catch (geminiError) {
+        console.warn("[generate-slide] Gemini failed, falling back to OpenAI:", geminiError);
+        // Fallback to OpenAI
+        const completion = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: `Create a slide: "${prompt}"` },
+          ],
+          response_format: { type: "json_object" },
+          max_tokens: 2000,
+          temperature: 0.7,
+        });
+        responseText = completion.choices[0]?.message?.content?.trim() || "{}";
+      }
+    } else {
+      // No Gemini, use OpenAI
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Create a slide: "${prompt}"` },
+        ],
+        response_format: { type: "json_object" },
+        max_tokens: 2000,
+        temperature: 0.7,
+      });
+      responseText = completion.choices[0]?.message?.content?.trim() || "{}";
+    }
     
     let generatedSlide: GeneratedSlide;
     try {
-      generatedSlide = JSON.parse(responseText);
-    } catch {
+      generatedSlide = parseAIJson<GeneratedSlide>(responseText);
+    } catch (parseError) {
+      console.error("Failed to parse AI response:", parseError, "Response:", responseText);
       return NextResponse.json(
         { error: "Failed to parse AI response" },
         { status: 500 }

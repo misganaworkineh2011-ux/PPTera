@@ -22,4 +22,12 @@ export interface PresentationViewerProps {
   totalSlidesForStreaming?: number;
   /** User's subscription plan for model access */
   subscriptionPlan?: string | null;
+  /** Show upgrade modal on load (for free users with limited slides) */
+  shouldShowUpgradeModal?: boolean;
+  /** Free user limitation flag */
+  isFreeUserLimited?: boolean;
+  /** Number of fully visible slides for free users */
+  freeSlideLimit?: number;
+  /** Index of the half-blurred slide for free users */
+  halfBlurredSlideIndex?: number;
 }

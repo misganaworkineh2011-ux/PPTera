@@ -15,6 +15,9 @@ import {
 import EditableText from "~/components/presentation/EditableText";
 import { CONTENT_FONT_SIZE } from "~/components/presentation/slide-typography";
 import type { Theme } from "~/lib/themes";
+import { CircularWorkflowRenderer } from "./CircularWorkflowRenderer";
+import { CircularFocusRenderer } from "./CircularFocusRenderer";
+import { CircularPetalRenderer } from "./CircularPetalRenderer";
 
 // Animation variants for staggered circle animations
 const containerVariants = {
@@ -97,6 +100,7 @@ interface CircleLayoutRendererProps {
   className?: string;
   isPresenting?: boolean;
   animationKey?: string;
+  centerText?: string; // Optional center text for workflow/focus/petal layouts
   // Editing props
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
@@ -104,6 +108,8 @@ interface CircleLayoutRendererProps {
   onStartEditText?: (index: number) => void;
   onUpdateLabel?: (index: number, value: string) => void;
   onUpdateText?: (index: number, value: string) => void;
+  onStartEditCenterText?: () => void;
+  onUpdateCenterText?: (value: string) => void;
   onFinishEditing?: () => void;
   onDeleteItem?: (index: number) => void;
   onReorderItems?: (fromIndex: number, toIndex: number) => void;
@@ -136,12 +142,15 @@ export function CircleLayoutRenderer({
   className = "",
   isPresenting = false,
   animationKey,
+  centerText,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
   onStartEditText,
   onUpdateLabel,
   onUpdateText,
+  onStartEditCenterText,
+  onUpdateCenterText,
   onFinishEditing,
   onDeleteItem,
   isOwner = false,
@@ -171,6 +180,90 @@ export function CircleLayoutRenderer({
         onStartEditText={onStartEditText}
         onUpdateLabel={onUpdateLabel}
         onUpdateText={onUpdateText}
+        onFinishEditing={onFinishEditing}
+        onDeleteItem={onDeleteItem}
+        isOwner={isOwner}
+        isHovered={isHovered}
+        spotlightIndex={effectiveSpotlightIndex}
+        isSpotlightMode={effectiveIsSpotlightMode}
+      />
+    );
+  }
+
+  if (layoutId === "circle-workflow") {
+    return (
+      <CircularWorkflowRenderer
+        items={displayItems}
+        theme={theme}
+        accentColor={accentColor}
+        className={className}
+        isPresenting={isPresenting}
+        animationKey={animationKey}
+        centerText={centerText}
+        isEditing={isEditing}
+        editingText={editingText}
+        onStartEditLabel={onStartEditLabel}
+        onStartEditText={onStartEditText}
+        onUpdateLabel={onUpdateLabel}
+        onUpdateText={onUpdateText}
+        onStartEditCenterText={onStartEditCenterText}
+        onUpdateCenterText={onUpdateCenterText}
+        onFinishEditing={onFinishEditing}
+        onDeleteItem={onDeleteItem}
+        isOwner={isOwner}
+        isHovered={isHovered}
+        spotlightIndex={effectiveSpotlightIndex}
+        isSpotlightMode={effectiveIsSpotlightMode}
+      />
+    );
+  }
+
+  if (layoutId === "circle-focus") {
+    return (
+      <CircularFocusRenderer
+        items={displayItems}
+        theme={theme}
+        accentColor={accentColor}
+        className={className}
+        isPresenting={isPresenting}
+        animationKey={animationKey}
+        centerText={centerText}
+        isEditing={isEditing}
+        editingText={editingText}
+        onStartEditLabel={onStartEditLabel}
+        onStartEditText={onStartEditText}
+        onUpdateLabel={onUpdateLabel}
+        onUpdateText={onUpdateText}
+        onStartEditCenterText={onStartEditCenterText}
+        onUpdateCenterText={onUpdateCenterText}
+        onFinishEditing={onFinishEditing}
+        onDeleteItem={onDeleteItem}
+        isOwner={isOwner}
+        isHovered={isHovered}
+        spotlightIndex={effectiveSpotlightIndex}
+        isSpotlightMode={effectiveIsSpotlightMode}
+      />
+    );
+  }
+
+  if (layoutId === "circle-petal") {
+    return (
+      <CircularPetalRenderer
+        items={displayItems}
+        theme={theme}
+        accentColor={accentColor}
+        className={className}
+        isPresenting={isPresenting}
+        animationKey={animationKey}
+        centerText={centerText}
+        isEditing={isEditing}
+        editingText={editingText}
+        onStartEditLabel={onStartEditLabel}
+        onStartEditText={onStartEditText}
+        onUpdateLabel={onUpdateLabel}
+        onUpdateText={onUpdateText}
+        onStartEditCenterText={onStartEditCenterText}
+        onUpdateCenterText={onUpdateCenterText}
         onFinishEditing={onFinishEditing}
         onDeleteItem={onDeleteItem}
         isOwner={isOwner}
@@ -360,8 +453,8 @@ function ArcLayout({
           suppressHydrationWarning
         >
           {[0, 1, 2].map((segmentIndex) => {
-            const path = getArcSegmentPath(segmentIndex, 3, outerRadius, innerRadius, gapAngle, startOffset);
-            const iconPos = getArcIconPosition(segmentIndex, 3, (outerRadius + innerRadius) / 2, gapAngle, startOffset);
+            const path = getArcSegmentPath(segmentIndex, 3, outerRadius, innerRadius, gapAngle);
+            const iconPos = getArcIconPosition(segmentIndex, 3, (outerRadius + innerRadius) / 2, gapAngle);
             const item = items[segmentIndex];
             const style = getSpotlightStyle(segmentIndex, spotlightIndex, isSpotlightMode);
             const { transform, position, zIndex, ...svgStyle } = style as any;
@@ -387,8 +480,8 @@ function ArcLayout({
                   cx={iconPos.x}
                   cy={iconPos.y}
                   r={28}
-                  fill="white"
-                  stroke={`${themeStyles.accentColor}40`}
+                  fill={themeStyles.shapeBgColor}
+                  stroke={themeStyles.shapeBorderColor}
                   strokeWidth="2"
                   suppressHydrationWarning
                 />
@@ -451,8 +544,8 @@ function ArcLayout({
           suppressHydrationWarning
         >
           {[0, 1].map((segmentIndex) => {
-            const path = getArcSegmentPath(segmentIndex, 2, outerRadius, innerRadius, gapAngle, startOffset);
-            const iconPos = getArcIconPosition(segmentIndex, 2, (outerRadius + innerRadius) / 2, gapAngle, startOffset);
+            const path = getArcSegmentPath(segmentIndex, 2, outerRadius, innerRadius, gapAngle);
+            const iconPos = getArcIconPosition(segmentIndex, 2, (outerRadius + innerRadius) / 2, gapAngle);
             const item = items[segmentIndex];
             const style = getSpotlightStyle(segmentIndex, spotlightIndex, isSpotlightMode);
             const { transform, position, zIndex, ...svgStyle } = style as any;
@@ -478,8 +571,8 @@ function ArcLayout({
                   cx={iconPos.x}
                   cy={iconPos.y}
                   r={28}
-                  fill="white"
-                  stroke={`${themeStyles.accentColor}40`}
+                  fill={themeStyles.shapeBgColor}
+                  stroke={themeStyles.shapeBorderColor}
                   strokeWidth="2"
                   suppressHydrationWarning
                 />
@@ -544,8 +637,8 @@ function ArcLayout({
           suppressHydrationWarning
         >
           {items.map((item, segmentIndex) => {
-            const path = getArcSegmentPath(segmentIndex, itemCount, outerRadius, innerRadius, gapAngle, startOffset);
-            const iconPos = getArcIconPosition(segmentIndex, itemCount, (outerRadius + innerRadius) / 2, gapAngle, startOffset);
+            const path = getArcSegmentPath(segmentIndex, itemCount, outerRadius, innerRadius, gapAngle);
+            const iconPos = getArcIconPosition(segmentIndex, itemCount, (outerRadius + innerRadius) / 2, gapAngle);
             const style = getSpotlightStyle(segmentIndex, spotlightIndex, isSpotlightMode);
             const { transform, position, zIndex, ...svgStyle } = style as any;
 
@@ -570,8 +663,8 @@ function ArcLayout({
                   cx={iconPos.x}
                   cy={iconPos.y}
                   r={24}
-                  fill="white"
-                  stroke={`${themeStyles.accentColor}40`}
+                  fill={themeStyles.shapeBgColor}
+                  stroke={themeStyles.shapeBorderColor}
                   strokeWidth="2"
                   suppressHydrationWarning
                 />
@@ -628,8 +721,8 @@ function ArcLayout({
         suppressHydrationWarning
       >
         {items.map((item, index) => {
-          const path = getArcSegmentPath(index, itemCount, outerRadius, innerRadius, gapAngle, startOffset);
-          const iconPos = getArcIconPosition(index, itemCount, (outerRadius + innerRadius) / 2, gapAngle, startOffset);
+          const path = getArcSegmentPath(index, itemCount, outerRadius, innerRadius, gapAngle);
+          const iconPos = getArcIconPosition(index, itemCount, (outerRadius + innerRadius) / 2, gapAngle);
           const style = getSpotlightStyle(index, spotlightIndex, isSpotlightMode);
           const { transform, position, zIndex, ...svgStyle } = style as any;
 
@@ -654,8 +747,8 @@ function ArcLayout({
                 cx={iconPos.x}
                 cy={iconPos.y}
                 r={24}
-                fill="white"
-                stroke={`${themeStyles.accentColor}40`}
+                fill={themeStyles.shapeBgColor}
+                stroke={themeStyles.shapeBorderColor}
                 strokeWidth="2"
                 suppressHydrationWarning
               />
@@ -815,8 +908,8 @@ function RingLayout({
                   cx={iconPos.x}
                   cy={iconPos.y}
                   r={22}
-                  fill="white"
-                  stroke={`${themeStyles.accentColor}40`}
+                  fill={themeStyles.shapeBgColor}
+                  stroke={themeStyles.shapeBorderColor}
                   strokeWidth="2"
                   suppressHydrationWarning
                 />
@@ -1091,8 +1184,8 @@ function RingLayout({
                 cx={iconPos.x}
                 cy={iconPos.y}
                 r="28"
-                fill="white"
-                stroke={`${themeStyles.accentColor}40`}
+                fill={themeStyles.shapeBgColor}
+                stroke={themeStyles.shapeBorderColor}
                 strokeWidth="2"
                 suppressHydrationWarning
               />

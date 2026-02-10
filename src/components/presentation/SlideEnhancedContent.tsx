@@ -9,6 +9,10 @@ import type { BulletLayoutType } from "~/lib/layouts/content/bullets";
 import type { StepsLayoutType } from "~/lib/layouts/content/steps";
 import type { QuotesLayoutType } from "~/lib/layouts/content/quotes";
 import type { CircleLayoutType } from "~/lib/layouts/content/circles";
+import type { CascadingLayoutType } from "~/lib/layouts/content/cascading";
+import type { ChevronLayoutType } from "~/lib/layouts/content/chevron";
+import type { FunnelLayoutType } from "~/lib/layouts/content/funnel";
+import type { ProsConsLayoutType } from "~/lib/layouts/content/proscons";
 import type { ImageLayoutType, ImageContentItem } from "~/lib/layouts/content/images";
 import type { SlideData, EditingState, SlideImage } from "./types";
 import { getLayoutCategory, type LayoutVariant } from "./slide-layout-utils";
@@ -19,6 +23,12 @@ import { BulletLayoutRenderer } from "~/components/layouts/BulletLayoutRenderer"
 import { StepsLayoutRenderer } from "~/components/layouts/StepsLayoutRenderer";
 import { QuotesLayoutRenderer } from "~/components/layouts/QuotesLayoutRenderer";
 import { CircleLayoutRenderer } from "~/components/layouts/CircleLayoutRenderer";
+import { CascadingWorkflowRenderer } from "~/components/layouts/CascadingWorkflowRenderer";
+import { ChevronFlowRenderer } from "~/components/layouts/ChevronFlowRenderer";
+import { FunnelStepsRenderer } from "~/components/layouts/FunnelStepsRenderer";
+import { ProsConsRenderer } from "~/components/layouts/ProsConsRenderer";
+import { BeforeAfterRenderer } from "~/components/layouts/BeforeAfterRenderer";
+import { ComparisonRenderer } from "~/components/layouts/ComparisonRenderer";
 import { ImageLayoutRenderer } from "~/components/layouts/ImageLayoutRenderer";
 import { ChangeLayoutButton } from "./SlideChrome";
 
@@ -218,6 +228,75 @@ export default function SlideEnhancedContent({
           return (
             <CircleLayoutRenderer
               layoutId={slide.contentLayout as CircleLayoutType}
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              className="w-full min-h-[300px]"
+              centerText={slide.introText || slide.title}
+              {...editingProps}
+              onStartEditCenterText={canEdit ? () => onStartEditing(index, 'introText') : undefined}
+              onUpdateCenterText={canEdit ? (value: string) => onUpdateContent(index, 'introText', value) : undefined}
+            />
+          );
+
+        case "cascading":
+          return (
+            <CascadingWorkflowRenderer
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              className="w-full min-h-[300px]"
+              {...editingProps}
+            />
+          );
+
+        case "chevron":
+          return (
+            <ChevronFlowRenderer
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              className="w-full min-h-[300px]"
+              {...editingProps}
+            />
+          );
+
+        case "funnel":
+          return (
+            <FunnelStepsRenderer
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              className="w-full min-h-[300px]"
+              {...editingProps}
+            />
+          );
+
+        case "proscons":
+          return (
+            <ProsConsRenderer
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              className="w-full min-h-[300px]"
+              {...editingProps}
+            />
+          );
+
+        case "beforeafter":
+          return (
+            <BeforeAfterRenderer
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              className="w-full min-h-[300px]"
+              {...editingProps}
+            />
+          );
+
+        case "comparison":
+          return (
+            <ComparisonRenderer
               items={boxContentItems}
               theme={theme}
               accentColor={accentColor}

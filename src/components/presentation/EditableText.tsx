@@ -635,12 +635,12 @@ function EditableTextComponent({
         dangerouslySetInnerHTML={{ __html: displayContent }}
       />
       {isOwner && onDelete && (
-        <div className="absolute top-0 right-0 flex gap-1 z-50 transition-opacity duration-200 opacity-0 pointer-events-none group-hover/editable:opacity-100 group-hover/editable:pointer-events-auto">
+        <div className="absolute top-0 right-0 flex gap-1 z-50 opacity-0 pointer-events-none group-hover/editable:opacity-100 group-hover/editable:pointer-events-auto">
           <button
             type="button"
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onStartEdit(); }}
             title="Edit"
-            className="p-1.5 rounded bg-white shadow-lg hover:bg-blue-50 transition-colors border border-slate-200"
+            className="p-1.5 rounded bg-white shadow-lg hover:bg-blue-50 border border-slate-200"
           >
             <Type size={14} className="text-slate-600" />
           </button>
@@ -648,7 +648,7 @@ function EditableTextComponent({
             type="button"
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(); }}
             title="Delete"
-            className="p-1.5 rounded bg-white shadow-lg hover:bg-red-50 transition-colors border border-slate-200"
+            className="p-1.5 rounded bg-white shadow-lg hover:bg-red-50 border border-slate-200"
           >
             <Trash2 size={14} className="text-red-500" />
           </button>

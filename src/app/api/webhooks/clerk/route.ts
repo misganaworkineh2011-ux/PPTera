@@ -36,28 +36,28 @@ export async function POST(req: Request) {
   // Step 3: Parse and verify webhook payload
   let payload: unknown;
   let body: string;
-  
+
   try {
     // Read the body as text first to handle potential issues
     const bodyText = await req.text();
-    
+
     if (!bodyText || bodyText.trim().length === 0) {
       return new Response("Empty request body", { status: 400 });
     }
-    
+
     // Parse the JSON
     try {
       payload = JSON.parse(bodyText);
     } catch (parseError) {
       return new Response("Invalid JSON payload", { status: 400 });
     }
-    
+
     // Use the original text for signature verification
     body = bodyText;
   } catch (error) {
     return new Response("Failed to read request body", { status: 400 });
   }
-  
+
   const wh = new Webhook(WEBHOOK_SECRET);
   let evt: WebhookEvent;
 
@@ -121,7 +121,7 @@ async function handleUserCreated(data: unknown) {
     }
 
     const userData = data as ClerkUserEventData;
-    
+
     // Validate required fields
     if (!userData.id) {
       throw new Error("Invalid user data: missing id");
@@ -191,12 +191,12 @@ async function handleUserCreated(data: unknown) {
             subscriptionPlan: "Free",
           },
         });
-        
+
         // Send welcome email (non-blocking, don't fail user creation if email fails)
         sendWelcomeEmail({ to: email, userName: name }).catch((err) => {
           console.error("[Webhook] Failed to send welcome email:", err);
         });
-        
+
         return;
       } catch (error) {
         // Handle unique constraint violation (race condition)
@@ -225,14 +225,14 @@ async function handleUserCreated(data: unknown) {
         if (attempt === maxRetries) {
           throw error;
         }
-        
+
         // Otherwise, retry with exponential backoff
         const delay = Math.pow(2, attempt) * 100;
         await new Promise((resolve) => setTimeout(resolve, delay));
         continue;
       }
     }
-    
+
     // If we get here, all retries failed
     throw new Error(`Failed to create user after ${maxRetries} attempts. Clerk ID: ${id}`);
   } catch (error) {

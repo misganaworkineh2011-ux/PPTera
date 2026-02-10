@@ -7,6 +7,7 @@ export { sendContactEmails } from "./send-contact";
 export { sendNewsletterConfirmation } from "./send-newsletter";
 export { sendShareNotification } from "./send-share";
 export { sendCollaborationInvite } from "./send-collaboration-invite";
+export { sendExportReadyEmail } from "./send-export-ready";
 
 // Email templates (for testing/preview)
 export { WelcomeEmail } from "./templates/welcome-email";
@@ -15,3 +16,4 @@ export { ContactNotification } from "./templates/contact-notification";
 export { NewsletterConfirmation } from "./templates/newsletter-confirmation";
 export { ShareNotification } from "./templates/share-notification";
 export { CollaborationInvite } from "./templates/collaboration-invite";
+export { ExportReady } from "./templates/export-ready";

@@ -60,9 +60,13 @@ export default function PresentationViewer({
   isStreaming = false,
   totalSlidesForStreaming = 0,
   subscriptionPlan,
+  shouldShowUpgradeModal = false,
+  isFreeUserLimited = false,
+  freeSlideLimit,
+  halfBlurredSlideIndex,
 }: PresentationViewerProps) {
   const router = useRouter();
-  const [showPricingModal, setShowPricingModal] = useState(false);
+  const [showPricingModal, setShowPricingModal] = useState(shouldShowUpgradeModal);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(isPublicView);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -282,6 +286,9 @@ export default function PresentationViewer({
     setIsAnimating,
     setCurrentSlide,
     setIsShaking,
+    isFreeUserLimited,
+    halfBlurredSlideIndex,
+    onUpgrade: () => setShowPricingModal(true),
   });
 
   // Update lastHoveredSlideIndex when a slide is hovered
@@ -457,6 +464,8 @@ export default function PresentationViewer({
       addSlideAt={addSlideAt}
       moveSlide={moveSlide}
       deleteSlide={deleteSlide}
+      subscriptionPlan={subscriptionPlan}
+      onUpgrade={() => setShowPricingModal(true)}
     />
   );
 
@@ -515,6 +524,7 @@ export default function PresentationViewer({
             presentZoom={presentZoom}
             isSpotlightActive={isSpotlightActive}
             currentSlide={currentSlide}
+            subscriptionPlan={subscriptionPlan}
             onBack={() => router.push("/dashboard")}
             onEditTitle={() => setIsEditingTitle(true)}
             onTitleChange={setEditedTitle}
@@ -621,6 +631,11 @@ export default function PresentationViewer({
           onShowNavbarInFullscreen={() => setShowNavbarInFullscreen(true)}
           onHideNavbarInFullscreen={() => setShowNavbarInFullscreen(false)}
           onShare={() => setShowShareModal(true)}
+          subscriptionPlan={subscriptionPlan}
+          isFreeUserLimited={isFreeUserLimited}
+          freeSlideLimit={freeSlideLimit}
+          halfBlurredSlideIndex={halfBlurredSlideIndex}
+          onUpgrade={() => setShowPricingModal(true)}
         />
 
         <PresentationModals

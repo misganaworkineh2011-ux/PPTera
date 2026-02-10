@@ -51,6 +51,7 @@ interface SlideLayoutSetBProps {
   onAddBullet: (slideIndex: number) => void;
   onDeleteBullet: (slideIndex: number, bulletIndex: number) => void;
   renderTitle: (props: { className?: string; align?: "left" | "center" | "right"; showSubtitle?: boolean }) => ReactNode;
+  renderDescription: (props?: { className?: string; align?: "left" | "center" | "right" }) => ReactNode;
   renderEnhanced: (props?: { compact?: boolean }) => ReactNode;
   renderIndicator: (position: "top-left" | "top-right") => ReactNode;
   renderCardBox: (props: { children: ReactNode; className?: string; style?: CSSProperties }) => ReactNode;
@@ -81,6 +82,7 @@ export function renderLayoutSetB(props: SlideLayoutSetBProps): ReactNode | null 
     onAddBullet,
     onDeleteBullet,
     renderTitle,
+    renderDescription,
     renderEnhanced,
     renderIndicator,
     renderCardBox,
@@ -160,7 +162,8 @@ export function renderLayoutSetB(props: SlideLayoutSetBProps): ReactNode | null 
         {renderIndicator("top-left")}
 
         <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
-          {renderTitle({ className: "text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8" })}
+          {renderTitle({ className: "text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8", showSubtitle: isTitleSlide })}
+          {!isTitleSlide && renderDescription({ className: "mb-3 sm:mb-4" })}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4 mt-3 sm:mt-4 md:mt-6">
             {bulletPoints.map((point, i) => {
@@ -214,7 +217,8 @@ export function renderLayoutSetB(props: SlideLayoutSetBProps): ReactNode | null 
         {renderIndicator("top-left")}
 
         <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
-          {renderTitle({ className: "text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8" })}
+          {renderTitle({ className: "text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8", showSubtitle: isTitleSlide })}
+          {!isTitleSlide && renderDescription({ className: "mb-3 sm:mb-4" })}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
             {renderCardBox({
@@ -289,7 +293,8 @@ export function renderLayoutSetB(props: SlideLayoutSetBProps): ReactNode | null 
         {renderIndicator("top-left")}
 
         <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
-          {renderTitle({ className: "text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8 text-center", align: "center" })}
+          {renderTitle({ className: "text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8 text-center", align: "center", showSubtitle: isTitleSlide })}
+          {!isTitleSlide && renderDescription({ className: "mb-3 sm:mb-4", align: "center" })}
 
           <div className="max-w-5xl mx-auto">
             {renderEnhanced({})}
@@ -467,7 +472,8 @@ export function renderLayoutSetB(props: SlideLayoutSetBProps): ReactNode | null 
         {renderIndicator("top-left")}
 
         <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
-          {renderTitle({ className: "text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8 text-center", align: "center" })}
+          {renderTitle({ className: "text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8 text-center", align: "center", showSubtitle: isTitleSlide })}
+          {!isTitleSlide && renderDescription({ className: "mb-3 sm:mb-4", align: "center" })}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-5xl mx-auto">
             <div className={comparisonCardProps.className} style={{ ...comparisonCardProps.style, borderColor: `${colors.accent}50` }}>

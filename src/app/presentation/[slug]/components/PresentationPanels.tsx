@@ -73,6 +73,7 @@ export function PresentationPanels({
         presentationId={presentationId}
         onUpdateSlide={onUpdateSlide}
         onSetEditingSlide={onSetEditingSlide}
+        subscriptionPlan={subscriptionPlan}
       />
 
       <ContentLayoutPanel
