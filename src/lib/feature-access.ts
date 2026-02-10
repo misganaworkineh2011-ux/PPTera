@@ -14,7 +14,7 @@ export const PLAN_FEATURES = {
   free: {
     // Basic features
     cardsPerPrompt: 10,
-    monthlyCredits: 200, // One-time signup credits
+    monthlyCredits: 40, // Free credits (one-time signup)
     creditsReset: false, // Free users don't get monthly resets
     
     // Content creation
@@ -169,7 +169,7 @@ export const PLAN_FEATURES = {
 /**
  * Get feature access for a specific plan
  */
-export function getPlanFeatures(plan: string | null | undefined): typeof PLAN_FEATURES.free {
+export function getPlanFeatures(plan: string | null | undefined) {
   if (!plan) return PLAN_FEATURES.free;
   
   const planLower = plan.toLowerCase() as PlanTier;

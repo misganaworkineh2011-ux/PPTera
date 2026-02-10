@@ -2,20 +2,23 @@
 
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Plus, Sparkles, Send, Loader2, X, Image, LayoutGrid } from "lucide-react";
+import { Plus, Sparkles, Send, Loader2, X, Image, LayoutGrid, Lock } from "lucide-react";
 import type { Theme } from "~/lib/themes";
 import { getThemeType } from "./types";
 import { getModalColors } from "./ui-colors";
+import PricingModal from "~/components/dashboard/PricingModal";
 
 interface AddSlideButtonsProps {
   onAddSlide: () => void;
   onAddAISlide: (prompt: string) => Promise<void>;
   presentationContext?: string;
   theme?: Theme;
+  subscriptionPlan?: string | null;
 }
 
-export function AddSlideButtons({ onAddSlide, onAddAISlide, presentationContext, theme }: AddSlideButtonsProps) {
+export function AddSlideButtons({ onAddSlide, onAddAISlide, presentationContext, theme, subscriptionPlan }: AddSlideButtonsProps) {
   const [showAIPanel, setShowAIPanel] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,6 +26,9 @@ export function AddSlideButtons({ onAddSlide, onAddAISlide, presentationContext,
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Check if user is free
+  const isFreeUser = !subscriptionPlan || subscriptionPlan === 'free';
 
   // Theme-aware styling using the helper
   const colors = theme ? getModalColors(theme) : null;
@@ -116,18 +122,31 @@ export function AddSlideButtons({ onAddSlide, onAddAISlide, presentationContext,
         {/* Add AI slide button */}
         <button
           ref={buttonRef}
-          onClick={() => showAIPanel ? setShowAIPanel(false) : openAIPanel()}
+          onClick={() => {
+            if (isFreeUser) {
+              setShowUpgradeModal(true);
+              return;
+            }
+            showAIPanel ? setShowAIPanel(false) : openAIPanel();
+          }}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full shadow-md border transition-all text-xs font-medium ${
             showAIPanel
               ? "bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white border-violet-400"
               : "bg-white/95 hover:bg-violet-50 text-slate-600 hover:text-violet-600 border-slate-200 ring-1 ring-black/5"
           }`}
-          title="Add slide with AI (4 credits)"
+          title={isFreeUser ? "Upgrade to unlock AI slide generation" : "Add slide with AI (4 credits)"}
         >
-          <Sparkles size={14} />
+          {isFreeUser ? <Lock size={14} /> : <Sparkles size={14} />}
           <span>+AI</span>
         </button>
       </div>
+
+      {/* Pricing Modal */}
+      <PricingModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        currentPlan={subscriptionPlan}
+      />
 
       {/* AI Panel - rendered via portal */}
       {showAIPanel &&

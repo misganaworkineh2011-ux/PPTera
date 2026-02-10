@@ -16,6 +16,7 @@ import type { SlideData } from "~/components/presentation/types";
 import { getModalColors } from "./ui-colors";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
+import PricingModal from "~/components/dashboard/PricingModal";
 
 interface AgentPanelProps {
   isOpen: boolean;
@@ -27,6 +28,7 @@ interface AgentPanelProps {
   presentationId: string;
   onUpdateSlide: (index: number, slide: SlideData) => void;
   onSetEditingSlide?: (index: number | null) => void;
+  subscriptionPlan?: string | null;
 }
 
 interface QuickAction {
@@ -110,6 +112,7 @@ export function AgentPanel({
   presentationId,
   onUpdateSlide,
   onSetEditingSlide,
+  subscriptionPlan,
 }: AgentPanelProps) {
   const [prompt, setPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -117,11 +120,15 @@ export function AgentPanel({
   const [credits, setCredits] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [slideProgress, setSlideProgress] = useState<SlideProgress[]>([]);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
   // Get translations
   const { language } = useLanguage();
   const t = dashboardTranslations[language] || dashboardTranslations.en;
+  
+  // Check if user is free
+  const isFreeUser = !subscriptionPlan || subscriptionPlan === 'free';
   
   // Keep a ref to track the latest slides during streaming
   const slidesRef = useRef<SlideData[]>(slides);
@@ -435,6 +442,87 @@ export function AgentPanel({
     accentBorder: `${theme.colors.primary}40`,
     accent: theme.colors.primary,
   };
+
+  // Show locked state for free users
+  if (isFreeUser) {
+    return (
+      <>
+        {/* Backdrop */}
+        <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
+
+        {/* Panel */}
+        <div
+          className="fixed top-16 right-4 w-[420px] max-w-[calc(100vw-2rem)] rounded-2xl shadow-2xl border z-50"
+          style={{
+            background: themeStyles.bg,
+            borderColor: themeStyles.border,
+          }}
+        >
+          {/* Header */}
+          <div
+            className="flex items-center justify-between p-4 border-b"
+            style={{ borderColor: themeStyles.border }}
+          >
+            <div className="flex items-center gap-2">
+              <div 
+                className="p-1.5 rounded-lg"
+                style={{ backgroundColor: themeStyles.accentBg }}
+              >
+                <Sparkles size={18} style={{ color: themeStyles.accent }} />
+              </div>
+              <div>
+                <h3 
+                  className="font-semibold"
+                  style={{ color: themeStyles.text }}
+                >
+                  {t.editAllCards || "Edit all cards"}
+                </h3>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg transition-colors"
+              style={{ color: themeStyles.textMuted }}
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          {/* Locked Content */}
+          <div className="p-6 flex flex-col items-center justify-center text-center space-y-4">
+            <div 
+              className="w-16 h-16 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: themeStyles.accentBg }}
+            >
+              <Lock size={32} style={{ color: themeStyles.accent }} />
+            </div>
+            <div>
+              <h4 className="text-lg font-bold mb-2" style={{ color: themeStyles.text }}>
+                AI Agent Locked
+              </h4>
+              <p className="text-sm" style={{ color: themeStyles.textMuted }}>
+                Upgrade to Plus, Pro, or Ultra to use the AI agent to edit and enhance your presentations.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowUpgradeModal(true)}
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white rounded-xl font-semibold hover:opacity-90 transition"
+            >
+              <Sparkles size={18} />
+              Upgrade Now
+            </button>
+          </div>
+        </div>
+
+        {/* Pricing Modal */}
+        <PricingModal
+          isOpen={showUpgradeModal}
+          onClose={() => setShowUpgradeModal(false)}
+          currentPlan={subscriptionPlan}
+        />
+      </>
+    );
+  }
 
   return (
     <>

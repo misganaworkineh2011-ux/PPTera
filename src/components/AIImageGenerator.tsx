@@ -130,8 +130,42 @@ export default function AIImageGenerator({
   const [creditsUsed, setCreditsUsed] = useState<number | null>(null);
 
   const userPlan = subscriptionPlan?.toLowerCase() || "free";
+  const isFreeUser = userPlan === "free";
   const modelInfo = MODEL_INFO[model];
   const creditCost = quality === "hd" ? modelInfo.hdCredits : modelInfo.standardCredits;
+
+  // Block free users from accessing AI image generation
+  if (isFreeUser) {
+    return (
+      <div className={cn("space-y-4", className)}>
+        <div className="flex flex-col items-center justify-center p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-neutral-900 dark:to-neutral-800 rounded-xl border-2 border-dashed border-slate-200 dark:border-neutral-700">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center mb-4">
+            <Lock className="w-8 h-8 text-white" />
+          </div>
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+            AI Image Generation
+          </h3>
+          <p className="text-sm text-slate-600 dark:text-neutral-400 text-center mb-4 max-w-md">
+            Upgrade to Plus, Pro, or Ultra to generate AI images with Google Gemini, Imagen, and OpenAI DALL-E models.
+          </p>
+          <button
+            onClick={() => setShowPricingModal(true)}
+            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white rounded-xl font-semibold hover:opacity-90 transition"
+          >
+            <Sparkles className="w-5 h-5" />
+            Upgrade Now
+          </button>
+        </div>
+        
+        {/* Pricing Modal */}
+        <PricingModal
+          isOpen={showPricingModal}
+          onClose={() => setShowPricingModal(false)}
+          currentPlan={subscriptionPlan}
+        />
+      </div>
+    );
+  }
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {

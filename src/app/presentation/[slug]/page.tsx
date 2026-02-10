@@ -12,6 +12,7 @@ interface PresentationPageProps {
   searchParams: Promise<{
     mode?: string;
     streaming?: string;
+    showUpgrade?: string;
   }>;
 }
 
@@ -46,8 +47,9 @@ export default async function PresentationPage({
   searchParams,
 }: PresentationPageProps) {
   const { slug } = await params;
-  const { mode, streaming } = await searchParams;
+  const { mode, streaming, showUpgrade } = await searchParams;
   const isStreaming = streaming === "true";
+  const shouldShowUpgrade = showUpgrade === "true";
   
   // requireAuth() returns the database user directly
   const user = await requireAuth();
@@ -202,6 +204,7 @@ export default async function PresentationPage({
       isStreaming={isStreaming}
       totalSlidesForStreaming={totalSlidesForStreaming}
       subscriptionPlan={user.subscriptionPlan}
+      shouldShowUpgradeModal={shouldShowUpgrade}
     />
   );
 }

@@ -60,9 +60,10 @@ export default function PresentationViewer({
   isStreaming = false,
   totalSlidesForStreaming = 0,
   subscriptionPlan,
+  shouldShowUpgradeModal = false,
 }: PresentationViewerProps) {
   const router = useRouter();
-  const [showPricingModal, setShowPricingModal] = useState(false);
+  const [showPricingModal, setShowPricingModal] = useState(shouldShowUpgradeModal);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(isPublicView);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -621,6 +622,7 @@ export default function PresentationViewer({
           onShowNavbarInFullscreen={() => setShowNavbarInFullscreen(true)}
           onHideNavbarInFullscreen={() => setShowNavbarInFullscreen(false)}
           onShare={() => setShowShareModal(true)}
+          subscriptionPlan={subscriptionPlan}
         />
 
         <PresentationModals

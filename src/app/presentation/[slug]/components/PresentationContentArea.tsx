@@ -57,6 +57,7 @@ interface PresentationContentAreaProps {
   onShowNavbarInFullscreen: () => void;
   onHideNavbarInFullscreen: () => void;
   onShare: () => void;
+  subscriptionPlan?: string | null;
 }
 
 export function PresentationContentArea({
@@ -97,6 +98,7 @@ export function PresentationContentArea({
   onShowNavbarInFullscreen,
   onHideNavbarInFullscreen,
   onShare,
+  subscriptionPlan,
 }: PresentationContentAreaProps) {
   const ui = getUIColors(getThemeType(theme));
 
@@ -147,6 +149,7 @@ export function PresentationContentArea({
                   onAddSlideAt={onAddSlideAt}
                   onAddAISlide={onAddAISlide}
                   presentationTitle={presentationTitle}
+                  subscriptionPlan={subscriptionPlan}
                 />
               </div>
             </div>

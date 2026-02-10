@@ -40,10 +40,6 @@ interface CreatePresentationClientProps {
   recentOutlines?: RecentOutline[];
 }
 
-// Credit cost per presentation generation (legacy check for AI outline generation UI)
-const CREDIT_COST_PER_GENERATION = 10;
-
-
 export default function CreatePresentationClient({
   maxSlides,
   subscriptionPlan,
@@ -54,14 +50,13 @@ export default function CreatePresentationClient({
 }: CreatePresentationClientProps) {
   const router = useRouter();
   const { state: streamState, startStream, cancel, reset } = useOutlineStream();
-  
+
   // Translations
   const { language } = useLanguage();
   const t = dashboardTranslations[language] || dashboardTranslations.en;
 
-  // Credit check state
+  // Credit check state (only for presentation creation, not outline generation)
   const [showCreditWarning, setShowCreditWarning] = useState(false);
-  const hasEnoughCredits = userCredits >= CREDIT_COST_PER_GENERATION;
   const isFreeUser = !subscriptionPlan || subscriptionPlan === 'free';
 
   // Client-side mount state for SVG noise filter (prevents hydration mismatch)
@@ -85,8 +80,8 @@ export default function CreatePresentationClient({
     numberOfSlides: existingOutline?.metadata.totalSlides || Math.min(10, maxSlides),
     tone: existingOutline?.metadata.tone || "professional",
     language: existingOutline?.metadata.language || "english",
-    theme: "corporate-professional",
-    imageSource: "no-images",
+    theme: "corporate-clean", // Default to corporate-clean theme
+    imageSource: "stock-photos", // Default to Pexels stock photos
     textDensity: "concise" as "minimal" | "concise" | "detailed" | "extensive",
     imageLicensing: "all-images" as "all-images" | "free-to-use" | "free-commercial",
     // Default AI image model (Gemini 2.5 Flash - "Nano Banana")
@@ -190,7 +185,7 @@ export default function CreatePresentationClient({
 
   // Track if we've started a new generation (to override existingOutline behavior)
   const [hasStartedGeneration, setHasStartedGeneration] = useState(false);
-  
+
   // Track if the current operation is a regeneration (for loading text)
   const [isRegenerating, setIsRegenerating] = useState(false);
 
@@ -235,22 +230,7 @@ export default function CreatePresentationClient({
     const trimmed = formData.description.trim();
     if (!trimmed) return;
 
-    // Credit check for AI generation (not scratch mode)
-    if (mode !== "scratch") {
-      // Free users without subscription should upgrade
-      if (isFreeUser) {
-        setShowCreditWarning(true);
-        return;
-      }
-
-      // Paid users with insufficient credits should upgrade or wait for reset
-      if (!hasEnoughCredits) {
-        setShowCreditWarning(true);
-        return;
-      }
-    }
-
-    // For scratch mode, create blank slides immediately
+    // For scratch mode, create blank slides immediately (no AI, no credits)
     if (mode === "scratch") {
       const blankSlides: Slide[] = [
         {
@@ -274,7 +254,7 @@ export default function CreatePresentationClient({
 
     // Determine which outline ID to use (reuse existing when present)
     const idForStream = outlineId || existingOutline?.id || null;
-    
+
     // Check if this is a regeneration - same logic as the button text
     // Button shows "Regenerate" when isSamePrompt is true, so loading should show "Regenerating..." in that case
     const normalizedCurrent = trimmed;
@@ -436,8 +416,14 @@ export default function CreatePresentationClient({
         throw new Error(data.error || "Failed to create presentation");
       }
 
-      // Redirect to presentation page where streaming will happen
-      router.push(data.redirectUrl);
+      // Check if presentation was limited (free user with >5 slides)
+      if (data.isLimited) {
+        // Redirect to presentation with showUpgrade flag
+        router.push(data.redirectUrl);
+      } else {
+        // Normal redirect
+        router.push(data.redirectUrl);
+      }
     } catch (error) {
       console.error("Error creating presentation:", error);
       setIsCreatingPresentation(false);
@@ -530,10 +516,10 @@ export default function CreatePresentationClient({
         <svg className="fixed inset-0 w-full h-full z-[1] pointer-events-none opacity-[0.7]" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <filter id="noiseFilter">
-              <feTurbulence 
-                type="fractalNoise" 
-                baseFrequency="0.9" 
-                numOctaves="5" 
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="0.9"
+                numOctaves="5"
                 stitchTiles="stitch"
               />
               <feColorMatrix type="saturate" values="0" />
@@ -599,432 +585,272 @@ export default function CreatePresentationClient({
 
         {/* Form Section - Compact when streaming/completed */}
         {view !== "navigating" && (
-        <div className={`px-4 sm:px-6 lg:px-8 ${showOutline ? "pb-4" : "pb-12"}`}>
-          <div className={`mx-auto ${showOutline ? "max-w-4xl" : "max-w-3xl"}`}>
-            {!showOutline && (
-              <div className="flex flex-col items-center justify-center mb-8">
-                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#1e3a8a] mb-2 text-center">
-                  {mode === "ai" && t.aiGenerationMode}
-                  {mode === "docs" && t.importDocumentsMode}
-                  {mode === "scratch" && t.startFromScratchMode}
-                </h1>
-                <p className="text-slate-600 text-center text-sm sm:text-base max-w-md">
-                  {mode === "ai" && t.describeYourIdea}
-                  {mode === "docs" && t.importDocumentsDesc}
-                  {mode === "scratch" && t.startFromScratchDesc}
-                </p>
-              </div>
-            )}
-
-            {/* Form Card */}
-            <form onSubmit={handleSubmit} className={`${!showOutline ? "bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6 sm:p-8" : ""}`}>
-              {/* Description - Compact when streaming */}
-              <div className={showOutline ? "flex flex-col md:flex-row items-start gap-4" : "space-y-5"}>
-                <div className={showOutline ? "flex-1 w-full" : ""}>
-                  {!showOutline && mode === "ai" && (
-                    <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
-                      {t.whatToCreateLabel}
-                    </label>
-                  )}
-                  {!showOutline && mode === "docs" && (
-                    <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
-                      {t.uploadOrPasteContent}
-                    </label>
-                  )}
-                  {!showOutline && mode === "scratch" && (
-                    <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
-                      {t.presentationTitleLabel}
-                    </label>
-                  )}
-
-                  {/* AI Mode - Description textarea */}
-                  {mode === "ai" && (
-                    <textarea
-                      id="description"
-                      value={formData.description}
-                      onChange={(e) => handleChange("description", e.target.value)}
-                      placeholder={t.defineWhatToCreate}
-                      rows={showOutline ? 2 : 3}
-                      disabled={isStreaming}
-                      className={`w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all resize-none text-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""}`}
-                      required
-                    />
-                  )}
-
-                  {/* Docs Mode - File upload and paste area */}
-                  {mode === "docs" && !showOutline && (
-                    <div className="space-y-4">
-                      {/* File Upload Area */}
-                      {!uploadedFile ? (
-                        <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center hover:border-[#06b6d4] transition-colors bg-slate-50/50">
-                          <Upload className="mx-auto h-10 w-10 text-slate-400 mb-2" />
-                          <input
-                            type="file"
-                            id="file-upload"
-                            accept=".pdf,.doc,.docx,.txt,.ppt,.pptx"
-                            onChange={async (e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                setUploadedFile(file);
-
-                                const formData = new FormData();
-                                formData.append("file", file);
-
-                                const loadingToast = toast.loading(t.parsingDocument);
-
-                                try {
-                                  const response = await fetch("/api/parse-document", {
-                                    method: "POST",
-                                    body: formData,
-                                  });
-
-                                  if (!response.ok) {
-                                    const text = await response.text();
-                                    console.error(`Upload failed: ${response.status} ${response.statusText}`, text);
-
-                                    try {
-                                      const errorData = JSON.parse(text);
-                                      throw new Error(errorData.error || `Upload failed: ${response.status}`);
-                                    } catch (e) {
-                                      throw new Error(`Server error (${response.status}): Check console for details.`);
-                                    }
-                                  }
-
-                                  const data = await response.json();
-                                  handleChange("description", data.text);
-                                  setPastedContent(data.text);
-                                  toast.success(t.documentParsedSuccess, { id: loadingToast });
-                                } catch (error) {
-                                  console.error("Parsing error:", error);
-                                  toast.error(error instanceof Error ? error.message : "Failed to parse document", { id: loadingToast });
-                                  setUploadedFile(null);
-                                }
-                              }
-                            }}
-                            className="hidden"
-                          />
-                          <label
-                            htmlFor="file-upload"
-                            className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-[#06b6d4] transition-all"
-                          >
-                            {t.chooseFile}
-                          </label>
-                          <p className="mt-2 text-xs text-slate-500">
-                            {t.pdfWordPptText}
-                          </p>
-                        </div>
-                      ) : (
-                        /* Uploaded File Display */
-                        <div className="border-2 border-[#06b6d4] rounded-xl p-4 bg-gradient-to-br from-[#06b6d4]/5 to-[#1e3a8a]/5">
-                          <div className="flex items-center gap-4">
-                            {/* File Icon */}
-                            <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center shadow-lg">
-                              <FileText className="w-7 h-7 text-white" />
-                            </div>
-                            {/* File Info */}
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-[#1e3a8a] truncate">
-                                {uploadedFile.name}
-                              </p>
-                              <p className="text-xs text-slate-500 mt-0.5">
-                                {(uploadedFile.size / 1024).toFixed(1)} KB • {uploadedFile.name.split('.').pop()?.toUpperCase() || 'Document'}
-                              </p>
-                              <div className="flex items-center gap-1.5 mt-1">
-                                <Check className="w-3.5 h-3.5 text-emerald-500" />
-                                <span className="text-xs font-medium text-emerald-600">Document uploaded successfully</span>
-                              </div>
-                            </div>
-                            {/* Remove Button */}
-                            <button
-                              onClick={() => {
-                                setUploadedFile(null);
-                                setPastedContent("");
-                                handleChange("description", "");
-                              }}
-                              className="flex-shrink-0 p-2 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-                              title="Remove file"
-                            >
-                              <X className="w-5 h-5" />
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1 h-px bg-slate-200"></div>
-                        <span className="text-xs text-slate-400 font-medium">{t.orDivider}</span>
-                        <div className="flex-1 h-px bg-slate-200"></div>
-                      </div>
-                      <textarea
-                        value={pastedContent}
-                        onChange={(e) => {
-                          setPastedContent(e.target.value);
-                          handleChange("description", e.target.value);
-                        }}
-                        placeholder={t.pasteContentHere}
-                        rows={5}
-                        disabled={isStreaming}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all resize-none text-sm"
-                      />
-                    </div>
-                  )}
-
-                  {/* Docs Mode - Compact view when streaming */}
-                  {mode === "docs" && showOutline && (
-                    <textarea
-                      id="description"
-                      value={formData.description}
-                      onChange={(e) => handleChange("description", e.target.value)}
-                      placeholder={t.yourContentPlaceholder}
-                      rows={2}
-                      disabled={isStreaming}
-                      className={`w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all resize-none text-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""}`}
-                      required
-                    />
-                  )}
-
-                  {/* Scratch Mode - Simple title input */}
-                  {mode === "scratch" && (
-                    <input
-                      type="text"
-                      id="description"
-                      value={formData.description}
-                      onChange={(e) => handleChange("description", e.target.value)}
-                      placeholder={t.enterPresentationTitle}
-                      disabled={isStreaming}
-                      className={`w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all text-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""}`}
-                      required
-                    />
-                  )}
-                </div>
-
-                {/* Inline controls when streaming/completed */}
-                {showOutline && (
-                  <div className="flex flex-wrap items-center gap-2 w-full md:w-auto md:shrink-0">
-                    <select
-                      value={formData.numberOfSlides}
-                      disabled={isStreaming}
-                      onChange={(e) => handleChange("numberOfSlides", parseInt(e.target.value))}
-                      className="flex-1 md:flex-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 disabled:opacity-60 min-w-[100px]"
-                    >
-                      {allSlideOptions
-                        .filter((opt) => opt.value > 0)
-                        .map((opt) => (
-                          <option key={opt.value} value={opt.value} disabled={opt.disabled}>
-                            {opt.label}
-                          </option>
-                        ))}
-                    </select>
-                    <select
-                      value={formData.tone}
-                      disabled={isStreaming}
-                      onChange={(e) => handleChange("tone", e.target.value)}
-                      className="flex-1 md:flex-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 disabled:opacity-60 min-w-[120px]"
-                    >
-                      <optgroup label="Business">
-                        <option value="professional"> Professional</option>
-                        <option value="formal">Formal</option>
-                        <option value="corporate">Corporate</option>
-                        <option value="executive">Executive</option>
-                      </optgroup>
-                      <optgroup label="Friendly">
-                        <option value="casual">Casual</option>
-                        <option value="friendly">Friendly</option>
-                        <option value="conversational"> Conversational</option>
-                        <option value="warm">Warm</option>
-                      </optgroup>
-                      <optgroup label="Creative">
-                        <option value="creative"> Creative</option>
-                        <option value="playful"> Playful</option>
-                        <option value="bold">Bold</option>
-                        <option value="inspirational">Inspirational</option>
-                      </optgroup>
-                      <optgroup label="Educational">
-                        <option value="educational">Educational</option>
-                        <option value="informative">Informative</option>
-                        <option value="technical">Technical</option>
-                        <option value="academic">Academic</option>
-                      </optgroup>
-                      <optgroup label="Persuasive">
-                        <option value="persuasive">Persuasive</option>
-                        <option value="confident">Confident</option>
-                        <option value="motivational">Motivational</option>
-                        <option value="compelling">Compelling</option>
-                      </optgroup>
-                    </select>
-                    <select
-                      value={formData.language}
-                      disabled={isStreaming}
-                      onChange={(e) => handleChange("language", e.target.value)}
-                      className="flex-1 md:flex-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 disabled:opacity-60 min-w-[100px]"
-                    >
-                      <optgroup label="Popular">
-                        <option value="english">🇺🇸 English</option>
-                        <option value="spanish">🇪🇸 Español</option>
-                        <option value="french">🇫🇷 Français</option>
-                        <option value="german">🇩🇪 Deutsch</option>
-                        <option value="chinese">🇨🇳 中文</option>
-                      </optgroup>
-                      <optgroup label="European">
-                        <option value="portuguese">🇵🇹 Português</option>
-                        <option value="italian">🇮🇹 Italiano</option>
-                        <option value="dutch">🇳🇱 Nederlands</option>
-                        <option value="polish">🇵🇱 Polski</option>
-                        <option value="swedish">🇸🇪 Svenska</option>
-                        <option value="norwegian">🇳🇴 Norsk</option>
-                        <option value="danish">🇩🇰 Dansk</option>
-                        <option value="finnish">🇫🇮 Suomi</option>
-                        <option value="greek">🇬🇷 Ελληνικά</option>
-                        <option value="czech">🇨🇿 Čeština</option>
-                        <option value="romanian">🇷🇴 Română</option>
-                        <option value="hungarian">🇭🇺 Magyar</option>
-                        <option value="ukrainian">🇺🇦 Українська</option>
-                        <option value="russian">🇷🇺 Русский</option>
-                      </optgroup>
-                      <optgroup label="Asian">
-                        <option value="japanese">🇯🇵 日本語</option>
-                        <option value="korean">🇰🇷 한국어</option>
-                        <option value="hindi">🇮🇳 हिन्दी</option>
-                        <option value="thai">🇹🇭 ไทย</option>
-                        <option value="vietnamese">🇻🇳 Tiếng Việt</option>
-                        <option value="indonesian">🇮🇩 Bahasa Indonesia</option>
-                        <option value="malay">🇲🇾 Bahasa Melayu</option>
-                        <option value="tagalog">🇵🇭 Tagalog</option>
-                        <option value="bengali">🇧🇩 বাংলা</option>
-                        <option value="tamil">🇮🇳 தமிழ்</option>
-                      </optgroup>
-                      <optgroup label="Middle East & Africa">
-                        <option value="arabic">🇸🇦 العربية</option>
-                        <option value="hebrew">🇮🇱 עברית</option>
-                        <option value="turkish">🇹🇷 Türkçe</option>
-                        <option value="persian">🇮🇷 فارسی</option>
-                        <option value="swahili">🇰🇪 Kiswahili</option>
-                      </optgroup>
-                    </select>
-                  </div>
-                )}
-              </div>
-
-              {/* Full form controls when not streaming */}
+          <div className={`px-4 sm:px-6 lg:px-8 ${showOutline ? "pb-4" : "pb-12"}`}>
+            <div className={`mx-auto ${showOutline ? "max-w-4xl" : "max-w-3xl"}`}>
               {!showOutline && (
-                <>
-                  {/* Number of Slides */}
-                  <div>
-                    <label htmlFor="slides" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
-                      {t.numberOfSlides}
-                    </label>
-                    <div className="relative">
-                      <select
-                        id="slides"
-                        value={formData.numberOfSlides}
-                        onChange={(e) => {
-                          const value = parseInt(e.target.value);
-                          const selectedOption = allSlideOptions.find((opt) => opt.value === value);
-                          if (value > 0 && selectedOption?.disabled) {
-                            setShowCreditWarning(true);
-                            return;
-                          }
-                          if (value > 0) {
-                            handleChange("numberOfSlides", value);
-                          }
-                        }}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all appearance-none cursor-pointer"
-                      >
-                        {allSlideOptions.map((option, index) => {
-                          if (option.isGroupHeader) {
-                            return (
-                              <option key={`header-${index}`} value={option.value} disabled className="font-semibold text-slate-500 bg-slate-50">
-                                {option.label}
-                              </option>
-                            );
-                          }
-                          const planLabel = option.plan !== "Free" ? option.plan : "";
-                          const spaces = planLabel ? "\u00A0".repeat(Math.max(1, 15 - option.label.length)) : "";
-                          const displayLabel = planLabel
-                            ? `${option.label}${spaces}${planLabel}`.trim()
-                            : option.label;
+                <div className="flex flex-col items-center justify-center mb-8">
+                  <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#1e3a8a] mb-2 text-center">
+                    {mode === "ai" && t.aiGenerationMode}
+                    {mode === "docs" && t.importDocumentsMode}
+                    {mode === "scratch" && t.startFromScratchMode}
+                  </h1>
+                  <p className="text-slate-600 text-center text-sm sm:text-base max-w-md">
+                    {mode === "ai" && t.describeYourIdea}
+                    {mode === "docs" && t.importDocumentsDesc}
+                    {mode === "scratch" && t.startFromScratchDesc}
+                  </p>
+                </div>
+              )}
 
-                          return (
-                            <option
-                              key={option.value}
-                              value={option.value}
-                              style={option.disabled ? { color: "#06b6d4" } : {}}
+              {/* Form Card */}
+              <form onSubmit={handleSubmit} className={`${!showOutline ? "bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6 sm:p-8" : ""}`}>
+                {/* Description - Compact when streaming */}
+                <div className={showOutline ? "flex flex-col md:flex-row items-start gap-4" : "space-y-5"}>
+                  <div className={showOutline ? "flex-1 w-full" : ""}>
+                    {!showOutline && mode === "ai" && (
+                      <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
+                        {t.whatToCreateLabel}
+                      </label>
+                    )}
+                    {!showOutline && mode === "docs" && (
+                      <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
+                        {t.uploadOrPasteContent}
+                      </label>
+                    )}
+                    {!showOutline && mode === "scratch" && (
+                      <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
+                        {t.presentationTitleLabel}
+                      </label>
+                    )}
+
+                    {/* AI Mode - Description textarea */}
+                    {mode === "ai" && (
+                      <textarea
+                        id="description"
+                        value={formData.description}
+                        onChange={(e) => handleChange("description", e.target.value)}
+                        placeholder={t.defineWhatToCreate}
+                        rows={showOutline ? 2 : 3}
+                        disabled={isStreaming}
+                        className={`w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all resize-none text-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""}`}
+                        required
+                      />
+                    )}
+
+                    {/* Docs Mode - File upload and paste area */}
+                    {mode === "docs" && !showOutline && (
+                      <div className="space-y-4">
+                        {/* File Upload Area */}
+                        {!uploadedFile ? (
+                          <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center hover:border-[#06b6d4] transition-colors bg-slate-50/50">
+                            <Upload className="mx-auto h-10 w-10 text-slate-400 mb-2" />
+                            <input
+                              type="file"
+                              id="file-upload"
+                              accept=".pdf,.doc,.docx,.txt,.ppt,.pptx"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  setUploadedFile(file);
+
+                                  const formData = new FormData();
+                                  formData.append("file", file);
+
+                                  const loadingToast = toast.loading(t.parsingDocument);
+
+                                  try {
+                                    const response = await fetch("/api/parse-document", {
+                                      method: "POST",
+                                      body: formData,
+                                    });
+
+                                    if (!response.ok) {
+                                      const text = await response.text();
+                                      console.error(`Upload failed: ${response.status} ${response.statusText}`, text);
+
+                                      try {
+                                        const errorData = JSON.parse(text);
+                                        throw new Error(errorData.error || `Upload failed: ${response.status}`);
+                                      } catch (e) {
+                                        throw new Error(`Server error (${response.status}): Check console for details.`);
+                                      }
+                                    }
+
+                                    const data = await response.json();
+                                    handleChange("description", data.text);
+                                    setPastedContent(data.text);
+                                    toast.success(t.documentParsedSuccess, { id: loadingToast });
+                                  } catch (error) {
+                                    console.error("Parsing error:", error);
+                                    toast.error(error instanceof Error ? error.message : "Failed to parse document", { id: loadingToast });
+                                    setUploadedFile(null);
+                                  }
+                                }
+                              }}
+                              className="hidden"
+                            />
+                            <label
+                              htmlFor="file-upload"
+                              className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-[#06b6d4] transition-all"
                             >
-                              {displayLabel}
-                            </option>
-                          );
-                        })}
-                      </select>
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                        <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
+                              {t.chooseFile}
+                            </label>
+                            <p className="mt-2 text-xs text-slate-500">
+                              {t.pdfWordPptText}
+                            </p>
+                          </div>
+                        ) : (
+                          /* Uploaded File Display */
+                          <div className="border-2 border-[#06b6d4] rounded-xl p-4 bg-gradient-to-br from-[#06b6d4]/5 to-[#1e3a8a]/5">
+                            <div className="flex items-center gap-4">
+                              {/* File Icon */}
+                              <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center shadow-lg">
+                                <FileText className="w-7 h-7 text-white" />
+                              </div>
+                              {/* File Info */}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-[#1e3a8a] truncate">
+                                  {uploadedFile.name}
+                                </p>
+                                <p className="text-xs text-slate-500 mt-0.5">
+                                  {(uploadedFile.size / 1024).toFixed(1)} KB • {uploadedFile.name.split('.').pop()?.toUpperCase() || 'Document'}
+                                </p>
+                                <div className="flex items-center gap-1.5 mt-1">
+                                  <Check className="w-3.5 h-3.5 text-emerald-500" />
+                                  <span className="text-xs font-medium text-emerald-600">Document uploaded successfully</span>
+                                </div>
+                              </div>
+                              {/* Remove Button */}
+                              <button
+                                onClick={() => {
+                                  setUploadedFile(null);
+                                  setPastedContent("");
+                                  handleChange("description", "");
+                                }}
+                                className="flex-shrink-0 p-2 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                                title="Remove file"
+                              >
+                                <X className="w-5 h-5" />
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 h-px bg-slate-200"></div>
+                          <span className="text-xs text-slate-400 font-medium">{t.orDivider}</span>
+                          <div className="flex-1 h-px bg-slate-200"></div>
+                        </div>
+                        <textarea
+                          value={pastedContent}
+                          onChange={(e) => {
+                            setPastedContent(e.target.value);
+                            handleChange("description", e.target.value);
+                          }}
+                          placeholder={t.pasteContentHere}
+                          rows={5}
+                          disabled={isStreaming}
+                          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all resize-none text-sm"
+                        />
                       </div>
-                    </div>
+                    )}
+
+                    {/* Docs Mode - Compact view when streaming */}
+                    {mode === "docs" && showOutline && (
+                      <textarea
+                        id="description"
+                        value={formData.description}
+                        onChange={(e) => handleChange("description", e.target.value)}
+                        placeholder={t.yourContentPlaceholder}
+                        rows={2}
+                        disabled={isStreaming}
+                        className={`w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all resize-none text-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""}`}
+                        required
+                      />
+                    )}
+
+                    {/* Scratch Mode - Simple title input */}
+                    {mode === "scratch" && (
+                      <input
+                        type="text"
+                        id="description"
+                        value={formData.description}
+                        onChange={(e) => handleChange("description", e.target.value)}
+                        placeholder={t.enterPresentationTitle}
+                        disabled={isStreaming}
+                        className={`w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all text-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""}`}
+                        required
+                      />
+                    )}
                   </div>
 
-                  {/* Tone and Language - Side by side */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor="tone" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
-                        {t.tone}
-                      </label>
+                  {/* Inline controls when streaming/completed */}
+                  {showOutline && (
+                    <div className="flex flex-wrap items-center gap-2 w-full md:w-auto md:shrink-0">
                       <select
-                        id="tone"
+                        value={formData.numberOfSlides}
+                        disabled={isStreaming}
+                        onChange={(e) => handleChange("numberOfSlides", parseInt(e.target.value))}
+                        className="flex-1 md:flex-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 disabled:opacity-60 min-w-[100px]"
+                      >
+                        {allSlideOptions
+                          .filter((opt) => opt.value > 0)
+                          .map((opt) => (
+                            <option key={opt.value} value={opt.value} disabled={opt.disabled}>
+                              {opt.label}
+                            </option>
+                          ))}
+                      </select>
+                      <select
                         value={formData.tone}
+                        disabled={isStreaming}
                         onChange={(e) => handleChange("tone", e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
+                        className="flex-1 md:flex-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 disabled:opacity-60 min-w-[120px]"
                       >
                         <optgroup label="Business">
                           <option value="professional"> Professional</option>
                           <option value="formal">Formal</option>
-                          <option value="corporate"> Corporate</option>
-                          <option value="executive"> Executive</option>
+                          <option value="corporate">Corporate</option>
+                          <option value="executive">Executive</option>
                         </optgroup>
                         <optgroup label="Friendly">
                           <option value="casual">Casual</option>
-                          <option value="friendly"> Friendly</option>
-                          <option value="conversational">Conversational</option>
+                          <option value="friendly">Friendly</option>
+                          <option value="conversational"> Conversational</option>
                           <option value="warm">Warm</option>
                         </optgroup>
                         <optgroup label="Creative">
                           <option value="creative"> Creative</option>
-                          <option value="playful">Playful</option>
-                          <option value="bold"> Bold</option>
-                          <option value="inspirational"> Inspirational</option>
+                          <option value="playful"> Playful</option>
+                          <option value="bold">Bold</option>
+                          <option value="inspirational">Inspirational</option>
                         </optgroup>
                         <optgroup label="Educational">
-                          <option value="educational"> Educational</option>
-                          <option value="informative"> Informative</option>
-                          <option value="technical"> Technical</option>
-                          <option value="academic"> Academic</option>
+                          <option value="educational">Educational</option>
+                          <option value="informative">Informative</option>
+                          <option value="technical">Technical</option>
+                          <option value="academic">Academic</option>
                         </optgroup>
                         <optgroup label="Persuasive">
-                          <option value="persuasive"> Persuasive</option>
-                          <option value="confident"> Confident</option>
-                          <option value="motivational"> Motivational</option>
-                          <option value="compelling"> Compelling</option>
+                          <option value="persuasive">Persuasive</option>
+                          <option value="confident">Confident</option>
+                          <option value="motivational">Motivational</option>
+                          <option value="compelling">Compelling</option>
                         </optgroup>
                       </select>
-                    </div>
-
-                    <div>
-                      <label htmlFor="language" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
-                        {t.languageLabel}
-                      </label>
                       <select
-                        id="language"
                         value={formData.language}
+                        disabled={isStreaming}
                         onChange={(e) => handleChange("language", e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
+                        className="flex-1 md:flex-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 disabled:opacity-60 min-w-[100px]"
                       >
-                        <optgroup label={t.languagePopular}>
+                        <optgroup label="Popular">
                           <option value="english">🇺🇸 English</option>
                           <option value="spanish">🇪🇸 Español</option>
                           <option value="french">🇫🇷 Français</option>
                           <option value="german">🇩🇪 Deutsch</option>
                           <option value="chinese">🇨🇳 中文</option>
                         </optgroup>
-                        <optgroup label={t.languageEuropean}>
+                        <optgroup label="European">
                           <option value="portuguese">🇵🇹 Português</option>
                           <option value="italian">🇮🇹 Italiano</option>
                           <option value="dutch">🇳🇱 Nederlands</option>
@@ -1040,7 +866,7 @@ export default function CreatePresentationClient({
                           <option value="ukrainian">🇺🇦 Українська</option>
                           <option value="russian">🇷🇺 Русский</option>
                         </optgroup>
-                        <optgroup label={t.languageAsian}>
+                        <optgroup label="Asian">
                           <option value="japanese">🇯🇵 日本語</option>
                           <option value="korean">🇰🇷 한국어</option>
                           <option value="hindi">🇮🇳 हिन्दी</option>
@@ -1052,7 +878,7 @@ export default function CreatePresentationClient({
                           <option value="bengali">🇧🇩 বাংলা</option>
                           <option value="tamil">🇮🇳 தமிழ்</option>
                         </optgroup>
-                        <optgroup label={t.languageMiddleEastAfrica}>
+                        <optgroup label="Middle East & Africa">
                           <option value="arabic">🇸🇦 العربية</option>
                           <option value="hebrew">🇮🇱 עברית</option>
                           <option value="turkish">🇹🇷 Türkçe</option>
@@ -1061,40 +887,200 @@ export default function CreatePresentationClient({
                         </optgroup>
                       </select>
                     </div>
-                  </div>
-                </>
-              )}
-
-              {/* Primary generate / regenerate button */}
-              <div className={`flex items-center justify-center ${!showOutline ? "pt-6" : "pt-4"}`}>
-                <button
-                  type="submit"
-                  disabled={!formData.description.trim() || isStreaming}
-                  title={
-                    isSamePrompt
-                      ? t.regenerateOutlineBtn
-                      : t.generateOutlineBtn
-                  }
-                  className="w-full sm:w-auto px-10 py-3 rounded-xl bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold shadow-lg transition-all hover:opacity-90 hover:shadow-xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm"
-                >
-                  {isStreaming ? (
-                    mode === "scratch" ? t.creatingDots : 
-                    // Show "Regenerating..." only when this is actually a regeneration
-                    isRegenerating ? t.regeneratingDots : t.generatingDots
-                  ) : (
-                    mode === "scratch" ? t.createPresentation :
-                      isSamePrompt ? t.regenerateOutlineBtn : t.generateOutlineBtn
                   )}
-                </button>
-              </div>
-            </form>
+                </div>
 
-            {/* Recent Outlines - Only show when form is visible */}
-            {!showOutline && mode === "ai" && recentOutlines.length > 0 && (
-              <RecentOutlines outlines={recentOutlines.map(o => ({ ...o, createdAt: new Date(o.createdAt) }))} mode={mode} />
-            )}
+                {/* Full form controls when not streaming */}
+                {!showOutline && (
+                  <>
+                    {/* Number of Slides */}
+                    <div>
+                      <label htmlFor="slides" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
+                        {t.numberOfSlides}
+                      </label>
+                      <div className="relative">
+                        <select
+                          id="slides"
+                          value={formData.numberOfSlides}
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value);
+                            const selectedOption = allSlideOptions.find((opt) => opt.value === value);
+                            if (value > 0 && selectedOption?.disabled) {
+                              setShowCreditWarning(true);
+                              return;
+                            }
+                            if (value > 0) {
+                              handleChange("numberOfSlides", value);
+                            }
+                          }}
+                          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all appearance-none cursor-pointer"
+                        >
+                          {allSlideOptions.map((option, index) => {
+                            if (option.isGroupHeader) {
+                              return (
+                                <option key={`header-${index}`} value={option.value} disabled className="font-semibold text-slate-500 bg-slate-50">
+                                  {option.label}
+                                </option>
+                              );
+                            }
+                            const planLabel = option.plan !== "Free" ? option.plan : "";
+                            const spaces = planLabel ? "\u00A0".repeat(Math.max(1, 15 - option.label.length)) : "";
+                            const displayLabel = planLabel
+                              ? `${option.label}${spaces}${planLabel}`.trim()
+                              : option.label;
+
+                            return (
+                              <option
+                                key={option.value}
+                                value={option.value}
+                                style={option.disabled ? { color: "#06b6d4" } : {}}
+                              >
+                                {displayLabel}
+                              </option>
+                            );
+                          })}
+                        </select>
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                          <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Tone and Language - Side by side */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="tone" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
+                          {t.tone}
+                        </label>
+                        <select
+                          id="tone"
+                          value={formData.tone}
+                          onChange={(e) => handleChange("tone", e.target.value)}
+                          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
+                        >
+                          <optgroup label="Business">
+                            <option value="professional"> Professional</option>
+                            <option value="formal">Formal</option>
+                            <option value="corporate"> Corporate</option>
+                            <option value="executive"> Executive</option>
+                          </optgroup>
+                          <optgroup label="Friendly">
+                            <option value="casual">Casual</option>
+                            <option value="friendly"> Friendly</option>
+                            <option value="conversational">Conversational</option>
+                            <option value="warm">Warm</option>
+                          </optgroup>
+                          <optgroup label="Creative">
+                            <option value="creative"> Creative</option>
+                            <option value="playful">Playful</option>
+                            <option value="bold"> Bold</option>
+                            <option value="inspirational"> Inspirational</option>
+                          </optgroup>
+                          <optgroup label="Educational">
+                            <option value="educational"> Educational</option>
+                            <option value="informative"> Informative</option>
+                            <option value="technical"> Technical</option>
+                            <option value="academic"> Academic</option>
+                          </optgroup>
+                          <optgroup label="Persuasive">
+                            <option value="persuasive"> Persuasive</option>
+                            <option value="confident"> Confident</option>
+                            <option value="motivational"> Motivational</option>
+                            <option value="compelling"> Compelling</option>
+                          </optgroup>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label htmlFor="language" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
+                          {t.languageLabel}
+                        </label>
+                        <select
+                          id="language"
+                          value={formData.language}
+                          onChange={(e) => handleChange("language", e.target.value)}
+                          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
+                        >
+                          <optgroup label={t.languagePopular}>
+                            <option value="english">🇺🇸 English</option>
+                            <option value="spanish">🇪🇸 Español</option>
+                            <option value="french">🇫🇷 Français</option>
+                            <option value="german">🇩🇪 Deutsch</option>
+                            <option value="chinese">🇨🇳 中文</option>
+                          </optgroup>
+                          <optgroup label={t.languageEuropean}>
+                            <option value="portuguese">🇵🇹 Português</option>
+                            <option value="italian">🇮🇹 Italiano</option>
+                            <option value="dutch">🇳🇱 Nederlands</option>
+                            <option value="polish">🇵🇱 Polski</option>
+                            <option value="swedish">🇸🇪 Svenska</option>
+                            <option value="norwegian">🇳🇴 Norsk</option>
+                            <option value="danish">🇩🇰 Dansk</option>
+                            <option value="finnish">🇫🇮 Suomi</option>
+                            <option value="greek">🇬🇷 Ελληνικά</option>
+                            <option value="czech">🇨🇿 Čeština</option>
+                            <option value="romanian">🇷🇴 Română</option>
+                            <option value="hungarian">🇭🇺 Magyar</option>
+                            <option value="ukrainian">🇺🇦 Українська</option>
+                            <option value="russian">🇷🇺 Русский</option>
+                          </optgroup>
+                          <optgroup label={t.languageAsian}>
+                            <option value="japanese">🇯🇵 日本語</option>
+                            <option value="korean">🇰🇷 한국어</option>
+                            <option value="hindi">🇮🇳 हिन्दी</option>
+                            <option value="thai">🇹🇭 ไทย</option>
+                            <option value="vietnamese">🇻🇳 Tiếng Việt</option>
+                            <option value="indonesian">🇮🇩 Bahasa Indonesia</option>
+                            <option value="malay">🇲🇾 Bahasa Melayu</option>
+                            <option value="tagalog">🇵🇭 Tagalog</option>
+                            <option value="bengali">🇧🇩 বাংলা</option>
+                            <option value="tamil">🇮🇳 தமிழ்</option>
+                          </optgroup>
+                          <optgroup label={t.languageMiddleEastAfrica}>
+                            <option value="arabic">🇸🇦 العربية</option>
+                            <option value="hebrew">🇮🇱 עברית</option>
+                            <option value="turkish">🇹🇷 Türkçe</option>
+                            <option value="persian">🇮🇷 فارسی</option>
+                            <option value="swahili">🇰🇪 Kiswahili</option>
+                          </optgroup>
+                        </select>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Primary generate / regenerate button */}
+                <div className={`flex items-center justify-center ${!showOutline ? "pt-6" : "pt-4"}`}>
+                  <button
+                    type="submit"
+                    disabled={!formData.description.trim() || isStreaming}
+                    title={
+                      isSamePrompt
+                        ? t.regenerateOutlineBtn
+                        : t.generateOutlineBtn
+                    }
+                    className="w-full sm:w-auto px-10 py-3 rounded-xl bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold shadow-lg transition-all hover:opacity-90 hover:shadow-xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm"
+                  >
+                    {isStreaming ? (
+                      mode === "scratch" ? t.creatingDots :
+                        // Show "Regenerating..." only when this is actually a regeneration
+                        isRegenerating ? t.regeneratingDots : t.generatingDots
+                    ) : (
+                      mode === "scratch" ? t.createPresentation :
+                        isSamePrompt ? t.regenerateOutlineBtn : t.generateOutlineBtn
+                    )}
+                  </button>
+                </div>
+              </form>
+
+              {/* Recent Outlines - Only show when form is visible */}
+              {!showOutline && mode === "ai" && recentOutlines.length > 0 && (
+                <RecentOutlines outlines={recentOutlines.map(o => ({ ...o, createdAt: new Date(o.createdAt) }))} mode={mode} />
+              )}
+            </div>
           </div>
-        </div>
         )}
 
         {/* Outline Section */}
@@ -1248,12 +1234,12 @@ export default function CreatePresentationClient({
                           const hasBackgroundImage = !!(theme.previewBackgroundImage || theme.backgroundImage);
                           const bgImageUrl = theme.previewBackgroundImage || theme.backgroundImage;
                           // For custom themes, use the background color from colors, not preview.titleBg (which might be a URL)
-                          const previewBgColor = hasBackgroundImage 
-                            ? theme.colors.background 
-                            : (typeof theme.preview?.titleBg === 'string' && !theme.preview.titleBg.startsWith('url(') 
-                                ? theme.preview.titleBg 
-                                : theme.colors.background);
-                          
+                          const previewBgColor = hasBackgroundImage
+                            ? theme.colors.background
+                            : (typeof theme.preview?.titleBg === 'string' && !theme.preview.titleBg.startsWith('url(')
+                              ? theme.preview.titleBg
+                              : theme.colors.background);
+
                           return (
                             <button
                               key={theme.id}
@@ -1291,13 +1277,12 @@ export default function CreatePresentationClient({
                                       style={{ background: "rgba(0,0,0,0.25)" }}
                                     />
                                   )}
-                                  
+
                                   {/* Content box centered on background with inline preview */}
                                   <div className="absolute inset-0 flex items-center justify-center">
                                     <div
-                                      className={`rounded backdrop-blur-sm transition-all duration-300 flex flex-col justify-center px-2 py-1.5 overflow-hidden ${
-                                        hasBackgroundImage ? "w-[70%] h-[60%]" : "w-[85%] h-[75%]"
-                                      }`}
+                                      className={`rounded backdrop-blur-sm transition-all duration-300 flex flex-col justify-center px-2 py-1.5 overflow-hidden ${hasBackgroundImage ? "w-[70%] h-[60%]" : "w-[85%] h-[75%]"
+                                        }`}
                                       style={{
                                         backgroundColor: hasBackgroundImage
                                           ? `${theme.cardBox?.background || theme.colors.background}e8`
@@ -1307,7 +1292,7 @@ export default function CreatePresentationClient({
                                       }}
                                     >
                                       {/* Inline text preview */}
-                                      <div 
+                                      <div
                                         className="text-[10px] font-bold mb-0.5 truncate"
                                         style={{ color: theme.cardBox?.titleColor || theme.colors.heading, fontFamily: theme.fonts?.heading?.family || "inherit" }}
                                       >
@@ -1315,7 +1300,7 @@ export default function CreatePresentationClient({
                                       </div>
                                       <div className="flex items-center gap-0.5 text-[8px]">
                                         <span style={{ color: theme.cardBox?.bodyColor || theme.colors.text }}>Body &</span>
-                                        <span 
+                                        <span
                                           className="underline"
                                           style={{ color: theme.cardBox?.accentColor || theme.colors.accent || theme.colors.primary }}
                                         >
@@ -1406,63 +1391,95 @@ export default function CreatePresentationClient({
                             <div className="absolute bottom-full left-0 right-0 mb-1 bg-white rounded-xl border border-slate-200 shadow-2xl z-[9999] max-h-[300px] overflow-y-auto">
                               <div className="p-2">
                                 {[
-                                  { 
-                                    id: "no-images", 
+                                  {
+                                    id: "no-images",
                                     label: "No Images (Text-Only Slides)",
                                     icon: (
                                       <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                       </svg>
-                                    )
+                                    ),
+                                    locked: false,
                                   },
-                                  { 
-                                    id: "placeholders", 
+                                  {
+                                    id: "placeholders",
                                     label: "Image Placeholders (Edit Later)",
                                     icon: (
                                       <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                       </svg>
-                                    )
+                                    ),
+                                    locked: false,
                                   },
-                                  { 
-                                    id: "ai-generated", 
+                                  {
+                                    id: "ai-generated",
                                     label: "AI-Generated Images",
-                                    icon: <Sparkles size={16} className="text-violet-500" />
+                                    icon: <Sparkles size={16} className="text-violet-500" />,
+                                    locked: isFreeUser, // Lock for free users
                                   },
-                                  { 
-                                    id: "stock-photos", 
+                                  {
+                                    id: "stock-photos",
                                     label: "Stock Photos (Pexels)",
                                     icon: (
                                       <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                                       </svg>
-                                    )
+                                    ),
+                                    locked: false,
                                   },
-                                ].map((option) => (
-                                  <button
-                                    key={option.id}
-                                    type="button"
-                                    onClick={() => {
-                                      handleChange("imageSource", option.id);
-                                      setIsImageSourceDropdownOpen(false);
-                                    }}
-                                    className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left transition-colors ${
-                                      formData.imageSource === option.id
-                                        ? "bg-[#06b6d4]/10 text-[#06b6d4]"
-                                        : "hover:bg-slate-50 text-slate-700"
-                                    }`}
-                                  >
-                                    {formData.imageSource === option.id ? (
-                                      <Check size={16} className="text-[#06b6d4] flex-shrink-0" />
-                                    ) : (
-                                      <div className="flex-shrink-0">{option.icon}</div>
-                                    )}
-                                    <span className={`text-sm ${formData.imageSource === option.id ? "font-medium" : ""}`}>
-                                      {option.label}
-                                    </span>
-                                  </button>
-                                ))}
+                                ].map((option) => {
+                                  const isLocked = option.locked;
+                                  
+                                  if (isLocked) {
+                                    // For locked options, wrap in a div that shows upgrade modal
+                                    return (
+                                      <div
+                                        key={option.id}
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          setIsImageSourceDropdownOpen(false);
+                                          setShowCreditWarning(true);
+                                        }}
+                                        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left transition-colors opacity-50 cursor-not-allowed bg-slate-50"
+                                      >
+                                        <Lock size={16} className="text-slate-400 flex-shrink-0" />
+                                        <span className="text-sm flex-1">
+                                          {option.label}
+                                        </span>
+                                        <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                                          Upgrade
+                                        </span>
+                                      </div>
+                                    );
+                                  }
+                                  
+                                  return (
+                                    <button
+                                      key={option.id}
+                                      type="button"
+                                      onClick={() => {
+                                        handleChange("imageSource", option.id);
+                                        setIsImageSourceDropdownOpen(false);
+                                      }}
+                                      className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left transition-colors ${
+                                        formData.imageSource === option.id
+                                          ? "bg-[#06b6d4]/10 text-[#06b6d4]"
+                                          : "hover:bg-slate-50 text-slate-700"
+                                      }`}
+                                    >
+                                      {formData.imageSource === option.id ? (
+                                        <Check size={16} className="text-[#06b6d4] flex-shrink-0" />
+                                      ) : (
+                                        <div className="flex-shrink-0">{option.icon}</div>
+                                      )}
+                                      <span className={`text-sm flex-1 ${formData.imageSource === option.id ? "font-medium" : ""}`}>
+                                        {option.label}
+                                      </span>
+                                    </button>
+                                  );
+                                })}
                               </div>
                             </div>
                           </>
@@ -1526,7 +1543,7 @@ export default function CreatePresentationClient({
                                   onClick={() => setIsModelDropdownOpen(false)}
                                   onMouseDown={() => setIsModelDropdownOpen(false)}
                                 />
-                                <div 
+                                <div
                                   className="absolute bottom-full left-0 right-0 mb-1 bg-white rounded-xl border border-slate-200 shadow-2xl z-[9999] max-h-[400px] overflow-y-auto"
                                 >
                                   {/* Basic Models - Free */}
@@ -1546,11 +1563,10 @@ export default function CreatePresentationClient({
                                           handleChange("imageModel", model.id);
                                           setIsModelDropdownOpen(false);
                                         }}
-                                        className={`w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors ${
-                                          formData.imageModel === model.id
+                                        className={`w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors ${formData.imageModel === model.id
                                             ? "bg-violet-50"
                                             : "hover:bg-slate-50"
-                                        }`}
+                                          }`}
                                       >
                                         <div className="flex items-center gap-2.5">
                                           {formData.imageModel === model.id ? (
@@ -1591,11 +1607,10 @@ export default function CreatePresentationClient({
                                             handleChange("imageModel", model.id);
                                             setIsModelDropdownOpen(false);
                                           }}
-                                          className={`w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors ${
-                                            formData.imageModel === model.id
+                                          className={`w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors ${formData.imageModel === model.id
                                               ? "bg-violet-50"
                                               : isLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50"
-                                          }`}
+                                            }`}
                                         >
                                           <div className="flex items-center gap-2.5">
                                             {formData.imageModel === model.id ? (
@@ -1640,18 +1655,17 @@ export default function CreatePresentationClient({
                                             handleChange("imageModel", model.id);
                                             setIsModelDropdownOpen(false);
                                           }}
-                                          className={`w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors ${
-                                            formData.imageModel === model.id
+                                          className={`w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors ${formData.imageModel === model.id
                                               ? "bg-violet-50"
                                               : isLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50"
-                                          }`}
+                                            }`}
                                         >
                                           <div className="flex items-center gap-2.5">
                                             {formData.imageModel === model.id ? (
                                               <Check size={16} className="text-violet-600" />
                                             ) : (
                                               <svg className="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="currentColor">
-                                                <path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.985 5.985 0 0 0-3.998 2.9 6.046 6.046 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.795.795 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646zM2.34 7.896a4.485 4.485 0 0 1 2.366-1.973V11.6a.766.766 0 0 0 .388.676l5.815 3.355-2.02 1.168a.076.076 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.34 7.896zm16.597 3.855l-5.833-3.387L15.119 7.2a.076.076 0 0 1 .071 0l4.83 2.791a4.494 4.494 0 0 1-.676 8.105v-5.678a.79.79 0 0 0-.407-.667zm2.01-3.023l-.141-.085-4.774-2.782a.776.776 0 0 0-.785 0L9.409 9.23V6.897a.066.066 0 0 1 .028-.061l4.83-2.787a4.5 4.5 0 0 1 6.68 4.66zm-12.64 4.135l-2.02-1.164a.08.08 0 0 1-.038-.057V6.075a4.5 4.5 0 0 1 7.375-3.453l-.142.08-4.778 2.758a.795.795 0 0 0-.393.681zm1.097-2.365l2.602-1.5 2.607 1.5v2.999l-2.597 1.5-2.607-1.5z"/>
+                                                <path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.985 5.985 0 0 0-3.998 2.9 6.046 6.046 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.795.795 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646zM2.34 7.896a4.485 4.485 0 0 1 2.366-1.973V11.6a.766.766 0 0 0 .388.676l5.815 3.355-2.02 1.168a.076.076 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.34 7.896zm16.597 3.855l-5.833-3.387L15.119 7.2a.076.076 0 0 1 .071 0l4.83 2.791a4.494 4.494 0 0 1-.676 8.105v-5.678a.79.79 0 0 0-.407-.667zm2.01-3.023l-.141-.085-4.774-2.782a.776.776 0 0 0-.785 0L9.409 9.23V6.897a.066.066 0 0 1 .028-.061l4.83-2.787a4.5 4.5 0 0 1 6.68 4.66zm-12.64 4.135l-2.02-1.164a.08.08 0 0 1-.038-.057V6.075a4.5 4.5 0 0 1 7.375-3.453l-.142.08-4.778 2.758a.795.795 0 0 0-.393.681zm1.097-2.365l2.602-1.5 2.607 1.5v2.999l-2.597 1.5-2.607-1.5z" />
                                               </svg>
                                             )}
                                             <span className={`text-sm ${formData.imageModel === model.id ? "font-medium text-violet-700" : "text-slate-700"}`}>{model.name}</span>
@@ -1691,11 +1705,10 @@ export default function CreatePresentationClient({
                                             handleChange("imageModel", model.id);
                                             setIsModelDropdownOpen(false);
                                           }}
-                                          className={`w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors ${
-                                            formData.imageModel === model.id
+                                          className={`w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors ${formData.imageModel === model.id
                                               ? "bg-violet-50"
                                               : isLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50"
-                                          }`}
+                                            }`}
                                         >
                                           <div className="flex items-center gap-2.5">
                                             {formData.imageModel === model.id ? (
@@ -1732,19 +1745,17 @@ export default function CreatePresentationClient({
                                 key={style.id}
                                 type="button"
                                 onClick={() => handleChange("imageArtStyle", style.id)}
-                                className={`flex-shrink-0 flex flex-col items-center gap-1 transition-all ${
-                                  formData.imageArtStyle === style.id
+                                className={`flex-shrink-0 flex flex-col items-center gap-1 transition-all ${formData.imageArtStyle === style.id
                                     ? "opacity-100"
                                     : "opacity-70 hover:opacity-100"
-                                }`}
+                                  }`}
                               >
-                                <div className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
-                                  formData.imageArtStyle === style.id
+                                <div className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${formData.imageArtStyle === style.id
                                     ? "border-[#06b6d4] ring-2 ring-[#06b6d4]/30"
                                     : "border-slate-200 hover:border-slate-300"
-                                }`}>
-                                  <Image 
-                                    src={style.image} 
+                                  }`}>
+                                  <Image
+                                    src={style.image}
                                     alt={style.label}
                                     width={64}
                                     height={64}
@@ -1758,13 +1769,12 @@ export default function CreatePresentationClient({
                                     </div>
                                   )}
                                 </div>
-                                <span className={`text-[10px] font-medium ${
-                                  formData.imageArtStyle === style.id ? "text-[#06b6d4]" : "text-slate-600"
-                                }`}>{style.label}</span>
+                                <span className={`text-[10px] font-medium ${formData.imageArtStyle === style.id ? "text-[#06b6d4]" : "text-slate-600"
+                                  }`}>{style.label}</span>
                               </button>
                             ))}
                           </div>
-                          
+
                           {/* Custom Art Style Text Input */}
                           {formData.imageArtStyle === "custom" && (
                             <div className="mb-4">

@@ -69,6 +69,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Block free users from AI image generation
+    const isFreeUser = !user.subscriptionPlan || user.subscriptionPlan === 'free';
+    if (isFreeUser) {
+      return NextResponse.json(
+        {
+          error: "Upgrade required",
+          message: "AI image generation is only available for Plus, Pro, and Ultra plans. Upgrade to unlock this feature.",
+          needsUpgrade: true,
+        },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
     const {
       prompt,

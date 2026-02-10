@@ -241,7 +241,7 @@ export default function ImagesPageClient({
                       />
                     </div>
                   )}
-                  
+
                   {/* Hover Overlay */}
                   <div className="absolute inset-0 flex flex-col justify-between bg-black/40 p-3 opacity-0 transition-opacity group-hover:opacity-100">
                     <div className="self-end flex gap-2">
@@ -455,7 +455,7 @@ export default function ImagesPageClient({
                   <ImageIcon className="h-16 w-16 text-slate-300" />
                 </div>
               )}
-              
+
               {/* URL Display */}
               {selectedImage.url && (
                 <div className="mt-4 p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">

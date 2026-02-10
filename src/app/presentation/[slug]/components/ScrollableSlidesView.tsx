@@ -31,6 +31,7 @@ interface ScrollableSlidesViewProps {
   presentationTitle: string;
   showFeedback?: boolean;
   presentationId?: string;
+  subscriptionPlan?: string | null;
 }
 
 export function ScrollableSlidesView({
@@ -48,6 +49,7 @@ export function ScrollableSlidesView({
   presentationTitle,
   showFeedback,
   presentationId,
+  subscriptionPlan,
 }: ScrollableSlidesViewProps) {
   const ui = getUIColors(getThemeType(theme));
   const isCurrentlyStreaming = streamingStatus === "streaming";
@@ -116,6 +118,7 @@ export function ScrollableSlidesView({
                 onAddAISlide={(prompt) => onAddAISlide(index, prompt)}
                 presentationContext={presentationTitle}
                 theme={theme}
+                subscriptionPlan={subscriptionPlan}
               />
             )}
           </div>
@@ -128,6 +131,7 @@ export function ScrollableSlidesView({
           onAddAISlide={(prompt) => onAddAISlide(slides.length - 1, prompt)}
           presentationContext={presentationTitle}
           theme={theme}
+          subscriptionPlan={subscriptionPlan}
         />
       )}
 
