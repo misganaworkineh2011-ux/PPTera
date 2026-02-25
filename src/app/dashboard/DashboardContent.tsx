@@ -7,6 +7,7 @@ import Image from "next/image";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
 import { useUser } from "@clerk/nextjs";
+import { useDashboard } from "~/contexts/DashboardContext";
 import { toast } from "sonner";
 import { getPresentationUrl } from "~/lib/utils";
 import ShareModal from "~/components/presentation/ShareModal";
@@ -44,7 +45,10 @@ type ViewMode = "grid" | "list";
 type FilterMode = "all" | "favorites" | "public" | "private";
 
 export default function DashboardContent({ presentations: propPresentations, userName, searchQuery = "", pagination, onLoadMore, isLoadingMore }: DashboardContentProps) {
-  const { user } = useUser();
+  const { user: clerkUser } = useUser();
+  const { user: dashboardUser } = useDashboard();
+  const subscriptionPlan = dashboardUser?.subscriptionPlan;
+  
   // Local state for optimistic updates only - synced from props
   const [localPresentations, setLocalPresentations] = useState(propPresentations);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -816,6 +820,7 @@ export default function DashboardContent({ presentations: propPresentations, use
               initialIsPublic={pres.isPublic}
               initialShareToken={pres.shareToken}
               onClose={() => setShowShareModal(null)}
+              subscriptionPlan={subscriptionPlan}
             />
           ) : null;
         })(),

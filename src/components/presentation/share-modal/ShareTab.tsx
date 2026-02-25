@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { FormEvent } from "react";
-import { Globe, Lock, CheckCircle2, Copy, Mail } from "lucide-react";
+import { Globe, Lock, CheckCircle2, Copy, Mail, Shield, Calendar, Crown } from "lucide-react";
 import { toast } from "sonner";
 import type { Theme } from "~/lib/themes";
 import { useLanguage } from "~/contexts/LanguageContext";
@@ -14,6 +14,7 @@ interface ShareTabProps {
   initialIsPublic?: boolean;
   initialShareToken?: string | null;
   theme?: Theme;
+  subscriptionPlan?: string | null;
 }
 
 export default function ShareTab({
@@ -21,9 +22,12 @@ export default function ShareTab({
   initialIsPublic,
   initialShareToken,
   theme,
+  subscriptionPlan,
 }: ShareTabProps) {
   const [isPublic, setIsPublic] = useState(initialIsPublic || false);
   const [shareToken, setShareToken] = useState(initialShareToken || null);
+  const [sharePassword, setSharePassword] = useState("");
+  const [shareExpiresAt, setShareExpiresAt] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -34,6 +38,27 @@ export default function ShareTab({
 
   const { language } = useLanguage();
   const t = dashboardTranslations[language] || dashboardTranslations.en;
+
+  const hasPremiumSharing = subscriptionPlan === "pro" || subscriptionPlan === "ultra";
+
+  useEffect(() => {
+    // Fetch current settings including password/expiration
+    async function fetchSettings() {
+      try {
+        const res = await fetch(`/api/presentations/${presentationId}/share`);
+        if (res.ok) {
+          const data = await res.json();
+          setSharePassword(data.sharePassword || "");
+          if (data.shareExpiresAt) {
+            setShareExpiresAt(new Date(data.shareExpiresAt).toISOString().split('T')[0]);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch share settings", err);
+      }
+    }
+    fetchSettings();
+  }, [presentationId]);
 
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
   const shareUrl = shareToken ? `${baseUrl}/share/${shareToken}` : "";
@@ -91,7 +116,14 @@ export default function ShareTab({
       const res = await fetch(`/api/presentations/${presentationId}/share`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isPublic: !isPublic }),
+        body: JSON.stringify({ 
+          isPublic: !isPublic,
+          // Only send these if the plan allows it
+          ...(hasPremiumSharing && {
+            sharePassword: sharePassword || null,
+            shareExpiresAt: shareExpiresAt || null,
+          })
+        }),
       });
 
       if (!res.ok) throw new Error("Failed to update");
@@ -153,6 +185,33 @@ export default function ShareTab({
       toast.error(err instanceof Error ? err.message : "Failed to send invite");
     } finally {
       setSendingInvite(false);
+    }
+  };
+
+  const handleUpdatePremiumSettings = async () => {
+    if (!hasPremiumSharing) {
+      toast.error("Upgrade to Pro or Ultra for these features");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/presentations/${presentationId}/share`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          isPublic, 
+          sharePassword: sharePassword || null,
+          shareExpiresAt: shareExpiresAt || null,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update");
+      toast.success("Sharing settings updated!");
+    } catch {
+      toast.error("Failed to update sharing settings");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -313,6 +372,68 @@ export default function ShareTab({
           </button>
         </div>
       )}
+
+      {/* Premium Sharing Settings */}
+      <div className="p-5 rounded-xl border space-y-4" style={{ backgroundColor: colors.cardBg, borderColor: colors.border }}>
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: colors.text }}>
+            <Shield size={16} className="text-cyan-500" />
+            Premium Sharing Options
+          </h3>
+          {!hasPremiumSharing && (
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800">
+              <Crown size={10} className="text-amber-600 dark:text-amber-400" />
+              <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 uppercase">Pro/Ultra Only</span>
+            </div>
+          )}
+        </div>
+
+        <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 ${!hasPremiumSharing ? 'opacity-50 pointer-events-none' : ''}`}>
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500" style={{ color: colors.textMuted }}>
+              Password Protection
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Enter password"
+                value={sharePassword}
+                onChange={(e) => setSharePassword(e.target.value)}
+                className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
+                style={{ backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }}
+              />
+              <Lock size={14} className="absolute right-3 top-1/2 -translate-y-1/2 opacity-30" />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500" style={{ color: colors.textMuted }}>
+              Expiration Date
+            </label>
+            <div className="relative">
+              <input
+                type="date"
+                value={shareExpiresAt || ""}
+                onChange={(e) => setShareExpiresAt(e.target.value)}
+                className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
+                style={{ backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }}
+              />
+              <Calendar size={14} className="absolute right-3 top-1/2 -translate-y-1/2 opacity-30" />
+            </div>
+          </div>
+        </div>
+
+        {hasPremiumSharing && (
+          <button
+            onClick={handleUpdatePremiumSettings}
+            disabled={loading}
+            className="w-full py-2 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 rounded-lg text-xs font-bold transition-all"
+            style={{ color: colors.text }}
+          >
+            {loading ? "Updating..." : "Update Protection Settings"}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

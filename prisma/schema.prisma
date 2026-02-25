@@ -37,6 +37,8 @@ model User {
   notifications         Notification[]
   outlines              Outline[]
   presentations         Presentation[]
+  apiKeys               ApiKey[]
+  webhooks              WebhookConfig[]
 
   @@map("user")
 }
@@ -55,6 +57,9 @@ model Presentation {
   updatedAt      DateTime        @updatedAt
   isPublic       Boolean         @default(false)
   shareToken     String?         @unique
+  sharePassword  String?         
+  shareExpiresAt DateTime?       
+  viewCount      Int             @default(0)
   activities     Activity[]
   charts         Chart[]
   collaborations Collaboration[]
@@ -398,27 +403,31 @@ model Feedback {
   @@map("feedback")
 }
 
-model Referral {
-  id              String    @id @default(cuid())
-  referrerId      String    // User who shared the referral
-  referredEmail   String?   // Email of referred user (before signup)
-  referredUserId  String?   // User ID after signup
-  referralCode    String    @unique
-  status          String    @default("pending") // pending, completed, expired
-  creditsAwarded  Int       @default(0)
-  createdAt       DateTime  @default(now())
-  completedAt     DateTime?
-  // Purchase tracking for influencer deals
-  hasPurchased    Boolean   @default(false)
-  purchasedAt     DateTime?
-  purchasePlan    String?   // plus, pro, ultra
-  purchaseAmount  Float?    // Amount in dollars
+model ApiKey {
+  id        String    @id @default(cuid())
+  key       String    @unique
+  name      String?
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  lastUsed  DateTime?
 
-  @@index([referrerId])
-  @@index([referralCode])
-  @@index([referredUserId])
-  @@index([referrerId, hasPurchased])
-  @@map("referral")
+  @@index([userId])
+  @@map("api_key")
+}
+
+model WebhookConfig {
+  id        String   @id @default(cuid())
+  url       String
+  events    String[] // e.g. ["export.completed", "presentation.created"]
+  secret    String   
+  active    Boolean  @default(true)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("webhook_config")
 }
 
 // ============================================
@@ -454,8 +463,8 @@ model SEOPage {
   views             Int       @default(0)
   isPublished       Boolean   @default(true)
   createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  
+  updatedAt         DateTime  @default(now())
+
   @@index([pageType, isPublished])
   @@index([industry])
   @@index([useCase])
@@ -476,7 +485,7 @@ model SEOTemplate {
   useCases    String[]
   isPublished Boolean  @default(true)
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @default(now())
   
   @@index([category])
   @@index([isPublished])

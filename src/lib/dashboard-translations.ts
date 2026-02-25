@@ -20,6 +20,8 @@ export const dashboardTranslations: Record<Language, Record<string, string>> = {
     design: "Design",
     intelligence: "Intelligence",
     workspace: "Workspace",
+    developer: "Developer",
+    apiAndWebhooks: "API & Webhooks",
     // Settings
     settingsTitle: "Settings",
     settingsSubtitle: "Manage your workspace preferences and account details",
@@ -4395,6 +4397,8 @@ ar: {
     design: "التصميم",
     intelligence: "الذكاء الاصطناعي",
     workspace: "مساحة العمل",
+    developer: "المطور",
+    apiAndWebhooks: "الـ API والويبهوك",
     // Settings
     settingsTitle: "الإعدادات",
     settingsSubtitle: "إدارة تفضيلات مساحة العمل وتفاصيل الحساب",

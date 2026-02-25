@@ -10,7 +10,7 @@ export async function POST(
   try {
     const user = await requireAuth();
     const { id } = await params;
-    const { isPublic } = await request.json();
+    const { isPublic, sharePassword, shareExpiresAt } = await request.json();
 
     // Check if user owns the presentation
     const presentation = await db.presentation.findUnique({
@@ -27,12 +27,20 @@ export async function POST(
     // Generate share token if it doesn't exist
     const shareToken = presentation.shareToken || nanoid(16);
 
+    // Only allow premium sharing features for Pro and Ultra plans
+    const hasPremiumSharing = user.subscriptionPlan === "pro" || user.subscriptionPlan === "ultra";
+    
     // Update presentation
     const updated = await db.presentation.update({
       where: { id },
       data: {
         isPublic,
         shareToken,
+        // Only update these if the user has a premium plan
+        ...(hasPremiumSharing && {
+          sharePassword: sharePassword !== undefined ? sharePassword : presentation.sharePassword,
+          shareExpiresAt: shareExpiresAt !== undefined ? (shareExpiresAt ? new Date(shareExpiresAt) : null) : presentation.shareExpiresAt,
+        }),
       },
     });
 
@@ -67,6 +75,8 @@ export async function GET(
         id: true,
         isPublic: true,
         shareToken: true,
+        sharePassword: true,
+        shareExpiresAt: true,
         userId: true,
       },
     });
@@ -85,6 +95,8 @@ export async function GET(
     return NextResponse.json({
       isPublic: presentation.isPublic,
       shareUrl,
+      sharePassword: presentation.sharePassword,
+      shareExpiresAt: presentation.shareExpiresAt,
     });
   } catch (error) {
     console.error("Error getting share status:", error);

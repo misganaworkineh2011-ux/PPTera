@@ -638,7 +638,7 @@ export const translations = {
     getStartedWithPPT: "Get started with PPTMaster",
     forExtraAIPower: "Unlimited AI creations",
     unlimitedAICreations: "Unlimited AI creations",
-    forPremiumAI: "Premium AI, 2K exports & 3D animations",
+    forPremiumAI: "Premium AI & 2K exports",
     for20xMoreAI: "Highest limits & all features",
     everythingInFree: "Everything in Free, and:",
     everythingInPlus: "Everything in Plus, and:",

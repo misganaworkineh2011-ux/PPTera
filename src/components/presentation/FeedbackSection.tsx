@@ -106,15 +106,9 @@ export default function FeedbackSection({ presentationId, theme }: FeedbackSecti
             </button>
           </div>
         </div>
-      </div>
-            }}
-          >
-            <ArrowLeft size={20} />
-            Back to prompt
-          </button>
-        </div>
+
         <div 
-          className="pt-6"
+          className="pt-6 mt-8 max-w-2xl mx-auto"
           style={{ borderTop: `1px solid ${colors.border}` }}
         >
           <p 
