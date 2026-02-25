@@ -73,31 +73,40 @@ export default function FeedbackSection({ presentationId, theme }: FeedbackSecti
         borderTop: `1px solid ${colors.border}`,
       }}
     >
-      <div className="max-w-2xl mx-auto px-6 py-12">
-        <h3 
-          className="text-2xl font-bold text-center mb-6"
-          style={{ color: colors.title }}
-        >
-          Like what you created?
-        </h3>
-        <div className="space-y-3 mb-8">
-          <button
-            onClick={() => router.push("/createpresentation?mode=ai")}
-            className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-white font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]"
-            style={{
-              background: `linear-gradient(to right, ${colors.primary}, ${colors.accent})`,
-            }}
+      <div className="w-full px-8 py-16 lg:py-24">
+        <div className="max-w-5xl mx-auto text-center">
+          <h3 
+            className="text-4xl md:text-5xl lg:text-6xl font-black mb-8 leading-tight tracking-tight"
+            style={{ color: colors.title }}
           >
-            <Sparkles size={20} />
-            Create something else
-          </button>
-          <button
-            onClick={() => router.push("/createpresentation?mode=ai")}
-            className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl border-2 font-semibold transition-all hover:opacity-80"
-            style={{
-              backgroundColor: colors.surface,
-              borderColor: colors.border,
-              color: colors.text,
+            Like what you created?
+          </h3>
+          <div className="flex flex-col md:flex-row items-center justify-center gap-4 max-w-2xl mx-auto">
+            <button
+              onClick={() => router.push("/createpresentation?mode=ai")}
+              className="w-full md:flex-1 flex items-center justify-center gap-3 px-8 py-5 rounded-2xl text-white text-lg font-bold shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] transition-all hover:scale-[1.03] active:scale-[1.01]"
+              style={{
+                background: `linear-gradient(135deg, ${colors.primary}, ${colors.accent})`,
+              }}
+            >
+              <Sparkles size={24} className="animate-pulse" />
+              Create something else
+            </button>
+            <button
+              onClick={() => router.push("/")}
+              className="w-full md:flex-1 flex items-center justify-center gap-3 px-8 py-5 rounded-2xl border-2 text-lg font-bold transition-all hover:opacity-90 hover:scale-[1.03] active:scale-[1.01]"
+              style={{
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+                color: colors.text,
+              }}
+            >
+              <ArrowLeft size={24} />
+              Back to Home
+            </button>
+          </div>
+        </div>
+      </div>
             }}
           >
             <ArrowLeft size={20} />

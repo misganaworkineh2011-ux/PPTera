@@ -811,17 +811,14 @@ function Step3Design({
 // AI Image Models with credits (same as other AI generation dropdowns)
 const AI_IMAGE_MODELS = [
   // Basic tier (Free)
-  { id: "gpt-image-1-mini", name: "GPT Image Mini", credits: 10, tier: "basic", provider: "OpenAI" },
+  { id: "gemini-2.0-flash-exp", name: "Gemini 2.0 Flash", credits: 10, tier: "basic", provider: "Google" },
   // Advanced tier (PLUS+)
-  { id: "imagen-4-fast", name: "Imagen 4 Fast", credits: 20, tier: "advanced", provider: "Google" },
-  { id: "gemini-2.0-flash-preview-image-generation", name: "Gemini 2.5 Flash", credits: 40, tier: "advanced", provider: "Google" },
+  { id: "imagen-4.0-fast-generate-001", name: "Imagen 4 Fast", credits: 20, tier: "advanced", provider: "Google" },
+  { id: "gemini-2.0-flash-exp", name: "Nano Banana", credits: 40, tier: "advanced", provider: "Google" },
   // Premium tier (PRO+)
-  { id: "imagen-4", name: "Imagen 4 Standard", credits: 40, tier: "premium", provider: "Google" },
-  { id: "dall-e-3", name: "DALL-E 3", credits: 40, tier: "premium", provider: "OpenAI" },
+  { id: "imagen-4.0-generate-001", name: "Imagen 4 Standard", credits: 40, tier: "premium", provider: "Google" },
   // Ultra tier (ULTRA only)
-  { id: "imagen-4-ultra", name: "Imagen 4 Ultra", credits: 60, tier: "ultra", provider: "Google" },
-  { id: "gpt-image-1.5", name: "GPT Image 1.5", credits: 130, tier: "ultra", provider: "OpenAI" },
-  { id: "gpt-image-1", name: "GPT Image 1", credits: 150, tier: "ultra", provider: "OpenAI" },
+  { id: "imagen-4.0-ultra-generate-001", name: "Imagen 4 Ultra", credits: 60, tier: "ultra", provider: "Google" },
 ];
 
 function Step4Background({
@@ -836,7 +833,7 @@ function Step4Background({
   const [imageUrl, setImageUrl] = useState(themeData.backgroundImageUrl || "");
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
-  const [selectedModel, setSelectedModel] = useState("imagen-4-fast");
+  const [selectedModel, setSelectedModel] = useState("imagen-4.0-fast-generate-001");
   const [showModelDropdown, setShowModelDropdown] = useState(false);
 
   // Determine user's plan tier for model locking

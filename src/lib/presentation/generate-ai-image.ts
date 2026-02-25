@@ -1,11 +1,10 @@
 /**
  * AI Image Generation Utility
  * 
- * Generates images using Google's Generative AI API and OpenAI.
+ * Generates images using Google's Generative AI API.
  * Supports:
  * 1. Imagen 4 models (dedicated text-to-image): Use generateImages endpoint
  * 2. Gemini Image models (multimodal): Use generateContent with responseModalities
- * 3. OpenAI GPT Image models: Use images/generations endpoint
  */
 
 import { env } from "~/env";
@@ -20,24 +19,13 @@ export type ImageModelId =
   | "imagen-4.0-fast-generate-001"     // $0.02/image - Optimized for latency
   // Gemini multimodal models (conversational, good for consistency/editing)
   | "gemini-3-pro-image-preview"       // ~$0.134/image - Best reasoning + image gen
-  | "gemini-2.5-flash-image"           // ~$0.039/image - Fast, cost-effective ("Nano Banana")
-  // OpenAI GPT Image models
-  | "gpt-image-1.5"                    // Latest flagship - best quality
-  | "gpt-image-1"                      // Previous flagship
-  | "gpt-image-1-mini"                 // Budget option
-  // Legacy OpenAI DALL-E models
-  | "openai"                           // DALL-E 3 standard (~$0.04/image)
-  | "openai-hd";                       // DALL-E 3 HD (~$0.08/image)
+  | "gemini-2.5-flash-image";          // ~$0.039/image - Fast, cost-effective ("Nano Banana")
 
 export const DEFAULT_IMAGE_MODEL: ImageModelId = "gemini-2.5-flash-image";
 
 // Check model type
 function isImagenModel(modelId: string): boolean {
   return modelId.startsWith("imagen-");
-}
-
-function isOpenAIModel(modelId: string): boolean {
-  return modelId.startsWith("gpt-image") || modelId === "openai" || modelId === "openai-hd";
 }
 
 // Image generation styles
@@ -195,101 +183,6 @@ async function generateGeminiModelImage(
 }
 
 
-/**
- * Generate an image using OpenAI models (GPT Image or DALL-E)
- */
-async function generateOpenAIImage(
-  prompt: string,
-  modelId: string,
-  apiKey: string
-): Promise<ImageResult> {
-  try {
-    // Determine if this is a GPT Image model or legacy DALL-E
-    const isGptImageModel = modelId.startsWith("gpt-image");
-    
-    let openaiModel: string;
-    let quality: "low" | "medium" | "high" | "standard" | "hd" = "medium";
-    let size = "1024x1024";
-
-    if (modelId === "gpt-image-1.5") {
-      openaiModel = "gpt-image-1.5";
-      quality = "high";
-    } else if (modelId === "gpt-image-1") {
-      openaiModel = "gpt-image-1";
-      quality = "high";
-    } else if (modelId === "gpt-image-1-mini") {
-      openaiModel = "gpt-image-1-mini";
-      quality = "low"; // Budget option uses low quality
-    } else if (modelId === "openai-hd") {
-      openaiModel = "dall-e-3";
-      quality = "hd";
-      size = "1792x1024"; // HD widescreen
-    } else {
-      openaiModel = "dall-e-3";
-      quality = "standard";
-    }
-
-    // Build request body based on model type
-    const requestBody: Record<string, unknown> = {
-      model: openaiModel,
-      prompt: prompt,
-      n: 1,
-      size: size,
-    };
-
-    // GPT Image models use different parameters than DALL-E
-    if (isGptImageModel) {
-      // GPT Image models: quality is "low", "medium", or "high"
-      requestBody.quality = quality as "low" | "medium" | "high";
-      // GPT Image models return base64 by default, no response_format needed
-    } else {
-      // DALL-E 3: quality is "standard" or "hd", and supports response_format
-      requestBody.quality = quality as "standard" | "hd";
-      requestBody.response_format = "b64_json";
-    }
-
-    const response = await fetch("https://api.openai.com/v1/images/generations", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify(requestBody),
-    });
-
-    if (!response.ok) {
-      const errorBody = await response.text();
-      console.error(`[OpenAI Image] API error: ${response.status}`, errorBody);
-      return { url: "", alt: prompt, source: "placeholder", error: `API error: ${response.status}` };
-    }
-
-    const data = await response.json();
-    
-    // GPT Image models return data differently - check for both formats
-    const imageData = data.data?.[0]?.b64_json || data.data?.[0]?.image;
-    const imageUrl = data.data?.[0]?.url;
-
-    if (imageData) {
-      const dataUrl = `data:image/png;base64,${imageData}`;
-
-      const uploadResult = await uploadImageFromDataUrl(dataUrl, {
-        folder: "pptmaster/ai-images",
-        tags: ["ai-generated", "openai", "presentation"],
-      });
-
-      return { url: uploadResult?.url ?? dataUrl, alt: prompt, source: "gemini" };
-    } else if (imageUrl) {
-      // If we got a URL instead of base64, use it directly
-      return { url: imageUrl, alt: prompt, source: "gemini" };
-    }
-
-    console.warn("[OpenAI Image] No image data in response", data);
-    return { url: "", alt: prompt, source: "placeholder", error: "No image generated" };
-  } catch (error) {
-    console.error("[OpenAI Image] Failed:", error);
-    return { url: "", alt: prompt, source: "placeholder", error: String(error) };
-  }
-}
 
 /**
  * Generate an image using the appropriate AI provider
@@ -305,16 +198,6 @@ export async function generateGeminiImage(
   const model = modelId || DEFAULT_IMAGE_MODEL;
 
   console.log(`[AI Image] Generating with model: ${model}`);
-
-  // Route to appropriate API
-  if (isOpenAIModel(model)) {
-    const apiKey = env.OPENAI_API_KEY;
-    if (!apiKey) {
-      console.warn("[AI Image] OPENAI_API_KEY not configured");
-      return { url: "", alt: promptHint, source: "placeholder", error: "OpenAI API key not configured" };
-    }
-    return generateOpenAIImage(prompt, model, apiKey);
-  }
 
   // Google models (Imagen or Gemini)
   const apiKey = env.GEMINI_API_KEY;

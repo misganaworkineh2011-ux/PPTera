@@ -1,14 +1,11 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
 import { db } from "~/server/db";
 import { env } from "~/env";
 import { CREDIT_COSTS } from "~/lib/credits";
 import { serverCache } from "~/lib/server-cache";
 import { generateGeminiImage, type ImageModelId } from "~/lib/presentation/generate-ai-image";
 import { uploadImageFromDataUrl } from "~/lib/uploads/cloudinary";
-
-const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
 
 /**
  * Upload image URL to Cloudinary (fetches and re-uploads)
@@ -118,21 +115,8 @@ export async function POST(req: Request) {
     // Determine credit cost based on model and quality
     let creditCost: number;
     
-    // Map model to credit cost
+    // Map model to credit cost (Google models only)
     const modelCreditMap: Record<string, { standard: number; hd: number }> = {
-      // GPT Image models (new)
-      "gpt-image-1-mini": {
-        standard: CREDIT_COSTS.IMAGE_BASIC,
-        hd: CREDIT_COSTS.IMAGE_BASIC,
-      },
-      "gpt-image-1.5": {
-        standard: CREDIT_COSTS.GPT_IMAGE_DETAILED,
-        hd: CREDIT_COSTS.GPT_IMAGE_DETAILED,
-      },
-      "gpt-image-1": {
-        standard: CREDIT_COSTS.GPT_IMAGE_DETAILED,
-        hd: CREDIT_COSTS.GPT_IMAGE_DETAILED,
-      },
       // Gemini models
       "gemini-2.5-flash-image": { 
         standard: CREDIT_COSTS.GEMINI_FLASH, 
@@ -155,27 +139,14 @@ export async function POST(req: Request) {
         standard: CREDIT_COSTS.IMAGEN_4_FAST, 
         hd: CREDIT_COSTS.IMAGEN_4_FAST 
       },
-      // OpenAI DALL-E models
-      "openai": { 
-        standard: CREDIT_COSTS.DALLE_STANDARD, 
-        hd: CREDIT_COSTS.DALLE_HD 
-      },
-      "openai-hd": { 
-        standard: CREDIT_COSTS.DALLE_HD, 
-        hd: CREDIT_COSTS.GPT_IMAGE_DETAILED 
-      },
-      // Legacy support
-      "gpt-image": { 
-        standard: CREDIT_COSTS.GPT_IMAGE_DETAILED, 
-        hd: CREDIT_COSTS.GPT_IMAGE_DETAILED 
-      },
+      // Legacy/Fallback
       "gemini": { 
         standard: CREDIT_COSTS.GEMINI_FLASH, 
         hd: CREDIT_COSTS.GEMINI_FLASH_HD 
       },
     };
     
-    const defaultCredits = { standard: CREDIT_COSTS.DALLE_STANDARD, hd: CREDIT_COSTS.DALLE_HD };
+    const defaultCredits = { standard: CREDIT_COSTS.GEMINI_FLASH, hd: CREDIT_COSTS.GEMINI_FLASH_HD };
     const modelCredits = modelCreditMap[model] ?? defaultCredits;
     creditCost = quality === "hd" ? modelCredits.hd : modelCredits.standard;
 
@@ -199,93 +170,26 @@ export async function POST(req: Request) {
       model,
       quality,
       size,
-      style,
       creditCost,
     });
 
     let imageUrl: string;
     let revisedPrompt: string | undefined;
 
-    // Check if this is a Google model (Gemini or Imagen)
-    const isGoogleModel = model.startsWith("gemini-") || model.startsWith("imagen-");
-    // Check if this is a GPT Image model (not DALL-E)
-    const isGptImageModel = model.startsWith("gpt-image");
-
-    if (isGoogleModel) {
-      // Use the unified Google image generation function
-      const result = await generateGeminiImage(
-        enhancedPrompt,
-        artStyle,
-        model as ImageModelId,
-        artStyle
-      );
-      
-      if (result.error || !result.url) {
-        throw new Error(result.error || "Failed to generate image with Google AI");
-      }
-      
-      imageUrl = result.url;
-      revisedPrompt = undefined; // Google models don't return revised prompts
-    } else if (isGptImageModel) {
-      // GPT Image models use OpenAI API with different parameters
-      let openaiModel: string;
-      let gptQuality: "low" | "medium" | "high" = "medium";
-      
-      if (model === "gpt-image-1.5") {
-        openaiModel = "gpt-image-1.5";
-        gptQuality = "high";
-      } else if (model === "gpt-image-1") {
-        openaiModel = "gpt-image-1";
-        gptQuality = "high";
-      } else {
-        // gpt-image-1-mini
-        openaiModel = "gpt-image-1-mini";
-        gptQuality = "low";
-      }
-
-      // GPT Image models have different supported sizes than DALL-E
-      // DALL-E: 1024x1024, 1792x1024, 1024x1792
-      // GPT Image: 1024x1024, 1536x1024, 1024x1536, auto
-      const gptSizeMap: Record<string, string> = {
-        "1024x1024": "1024x1024",
-        "1792x1024": "1536x1024", // Landscape: map to closest GPT Image size
-        "1024x1792": "1024x1536", // Portrait: map to closest GPT Image size
-      };
-      const gptSize = gptSizeMap[size] || "1024x1024";
-
-      const response = await openai.images.generate({
-        model: openaiModel,
-        prompt: enhancedPrompt,
-        n: 1,
-        size: gptSize as "1024x1024" | "1536x1024" | "1024x1536",
-        quality: gptQuality,
-      });
-
-      // GPT Image models may return b64_json or url
-      const imageData = response.data?.[0];
-      if (imageData?.b64_json) {
-        imageUrl = `data:image/png;base64,${imageData.b64_json}`;
-      } else {
-        imageUrl = imageData?.url || "";
-      }
-      revisedPrompt = imageData?.revised_prompt;
-    } else {
-      // OpenAI DALL-E 3 models
-      const dalleQuality = model === "openai-hd" ? "hd" : (quality as "standard" | "hd");
-      
-      const response = await openai.images.generate({
-        model: "dall-e-3",
-        prompt: enhancedPrompt,
-        n: 1,
-        size: size as "1024x1024" | "1792x1024" | "1024x1792",
-        quality: dalleQuality,
-        style: style as "vivid" | "natural",
-        response_format: "url",
-      });
-
-      imageUrl = response.data?.[0]?.url || "";
-      revisedPrompt = response.data?.[0]?.revised_prompt;
+    // Use the unified Google image generation function exclusively
+    const result = await generateGeminiImage(
+      enhancedPrompt,
+      artStyle,
+      model as ImageModelId,
+      artStyle
+    );
+    
+    if (result.error || !result.url) {
+      throw new Error(result.error || "Failed to generate image with Google AI");
     }
+    
+    imageUrl = result.url;
+    revisedPrompt = undefined; // Google models don't return revised prompts (currently)
 
     if (!imageUrl) {
       throw new Error("No image URL returned");
@@ -300,16 +204,11 @@ export async function POST(req: Request) {
 
     // Get friendly model name for activity log
     const modelNames: Record<string, string> = {
-      "gpt-image-1-mini": "GPT Image Mini",
-      "gpt-image-1.5": "GPT Image 1.5",
-      "gpt-image-1": "GPT Image 1",
       "gemini-2.5-flash-image": "Nano Banana",
       "gemini-3-pro-image-preview": "Nano Banana Pro",
       "imagen-4.0-generate-001": "Imagen 4",
       "imagen-4.0-ultra-generate-001": "Imagen 4 Ultra",
       "imagen-4.0-fast-generate-001": "Imagen 4 Fast",
-      "openai": "DALL-E 3",
-      "openai-hd": "DALL-E 3 HD",
     };
     const modelDisplayName = modelNames[model] || model;
 

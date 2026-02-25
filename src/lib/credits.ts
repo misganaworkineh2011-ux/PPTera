@@ -28,15 +28,10 @@ export const CREDIT_COSTS = {
   IMAGEN_4_ULTRA: 30,          // Imagen 4 Ultra (imagen-4.0-ultra-generate-001) - highest quality 2K
   IMAGEN_4_FAST: 10,           // Imagen 4 Fast (imagen-4.0-fast-generate-001) - low latency
   
-  // OpenAI DALL-E models
-  DALLE_STANDARD: 40,          // DALL-E 3 standard quality
-  DALLE_HD: 60,                // DALL-E 3 HD quality
-  GPT_IMAGE_DETAILED: 120,     // GPT Image (highest quality)
-  
   // Legacy aliases (for backwards compatibility)
   IMAGE_BASIC: 10,             // Maps to GEMINI_FLASH
   IMAGE_HD: 30,                // Maps to GEMINI_PRO_HD
-  IMAGE_PREMIUM: 120,          // Maps to GPT_IMAGE_DETAILED
+  IMAGE_PREMIUM: 30,           // Re-mapped from OpenAI to high-end Google models
   GEMINI_IMAGEN: 10,           // Legacy alias
   GEMINI_IMAGEN_HD: 30,        // Legacy alias
   
