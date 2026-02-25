@@ -28,19 +28,40 @@ const PLAN_INFO = {
   plus: {
     name: 'Plus',
     color: 'from-blue-500 to-cyan-500',
-    features: ['1,000 monthly credits', '20 cards per prompt', 'Remove PPTMaster branding', 'Advanced AI models', 'Basic slide animations'],
-    includesText: null,
+    features: ['1,000 monthly credits', '20 cards per prompt', 'Export to PDF, PPTX & PNG', 'Remove PPTMaster branding', 'Basic AI image models', 'Basic slide animations'],
+    includesText: 'Everything in Free, and:',
   },
   pro: {
     name: 'Pro',
     color: 'from-purple-500 to-pink-500',
-    features: ['4,000 monthly credits', '60 cards per prompt', 'Premium AI image models', 'Custom branding & fonts', 'Premium slide animations'],
+    features: [
+      '4,000 monthly credits', 
+      '60 cards per prompt', 
+      'Remove PPTMaster branding',
+      'Export to PDF, PPTX & PNG',
+      'Pro AI models & 2K exports', 
+      'Advanced animations', 
+      'Full Brand Control & Fonts', 
+      'Detailed analytics & premium sharing'
+    ],
     includesText: 'Everything in Plus, and:',
   },
   ultra: {
     name: 'Ultra',
     color: 'from-orange-500 to-red-500',
-    features: ['20,000 monthly credits', '75 cards per prompt', 'Most advanced AI models (text, image, video)', 'All slide animations & effects', 'Early access to new features'],
+    features: [
+      '20,000 monthly credits', 
+      '75 cards per prompt', 
+      'Remove PPTMaster branding',
+      'Export to PDF, PPTX & PNG',
+      'Pro AI models & 2K exports',
+      'Most advanced AI models', 
+      'All slide animations & effects', 
+      'Full Brand Control & Fonts', 
+      'Detailed analytics & premium sharing',
+      'API & Webhook access', 
+      'Early access to new features'
+    ],
     includesText: 'Everything in Pro, and:',
   },
 };

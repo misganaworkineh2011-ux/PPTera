@@ -11,10 +11,9 @@ interface AnimatedSlideProps {
   isPresenting?: boolean;
 }
 
-// Optimized animation configs with GPU-accelerated properties
 const getOptimizedAnimation = (animation: typeof ANIMATION_PRESETS[0]) => {
-  const initial = { ...animation.enterAnimation.initial };
-  const animate = { ...animation.enterAnimation.animate };
+  const initial: any = { ...animation.enterAnimation.initial };
+  const animate: any = { ...animation.enterAnimation.animate };
   
   // Ensure GPU acceleration by using transform3d
   if ('x' in initial || 'y' in initial || 'scale' in initial || 'rotate' in initial) {
@@ -23,23 +22,33 @@ const getOptimizedAnimation = (animation: typeof ANIMATION_PRESETS[0]) => {
   
   // Use animation's defined duration, capped for performance
   const baseTransition = animation.enterAnimation.transition || {};
-  const optimizedTransition = {
+  const desiredDuration = baseTransition.duration ?? 0.5;
+  const maxDuration = animation.isPremium ? 2.2 : 1.2;
+  const optimizedTransition: any = {
     ...baseTransition,
-    // Use the animation's duration but cap at reasonable max
-    duration: Math.min(baseTransition.duration || 0.5, 1.2),
+    duration: Math.min(desiredDuration, maxDuration),
     ease: baseTransition.type === "spring" 
       ? undefined 
-      : baseTransition.ease || [0.25, 0.1, 0.25, 1],
+      : (baseTransition.ease || [0.25, 0.1, 0.25, 1]),
   };
   
-  // For spring animations, keep original settings for premium feel
   if (baseTransition.type === "spring") {
     optimizedTransition.stiffness = baseTransition.stiffness || 300;
     optimizedTransition.damping = baseTransition.damping || 20;
     optimizedTransition.mass = baseTransition.mass || 1;
   }
+
+  // Handle Exit
+  let exit: any = { opacity: 0, scale: 0.98, transition: { duration: 0.15, ease: "easeOut" } };
   
-  return { initial, animate, transition: optimizedTransition };
+  if (animation.exitAnimation && animation.exitAnimation.exit) {
+     exit = { 
+       ...animation.exitAnimation.exit, 
+       transition: animation.exitAnimation.transition || optimizedTransition 
+     };
+  }
+  
+  return { initial, animate, exit, transition: optimizedTransition };
 };
 
 export default function AnimatedSlide({
@@ -66,17 +75,10 @@ export default function AnimatedSlide({
   );
 
   // Get optimized animation config - MUST be called unconditionally
-  const { initial, animate, transition } = useMemo(
-    () => animation ? getOptimizedAnimation(animation) : { initial: {}, animate: {}, transition: {} },
+  const { initial, animate, exit, transition } = useMemo(
+    () => (animation ? getOptimizedAnimation(animation) : { initial: {}, animate: {}, exit: {}, transition: {} }) as any,
     [animation]
   );
-  
-  // Quick exit animation - MUST be called unconditionally
-  const exit = useMemo(() => ({
-    opacity: 0,
-    scale: 0.98,
-    transition: { duration: 0.15, ease: "easeOut" as const }
-  }), []);
 
   // If not presenting or not found/none, just render content (after all hooks)
   if (!isPresenting || !animation || animation.id === "none") {
@@ -84,24 +86,26 @@ export default function AnimatedSlide({
   }
 
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <motion.div
-        key={`slide-${slideKey}`}
-        className="w-full h-full"
-        initial={initial}
-        animate={animate}
-        exit={exit}
-        transition={transition}
-        style={{ 
-          willChange: "transform, opacity",
-          backfaceVisibility: "hidden",
-          perspective: 1000,
-          transformStyle: "preserve-3d",
-        }}
-      >
-        {children}
-      </motion.div>
-    </AnimatePresence>
+    <div style={{ perspective: "1500px", width: "100%", height: "100%", overflow: "hidden" }}>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={`slide-${slideKey}`}
+          className="w-full h-full"
+          initial={initial}
+          animate={animate}
+          exit={exit}
+          transition={transition}
+          style={{ 
+            willChange: "transform, opacity, filter, clip-path",
+            backfaceVisibility: "hidden",
+            transformStyle: "preserve-3d",
+            transformOrigin: "center center", // Default, can be overridden by animation variant
+          }}
+        >
+          {children}
+        </motion.div>
+      </AnimatePresence>
+    </div>
   );
 }
 

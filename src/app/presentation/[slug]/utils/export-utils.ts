@@ -3,6 +3,7 @@ export type ExportFormat = "pdf" | "pptx" | "images";
 export interface ExportOptions {
   range: "all" | "current" | "custom";
   customRange?: { from: number; to: number };
+  quality?: "standard" | "hd" | "2k";
 }
 
 export const buildExportParams = (
@@ -20,6 +21,10 @@ export const buildExportParams = (
     } else if (options.range === "custom" && options.customRange) {
       params.set("from", String(options.customRange.from));
       params.set("to", String(options.customRange.to));
+    }
+    
+    if (options.quality) {
+      params.set("quality", options.quality);
     }
   }
 

@@ -258,7 +258,6 @@ export function PricingPageClient({ currentLang }: PricingPageClientProps) {
                     <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.createUpTo10Cards}</span></li>
                     <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.simplePresentations}</span></li>
                     <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.importFromPdfPptx || "Import from PDF & PPTX"}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.exportFormatsAll}</span></li>
                   </ul>
                 </div>
               </div>
@@ -301,10 +300,11 @@ export function PricingPageClient({ currentLang }: PricingPageClientProps) {
                   </div>
                   <p className="text-xs text-slate-500 mb-2 font-medium">{t.everythingInFree || "Everything in Free, and:"}</p>
                   <ul className="space-y-1.5 text-xs flex-grow">
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.createUpTo20Cards || "Create up to 20 cards per prompt"}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.monthlyCredits1000}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.credits1000 || "1,000 monthly credits"}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.upTo20Slides || "20 cards per prompt"}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.exportFormatsAll || "Export to PDF, PPTX, PNG & Google Slides"}</span></li>
                     <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.removeBranding}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.advancedAIImageModels}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.advancedAIModels || "Basic AI image models"}</span></li>
                     <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.basicAnimations}</span></li>
                   </ul>
                 </div>
@@ -354,12 +354,14 @@ export function PricingPageClient({ currentLang }: PricingPageClientProps) {
                   </div>
                   <p className="text-xs text-white/70 mb-2 font-medium">{t.everythingInPlus || "Everything in Plus, and:"}</p>
                   <ul className="space-y-1.5 text-xs flex-grow">
-                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.createUpTo60Cards || "Create up to 60 cards per prompt"}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.monthlyCredits4000}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.premiumAIImageModels}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.customBrandingFonts}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.premiumAnimations}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.detailedAnalytics || "Detailed analytics & advanced sharing"}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.credits4000 || "4,000 monthly credits"}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.upTo60Slides || "60 cards per prompt"}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.removeBranding || "Remove PPTMaster branding"}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.exportFormatsAll || "Export to PDF, PPTX, PNG & Google Slides"}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.premiumAIModels || "Pro AI models & 2K exports"}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.premiumAnimations || "Advanced animations"}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.customBranding || "Full Brand Control & Fonts"}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.detailedAnalyticsSharing || "Detailed analytics & premium sharing"}</span></li>
                   </ul>
                 </div>
               </div>
@@ -405,11 +407,17 @@ export function PricingPageClient({ currentLang }: PricingPageClientProps) {
                   </div>
                   <p className="text-xs text-slate-500 mb-2 font-medium">{t.everythingInPro || "Everything in Pro, and:"}</p>
                   <ul className="space-y-1.5 text-xs flex-grow">
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.createUpTo75Cards || "Create up to 75 cards per prompt"}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.monthlyCredits20000}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.mostAdvancedAIModels}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.allAnimations}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.earlyAccessFeatures}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.credits20000 || "20,000 monthly credits"}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.upTo75Slides || "75 cards per prompt"}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.removeBranding || "Remove PPTMaster branding"}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.exportFormatsAll || "Export to PDF, PPTX, PNG & Google Slides"}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.premiumAIModels || "Pro AI models & 2K exports"}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.mostAdvancedModels || "Most advanced AI models"}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.allAnimations || "All slide animations & effects"}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.customBranding || "Full Brand Control & Fonts"}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.detailedAnalyticsSharing || "Detailed analytics & premium sharing"}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.apiWebhookAccess || "API & Webhook access"}</span></li>
+                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.earlyAccess || "Early access to new features"}</span></li>
                   </ul>
                 </div>
               </div>

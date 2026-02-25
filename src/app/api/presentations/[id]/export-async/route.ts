@@ -16,10 +16,11 @@ export async function POST(
     const { id: presentationId } = await params;
     const body = await request.json();
     
-    const { format, range, customRange } = body as {
+    const { format, range, customRange, quality } = body as {
       format: "pdf" | "pptx" | "images";
       range?: "all" | "current" | "custom";
       customRange?: { from: number; to: number };
+      quality?: "standard" | "hd" | "2k";
     };
 
     // Validate format
@@ -75,6 +76,7 @@ export async function POST(
         jobId: exportJob.id,
         range,
         customRange,
+        quality,
       }),
     }).catch((error) => {
       console.error("[Export Async] Failed to trigger processor:", error);

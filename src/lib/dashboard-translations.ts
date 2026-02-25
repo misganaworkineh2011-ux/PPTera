@@ -171,7 +171,8 @@ export const dashboardTranslations: Record<Language, Record<string, string>> = {
     // Credit topups
     creditTopups: "Credit Top-ups",
     // Plan features
-    upTo20Slides: "Up to 20 slides per presentation", upTo60Slides: "Up to 60 slides per presentation", upTo75Slides: "Up to 75 slides per presentation", credits1000: "1,000 AI credits/month", credits4000: "4,000 AI credits/month", credits20000: "20,000 AI credits/month", removeBranding: "Remove PPTMaster branding", advancedAIModels: "Advanced AI image models", premiumAIModels: "Premium AI image models", customBranding: "Custom branding & fonts", mostAdvancedModels: "Most advanced AI models", earlyAccess: "Early access to new features", basicAnimations: "Basic slide animations", premiumAnimations: "Premium slide animations", allAnimations: "All slide animations & effects", everythingInFree: "Everything in Free, and:",
+    upTo20Slides: "20 cards per prompt", upTo60Slides: "60 cards per prompt", upTo75Slides: "75 cards per prompt", credits1000: "1,000 monthly credits", credits4000: "4,000 monthly credits", credits20000: "20,000 monthly credits", removeBranding: "Remove PPTMaster branding", advancedAIModels: "Basic AI image models", premiumAIModels: "Pro AI models & 2K exports", customBranding: "Full Brand Control & Fonts", mostAdvancedModels: "Most advanced AI models", earlyAccess: "Early access to new features", basicAnimations: "Basic slide animations", premiumAnimations: "Advanced animations", allAnimations: "All slide animations & effects", everythingInFree: "Everything in Free, and:",
+    apiWebhookAccess: "API & Webhook access", prioritySupport: "Priority Support", detailedAnalyticsSharing: "Detailed analytics & premium sharing",
     // Additional translations for analytics, charts, images
     trackPerformance: "Track your presentation performance", somethingWentWrong: "Something went wrong", loadingCharts: "Loading charts...", searchCharts: "Search charts...", noChartsFound: "No charts found", noChartsYet: "No charts yet", createFirstChart: "Create your first chart to visualize data in your presentations", createYourFirstChart: "Create Your First Chart", createChart: "Create Chart", editChart: "Edit Chart", tryAdjustingSearch: "Try adjusting your search or filters", dataPoints: "data points", untitledChart: "Untitled Chart", favorite: "Favorite", unfavorite: "Unfavorite",
     // Feedback/Review translations
@@ -563,14 +564,17 @@ es: {
     credits20000: "20,000 créditos de IA/mes",
     removeBranding: "Eliminar marca de PPTMaster",
     advancedAIModels: "Modelos avanzados de imagen IA",
-    premiumAIModels: "Modelos premium de imagen IA",
-    customBranding: "Marca y fuentes personalizadas",
+    premiumAIModels: "Modelos Pro IA y exportaciones 2K",
+    customBranding: "Control Total de Marca y Fuentes",
     mostAdvancedModels: "Modelos de IA más avanzados",
     earlyAccess: "Acceso anticipado a nuevas funciones",
     basicAnimations: "Animaciones básicas de diapositivas",
-    premiumAnimations: "Animaciones premium de diapositivas",
+    premiumAnimations: "Animaciones 3D avanzadas (Origami, Shatter)",
     allAnimations: "Todas las animaciones y efectos",
     everythingInFree: "Todo en Gratis y:",
+    apiWebhookAccess: "Acceso a API y Webhooks",
+    prioritySupport: "Soporte Prioritario",
+    detailedAnalyticsSharing: "Analítica detallada y uso compartido premium",
     // Additional translations for analytics, charts, images
     trackPerformance: "Rastrea el rendimiento de tu presentación",
     somethingWentWrong: "Algo salió mal",
@@ -4594,7 +4598,7 @@ ar: {
     // Collaborate Tab
     invitePeople: "دعوة أشخاص", enterEmailToInvite: "أدخل البريد الإلكتروني للدعوة", viewerRole: "مشاهد", editorRole: "محرر", sendInviteBtn: "إرسال دعوة", pendingInvites: "دعوات معلقة", currentCollaborators: "المتعاونون الحاليون", removeAccessBtn: "إزالة الوصول", ownerBadge: "المالك",
     // Export Modal (standalone)
-    exportModalTitle: "تصدير العرض التقديمي", slidesCountExport: "شرائح", chooseFormatRange: "اختر الصيغة والنطاق", slidesToExport: "الشرائح المراد تصديرها", allSlidesRange: "جميع الشرائح", currentSlideOnly: "الشريحة الحالية فقط", customRange: "نطاق مخصص", fromSlide: "من", toSlide: "إلى", watermarkNotice: "الملفات المصدرة تتضمن علامة مائية \"صنع بواسطة PPTMaster\"", upgradeToRemove: "رقِّ خطتك لإزالة العلامة التجارية من الصادرات", viewPlansBtn: "عرض الخطط",
+    exportModalTitle: "تصدير العرض التقديمي", slidesCountExport: "شرائح", chooseFormatRange: "اختر الصيغة والنطاق", slidesToExport: "الشرائح المراد تصديرها", allSlidesRange: "جميع الشرائح", currentSlideOnly: "الشريحة الحالية فقط", customRange: "نطاق مخصص", fromSlide: "من", toSlide: "إلى", watermarkNotice: "الملفات المصدرة تتضمن علامة مائية \"صنع بواسطة PPTMaster\"", upgradeToRemove: "قم بالترقية إلى Pro لإزالة العلامة التجارية من الصادرات", upgradeToExportTitle: "التصدير ميزة في خطة Plus", upgradeToExportDesc: "قم بالترقية إلى خطة Plus أو أعلى لتصدير عرضك التقديمي كملف PDF أو PowerPoint أو صور.", upgradeToExport: "ترقية للتصدير", viewPlansBtn: "عرض الخطط",
     // Navigation
     previous: "السابق", nextBtn: "التالي",
     // Header / Toolbar
@@ -5118,7 +5122,7 @@ hi: {
     // Collaborate
     invitePeople: "Пригласить", enterEmailToInvite: "Введите почту", viewerRole: "Читатель", editorRole: "Редактор", sendInviteBtn: "Пригласить", pendingInvites: "Ожидают", currentCollaborators: "Участники", removeAccessBtn: "Удалить", ownerBadge: "Владелец",
     // Standalone Export
-    exportModalTitle: "Экспорт", slidesCountExport: "слайдов", chooseFormatRange: "Формат и диапазон", slidesToExport: "Слайды", allSlidesRange: "Все", currentSlideOnly: "Текущий", customRange: "Диапазон", fromSlide: "От", toSlide: "До", watermarkNotice: "На файлах будет знак «Made with PPTMaster»", upgradeToRemove: "Обновите тариф, чтобы убрать логотип", viewPlansBtn: "Тарифы",
+    exportModalTitle: "Экспорт", slidesCountExport: "слайдов", chooseFormatRange: "Формат и диапазон", slidesToExport: "Слайды", allSlidesRange: "Все", currentSlideOnly: "Текущий", customRange: "Диапазон", fromSlide: "От", toSlide: "До", watermarkNotice: "На файлах будет знак «Made with PPTMaster»", upgradeToRemove: "Обновите тариф до Pro, чтобы убрать логотип", upgradeToExportTitle: "Экспорт — это функция Plus", upgradeToExportDesc: "Обновите тариф до Plus или выше, чтобы экспортировать проект в PDF, PowerPoint или картинки.", upgradeToExport: "Обновить для экспорта", viewPlansBtn: "Тарифы",
     // Nav
     previous: "Пред.", nextBtn: "След.",
     // Toolbar

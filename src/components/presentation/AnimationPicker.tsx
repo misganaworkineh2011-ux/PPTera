@@ -18,6 +18,7 @@ interface AnimationPickerProps {
   contentAnimation?: boolean;
   theme: Theme;
   isPaidUser?: boolean;
+  subscriptionPlan?: string | null;
   onSelect: (animationId: string) => void;
   onContentAnimationChange?: (enabled: boolean) => void;
   onUpgrade?: () => void;
@@ -180,6 +181,7 @@ export default function AnimationPicker({
   contentAnimation = true,
   theme,
   isPaidUser = false,
+  subscriptionPlan,
   onSelect,
   onContentAnimationChange,
   onUpgrade,
@@ -192,6 +194,10 @@ export default function AnimationPicker({
   const categories = getAnimationCategories();
   const isDark = isThemeDark(theme);
   const accentColor = theme.colors.accent;
+
+  const userPlan = (subscriptionPlan || "free").toLowerCase();
+  const hasProPlus = ["pro", "ultra"].includes(userPlan);
+  const hasPlusPlus = ["plus", "pro", "ultra"].includes(userPlan);
 
   const filteredAnimations =
     selectedCategory === "all"
@@ -313,8 +319,15 @@ export default function AnimationPicker({
         <div className="flex-1 overflow-y-auto p-5 min-h-0">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
             {filteredAnimations.map((animation) => {
-              const isPremiumAnimation = animation.isPremium === true;
-              const isLocked = isPremiumAnimation && !isPaidUser;
+              const followsProTier = animation.isPro === true;
+              const followsPlusTier = animation.isPremium === true;
+              
+              let isLocked = false;
+              if (followsProTier) {
+                isLocked = !hasProPlus;
+              } else if (followsPlusTier) {
+                isLocked = !hasPlusPlus;
+              }
 
               return (
                 <AnimationPreview
@@ -322,13 +335,13 @@ export default function AnimationPicker({
                   animation={animation}
                   isSelected={currentAnimation === animation.id}
                   isPlaying={playingId === animation.id}
-                  isPremium={isPremiumAnimation}
+                  isPremium={followsPlusTier || followsProTier}
                   isLocked={isLocked}
                   accentColor={accentColor}
                   cardTextBg={cardTextBg}
                   textPrimary={textPrimary}
                   textSecondary={textSecondary}
-                  premiumBadgeText={t.animationPremiumBadge || "PREMIUM"}
+                  premiumBadgeText={followsProTier ? "PRO" : (t.animationPremiumBadge || "PREMIUM")}
                   effectsBadgeText={t.animationEffectsBadge || "FX"}
                   onPlay={() => {
                     setPlayingId(animation.id);

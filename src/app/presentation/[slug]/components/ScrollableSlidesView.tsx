@@ -31,11 +31,6 @@ interface ScrollableSlidesViewProps {
   presentationTitle: string;
   showFeedback?: boolean;
   presentationId?: string;
-  subscriptionPlan?: string | null;
-  isFreeUserLimited?: boolean;
-  freeSlideLimit?: number;
-  halfBlurredSlideIndex?: number;
-  onUpgrade?: () => void;
 }
 
 export function ScrollableSlidesView({
@@ -53,11 +48,6 @@ export function ScrollableSlidesView({
   presentationTitle,
   showFeedback,
   presentationId,
-  subscriptionPlan,
-  isFreeUserLimited = false,
-  freeSlideLimit,
-  halfBlurredSlideIndex,
-  onUpgrade,
 }: ScrollableSlidesViewProps) {
   const ui = getUIColors(getThemeType(theme));
   const isCurrentlyStreaming = streamingStatus === "streaming";
@@ -70,16 +60,6 @@ export function ScrollableSlidesView({
         const isSlideStreaming = isCurrentlyStreaming && streamingSlideIndex === index;
         const isNewSlide = isCurrentlyStreaming && index === slides.length - 1;
         const isAiEditing = aiEditingSlideIndex === index;
-
-        // Determine slide visibility for free users
-        const isFullyVisible = !isFreeUserLimited || (freeSlideLimit !== undefined && index < freeSlideLimit);
-        const isHalfBlurred = isFreeUserLimited && halfBlurredSlideIndex !== undefined && index === halfBlurredSlideIndex;
-        const isHidden = isFreeUserLimited && freeSlideLimit !== undefined && halfBlurredSlideIndex !== undefined && index > halfBlurredSlideIndex;
-
-        // Skip rendering hidden slides
-        if (isHidden) {
-          return null;
-        }
 
         const slideElement = isTitle && !slide.slideLayout ? (
           <div
@@ -98,48 +78,6 @@ export function ScrollableSlidesView({
               </div>
             )}
             {renderSlide(slide, index, true)}
-            {isHalfBlurred && (() => {
-              const lockedSlidesCount = slides.length - (halfBlurredSlideIndex || 0);
-              return (
-                <div className="absolute inset-0 z-10 pointer-events-none">
-                  {/* Blur overlay covering 70% of the slide */}
-                  <div 
-                    className="absolute inset-0 bg-gradient-to-b from-transparent via-white/60 to-white/98" 
-                    style={{ 
-                      backdropFilter: 'blur(8px)',
-                      WebkitBackdropFilter: 'blur(8px)',
-                      top: '30%'
-                    }} 
-                  />
-                  {/* CTA Section */}
-                  <div className="absolute bottom-0 left-0 right-0 h-[70%] flex flex-col items-center justify-center pointer-events-auto px-4">
-                    <div className="text-center space-y-4 max-w-md">
-                      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200/50">
-                        <Sparkles className="w-4 h-4" style={{ color: theme.colors.primary }} />
-                        <span className="text-sm font-medium" style={{ color: theme.colors.primary }}>
-                          {lockedSlidesCount} {lockedSlidesCount === 1 ? 'Slide' : 'Slides'} Locked
-                        </span>
-                      </div>
-                      <h3 className="text-2xl font-bold" style={{ color: theme.colors.heading }}>
-                        Unlock Your Full Presentation
-                      </h3>
-                      <p className="text-sm" style={{ color: theme.colors.textMuted }}>
-                        Upgrade to access all {slides.length} slides and unlock premium features
-                      </p>
-                      <button
-                        onClick={onUpgrade}
-                        className="px-8 py-3.5 rounded-lg font-semibold text-white shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95"
-                        style={{
-                          background: `linear-gradient(135deg, ${theme.colors.primary}, ${theme.colors.accent})`,
-                        }}
-                      >
-                        Unlock {lockedSlidesCount} {lockedSlidesCount === 1 ? 'Slide' : 'Slides'}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
           </div>
         ) : (
           <div
@@ -165,48 +103,6 @@ export function ScrollableSlidesView({
               theme={theme}
               renderSlide={renderSlide}
             />
-            {isHalfBlurred && (() => {
-              const lockedSlidesCount = slides.length - (halfBlurredSlideIndex || 0);
-              return (
-                <div className="absolute inset-0 z-10 pointer-events-none">
-                  {/* Blur overlay covering 70% of the slide */}
-                  <div 
-                    className="absolute inset-0 bg-gradient-to-b from-transparent via-white/60 to-white/98" 
-                    style={{ 
-                      backdropFilter: 'blur(8px)',
-                      WebkitBackdropFilter: 'blur(8px)',
-                      top: '30%'
-                    }} 
-                  />
-                  {/* CTA Section */}
-                  <div className="absolute bottom-0 left-0 right-0 h-[70%] flex flex-col items-center justify-center pointer-events-auto px-4">
-                    <div className="text-center space-y-4 max-w-md">
-                      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200/50">
-                        <Sparkles className="w-4 h-4" style={{ color: theme.colors.primary }} />
-                        <span className="text-sm font-medium" style={{ color: theme.colors.primary }}>
-                          {lockedSlidesCount} {lockedSlidesCount === 1 ? 'Slide' : 'Slides'} Locked
-                        </span>
-                      </div>
-                      <h3 className="text-2xl font-bold" style={{ color: theme.colors.heading }}>
-                        Unlock Your Full Presentation
-                      </h3>
-                      <p className="text-sm" style={{ color: theme.colors.textMuted }}>
-                        Upgrade to access all {slides.length} slides and unlock premium features
-                      </p>
-                      <button
-                        onClick={onUpgrade}
-                        className="px-8 py-3.5 rounded-lg font-semibold text-white shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95"
-                        style={{
-                          background: `linear-gradient(135deg, ${theme.colors.primary}, ${theme.colors.accent})`,
-                        }}
-                      >
-                        Unlock {lockedSlidesCount} {lockedSlidesCount === 1 ? 'Slide' : 'Slides'}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
           </div>
         );
 
@@ -220,7 +116,6 @@ export function ScrollableSlidesView({
                 onAddAISlide={(prompt) => onAddAISlide(index, prompt)}
                 presentationContext={presentationTitle}
                 theme={theme}
-                subscriptionPlan={subscriptionPlan}
               />
             )}
           </div>
@@ -233,7 +128,6 @@ export function ScrollableSlidesView({
           onAddAISlide={(prompt) => onAddAISlide(slides.length - 1, prompt)}
           presentationContext={presentationTitle}
           theme={theme}
-          subscriptionPlan={subscriptionPlan}
         />
       )}
 

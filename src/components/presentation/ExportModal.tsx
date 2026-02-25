@@ -22,10 +22,12 @@ interface ExportModalProps {
 interface ExportOptions {
   range: "all" | "current" | "custom";
   customRange?: { from: number; to: number };
+  quality?: "standard" | "hd" | "2k";
 }
 
 type ExportFormat = "pdf" | "pptx" | "images";
 type ExportRange = "all" | "current" | "custom";
+type ExportQuality = "standard" | "hd" | "2k";
 
 // Theme type detection
 type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber" | "alien" | "corporate" | "cosmic" | "architectural" | "anime" | "hacker" | "custom-dark" | "custom-light";
@@ -173,7 +175,7 @@ const themeColors: Record<ThemeType, {
     cardBorder: "border-[#1a1a2e]",
     cardHover: "hover:border-cyan-500/40",
     inputBg: "bg-[#151520]",
-    inputBorder: "border-[#1a1a2e]",
+    inputBorder: "border-[#1a2a2e]",
     closeHover: "hover:bg-[#151520]/50 text-cyan-300/70 hover:text-cyan-100",
     accent: "text-cyan-400",
   },
@@ -294,6 +296,7 @@ export default function ExportModal({
 }: ExportModalProps) {
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>("pptx");
   const [exportRange, setExportRange] = useState<ExportRange>("all");
+  const [selectedQuality, setSelectedQuality] = useState<ExportQuality>("standard");
   const [customFromInput, setCustomFromInput] = useState("1");
   const [customToInput, setCustomToInput] = useState(String(totalSlides));
   const [showPricingModal, setShowPricingModal] = useState(false);
@@ -319,6 +322,7 @@ export default function ExportModal({
   const modalColors = getModalColors(theme);
   
   const hasPaidPlan = subscriptionPlan && ["plus", "pro", "ultra"].includes(subscriptionPlan);
+  const hasProPlus = subscriptionPlan && ["pro", "ultra"].includes(subscriptionPlan);
 
   // Microsoft PowerPoint icon - official style
   const PowerPointIcon = ({ selected }: { selected: boolean }) => (
@@ -359,6 +363,7 @@ export default function ExportModal({
   const handleExport = () => {
     const options: ExportOptions = {
       range: exportRange,
+      quality: selectedQuality,
       ...(exportRange === "custom" && { customRange: { from: customFrom, to: customTo || totalSlides } }),
     };
     // Track export event
@@ -498,17 +503,58 @@ export default function ExportModal({
           )}
         </div>
 
-        {/* Watermark Notice */}
-        {!hasPaidPlan && (
+        {/* Quality Selection */}
+        <div className="mb-6">
+          <label className={`text-sm font-medium ${c.textMuted} mb-3 block`}>
+            {language === 'ar' ? 'جودة التصدير' : 'Export Quality'}
+          </label>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { id: "standard", label: language === 'ar' ? 'قياسي' : "Standard", sub: "1080p", pro: false },
+              { id: "hd", label: "HD+", sub: "1620p", pro: true },
+              { id: "2k", label: "2K Ultra", sub: "2160p", pro: true },
+            ].map((q) => {
+              const isLocked = q.pro && !hasProPlus;
+              return (
+                <button
+                  key={q.id}
+                  disabled={isLocked && !isExporting}
+                  onClick={() => !isLocked && setSelectedQuality(q.id as ExportQuality)}
+                  className={`
+                    flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition-all relative
+                    ${selectedQuality === q.id 
+                      ? `border-current ${c.accent} ${c.cardBg}` 
+                      : `${c.cardBorder} ${isLocked ? 'opacity-60 grayscale-[0.5]' : `${c.cardHover} ${c.cardBg}`}`
+                    }
+                  `}
+                >
+                  {isLocked && (
+                    <div className="absolute top-1.5 right-1.5">
+                      <Crown size={12} className="text-amber-500 fill-amber-500" />
+                    </div>
+                  )}
+                  <span className={`text-sm font-bold ${c.text}`}>{q.label}</span>
+                  <span className={`text-[10px] uppercase font-bold tracking-wider ${c.textMuted}`}>{q.sub}</span>
+                  {isLocked && (
+                    <span className="text-[9px] font-black text-amber-500 mt-0.5">PRO</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Watermark Notice or Locking */}
+        {!hasPaidPlan ? (
           <div className={`mb-6 p-4 rounded-xl ${c.cardBg} ${c.cardBorder} border`}>
             <div className="flex items-start gap-3">
               <Crown size={18} className="text-amber-500 mt-0.5 flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className={`text-sm ${c.text}`}>
-                  {t.watermarkNotice || "Exported files include \"Made with PPTMaster\" watermark"}
+                <p className={`text-sm font-bold ${c.text}`}>
+                  {t.upgradeToExportTitle || "Export is a Plus feature"}
                 </p>
                 <p className={`text-xs mt-1 ${c.textMuted}`}>
-                  {t.upgradeToRemove || "Upgrade to remove branding from exports"}
+                  {t.upgradeToExportDesc || "Upgrade to a Plus plan or higher to export your presentation as PDF, PowerPoint, or Images."}
                 </p>
                 <button
                   onClick={() => setShowPricingModal(true)}
@@ -520,6 +566,29 @@ export default function ExportModal({
               </div>
             </div>
           </div>
+        ) : (
+          subscriptionPlan === 'plus' && (
+            <div className={`mb-6 p-4 rounded-xl ${c.cardBg} ${c.cardBorder} border`}>
+              <div className="flex items-start gap-3">
+                <Crown size={18} className="text-amber-500 mt-0.5 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm ${c.text}`}>
+                    {t.watermarkNotice || "Exported files include \"Made with PPTMaster\" watermark"}
+                  </p>
+                  <p className={`text-xs mt-1 ${c.textMuted}`}>
+                    {t.upgradeToRemove || "Upgrade to Pro to remove branding from exports"}
+                  </p>
+                  <button
+                    onClick={() => setShowPricingModal(true)}
+                    className="inline-flex items-center gap-1 text-xs font-medium mt-2"
+                    style={{ color: accentColor }}
+                  >
+                    {t.viewPlansBtn || "View plans"} →
+                  </button>
+                </div>
+              </div>
+            </div>
+          )
         )}
 
         {/* Actions */}
@@ -532,7 +601,7 @@ export default function ExportModal({
             {t.cancel || "Cancel"}
           </button>
           <button
-            onClick={handleExport}
+            onClick={hasPaidPlan ? handleExport : () => setShowPricingModal(true)}
             disabled={isExporting}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity disabled:opacity-50"
             style={{ backgroundColor: accentColor }}
@@ -544,8 +613,8 @@ export default function ExportModal({
               </>
             ) : (
               <>
-                <Download size={16} />
-                {t.exportBtn || "Export"}
+                {!hasPaidPlan ? <Crown size={16} /> : <Download size={16} />}
+                {hasPaidPlan ? (t.exportBtn || "Export") : (t.upgradeToExport || "Upgrade to Export")}
               </>
             )}
           </button>

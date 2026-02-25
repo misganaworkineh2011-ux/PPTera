@@ -187,7 +187,8 @@ export function PresentationModals({
           theme={theme}
           currentAnimation={slidesData[showAnimationPicker]?.animation || "fade"}
           contentAnimation={slidesData[showAnimationPicker]?.contentAnimation !== false}
-          isPaidUser={!!subscriptionPlan && ["plus", "pro", "ultra"].includes(subscriptionPlan)}
+          isPaidUser={!!subscriptionPlan && ["plus", "pro", "ultra"].includes(subscriptionPlan.toLowerCase())}
+          subscriptionPlan={subscriptionPlan}
           onClose={() => onSetShowAnimationPicker(null)}
           onSelect={(animationId: string) => {
             changeSlideAnimation(showAnimationPicker, animationId);
