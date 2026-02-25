@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { type Metadata } from "next";
 import { db } from "~/server/db";
 import PresentationViewer from "~/app/presentation/[slug]/PresentationViewer";
+import PasswordProtectedView from "~/components/presentation/share/PasswordProtectedView";
 import { type SlideData } from "~/components/presentation/types";
 
 export async function generateMetadata({
@@ -87,6 +88,37 @@ export default async function SharedPresentationPage({
     notFound();
   }
 
+  // Check Expiration
+  if (presentation.shareExpiresAt && new Date() > presentation.shareExpiresAt) {
+    notFound();
+  }
+
+  // Update View Count & Log Activity
+  try {
+    const isBot = false; // Simple check if needed
+    if (!isBot) {
+      await db.presentation.update({
+        where: { id: presentation.id },
+        data: { viewCount: { increment: 1 } },
+      });
+
+      await db.activity.create({
+        data: {
+          type: "view",
+          description: `Presentation viewed via public link`,
+          userId: presentation.userId,
+          presentationId: presentation.id,
+          metadata: { source: "public_link" },
+        },
+      });
+    }
+  } catch (err) {
+    console.error("Failed to track view activity", err);
+  }
+
+  // Check if password protected
+  const isPasswordProtected = !!presentation.sharePassword;
+
   // Check if watermark should be shown (free users)
   const showWatermark = !presentation.user?.subscriptionPlan || 
     !["plus", "pro", "ultra"].includes(presentation.user.subscriptionPlan);
@@ -125,36 +157,55 @@ export default async function SharedPresentationPage({
 
   return (
     <div className="relative">
-      <PresentationViewer
-        presentation={{
-          id: presentation.id,
-          title: presentation.title,
-          description: presentation.description,
-          slides: slides,
-          content: content,
-          createdAt: presentation.createdAt,
-          updatedAt: presentation.updatedAt,
-        }}
-        mode="view"
-        isOwner={false}
-        isPublicView={true}
-      />
-      
-      {/* Watermark for free users */}
-      {showWatermark && (
-        <a
-          href="https://www.pptmaster.app"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="fixed bottom-4 right-4 z-50 flex items-center gap-2 px-4 py-2 bg-black/70 backdrop-blur-sm rounded-full text-white text-sm font-medium hover:bg-black/80 transition shadow-lg"
-        >
-          <img 
-            src="/logo.png" 
-            alt="PPTMaster" 
-            className="w-5 h-5 object-contain"
+      {isPasswordProtected ? (
+        <PasswordProtectedView 
+          presentationId={presentation.id}
+          correctPassword={presentation.sharePassword!}
+          presentationData={{
+            id: presentation.id,
+            title: presentation.title,
+            description: presentation.description,
+            slides: slides,
+            content: content,
+            createdAt: presentation.createdAt,
+            updatedAt: presentation.updatedAt,
+          }}
+          showWatermark={showWatermark}
+        />
+      ) : (
+        <>
+          <PresentationViewer
+            presentation={{
+              id: presentation.id,
+              title: presentation.title,
+              description: presentation.description,
+              slides: slides,
+              content: content,
+              createdAt: presentation.createdAt,
+              updatedAt: presentation.updatedAt,
+            }}
+            mode="view"
+            isOwner={false}
+            isPublicView={true}
           />
-          Made with PPTMaster
-        </a>
+          
+          {/* Watermark for free users */}
+          {showWatermark && (
+            <a
+              href="https://www.pptmaster.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="fixed bottom-4 right-4 z-50 flex items-center gap-2 px-4 py-2 bg-black/70 backdrop-blur-sm rounded-full text-white text-sm font-medium hover:bg-black/80 transition shadow-lg"
+            >
+              <img 
+                src="/logo.png" 
+                alt="PPTMaster" 
+                className="w-5 h-5 object-contain"
+              />
+              Made with PPTMaster
+            </a>
+          )}
+        </>
       )}
     </div>
   );

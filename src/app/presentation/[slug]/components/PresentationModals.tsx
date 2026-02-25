@@ -153,6 +153,7 @@ export function PresentationModals({
           initialShareToken={initialShareToken}
           onClose={() => onSetShowShareModal(false)}
           theme={theme}
+          subscriptionPlan={subscriptionPlan}
         />
       )}
 

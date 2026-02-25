@@ -106,6 +106,21 @@ export default function Sidebar({ isCollapsed, subscriptionPlan, onCloseMobile }
     },
   ];
 
+  // Add Developer section if Pro or Ultra
+  if (subscriptionPlan === "pro" || subscriptionPlan === "ultra") {
+    // Note: Marketing said Ultra only for API/Webhooks, but sometimes Pro has some access too.
+    // The user specifically asked to move API to Ultra in previous turns.
+    // So only for Ultra.
+    if (subscriptionPlan === "ultra") {
+      navGroups.push({
+        title: t.developer || "Developer",
+        items: [
+          { name: t.apiAndWebhooks || "API & Webhooks", href: "/dashboard/api", icon: Sparkles },
+        ],
+      });
+    }
+  }
+
   return (
     <aside
       className={cn(

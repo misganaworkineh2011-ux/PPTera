@@ -17,6 +17,7 @@ interface ShareModalProps {
   initialShareToken?: string | null;
   onClose: () => void;
   theme?: Theme;
+  subscriptionPlan?: string | null;
 }
 
 export default function ShareModal({
@@ -24,7 +25,8 @@ export default function ShareModal({
   initialIsPublic = false,
   initialShareToken = null,
   onClose,
-  theme
+  theme,
+  subscriptionPlan
 }: ShareModalProps) {
   const [activeTab, setActiveTab] = useState<"collaborate" | "share" | "export" | "embed">("share");
 
@@ -141,13 +143,16 @@ export default function ShareModal({
 
         {/* Content */}
         <div className="p-4 sm:p-8">
-          {activeTab === "collaborate" && <CollaborateTab presentationId={presentationId} theme={theme} />}
+          {activeTab === "collaborate" && (
+            <CollaborateTab presentationId={presentationId} theme={theme} />
+          )}
           {activeTab === "share" && (
-            <ShareTab
-              presentationId={presentationId}
-              initialIsPublic={initialIsPublic}
+            <ShareTab 
+              presentationId={presentationId} 
+              initialIsPublic={initialIsPublic} 
               initialShareToken={initialShareToken}
               theme={theme}
+              subscriptionPlan={subscriptionPlan}
             />
           )}
           {activeTab === "export" && <ExportTab presentationId={presentationId} theme={theme} />}
