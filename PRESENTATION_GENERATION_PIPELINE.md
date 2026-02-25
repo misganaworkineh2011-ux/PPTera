@@ -239,7 +239,7 @@ This is your **newly implemented smart layout selection system** that replaces t
   - Uses `pexelsPromptHint` from outline
   - Searches Pexels photo library
   - Returns photographer credits
-- **AI Generated** (OpenAI DALL-E or Stability AI):
+- **AI Generated** (Google Imagen or Gemini):
   - Uses `aiPromptHint` from outline
   - Generates custom images
   - Saves to user's image library
@@ -312,7 +312,7 @@ Throughout the process, sends SSE events:
    - Stock photo search and download
    - Photographer attribution
 
-2. **OpenAI DALL-E / Stability AI**
+2. **Google Imagen / Gemini**
    - AI image generation
    - Custom images based on prompts
 

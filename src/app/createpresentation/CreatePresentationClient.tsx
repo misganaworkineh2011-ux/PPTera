@@ -101,14 +101,7 @@ export default function CreatePresentationClient({
       // Google Imagen 4 models (dedicated text-to-image)
       | "imagen-4.0-fast-generate-001"     // $0.02/image - Fast
       | "imagen-4.0-generate-001"          // $0.04/image - Standard
-      | "imagen-4.0-ultra-generate-001"    // $0.06/image - Ultra
-      // OpenAI GPT Image models
-      | "gpt-image-1.5"                    // Latest flagship
-      | "gpt-image-1"                      // Previous flagship
-      | "gpt-image-1-mini"                 // Budget option
-      // Legacy OpenAI DALL-E
-      | "openai"                           // DALL-E 3 ~$0.04/image
-      | "openai-hd",                       // DALL-E 3 HD ~$0.08/image
+      | "imagen-4.0-ultra-generate-001",   // $0.06/image - Ultra
     // Image art style (like Gamma)
     imageArtStyle: "photo" as "photo" | "abstract" | "3d" | "line-art" | "custom",
     // Custom art style text (when imageArtStyle is "custom")
@@ -1519,11 +1512,6 @@ export default function CreatePresentationClient({
                                   {formData.imageModel === "imagen-4.0-fast-generate-001" && "Imagen 4 Fast"}
                                   {formData.imageModel === "imagen-4.0-generate-001" && "Imagen 4"}
                                   {formData.imageModel === "imagen-4.0-ultra-generate-001" && "Imagen 4 Ultra"}
-                                  {formData.imageModel === "gpt-image-1.5" && "GPT Image 1.5"}
-                                  {formData.imageModel === "gpt-image-1" && "GPT Image 1"}
-                                  {formData.imageModel === "gpt-image-1-mini" && "GPT Image Mini"}
-                                  {formData.imageModel === "openai" && "DALL-E 3"}
-                                  {formData.imageModel === "openai-hd" && "DALL-E 3 HD"}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
@@ -1532,12 +1520,7 @@ export default function CreatePresentationClient({
                                   {formData.imageModel === "gemini-3-pro-image-preview" && CREDIT_COSTS.GEMINI_PRO}
                                   {formData.imageModel === "imagen-4.0-fast-generate-001" && CREDIT_COSTS.IMAGEN_4_FAST}
                                   {formData.imageModel === "imagen-4.0-generate-001" && CREDIT_COSTS.IMAGEN_4}
-                                  {formData.imageModel === "imagen-4.0-ultra-generate-001" && CREDIT_COSTS.IMAGEN_4_ULTRA}
-                                  {formData.imageModel === "gpt-image-1.5" && CREDIT_COSTS.GPT_IMAGE_DETAILED}
-                                  {formData.imageModel === "gpt-image-1" && CREDIT_COSTS.GPT_IMAGE_DETAILED}
-                                  {formData.imageModel === "gpt-image-1-mini" && CREDIT_COSTS.IMAGE_BASIC}
-                                  {formData.imageModel === "openai" && CREDIT_COSTS.DALLE_STANDARD}
-                                  {formData.imageModel === "openai-hd" && CREDIT_COSTS.DALLE_HD} ✦
+                                  {formData.imageModel === "imagen-4.0-ultra-generate-001" && CREDIT_COSTS.IMAGEN_4_ULTRA} ✦
                                 </span>
                                 <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${isModelDropdownOpen ? "rotate-180" : ""}`} />
                               </div>
@@ -1561,7 +1544,6 @@ export default function CreatePresentationClient({
                                       <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{t.basicModels}</span>
                                     </div>
                                     {[
-                                      { id: "gpt-image-1-mini", name: "GPT Image Mini", credits: CREDIT_COSTS.IMAGE_BASIC },
                                       { id: "gemini-2.5-flash-image", name: "Nano Banana", credits: CREDIT_COSTS.GEMINI_FLASH },
                                       { id: "imagen-4.0-fast-generate-001", name: "Imagen 4 Fast", credits: CREDIT_COSTS.IMAGEN_4_FAST },
                                     ].map((model) => (
@@ -1646,7 +1628,7 @@ export default function CreatePresentationClient({
                                       <span className="text-[10px] font-semibold text-white bg-indigo-600 px-1.5 py-0.5 rounded-full">PRO</span>
                                     </div>
                                     {[
-                                      { id: "openai", name: "DALL-E 3", credits: CREDIT_COSTS.DALLE_STANDARD },
+                                      { id: "imagen-4.0-ultra-generate-001", name: "Imagen 4 Ultra", credits: CREDIT_COSTS.IMAGEN_4_ULTRA },
                                     ].map((model) => {
                                       const userPlan = subscriptionPlan?.toLowerCase() || "free";
                                       const hasAccess = userPlan === "pro" || userPlan === "ultra";
@@ -1673,9 +1655,7 @@ export default function CreatePresentationClient({
                                             {formData.imageModel === model.id ? (
                                               <Check size={16} className="text-violet-600" />
                                             ) : (
-                                              <svg className="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="currentColor">
-                                                <path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.985 5.985 0 0 0-3.998 2.9 6.046 6.046 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.795.795 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646zM2.34 7.896a4.485 4.485 0 0 1 2.366-1.973V11.6a.766.766 0 0 0 .388.676l5.815 3.355-2.02 1.168a.076.076 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.34 7.896zm16.597 3.855l-5.833-3.387L15.119 7.2a.076.076 0 0 1 .071 0l4.83 2.791a4.494 4.494 0 0 1-.676 8.105v-5.678a.79.79 0 0 0-.407-.667zm2.01-3.023l-.141-.085-4.774-2.782a.776.776 0 0 0-.785 0L9.409 9.23V6.897a.066.066 0 0 1 .028-.061l4.83-2.787a4.5 4.5 0 0 1 6.68 4.66zm-12.64 4.135l-2.02-1.164a.08.08 0 0 1-.038-.057V6.075a4.5 4.5 0 0 1 7.375-3.453l-.142.08-4.778 2.758a.795.795 0 0 0-.393.681zm1.097-2.365l2.602-1.5 2.607 1.5v2.999l-2.597 1.5-2.607-1.5z" />
-                                              </svg>
+                                              <Sparkles size={16} className="text-violet-500" />
                                             )}
                                             <span className={`text-sm ${formData.imageModel === model.id ? "font-medium text-violet-700" : "text-slate-700"}`}>{model.name}</span>
                                             {isLocked && <Lock size={12} className="text-slate-400 ml-1" />}
@@ -1693,10 +1673,7 @@ export default function CreatePresentationClient({
                                       <span className="text-[10px] font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-500 px-1.5 py-0.5 rounded-full">ULTRA</span>
                                     </div>
                                     {[
-                                      { id: "imagen-4.0-ultra-generate-001", name: "Imagen 4 Ultra", credits: CREDIT_COSTS.IMAGEN_4_ULTRA },
-                                      { id: "gpt-image-1.5", name: "GPT Image 1.5", credits: CREDIT_COSTS.GPT_IMAGE_DETAILED },
-                                      { id: "gpt-image-1", name: "GPT Image 1", credits: CREDIT_COSTS.GPT_IMAGE_DETAILED },
-                                      { id: "openai-hd", name: "DALL-E 3 HD", credits: CREDIT_COSTS.DALLE_HD },
+                                      { id: "imagen-4.0-ultra-generate-001", name: "Imagen 4 Ultra (2K)", credits: CREDIT_COSTS.IMAGEN_4_ULTRA },
                                     ].map((model) => {
                                       const userPlan = subscriptionPlan?.toLowerCase() || "free";
                                       const hasAccess = userPlan === "ultra";
@@ -1723,7 +1700,7 @@ export default function CreatePresentationClient({
                                             {formData.imageModel === model.id ? (
                                               <Check size={16} className="text-violet-600" />
                                             ) : (
-                                              <Sparkles size={16} className="text-purple-500" />
+                                              <Sparkles size={16} className="text-violet-500" />
                                             )}
                                             <span className={`text-sm ${formData.imageModel === model.id ? "font-medium text-violet-700" : "text-slate-700"}`}>{model.name}</span>
                                             {isLocked && <Lock size={12} className="text-slate-400 ml-1" />}

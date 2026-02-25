@@ -15,10 +15,11 @@ import { sendExportReadyEmail } from "~/lib/email";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { jobId, range, customRange } = body as {
+    const { jobId, range, customRange, quality } = body as {
       jobId: string;
       range?: "all" | "current" | "custom";
       customRange?: { from: number; to: number };
+      quality?: "standard" | "hd" | "2k";
     };
 
     if (!jobId) {
@@ -64,6 +65,7 @@ export async function POST(request: NextRequest) {
       if (range) exportUrl.searchParams.set("range", range);
       if (customRange?.from) exportUrl.searchParams.set("from", customRange.from.toString());
       if (customRange?.to) exportUrl.searchParams.set("to", customRange.to.toString());
+      if (quality) exportUrl.searchParams.set("quality", quality);
 
       // Get user's Clerk session token for authentication
       // Note: In production, you'd need to handle this differently

@@ -60,7 +60,8 @@ async function exportPresentation(
   userId: string,
   format: "pdf" | "pptx" | "images",
   range: "all" | "current" | "custom" = "all",
-  customRange?: { from: number; to: number }
+  customRange?: { from: number; to: number },
+  quality: "standard" | "hd" | "2k" = "standard"
 ) {
   if (!format || !["pdf", "pptx", "images"].includes(format)) {
     return NextResponse.json({ error: "Invalid format" }, { status: 400 });
@@ -99,6 +100,12 @@ async function exportPresentation(
   if (slideIndices.length === 0) {
     slideIndices = Array.from({ length: allSlides.length }, (_, i) => i);
   }
+
+  // Calculate scale factor based on quality
+  // Standard: 1x (1080p), HD: 1.5x (1620p), 2K: 2x (2160p/4K)
+  let scaleFactor = 1;
+  if (quality === "hd") scaleFactor = 1.5;
+  if (quality === "2k") scaleFactor = 2;
 
   const user = await db.user.findUnique({
     where: { id: userId },
@@ -168,10 +175,12 @@ async function exportPresentation(
       const page = await browser.newPage();
       const pageWidth = 1920;
       const pageHeight = 1080;
+      
+
       await page.setViewport({
         width: pageWidth,
         height: pageHeight,
-        deviceScaleFactor: 1,
+        deviceScaleFactor: scaleFactor,
       });
 
       // Generate PDF for each slide and merge them
@@ -311,7 +320,7 @@ async function exportPresentation(
       await page.setViewport({
         width: pageWidth,
         height: pageHeight,
-        deviceScaleFactor: 1,
+        deviceScaleFactor: scaleFactor,
       });
 
       // Generate PDF for each slide and merge them
@@ -442,7 +451,7 @@ async function exportPresentation(
       await page.setViewport({
         width: pageWidth,
         height: pageHeight,
-        deviceScaleFactor: 2, // High DPI for crisp images
+        deviceScaleFactor: scaleFactor,
       });
 
       for (let i = 0; i < slideIndices.length; i++) {
@@ -578,12 +587,13 @@ export async function GET(
     const format = searchParams.get("format") as "pdf" | "pptx" | "images";
     const range =
       (searchParams.get("range") as "all" | "current" | "custom") || "all";
+    const quality = (searchParams.get("quality") as "standard" | "hd" | "2k") || "standard";
     const from = parseInt(searchParams.get("from") || "0");
     const to = parseInt(searchParams.get("to") || "0");
 
     const customRange = from > 0 || to > 0 ? { from, to } : undefined;
 
-    return exportPresentation(id, authUser.id, format, range, customRange);
+    return exportPresentation(id, authUser.id, format, range, customRange, quality);
   } catch (error) {
     console.error("[Export GET] Error:", error);
     return NextResponse.json(
@@ -604,13 +614,14 @@ export async function POST(
     const authUser = await requireAuth();
     const { id } = await params;
     const body = await request.json();
-    const { format, range, customRange } = body as {
+    const { format, range, customRange, quality } = body as {
       format: "pdf" | "pptx" | "images";
       range?: "all" | "current" | "custom";
       customRange?: { from: number; to: number };
+      quality?: "standard" | "hd" | "2k";
     };
 
-    return exportPresentation(id, authUser.id, format, range || "all", customRange);
+    return exportPresentation(id, authUser.id, format, range || "all", customRange, quality || "standard");
   } catch (error) {
     console.error("[Export POST] Error:", error);
     return NextResponse.json(

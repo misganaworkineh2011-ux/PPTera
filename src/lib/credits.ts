@@ -28,15 +28,10 @@ export const CREDIT_COSTS = {
   IMAGEN_4_ULTRA: 30,          // Imagen 4 Ultra (imagen-4.0-ultra-generate-001) - highest quality 2K
   IMAGEN_4_FAST: 10,           // Imagen 4 Fast (imagen-4.0-fast-generate-001) - low latency
   
-  // OpenAI DALL-E models
-  DALLE_STANDARD: 40,          // DALL-E 3 standard quality
-  DALLE_HD: 60,                // DALL-E 3 HD quality
-  GPT_IMAGE_DETAILED: 120,     // GPT Image (highest quality)
-  
   // Legacy aliases (for backwards compatibility)
   IMAGE_BASIC: 10,             // Maps to GEMINI_FLASH
   IMAGE_HD: 30,                // Maps to GEMINI_PRO_HD
-  IMAGE_PREMIUM: 120,          // Maps to GPT_IMAGE_DETAILED
+  IMAGE_PREMIUM: 30,           // Re-mapped from OpenAI to high-end Google models
   GEMINI_IMAGEN: 10,           // Legacy alias
   GEMINI_IMAGEN_HD: 30,        // Legacy alias
   
@@ -54,34 +49,42 @@ export const PLAN_CONFIG = {
     credits: 1000,
     cardsPerPrompt: 20,
     features: [
-      "Create up to 20 cards per prompt",
       "1,000 monthly credits",
-      "Remove Gamma branding",
-      "Advanced AI image models",
+      "20 cards per prompt",
+      "Export to PDF, PPTX & PNG",
+      "Remove PPTMaster branding",
+      "Basic AI image models",
+      "Basic slide animations",
     ],
   },
   pro: {
     credits: 4000,
     cardsPerPrompt: 60,
     features: [
-      "Create up to 60 cards per prompt",
       "4,000 monthly credits",
-      "Premium AI image models",
-      "Custom branding & fonts",
-      "Detailed analytics & advanced sharing",
-      "Publish up to 10 custom domains",
-      "API access",
-      "Workspace templates",
+      "60 cards per prompt",
+      "Remove PPTMaster branding",
+      "Export to PDF, PPTX & PNG",
+      "Pro AI models & 2K exports",
+      "Advanced animations",
+      "Full Brand Control & Fonts",
+      "Detailed analytics & premium sharing",
     ],
   },
   ultra: {
     credits: 20000,
     cardsPerPrompt: 75,
     features: [
-      "Create up to 75 cards per prompt",
       "20,000 monthly credits",
-      "Access to the most advanced AI models (text, image, video)",
-      "Publish up to 100 custom domains",
+      "75 cards per prompt",
+      "Remove PPTMaster branding",
+      "Export to PDF, PPTX & PNG",
+      "Pro AI models & 2K exports",
+      "All slide animations & effects",
+      "Most advanced AI models",
+      "Full Brand Control & Fonts",
+      "Detailed analytics & premium sharing",
+      "API & Webhook access",
       "Early access to new features",
     ],
   },

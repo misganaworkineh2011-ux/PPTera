@@ -72,7 +72,6 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
         t.createUpTo10Cards || "Up to 10 slides per presentation",
         t.simplePresentations || "Basic AI generation",
         t.importFromPdfPptx || "Import from PDF & PPTX",
-        t.exportFormatsAll || "Export to PPTX, PDF, Google Slides",
       ],
       cta: t.startFree || "Start Free",
       popular: false,
@@ -88,12 +87,13 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
           ? `$${plusPrices?.yearly || 8}`
           : `$${plusPrices?.monthly || 10}`,
       period: t.perMonth || "/month",
-      description: t.forExtraAIPower || "Unlimited AI creations",
+      description: t.unlimitedAICreations || "Unlimited AI creations",
       features: [
-        t.createUpTo20Cards || "Up to 20 slides per presentation",
-        t.monthlyCredits1000 || "1,000 AI credits/month",
+        t.credits1000 || "1,000 monthly credits",
+        t.upTo20Slides || "20 cards per prompt",
+        t.exportFormatsAll || "Export to PDF, PPTX & PNG",
         t.removeBranding || "Remove PPT Master branding",
-        t.advancedAIImageModels || "Advanced AI image models",
+        t.advancedAIModels || "Basic AI image models",
         t.basicAnimations || "Basic slide animations",
       ],
       cta: t.getStartedBtn || "Get Started",
@@ -112,11 +112,14 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
       period: t.perMonth || "/month",
       description: t.forPremiumAI || "For premium AI and customization",
       features: [
-        t.createUpTo60Cards || "Up to 60 slides per presentation",
-        t.monthlyCredits4000 || "4,000 AI credits/month",
-        t.premiumAIImageModels || "Premium AI image models",
-        t.customBrandingFonts || "Custom branding & fonts",
-        t.premiumAnimations || "Premium slide animations",
+        t.credits4000 || "4,000 monthly credits",
+        t.upTo60Slides || "60 cards per prompt",
+        t.removeBranding || "Remove PPT Master branding",
+        t.exportFormatsAll || "Export to PDF, PPTX & PNG",
+        t.premiumAIModels || "Pro AI models & 2K exports", 
+        t.premiumAnimations || "Advanced animations",
+        t.customBranding || "Full Brand Control & Fonts",
+        t.detailedAnalyticsSharing || "Detailed analytics & premium sharing",
       ],
       cta: t.getStartedBtn || "Get Started",
       popular: true,
@@ -134,11 +137,17 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
       period: t.perMonth || "/month",
       description: t.for20xMoreAI || "For 20× more AI usage",
       features: [
-        t.createUpTo75Cards || "Up to 75 slides per presentation",
-        t.monthlyCredits20000 || "20,000 AI credits/month",
-        t.mostAdvancedAIModels || "Most advanced AI models",
+        t.credits20000 || "20,000 monthly credits",
+        t.upTo75Slides || "75 cards per prompt",
+        t.removeBranding || "Remove PPT Master branding",
+        t.exportFormatsAll || "Export to PDF, PPTX & PNG",
+        t.premiumAIModels || "Pro AI models & 2K exports",
+        t.mostAdvancedModels || "Most advanced AI models",
         t.allAnimations || "All slide animations & effects",
-        t.earlyAccessFeatures || "Early access to new features",
+        t.customBranding || "Full Brand Control & Fonts",
+        t.detailedAnalyticsSharing || "Detailed analytics & premium sharing",
+        t.apiWebhookAccess || "API & Webhook access",
+        t.earlyAccess || "Early access to new features",
       ],
       cta: t.getStartedBtn || "Get Started",
       popular: false,
@@ -270,7 +279,14 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
               </div>
 
               <p className={`text-xs mb-2 font-medium ${plan.highlight ? "text-white/70" : "text-slate-500"}`}>
-                {i === 0 ? (t.freeIncludes || "Free includes:") : (t.everythingInPrevious || "Includes:")}
+                {i === 0 
+                  ? (t.freeIncludes || "Free includes:") 
+                  : i === 1 
+                    ? (t.everythingInFree || "Everything in Free, and:")
+                    : i === 2
+                      ? (t.everythingInPlus || "Everything in Plus, and:")
+                      : (t.everythingInPro || "Everything in Pro, and:")
+                }
               </p>
               <ul className="space-y-1.5 text-xs flex-grow">
                 {plan.features.map((feature, j) => (

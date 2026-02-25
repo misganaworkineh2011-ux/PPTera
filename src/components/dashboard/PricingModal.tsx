@@ -177,10 +177,12 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
       prices: getPriceFromProducts("plus"), 
       description: t.unlimitedAICreations || "Unlimited AI creations", 
       features: [
-        t.upTo20Slides || "Up to 20 slides per presentation", 
-        t.credits1000 || "1,000 AI credits/month", 
+        t.credits1000 || "1,000 monthly credits", 
+        t.upTo20Slides || "20 cards per prompt", 
+        t.exportFormatsAll || "Export to PDF, PPTX & PNG",
         t.removeBranding || "Remove PPTMaster branding", 
-        t.advancedAIModels || "Advanced AI image models"
+        t.advancedAIModels || "Basic AI image models",
+        t.basicAnimations || "Basic slide animations"
       ], 
       highlight: false, 
       badge: null as string | null, 
@@ -192,11 +194,14 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
       prices: getPriceFromProducts("pro"), 
       description: t.forPremiumAI || "For premium AI and customization", 
       features: [
-        t.upTo60Slides || "Up to 60 slides per presentation", 
-        t.credits4000 || "4,000 AI credits/month", 
-        t.premiumAIModels || "Premium AI image models", 
-        t.customBranding || "Custom branding & fonts",
-        t.detailedAnalytics || "Detailed analytics"
+        t.credits4000 || "4,000 monthly credits", 
+        t.upTo60Slides || "60 cards per prompt", 
+        t.removeBranding || "Remove PPTMaster branding", 
+        t.exportFormatsAll || "Export to PDF, PPTX & PNG",
+        t.premiumAIModels || "Pro AI models & 2K exports", 
+        t.premiumAnimations || "Advanced animations",
+        t.customBranding || "Full Brand Control & Fonts",
+        t.detailedAnalyticsSharing || "Detailed analytics & premium sharing",
       ], 
       highlight: true, 
       badge: t.mostPopular || "MOST POPULAR", 
@@ -208,9 +213,16 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
       prices: getPriceFromProducts("ultra"), 
       description: t.for20xMoreAI || "For 20× more AI usage", 
       features: [
-        t.upTo75Slides || "Up to 75 slides per presentation", 
-        t.credits20000 || "20,000 AI credits/month", 
+        t.credits20000 || "20,000 monthly credits", 
+        t.upTo75Slides || "75 cards per prompt", 
+        t.removeBranding || "Remove PPTMaster branding", 
+        t.exportFormatsAll || "Export to PDF, PPTX & PNG",
+        t.premiumAIModels || "Pro AI models & 2K exports",
         t.mostAdvancedModels || "Most advanced AI models", 
+        t.allAnimations || "All slide animations & effects",
+        t.customBranding || "Full Brand Control & Fonts",
+        t.detailedAnalyticsSharing || "Detailed analytics & premium sharing",
+        t.apiWebhookAccess || "API & Webhook access",
         t.earlyAccess || "Early access to new features"
       ], 
       highlight: false, 
@@ -294,7 +306,7 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
 
               {/* Pricing Cards - Matching pricing page style */}
               <div className="grid md:grid-cols-3 gap-3">
-                {plans.map((plan) => {
+                {plans.map((plan, i) => {
                   const isCurrentPlan = currentPlan?.toLowerCase() === plan.key.toLowerCase();
                   const price = plan.prices ? (isAnnual ? plan.prices.yearly : plan.prices.monthly) : null;
                   const yearlyTotal = plan.prices?.yearlyTotal;
@@ -379,7 +391,12 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
 
                         {/* Features */}
                         <p className={cn("text-xs mb-2 font-medium", plan.highlight ? "text-white/70" : "text-slate-500")}>
-                          {t.includes || "Includes:"}
+                          {i === 0 
+                            ? (t.everythingInFree || "Everything in Free, and:") 
+                            : i === 1 
+                              ? (t.everythingInPlus || "Everything in Plus, and:") 
+                              : (t.everythingInPro || "Everything in Pro, and:")
+                          }
                         </p>
                         <ul className="space-y-1.5 text-xs flex-grow">
                           {plan.features.map((feature, j) => (
