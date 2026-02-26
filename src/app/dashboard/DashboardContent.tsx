@@ -573,9 +573,9 @@ export default function DashboardContent({ presentations: propPresentations, use
                   {/* Footer Info */}
                   <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-slate-50 dark:border-neutral-800">
                     <div className="flex items-center gap-1 sm:gap-1.5">
-                      {user?.imageUrl ? (
+                      {clerkUser?.imageUrl ? (
                         <Image
-                          src={user.imageUrl}
+                          src={clerkUser.imageUrl}
                           alt={userName || "User"}
                           width={20}
                           height={20}
