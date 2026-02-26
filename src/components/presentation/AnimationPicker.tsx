@@ -197,7 +197,9 @@ export default function AnimationPicker({
 
   const userPlan = (subscriptionPlan || "free").toLowerCase();
   const hasProPlus = ["pro", "ultra"].includes(userPlan);
-  const hasPlusPlus = ["plus", "pro", "ultra"].includes(userPlan);
+  // User requested to lock animations for Plus plan too, only available for Pro and Ultra
+  // Previously: const hasPlusPlus = ["plus", "pro", "ultra"].includes(userPlan);
+  const hasPlusPlus = ["pro", "ultra"].includes(userPlan); 
 
   const filteredAnimations =
     selectedCategory === "all"
@@ -341,7 +343,7 @@ export default function AnimationPicker({
                   cardTextBg={cardTextBg}
                   textPrimary={textPrimary}
                   textSecondary={textSecondary}
-                  premiumBadgeText={followsProTier ? "PRO" : (t.animationPremiumBadge || "PREMIUM")}
+                  premiumBadgeText={followsProTier ? "ULTRA" : (t.animationPremiumBadge || "PRO & ULTRA")}
                   effectsBadgeText={t.animationEffectsBadge || "FX"}
                   onPlay={() => {
                     setPlayingId(animation.id);
