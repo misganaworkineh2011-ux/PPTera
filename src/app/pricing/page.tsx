@@ -1,4 +1,4 @@
-import { PricingPageClient } from "./PricingPageClient";
+import PricingPageClient from "./PricingPageClient";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

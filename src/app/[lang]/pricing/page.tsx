@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { generateLanguageParams, getTranslations, isValidLanguage, type Language } from "~/lib/i18n";
-import { PricingPageClient } from "../../pricing/PricingPageClient";
+import PricingPageClient from "../../pricing/PricingPageClient";
 import type { Metadata } from "next";
 
 export async function generateStaticParams() {

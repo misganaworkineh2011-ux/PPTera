@@ -1,9 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { SignInButton } from "@clerk/nextjs";
 import { LoadingLink } from "~/components/LoadingLink";
 import { type Language } from "~/lib/i18n";
+import { Check, Zap, Sparkles } from "lucide-react";
+import { DiscountBadgeBanner } from "~/components/DiscountBadgeBanner";
 
 interface PricingSectionProps {
   t: any;
@@ -135,7 +137,7 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
           ? `$${ultraPrices?.yearly || 67}`
           : `$${ultraPrices?.monthly || 79}`,
       period: t.perMonth || "/month",
-      description: t.for20xMoreAI || "For 20× more AI usage",
+      description: t.for20xMoreAI || "For 20Ã— more AI usage",
       features: [
         t.credits20000 || "20,000 monthly credits",
         t.upTo75Slides || "75 cards per prompt",
@@ -160,8 +162,13 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
   return (
     <section className="py-24 px-6 lg:px-8 bg-zinc-50">
       <div className="mx-auto max-w-7xl">
+        {/* Banner above header */}
+        <div className="mb-12 max-w-5xl mx-auto px-4 text-center">
+           <DiscountBadgeBanner />
+        </div>
+
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <h2 className="text-[2.75rem] leading-[1.15] font-semibold tracking-tight text-zinc-900 lg:text-[3.25rem] mb-4">
             {t.simplePricing || "Simple, transparent pricing"}
           </h2>
@@ -171,7 +178,7 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
         </div>
 
         {/* Toggle */}
-        <div className="flex items-center justify-center gap-4 mb-12">
+        <div className="flex items-center justify-center gap-4 mb-8">
           <span
             className={`text-sm font-medium ${!isAnnual ? "text-zinc-900" : "text-zinc-500"}`}
           >
@@ -197,109 +204,87 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3 items-stretch">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 items-start max-w-7xl mx-auto">
           {plans.map((plan, i) => (
             <div
               key={i}
-              className={`relative rounded-lg p-4 flex flex-col h-full mt-4 ${
+              className={`relative rounded-[2rem] p-8 flex flex-col h-auto transition-all duration-300 group border-2 border-slate-900 ${
                 plan.highlight
-                  ? "border-2 border-[#06b6d4] bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-lg"
-                  : "border border-slate-200 bg-white hover:border-[#06b6d4] transition-all"
+                  ? "shadow-[0_20px_40px_-15px_rgba(6,182,212,0.15)] bg-gradient-to-b from-white to-cyan-50/20"
+                  : "hover:border-slate-800 hover:shadow-xl bg-white"
               }`}
             >
               {plan.badge && (
                 <div
-                  className={`absolute -top-2.5 left-1/2 -translate-x-1/2 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg whitespace-nowrap ${
+                  className={`absolute -top-4 left-1/2 -translate-x-1/2 text-white text-[11px] font-black tracking-[0.15em] px-5 py-1.5 rounded-full shadow-lg whitespace-nowrap z-10 uppercase ${
                     plan.badgeGradient
-                      ? "bg-gradient-to-r from-purple-500 to-pink-500"
-                      : "bg-gradient-to-r from-amber-400 to-orange-500"
+                      ? "bg-gradient-to-r from-purple-600 to-pink-600 shadow-purple-500/20"
+                      : "bg-[#06b6d4] shadow-cyan-500/20 shadow-lg"
                   }`}
                 >
                   {plan.badge}
                 </div>
               )}
 
-              <div className="flex items-center gap-1.5 mb-1">
-                <span className={`text-sm ${plan.highlight ? "text-white" : "text-[#06b6d4]"}`}>✦</span>
-                <h3
-                  className={`text-lg font-bold ${plan.highlight ? "text-white" : "text-slate-900"}`}
-                >
-                  {plan.name}
-                </h3>
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-2xl font-black text-slate-900">
+                    {plan.name}
+                  </h3>
+                  {plan.highlight && (
+                    <div className="flex items-center justify-center p-1 rounded-lg bg-cyan-50 border border-cyan-100">
+                      <Zap className="h-4 w-4 text-[#06b6d4] fill-[#06b6d4]/20" />
+                    </div>
+                  )}
+                  {plan.name === "Ultra" && (
+                    <Sparkles className="h-5 w-5 text-purple-500 fill-purple-500/20" />
+                  )}
+                </div>
+                <p className="text-xs font-bold text-slate-400 leading-relaxed min-h-[32px]">
+                  {plan.description}
+                </p>
               </div>
-              <p
-                className={`text-xs mb-3 ${plan.highlight ? "text-white/70" : "text-slate-500"}`}
-              >
-                {plan.description}
-              </p>
 
-              <div className="mb-3">
+              <div className="mb-4 border-b border-slate-100 pb-4">
                 {plan.price === null ? (
-                  <div className={`h-6 w-12 animate-pulse rounded ${plan.highlight ? "bg-white/30" : "bg-slate-200"}`} />
+                  <div className="h-10 w-24 animate-pulse rounded-xl bg-slate-100" />
                 ) : (
-                  <div className="flex items-baseline gap-1">
-                    <span
-                      className={`text-2xl font-bold ${plan.highlight ? "text-white" : "text-slate-900"}`}
-                    >
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-4xl font-black tracking-tighter text-slate-900">
                       {plan.price}
                     </span>
-                    <span
-                      className={`text-xs ${plan.highlight ? "text-white/60" : "text-slate-500"}`}
-                    >
-                      {plan.period}
+                    <span className="text-sm font-bold text-slate-400">
+                      /{isAnnual && plan.name !== "Free" ? "yr" : plan.period.replace("/", "")}
                     </span>
                   </div>
                 )}
               </div>
 
-              <div className="mt-auto mb-4">
-                {i === 0 ? (
-                  <SignInButton mode="modal">
-                    <button
-                      className="w-full rounded-md py-2 px-3 font-medium text-sm bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90"
-                      style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}
-                    >
-                      {plan.cta}
-                    </button>
-                  </SignInButton>
-                ) : (
-                  <SignInButton mode="modal">
-                    <button
-                      className={`w-full rounded-md py-2 px-3 font-medium text-sm transition ${
-                        plan.highlight
-                          ? "bg-white text-[#1e3a8a] hover:bg-slate-100"
-                          : "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90"
-                      }`}
-                      style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}
-                    >
-                      {plan.cta}
-                    </button>
-                  </SignInButton>
-                )}
-              </div>
-
-              <p className={`text-xs mb-2 font-medium ${plan.highlight ? "text-white/70" : "text-slate-500"}`}>
-                {i === 0 
-                  ? (t.freeIncludes || "Free includes:") 
-                  : i === 1 
-                    ? (t.everythingInFree || "Everything in Free, and:")
-                    : i === 2
-                      ? (t.everythingInPlus || "Everything in Plus, and:")
-                      : (t.everythingInPro || "Everything in Pro, and:")
-                }
-              </p>
-              <ul className="space-y-1.5 text-xs flex-grow">
-                {plan.features.map((feature, j) => (
-                  <li key={j} className="flex items-start gap-1.5">
-                    <span className={`text-xs ${plan.highlight ? "text-white" : "text-[#06b6d4]"}`}>✓</span>
-                    <span
-                      className={plan.highlight ? "text-white/90" : "text-slate-600"}
-                    >
+              <ul className="space-y-3 mb-8">
+                {plan.features.map((feature, idx) => (
+                  <li key={idx} className="flex items-start gap-3">
+                    <div className={`mt-0.5 h-3.5 w-3.5 rounded-full flex items-center justify-center shrink-0 ${plan.highlight ? "bg-cyan-100 text-cyan-600" : "bg-slate-100 text-slate-400"}`}>
+                      <Check className="h-2 w-2 stroke-[4]" />
+                    </div>
+                    <span className="text-[13px] font-bold text-slate-600 leading-tight">
                       {feature}
                     </span>
                   </li>
                 ))}
               </ul>
+
+              <div className="mt-auto">
+                <LoadingLink
+                  href={localPath("/pricing")}
+                  className={`w-full py-4 rounded-[1.2rem] text-sm font-black text-center transition-all duration-300 border-2 border-slate-900 block ${
+                    plan.highlight
+                      ? "bg-slate-900 text-white hover:bg-black hover:scale-[1.02] shadow-xl"
+                      : "bg-white text-slate-900 hover:bg-slate-900 hover:text-white"
+                  }`}
+                >
+                  {plan.cta}
+                </LoadingLink>
+              </div>
             </div>
           ))}
         </div>
