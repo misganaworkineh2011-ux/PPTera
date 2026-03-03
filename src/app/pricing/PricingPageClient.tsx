@@ -1,14 +1,17 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, AlertCircle, Plus, Zap, ChevronDown } from "lucide-react";
+import { Loader2, AlertCircle, Zap, Check, Sparkles } from "lucide-react";
+import { cn } from "~/lib/utils";
+import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { useLanguage } from "~/contexts/LanguageContext";
+import { dashboardTranslations } from "~/lib/dashboard-translations";
+import { trackViewPricing, trackSelectPlan, trackBeginCheckout } from "~/components/GoogleAnalytics";
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
-import { cn } from "~/lib/utils";
-import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
-import { getTranslations, type Language } from "~/lib/i18n";
-import { trackViewPricing, trackSelectPlan, trackBeginCheckout } from "~/components/GoogleAnalytics";
+import { DiscountBadgeBanner } from "~/components/DiscountBadgeBanner";
+import { type Language } from "~/lib/i18n";
 
 type PolarProduct = {
   key: string;
@@ -29,131 +32,98 @@ type PolarProduct = {
   } | null;
 };
 
+type TopupOption = {
+  credits: number;
+  price: number;
+  priceDisplay: string;
+  available: boolean;
+};
+
 interface PricingPageClientProps {
   currentLang: Language;
 }
 
-// Inline skeleton component for price display
-function PriceSkeleton({ className = "" }: { className?: string }) {
-  return (
-    <div 
-      className={cn("h-8 w-16 bg-slate-200 animate-pulse rounded", className)}
-      data-testid="price-skeleton"
-    />
-  );
-}
-
-// Error indicator for price display
-function PriceError() {
-  return (
-    <div className="flex items-center gap-1 text-red-500" data-testid="price-error">
-      <AlertCircle className="h-4 w-4" />
-      <span className="text-xs">Price unavailable</span>
-    </div>
-  );
-}
-
-// Helper to get price from Polar products
-function getPriceFromProducts(products: PolarProduct[], key: string): { monthly: number; yearly: number; yearlyTotal: number } | null {
-  const product = products.find(p => p.key === key);
-  if (!product) return null;
-  
-  const monthlyPrice = product.monthly?.priceAmount ? product.monthly.priceAmount / 100 : null;
-  const yearlyPrice = product.yearly?.priceAmount ? product.yearly.priceAmount / 100 : null;
-  
-  if (monthlyPrice === null && yearlyPrice === null) return null;
-  
-  // For yearly, calculate monthly equivalent (yearly price / 12) - show decimals
-  const yearlyMonthly = yearlyPrice ? Number((yearlyPrice / 12).toFixed(2)) : monthlyPrice;
-  
-  return {
-    monthly: monthlyPrice ?? yearlyMonthly ?? 0,
-    yearly: yearlyMonthly ?? monthlyPrice ?? 0,
-    yearlyTotal: yearlyPrice ?? (monthlyPrice ? monthlyPrice * 12 : 0),
-  };
-}
-
-export function PricingPageClient({ currentLang }: PricingPageClientProps) {
+export default function PricingPageClient({ currentLang }: PricingPageClientProps) {
   const [isAnnual, setIsAnnual] = useState(true);
   const [products, setProducts] = useState<PolarProduct[]>([]);
+  const [topupOptions, setTopupOptions] = useState<TopupOption[]>([]);
   const [loading, setLoading] = useState(true);
+  const [topupLoading, setTopupLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [checkoutLoadingId, setCheckoutLoadingId] = useState<string | null>(null);
-  const [hasSubscription, setHasSubscription] = useState(false);
-  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [topupLoadingId, setTopupLoadingId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<"plans" | "topup">("plans");
+  const [currentPlan, setCurrentPlan] = useState<string | null>(null);
 
   const { isSignedIn, user } = useUser();
   const router = useRouter();
-  const t = getTranslations(currentLang);
-
-  // Reset loading state when component mounts (handles back navigation)
-  useEffect(() => {
-    setCheckoutLoadingId(null);
-    setTopupLoadingId(null);
-  }, []);
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language] || dashboardTranslations.en;
 
   useEffect(() => {
-    async function loadProducts() {
-      try {
-        const res = await fetch("/api/polar/products");
-        if (!res.ok) throw new Error("Failed to load pricing");
-        const data = await res.json();
-        setProducts(data);
-        // Track pricing page view
-        trackViewPricing();
-      } catch (err) {
-        console.error(err);
-        setError("Could not load pricing plans. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
+    if (user?.publicMetadata?.subscriptionPlan) {
+      setCurrentPlan(user.publicMetadata.subscriptionPlan as string);
     }
+  }, [user]);
+
+  const isPaidUser = currentPlan && currentPlan.toLowerCase() !== "free";
+
+  useEffect(() => {
     loadProducts();
+    loadTopupOptions();
   }, []);
 
-  useEffect(() => {
-    if (isSignedIn && user) {
-      const subscription = user.publicMetadata?.subscription as string | undefined;
-      setHasSubscription(!!subscription && subscription !== 'free');
+  async function loadProducts() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/polar/products");
+      if (!res.ok) throw new Error("Failed to load pricing");
+      setProducts(await res.json());
+      trackViewPricing();
+    } catch (err) {
+      console.error(err);
+      setError("Could not load pricing plans.");
+    } finally {
+      setLoading(false);
     }
-  }, [isSignedIn, user]);
+  }
+
+  async function loadTopupOptions() {
+    setTopupLoading(true);
+    try {
+      const res = await fetch("/api/polar/topup");
+      if (!res.ok) throw new Error("Failed to load topup options");
+      const data = await res.json();
+      setTopupOptions(data.options || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setTopupLoading(false);
+    }
+  }
 
   const handleSubscribe = async (productKey: string) => {
-    if (!isSignedIn) {
-      router.push("/sign-in");
-      return;
-    }
-
+    if (!isSignedIn) { router.push("/sign-in"); return; }
     const product = products.find(p => p.key === productKey);
     if (!product) return;
-
     const priceData = isAnnual ? product.yearly : product.monthly;
     if (!priceData) return;
 
     const price = priceData.priceAmount / 100;
-    
-    // Track plan selection
     trackSelectPlan(productKey, price, isAnnual);
 
     setCheckoutLoadingId(productKey);
     try {
-      // Track checkout begin
       trackBeginCheckout(productKey, price, isAnnual);
-      
       const res = await fetch("/api/polar/checkout", {
         method: "POST",
-        body: JSON.stringify({
-          productId: priceData.id,
-          recurringInterval: isAnnual ? "year" : "month"
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId: priceData.id, recurringInterval: isAnnual ? "year" : "month" })
       });
       const data = await res.json();
-      if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
-      } else {
-        throw new Error("No checkout URL returned");
-      }
+      if (data.checkoutUrl) window.location.href = data.checkoutUrl;
+      else throw new Error("No checkout URL");
     } catch (err) {
       console.error(err);
       alert("Failed to start checkout");
@@ -161,18 +131,8 @@ export function PricingPageClient({ currentLang }: PricingPageClientProps) {
     }
   };
 
-  const topUpOptions = [
-    { credits: 500, price: "$9.99", popular: false, slides: 125, images: 50 },
-    { credits: 1000, price: "$17.99", popular: true, slides: 250, images: 100 },
-    { credits: 2500, price: "$39.99", popular: false, slides: 625, images: 250 },
-  ];
-
   const handleTopup = async (credits: number, index: number) => {
-    if (!isSignedIn) {
-      router.push("/sign-in");
-      return;
-    }
-
+    if (!isSignedIn) { router.push("/sign-in"); return; }
     setTopupLoadingId(index);
     try {
       const res = await fetch("/api/polar/topup", {
@@ -181,16 +141,9 @@ export function PricingPageClient({ currentLang }: PricingPageClientProps) {
         body: JSON.stringify({ credits: credits.toString() }),
       });
       const data = await res.json();
-      
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to start checkout");
-      }
-      
-      if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
-      } else {
-        throw new Error("No checkout URL returned");
-      }
+      if (!res.ok) throw new Error(data.error || "Failed to start checkout");
+      if (data.checkoutUrl) window.location.href = data.checkoutUrl;
+      else throw new Error("No checkout URL");
     } catch (err: unknown) {
       console.error(err);
       alert(err instanceof Error ? err.message : "Failed to start checkout");
@@ -198,358 +151,354 @@ export function PricingPageClient({ currentLang }: PricingPageClientProps) {
     }
   };
 
+  const getPriceFromProducts = (key: string) => {
+    const product = products.find(p => p.key === key);
+    if (!product) return null;
+    const monthlyPrice = product.monthly?.priceAmount ? product.monthly.priceAmount / 100 : null;
+    const yearlyPrice = product.yearly?.priceAmount ? product.yearly.priceAmount / 100 : null;
+    if (monthlyPrice === null && yearlyPrice === null) return null;
+    const yearlyMonthly = yearlyPrice ? Number((yearlyPrice / 12).toFixed(2)) : monthlyPrice;
+    return {
+      monthly: monthlyPrice ?? yearlyMonthly ?? 0,
+      yearly: yearlyMonthly ?? monthlyPrice ?? 0,
+      yearlyTotal: yearlyPrice ?? (monthlyPrice ? monthlyPrice * 12 : 0),
+    };
+  };
+
+  const plans = [
+    { 
+      key: "free",
+      name: t.free || "Free",
+      prices: { monthly: 0, yearly: 0, yearlyTotal: 0 },
+      description: t.getStartedWithPPT || "Get started with PPT Master",
+      features: [
+        t.createUpTo10Cards || "Up to 10 slides per presentation",
+        t.simplePresentations || "Basic AI generation",
+        t.importFromPdfPptx || "Import from PDF & PPTX",
+      ],
+      highlight: false,
+      badge: null
+    },
+    { 
+      key: "plus", 
+      name: "Plus", 
+      prices: getPriceFromProducts("plus"), 
+      description: t.unlimitedAICreations || "Unlimited AI creations", 
+      features: [
+        t.credits1000 || "1,000 monthly credits", 
+        t.upTo20Slides || "20 cards per prompt", 
+        t.exportFormatsAll || "Export to PDF, PPTX & PNG",
+        t.removeBranding || "Remove PPTMaster branding", 
+        t.advancedAIModels || "Basic AI image models",
+        t.basicAnimations || "Basic slide animations"
+      ], 
+      highlight: false, 
+      badge: null, 
+      badgeGradient: false 
+    },
+    { 
+      key: "pro", 
+      name: "Pro", 
+      prices: getPriceFromProducts("pro"), 
+      description: t.forPremiumAI || "For premium AI and customization", 
+      features: [
+        t.credits4000 || "4,000 monthly credits", 
+        t.upTo60Slides || "60 cards per prompt", 
+        t.removeBranding || "Remove PPTMaster branding", 
+        t.exportFormatsAll || "Export to PDF, PPTX & PNG",
+        t.premiumAIModels || "Pro AI models & 2K exports", 
+        t.premiumAnimations || "Advanced animations",
+        t.customBranding || "Full Brand Control & Fonts",
+        t.detailedAnalyticsSharing || "Detailed analytics & premium sharing",
+      ], 
+      highlight: true, 
+      badge: t.mostPopular || "MOST POPULAR", 
+      badgeGradient: false 
+    },
+    { 
+      key: "ultra", 
+      name: "Ultra", 
+      prices: getPriceFromProducts("ultra"), 
+      description: t.for20xMoreAI || "For 20× more AI usage", 
+      features: [
+        t.credits20000 || "20,000 monthly credits", 
+        t.upTo75Slides || "75 cards per prompt", 
+        t.removeBranding || "Remove PPTMaster branding", 
+        t.exportFormatsAll || "Export to PDF, PPTX & PNG",
+        t.premiumAIModels || "Pro AI models & 2K exports",
+        t.mostAdvancedModels || "Most advanced AI models", 
+        t.allAnimations || "All slide animations & effects",
+        t.customBranding || "Full Brand Control & Fonts",
+        t.detailedAnalyticsSharing || "Detailed analytics & premium sharing",
+        t.apiWebhookAccess || "API & Webhook access",
+        t.earlyAccess || "Early access to new features"
+      ], 
+      highlight: false, 
+      badge: t.introductoryPrice || "INTRODUCTORY PRICE", 
+      badgeGradient: true 
+    },
+  ];
+
   return (
     <div className="landing-page min-h-screen bg-white font-sans text-slate-900 overflow-x-hidden">
-      <LandingNavbar currentLang={currentLang} />
+      <LandingNavbar currentLang={currentLang as any} />
 
-      {/* Hero Section */}
-      <div className="relative pt-40 pb-20 px-6 overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+      <div className="relative pt-32 pb-12 px-6 overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent)] bg-[size:24px_24px]"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_-100px,#1e1e1e0a,transparent)]"></div>
 
         <div className="mx-auto max-w-7xl text-center relative z-10">
-          <h1 className="text-5xl font-extrabold tracking-tight text-slate-900 md:text-7xl mb-6">
-            {t.pricingTitle}
-          </h1>
-          <p className="text-xl text-slate-500 mb-12">
-            {t.pricingSubtitle}
-          </p>
-
-          {/* Toggle */}
-          <div className="flex items-center justify-center gap-4 mb-16">
-            <span className={cn("text-sm font-semibold", !isAnnual ? "text-slate-900" : "text-slate-500")}>{t.monthly}</span>
-            <button
-              onClick={() => setIsAnnual(!isAnnual)}
-              className="relative h-8 w-14 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] p-1 transition-all hover:shadow-lg"
-            >
-              <div className={cn("h-6 w-6 rounded-full bg-white shadow-md transition-transform", isAnnual ? "translate-x-6" : "translate-x-0")} />
-            </button>
-            <span className={cn("text-sm font-semibold", isAnnual ? "text-slate-900" : "text-slate-500")}>
-              {t.yearly} <span className="text-green-600 font-bold ml-1">{t.savePercent}</span>
-            </span>
+          <div className="mb-8 max-w-5xl mx-auto px-4">
+            <DiscountBadgeBanner />
           </div>
 
-          {/* Pricing Cards */}
-          <div className="grid gap-3 md:grid-cols-4 max-w-6xl mx-auto items-stretch">
-              {/* Free Plan Card */}
-              <div className="relative rounded-lg border border-slate-200 bg-white hover:border-[#06b6d4] transition-all flex flex-col h-full mt-4">
-                <div className="absolute -top-2.5 right-3 bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded">
-                  {t.noCreditCard || "NO CREDIT CARD"}
-                </div>
-                <div className="p-4 flex flex-col h-full">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <span className="text-[#06b6d4] text-sm">✦</span>
-                    <h3 className="text-lg font-bold">{t.free || "Free"}</h3>
-                  </div>
-                  <p className="text-xs text-slate-500 mb-3">{t.getStartedWithPPT || "Get started with PPT Master"}</p>
-                  <div className="mb-3">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-2xl font-bold">$0</span>
-                      <span className="text-xs text-slate-500">{t.freeForever || "/forever"}</span>
-                    </div>
-                  </div>
-                  <div className="mt-auto mb-4">
-                    <button onClick={() => router.push(isSignedIn ? "/" : "/sign-up")} className="w-full rounded-md py-2 px-3 font-medium text-sm bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90">
-                      {isSignedIn ? t.goToDashboard : t.signUpFree}
-                    </button>
-                  </div>
-                  <p className="text-xs text-slate-500 mb-2 font-medium">{t.freeIncludes || "Free includes:"}</p>
-                  <ul className="space-y-1.5 text-xs flex-grow">
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.createUpTo10Cards}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.simplePresentations}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.importFromPdfPptx || "Import from PDF & PPTX"}</span></li>
-                  </ul>
-                </div>
-              </div>
+          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 md:text-6xl mb-4">
+            {t.pricingTitle || "Simple Pricing"}
+          </h1>
+          <p className="text-lg text-slate-500 mb-8">
+            {t.pricingSubtitle || "Choose the plan that's right for you"}
+          </p>
 
-              {/* Plus Plan */}
-              {(() => {
-                const plusPrices = getPriceFromProducts(products, 'plus');
-                return (
-              <div className="relative rounded-lg border border-slate-200 bg-white hover:border-[#06b6d4] transition-all flex flex-col h-full mt-4">
-                <div className="p-4 flex flex-col h-full">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <span className="text-[#06b6d4] text-sm">✦</span>
-                    <h3 className="text-lg font-bold">Plus</h3>
-                  </div>
-                  <p className="text-xs text-slate-500 mb-3">{t.forExtraAIPower || "Unlimited AI creations"}</p>
-                  <div className="mb-3" data-testid="price-display-plus">
-                    {loading ? (
-                      <PriceSkeleton className="h-6 w-12" />
-                    ) : error || !plusPrices ? (
-                      <PriceError />
-                    ) : isAnnual ? (
-                      <>
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-2xl font-bold" data-testid="price-value-plus">${plusPrices.yearly}</span>
-                          <span className="text-xs text-slate-500">/ {t.monthly?.toLowerCase() || "month"}</span>
-                        </div>
-                        <p className="text-xs text-slate-400">${plusPrices.yearlyTotal} {t.annualBilling || "billed annually"}</p>
-                      </>
-                    ) : (
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-2xl font-bold" data-testid="price-value-plus">${plusPrices.monthly}</span>
-                        <span className="text-xs text-slate-500">/ {t.monthly?.toLowerCase() || "month"}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="mt-auto mb-4">
-                    <button onClick={() => handleSubscribe('plus')} disabled={!!checkoutLoadingId} className="w-full rounded-md py-2 px-3 font-medium text-sm bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90 disabled:opacity-50">
-                      {checkoutLoadingId === 'plus' ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : t.getStartedBtn}
-                    </button>
-                  </div>
-                  <p className="text-xs text-slate-500 mb-2 font-medium">{t.everythingInFree || "Everything in Free, and:"}</p>
-                  <ul className="space-y-1.5 text-xs flex-grow">
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.credits1000 || "1,000 monthly credits"}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.upTo20Slides || "20 cards per prompt"}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.exportFormatsAll || "Export to PDF, PPTX, PNG & Google Slides"}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.removeBranding}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.advancedAIModels || "Basic AI image models"}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.basicAnimations}</span></li>
-                  </ul>
-                </div>
+          <div className="flex items-center justify-center gap-5 mb-8">
+            <span className={cn("text-sm font-bold tracking-tight transition-colors", !isAnnual ? "text-slate-900" : "text-slate-400")}>
+              {t.monthly || "Monthly"}
+            </span>
+            <button 
+              onClick={() => setIsAnnual(!isAnnual)} 
+              className="relative h-8 w-16 rounded-full bg-slate-100 hover:bg-slate-200 p-1 transition-all flex items-center"
+            >
+              <div className={cn(
+                "h-6 w-6 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center",
+                isAnnual ? "translate-x-8 bg-[#06b6d4]" : "translate-x-0 bg-white"
+              )}>
+                {isAnnual && <div className="w-1 h-1 bg-white rounded-full" />}
               </div>
-                );
-              })()}
-
-              {/* Pro Plan - Most Popular */}
-              {(() => {
-                const proPrices = getPriceFromProducts(products, 'pro');
-                return (
-              <div className="relative rounded-lg border-2 border-[#06b6d4] bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-lg flex flex-col h-full mt-4">
-                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg whitespace-nowrap">{t.mostPopular?.toUpperCase() || "MOST POPULAR"}</div>
-                <div className="p-4 flex flex-col h-full">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <span className="text-white text-sm">✦</span>
-                    <h3 className="text-lg font-bold">Pro</h3>
-                  </div>
-                  <p className="text-xs text-white/70 mb-3">{t.forPremiumAI || "For premium AI and customization"}</p>
-                  <div className="mb-3" data-testid="price-display-pro">
-                    {loading ? (
-                      <PriceSkeleton className="bg-white/30 h-6 w-12" />
-                    ) : error || !proPrices ? (
-                      <div className="flex items-center gap-1 text-white/80" data-testid="price-error">
-                        <AlertCircle className="h-4 w-4" />
-                        <span className="text-xs">Price unavailable</span>
-                      </div>
-                    ) : isAnnual ? (
-                      <>
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-2xl font-bold" data-testid="price-value-pro">${proPrices.yearly}</span>
-                          <span className="text-xs text-white/60">/ {t.monthly?.toLowerCase() || "month"}</span>
-                        </div>
-                        <p className="text-xs text-white/50">${proPrices.yearlyTotal} {t.annualBilling || "billed annually"}</p>
-                      </>
-                    ) : (
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-2xl font-bold" data-testid="price-value-pro">${proPrices.monthly}</span>
-                        <span className="text-xs text-white/60">/ {t.monthly?.toLowerCase() || "month"}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="mt-auto mb-4">
-                    <button onClick={() => handleSubscribe('pro')} disabled={!!checkoutLoadingId} className="w-full rounded-md py-2 px-3 font-medium text-sm bg-white text-[#1e3a8a] hover:bg-slate-100 disabled:opacity-50">
-                      {checkoutLoadingId === 'pro' ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : t.getStartedBtn}
-                    </button>
-                  </div>
-                  <p className="text-xs text-white/70 mb-2 font-medium">{t.everythingInPlus || "Everything in Plus, and:"}</p>
-                  <ul className="space-y-1.5 text-xs flex-grow">
-                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.credits4000 || "4,000 monthly credits"}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.upTo60Slides || "60 cards per prompt"}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.removeBranding || "Remove PPTMaster branding"}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.exportFormatsAll || "Export to PDF, PPTX, PNG & Google Slides"}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.premiumAIModels || "Pro AI models & 2K exports"}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.premiumAnimations || "Advanced animations"}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.customBranding || "Full Brand Control & Fonts"}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-white text-xs">✓</span><span className="text-white/90">{t.detailedAnalyticsSharing || "Detailed analytics & premium sharing"}</span></li>
-                  </ul>
-                </div>
-              </div>
-                );
-              })()}
-
-              {/* Ultra Plan */}
-              {(() => {
-                const ultraPrices = getPriceFromProducts(products, 'ultra');
-                return (
-              <div className="relative rounded-lg border border-slate-200 bg-white hover:border-[#06b6d4] transition-all flex flex-col h-full mt-4">
-                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg whitespace-nowrap">{t.introductoryPrice?.toUpperCase() || "INTRODUCTORY PRICE"}</div>
-                <div className="p-4 flex flex-col h-full">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <span className="text-[#06b6d4] text-sm">✦</span>
-                    <h3 className="text-lg font-bold">Ultra</h3>
-                  </div>
-                  <p className="text-xs text-slate-500 mb-3">{t.for20xMoreAI || "For 20× more AI usage"}</p>
-                  <div className="mb-3" data-testid="price-display-ultra">
-                    {loading ? (
-                      <PriceSkeleton className="h-6 w-12" />
-                    ) : error || !ultraPrices ? (
-                      <PriceError />
-                    ) : isAnnual ? (
-                      <>
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-2xl font-bold" data-testid="price-value-ultra">${ultraPrices.yearly}</span>
-                          <span className="text-xs text-slate-500">/ {t.monthly?.toLowerCase() || "month"}</span>
-                        </div>
-                        <p className="text-xs text-slate-400">${ultraPrices.yearlyTotal.toLocaleString()} {t.annualBilling || "billed annually"}</p>
-                      </>
-                    ) : (
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-2xl font-bold" data-testid="price-value-ultra">${ultraPrices.monthly}</span>
-                        <span className="text-xs text-slate-500">/ {t.monthly?.toLowerCase() || "month"}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="mt-auto mb-4">
-                    <button onClick={() => handleSubscribe('ultra')} disabled={!!checkoutLoadingId} className="w-full rounded-md py-2 px-3 font-medium text-sm bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90 disabled:opacity-50">
-                      {checkoutLoadingId === 'ultra' ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : t.getStartedBtn}
-                    </button>
-                  </div>
-                  <p className="text-xs text-slate-500 mb-2 font-medium">{t.everythingInPro || "Everything in Pro, and:"}</p>
-                  <ul className="space-y-1.5 text-xs flex-grow">
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.credits20000 || "20,000 monthly credits"}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.upTo75Slides || "75 cards per prompt"}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.removeBranding || "Remove PPTMaster branding"}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.exportFormatsAll || "Export to PDF, PPTX, PNG & Google Slides"}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.premiumAIModels || "Pro AI models & 2K exports"}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.mostAdvancedModels || "Most advanced AI models"}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.allAnimations || "All slide animations & effects"}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.customBranding || "Full Brand Control & Fonts"}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.detailedAnalyticsSharing || "Detailed analytics & premium sharing"}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.apiWebhookAccess || "API & Webhook access"}</span></li>
-                    <li className="flex items-start gap-1.5"><span className="text-[#06b6d4] text-xs">✓</span><span className="text-slate-600">{t.earlyAccess || "Early access to new features"}</span></li>
-                  </ul>
-                </div>
-              </div>
-                );
-              })()}
+            </button>
+            <div className="flex items-center gap-2">
+              <span className={cn("text-sm font-bold tracking-tight transition-colors", isAnnual ? "text-slate-900" : "text-slate-400")}>
+                {t.yearly || "Yearly"}
+              </span>
+              <span className="text-[10px] font-black bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                -25%
+              </span>
             </div>
+          </div>
 
-          {/* Top-up Cards - Only show for subscribed users */}
-          {hasSubscription && (
-            <div id="topup" className="mt-24 scroll-mt-32">
-              <div className="text-center mb-12">
-                <div className="inline-flex items-center gap-2 rounded-full border border-[#06b6d4] bg-cyan-50 px-4 py-2 mb-4">
-                  <Zap className="h-4 w-4 text-[#06b6d4]" />
-                  <span className="text-sm font-semibold text-[#1e3a8a] uppercase tracking-wide">{t.creditTopups || "Credit Top-ups"}</span>
+          <div className="px-8 flex items-center justify-center gap-1.5 mb-8">
+            {[
+              { id: "plans", label: t.subscriptionPlans || "Subscription Plans", icon: null },
+              { id: "topup", label: t.buyCredits || "Buy Credits", icon: <Zap className="h-3.5 w-3.5" /> }
+            ].map(tab => (
+              <button 
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)} 
+                className={cn(
+                  "px-8 py-4 text-sm font-black transition-all relative rounded-2xl overflow-hidden border-2",
+                  activeTab === tab.id 
+                    ? "bg-slate-900 text-white shadow-xl border-slate-900" 
+                    : "bg-white border-slate-900 text-slate-400 hover:text-slate-900 hover:bg-slate-50"
+                )}
+              >
+                <div className="flex items-center gap-2 relative z-10 uppercase tracking-widest">
+                  {tab.icon}
+                  {tab.label}
                 </div>
-                <h2 className="text-3xl font-bold text-slate-900 mb-3">{t.needMoreCredits || "Need More Credits?"}</h2>
-                <p className="text-lg text-slate-500">{t.purchaseAdditionalCredits || "Purchase additional credits anytime"}</p>
-              </div>
+              </button>
+            ))}
+          </div>
 
-              <div className="grid gap-6 md:grid-cols-3 max-w-4xl mx-auto">
-                {topUpOptions.map((option, i) => (
-                  <div
-                    key={i}
+          {activeTab === "plans" ? (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 px-4 pb-20 max-w-7xl mx-auto items-start">
+              {plans.map((plan) => {
+                const isCurrentPlan = currentPlan?.toLowerCase() === plan.key.toLowerCase();
+                const price = isAnnual ? plan.prices?.yearly : plan.prices?.monthly;
+                const yearlyTotal = plan.prices?.yearlyTotal;
+                
+                return (
+                  <div 
+                    key={plan.key} 
                     className={cn(
-                      "relative rounded-2xl p-6 border transition-all duration-300 hover:shadow-xl",
-                      option.popular
-                        ? "border-[#06b6d4] bg-gradient-to-br from-cyan-50 to-blue-50 scale-105"
-                        : "border-slate-200 bg-white hover:border-[#06b6d4]"
+                      "relative rounded-[2.5rem] p-8 transition-all duration-300 flex flex-col group text-left h-auto border-2 border-slate-900",
+                      plan.highlight 
+                        ? "shadow-[0_20px_40px_-15px_rgba(6,182,212,0.15)] bg-gradient-to-b from-white to-cyan-50/20" 
+                        : "hover:border-slate-800 hover:shadow-xl bg-white"
                     )}
                   >
-                    {option.popular && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#06b6d4] text-white text-xs font-bold px-3 py-1 rounded-full">
-                        {t.bestValue || "BEST VALUE"}
+                    {plan.badge && (
+                      <div className={cn(
+                        "absolute -top-4 left-1/2 -translate-x-1/2 text-[11px] font-black tracking-[0.15em] px-5 py-1.5 rounded-full shadow-lg whitespace-nowrap uppercase",
+                        plan.badgeGradient 
+                          ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white" 
+                          : "bg-[#06b6d4] text-white shadow-cyan-500/20"
+                      )}>
+                        {plan.badge}
+                      </div>
+                    )}
+                    
+                    {isCurrentPlan && (
+                      <div className="absolute top-6 right-8 bg-emerald-50 text-emerald-600 text-[10px] font-black tracking-widest px-2 py-0.5 rounded-full border border-emerald-100 uppercase">
+                        {t.current || "CURRENT"}
                       </div>
                     )}
 
-                    <div className="text-center">
-                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white mb-4">
-                        <Plus className="w-8 h-8" />
-                      </div>
-                      <div className="text-3xl font-bold text-slate-900 mb-1">{option.credits.toLocaleString()}</div>
-                      <div className="text-sm text-slate-500 mb-2">{t.credits || "Credits"}</div>
-                      <div className="text-2xl font-bold text-[#1e3a8a] mb-6">{option.price}</div>
+                    <div className="mb-4">
+                      <h3 className="text-2xl font-black text-slate-900 mb-1 flex items-center gap-2">
+                        {plan.name}
+                        {plan.highlight && (
+                          <div className="flex items-center justify-center p-1 rounded-lg bg-cyan-50 border border-cyan-100">
+                            <Zap className="h-4 w-4 text-[#06b6d4] fill-[#06b6d4]/20" />
+                          </div>
+                        )}
+                        {plan.key === "ultra" && (
+                          <Sparkles className="h-5 w-5 text-purple-500 fill-purple-500/20" />
+                        )}
+                      </h3>
+                      <p className="text-xs font-bold text-slate-400 leading-relaxed min-h-[32px]">{plan.description}</p>
+                    </div>
+
+                    <div className="mb-4 border-b border-slate-100 pb-4">
+                      {loading && plan.key !== "free" ? (
+                        <div className="h-10 w-24 animate-pulse rounded-xl bg-slate-100" />
+                      ) : (
+                        <>
+                          <div className="flex items-baseline gap-1.5">
+                            <span className="text-4xl font-black tracking-tighter text-slate-900">${price}</span>
+                            <span className="text-sm font-bold text-slate-400">/ {isAnnual ? "yr" : "mo"}</span>
+                          </div>
+                          {isAnnual && yearlyTotal && yearlyTotal > 0 && (
+                            <div className="mt-1 flex items-center gap-2">
+                              <span className="text-[10px] font-black text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 uppercase">
+                                Billed ${yearlyTotal}/year
+                              </span>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+
+                    <div className="space-y-3 mb-8">
+                      {plan.features.map((feature, j) => (
+                        <div key={j} className="flex items-start gap-3">
+                          <div className={cn(
+                            "mt-0.5 h-3.5 w-3.5 rounded-full flex items-center justify-center shrink-0",
+                            plan.highlight ? "bg-cyan-100 text-cyan-600" : "bg-slate-100 text-slate-400"
+                          )}>
+                            <Check className="h-2 w-2 stroke-[4]" />
+                          </div>
+                          <span className="text-[13px] font-bold text-slate-600 leading-tight">{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mt-auto">
                       <button
-                        onClick={() => handleTopup(option.credits, i)}
-                        disabled={topupLoadingId !== null}
+                        onClick={() => plan.key === "free" ? router.push("/sign-up") : handleSubscribe(plan.key)}
+                        disabled={!!checkoutLoadingId || isCurrentPlan}
                         className={cn(
-                          "w-full rounded-full py-2.5 px-6 font-semibold text-sm transition-all hover:scale-105 disabled:opacity-70",
-                          option.popular
-                            ? "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white shadow-lg"
-                            : "border-2 border-[#06b6d4] text-[#1e3a8a] hover:bg-cyan-50"
+                          "w-full py-4 rounded-[1.2rem] text-sm font-black transition-all duration-300 relative overflow-hidden group/btn disabled:opacity-50 disabled:cursor-not-allowed border-2 border-slate-900",
+                          isCurrentPlan 
+                            ? "bg-slate-50 text-slate-400 border border-slate-100" 
+                            : plan.highlight
+                              ? "bg-slate-900 text-white hover:bg-black hover:scale-[1.02] shadow-xl"
+                              : "bg-white text-slate-900 hover:bg-slate-900 hover:text-white"
                         )}
                       >
-                        {topupLoadingId === i ? (
+                        {checkoutLoadingId === plan.key ? (
                           <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+                        ) : isCurrentPlan ? (
+                          t.currentPlan || "Current Plan"
                         ) : (
-                          t.purchase || "Purchase"
+                          t.getStarted || "Get Started"
                         )}
                       </button>
                     </div>
                   </div>
-                ))}
+                );
+              })}
+            </div>
+          ) : (
+            <div className="p-8 pb-20 max-w-7xl mx-auto">
+              <div className="flex flex-col">
+                <div className="text-center mb-10">
+                  <h3 className="text-3xl font-black text-slate-900 mb-2">{t.buyMoreCredits || "Need More Credits?"}</h3>
+                  <p className="text-lg font-medium text-slate-400">{t.oneTimePurchase || "One-time purchase, use anytime"}</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  {[
+                    { credits: 500, index: 0 },
+                    { credits: 1000, index: 1 },
+                    { credits: 2500, index: 2 },
+                  ].map(({ credits, index }) => {
+                    const isPopular = index === 1;
+                    const option = topupOptions.find(o => o.credits === credits);
+                    
+                    return (
+                      <div 
+                        key={index} 
+                        className={cn(
+                          "relative rounded-[2.5rem] p-12 text-center transition-all duration-300 flex flex-col group items-center border-2 border-slate-900",
+                          isPopular
+                            ? "bg-slate-900 text-white shadow-2xl scale-105 z-10"
+                            : "bg-white hover:border-slate-800 hover:shadow-xl"
+                        )}
+                      >
+                        {isPopular && (
+                          <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#06b6d4] text-white text-[11px] font-black tracking-[0.15em] px-6 py-2 rounded-full shadow-lg shadow-cyan-500/20 uppercase whitespace-nowrap">
+                            {t.bestValue || "BEST VALUE"}
+                          </div>
+                        )}
+
+                        <div className={cn(
+                          "w-20 h-20 rounded-[2rem] flex items-center justify-center mb-8 rotate-3 group-hover:rotate-6 transition-transform",
+                          isPopular ? "bg-white/10 ring-1 ring-white/20" : "bg-slate-50 ring-1 ring-slate-100"
+                        )}>
+                          <Zap className={cn("w-10 h-10", isPopular ? "text-cyan-400" : "text-slate-900")} />
+                        </div>
+
+                        <div className="mb-6">
+                          <div className={cn("text-5xl font-black tracking-tighter", isPopular ? "text-white" : "text-slate-900")}>
+                            {credits.toLocaleString()}
+                          </div>
+                          <div className={cn("text-sm font-black tracking-[0.2em] uppercase mt-2", isPopular ? "text-cyan-400" : "text-slate-400")}>
+                            {t.credits || "credits"}
+                          </div>
+                        </div>
+
+                        <div className={cn("text-3xl font-black mb-10", isPopular ? "text-white" : "text-[#06b6d4]")}>
+                          {topupLoading || !option ? (
+                            <div className="h-8 w-24 animate-pulse rounded-lg bg-current/20 mx-auto" />
+                          ) : (
+                            `$${option.priceDisplay}`
+                          )}
+                        </div>
+                        
+                        <button 
+                          onClick={() => option && handleTopup(option.credits, index)} 
+                          disabled={topupLoadingId !== null || topupLoading || !option?.available} 
+                          className={cn(
+                            "w-full py-5 rounded-[1.5rem] text-sm font-black transition-all duration-300 disabled:opacity-50 mt-auto border-2 border-slate-900",
+                            isPopular
+                              ? "bg-[#06b6d4] text-white hover:bg-cyan-400 shadow-[0_10px_20px_-5px_rgba(6,182,212,0.4)] border-transparent"
+                              : "bg-white text-slate-900 hover:bg-slate-900 hover:text-white"
+                          )}
+                        >
+                          {topupLoadingId === index ? (
+                            <Loader2 className="h-5 w-5 animate-spin mx-auto" />
+                          ) : (
+                            isPopular ? t.buyNow || "Buy Now" : t.getCredits || "Get Credits"
+                          )}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}
-
-          {/* FAQ Section */}
-          <div className="mt-32 max-w-3xl mx-auto text-left">
-            <h2 className="text-3xl font-bold text-slate-900 mb-4 text-center">{t.faqTitle}</h2>
-            <p className="text-lg text-slate-600 mb-12 text-center max-w-2xl mx-auto">
-              {t.faqIntro || "Find answers to common questions about PPT Master pricing, credits, and features. Can't find what you're looking for? Contact our support team."}
-            </p>
-            <div className="space-y-3">
-              {[
-                { question: t.faqAIModels, answer: t.faqAIModelsAnswer },
-                { question: t.faqAICredits, answer: t.faqAICreditsAnswer },
-                { question: t.faqMoreCredits, answer: t.faqMoreCreditsAnswer },
-                { question: t.faqCard, answer: t.faqCardAnswer },
-                { question: t.faqPowerPoint, answer: t.faqPowerPointAnswer },
-                { question: t.faqAnnualDiscount, answer: t.faqAnnualDiscountAnswer },
-              ].map((faq, index) => (
-                <div
-                  key={index}
-                  className="rounded-2xl border border-slate-200 hover:border-[#06b6d4] transition-all overflow-hidden"
-                >
-                  <button
-                    onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
-                    className="w-full p-6 text-left flex items-center justify-between gap-4 hover:bg-slate-50 transition-colors"
-                  >
-                    <h4 className="font-bold text-slate-900 text-lg">{faq.question}</h4>
-                    <ChevronDown
-                      className={cn(
-                        "h-5 w-5 text-slate-500 flex-shrink-0 transition-transform duration-200",
-                        openFaqIndex === index && "rotate-180"
-                      )}
-                    />
-                  </button>
-                  <div
-                    className={cn(
-                      "overflow-hidden transition-all duration-200",
-                      openFaqIndex === index ? "max-h-96" : "max-h-0"
-                    )}
-                  >
-                    <p className="px-6 pb-6 text-slate-600 leading-relaxed">{faq.answer}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Trust Section */}
-          <div className="mt-24 text-center">
-            <h3 className="text-2xl font-bold text-slate-900 mb-6">{t.trustedByProfessionals || "Trusted by Professionals Worldwide"}</h3>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto mb-8">
-              {t.trustedByProfessionalsDesc || "Join over 100,000 users who trust PPT Master to create professional presentations. Our AI-powered platform has generated over 1 million presentations across 150+ countries."}
-            </p>
-            <div className="flex flex-wrap justify-center gap-8 text-slate-400">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-[#06b6d4]">4.8/5</div>
-                <div className="text-sm">{t.userRating || "User Rating"}</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-[#06b6d4]">24/7</div>
-                <div className="text-sm">{t.customerSupport || "Customer Support"}</div>
-              </div>
-            </div>
-          </div>
-
         </div>
       </div>
-
-      <LandingFooter currentLang={currentLang} />
+      <LandingFooter currentLang={currentLang as any} />
     </div>
   );
 }

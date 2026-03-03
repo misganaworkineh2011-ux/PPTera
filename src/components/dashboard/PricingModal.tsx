@@ -1,9 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { X, Loader2, AlertCircle, Zap } from "lucide-react";
+import { X, Loader2, AlertCircle, Zap, Check } from "lucide-react";
 import { cn } from "~/lib/utils";
+import { DiscountTopBanner } from "~/components/DiscountTopBanner";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "~/contexts/LanguageContext";
@@ -58,7 +59,7 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
   const { language } = useLanguage();
   const t = dashboardTranslations[language] || dashboardTranslations.en;
 
-  const isPaidUser = currentPlan && currentPlan.toLowerCase() !== 'free';
+  const isPaidUser = currentPlan && currentPlan.toLowerCase() !== "free";
 
   useEffect(() => {
     if (isOpen) {
@@ -153,15 +154,12 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
     }
   };
 
-  if (!isOpen || typeof window === 'undefined') return null;
-
   const getPriceFromProducts = (key: string) => {
     const product = products.find(p => p.key === key);
     if (!product) return null;
     const monthlyPrice = product.monthly?.priceAmount ? product.monthly.priceAmount / 100 : null;
     const yearlyPrice = product.yearly?.priceAmount ? product.yearly.priceAmount / 100 : null;
     if (monthlyPrice === null && yearlyPrice === null) return null;
-    // Show decimal for yearly monthly price (don't round)
     const yearlyMonthly = yearlyPrice ? Number((yearlyPrice / 12).toFixed(2)) : monthlyPrice;
     return {
       monthly: monthlyPrice ?? yearlyMonthly ?? 0,
@@ -185,7 +183,7 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
         t.basicAnimations || "Basic slide animations"
       ], 
       highlight: false, 
-      badge: null as string | null, 
+      badge: null, 
       badgeGradient: false 
     },
     { 
@@ -231,81 +229,102 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
     },
   ];
 
+  if (!isOpen) return null;
+
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-0 md:p-4 bg-black/60 backdrop-blur-sm overflow-hidden">
+      <div className="absolute inset-0" onClick={onClose} />
       
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
-        {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between z-10">
-          <div>
-            <h2 className="text-xl font-bold text-slate-900">{t.upgradeYourPlan || "Upgrade Your Plan"}</h2>
-            <p className="text-sm text-slate-500">
-              {currentPlan ? `${t.current || "Current"}: ${currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)}` : t.choosePlanToUnlock || "Choose a plan to unlock more features"}
+      <div className="relative bg-white md:rounded-[2rem] shadow-[0_32px_128px_-16px_rgba(0,0,0,0.3)] w-full max-w-5xl h-full md:h-auto md:max-h-[92vh] overflow-hidden flex flex-col group animate-in fade-in zoom-in-95 duration-300">
+        <div className="p-0 border-b border-slate-100/50">
+          <DiscountTopBanner />
+        </div>
+        
+        <div className="flex items-center justify-between px-8 py-5">
+          <div className="flex flex-col gap-0.5">
+            <h2 className="text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+              {t.upgradeYourPlan || "Upgrade Your Plan"}
+              {isPaidUser && (
+                <span className="text-[10px] uppercase tracking-widest bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full border border-emerald-100">
+                  {currentPlan}
+                </span>
+              )}
+            </h2>
+            <p className="text-sm font-medium text-slate-400">
+              {t.choosePlanToUnlock || "Choose a plan to unlock more features"}
             </p>
           </div>
-          <button onClick={onClose} className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition">
-            <X className="h-5 w-5" />
+          <button 
+            onClick={onClose} 
+            className="p-2.5 rounded-2xl text-slate-300 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200"
+          >
+            <X className="h-6 w-6" />
           </button>
         </div>
 
-        {/* Tabs */}
-        <div className="px-6 pt-4 flex gap-2">
-          <button 
-            onClick={() => setActiveTab("plans")} 
-            className={cn(
-              "px-4 py-2 rounded-lg text-sm font-semibold transition",
-              activeTab === "plans" 
-                ? "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white" 
-                : "text-slate-600 hover:bg-slate-100 border border-slate-200"
-            )}
-          >
-            {t.subscriptionPlans || "Subscription Plans"}
-          </button>
-          {isPaidUser && (
+        <div className="px-8 flex items-center gap-1.5 border-b border-slate-100/50 pb-0">
+          {[
+            { id: "plans", label: t.subscriptionPlans || "Subscription Plans", icon: null },
+            { id: "topup", label: t.buyCredits || "Buy Credits", icon: <Zap className="h-3.5 w-3.5" /> }
+          ].filter(tab => tab.id === "plans" || isPaidUser).map(tab => (
             <button 
-              onClick={() => setActiveTab("topup")} 
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)} 
               className={cn(
-                "px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2",
-                activeTab === "topup" 
-                  ? "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white" 
-                  : "text-slate-600 hover:bg-slate-100 border border-slate-200"
+                "px-5 py-3 text-sm font-bold transition-all relative",
+                activeTab === tab.id 
+                  ? "text-slate-900" 
+                  : "text-slate-400 hover:text-slate-600"
               )}
             >
-              <Zap className="h-4 w-4" />
-              {t.buyCredits || "Buy Credits"}
+              <div className="flex items-center gap-2">
+                {tab.icon}
+                {tab.label}
+              </div>
+              {activeTab === tab.id && (
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#06b6d4] rounded-t-full" />
+              )}
             </button>
-          )}
+          ))}
         </div>
 
-        {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)] min-h-[420px]">
-          {activeTab === "plans" && (
-            <>
-              {/* Toggle */}
-              <div className="flex items-center justify-center gap-4 mb-6">
-                <span className={cn("text-sm font-semibold", !isAnnual ? "text-slate-900" : "text-slate-500")}>{t.monthly || "Monthly"}</span>
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-0">
+          {activeTab === "plans" ? (
+            <div className="p-8">
+              <div className="flex items-center justify-center gap-5 mb-10">
+                <span className={cn("text-sm font-bold tracking-tight transition-colors", !isAnnual ? "text-slate-900" : "text-slate-400")}>
+                  {t.monthly || "Monthly"}
+                </span>
                 <button 
                   onClick={() => setIsAnnual(!isAnnual)} 
-                  className="relative h-8 w-14 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] p-1 transition-all hover:shadow-lg"
+                  className="relative h-8 w-16 rounded-full bg-slate-100 hover:bg-slate-200 p-1 transition-all flex items-center"
                 >
-                  <div className={cn("h-6 w-6 rounded-full bg-white shadow-md transition-transform", isAnnual ? "translate-x-6" : "translate-x-0")} />
+                  <div className={cn(
+                    "h-6 w-6 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center",
+                    isAnnual ? "translate-x-8 bg-[#06b6d4]" : "translate-x-0 bg-white"
+                  )}>
+                    {isAnnual && <div className="w-1 h-1 bg-white rounded-full" />}
+                  </div>
                 </button>
-                <span className={cn("text-sm font-semibold", isAnnual ? "text-slate-900" : "text-slate-500")}>
-                  {t.yearly || "Yearly"} <span className="text-green-600 font-bold ml-1">-20%</span>
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className={cn("text-sm font-bold tracking-tight transition-colors", isAnnual ? "text-slate-900" : "text-slate-400")}>
+                    {t.yearly || "Yearly"}
+                  </span>
+                  <span className="text-[10px] font-black bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                    -20%
+                  </span>
+                </div>
               </div>
 
               {error && (
-                <div className="flex items-center gap-2 mb-4 px-4 py-3 rounded-lg bg-red-50 text-red-600 text-sm">
+                <div className="flex items-center gap-2 mb-8 px-4 py-3 rounded-2xl bg-red-50 text-red-600 text-sm font-bold border border-red-100 animate-in fade-in slide-in-from-top-2">
                   <AlertCircle className="h-4 w-4" />
-                  <span>{t.couldNotLoadPricing || "Could not load pricing"}</span>
-                  <button onClick={loadProducts} className="ml-auto text-xs underline font-medium">{t.tryAgain || "Try again"}</button>
+                  <span>{error}</span>
+                  <button onClick={loadProducts} className="ml-auto text-xs underline decoration-2 underline-offset-2">{t.tryAgain || "Try again"}</button>
                 </div>
               )}
 
-              {/* Pricing Cards - Matching pricing page style */}
-              <div className="grid md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {plans.map((plan, i) => {
                   const isCurrentPlan = currentPlan?.toLowerCase() === plan.key.toLowerCase();
                   const price = plan.prices ? (isAnnual ? plan.prices.yearly : plan.prices.monthly) : null;
@@ -315,189 +334,186 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
                     <div 
                       key={plan.key} 
                       className={cn(
-                        "relative rounded-lg flex flex-col transition-all mt-4",
+                        "relative rounded-[2rem] p-8 transition-all duration-300 flex flex-col group",
                         plan.highlight 
-                          ? "border-2 border-[#06b6d4] bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-lg" 
-                          : "border border-slate-200 bg-white hover:border-[#06b6d4]",
-                        isCurrentPlan && !plan.highlight && "ring-2 ring-green-500"
+                          ? "ring-2 ring-[#06b6d4] shadow-[0_20px_40px_-15px_rgba(6,182,212,0.15)] bg-gradient-to-b from-white to-cyan-50/20" 
+                          : "border border-slate-100/80 hover:border-slate-200 hover:shadow-xl bg-white"
                       )}
                     >
-                      {/* Badge */}
                       {plan.badge && (
                         <div className={cn(
-                          "absolute -top-2.5 left-1/2 -translate-x-1/2 text-[10px] font-bold px-2 py-0.5 rounded shadow-lg whitespace-nowrap",
+                          "absolute -top-4 left-1/2 -translate-x-1/2 text-[11px] font-black tracking-[0.15em] px-5 py-1.5 rounded-full shadow-lg whitespace-nowrap uppercase",
                           plan.badgeGradient 
-                            ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white" 
-                            : "bg-gradient-to-r from-amber-400 to-orange-500 text-white"
+                            ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white" 
+                            : "bg-[#06b6d4] text-white shadow-cyan-500/20"
                         )}>
-                          {plan.badge.toUpperCase()}
+                          {plan.badge}
                         </div>
                       )}
+                      
                       {isCurrentPlan && (
-                        <div className="absolute -top-2.5 right-3 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">
+                        <div className="absolute top-6 right-8 bg-emerald-50 text-emerald-600 text-[10px] font-black tracking-widest px-2 py-0.5 rounded-full border border-emerald-100 uppercase">
                           {t.current || "CURRENT"}
                         </div>
                       )}
 
-                      <div className="p-4 flex flex-col h-full">
-                        {/* Plan name */}
-                        <div className="flex items-center gap-1.5 mb-1">
-                          <span className={cn("text-sm", plan.highlight ? "text-white" : "text-[#06b6d4]")}>✦</span>
-                          <h3 className="text-lg font-bold">{plan.name}</h3>
-                        </div>
-                        <p className={cn("text-xs mb-3", plan.highlight ? "text-white/70" : "text-slate-500")}>{plan.description}</p>
-
-                        {/* Price */}
-                        <div className="mb-3">
-                          {loading || price === null ? (
-                            <div className={cn("h-6 w-12 animate-pulse rounded", plan.highlight ? "bg-white/20" : "bg-slate-200")} />
-                          ) : (
-                            <>
-                              <div className="flex items-baseline gap-1">
-                                <span className="text-2xl font-bold">${price}</span>
-                                <span className={cn("text-xs", plan.highlight ? "text-white/60" : "text-slate-500")}>/ {(t.monthly || "month").toLowerCase()}</span>
-                              </div>
-                              {isAnnual && yearlyTotal && (
-                                <p className={cn("text-xs", plan.highlight ? "text-white/50" : "text-slate-400")}>
-                                  ${yearlyTotal} {t.billedAnnually || "billed annually"}
-                                </p>
-                              )}
-                            </>
+                      <div className="mb-6">
+                        <h3 className="text-xl font-black text-slate-900 mb-1 flex items-center gap-2">
+                          {plan.name}
+                          {plan.highlight && (
+                            <div className="flex items-center justify-center p-1 rounded-lg bg-cyan-50 border border-cyan-100">
+                              <Zap className="h-3.5 w-3.5 text-[#06b6d4] fill-[#06b6d4]/20" />
+                            </div>
                           )}
-                        </div>
-
-                        {/* Button */}
-                        <div className="mt-auto mb-4">
-                          <button 
-                            onClick={() => handleSubscribe(plan.key)} 
-                            disabled={!!checkoutLoadingId || isCurrentPlan} 
-                            className={cn(
-                              "w-full rounded-md py-2 px-3 font-medium text-sm transition disabled:opacity-50",
-                              plan.highlight 
-                                ? "bg-white text-[#1e3a8a] hover:bg-slate-100" 
-                                : "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90",
-                              isCurrentPlan && "!bg-green-500 !text-white cursor-default"
-                            )}
-                          >
-                            {checkoutLoadingId === plan.key ? (
-                              <Loader2 className="h-4 w-4 animate-spin mx-auto" />
-                            ) : isCurrentPlan ? (
-                              t.currentPlan || "Current Plan"
-                            ) : (
-                              t.getStarted || "Get Started"
-                            )}
-                          </button>
-                        </div>
-
-                        {/* Features */}
-                        <p className={cn("text-xs mb-2 font-medium", plan.highlight ? "text-white/70" : "text-slate-500")}>
-                          {i === 0 
-                            ? (t.everythingInFree || "Everything in Free, and:") 
-                            : i === 1 
-                              ? (t.everythingInPlus || "Everything in Plus, and:") 
-                              : (t.everythingInPro || "Everything in Pro, and:")
-                          }
-                        </p>
-                        <ul className="space-y-1.5 text-xs flex-grow">
-                          {plan.features.map((feature, j) => (
-                            <li key={j} className="flex items-start gap-1.5">
-                              <span className={cn("text-xs", plan.highlight ? "text-white" : "text-[#06b6d4]")}>✓</span>
-                              <span className={plan.highlight ? "text-white/90" : "text-slate-600"}>{feature}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </>
-          )}
-
-          {activeTab === "topup" && (
-            <div className="flex flex-col">
-              <div className="text-center mb-8">
-                <h3 className="text-xl font-bold text-slate-900 mb-2">{t.buyMoreCredits || "Need More Credits?"}</h3>
-                <p className="text-sm text-slate-500">{t.oneTimePurchase || "One-time purchase, use anytime"}</p>
-              </div>
-
-              {/* Credit Cards */}
-              <div className="grid md:grid-cols-3 gap-5 mt-4">
-                {[
-                  { credits: 500, index: 0 },
-                  { credits: 1000, index: 1 },
-                  { credits: 2500, index: 2 },
-                ].map(({ credits, index }) => {
-                  const isPopular = index === 1;
-                  const option = topupOptions.find(o => o.credits === credits);
-                  
-                  return (
-                    <div 
-                      key={index} 
-                      className={cn(
-                        "relative rounded-lg p-6 text-center transition-all flex flex-col",
-                        isPopular
-                          ? "border-2 border-[#06b6d4] bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-lg mt-0"
-                          : "border border-slate-200 bg-white hover:border-[#06b6d4] hover:shadow-md mt-3"
-                      )}
-                    >
-                      {isPopular && (
-                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg">
-                          {t.bestValue || "BEST VALUE"}
-                        </div>
-                      )}
-
-                      {/* Icon */}
-                      <div className={cn(
-                        "w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-4",
-                        isPopular ? "bg-white/20" : "bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4]"
-                      )}>
-                        <Zap className={cn("w-5 h-5", isPopular ? "text-cyan-300" : "text-white")} />
+                        </h3>
+                        <p className="text-xs font-bold text-slate-400 leading-relaxed min-h-[32px]">{plan.description}</p>
                       </div>
 
-                      {/* Credits */}
-                      <div className={cn("text-3xl font-bold", isPopular ? "text-white" : "text-slate-900")}>
-                        {credits.toLocaleString()}
-                      </div>
-                      <div className={cn("text-sm mb-4", isPopular ? "text-white/70" : "text-slate-500")}>
-                        {t.credits || "credits"}
-                      </div>
-
-                      {/* Price - only this part shows skeleton */}
-                      <div className={cn("text-2xl font-bold mb-5", isPopular ? "text-white" : "text-[#1e3a8a]")}>
-                        {topupLoading || !option ? (
-                          <span className={cn("inline-block h-7 w-16 animate-pulse rounded", isPopular ? "bg-white/30" : "bg-slate-200")} />
+                      <div className="mb-8">
+                        {loading || price === null ? (
+                          <div className="h-10 w-24 animate-pulse rounded-xl bg-slate-100" />
                         ) : (
-                          `$${option.priceDisplay}`
+                          <>
+                            <div className="flex items-baseline gap-1.5">
+                              <span className="text-4xl font-black tracking-tighter text-slate-900">${price}</span>
+                              <span className="text-sm font-bold text-slate-400">/ {isAnnual ? "yr" : "mo"}</span>
+                            </div>
+                            {isAnnual && yearlyTotal && (
+                              <div className="mt-1 flex items-center gap-2">
+                                <span className="text-[10px] font-black text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 uppercase">
+                                  Billed ${yearlyTotal}/year
+                                </span>
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
-                      
-                      {/* Button */}
-                      <button 
-                        onClick={() => option && handleTopup(option.credits, index)} 
-                        disabled={topupLoadingId !== null || topupLoading || !option?.available} 
+
+                      <div className="space-y-4 mb-10 flex-1">
+                        {plan.features.map((feature, j) => (
+                          <div key={j} className="flex items-start gap-3">
+                            <div className={cn(
+                              "mt-0.5 h-4 w-4 rounded-full flex items-center justify-center shrink-0",
+                              plan.highlight ? "bg-cyan-100 text-cyan-600" : "bg-slate-100 text-slate-400"
+                            )}>
+                              <Check className="h-2.5 w-2.5 stroke-[4]" />
+                            </div>
+                            <span className="text-[13px] font-bold text-slate-600 leading-tight">{feature}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <button
+                        onClick={() => handleSubscribe(plan.key)}
+                        disabled={!!checkoutLoadingId || isCurrentPlan}
                         className={cn(
-                          "w-full py-2.5 rounded-md text-sm font-semibold transition disabled:opacity-50 mt-auto",
-                          isPopular
-                            ? "bg-white text-[#1e3a8a] hover:bg-slate-100"
-                            : "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:opacity-90"
+                          "w-full py-4 rounded-2xl text-sm font-black transition-all duration-300 relative overflow-hidden group/btn disabled:opacity-50 disabled:cursor-not-allowed",
+                          isCurrentPlan 
+                            ? "bg-slate-50 text-slate-400 border border-slate-100" 
+                            : plan.highlight
+                              ? "bg-slate-900 text-white hover:bg-black hover:scale-[1.02] shadow-xl"
+                              : "bg-white border-2 border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white"
                         )}
                       >
-                        {topupLoadingId === index ? (
+                        {checkoutLoadingId === plan.key ? (
                           <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+                        ) : isCurrentPlan ? (
+                          t.currentPlan || "Current Plan"
                         ) : (
-                          t.purchase || "Purchase"
+                          t.getStarted || "Get Started"
                         )}
                       </button>
                     </div>
                   );
                 })}
               </div>
+            </div>
+          ) : (
+            <div className="p-8">
+              <div className="flex flex-col">
+                <div className="text-center mb-10">
+                  <h3 className="text-2xl font-black text-slate-900 mb-2">{t.buyMoreCredits || "Need More Credits?"}</h3>
+                  <p className="text-sm font-medium text-slate-400">{t.oneTimePurchase || "One-time purchase, use anytime"}</p>
+                </div>
 
-              {/* Info text */}
-              <p className="text-center text-xs text-slate-400 mt-8">
-                Credits never expire and can be used for AI generations
-              </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {[
+                    { credits: 500, index: 0 },
+                    { credits: 1000, index: 1 },
+                    { credits: 2500, index: 2 },
+                  ].map(({ credits, index }) => {
+                    const isPopular = index === 1;
+                    const option = topupOptions.find(o => o.credits === credits);
+                    
+                    return (
+                      <div 
+                        key={index} 
+                        className={cn(
+                          "relative rounded-[2.5rem] p-10 text-center transition-all duration-300 flex flex-col group items-center",
+                          isPopular
+                            ? "bg-slate-900 text-white shadow-2xl scale-105 z-10"
+                            : "bg-white border border-slate-100 hover:border-slate-200 hover:shadow-xl"
+                        )}
+                      >
+                        {isPopular && (
+                          <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#06b6d4] text-white text-[11px] font-black tracking-[0.15em] px-5 py-1.5 rounded-full shadow-lg shadow-cyan-500/20 uppercase whitespace-nowrap">
+                            {t.bestValue || "BEST VALUE"}
+                          </div>
+                        )}
+
+                        <div className={cn(
+                          "w-16 h-16 rounded-3xl flex items-center justify-center mb-8 rotate-3 group-hover:rotate-6 transition-transform",
+                          isPopular ? "bg-white/10 ring-1 ring-white/20" : "bg-slate-50 ring-1 ring-slate-100"
+                        )}>
+                          <Zap className={cn("w-8 h-8", isPopular ? "text-cyan-400" : "text-slate-900")} />
+                        </div>
+
+                        <div className="mb-4">
+                          <div className={cn("text-4xl font-black tracking-tighter", isPopular ? "text-white" : "text-slate-900")}>
+                            {credits.toLocaleString()}
+                          </div>
+                          <div className={cn("text-xs font-black tracking-[0.2em] uppercase mt-1", isPopular ? "text-cyan-400" : "text-slate-400")}>
+                            {t.credits || "credits"}
+                          </div>
+                        </div>
+
+                        <div className={cn("text-3xl font-black mb-10", isPopular ? "text-white" : "text-[#06b6d4]")}>
+                          {topupLoading || !option ? (
+                            <div className="h-8 w-20 animate-pulse rounded-lg bg-current/20 mx-auto" />
+                          ) : (
+                            `$${option.priceDisplay}`
+                          )}
+                        </div>
+                        
+                        <button 
+                          onClick={() => option && handleTopup(option.credits, index)} 
+                          disabled={topupLoadingId !== null || topupLoading || !option?.available} 
+                          className={cn(
+                            "w-full py-4 rounded-2xl text-sm font-black transition-all duration-300 disabled:opacity-50 mt-auto",
+                            isPopular
+                              ? "bg-[#06b6d4] text-white hover:bg-cyan-400 shadow-[0_10px_20px_-5px_rgba(6,182,212,0.4)]"
+                              : "bg-slate-900 text-white hover:scale-[1.02]"
+                          )}
+                        >
+                          {topupLoadingId === index ? (
+                            <Loader2 className="h-5 w-5 animate-spin mx-auto" />
+                          ) : (
+                            t.purchase || "Purchase"
+                          )}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="flex items-center justify-center gap-2 mt-12 mb-4">
+                  <div className="h-px w-8 bg-slate-100" />
+                  <p className="text-[11px] font-black tracking-widest text-slate-300 uppercase">
+                    Credits never expire & apply instantly
+                  </p>
+                  <div className="h-px w-8 bg-slate-100" />
+                </div>
+              </div>
             </div>
           )}
         </div>

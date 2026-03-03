@@ -2,6 +2,7 @@
 
 import { LandingNavbar } from "~/components/LandingNavbar";
 import { LandingFooter } from "~/components/LandingFooter";
+import { DiscountTopBanner } from "~/components/DiscountTopBanner";
 import { getTranslations, type Language } from "~/lib/i18n";
 import {
   HeroSection,
