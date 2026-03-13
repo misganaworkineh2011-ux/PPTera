@@ -198,7 +198,7 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
           >
             {t.yearly || "Yearly"}{" "}
             <span className="text-emerald-600 font-semibold ml-1">
-              {t.savePercent || "Save 20%"}
+              {t.savePercent || "Save 25%"}
             </span>
           </span>
         </div>

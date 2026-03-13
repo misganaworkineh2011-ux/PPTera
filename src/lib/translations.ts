@@ -345,7 +345,7 @@ export const translations = {
     pricingSubtitle: "Start creating PowerPoint presentations for free, upgrade when you love it.",
     monthly: "Monthly",
     yearly: "Yearly",
-    savePercent: "(Save up to 28%)",
+    savePercent: "(Save up to 25%)",
     signUpFree: "Sign up for free",
     getStartedBtn: "Get started",
     mostPopular: "Most Popular",

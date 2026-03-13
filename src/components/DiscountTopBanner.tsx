@@ -26,17 +26,10 @@ export function DiscountTopBanner({ subscriptionPlan }: CyberMondayDealsProps) {
 
   const isLifetime = subscriptionPlan === 'lifetime';
 
-  // Fixed target date: Set to a specific end date/time so all users see the same countdown
-  // This should be 15 hours from when the deal started
-  // Set DEAL_START_TIME to when you launched the deal (fixed date/time)
-  // Format: "YYYY-MM-DDTHH:mm:ssZ" (UTC time)
-  // Example: If deal started at Dec 5, 2025 10:00 AM UTC:
-  const DEAL_START_TIME = new Date("2026-03-02T00:00:00Z").getTime();
-  const TARGET_DATE = DEAL_START_TIME + (6 * 24 * 60 * 60 * 1000); 
+  // Fixed epoch time to calculate continuous 3-day cycles
+  const EPOCH_START_TIME = new Date("2024-01-01T00:00:00Z").getTime();
+  const CYCLE_MS = 3 * 24 * 60 * 60 * 1000;
   
-  // Or use a completely fixed end date/time directly:
-  // const TARGET_DATE = new Date("2025-12-05T01:00:00Z").getTime(); // 15 hours after start
-
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -67,18 +60,15 @@ export function DiscountTopBanner({ subscriptionPlan }: CyberMondayDealsProps) {
 
     const calculateTimeLeft = () => {
       const now = new Date().getTime();
-      const difference = TARGET_DATE - now;
+      const timeSinceEpoch = Math.max(0, now - EPOCH_START_TIME);
+      const difference = CYCLE_MS - (timeSinceEpoch % CYCLE_MS);
 
-      if (difference > 0) {
-        return {
-          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-          minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
-          seconds: Math.floor((difference % (1000 * 60)) / 1000),
-        };
-      } else {
-        return { days: 0, hours: 0, minutes: 0, seconds: 0 };
-      }
+      return {
+        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
+        seconds: Math.floor((difference % (1000 * 60)) / 1000),
+      };
     };
 
     setTimeLeft(calculateTimeLeft());
