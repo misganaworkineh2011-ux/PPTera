@@ -311,7 +311,7 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
                     {t.yearly || "Yearly"}
                   </span>
                   <span className="text-[10px] font-black bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                    -20%
+                    -25%
                   </span>
                 </div>
               </div>
