@@ -79,6 +79,7 @@ export default function ExportTab({ presentationId, theme, onExportStart }: Expo
   const handleExport = async () => {
     setIsExporting(selectedFormat);
     onExportStart?.(selectedFormat);
+    const toastId = toast.loading(`${t.preparingExport || "Exporting presentation..."} This might take a few minutes.`);
 
     try {
       const params = new URLSearchParams();
@@ -86,7 +87,6 @@ export default function ExportTab({ presentationId, theme, onExportStart }: Expo
       params.set("range", "all");
 
       const exportUrl = `/api/presentations/${presentationId}/export?${params.toString()}`;
-      toast.info(`${t.preparingExport || "Preparing export"}...`);
 
       const response = await fetch(exportUrl);
 
@@ -116,10 +116,10 @@ export default function ExportTab({ presentationId, theme, onExportStart }: Expo
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      toast.success(t.exportCompleteMsg || "Export complete!");
+      toast.success(t.exportCompleteMsg || "Export complete!", { id: toastId });
     } catch (error) {
       console.error("Export failed:", error);
-      toast.error(error instanceof Error ? error.message : "Export failed");
+      toast.error(error instanceof Error ? error.message : "Export failed", { id: toastId });
     } finally {
       setIsExporting(null);
     }

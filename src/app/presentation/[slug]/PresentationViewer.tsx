@@ -240,6 +240,7 @@ export default function PresentationViewer({
     console.log("[PresentationViewer] Starting export via fetch:", format);
     setIsExporting(true);
     setExportingFormat(format);
+    const toastId = toast.loading("Exporting presentation... This might take a few minutes.");
 
     try {
       // Build query params
@@ -247,8 +248,6 @@ export default function PresentationViewer({
 
       const exportUrl = `/api/presentations/${presentation.id}/export?${params.toString()}`;
       console.log("[PresentationViewer] Fetching:", exportUrl);
-
-      toast.info("Preparing export...");
 
       // Fetch the file as blob
       const response = await fetch(exportUrl);
@@ -268,11 +267,11 @@ export default function PresentationViewer({
       // Create download link and trigger download
       downloadBlob(blob, filename);
 
-      toast.success("Export complete!");
+      toast.success("Export complete!", { id: toastId });
       setShowExportModal(false);
     } catch (error) {
       console.error("[PresentationViewer] Export failed:", error);
-      toast.error(error instanceof Error ? error.message : "Export failed");
+      toast.error(error instanceof Error ? error.message : "Export failed", { id: toastId });
     } finally {
       setIsExporting(false);
       setExportingFormat(null);
