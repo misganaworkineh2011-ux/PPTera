@@ -331,17 +331,19 @@ export default function BillingPage() {
           <ChevronRight className="h-4 w-4 text-zinc-400 group-hover:text-cyan-500" />
         </Link>
 
-        <Link
-          href="/pricing#topup"
-          className="flex items-center gap-3 p-4 bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:border-blue-300 dark:hover:border-blue-700 transition group"
-        >
-          <Zap className="h-5 w-5 text-blue-500 group-hover:text-blue-600" />
-          <div className="flex-1">
-            <p className="text-sm font-medium text-zinc-900 dark:text-white">{t.buyCredits || "Buy Credits"}</p>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">{t.oneTime || "One-time"}</p>
-          </div>
-          <ChevronRight className="h-4 w-4 text-zinc-400 group-hover:text-blue-500" />
-        </Link>
+        {billing.subscription.plan !== "free" && (
+          <Link
+            href="/pricing#topup"
+            className="flex items-center gap-3 p-4 bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:border-blue-300 dark:hover:border-blue-700 transition group"
+          >
+            <Zap className="h-5 w-5 text-blue-500 group-hover:text-blue-600" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-zinc-900 dark:text-white">{t.buyCredits || "Buy Credits"}</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">{t.oneTime || "One-time"}</p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-zinc-400 group-hover:text-blue-500" />
+          </Link>
+        )}
 
         <Link
           href="/dashboard/activity"

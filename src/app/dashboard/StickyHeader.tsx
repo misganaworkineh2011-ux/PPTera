@@ -44,11 +44,11 @@ export default function StickyHeader({ userId, credits }: StickyHeaderProps) {
         if (sticky) {
           setStickyTitleContent(
             <>
-              <div className="flex h-7 w-7 lg:h-8 lg:w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
+              <div className="flex h-7 w-7 lg:h-8 lg:w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#006482] to-[#007ea3] text-white shadow-md">
                 <FileText size={16} className="lg:hidden" />
                 <FileText size={18} className="hidden lg:block" />
               </div>
-              <h1 className="text-lg lg:text-xl font-bold tracking-tight text-[#1e3a8a] whitespace-nowrap">{t.presentations || "Presentations"}</h1>
+              <h1 className="text-lg lg:text-xl font-bold font-headline tracking-tight text-[#001f2a] whitespace-nowrap">{t.presentations || "Presentations"}</h1>
             </>
           );
         } else {
@@ -84,11 +84,11 @@ export default function StickyHeader({ userId, credits }: StickyHeaderProps) {
       >
         {/* Title Section */}
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
+          <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#006482] to-[#007ea3] text-white shadow-md">
             <FileText size={18} className="sm:hidden" />
             <FileText size={22} className="hidden sm:block" />
           </div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[#1e3a8a]">{t.presentations || "Presentations"}</h1>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold font-headline tracking-tight text-[#001f2a]">{t.presentations || "Presentations"}</h1>
         </div>
 
         {/* Action buttons - right aligned */}
@@ -96,7 +96,7 @@ export default function StickyHeader({ userId, credits }: StickyHeaderProps) {
           <CreateProjectButton userId={userId} credits={credits} />
           <button
             onClick={() => router.push("/createpresentation?mode=docs")}
-            className="flex items-center gap-1.5 md:gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-[#1e3a8a] hover:border-[#1e3a8a]/20 whitespace-nowrap"
+            className="flex items-center gap-1.5 md:gap-2 rounded-lg border border-outline-variant/20 bg-white px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-[#006482] shadow-sm transition hover:bg-[#007ea3]/5 hover:text-[#001f2a] hover:border-[#006482]/20 whitespace-nowrap"
           >
             <Import size={16} className="md:w-[18px] md:h-[18px]" />
             <span className="hidden sm:inline">{t.importBtn || "Import"}</span>

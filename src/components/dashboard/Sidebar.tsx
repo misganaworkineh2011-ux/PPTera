@@ -124,14 +124,14 @@ export default function Sidebar({ isCollapsed, subscriptionPlan, onCloseMobile }
   return (
     <aside
       className={cn(
-        "relative flex h-screen flex-col border-r border-slate-200/60 bg-white dark:bg-zinc-900 dark:border-zinc-800 transition-all duration-300",
+        "relative flex h-screen flex-col border-r-0 bg-[#f0f4f8] dark:bg-zinc-900 transition-all duration-300",
         // On mobile, always show full width; on desktop, respect collapsed state
         "w-72 lg:w-72",
         isCollapsed && "lg:w-20"
       )}
     >
       {/* Sidebar Header */}
-      <div className="flex h-16 lg:h-20 items-center px-4 lg:px-6 border-b border-slate-100 dark:border-zinc-800">
+      <div className="flex h-16 lg:h-20 items-center px-4 lg:px-6">
         {/* Logo - centered when expanded, centered icon when collapsed */}
         <div className={cn(
           "flex items-center justify-center flex-1",
@@ -175,21 +175,22 @@ export default function Sidebar({ isCollapsed, subscriptionPlan, onCloseMobile }
                     : pathname === item.href;
                   
                   const itemClasses = cn(
-                    "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-semibold transition-all",
+                    "group flex items-center gap-3 rounded-lg px-4 py-2.5 text-[14px] font-semibold transition-all scale-95 active:scale-90",
                     isActive
-                      ? "bg-[#e0f2fe] text-[#06b6d4] shadow-sm dark:bg-zinc-800 dark:text-white"
-                      : "text-slate-700 hover:bg-slate-50 hover:text-[#1e3a8a] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white",
+                      ? "bg-[#f1f5f9]/50 text-[#0b97c2] border-r-4 border-[#0b97c2] shadow-sm dark:bg-zinc-800 dark:text-[#0b97c2]"
+                      : "text-slate-500 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white",
                     isCollapsed && "lg:justify-center lg:px-2",
-                    isActive && "cursor-default"
+                    isActive && "cursor-default font-bold"
                   );
 
                   const content = (
                     <>
                       <item.icon
-                        size={17}
+                        size={20}
+                        strokeWidth={isActive ? 2.5 : 1.5}
                         className={cn(
                           "transition-colors flex-shrink-0",
-                          isActive ? "text-[#06b6d4] dark:text-white" : "text-slate-600 group-hover:text-[#1e3a8a] dark:text-zinc-500 dark:group-hover:text-white"
+                          isActive ? "text-[#0b97c2]" : "text-slate-500 group-hover:text-slate-700 dark:text-zinc-500 dark:group-hover:text-white"
                         )}
                       />
                       {/* Show text on mobile always, on desktop only when not collapsed */}

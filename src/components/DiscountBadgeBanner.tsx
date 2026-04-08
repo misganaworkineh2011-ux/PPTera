@@ -84,37 +84,37 @@ export function DiscountBadgeBanner({ subscriptionPlan }: CyberMondayDealsProps)
   return (
     <div className="w-full">
       {/* Premium shining banner with top-left to bottom-right glow */}
-      <div className="relative overflow-hidden bg-slate-950 px-8 py-4 text-white rounded-[2rem] border border-white/10 group shadow-2xl">
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#006482] to-[#014457] px-8 md:px-12 py-10 md:py-12 text-white rounded-[2.5rem] border border-[#006482]/30 group shadow-[0_0_20px_rgba(0,100,130,0.15)]">
         {/* Animated shining sweep from top-left to bottom-right */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute -inset-[100%] bg-gradient-to-tr from-transparent via-white/10 to-transparent rotate-12 animate-[shimmer_4s_infinite] transition-transform duration-1000" />
           
           {/* Decorative glowing orbs */}
-          <div className="absolute top-0 left-0 w-32 h-32 bg-[#06b6d4]/20 blur-[60px] rounded-full -translate-x-1/2 -translate-y-1/2" />
-          <div className="absolute bottom-0 right-0 w-32 h-32 bg-purple-600/20 blur-[60px] rounded-full translate-x-1/2 translate-y-1/2" />
+          <div className="absolute top-0 left-0 w-48 h-48 bg-[#06b6d4]/20 blur-[80px] rounded-full -translate-x-1/2 -translate-y-1/2" />
+          <div className="absolute bottom-0 right-0 w-48 h-48 bg-purple-600/20 blur-[80px] rounded-full translate-x-1/2 translate-y-1/2" />
         </div>
 
-        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 w-full">
+        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-10 w-full">
           {/* Left Side: Premium Typography */}
-          <div className="flex items-center gap-6">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start md:items-center gap-6 md:gap-8 text-center sm:text-left">
             <div className="relative group-hover:scale-110 transition-transform duration-500 shrink-0">
-              <div className="absolute inset-0 bg-yellow-400 blur-md opacity-20 group-hover:opacity-40" />
-              <div className="relative p-3 rounded-[1.2rem] bg-gradient-to-br from-yellow-300 to-yellow-600 shadow-lg shadow-yellow-500/20">
-                <Sparkles className="h-4 w-4 text-slate-900" />
+              <div className="absolute inset-0 bg-[#006482] blur-md opacity-20 group-hover:opacity-40" />
+              <div className="relative p-4 rounded-[1.5rem] bg-white shadow-lg shadow-[#006482]/20">
+                <img src="/logo.png" alt="PPTMaster Logo" className="h-10 w-10 md:h-12 md:w-12 object-contain" />
               </div>
             </div>
             
-            <div className="flex flex-col">
-              <div className="flex items-center gap-4">
-                <h2 className="text-xl sm:text-2xl font-black tracking-tight leading-none bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
-                  MILESTONE CELEBRATION
+            <div className="flex flex-col items-center sm:items-start">
+              <div className="flex flex-col sm:flex-row items-center gap-4">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight leading-none bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+                  100K USER DISCOUNT
                 </h2>
-                <div className="px-3 py-1 rounded-full bg-yellow-400 text-slate-900 text-[10px] font-black tracking-[0.2em] uppercase">
+                <div className="px-4 py-1.5 rounded-full bg-yellow-400 text-slate-900 text-xs font-black tracking-[0.2em] uppercase whitespace-nowrap">
                   ACTIVE
                 </div>
               </div>
-              <p className="text-base text-slate-400 mt-2 font-bold">
-                Enjoy <span className="text-white font-black">25% OFF</span> all premium plans. Discount applied at checkout.
+              <p className="text-lg sm:text-xl md:text-2xl text-slate-300 mt-3 md:mt-4 font-bold">
+                Enjoy <span className="text-white font-black">50% OFF</span> all premium plans. Discount applied at checkout.
               </p>
             </div>
           </div>

@@ -139,7 +139,7 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
   }, [showNotifications]);
 
   return (
-    <header className="md:sticky top-0 z-30 flex h-14 lg:h-20 items-center justify-between bg-[#F8F9FA]/95 dark:bg-zinc-900/95 px-3 sm:px-4 lg:px-8 border-b border-slate-100/50 dark:border-zinc-800 gap-2 lg:gap-4">
+    <header className="md:sticky top-0 z-30 flex h-14 lg:h-20 items-center justify-between bg-[#f0f4f8]/95 backdrop-blur-[12px] dark:bg-zinc-900/95 px-3 sm:px-4 lg:px-8 border-b border-[#bdc8cf]/20 dark:border-zinc-800 gap-2 lg:gap-4">
       {/* Left: Mobile menu button + Title */}
       <div className="flex items-center gap-2 lg:gap-3 shrink-0">
         {/* Mobile menu button */}

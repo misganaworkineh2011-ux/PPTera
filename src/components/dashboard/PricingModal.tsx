@@ -291,29 +291,30 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
         <div className="flex-1 overflow-y-auto custom-scrollbar p-0">
           {activeTab === "plans" ? (
             <div className="p-8">
-              <div className="flex items-center justify-center gap-5 mb-10">
-                <span className={cn("text-sm font-bold tracking-tight transition-colors", !isAnnual ? "text-slate-900" : "text-slate-400")}>
+              {/* Toggle */}
+              <div className="flex items-center justify-center gap-4 mb-10">
+                <span
+                  className={`text-sm font-medium ${!isAnnual ? "text-zinc-900" : "text-zinc-500"}`}
+                >
                   {t.monthly || "Monthly"}
                 </span>
-                <button 
-                  onClick={() => setIsAnnual(!isAnnual)} 
-                  className="relative h-8 w-16 rounded-full bg-slate-100 hover:bg-slate-200 p-1 transition-all flex items-center"
+                <button
+                  onClick={() => setIsAnnual(!isAnnual)}
+                  className="relative h-7 w-12 rounded-full bg-zinc-900 p-0.5 transition-all"
+                  style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}
                 >
-                  <div className={cn(
-                    "h-6 w-6 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center",
-                    isAnnual ? "translate-x-8 bg-[#06b6d4]" : "translate-x-0 bg-white"
-                  )}>
-                    {isAnnual && <div className="w-1 h-1 bg-white rounded-full" />}
-                  </div>
+                  <div
+                    className={`h-6 w-6 rounded-full bg-white shadow transition-transform ${isAnnual ? "translate-x-5" : "translate-x-0"}`}
+                  />
                 </button>
-                <div className="flex items-center gap-2">
-                  <span className={cn("text-sm font-bold tracking-tight transition-colors", isAnnual ? "text-slate-900" : "text-slate-400")}>
-                    {t.yearly || "Yearly"}
+                <span
+                  className={`text-sm font-medium ${isAnnual ? "text-zinc-900" : "text-zinc-500"}`}
+                >
+                  {t.yearly || "Yearly"}{" "}
+                  <span className="text-emerald-600 font-semibold ml-1">
+                    {t.saveUpTo || "(Save 50%)"}
                   </span>
-                  <span className="text-[10px] font-black bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                    -25%
-                  </span>
-                </div>
+                </span>
               </div>
 
               {error && (
