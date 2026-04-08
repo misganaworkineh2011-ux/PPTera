@@ -262,30 +262,31 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
           </button>
         </div>
 
-        <div className="px-8 flex items-center gap-1.5 border-b border-slate-100/50 pb-0">
-          {[
-            { id: "plans", label: t.subscriptionPlans || "Subscription Plans", icon: null },
-            { id: "topup", label: t.buyCredits || "Buy Credits", icon: <Zap className="h-3.5 w-3.5" /> }
-          ].filter(tab => tab.id === "plans" || isPaidUser).map(tab => (
-            <button 
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)} 
-              className={cn(
-                "px-5 py-3 text-sm font-bold transition-all relative",
-                activeTab === tab.id 
-                  ? "text-slate-900" 
-                  : "text-slate-400 hover:text-slate-600"
-              )}
-            >
-              <div className="flex items-center gap-2">
-                {tab.icon}
-                {tab.label}
-              </div>
-              {activeTab === tab.id && (
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#06b6d4] rounded-t-full" />
-              )}
-            </button>
-          ))}
+        <div className="px-8 flex items-center justify-between border-b border-slate-100/50 pb-0">
+          <div className="flex h-full pt-2">
+            {isPaidUser ? (
+              <button 
+                onClick={() => setActiveTab(activeTab === "plans" ? "topup" : "plans")} 
+                className="px-5 py-3 text-sm font-bold transition-all relative text-slate-900 flex items-center gap-2 hover:bg-slate-50 rounded-t-lg"
+              >
+                {activeTab === "plans" ? (
+                  <>
+                    <Zap className="h-4 w-4 text-cyan-600" />
+                    {t.buyCredits || "Buy Credits"}
+                  </>
+                ) : (
+                  "Back to Plans"
+                )}
+                {activeTab === "topup" && (
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#06b6d4] rounded-t-full" />
+                )}
+              </button>
+            ) : (
+               <div className="px-5 py-3 text-sm font-bold text-slate-900 border-b-4 border-[#06b6d4]">
+                 {t.subscriptionPlans || "Subscription Plans"}
+               </div>
+            )}
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar p-0">

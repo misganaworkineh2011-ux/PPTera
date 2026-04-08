@@ -244,14 +244,11 @@ export default function PricingPageClient({ currentLang }: PricingPageClientProp
       <LandingNavbar currentLang={currentLang as any} />
 
       <div className="relative pt-32 pb-12 px-6 overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent)] bg-[size:24px_24px]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_-100px,#1e1e1e0a,transparent)]"></div>
+        {/* Soft, ambient gradient backdrop replacing the square grid */}
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-50 via-zinc-50/50 to-white"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_-100px,rgba(0,100,130,0.08),transparent)]"></div>
 
         <div className="mx-auto max-w-7xl text-center relative z-10">
-          <div className="mb-8 max-w-5xl mx-auto px-4">
-            <DiscountBadgeBanner />
-          </div>
-
           <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 md:text-6xl mb-4">
             {t.pricingTitle || "Simple Pricing"}
           </h1>
@@ -259,53 +256,58 @@ export default function PricingPageClient({ currentLang }: PricingPageClientProp
             {t.pricingSubtitle || "Choose the plan that's right for you"}
           </p>
 
-          <div className="flex items-center justify-center gap-4 mb-8">
-            <span
-              className={`text-sm font-medium ${!isAnnual ? "text-zinc-900" : "text-zinc-500"}`}
-            >
-              {t.monthly || "Monthly"}
-            </span>
-            <button
-              onClick={() => setIsAnnual(!isAnnual)}
-              className="relative h-7 w-12 rounded-full bg-zinc-900 p-0.5 transition-all"
-              style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}
-            >
-              <div
-                className={`h-6 w-6 rounded-full bg-white shadow transition-transform ${isAnnual ? "translate-x-5" : "translate-x-0"}`}
-              />
-            </button>
-            <span
-              className={`text-sm font-medium ${isAnnual ? "text-zinc-900" : "text-zinc-500"}`}
-            >
-              {t.yearly || "Yearly"}{" "}
-              <span className="text-emerald-600 font-semibold ml-1">
-                {t.savePercent || "(Save 50%)"}
-              </span>
-            </span>
+          <div className="mb-10 max-w-5xl mx-auto px-4">
+            <DiscountBadgeBanner />
           </div>
 
-          <div className="px-8 flex items-center justify-center gap-1.5 mb-8">
-            {[
-              { id: "plans", label: t.subscriptionPlans || "Subscription Plans", icon: null },
-              (currentPlan && currentPlan !== "free" && { id: "topup", label: t.buyCredits || "Buy Credits", icon: <Zap className="h-3.5 w-3.5" /> })
-            ].filter(Boolean).map((tab: any) => (
+          <div className="flex items-center justify-center gap-4 mb-4">
+            {activeTab === "plans" ? (
+              <>
+                <span
+                  className={`text-sm font-medium ${!isAnnual ? "text-zinc-900" : "text-zinc-500"}`}
+                >
+                  {t.monthly || "Monthly"}
+                </span>
+                <button
+                  onClick={() => setIsAnnual(!isAnnual)}
+                  className="relative h-7 w-12 rounded-full bg-zinc-900 p-0.5 transition-all"
+                  style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}
+                >
+                  <div
+                    className={`h-6 w-6 rounded-full bg-white shadow transition-transform ${isAnnual ? "translate-x-5" : "translate-x-0"}`}
+                  />
+                </button>
+                <span
+                  className={`text-sm font-medium ${isAnnual ? "text-zinc-900" : "text-zinc-500"}`}
+                >
+                  {t.yearly || "Yearly"}{" "}
+                  <span className="text-emerald-600 font-semibold ml-1">
+                    {t.savePercent || "(Save 50%)"}
+                  </span>
+                </span>
+              </>
+            ) : null}
+          </div>
+
+          {currentPlan && currentPlan !== "free" && (
+            <div className="px-8 flex items-center justify-center gap-2 mb-12">
               <button 
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)} 
-                className={cn(
-                  "px-8 py-4 text-sm font-black transition-all relative rounded-2xl overflow-hidden border-2",
-                  activeTab === tab.id 
-                    ? "bg-slate-900 text-white shadow-xl border-slate-900" 
-                    : "bg-white border-slate-900 text-slate-400 hover:text-slate-900 hover:bg-slate-50"
-                )}
+                onClick={() => setActiveTab(activeTab === "plans" ? "topup" as any : "plans" as any)} 
+                className="px-6 py-3 text-sm font-semibold transition-all relative rounded-full bg-zinc-100 text-zinc-800 hover:bg-zinc-200 shadow-sm border border-zinc-200/50"
               >
-                <div className="flex items-center gap-2 relative z-10 uppercase tracking-widest">
-                  {tab.icon}
-                  {tab.label}
+                <div className="flex items-center gap-2 relative z-10">
+                  {activeTab === "plans" ? (
+                    <>
+                      <Zap className="h-4 w-4 text-cyan-600" />
+                      {t.buyCredits || "Buy Credits"}
+                    </>
+                  ) : (
+                    "Back to Plans"
+                  )}
                 </div>
               </button>
-            ))}
-          </div>
+            </div>
+          )}
 
           {activeTab === "plans" ? (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 px-4 pb-20 max-w-7xl mx-auto items-start">
@@ -317,20 +319,18 @@ export default function PricingPageClient({ currentLang }: PricingPageClientProp
                 return (
                   <div 
                     key={plan.key} 
-                    className={cn(
-                      "relative rounded-[2.5rem] p-8 transition-all duration-300 flex flex-col group text-left h-auto border-2 border-slate-900",
-                      plan.highlight 
-                        ? "shadow-[0_20px_40px_-15px_rgba(6,182,212,0.15)] bg-gradient-to-b from-white to-cyan-50/20" 
-                        : "hover:border-slate-800 hover:shadow-xl bg-white"
-                    )}
+                    className={`relative rounded-[2rem] p-8 flex flex-col h-auto transition-all duration-300 group border-2 border-slate-900 ${
+                      plan.highlight
+                        ? "shadow-[0_20px_40px_-15px_rgba(6,182,212,0.15)] bg-gradient-to-b from-white to-cyan-50/20 text-left"
+                        : "hover:border-slate-800 hover:shadow-xl bg-white text-left"
+                    }`}
                   >
                     {plan.badge && (
-                      <div className={cn(
-                        "absolute -top-4 left-1/2 -translate-x-1/2 text-[11px] font-black tracking-[0.15em] px-5 py-1.5 rounded-full shadow-lg whitespace-nowrap uppercase",
+                      <div className={`absolute -top-4 left-1/2 -translate-x-1/2 text-white text-[11px] font-black tracking-[0.15em] px-5 py-1.5 rounded-full shadow-lg whitespace-nowrap z-10 uppercase ${
                         plan.badgeGradient 
-                          ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white" 
-                          : "bg-[#06b6d4] text-white shadow-cyan-500/20"
-                      )}>
+                          ? "bg-gradient-to-r from-purple-600 to-pink-600 shadow-purple-500/20" 
+                          : "bg-[#06b6d4] shadow-cyan-500/20 shadow-lg"
+                      }`}>
                         {plan.badge}
                       </div>
                     )}
@@ -342,8 +342,10 @@ export default function PricingPageClient({ currentLang }: PricingPageClientProp
                     )}
 
                     <div className="mb-4">
-                      <h3 className="text-2xl font-black text-slate-900 mb-1 flex items-center gap-2">
-                        {plan.name}
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-2xl font-black text-slate-900">
+                          {plan.name}
+                        </h3>
                         {plan.highlight && (
                           <div className="flex items-center justify-center p-1 rounded-lg bg-cyan-50 border border-cyan-100">
                             <Zap className="h-4 w-4 text-[#06b6d4] fill-[#06b6d4]/20" />
@@ -352,7 +354,7 @@ export default function PricingPageClient({ currentLang }: PricingPageClientProp
                         {plan.key === "ultra" && (
                           <Sparkles className="h-5 w-5 text-purple-500 fill-purple-500/20" />
                         )}
-                      </h3>
+                      </div>
                       <p className="text-xs font-bold text-slate-400 leading-relaxed min-h-[32px]">{plan.description}</p>
                     </div>
 
@@ -360,29 +362,17 @@ export default function PricingPageClient({ currentLang }: PricingPageClientProp
                       {loading && plan.key !== "free" ? (
                         <div className="h-10 w-24 animate-pulse rounded-xl bg-slate-100" />
                       ) : (
-                        <>
-                          <div className="flex items-baseline gap-1.5">
-                            <span className="text-4xl font-black tracking-tighter text-slate-900">${price}</span>
-                            <span className="text-sm font-bold text-slate-400">/ {isAnnual ? "yr" : "mo"}</span>
-                          </div>
-                          {isAnnual && yearlyTotal && yearlyTotal > 0 && (
-                            <div className="mt-1 flex items-center gap-2">
-                              <span className="text-[10px] font-black text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 uppercase">
-                                Billed ${yearlyTotal}/year
-                              </span>
-                            </div>
-                          )}
-                        </>
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="text-4xl font-black tracking-tighter text-slate-900">${price}</span>
+                          <span className="text-sm font-bold text-slate-400">/{isAnnual && plan.key !== "free" ? "yr" : plan.key === "free" ? "mo" : "mo"}</span>
+                        </div>
                       )}
                     </div>
 
                     <div className="space-y-3 mb-8">
                       {plan.features.map((feature, j) => (
                         <div key={j} className="flex items-start gap-3">
-                          <div className={cn(
-                            "mt-0.5 h-3.5 w-3.5 rounded-full flex items-center justify-center shrink-0",
-                            plan.highlight ? "bg-cyan-100 text-cyan-600" : "bg-slate-100 text-slate-400"
-                          )}>
+                          <div className={`mt-0.5 h-3.5 w-3.5 rounded-full flex items-center justify-center shrink-0 ${plan.highlight ? "bg-cyan-100 text-cyan-600" : "bg-slate-100 text-slate-400"}`}>
                             <Check className="h-2 w-2 stroke-[4]" />
                           </div>
                           <span className="text-[13px] font-bold text-slate-600 leading-tight">{feature}</span>
@@ -394,14 +384,13 @@ export default function PricingPageClient({ currentLang }: PricingPageClientProp
                       <button
                         onClick={() => plan.key === "free" ? router.push("/sign-up") : handleSubscribe(plan.key)}
                         disabled={!!checkoutLoadingId || isCurrentPlan}
-                        className={cn(
-                          "w-full py-4 rounded-[1.2rem] text-sm font-black transition-all duration-300 relative overflow-hidden group/btn disabled:opacity-50 disabled:cursor-not-allowed border-2 border-slate-900",
+                        className={`w-full py-4 rounded-[1.2rem] text-sm font-black transition-all duration-300 relative overflow-hidden group/btn disabled:opacity-50 disabled:cursor-not-allowed border-2 border-slate-900 block ${
                           isCurrentPlan 
-                            ? "bg-slate-50 text-slate-400 border border-slate-100" 
+                            ? "bg-slate-50 text-slate-400 border-slate-200" 
                             : plan.highlight
                               ? "bg-slate-900 text-white hover:bg-black hover:scale-[1.02] shadow-xl"
                               : "bg-white text-slate-900 hover:bg-slate-900 hover:text-white"
-                        )}
+                        }`}
                       >
                         {checkoutLoadingId === plan.key ? (
                           <Loader2 className="h-4 w-4 animate-spin mx-auto" />
@@ -436,15 +425,14 @@ export default function PricingPageClient({ currentLang }: PricingPageClientProp
                     return (
                       <div 
                         key={index} 
-                        className={cn(
-                          "relative rounded-[2.5rem] p-12 text-center transition-all duration-300 flex flex-col group items-center border-2 border-slate-900",
+                        className={`relative rounded-[2rem] p-12 text-center transition-all duration-300 flex flex-col group items-center border-2 border-slate-900 ${
                           isPopular
                             ? "bg-slate-900 text-white shadow-2xl scale-105 z-10"
-                            : "bg-white hover:border-slate-800 hover:shadow-xl"
-                        )}
+                            : "bg-white hover:border-slate-800 hover:shadow-xl text-slate-900"
+                        }`}
                       >
                         {isPopular && (
-                          <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#06b6d4] text-white text-[11px] font-black tracking-[0.15em] px-6 py-2 rounded-full shadow-lg shadow-cyan-500/20 uppercase whitespace-nowrap">
+                          <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#06b6d4] text-white text-[11px] font-black tracking-[0.15em] px-6 py-2 rounded-full shadow-lg shadow-cyan-500/20 uppercase whitespace-nowrap z-10">
                             {t.bestValue || "BEST VALUE"}
                           </div>
                         )}

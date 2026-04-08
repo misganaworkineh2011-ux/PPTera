@@ -120,8 +120,6 @@ export function DiscountTopBanner({ subscriptionPlan }: CyberMondayDealsProps) {
       <div className="relative overflow-hidden bg-gradient-to-r from-[#006482] to-[#014457] px-8 md:px-12 py-10 md:py-12 text-white rounded-[2.5rem] border border-[#006482]/30 group shadow-[0_0_20px_rgba(0,100,130,0.15)]">
         {/* Animated shining sweep from top-left to bottom-right */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute -inset-[100%] bg-gradient-to-tr from-transparent via-white/10 to-transparent rotate-12 animate-[shimmer_4s_infinite] transition-transform duration-1000" />
-          
           {/* Decorative glowing orbs */}
           <div className="absolute top-0 left-0 w-48 h-48 bg-[#06b6d4]/20 blur-[80px] rounded-full -translate-x-1/2 -translate-y-1/2" />
           <div className="absolute bottom-0 right-0 w-48 h-48 bg-purple-600/20 blur-[80px] rounded-full translate-x-1/2 translate-y-1/2" />
@@ -153,8 +151,8 @@ export function DiscountTopBanner({ subscriptionPlan }: CyberMondayDealsProps) {
           </div>
 
           {/* Right Side: Enhanced Countdown */}
-          <div className="shrink-0 flex items-center gap-6">
-            <div className="flex gap-2">
+          <div className="shrink-0 flex flex-col items-center sm:items-end gap-3">
+            <div className="flex gap-2 sm:gap-3">
               {[
                 { label: "DAYS", value: timeLeft.days },
                 { label: "HOURS", value: timeLeft.hours },
@@ -162,21 +160,21 @@ export function DiscountTopBanner({ subscriptionPlan }: CyberMondayDealsProps) {
                 { label: "SECS", value: timeLeft.seconds },
               ].map((item, i) => (
                 <div key={i} className="flex flex-col items-center">
-                  <div className="w-11 h-11 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 backdrop-blur-md shadow-inner">
-                    <span className="text-lg font-black tabular-nums text-white">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 backdrop-blur-md shadow-inner">
+                    <span className="text-xl sm:text-2xl font-black tabular-nums text-white">
                       {String(item.value).padStart(2, '0')}
                     </span>
                   </div>
-                  <span className="text-[8px] font-black text-slate-500 mt-1.5 tracking-wider">
+                  <span className="text-[10px] font-black text-slate-500 mt-2 tracking-wider">
                     {item.label}
                   </span>
                 </div>
               ))}
             </div>
 
-            <div className="hidden lg:flex flex-col items-end">
-              <div className="flex items-center gap-2 text-yellow-400 text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">
-                <Timer className="h-4 w-4" /> Limited Time
+            <div className="flex flex-col items-center sm:items-end mt-2">
+              <div className="flex items-center gap-2 text-yellow-400 text-xs sm:text-sm font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] animate-pulse">
+                <Timer className="h-4 w-4 sm:h-5 sm:w-5" /> Limited Time
               </div>
             </div>
           </div>
