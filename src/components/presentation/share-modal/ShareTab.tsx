@@ -427,8 +427,11 @@ export default function ShareTab({
           <button
             onClick={handleUpdatePremiumSettings}
             disabled={loading}
-            className="w-full py-2 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 rounded-lg text-xs font-bold transition-all"
-            style={{ color: colors.text }}
+            className="w-full py-2 rounded-lg text-xs font-bold transition-all hover:opacity-80"
+            style={{ 
+              backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)", 
+              color: colors.text 
+            }}
           >
             {loading ? "Updating..." : "Update Protection Settings"}
           </button>

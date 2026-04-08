@@ -323,9 +323,11 @@ export default function AnimationPicker({
             {filteredAnimations.map((animation) => {
               const followsProTier = animation.isPro === true;
               const followsPlusTier = animation.isPremium === true;
-              
+
               let isLocked = false;
-              if (followsProTier) {
+              if (userPlan === "free" && animation.id !== "none") {
+                isLocked = true;
+              } else if (followsProTier) {
                 isLocked = !hasProPlus;
               } else if (followsPlusTier) {
                 isLocked = !hasPlusPlus;
@@ -387,10 +389,18 @@ export default function AnimationPicker({
               </div>
             </div>
             <button
-              onClick={() => onContentAnimationChange?.(!contentAnimation)}
+              onClick={() => {
+                if (userPlan === "free" && onUpgrade) {
+                  onUpgrade();
+                } else {
+                  onContentAnimationChange?.(!contentAnimation);
+                }
+              }}
               className="relative w-12 h-6 rounded-full transition-colors"
               style={{
                 backgroundColor: contentAnimation ? accentColor : "#475569",
+                opacity: userPlan === "free" ? 0.7 : 1,
+                cursor: userPlan === "free" ? "not-allowed" : "pointer"
               }}
             >
               <div
