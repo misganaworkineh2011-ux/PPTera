@@ -163,7 +163,7 @@ async function callGeminiForLayout(prompt: string): Promise<string> {
     throw new Error("GEMINI_API_KEY not configured");
   }
 
-  const apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
+  const apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent";
   
   const response = await fetch(`${apiUrl}?key=${apiKey}`, {
     method: "POST",
@@ -366,4 +366,5 @@ Return ONLY valid JSON matching the specified format.`;
     return null;
   }
 }
+
 

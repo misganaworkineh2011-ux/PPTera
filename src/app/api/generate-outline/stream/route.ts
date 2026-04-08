@@ -1,10 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
-import OpenAI from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { env } from "~/env";
 import { db } from "~/server/db";
 
-const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
 const gemini = env.GEMINI_API_KEY ? new GoogleGenerativeAI(env.GEMINI_API_KEY) : null;
 
 // Define slide limits by plan
@@ -594,7 +592,7 @@ Return ONLY a valid JSON object in this exact structure:
         if (!gemini) throw new Error("Gemini API not configured");
         
         const model = gemini.getGenerativeModel({ 
-          model: "gemini-flash-latest",
+          model: "gemini-2.5-flash-lite",
           generationConfig: {
             temperature: 1,
             maxOutputTokens: 14000,
@@ -861,4 +859,5 @@ Return ONLY a valid JSON object in this exact structure:
     },
   });
 }
+
 

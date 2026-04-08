@@ -169,7 +169,7 @@ async function callGemini(prompt: string, maxItems: number): Promise<string> {
   }
 
   const model = gemini.getGenerativeModel({ 
-    model: "gemini-flash-latest", // Same model as outline generation
+    model: "gemini-2.5-flash-lite", // Same model as outline generation
     generationConfig: {
       temperature: 0.7,
       maxOutputTokens: 8192, // Increased to prevent content cutoff
@@ -198,8 +198,8 @@ async function callLLM(prompt: string, maxItems: number): Promise<string> {
 
   // Fallback to OpenAI
   if (env.OPENAI_API_KEY) {
-    console.log("[transform-outline] Using Gemini API (fallback)...");
-    return await callGemini(prompt, maxItems);
+    console.log("[transform-outline] Using OpenAI API (fallback)...");
+    return await callOpenAI(prompt, maxItems);
   }
 
   throw new Error("No API keys configured (OPENAI_API_KEY or GEMINI_API_KEY)");
@@ -477,3 +477,4 @@ export async function* transformOutlineToPresentationStream(
     yield { slideIndex: i, slide: transformed };
   }
 }
+

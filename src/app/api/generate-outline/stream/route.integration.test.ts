@@ -307,7 +307,7 @@ For each CONTENT slide, include:
 Return ONLY valid JSON.`;
       
       const model = gemini.getGenerativeModel({
-        model: "gemini-flash-latest",
+        model: "gemini-2.5-flash-lite",
         generationConfig: {
           temperature: 0.7,
           maxOutputTokens: 4000,
@@ -361,7 +361,7 @@ Return ONLY valid JSON.`;
 Include: type, title, bulletPoints. Return only JSON.`;
       
       const model = gemini.getGenerativeModel({
-        model: "gemini-flash-latest",
+        model: "gemini-2.5-flash-lite",
         generationConfig: {
           temperature: 0.7,
           maxOutputTokens: 2000,
@@ -538,3 +538,4 @@ Include: type, title, bulletPoints. Return only JSON.`;
     });
   });
 });
+

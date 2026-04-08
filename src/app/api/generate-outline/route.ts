@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { env } from "~/env";
 import { db } from "~/server/db";
 import { getAuthUser } from "~/lib/clerk-server";
 
-const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
 
 // Define slide limits by plan
 const PLAN_SLIDE_LIMITS = {
@@ -394,48 +393,67 @@ Return ONLY a valid JSON object in this exact structure:
 }
 `;
 
-    // 8. Generate outline with OpenAI (with web search enabled for current data)
-    // Use Responses API for web search support (web_search only works with responses API, not chat.completions)
+    // 8. Generate outline with AI (using Gemini as primary)
     const combinedPrompt = `${systemPrompt}\n\n${userPrompt}`;
 
-    // Use Responses API with web search enabled (non-reasoning mode)
-    // Use web_search_preview for basic web search
-    const response = await openai.responses.create({
-      model: "gpt-4o", // Using gpt-4o for web search support
-      tools: [
-        {
-          type: "web_search_preview", // Enable basic web search (non-reasoning mode)
-        },
-      ],
-      input: combinedPrompt,
-      temperature: 0.7,
-      max_output_tokens: 4000,
-    });
-
-    let responseContent = response.output_text || "";
-
-    // If web search was used, the response should include current data
-    // Now convert to JSON format if needed
-    if (!responseContent || !responseContent.trim().startsWith("{")) {
-      // Use chat.completions for JSON formatting (since responses API doesn't support response_format)
-      const jsonCompletion = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          {
-            role: "system",
-            content: "You are a JSON formatter. Convert the provided content into the exact JSON format specified.",
+    let responseContent = "";
+    if (env.GEMINI_API_KEY) {
+      try {
+        console.log("[generate-outline] Using Gemini API...");
+        const gemini = new GoogleGenerativeAI(env.GEMINI_API_KEY);
+        const model = gemini.getGenerativeModel({
+          model: "gemini-2.5-flash-lite",
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 8192,
+            responseMimeType: "application/json",
           },
+        });
+        
+        const result = await model.generateContent(combinedPrompt);
+        const response = await result.response;
+        responseContent = response.text()?.trim() || "";
+      } catch (geminiError) {
+        console.warn("[generate-outline] Gemini failed, falling back to OpenAI:", geminiError);
+      }
+    }
+    
+    if (!responseContent && env.OPENAI_API_KEY) {
+      // Fallback to OpenAI Responses API with web search enabled
+      const response = await openai.responses.create({
+        model: "gpt-4o",
+        tools: [
           {
-            role: "user",
-            content: `Convert the following outline into the exact JSON format. Include all current data and statistics from the web search with proper citations in format 'Statistic (Source Name, Year)'. Return ONLY a valid JSON object with structure: { slides: [...], metadata: {...} }\n\nContent to convert:\n${responseContent}`,
+            type: "web_search_preview",
           },
         ],
-        response_format: { type: "json_object" },
+        input: combinedPrompt,
         temperature: 0.7,
-        max_tokens: 4000,
+        max_output_tokens: 4000,
       });
 
-      responseContent = jsonCompletion.choices[0]?.message?.content || "";
+      responseContent = response.output_text || "";
+
+      if (!responseContent || !responseContent.trim().startsWith("{")) {
+        const jsonCompletion = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [
+            {
+              role: "system",
+              content: "You are a JSON formatter. Convert the provided content into the exact JSON format specified.",
+            },
+            {
+              role: "user",
+              content: `Convert the following outline into the exact JSON format. Include all current data and statistics from the web search with proper citations in format 'Statistic (Source Name, Year)'. Return ONLY a valid JSON object with structure: { slides: [...], metadata: {...} }\n\nContent to convert:\n${responseContent}`,
+            },
+          ],
+          response_format: { type: "json_object" },
+          temperature: 0.7,
+          max_tokens: 4000,
+        });
+
+        responseContent = jsonCompletion.choices[0]?.message?.content || "";
+      }
     }
     
     if (!responseContent || !responseContent.trim()) {
@@ -496,4 +514,5 @@ Return ONLY a valid JSON object in this exact structure:
     );
   }
 }
+
 

@@ -1,13 +1,11 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { db } from "~/server/db";
 import { env } from "~/env";
 import { searchPexelsPhotos } from "~/lib/pexels";
 import { type LayoutType, slideLayouts } from "~/lib/slide-layouts";
 
-const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
 const gemini = env.GEMINI_API_KEY ? new GoogleGenerativeAI(env.GEMINI_API_KEY) : null;
 
 // Helper to clean and parse JSON from AI responses (handles markdown fences)
@@ -178,7 +176,7 @@ ${currentContent}`;
       try {
         console.log("[edit-slide] Using Gemini API...");
         const model = gemini.getGenerativeModel({ 
-          model: "gemini-flash-latest",
+          model: "gemini-2.5-flash-lite",
           generationConfig: {
             temperature: 0.7,
             maxOutputTokens: 2000,
@@ -193,37 +191,13 @@ ${currentContent}`;
       } catch (geminiError) {
         console.warn("[edit-slide] Gemini failed, falling back to OpenAI:", geminiError);
         // Fallback to OpenAI
-        const completion = await openai.chat.completions.create({
-          model: "gpt-4o-mini",
-          messages: [
-            { role: "system", content: systemPrompt },
-            {
-              role: "user",
-              content: `User's edit request: "${prompt}"\n\nEdit the slide according to this request. Return the complete updated slide as JSON.`,
-            },
-          ],
-          response_format: { type: "json_object" },
-          max_tokens: 2000,
-          temperature: 0.7,
-        });
-        responseText = completion.choices[0]?.message?.content?.trim() || "{}";
+        throw new Error("OpenAI fallback disabled");
+        
       }
     } else {
       // No Gemini, use OpenAI
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: systemPrompt },
-          {
-            role: "user",
-            content: `User's edit request: "${prompt}"\n\nEdit the slide according to this request. Return the complete updated slide as JSON.`,
-          },
-        ],
-        response_format: { type: "json_object" },
-        max_tokens: 2000,
-        temperature: 0.7,
-      });
-      responseText = completion.choices[0]?.message?.content?.trim() || "{}";
+      throw new Error("OpenAI fallback disabled");
+      
     }
     
     let editedSlide: SlideContent;
@@ -319,3 +293,4 @@ ${currentContent}`;
     );
   }
 }
+

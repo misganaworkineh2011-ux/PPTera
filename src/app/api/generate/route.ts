@@ -1,13 +1,13 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import PptxGenJS from "pptxgenjs";
 import { db } from "~/server/db";
 import { env } from "~/env";
 import { calculateSlideCredits, CREDIT_COSTS } from "~/lib/credits";
 import { generateSlug } from "~/lib/utils";
 
-const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
+const gemini = env.GEMINI_API_KEY ? new GoogleGenerativeAI(env.GEMINI_API_KEY) : null;
 
 export async function POST(req: Request) {
   try {
@@ -42,26 +42,34 @@ export async function POST(req: Request) {
       );
     }
 
-    // Generate content with OpenAI
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are a presentation expert. Generate structured slide content in JSON format with a 'slides' array.",
-        },
-        {
-          role: "user",
-          content: `Create ${slides} slides about "${topic}". Return a JSON object with a "slides" array. Each slide should have: title (string), content (array of 3-5 bullet points as strings). First slide should be a title slide with the topic name and a brief subtitle.`,
-        },
-      ],
-      response_format: { type: "json_object" },
-    });
+    // Generate content with AI
+    let contentStr: string;
+    
+    if (gemini) {
+      try {
+        const model = gemini.getGenerativeModel({
+          model: "gemini-2.5-flash-lite",
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 2000,
+            responseMimeType: "application/json",
+          },
+        });
+        
+        const result = await model.generateContent(`Create ${slides} slides about "${topic}". Return a JSON object with a "slides" array. Each slide should have: title (string), content (array of 3-5 bullet points as strings). First slide should be a title slide with the topic name and a brief subtitle. Do NOT wrap in markdown fences. Return ONLY JSON.`);
+        const response = await result.response;
+        contentStr = response.text()?.trim() || '{"slides":[]}';
+      } catch(geminiError) {
+        console.warn("[generate] Gemini failed, falling back to OpenAI", geminiError);
+        throw new Error("OpenAI fallback disabled");
+        contentStr = completion.choices[0]?.message?.content || '{"slides":[]}';
+      }
+    } else {
+      throw new Error("OpenAI fallback disabled");
+      contentStr = completion.choices[0]?.message?.content || '{"slides":[]}';
+    }
 
-    const content = JSON.parse(
-      completion.choices[0]?.message?.content || '{"slides":[]}'
-    );
+    const content = JSON.parse(contentStr);
     const slideData = content.slides || [];
 
     // Create PowerPoint
@@ -168,3 +176,4 @@ export async function POST(req: Request) {
     );
   }
 }
+

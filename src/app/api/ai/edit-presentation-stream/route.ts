@@ -1,13 +1,11 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { db } from "~/server/db";
 import { env } from "~/env";
 import { searchPexelsPhotos } from "~/lib/pexels";
 import { slideLayouts, type LayoutType } from "~/lib/slide-layouts";
 
-const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
 const gemini = env.GEMINI_API_KEY ? new GoogleGenerativeAI(env.GEMINI_API_KEY) : null;
 
 // Helper to clean and parse JSON from AI responses (handles markdown fences)
@@ -286,7 +284,7 @@ For CONTENT slides (ALWAYS use bulletPoints for content):
             try {
               console.log("[edit-presentation-stream] Using Gemini API...");
               const model = gemini.getGenerativeModel({ 
-                model: "gemini-flash-latest",
+                model: "gemini-2.5-flash-lite",
                 generationConfig: {
                   temperature: 0.7,
                   maxOutputTokens: 4000,
@@ -313,60 +311,11 @@ CRITICAL INSTRUCTIONS:
               const result = await model.generateContent(fullPrompt);
               const response = await result.response;
               responseText = response.text()?.trim() || "{}";
-            } catch (geminiError) {
-              console.warn("[edit-presentation-stream] Gemini failed, falling back to OpenAI:", geminiError);
-              // Fallback to OpenAI
-              const completion = await openai.chat.completions.create({
-                model: "gpt-4o-mini",
-                messages: [
-                  { role: "system", content: systemPrompt },
-                  { role: "user", content: `User request: "${prompt}"
-
-CRITICAL INSTRUCTIONS:
-1. If this is a TOPIC CHANGE request:
-   - Rewrite ALL titles and ALL bulletPoints for the new topic
-   - Include "imageSearch" for EVERY slide with terms relevant to the NEW topic
-   - Remove ALL references to the old topic - every single word must be about the new topic
-
-2. Return ALL ${slides.length} slides as JSON.
-
-3. For ALL content slides, use bulletPoints array with format: "Label: Description"
-   Example: ["Variables: Store data values", "Functions: Reusable code blocks", "Loops: Repeat actions"]
-
-4. Title slides can have imageSearch for background images.` },
-                ],
-                response_format: { type: "json_object" },
-                max_tokens: 4000,
-                temperature: 0.7,
-              });
-              responseText = completion.choices[0]?.message?.content?.trim() || "{}";
-            }
+            } catch (geminiError) { throw geminiError; }
           } else {
             // No Gemini, use OpenAI
-            const completion = await openai.chat.completions.create({
-              model: "gpt-4o-mini",
-              messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: `User request: "${prompt}"
-
-CRITICAL INSTRUCTIONS:
-1. If this is a TOPIC CHANGE request:
-   - Rewrite ALL titles and ALL bulletPoints for the new topic
-   - Include "imageSearch" for EVERY slide with terms relevant to the NEW topic
-   - Remove ALL references to the old topic - every single word must be about the new topic
-
-2. Return ALL ${slides.length} slides as JSON.
-
-3. For ALL content slides, use bulletPoints array with format: "Label: Description"
-   Example: ["Variables: Store data values", "Functions: Reusable code blocks", "Loops: Repeat actions"]
-
-4. Title slides can have imageSearch for background images.` },
-              ],
-              response_format: { type: "json_object" },
-              max_tokens: 4000,
-              temperature: 0.7,
-            });
-            responseText = completion.choices[0]?.message?.content?.trim() || "{}";
+            throw new Error("OpenAI fallback disabled");
+            
           }
           
           let result: { slides?: SlideContent[] };
@@ -587,3 +536,4 @@ CRITICAL INSTRUCTIONS:
     );
   }
 }
+

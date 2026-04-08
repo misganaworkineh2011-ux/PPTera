@@ -1,6 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { db } from "~/server/db";
 import { env } from "~/env";
@@ -8,7 +7,6 @@ import { searchPexelsPhotos } from "~/lib/pexels";
 import { type LayoutType, slideLayouts } from "~/lib/slide-layouts";
 import { CHART_TEMPLATES, type ChartType, type ChartDataPoint } from "~/lib/charts/types";
 
-const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
 const gemini = env.GEMINI_API_KEY ? new GoogleGenerativeAI(env.GEMINI_API_KEY) : null;
 
 // Helper to clean and parse JSON from AI responses (handles markdown fences)
@@ -304,7 +302,7 @@ Use an IMAGE instead when:
       try {
         console.log("[generate-slide] Using Gemini API...");
         const model = gemini.getGenerativeModel({ 
-          model: "gemini-flash-latest",
+          model: "gemini-2.5-flash-lite",
           generationConfig: {
             temperature: 0.7,
             maxOutputTokens: 2000,
@@ -319,31 +317,13 @@ Use an IMAGE instead when:
       } catch (geminiError) {
         console.warn("[generate-slide] Gemini failed, falling back to OpenAI:", geminiError);
         // Fallback to OpenAI
-        const completion = await openai.chat.completions.create({
-          model: "gpt-4o-mini",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: `Create a slide: "${prompt}"` },
-          ],
-          response_format: { type: "json_object" },
-          max_tokens: 2000,
-          temperature: 0.7,
-        });
-        responseText = completion.choices[0]?.message?.content?.trim() || "{}";
+        throw new Error("OpenAI fallback disabled");
+        
       }
     } else {
       // No Gemini, use OpenAI
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: `Create a slide: "${prompt}"` },
-        ],
-        response_format: { type: "json_object" },
-        max_tokens: 2000,
-        temperature: 0.7,
-      });
-      responseText = completion.choices[0]?.message?.content?.trim() || "{}";
+      throw new Error("OpenAI fallback disabled");
+      
     }
     
     let generatedSlide: GeneratedSlide;
@@ -463,3 +443,4 @@ Use an IMAGE instead when:
     );
   }
 }
+

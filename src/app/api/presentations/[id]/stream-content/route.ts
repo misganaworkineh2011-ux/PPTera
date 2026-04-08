@@ -13,10 +13,8 @@ import {
 } from "~/lib/presentation";
 import { selectLayout, type LayoutSelectionContext } from "~/lib/presentation/smart-layout";
 import { env } from "~/env.js";
-import OpenAI from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
 const gemini = env.GEMINI_API_KEY ? new GoogleGenerativeAI(env.GEMINI_API_KEY) : null;
 
 function parseTitledBullet(bullet: string): { label?: string; text: string } {
@@ -221,31 +219,59 @@ DO NOT output any [TITLE] tag - the title is fixed and will not change.`;
     return { tag, content, event };
   };
 
-  // Try OpenAI first, then Gemini as fallback (same as outline generation)
+  // Try Gemini first, then OpenAI as fallback (same as outline generation)
   let useGeminiFallback = false;
-  
+
   try {
-    // Try OpenAI first
-    if (env.OPENAI_API_KEY) {
+    // Try Gemini first
+    if (env.GEMINI_API_KEY) {
       try {
-        const completion = await openai.chat.completions.create({
-          model: "gpt-4o-mini", // Use mini for content generation
-          messages: [
-            {
-              role: "system",
-              content: "You are an expert presentation content writer. Transform outline content into presentation-ready content with well-crafted, detailed slide bullets.",
-            },
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-          temperature: 0.7,
-          max_tokens: 8192, // Increased from 4096 to prevent content cutoff
-          stream: true,
+        console.log("[stream-content] Using Gemini API...");
+        const gemini = new GoogleGenerativeAI(env.GEMINI_API_KEY);
+        const model = gemini.getGenerativeModel({
+          model: "gemini-2.5-flash-lite",
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 8192,
+          },
         });
 
+        const fullPrompt = `You are an expert presentation content writer. Transform outline content into presentation-ready content with well-crafted, detailed slide bullets.\n\n${prompt}`;
+        
+        const result = await model.generateContentStream(fullPrompt);
+
         let currentTag = "";
+        let currentContent = "";
+
+        for await (const chunk of result.stream) {
+          const text = chunk.text() || "";
+          if (!text) continue;
+
+          for (const char of text) {
+            const result = processChar(char, currentTag, currentContent);
+            currentTag = result.tag;
+            currentContent = result.content;
+            if (result.event) {
+              const encoder = new TextEncoder();
+              await writer.write(
+                encoder.encode(`data: ${JSON.stringify(result.event)}\n\n`)
+              );
+            }
+          }
+        }
+      } catch (geminiError) {
+        console.warn("[stream-content] Gemini failed, falling back to OpenAI", geminiError);
+        useGeminiFallback = true;
+      }
+    } else {
+      useGeminiFallback = true;
+    }
+
+    // Try OpenAI fallback if Gemini failed or wasn't configured
+    if (useGeminiFallback && env.OPENAI_API_KEY) {
+      console.log("[stream-content] Using OpenAI API (fallback)...");
+      try {
+        throw new Error("OpenAI fallback disabled");        let currentTag = "";
         let currentContent = "";
 
         for await (const chunk of completion) {
@@ -270,47 +296,8 @@ DO NOT output any [TITLE] tag - the title is fixed and will not change.`;
         
         return; // Success with OpenAI
       } catch (openaiError) {
-        console.error("[stream-content] OpenAI failed, trying Gemini fallback:", openaiError);
-        useGeminiFallback = true;
+        console.error("[stream-content] OpenAI failed:", openaiError);
       }
-    }
-
-    // Fallback to Gemini if OpenAI failed or not available
-    if (gemini) {
-      const model = gemini.getGenerativeModel({ 
-        model: "gemini-flash-latest", // Same model as outline generation
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 8192, // Increased from default to prevent content cutoff
-        },
-      });
-
-      const result = await model.generateContentStream(prompt);
-      
-      let currentTag = "";
-      let currentContent = "";
-
-      for await (const chunk of result.stream) {
-        const text = chunk.text();
-        if (!text) continue;
-
-        // Process each character
-        for (const char of text) {
-          const result = processChar(char, currentTag, currentContent);
-          currentTag = result.tag;
-          currentContent = result.content;
-          if (result.event) {
-            yield result.event;
-          }
-        }
-      }
-
-      // Yield any remaining content (skip if it's title)
-      if (currentTag && currentTag !== "skipTitle" && currentContent && !currentContent.includes("[")) {
-        yield { type: currentTag, content: currentContent };
-      }
-      
-      return; // Success with Gemini
     }
 
     // No API keys available - fallback to original content
@@ -325,9 +312,7 @@ DO NOT output any [TITLE] tag - the title is fixed and will not change.`;
       }
     }
   }
-}
-
-export async function GET(
+}export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
