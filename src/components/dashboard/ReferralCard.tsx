@@ -173,14 +173,14 @@ export function ReferralCard() {
           <div className="flex items-center justify-center gap-1 text-purple-600 mb-1">
             <Users className="w-4 h-4" />
           </div>
-          <p className="text-xl font-bold text-zinc-900">{data.stats.completedReferrals}</p>
+          <p className="text-xl font-bold text-zinc-900">{data?.stats?.completedReferrals || 0}</p>
           <p className="text-xs text-zinc-500">{t.signups || "Signups"}</p>
         </div>
         <div className="text-center p-3 bg-white/60 rounded-lg">
           <div className="flex items-center justify-center gap-1 text-pink-600 mb-1">
             <Coins className="w-4 h-4" />
           </div>
-          <p className="text-xl font-bold text-zinc-900">{data.stats.totalCreditsEarned}</p>
+          <p className="text-xl font-bold text-zinc-900">{data?.stats?.totalCreditsEarned || 0}</p>
           <p className="text-xs text-zinc-500">{t.creditsEarned || "Credits Earned"}</p>
         </div>
       </div>
