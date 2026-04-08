@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+                  "surface-variant": "#dfe3e7",
+                  "primary-fixed": "#bfe9ff",
+                  "on-secondary-fixed-variant": "#264b5b",
+                  "surface-container-low": "#f0f4f8",
+                  "secondary": "#3f6374",
+                  "on-tertiary-fixed": "#2c1700",
+                  "surface-container-highest": "#dfe3e7",
+                  "surface-container-lowest": "#ffffff",
+                  "on-secondary-container": "#446778",
+                  "secondary-container": "#c0e5f9",
+                  "surface-tint": "#006685",
+                  "tertiary": "#855000",
+                  "secondary-fixed-dim": "#a7ccdf",
+                  "on-primary-container": "#fbfdff",
+                  "primary-fixed-dim": "#6bd2ff",
+                  "on-tertiary-container": "#fffbff",
+                  "on-surface": "#171c1f",
+                  "on-secondary-fixed": "#001f2a",
+                  "tertiary-fixed": "#ffdcbb",
+                  "inverse-surface": "#2c3134",
+                  "on-primary": "#ffffff",
+                  "on-secondary": "#ffffff",
+                  "on-background": "#171c1f",
+                  "surface-dim": "#d6dade",
+                  "outline": "#6e797f",
+                  "error": "#ba1a1a",
+                  "on-surface-variant": "#3e484e",
+                  "tertiary-container": "#a76500",
+                  "on-primary-fixed": "#001f2a",
+                  "tertiary-fixed-dim": "#ffb869",
+                  "on-tertiary": "#ffffff",
+                  "primary": "#006482",
+                  "outline-variant": "#bdc8cf",
+                  "on-primary-fixed-variant": "#004d65",
+                  "background": "#f6fafd",
+                  "error-container": "#ffdad6",
+                  "surface": "#f6fafd",
+                  "inverse-on-surface": "#edf1f5",
+                  "on-tertiary-fixed-variant": "#683d00",
+                  "surface-container-high": "#e4e9ec",
+                  "surface-bright": "#f6fafd",
+                  "inverse-primary": "#6bd2ff",
+                  "on-error-container": "#93000a",
+                  "on-error": "#ffffff",
+                  "secondary-fixed": "#c3e8fc",
+                  "surface-container": "#eaeef2",
+                  "primary-container": "#007ea3"
+          },
+          "borderRadius": {
+                  "DEFAULT": "0.125rem",
+                  "lg": "0.25rem",
+                  "xl": "0.5rem",
+                  "full": "0.75rem"
+          },
+          "fontFamily": {
+                  "headline": ["Manrope"],
+                  "body": ["Inter"],
+                  "label": ["Inter"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+      font-size: 20px;
+    }
+    .active-icon { font-variation-settings: 'FILL' 1; }
+    .glass-effect { backdrop-filter: blur(12px); }
+    .sidebar-active {
+        color: #0b97c2 !important;
+        font-weight: 700;
+        border-right: 4px solid #0b97c2;
+        background-color: rgba(241, 245, 249, 0.5);
+    }
+  </style>
+</head>
+<body class="bg-surface font-body text-on-surface min-h-screen">
+<aside class="fixed left-0 top-0 h-full w-64 flex flex-col bg-slate-50 border-r-0 z-50">
+<div class="text-xl font-bold text-slate-900 px-6 py-8 font-headline">
+      Lucid Workspace
+    </div>
+<nav class="flex-1 overflow-y-auto px-2 space-y-1">
+<div class="px-4 py-2 text-[10px] font-bold text-slate-400 tracking-widest">DASHBOARD</div>
+<a class="sidebar-active flex items-center px-4 py-2.5 rounded-lg transition-all scale-95 active:scale-90" href="#">
+<span class="material-symbols-outlined mr-3 active-icon">tactic</span>
+<span class="text-sm">Presentations</span>
+</a>
+<div class="px-4 py-2 mt-4 text-[10px] font-bold text-slate-400 tracking-widest uppercase">Assets</div>
+<a class="text-slate-500 hover:bg-slate-100 flex items-center px-4 py-2.5 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined mr-3">image</span>
+<span class="text-sm">Images</span>
+</a>
+<a class="text-slate-500 hover:bg-slate-100 flex items-center px-4 py-2.5 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined mr-3">bar_chart</span>
+<span class="text-sm">Charts</span>
+</a>
+<div class="px-4 py-2 mt-4 text-[10px] font-bold text-slate-400 tracking-widest uppercase">Design</div>
+<a class="text-slate-500 hover:bg-slate-100 flex items-center px-4 py-2.5 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined mr-3">format_paint</span>
+<span class="text-sm">Themes</span>
+</a>
+<div class="px-4 py-2 mt-4 text-[10px] font-bold text-slate-400 tracking-widest uppercase">Workspace</div>
+<a class="text-slate-500 hover:bg-slate-100 flex items-center px-4 py-2.5 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined mr-3">group</span>
+<span class="text-sm">Collaboration</span>
+</a>
+<a class="text-slate-500 hover:bg-slate-100 flex items-center px-4 py-2.5 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined mr-3">history</span>
+<span class="text-sm">Activity</span>
+</a>
+<a class="text-slate-500 hover:bg-slate-100 flex items-center px-4 py-2.5 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined mr-3">analytics</span>
+<span class="text-sm">Analytics</span>
+</a>
+<a class="text-slate-500 hover:bg-slate-100 flex items-center px-4 py-2.5 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined mr-3">payments</span>
+<span class="text-sm">Billing</span>
+</a>
+<a class="text-slate-500 hover:bg-slate-100 flex items-center px-4 py-2.5 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined mr-3">settings</span>
+<span class="text-sm">Settings</span>
+</a>
+</nav>
+<div class="p-4 mt-auto">
+<div class="bg-slate-100/50 p-4 rounded-xl border border-outline-variant/10">
+<p class="text-xs font-semibold text-slate-900 mb-1">Professional Plan</p>
+<p class="text-[10px] text-slate-500 mb-3">Get more features</p>
+<button class="w-full py-2 bg-white text-[#0b97c2] border border-[#0b97c2]/20 rounded-lg text-xs font-bold hover:bg-[#0b97c2]/5 transition-colors">
+          Upgrade Plan
+        </button>
+</div>
+</div>
+</aside>
+<header class="fixed top-0 right-0 left-64 h-16 flex items-center justify-between px-8 z-40 bg-white/80 backdrop-blur-md shadow-sm border-b border-slate-100">
+<div class="flex items-center flex-1 max-w-xl">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-[#0b97c2]/20" placeholder="Search..." type="text"/>
+</div>
+</div>
+<div class="flex items-center space-x-4">
+<div class="flex items-center bg-secondary-container/30 px-3 py-1.5 rounded-full mr-2">
+<span class="material-symbols-outlined text-[#0b97c2] text-sm mr-1.5" style="font-variation-settings: 'FILL' 1;">generating_tokens</span>
+<span class="text-[11px] font-bold text-[#0b97c2]">7254 Credits</span>
+</div>
+<button class="px-4 py-2 bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-200 transition-all">
+        Import
+      </button>
+<button class="px-4 py-2 bg-gradient-to-br from-[#006482] to-[#007ea3] text-white text-xs font-semibold rounded-lg hover:opacity-90 transition-all">
+        Create new AI
+      </button>
+<div class="flex items-center space-x-1 pl-2 border-l border-slate-100 ml-2">
+<button class="p-2 text-slate-500 hover:text-[#0b97c2] transition-colors"><span class="material-symbols-outlined">notifications</span></button>
+<button class="p-2 text-slate-500 hover:text-[#0b97c2] transition-colors"><span class="material-symbols-outlined">help</span></button>
+<div class="w-8 h-8 rounded-full overflow-hidden bg-slate-200 ml-2">
+<img class="w-full h-full object-cover" data-alt="close-up portrait of a professional male designer in his early 30s with a clean minimalist background and soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB56HmoLDFVDPkAWLJ60J-4d9wuN7ZSm5F8Mt75gG_u_3TcKHJ0IOjj2kaevZbSvd7WCmqx-W50YsToO7x3KWKjWgQJbvEG0tS4emvLcOHElKo08TH6WCxMnY3D64XBGfejbKHHChBhIHMdEG8nUVIULR9NGaX_a3HwF4gMS6wkKhINZ86pIGGqWglkVeSLR2h3rFWx1PYi8YxeAdGTtmyHaiSkPTyYtzJOgq11sXv2rEBHfg8Q-f3UZBCenWiODBaNM5aWgBe2NoQ"/>
+</div>
+</div>
+</div>
+</header>
+<main class="ml-64 pt-24 px-8 pb-12">
+<div class="mb-8">
+<p class="text-[10px] font-bold text-[#0b97c2] tracking-[0.2em] uppercase mb-1">Workspace Summary</p>
+<h1 class="text-3xl font-extrabold text-slate-900 font-headline tracking-tight mb-2">Welcome back, Baslael Workneh</h1>
+<p class="text-sm text-slate-500">Pick up where you left off or start a new creative journey.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-transparent flex items-center">
+<div class="w-12 h-12 rounded-full bg-[#0b97c2]/10 flex items-center justify-center mr-4">
+<span class="material-symbols-outlined text-[#0b97c2]">tactic</span>
+</div>
+<div>
+<p class="text-[11px] font-bold text-slate-400 uppercase">Presentations</p>
+<p class="text-2xl font-bold text-slate-900 font-headline">28</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-transparent flex items-center">
+<div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mr-4">
+<span class="material-symbols-outlined text-slate-400">favorite</span>
+</div>
+<div>
+<p class="text-[11px] font-bold text-slate-400 uppercase">Favorites</p>
+<p class="text-2xl font-bold text-slate-900 font-headline">0</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-transparent flex items-center">
+<div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mr-4">
+<span class="material-symbols-outlined text-slate-400">public</span>
+</div>
+<div>
+<p class="text-[11px] font-bold text-slate-400 uppercase">Public</p>
+<p class="text-2xl font-bold text-slate-900 font-headline">3</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-transparent flex items-center">
+<div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mr-4">
+<span class="material-symbols-outlined text-slate-400">update</span>
+</div>
+<div>
+<p class="text-[11px] font-bold text-slate-400 uppercase">Updated recently</p>
+<p class="text-2xl font-bold text-slate-900 font-headline">0</p>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between mb-6">
+<div class="flex items-center space-x-1 p-1 bg-surface-container-low rounded-xl">
+<button class="px-6 py-2 text-xs font-bold bg-white text-[#0b97c2] shadow-sm rounded-lg">All</button>
+<button class="px-6 py-2 text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors">Favorites</button>
+<div class="h-4 w-[1px] bg-slate-200 mx-2"></div>
+<button class="flex items-center px-4 py-2 text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined text-sm mr-2">filter_list</span>
+          Filters
+        </button>
+</div>
+<div class="flex items-center space-x-1 p-1 bg-surface-container-low rounded-xl">
+<button class="p-2 bg-white text-[#0b97c2] shadow-sm rounded-lg">
+<span class="material-symbols-outlined text-lg">grid_view</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-slate-600 transition-colors">
+<span class="material-symbols-outlined text-lg">view_list</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="group bg-surface-container-lowest rounded-2xl overflow-hidden transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-[#006482]/5 border border-transparent">
+<div class="aspect-video overflow-hidden relative">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500" data-alt="stunning aerial view of a vibrant green tropical rainforest canopy during sunrise with a light mystical fog" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJ8BiIarXryiFdH1QOm3ytjvCorqGfRoaUt_oVQFkiTbpUiHQN5pdrR7TR2nNEfSZQ9hyK_MYigRDnHPG4QLQX1uMDwN4oCblmvZ7mY5OEwBC29wIz6hUd9GzX7wGCA3XzmfRv8ArTp7b-AoHBwZamFkzYUXtnFFtypt8SAJ7HGmpBR10uaTVYAMOel3X3_xP7i81Ox4c5AgMn5-A1I8HE6PMKT_zdQfAzK8M71mAKfG_gEgk6-cWGEuM07K0zIjNCp67WxRqAMVE"/>
+<div class="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded-lg flex items-center shadow-sm">
+<span class="material-symbols-outlined text-[14px] text-slate-500 mr-1">lock</span>
+<span class="text-[10px] font-bold text-slate-500">Private</span>
+</div>
+</div>
+<div class="p-5">
+<h3 class="text-sm font-bold text-slate-900 mb-4 line-clamp-1">The Future of Ecology</h3>
+<div class="flex items-center justify-between">
+<div class="flex items-center">
+<img class="w-6 h-6 rounded-full border border-white" data-alt="small circular user avatar of a man with a professional look" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6EE17AJfuWY3eLvu8G8PZuzpka0ViRUAaXOG_TAu_bFUgwc2L24m9ZUKRJ2XZ3Hku4CbigytDhTNlISpv_H7pfxr3yQY_CyOPKtxI_lTttfHhU2_qpI6TfPEosTPF__vKkGDkeBz-VY0thiDymbvqceNsA5rhu8L7UA-lUQxb2_ENbbaRhGzIb-ZSVgAOSkMM-ltqtHkR1bTcWQeGcWtFS_IqCzpXTAfjavhWGh8t0pXZ92bPsOTcjv_XvyyIZXq0CaoNiuWWHUA"/>
+<span class="text-[10px] text-slate-400 ml-2">Oct 24, 2023</span>
+</div>
+<button class="text-slate-400 hover:text-[#0b97c2]"><span class="material-symbols-outlined">more_horiz</span></button>
+</div>
+</div>
+</div>
+<div class="group bg-surface-container-lowest rounded-2xl overflow-hidden transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-[#006482]/5 border border-transparent">
+<div class="aspect-video overflow-hidden relative">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500" data-alt="interior of a contemporary library with warm wood textures and rows of colorful books in soft focus" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRFqAnh-qT3uuEblrT0L1rqUnzdzPU520OHoN9YXiJbvQMOZCjiPhW2vB2PLOvCnTLQK3EzgsX89fGxgOoTyMmJhQY5Qa_KBo9OlnHLtLNZfcaN6Ki68L-u4ADsZkWfhAHzunDpAzZSKJtjvmM2sBBqRBBwO2FjpY6MasUIi_jBWHCUikHiG8HRfqBwhLpCuhj9o1g_lbL_1lgHpGzmxbK9Rlh3V2XsnSVIeUFi6F_vIW8ofE6Kt9sq_T80fa2lUkDzRn6b5tC5Vs"/>
+<div class="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded-lg flex items-center shadow-sm">
+<span class="material-symbols-outlined text-[14px] text-slate-500 mr-1">public</span>
+<span class="text-[10px] font-bold text-slate-500">Public</span>
+</div>
+</div>
+<div class="p-5">
+<h3 class="text-sm font-bold text-slate-900 mb-4 line-clamp-1">Digital Library Systems</h3>
+<div class="flex items-center justify-between">
+<div class="flex items-center">
+<img class="w-6 h-6 rounded-full border border-white" data-alt="small circular user avatar for a professional platform" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDO2kJsokWVox9JCQHtEJqBrMQAvkyKQ-pF_TycRIO7DK2ElnWD-TtnHTtcbvK8tIHh_jG4pKbDpm0hXJ6wmc7NBRPumLulzrv-pOz9jHm6NQ-uIaKC7F5XnWPMjG25E1yX3r3OiRaHEbf91nDj0v4jXGhcqmpZajSQ9Nwv4o39iwzRk2b9R70732X6IvDyf-PT6OdELw0xtuzNocJ6WsympmdBgzEp-m6bqVoaS8dINv9tOgXuDD2zoFSoQ-2t_yiQG0sqMQga87s"/>
+<span class="text-[10px] text-slate-400 ml-2">Oct 22, 2023</span>
+</div>
+<button class="text-slate-400 hover:text-[#0b97c2]"><span class="material-symbols-outlined">more_horiz</span></button>
+</div>
+</div>
+</div>
+<div class="group bg-surface-container-lowest rounded-2xl overflow-hidden transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-[#006482]/5 border border-transparent">
+<div class="aspect-video overflow-hidden relative">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500" data-alt="complex abstract visualization of artificial intelligence with glowing blue digital nodes and connections" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeq2uvTzXc0BA9WK7sabOskWh9aU0b_2OL-6oE83Q6vJoDbqUbVCFMRjMI2LaAQ8TQoqRFKsiDJf4SA-BhLWRkwIDz1yHeygUAa-PzyOkQ7mjY_3TDydR0R4oWn76zYCUNmpLjGV0jwU_vL8xS5FlbH5g0mE4boGQMD--XpzGQFltc-_1tdbP9wW0CFhczXDUnshlju-ZxSmS1vup4t8oQ9MQJCLl_Cx5xNFQyqEwTLHRsMzv4LY-RfuhbFZaYm_nL4MWzNEPsdds"/>
+<div class="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded-lg flex items-center shadow-sm">
+<span class="material-symbols-outlined text-[14px] text-slate-500 mr-1">lock</span>
+<span class="text-[10px] font-bold text-slate-500">Private</span>
+</div>
+</div>
+<div class="p-5">
+<h3 class="text-sm font-bold text-slate-900 mb-4 line-clamp-1">AI and Ethics 2024</h3>
+<div class="flex items-center justify-between">
+<div class="flex items-center">
+<img class="w-6 h-6 rounded-full border border-white" data-alt="small user icon representing a profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQSjGE9Tl-73IRm9KWWtCVR8Hv-fBW0UwY8Rzcs2mt6ffML_yP2bHPDTU1i3jeE11Ml1snnBhHHiC5ffRKAUrfjB3gCmUlldITgFOLZWfaZQPS4_ZV7zMrmlv2E2LDzk2DnYKFszfitSTcpsFwUlj6ANH7hlCNVQ0lA9M_GATv0-wc4Y1uqW1xfSuRYfKcC_FmPTx_5pagI6D3lAPyqW80n2zSwPWa81JUQubSaMqt1rHnIoanHcA_HADB2eux4ievo4KAhLNKGY8"/>
+<span class="text-[10px] text-slate-400 ml-2">Oct 19, 2023</span>
+</div>
+<button class="text-slate-400 hover:text-[#0b97c2]"><span class="material-symbols-outlined">more_horiz</span></button>
+</div>
+</div>
+</div>
+<div class="group bg-surface-container-lowest rounded-2xl overflow-hidden transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-[#006482]/5 border border-transparent">
+<div class="aspect-video overflow-hidden relative">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500" data-alt="close-up of a high-end laptop with lines of code visible on screen in a professional workspace" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBEJwdFFvT6jxeEJgtxBmzvfQsydA0mGNcRmY6fyOmzPha8raUk9L7HReZoEO0alPvcDJ0nqnt-6pQZklVW3dVwqLGu7k6j847YNigygG4PTfBDSx1Ov5S2HKO28hDRH5fx2JLAUfkJx8nkGEgQUSFr9D0S5taavlsw-GKEOd_olofDGyoJHGmhH0x1OC5jHnIVTldfCOQ7bnT7H_Z7GxO-LyC5aE5The277GkwQhns2rb_oSPuCMnlu93Zte4GLi1LFZrc21pK5D0"/>
+<div class="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded-lg flex items-center shadow-sm">
+<span class="material-symbols-outlined text-[14px] text-slate-500 mr-1">public</span>
+<span class="text-[10px] font-bold text-slate-500">Public</span>
+</div>
+</div>
+<div class="p-5">
+<h3 class="text-sm font-bold text-slate-900 mb-4 line-clamp-1">Hardware Acceleration</h3>
+<div class="flex items-center justify-between">
+<div class="flex items-center">
+<img class="w-6 h-6 rounded-full border border-white" data-alt="round user profile picture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB389HcBpq5mrRKnlhWu2oNPak4wTUdsbr8oqw7604fH3yK7LfYqW9g60lZ4un_gQNbZQiO5XI3A4rK_bJ69GyQfutCL7bilghWrzOXzC1jkdjrFR77MUq8-io3uI0IAYY2gYHluKak3ERTAT7LZDCez828fnxj1G6cL7Beixf18fIR-rSj6zj-QQ2KGkXLCt0BxE3qVPNi5i15tS64mWP6SVDjXTHX1aK2RFTFLBvesx0zaZeE-WUKWp8d9oVS1yhYFR6AALmiT4c"/>
+<span class="text-[10px] text-slate-400 ml-2">Oct 15, 2023</span>
+</div>
+<button class="text-slate-400 hover:text-[#0b97c2]"><span class="material-symbols-outlined">more_horiz</span></button>
+</div>
+</div>
+</div>
+<div class="group bg-surface-container-lowest rounded-2xl overflow-hidden transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-[#006482]/5 border border-transparent">
+<div class="aspect-video overflow-hidden relative">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500" data-alt="a clean minimalist architectural sketch of a futuristic eco-friendly building with teal accents" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBn8CfTOSsSak7WHk-nY_gt7jhG4Pd0V6F6p9B0_4aOjSM-ONHS12XAbIUNu-pKUyZTbs9JGNWF3XqLoDFQqnOWUM26lpdrzzKRRjxov0hgzCfJS7_OgXCswpE_05toixNlUJg40IRhGPn18aCkCRCcxGZgD4rwdJLRgmxpmbMzJOGO-WNGCmgMiZqYUArQByRNlXj6g_L0_Lz-cOPqWIceFNIFf07uerTeBre_ALeWbmf-sA6yZsnN2qz7PpB8kmcbSTKcAySrv5s"/>
+<div class="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded-lg flex items-center shadow-sm">
+<span class="material-symbols-outlined text-[14px] text-slate-500 mr-1">lock</span>
+<span class="text-[10px] font-bold text-slate-500">Private</span>
+</div>
+</div>
+<div class="p-5">
+<h3 class="text-sm font-bold text-slate-900 mb-4 line-clamp-1">Sustainable Urbanism</h3>
+<div class="flex items-center justify-between">
+<div class="flex items-center">
+<img class="w-6 h-6 rounded-full border border-white" data-alt="user icon thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6c3EyKOqM-GLrzzTKKLFVQKvcT7VSecd-84_s0veZEsnL1z2aoivEk_S4cBixeiLH4Qo19FNxsp8QoVMW3__UVuBIxIhd5gLprFxUelkctTzhi0Txj1C7bJWxCr9Y-AcV0URgrclFNQJixSeJJ__vlaCd1jHdy_TKdCX0TMvBMtOzlVLpxgdspGIvtDeHUSgrg_lSXN2wF9_8K0CwtkwcULrpltsUBNOnhPP37_k6rgZI1msc1QVAtDpGdPjhsC6ZnyRmkeQ_QqY"/>
+<span class="text-[10px] text-slate-400 ml-2">Oct 12, 2023</span>
+</div>
+<button class="text-slate-400 hover:text-[#0b97c2]"><span class="material-symbols-outlined">more_horiz</span></button>
+</div>
+</div>
+</div>
+<div class="group bg-surface-container-lowest rounded-2xl overflow-hidden transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-[#006482]/5 border border-transparent">
+<div class="aspect-video overflow-hidden relative">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500" data-alt="vibrant designer's workspace featuring a moodboard and colorful graphic elements in soft focus" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZWAfASWiSKKnwq8reQaA0X34NKq6mQt6a8xoAGCMseSx21kPonFR0EEWqoVGSvfUIPOOXWbQI0_j2MiG5TkuUfRUqskeUuBjjvriKxOEgU-_mg1gvFi0YqFJkONkhmIchuT9eD-3OqLyIw53AqU4SKgq_8HoVdcg30JXPh6litgJckKpoit6pNB14ebNvIXnmRQX5rZAVVTDqnaHO5z6LxNUXVlOFxW0sg2W-IsaLNYJ1U9BTIikqiSFIfpELmQ7TdC7kChItg4c"/>
+<div class="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded-lg flex items-center shadow-sm">
+<span class="material-symbols-outlined text-[14px] text-slate-500 mr-1">public</span>
+<span class="text-[10px] font-bold text-slate-500">Public</span>
+</div>
+</div>
+<div class="p-5">
+<h3 class="text-sm font-bold text-slate-900 mb-4 line-clamp-1">Design Systems 101</h3>
+<div class="flex items-center justify-between">
+<div class="flex items-center">
+<img class="w-6 h-6 rounded-full border border-white" data-alt="user circular photo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAlJiqkxZT2MKo5MecxUEk2nhzSziiqGuui7lrH2Q8H7A0xporF49_xYxLGMpVp0ZvBbKFPn13-IX2zYl-tPb4UMUvZfA8REVQrRouFJhvVG150Xk7LMutB77uOqCM3Rd7iy0jSpuM6s0aGtkfJfNFsbVbhLwkOe3MWvUm5CZw6bS8dQAARSqBzhxJYzshqJIqJNMDWu_e5vUT8CD84gWqiNiiroD0e9zXTNgiRPufqsKzCN7b1zPIA8DKGrGc7SXgyrkfCAMVaiy4"/>
+<span class="text-[10px] text-slate-400 ml-2">Oct 10, 2023</span>
+</div>
+<button class="text-slate-400 hover:text-[#0b97c2]"><span class="material-symbols-outlined">more_horiz</span></button>
+</div>
+</div>
+</div>
+<div class="group bg-surface-container-lowest rounded-2xl overflow-hidden transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-[#006482]/5 border border-transparent">
+<div class="aspect-video overflow-hidden relative">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500" data-alt="elegant abstract data visualization with flowing lines and graph shapes on a deep navy background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCM1KJO-wCZDhaOlAo2hlv9E24VbSHFNGordMMHc36CmASjaLkfrto2bTMcMwzaofb5tuRJQI5GnmvkJ_m_K_07ZLMYaKKKPiCWDkR-rPincL-pO8WlAdtvC55UHcsbJwnvkGl6HdEu8c3tUNnOF5Ewg8WOB1GKVdp5asx_cO80eVPdguF3CszuPhC8E55i7hMAuKEMCnXJVOahBFjrJj8LSLLW5GOmRjw-06NZ15ffSFNGH-yI_sSnX8ZMO3zBJZMb5Aezm9scPjo"/>
+<div class="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded-lg flex items-center shadow-sm">
+<span class="material-symbols-outlined text-[14px] text-slate-500 mr-1">lock</span>
+<span class="text-[10px] font-bold text-slate-500">Private</span>
+</div>
+</div>
+<div class="p-5">
+<h3 class="text-sm font-bold text-slate-900 mb-4 line-clamp-1">Quantitative Analysis</h3>
+<div class="flex items-center justify-between">
+<div class="flex items-center">
+<img class="w-6 h-6 rounded-full border border-white" data-alt="small user headshot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjfbPUJzWd24yAjGIt_XVrfasdmtvD7sM5tyRMb2EsDQDa4tw5ZqcV-FAswqNYreEftF-zudT7Ri7P3ygbYG8nnSrafojoEB61DDGlhK1f6DBIVKUO3RbYD5BFEhr7ZDV5M9CHrwOP7qXwpYtc-jX08GTJCvjXvSYv3WaXB_WlYVil6b2nboXgQpHsQ1q3AnTGQGRotxX1QGfCdPuZr1eKJxkU72rUSSsJ8TLGK14FOktx9LDdb2oIRLJqDIqdeF-lj7wa6ZyX9_w"/>
+<span class="text-[10px] text-slate-400 ml-2">Oct 05, 2023</span>
+</div>
+<button class="text-slate-400 hover:text-[#0b97c2]"><span class="material-symbols-outlined">more_horiz</span></button>
+</div>
+</div>
+</div>
+<div class="group bg-surface-container-lowest rounded-2xl overflow-hidden transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-[#006482]/5 border border-transparent">
+<div class="aspect-video overflow-hidden relative">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500" data-alt="breath-taking cosmic nebula in vibrant purple and blue shades with distant glittering stars" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMRhyuP5qOTVbQQYCxmUc3pLMe6S3VoiQ4JQOfyFDn8zNH2ADNE1tI2TapOn2vuYpZ5uY2a_9sm1y0vqdRbvrO6zNrCT_QOqERaAjf4EwggAhrSfvYfl6QRBjaF78pOApDslfcnc4iUEZjV9FUFrTUj-lZXCmLiixwge5NeaInE68gDN2ooHD9VUBknm-KANtzmFtKF0j9kqGRN8Iutd0WugSNiHILHQTmKujrXq7n4n_WiFAAEEnCqMxmwHwYjrwaHut5XAxZ45g"/>
+<div class="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded-lg flex items-center shadow-sm">
+<span class="material-symbols-outlined text-[14px] text-slate-500 mr-1">public</span>
+<span class="text-[10px] font-bold text-slate-500">Public</span>
+</div>
+</div>
+<div class="p-5">
+<h3 class="text-sm font-bold text-slate-900 mb-4 line-clamp-1">Astro-Physics Overview</h3>
+<div class="flex items-center justify-between">
+<div class="flex items-center">
+<img class="w-6 h-6 rounded-full border border-white" data-alt="small user portrait icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiRKsrNZDeJ1xjaZuTSekFiRSbcHx4lU5DMSd9jXiCM1ClKnyFew6O6csPaJBm08HAFqiOTZ2nx-XK5oa-n8l73Giox9D-dENVmZobH4XhgjfX4SPZ6hIPQL_BU0oBLvkZ9yqSQQ9zLrtvxLFrMyjOxHVl6EK_X2n6Y6xm70FJM7AwFzPSSwIP8EP3maOKzXd8M4oGFIQ4H6ikSrFo_0sbUMENaEtpNBrXb7U2sVr1FEWhzzvdags0xj9IkYpuhuS9WNjKMfOaMnc"/>
+<span class="text-[10px] text-slate-400 ml-2">Sep 28, 2023</span>
+</div>
+<button class="text-slate-400 hover:text-[#0b97c2]"><span class="material-symbols-outlined">more_horiz</span></button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>
