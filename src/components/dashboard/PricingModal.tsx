@@ -236,10 +236,6 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
       <div className="absolute inset-0" onClick={onClose} />
       
       <div className="relative bg-white md:rounded-[2rem] shadow-[0_32px_128px_-16px_rgba(0,0,0,0.3)] w-full max-w-5xl h-full md:h-auto md:max-h-[92vh] overflow-hidden flex flex-col group animate-in fade-in zoom-in-95 duration-300">
-        <div className="p-0 border-b border-slate-100/50">
-          <DiscountTopBanner />
-        </div>
-        
         <div className="flex items-center justify-between px-8 py-5">
           <div className="flex flex-col gap-0.5">
             <h2 className="text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
@@ -290,6 +286,10 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
         </div>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar p-0">
+          <div className="p-8 pb-0">
+            <DiscountTopBanner />
+          </div>
+
           {activeTab === "plans" ? (
             <div className="p-8">
               {/* Toggle */}
