@@ -521,30 +521,7 @@ export default function ExportModal({
               </div>
             </div>
           </div>
-        ) : (
-          subscriptionPlan === 'plus' && (
-            <div className={`mb-6 p-4 rounded-xl ${c.cardBg} ${c.cardBorder} border`}>
-              <div className="flex items-start gap-3">
-                <Crown size={18} className="text-amber-500 mt-0.5 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm ${c.text}`}>
-                    {t.watermarkNotice || "Exported files include \"Made with PPTMaster\" watermark"}
-                  </p>
-                  <p className={`text-xs mt-1 ${c.textMuted}`}>
-                    {t.upgradeToRemove || "Upgrade to Pro to remove branding from exports"}
-                  </p>
-                  <button
-                    onClick={() => setShowPricingModal(true)}
-                    className="inline-flex items-center gap-1 text-xs font-medium mt-2"
-                    style={{ color: accentColor }}
-                  >
-                    {t.viewPlansBtn || "View plans"} →
-                  </button>
-                </div>
-              </div>
-            </div>
-          )
-        )}
+        ) : null}
 
         {/* Actions */}
         <div className="flex items-center justify-end gap-3">
