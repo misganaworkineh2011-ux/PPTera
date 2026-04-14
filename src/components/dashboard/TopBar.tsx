@@ -197,6 +197,38 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
 
       {/* Right: Actions and System Info */}
       <div className="flex items-center shrink-0">
+        {/* Mobile Action Buttons (visible on small screens only) */}
+        <div className="flex sm:hidden items-center gap-2 mr-2">
+          {/* Mobile New Button */}
+          <button 
+            onClick={() => setIsWizardOpen(true)} 
+            className="group relative flex items-center gap-1.5 rounded-full bg-slate-900 dark:bg-white px-3 py-1.5 text-[12px] font-bold text-white dark:text-black hover:bg-slate-800 transition-all active:scale-95 overflow-hidden"
+          >
+            <div className="absolute inset-0 -translate-x-full animate-[shimmer_3s_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+            <Plus size={14} className="relative z-10" />
+            <span className="relative z-10">New</span>
+          </button>
+
+          {/* Mobile Credits */}
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-zinc-900/80 text-[11px] font-bold text-slate-500 dark:text-zinc-400">
+            <Sparkles size={11} className="text-[#06b6d4]" />
+            <span>{credits}</span>
+            <span className="text-slate-400 dark:text-zinc-500">Credits</span>
+          </div>
+
+          {/* Mobile Upgrade Button */}
+          <button
+            onClick={() => {
+              setPricingModalTab("plans");
+              setShowPricingModal(true);
+            }}
+            className="relative flex items-center rounded-full bg-gradient-to-r from-[#06b6d4] to-[#0891b2] border border-[#06b6d4]/30 px-3 py-1.5 text-[11px] font-black uppercase tracking-wider text-white transition-all hover:from-[#0891b2] hover:to-[#0e7490] active:scale-95 overflow-hidden"
+          >
+            <div className="absolute inset-0 -translate-x-full animate-[shimmer_3s_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+            <span className="relative z-10">{t.upgrade || "Upgrade"}</span>
+          </button>
+        </div>
+
         {/* Mobile search button */}
         <button
           onClick={() => setShowMobileSearch(!showMobileSearch)}
@@ -255,7 +287,7 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
         <div className="hidden sm:block h-6 w-px bg-slate-200 dark:bg-zinc-800 mx-2" />
 
         {/* Account Cluster */}
-        <div className="flex items-center gap-2 ml-1">
+        <div className="hidden sm:flex items-center gap-2 ml-1">
           {/* Notifications */}
           <div className="relative notifications-container flex items-center">
             <button
