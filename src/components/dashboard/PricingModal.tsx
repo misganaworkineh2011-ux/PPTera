@@ -41,9 +41,10 @@ interface PricingModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentPlan?: string | null;
+  initialTab?: "plans" | "topup";
 }
 
-export default function PricingModal({ isOpen, onClose, currentPlan }: PricingModalProps) {
+export default function PricingModal({ isOpen, onClose, currentPlan, initialTab = "plans" }: PricingModalProps) {
   const [isAnnual, setIsAnnual] = useState(true);
   const [products, setProducts] = useState<PolarProduct[]>([]);
   const [topupOptions, setTopupOptions] = useState<TopupOption[]>([]);
@@ -52,7 +53,7 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
   const [error, setError] = useState<string | null>(null);
   const [checkoutLoadingId, setCheckoutLoadingId] = useState<string | null>(null);
   const [topupLoadingId, setTopupLoadingId] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<"plans" | "topup">("plans");
+  const [activeTab, setActiveTab] = useState<"plans" | "topup">(initialTab);
 
   const { isSignedIn } = useUser();
   const router = useRouter();
@@ -65,8 +66,9 @@ export default function PricingModal({ isOpen, onClose, currentPlan }: PricingMo
     if (isOpen) {
       setCheckoutLoadingId(null);
       setTopupLoadingId(null);
+      setActiveTab(initialTab);
     }
-  }, [isOpen]);
+  }, [isOpen, initialTab]);
 
   useEffect(() => {
     if (isOpen && products.length === 0) loadProducts();

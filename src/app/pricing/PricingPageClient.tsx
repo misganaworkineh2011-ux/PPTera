@@ -167,19 +167,6 @@ export default function PricingPageClient({ currentLang }: PricingPageClientProp
 
   const plans = [
     { 
-      key: "free",
-      name: t.free || "Free",
-      prices: { monthly: 0, yearly: 0, yearlyTotal: 0 },
-      description: t.getStartedWithPPT || "Get started with PPT Master",
-      features: [
-        t.createUpTo10Cards || "Up to 10 slides per presentation",
-        t.simplePresentations || "Basic AI generation",
-        t.importFromPdfPptx || "Import from PDF & PPTX",
-      ],
-      highlight: false,
-      badge: null
-    },
-    { 
       key: "plus", 
       name: "Plus", 
       prices: getPriceFromProducts("plus"), 
@@ -310,7 +297,7 @@ export default function PricingPageClient({ currentLang }: PricingPageClientProp
           )}
 
           {activeTab === "plans" ? (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 px-4 pb-20 max-w-7xl mx-auto items-start">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 pb-20 max-w-7xl mx-auto items-start">
               {plans.map((plan) => {
                 const isCurrentPlan = currentPlan?.toLowerCase() === plan.key.toLowerCase();
                 const price = isAnnual ? plan.prices?.yearly : plan.prices?.monthly;
@@ -382,7 +369,7 @@ export default function PricingPageClient({ currentLang }: PricingPageClientProp
 
                     <div className="mt-auto">
                       <button
-                        onClick={() => plan.key === "free" ? router.push("/sign-up") : handleSubscribe(plan.key)}
+                        onClick={() => handleSubscribe(plan.key)}
                         disabled={!!checkoutLoadingId || isCurrentPlan}
                         className={`w-full py-4 rounded-[1.2rem] text-sm font-black transition-all duration-300 relative overflow-hidden group/btn disabled:opacity-50 disabled:cursor-not-allowed border-2 border-slate-900 block ${
                           isCurrentPlan 

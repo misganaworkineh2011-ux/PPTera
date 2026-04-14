@@ -179,6 +179,10 @@ export default function AnalyticsPage() {
     1
   );
 
+  // Debug: Log activity data
+  console.log('[Analytics] Daily Activity:', data.dailyActivity);
+  console.log('[Analytics] Max Activity:', maxActivity);
+
   return (
     <div className="max-w-[1400px] mx-auto p-4 md:p-5 lg:px-6 lg:py-4">
       {/* Period selector */}
@@ -276,29 +280,42 @@ export default function AnalyticsPage() {
         </h3>
         {data.dailyActivity && data.dailyActivity.length > 0 ? (
           <>
-            <div className="h-48 sm:h-56 flex items-end gap-1 overflow-x-auto pb-2">
+            <div className="h-56 sm:h-64 flex items-end gap-1.5 overflow-x-auto pb-2">
               {data.dailyActivity.map((day, idx) => {
-                const height = maxActivity > 0 ? ((day.presentations + day.slides / 10) / maxActivity) * 100 : 5;
+                const activityValue = day.presentations + day.slides / 10;
+                const height = maxActivity > 0 ? (activityValue / maxActivity) * 100 : 0;
+                const hasActivity = day.presentations > 0 || day.slides > 0;
+                
+                // Ensure minimum visible height for bars with activity
+                const displayHeight = hasActivity ? Math.max(height, 12) : 3;
+                
                 return (
                   <div
                     key={idx}
-                    className="flex-1 min-w-[8px] sm:min-w-[10px] group relative"
+                    className="flex-1 min-w-[10px] sm:min-w-[12px] group relative"
                   >
                     <div
-                      className="w-full bg-gradient-to-t from-[#06b6d4] to-[#3b82f6] rounded-t-lg transition-all hover:from-[#0891b2] hover:to-[#2563eb] cursor-pointer"
-                      style={{ height: `${Math.max(height, 5)}%` }}
+                      className={cn(
+                        "w-full rounded-t-lg transition-all",
+                        hasActivity 
+                          ? "bg-gradient-to-t from-[#06b6d4] to-[#3b82f6] hover:from-[#0891b2] hover:to-[#2563eb] cursor-pointer" 
+                          : "bg-slate-100 dark:bg-zinc-800/50"
+                      )}
+                      style={{ height: `${displayHeight}%` }}
                     />
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-2 bg-slate-900 dark:bg-zinc-800 text-white text-xs rounded-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10 shadow-xl">
-                      <div className="font-semibold mb-0.5">
-                        {new Date(day.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                    {hasActivity && (
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-2 bg-slate-900 dark:bg-zinc-800 text-white text-xs rounded-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10 shadow-xl">
+                        <div className="font-semibold mb-0.5">
+                          {new Date(day.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                        </div>
+                        <div className="text-white/80">
+                          {day.presentations} presentations
+                        </div>
+                        <div className="text-white/80">
+                          {day.slides} slides
+                        </div>
                       </div>
-                      <div className="text-white/80">
-                        {day.presentations} presentations
-                      </div>
-                      <div className="text-white/80">
-                        {day.slides} slides
-                      </div>
-                    </div>
+                    )}
                   </div>
                 );
               })}
@@ -309,7 +326,7 @@ export default function AnalyticsPage() {
             </div>
           </>
         ) : (
-          <div className="flex flex-col items-center justify-center h-48 sm:h-56">
+          <div className="flex flex-col items-center justify-center h-56 sm:h-64">
             <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-zinc-800">
               <BarChart3 className="h-6 w-6 text-slate-400 dark:text-zinc-500" />
             </div>

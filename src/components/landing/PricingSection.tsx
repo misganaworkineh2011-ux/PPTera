@@ -1,7 +1,6 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { SignInButton } from "@clerk/nextjs";
 import { LoadingLink } from "~/components/LoadingLink";
 import { type Language } from "~/lib/i18n";
 import { Check, Zap, Sparkles } from "lucide-react";
@@ -65,22 +64,6 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
   const ultraPrices = getPriceFromProducts(products, "ultra");
 
   const plans = [
-    {
-      name: t.free || "Free",
-      price: "$0",
-      period: t.freeForever || "forever",
-      description: t.getStartedWithPPT || "Get started with PPT Master",
-      features: [
-        t.createUpTo10Cards || "Up to 10 slides per presentation",
-        t.simplePresentations || "Basic AI generation",
-        t.importFromPdfPptx || "Import from PDF & PPTX",
-      ],
-      cta: t.startFree || "Start Free",
-      popular: false,
-      highlight: false,
-      badge: null as string | null,
-      badgeGradient: false,
-    },
     {
       name: "Plus",
       price: loading
@@ -204,7 +187,7 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 items-start max-w-7xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 items-start max-w-7xl mx-auto">
           {plans.map((plan, i) => (
             <div
               key={i}

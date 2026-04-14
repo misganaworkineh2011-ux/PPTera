@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bell, Search, Sparkles, Gift, AlertCircle, AlertTriangle, FileText, Image as ImageIcon, BarChart, Palette, Sparkles as SparklesIcon, Users, History, Menu, Settings, Upload, Plus } from "lucide-react";
+import { Bell, Search, Sparkles, Gift, AlertCircle, AlertTriangle, FileText, Image as ImageIcon, BarChart, Palette, Sparkles as SparklesIcon, Users, History, Menu, Settings, Upload, Plus, Zap } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
 import { useStickyContext } from "./DashboardLayout";
 import { usePathname } from "next/navigation";
@@ -35,6 +35,7 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
   const [loading, setLoading] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
+  const [pricingModalTab, setPricingModalTab] = useState<"plans" | "topup">("plans");
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const { user } = useDashboard();
   const pathname = usePathname();
@@ -142,7 +143,15 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
   }, [showNotifications]);
 
   return (
-    <header className="md:sticky top-0 z-30 flex h-14 lg:h-20 items-center justify-between bg-white/80 backdrop-blur-md dark:bg-zinc-950/80 px-4 lg:px-10 border-b border-slate-200/80 shadow-[0_4px_24px_rgba(0,0,0,0.06)] dark:border-white/10 dark:shadow-none gap-4">
+    <>
+      <style jsx global>{`
+        @keyframes shimmer {
+          100% {
+            transform: translateX(200%);
+          }
+        }
+      `}</style>
+      <header className="md:sticky top-0 z-30 flex h-14 lg:h-20 items-center justify-between bg-white/80 backdrop-blur-md dark:bg-zinc-950/80 px-4 lg:px-10 border-b border-slate-200/80 shadow-[0_4px_24px_rgba(0,0,0,0.06)] dark:border-white/10 dark:shadow-none gap-4">
       {/* Left: Mobile menu button + Title */}
       <div className="flex items-center gap-3 shrink-0">
         {/* Mobile menu button */}
@@ -164,9 +173,13 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
               <Upload size={16} className="text-slate-500" />
               Import
            </button>
-           <button onClick={() => setIsWizardOpen(true)} className="group flex items-center gap-2 rounded-full bg-slate-900 dark:bg-white px-5 py-2.5 text-[14px] font-bold text-white dark:text-black hover:bg-slate-800 hover:shadow-[0_4px_14px_rgba(0,0,0,0.1)] transition-all outline-none focus:ring-4 focus:ring-slate-900/10 active:scale-95">
-              <Plus size={16} className="group-hover:scale-110 transition-transform" />
-              New AI PPT
+           <button 
+             onClick={() => setIsWizardOpen(true)} 
+             className="group relative flex items-center gap-2 rounded-full bg-slate-900 dark:bg-white px-5 py-2.5 text-[14px] font-bold text-white dark:text-black hover:bg-slate-800 hover:shadow-[0_4px_14px_rgba(0,0,0,0.1)] transition-all outline-none focus:ring-4 focus:ring-slate-900/10 active:scale-95 overflow-hidden"
+           >
+              <div className="absolute inset-0 -translate-x-full animate-[shimmer_3s_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+              <Plus size={16} className="group-hover:scale-110 transition-transform relative z-10" />
+              <span className="relative z-10">New AI PPT</span>
            </button>
         </div>
 
@@ -194,6 +207,15 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
         
         {/* System Info Cluster */}
         <div className="hidden md:flex items-center gap-2 mr-3">
+          {/* Referral Button */}
+          <button
+            onClick={() => window.location.href = '/dashboard/billing#referral'}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200/50 dark:border-purple-800/50 text-[12px] font-bold text-purple-600 dark:text-purple-400 hover:from-purple-100 hover:to-pink-100 dark:hover:from-purple-900/30 dark:hover:to-pink-900/30 transition-all active:scale-95"
+          >
+            <Gift size={12} />
+            <span>Refer & Earn</span>
+          </button>
+
           {/* Subtle Credits Indicator */}
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-zinc-900/80 text-[12px] font-bold text-slate-500 dark:text-zinc-400">
             <Sparkles size={12} className="text-[#06b6d4]" />
@@ -204,11 +226,29 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
           {/* Upgrade Button */}
           <button
             data-onboarding="upgrade"
-            onClick={() => setShowPricingModal(true)}
-            className="flex items-center gap-1.5 rounded-full bg-[#06b6d4]/10 dark:bg-[#06b6d4]/20 border border-[#06b6d4]/20 px-4 py-1.5 text-[12px] font-black uppercase tracking-wider text-[#06b6d4] transition-all hover:bg-[#06b6d4] hover:text-white active:scale-95"
+            onClick={() => {
+              setPricingModalTab("plans");
+              setShowPricingModal(true);
+            }}
+            className="relative flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#06b6d4] to-[#0891b2] border border-[#06b6d4]/30 px-4 py-1.5 text-[12px] font-black uppercase tracking-wider text-white transition-all hover:from-[#0891b2] hover:to-[#0e7490] hover:shadow-lg hover:shadow-cyan-500/30 active:scale-95 overflow-hidden"
           >
-            {t.upgrade || "Upgrade"}
+            <div className="absolute inset-0 -translate-x-full animate-[shimmer_3s_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+            <span className="relative z-10">{t.upgrade || "Upgrade"}</span>
           </button>
+
+          {/* Top-up Button (Only for paid users) */}
+          {user?.subscriptionPlan && user.subscriptionPlan.toLowerCase() !== "free" && (
+            <button
+              onClick={() => {
+                setPricingModalTab("topup");
+                setShowPricingModal(true);
+              }}
+              className="flex items-center gap-1.5 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-800/50 px-3 py-1.5 text-[12px] font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all active:scale-95"
+            >
+              <Zap size={12} />
+              {t.topUp || "Top-up"}
+            </button>
+          )}
         </div>
         
         {/* Divider */}
@@ -347,6 +387,7 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
         isOpen={showPricingModal}
         onClose={() => setShowPricingModal(false)}
         currentPlan={user?.subscriptionPlan}
+        initialTab={pricingModalTab}
       />
 
       {/* Project Wizard Modal */}
@@ -365,5 +406,6 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
       </Dialog.Root>
 
     </header>
+    </>
   );
 }
