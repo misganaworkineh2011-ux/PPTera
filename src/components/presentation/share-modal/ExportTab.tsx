@@ -5,18 +5,21 @@ import { toast } from "sonner";
 import type { Theme } from "~/lib/themes";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
+import PricingModal from "~/components/dashboard/PricingModal";
 
 type ExportFormat = "pdf" | "pptx" | "images";
 
 interface ExportTabProps {
   presentationId: string;
   theme?: Theme;
+  subscriptionPlan?: string | null;
   onExportStart?: (format: ExportFormat) => void;
 }
 
-export default function ExportTab({ presentationId, theme, onExportStart }: ExportTabProps) {
+export default function ExportTab({ presentationId, theme, subscriptionPlan, onExportStart }: ExportTabProps) {
   const [isExporting, setIsExporting] = useState<ExportFormat | null>(null);
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>("pptx");
+  const [showPricingModal, setShowPricingModal] = useState(false);
   const isDark = theme?.colors.background.startsWith("#") &&
     parseInt(theme.colors.background.slice(1, 3), 16) < 128;
 
@@ -24,6 +27,8 @@ export default function ExportTab({ presentationId, theme, onExportStart }: Expo
 
   const { language } = useLanguage();
   const t = dashboardTranslations[language] || dashboardTranslations.en;
+  const userPlan = (subscriptionPlan || "free").toLowerCase();
+  const hasPaidPlan = ["plus", "pro", "ultra"].includes(userPlan);
 
   const colors = isDark ? {
     text: "#fafafa",
@@ -77,6 +82,11 @@ export default function ExportTab({ presentationId, theme, onExportStart }: Expo
   ];
 
   const handleExport = async () => {
+    if (!hasPaidPlan) {
+      setShowPricingModal(true);
+      return;
+    }
+
     setIsExporting(selectedFormat);
     onExportStart?.(selectedFormat);
     const toastId = toast.loading(`${t.preparingExport || "Exporting presentation..."} This might take a few minutes.`);
@@ -92,6 +102,9 @@ export default function ExportTab({ presentationId, theme, onExportStart }: Expo
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        if (response.status === 403) {
+          setShowPricingModal(true);
+        }
         throw new Error(errorData.error || `Export failed with status ${response.status}`);
       }
 
@@ -156,7 +169,7 @@ export default function ExportTab({ presentationId, theme, onExportStart }: Expo
 
       <div className="flex justify-end">
         <button
-          onClick={handleExport}
+          onClick={hasPaidPlan ? handleExport : () => setShowPricingModal(true)}
           disabled={isExporting !== null}
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity disabled:opacity-50"
           style={{ backgroundColor: primaryColor }}
@@ -173,11 +186,17 @@ export default function ExportTab({ presentationId, theme, onExportStart }: Expo
                 <polyline points="7 10 12 15 17 10" />
                 <line x1="12" y1="15" x2="12" y2="3" />
               </svg>
-              {t.exportBtn || "Export"}
+              {hasPaidPlan ? (t.exportBtn || "Export") : (t.upgradeToExport || "Upgrade to Export")}
             </>
           )}
         </button>
       </div>
+
+      <PricingModal
+        isOpen={showPricingModal}
+        onClose={() => setShowPricingModal(false)}
+        currentPlan={subscriptionPlan}
+      />
     </div>
   );
 }

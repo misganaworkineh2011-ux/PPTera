@@ -112,9 +112,20 @@ async function exportPresentation(
     select: { subscriptionPlan: true },
   });
   const isPaidPlan =
-    user?.subscriptionPlan &&
+    !!user?.subscriptionPlan &&
     ["plus", "pro", "ultra"].includes(user.subscriptionPlan);
-  const addWatermark = !isPaidPlan;
+
+  if (!isPaidPlan) {
+    return NextResponse.json(
+      {
+        error: "Export requires a paid plan",
+        code: "UPGRADE_REQUIRED",
+      },
+      { status: 403 }
+    );
+  }
+
+  const addWatermark = false;
 
   const themeId =
     (presentation.content as { theme?: string })?.theme || "corporate-clean";

@@ -141,6 +141,7 @@ export function PresentationModals({
           theme={theme}
           totalSlides={slidesData.length}
           currentSlide={currentSlide + 1}
+          subscriptionPlan={subscriptionPlan}
           onExport={onExport}
           onClose={() => onSetShowExportModal(false)}
         />

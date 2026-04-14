@@ -22,12 +22,10 @@ interface ExportModalProps {
 interface ExportOptions {
   range: "all" | "current" | "custom";
   customRange?: { from: number; to: number };
-  quality?: "standard" | "hd" | "2k";
 }
 
 type ExportFormat = "pdf" | "pptx" | "images";
 type ExportRange = "all" | "current" | "custom";
-type ExportQuality = "standard" | "hd" | "2k";
 
 // Theme type detection
 type ThemeType = "dark" | "light" | "sunset" | "ocean" | "aurora" | "ember" | "midnight" | "cyber" | "alien" | "corporate" | "cosmic" | "architectural" | "anime" | "hacker" | "custom-dark" | "custom-light";
@@ -296,7 +294,6 @@ export default function ExportModal({
 }: ExportModalProps) {
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>("pptx");
   const [exportRange, setExportRange] = useState<ExportRange>("all");
-  const [selectedQuality, setSelectedQuality] = useState<ExportQuality>("standard");
   const [customFromInput, setCustomFromInput] = useState("1");
   const [customToInput, setCustomToInput] = useState(String(totalSlides));
   const [showPricingModal, setShowPricingModal] = useState(false);
@@ -363,7 +360,6 @@ export default function ExportModal({
   const handleExport = () => {
     const options: ExportOptions = {
       range: exportRange,
-      quality: selectedQuality,
       ...(exportRange === "custom" && { customRange: { from: customFrom, to: customTo || totalSlides } }),
     };
     // Track export event
@@ -501,47 +497,6 @@ export default function ExportModal({
               </div>
             </div>
           )}
-        </div>
-
-        {/* Quality Selection */}
-        <div className="mb-6">
-          <label className={`text-sm font-medium ${c.textMuted} mb-3 block`}>
-            {language === 'ar' ? 'جودة التصدير' : 'Export Quality'}
-          </label>
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { id: "standard", label: language === 'ar' ? 'قياسي' : "Standard", sub: "1080p", pro: false },
-              { id: "hd", label: "HD+", sub: "1620p", pro: true },
-              { id: "2k", label: "2K Ultra", sub: "2160p", pro: true },
-            ].map((q) => {
-              const isLocked = q.pro && !hasProPlus;
-              return (
-                <button
-                  key={q.id}
-                  disabled={isLocked && !isExporting}
-                  onClick={() => !isLocked && setSelectedQuality(q.id as ExportQuality)}
-                  className={`
-                    flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition-all relative
-                    ${selectedQuality === q.id 
-                      ? `border-current ${c.accent} ${c.cardBg}` 
-                      : `${c.cardBorder} ${isLocked ? 'opacity-60 grayscale-[0.5]' : `${c.cardHover} ${c.cardBg}`}`
-                    }
-                  `}
-                >
-                  {isLocked && (
-                    <div className="absolute top-1.5 right-1.5">
-                      <Crown size={12} className="text-amber-500 fill-amber-500" />
-                    </div>
-                  )}
-                  <span className={`text-sm font-bold ${c.text}`}>{q.label}</span>
-                  <span className={`text-[10px] uppercase font-bold tracking-wider ${c.textMuted}`}>{q.sub}</span>
-                  {isLocked && (
-                    <span className="text-[9px] font-black text-amber-500 mt-0.5">PRO</span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
         </div>
 
         {/* Watermark Notice or Locking */}

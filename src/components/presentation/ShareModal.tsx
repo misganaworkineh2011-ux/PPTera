@@ -49,7 +49,7 @@ export default function ShareModal({
     parseInt(theme.colors.background.slice(1, 3), 16) < 128);
 
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 sm:p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 sm:p-4">
       <div
         className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl"
         style={{ backgroundColor: bgColor }}
@@ -155,7 +155,13 @@ export default function ShareModal({
               subscriptionPlan={subscriptionPlan}
             />
           )}
-          {activeTab === "export" && <ExportTab presentationId={presentationId} theme={theme} />}
+          {activeTab === "export" && (
+            <ExportTab
+              presentationId={presentationId}
+              theme={theme}
+              subscriptionPlan={subscriptionPlan}
+            />
+          )}
           {activeTab === "embed" && <EmbedTab presentationId={presentationId} theme={theme} />}
         </div>
       </div>
