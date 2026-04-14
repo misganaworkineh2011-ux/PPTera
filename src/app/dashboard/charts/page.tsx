@@ -14,7 +14,6 @@ import {
   Copy,
   Grid,
   List as ListIcon,
-  Sparkles,
   Loader2,
   Check,
   X,
@@ -292,141 +291,159 @@ export default function ChartsPage() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="flex h-[60vh] items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 size={40} className="animate-spin text-[#06b6d4]" />
-          <p className="text-slate-500 dark:text-neutral-400">{t.loadingCharts || "Loading charts..."}</p>
+      <>
+        <style jsx global>{`
+          @keyframes shimmer {
+            100% {
+              transform: translateX(100%);
+            }
+          }
+        `}</style>
+        <div className="mx-auto max-w-[1400px] w-full p-4 md:p-5 lg:px-6 lg:py-4">
+          <div className="mb-4 flex flex-col gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/60 dark:border-zinc-800/60 pb-3">
+              <div className="h-10 w-full sm:max-w-xs md:max-w-md bg-slate-200 dark:bg-zinc-800 rounded-2xl relative overflow-hidden">
+                 <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+              </div>
+              <div className="flex items-center gap-3">
+                 <div className="h-9 w-[180px] bg-slate-200 dark:bg-zinc-800 rounded-2xl relative overflow-hidden">
+                    <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                 </div>
+                 <div className="h-9 w-[100px] bg-slate-200 dark:bg-zinc-800 rounded-2xl relative overflow-hidden">
+                    <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                 </div>
+              </div>
+            </div>
+          </div>
+          <div className="min-h-[400px] pb-16">
+            <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 animate-pulse">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex flex-col overflow-hidden rounded-[20px] border border-slate-200/80 shadow-[0_4px_24px_rgba(0,0,0,0.06)] ring-1 ring-slate-900/5 dark:ring-0 dark:border-white/10 dark:shadow-none bg-white dark:bg-zinc-950"
+                >
+                  <div className="aspect-[4/3] w-full bg-slate-100 dark:bg-zinc-900 border-b border-slate-100 dark:border-zinc-800 relative overflow-hidden">
+                     <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                  </div>
+                  <div className="p-4 flex flex-col gap-2">
+                    <div className="h-4 w-1/2 bg-slate-200 dark:bg-zinc-800 rounded relative overflow-hidden">
+                       <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                    </div>
+                    <div className="h-3 w-1/4 bg-slate-200 dark:bg-zinc-800 rounded relative overflow-hidden">
+                       <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
-      {/* Header with sticky behavior */}
-      <DashboardStickyHeader
-        icon={
-          <>
-            <BarChart3 size={18} className="sm:hidden" />
-            <BarChart3 size={22} className="hidden sm:block" />
-          </>
-        }
-        title={t.charts || "Charts"}
-        stickyIcon={<BarChart3 size={18} />}
-        stickyTitle={t.charts || "Charts"}
-        actions={
-          <button
-            onClick={() => {
-              setEditingChart(null);
-              setEditingChartId(null);
-              setShowChartModal(true);
-            }}
-            disabled={isSaving}
-            className="flex items-center gap-1.5 md:gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-white shadow-lg shadow-[#06b6d4]/20 transition-all hover:from-[#172554] hover:to-[#0891b2] hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap disabled:opacity-50"
-          >
-            {isSaving ? (
-              <Loader2 size={16} className="animate-spin md:w-[18px] md:h-[18px]" />
-            ) : (
-              <Plus size={16} className="md:w-[18px] md:h-[18px]" />
-            )}
-            <span className="hidden sm:inline">{t.createChart || "Create Chart"}</span>
-            <span className="sm:hidden">{t.createBtn || "Create"}</span>
-          </button>
-        }
-      />
-
-      {/* Search and Filters */}
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <div className="relative flex-1">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t.searchCharts || "Search charts..."}
-            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-800 dark:text-white focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 dark:border-neutral-700 dark:bg-neutral-800"
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 rounded-lg bg-slate-100 p-1 dark:bg-neutral-800">
-            {[
-              { id: "all", label: "All" },
-              { id: "bar", label: "Bar", icon: <BarChart3 size={14} /> },
-              { id: "pie", label: "Pie", icon: <PieChart size={14} /> },
-              { id: "line", label: "Line", icon: <LineChart size={14} /> },
-              { id: "kpi", label: "KPI", icon: <TrendingUp size={14} /> },
-            ].map((filter) => (
-              <button
-                key={filter.id}
-                onClick={() => setFilterType(filter.id as FilterType)}
-                className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
-                  filterType === filter.id
-                    ? "bg-white text-[#06b6d4] shadow-sm dark:bg-neutral-700"
-                    : "text-slate-600 dark:text-neutral-400 hover:text-slate-800"
-                }`}
-              >
-                {filter.icon}
-                <span className="hidden sm:inline">{filter.label}</span>
-              </button>
-            ))}
+    <div className="mx-auto max-w-[1400px] w-full p-4 md:p-5 lg:px-6 lg:py-4">
+      {/* Quick Actions & Controls Bar */}
+      <div className="mb-4 flex flex-col gap-3">
+        {/* Controls Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/60 dark:border-zinc-800/60 pb-3">
+          <div className="relative w-full sm:max-w-xs md:max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t.searchCharts || "Search charts..."}
+              className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 shadow-sm shadow-slate-200/50 dark:shadow-none focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all"
+            />
           </div>
 
-          <div className="flex items-center gap-0.5 rounded-lg bg-slate-100 p-1 dark:bg-neutral-800">
-            <button
-              onClick={() => setViewMode("grid")}
-              className={`rounded-md p-2 transition-all ${
-                viewMode === "grid"
-                  ? "bg-white text-[#06b6d4] shadow-sm dark:bg-neutral-700"
-                  : "text-slate-500 hover:text-slate-700 dark:text-neutral-300"
-              }`}
-            >
-              <Grid size={16} />
-            </button>
-            <button
-              onClick={() => setViewMode("list")}
-              className={`rounded-md p-2 transition-all ${
-                viewMode === "list"
-                  ? "bg-white text-[#06b6d4] shadow-sm dark:bg-neutral-700"
-                  : "text-slate-500 hover:text-slate-700 dark:text-neutral-300"
-              }`}
-            >
-              <ListIcon size={16} />
-            </button>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 rounded-2xl bg-white border border-slate-200 shadow-sm shadow-slate-200/50 dark:bg-zinc-900 dark:border-zinc-800 dark:shadow-none p-1">
+              {[
+                { id: "all", label: "All" },
+                { id: "bar", label: "Bar", icon: <BarChart3 size={14} /> },
+                { id: "pie", label: "Pie", icon: <PieChart size={14} /> },
+                { id: "line", label: "Line", icon: <LineChart size={14} /> },
+                { id: "kpi", label: "KPI", icon: <TrendingUp size={14} /> },
+              ].map((filter) => (
+                <button
+                  key={filter.id}
+                  onClick={() => setFilterType(filter.id as FilterType)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all outline-none text-xs font-bold uppercase tracking-wider ${
+                    filterType === filter.id
+                      ? "bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm"
+                      : "text-slate-400 hover:text-slate-600"
+                  }`}
+                >
+                  {filter.icon}
+                  <span className="hidden sm:inline">{filter.label}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center rounded-2xl bg-white border border-slate-200 shadow-sm shadow-slate-200/50 dark:bg-zinc-900 dark:border-zinc-800 dark:shadow-none p-1">
+              <button
+                onClick={() => setViewMode("grid")}
+                title="Grid View"
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all outline-none ${
+                  viewMode === "grid"
+                    ? "bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm"
+                    : "text-slate-400 hover:text-slate-600"
+                }`}
+              >
+                <Grid size={16} />
+                <span className="text-[11px] font-bold uppercase tracking-wider hidden sm:block">Grid</span>
+              </button>
+              <button
+                onClick={() => setViewMode("list")}
+                title="List View"
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all outline-none ${
+                  viewMode === "list"
+                    ? "bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm"
+                    : "text-slate-400 hover:text-slate-600"
+                }`}
+              >
+                <ListIcon size={16} />
+                <span className="text-[11px] font-bold uppercase tracking-wider hidden sm:block">List</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Charts Grid/List */}
-      {filteredCharts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center px-4 py-16">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-neutral-800">
-            <BarChart3 size={32} className="text-slate-400" />
+      <div className="min-h-[400px]">
+        {filteredCharts.length === 0 ? (
+          <div className="flex h-[400px] flex-col items-center justify-center rounded-[32px] border-2 border-dashed border-slate-200/60 dark:border-zinc-800/60 bg-slate-50/50 dark:bg-zinc-900/50 text-center">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white dark:bg-zinc-800 shadow-lg ring-1 ring-slate-900/5 dark:ring-0">
+              <BarChart3 size={28} className="text-[#06b6d4]" />
+            </div>
+            <h3 className="mb-2 text-lg font-bold text-slate-900 dark:text-white">
+              {searchQuery ? (t.noChartsFound || "No charts found") : (t.noChartsYet || "No charts yet")}
+            </h3>
+            <p className="mb-6 max-w-md text-center text-sm font-medium text-slate-500 dark:text-zinc-400">
+              {searchQuery
+                ? (t.tryAdjustingSearch || "Try adjusting your search or filters")
+                : (t.createFirstChart || "Create your first chart to visualize data in your presentations")}
+            </p>
+            {!searchQuery && (
+              <button
+                onClick={() => setShowChartModal(true)}
+                className="group flex items-center gap-2 rounded-2xl bg-slate-900 dark:bg-white px-5 py-3 text-[13px] font-bold text-white dark:text-black hover:bg-slate-800 hover:shadow-[0_4px_14px_rgba(0,0,0,0.1)] transition-all outline-none focus:ring-4 focus:ring-slate-900/10 active:scale-95"
+              >
+                <Plus size={16} className="group-hover:scale-110 transition-transform" />
+                {t.createYourFirstChart || "Create Your First Chart"}
+              </button>
+            )}
           </div>
-          <h3 className="mb-2 text-lg font-semibold text-slate-700 dark:text-neutral-300">
-            {searchQuery ? (t.noChartsFound || "No charts found") : (t.noChartsYet || "No charts yet")}
-          </h3>
-          <p className="mb-6 max-w-md text-center text-sm text-slate-500 dark:text-neutral-400">
-            {searchQuery
-              ? (t.tryAdjustingSearch || "Try adjusting your search or filters")
-              : (t.createFirstChart || "Create your first chart to visualize data in your presentations")}
-          </p>
-          {!searchQuery && (
-            <button
-              onClick={() => setShowChartModal(true)}
-              className="flex items-center gap-2 rounded-lg bg-[#06b6d4] px-4 py-2 font-medium text-white transition-colors hover:bg-[#0891b2]"
-            >
-              <Sparkles size={16} />
-              {t.createYourFirstChart || "Create Your First Chart"}
-            </button>
-          )}
-        </div>
-      ) : viewMode === "grid" ? (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        ) : viewMode === "grid" ? (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 pb-16">
           {filteredCharts.map((chart) => (
             <div
               key={chart.id}
-              className="group relative flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-xl hover:shadow-[#06b6d4]/10 dark:border-neutral-800 dark:bg-neutral-900"
+              className="group relative flex flex-col overflow-hidden rounded-[20px] border border-slate-200/80 shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] ring-1 ring-slate-900/5 dark:ring-0 dark:border-white/10 dark:shadow-none bg-white transition-all duration-300 hover:border-[#06b6d4]/50 hover:-translate-y-1 dark:bg-zinc-950"
             >
               {/* Chart Preview */}
               <div className="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 dark:from-neutral-800 dark:to-neutral-900">
@@ -546,11 +563,11 @@ export default function ChartsPage() {
           ))}
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4 pb-16">
           {filteredCharts.map((chart) => (
             <div
               key={chart.id}
-              className="group flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-lg dark:border-neutral-800 dark:bg-neutral-900"
+              className="group flex items-center gap-5 rounded-[20px] border border-slate-200/80 shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] ring-1 ring-slate-900/5 dark:ring-0 dark:border-white/10 dark:shadow-none bg-white transition-all duration-300 hover:border-[#06b6d4]/50 p-4 dark:bg-zinc-950 cursor-pointer"
             >
               <div className="h-20 w-32 flex-shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-slate-50 to-slate-100 p-2 dark:from-neutral-800 dark:to-neutral-900">
                 <InteractiveChart chart={chart} compact={true} interactive={false} />
@@ -634,6 +651,7 @@ export default function ChartsPage() {
           ))}
         </div>
       )}
+      </div>
 
       {/* Chart Modal */}
       <ChartModal

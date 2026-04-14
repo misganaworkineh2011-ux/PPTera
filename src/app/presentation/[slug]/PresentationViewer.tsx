@@ -303,6 +303,10 @@ export default function PresentationViewer({
     setIsFullscreen,
   });
 
+  const handleCopySlide = async () => {};
+  const handlePasteSlide = async () => {};
+  const handleDeleteSlide = async () => {};
+
   usePresentationKeyboard({
     nextSlide,
     prevSlide,
@@ -626,11 +630,14 @@ export default function PresentationViewer({
               return !prev;
             });
           }}
+          onCopySlide={handleCopySlide}
+          onPasteSlide={handlePasteSlide}
+          onDeleteSlide={handleDeleteSlide}
           onZoomChange={setPresentZoom}
           onShowNavbarInFullscreen={() => setShowNavbarInFullscreen(true)}
           onHideNavbarInFullscreen={() => setShowNavbarInFullscreen(false)}
           onShare={() => setShowShareModal(true)}
-          subscriptionPlan={subscriptionPlan}
+          subscriptionPlan={subscriptionPlan || undefined}
           isFreeUserLimited={isFreeUserLimited}
           freeSlideLimit={freeSlideLimit}
           halfBlurredSlideIndex={halfBlurredSlideIndex}

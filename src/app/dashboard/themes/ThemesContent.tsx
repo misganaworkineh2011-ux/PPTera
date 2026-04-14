@@ -3,7 +3,7 @@
 import type React from "react";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Grid, List as ListIcon, Palette, Trash2, MoreHorizontal, X, Eye, Loader2 } from "lucide-react";
+import { Grid, List as ListIcon, Palette, Trash2, MoreHorizontal, X, Eye, Loader2, Plus } from "lucide-react";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
 
@@ -58,6 +58,7 @@ interface ThemeData {
 
 interface ThemesContentProps {
   initialThemes: ThemeData[];
+  onCreateClick?: () => void;
 }
 
 type ViewMode = "grid" | "list";
@@ -76,7 +77,7 @@ const fontFamilyMap: Record<string, string> = {
   "space-grotesk": "'Space Grotesk', sans-serif",
 };
 
-export default function ThemesContent({ initialThemes }: ThemesContentProps) {
+export default function ThemesContent({ initialThemes, onCreateClick }: ThemesContentProps) {
   const [themes, setThemes] = useState<ThemeData[]>(initialThemes);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
@@ -189,65 +190,79 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
 
   return (
     <>
-      {/* Filters & View Toggle - matching presentations exactly */}
-      <div className="flex flex-row items-center justify-between gap-4 border-b border-slate-100 dark:border-neutral-800 pb-3 sm:pb-4">
-        {/* Left side - Filter buttons */}
-        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 sm:pb-0 -mx-1 px-1">
-          <button
-            className="flex items-center gap-1.5 sm:gap-2 whitespace-nowrap rounded-lg px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition bg-[#1e3a8a]/10 dark:bg-[#1e3a8a]/30 font-bold text-[#1e3a8a] dark:text-white"
-          >
-            <Grid size={14} className="sm:hidden" />
-            <Grid size={16} className="hidden sm:block" />
-            {t.all || "All"}
-          </button>
-        </div>
-
-        {/* Right side - Grid/List toggle */}
-        <div className="flex items-center gap-0.5 sm:gap-1 rounded-lg bg-slate-100 dark:bg-neutral-800 p-0.5 sm:p-1">
-          <button
-            onClick={() => setViewMode("grid")}
-            className={`flex items-center gap-1 sm:gap-2 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 transition ${
-              viewMode === "grid"
-                ? "bg-white dark:bg-neutral-700 text-[#1e3a8a] dark:text-white shadow-sm"
-                : "text-slate-500 hover:text-slate-700 dark:text-neutral-400 dark:hover:text-neutral-200"
-            }`}
-          >
-            <Grid size={16} className="sm:hidden" />
-            <Grid size={20} className="hidden sm:block" />
-            <span className="text-xs sm:text-sm font-medium hidden xs:inline">{t.grid || "Grid"}</span>
-          </button>
-          <button
-            onClick={() => setViewMode("list")}
-            className={`flex items-center gap-1 sm:gap-2 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 transition ${
-              viewMode === "list"
-                ? "bg-white dark:bg-neutral-700 text-[#1e3a8a] dark:text-white shadow-sm"
-                : "text-slate-500 hover:text-slate-700 dark:text-neutral-400 dark:hover:text-neutral-200"
-            }`}
-          >
-            <ListIcon size={16} className="sm:hidden" />
-            <ListIcon size={20} className="hidden sm:block" />
-            <span className="text-xs sm:text-sm font-medium hidden xs:inline">{t.list || "List"}</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Content Display */}
-      <div className="min-h-[300px] sm:min-h-[400px] lg:min-h-[600px]">
-        {themes.length === 0 ? (
-          <div className="flex h-[250px] sm:h-[300px] lg:h-[400px] flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-200 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-900/50 text-center px-4">
-            <div className="mb-3 sm:mb-4 flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-md bg-white dark:bg-neutral-800 shadow-lg ring-1 ring-slate-100 dark:ring-neutral-700">
-              <Palette size={22} className="sm:hidden text-[#06b6d4]" />
-              <Palette size={28} className="hidden sm:block text-[#06b6d4]" />
+      <div className="mx-auto max-w-[1400px] w-full p-4 md:p-5 lg:px-6 lg:py-4">
+        {/* Filters & View Toggle */}
+        <div className="mb-4 flex flex-col gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/60 dark:border-zinc-800/60 pb-3">
+            {/* Left side - Filter buttons and Create button */}
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1 rounded-2xl bg-white border border-slate-200 shadow-sm shadow-slate-200/50 dark:bg-zinc-900 dark:border-zinc-800 dark:shadow-none p-1">
+                <button
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all outline-none text-xs font-bold uppercase tracking-wider bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm"
+                >
+                  <Grid size={14} className="sm:hidden" />
+                  <Grid size={16} className="hidden sm:block" />
+                  {t.all || "All"}
+                </button>
+              </div>
+              
+              {/* Create Custom Theme Button */}
+              <button
+                onClick={onCreateClick}
+                className="group flex items-center gap-2 rounded-2xl bg-slate-900 dark:bg-white px-4 py-2 text-[13px] font-bold text-white dark:text-black hover:bg-slate-800 dark:hover:bg-slate-100 hover:shadow-[0_4px_14px_rgba(0,0,0,0.1)] transition-all outline-none focus:ring-4 focus:ring-slate-900/10 active:scale-95"
+              >
+                <Plus size={16} className="group-hover:scale-110 transition-transform" />
+                <span className="hidden sm:inline">{t.createCustomTheme || "Create Custom Theme"}</span>
+                <span className="sm:hidden">{t.createBtn || "Create"}</span>
+              </button>
             </div>
-            <h3 className="mb-1.5 sm:mb-2 text-base sm:text-lg font-bold text-[#1e3a8a] dark:text-white">
-              {t.noCustomThemes || "No custom themes yet"}
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400 max-w-xs mx-auto">
-              {t.createFirstTheme || "Create your first custom theme to personalize your presentations."}
-            </p>
+
+            {/* Right side - Grid/List toggle */}
+            <div className="flex items-center rounded-2xl bg-white border border-slate-200 shadow-sm shadow-slate-200/50 dark:bg-zinc-900 dark:border-zinc-800 dark:shadow-none p-1">
+              <button
+                onClick={() => setViewMode("grid")}
+                title="Grid View"
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all outline-none ${
+                  viewMode === "grid"
+                    ? "bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm"
+                    : "text-slate-400 hover:text-slate-600"
+                }`}
+              >
+                <Grid size={16} />
+                <span className="text-[11px] font-bold uppercase tracking-wider hidden sm:block">{t.grid || "Grid"}</span>
+              </button>
+              <button
+                onClick={() => setViewMode("list")}
+                title="List View"
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all outline-none ${
+                  viewMode === "list"
+                    ? "bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm"
+                    : "text-slate-400 hover:text-slate-600"
+                }`}
+              >
+                <ListIcon size={16} />
+                <span className="text-[11px] font-bold uppercase tracking-wider hidden sm:block">{t.list || "List"}</span>
+              </button>
+            </div>
           </div>
-        ) : viewMode === "grid" ? (
-          <div className="grid gap-3 sm:gap-4 grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+        </div>
+
+        {/* Content Display */}
+        <div className="min-h-[400px] pb-16">
+          {themes.length === 0 ? (
+            <div className="flex h-[400px] flex-col items-center justify-center rounded-[32px] border-2 border-dashed border-slate-200/60 dark:border-zinc-800/60 bg-slate-50/50 dark:bg-zinc-900/50 text-center px-4">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white dark:bg-zinc-800 shadow-lg ring-1 ring-slate-900/5 dark:ring-0">
+                <Palette size={28} className="text-[#06b6d4]" />
+              </div>
+              <h3 className="mb-2 text-lg font-bold text-slate-900 dark:text-white">
+                {t.noCustomThemes || "No custom themes yet"}
+              </h3>
+              <p className="text-sm font-medium text-slate-500 dark:text-zinc-400 max-w-xs mx-auto">
+                {t.createFirstTheme || "Create your first custom theme to personalize your presentations."}
+              </p>
+            </div>
+          ) : viewMode === "grid" ? (
+            <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {themes.map((theme) => {
               const themeColors = resolveThemeColors(theme);
               const bgImage = getBackgroundImage(theme);
@@ -258,18 +273,18 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
                 <div
                   key={theme.id}
                   onClick={() => setPreviewTheme(theme)}
-                  className="group relative flex flex-col overflow-hidden rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-lg hover:shadow-[#06b6d4]/10 cursor-pointer"
+                  className="group relative flex flex-col overflow-hidden rounded-[20px] border border-slate-200/80 shadow-[0_4px_24px_rgba(0,0,0,0.06)] ring-1 ring-slate-900/5 dark:ring-0 dark:border-white/10 dark:shadow-none bg-white transition-all duration-300 hover:border-[#06b6d4]/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 cursor-pointer dark:bg-zinc-950"
                 >
                   {/* Custom badge */}
-                  <div className="absolute top-2 left-2 z-10">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
+                  <div className="absolute top-3 left-3 z-10">
+                    <span className="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 px-2 py-0.5 text-xs font-bold text-white shadow-sm">
                       ✨ Custom
                     </span>
                   </div>
 
                   {/* Theme Preview - actual slide-like preview */}
                   <div 
-                    className="aspect-[16/10] w-full relative overflow-hidden border-b border-slate-100 dark:border-neutral-800"
+                    className="aspect-[16/10] w-full relative overflow-hidden border-b border-slate-100 dark:border-zinc-800"
                     style={{ 
                       backgroundColor: themeColors.background,
                       backgroundImage: bgImage ? `url(${bgImage})` : undefined,
@@ -286,41 +301,41 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
                     )}
                     
                     {/* Mini slide content */}
-                    <div className="relative p-3 h-full flex flex-col">
+                    <div className="relative p-3 lg:p-5 h-full flex flex-col">
                       <h4 
-                        className="text-sm font-bold mb-1 line-clamp-1"
+                        className="text-base font-bold mb-1.5 line-clamp-1"
                         style={{ color: themeColors.heading, fontFamily: headingFontFamily }}
                       >
                         Title
                       </h4>
                       <p 
-                        className="text-[10px] mb-2 line-clamp-1"
+                        className="text-[11px] mb-2 line-clamp-2"
                         style={{ color: themeColors.text, fontFamily: bodyFontFamily }}
                       >
                         Body &amp; <span style={{ color: themeColors.accent, textDecoration: "underline" }}>link</span>
                       </p>
                       
                       {/* Mini color dots */}
-                      <div className="mt-auto flex gap-1">
-                        <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: themeColors.primary }} />
-                        <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: themeColors.accent }} />
-                        <div className="w-3 h-3 rounded-full shadow-sm border" style={{ backgroundColor: themeColors.backgroundAlt, borderColor: themeColors.primary + "40" }} />
+                      <div className="mt-auto flex gap-1.5">
+                        <div className="w-4 h-4 rounded-full shadow-sm" style={{ backgroundColor: themeColors.primary }} />
+                        <div className="w-4 h-4 rounded-full shadow-sm" style={{ backgroundColor: themeColors.accent }} />
+                        <div className="w-4 h-4 rounded-full shadow-sm border border-slate-200/50" style={{ backgroundColor: themeColors.backgroundAlt }} />
                       </div>
                     </div>
                     
                     {/* Preview icon on hover */}
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
-                      <div className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-full p-2 shadow-lg">
-                        <Eye size={18} className="text-[#1e3a8a] dark:text-[#06b6d4]" />
+                      <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm rounded-full p-2.5 shadow-lg">
+                        <Eye size={20} className="text-slate-900 dark:text-white" />
                       </div>
                     </div>
                   </div>
 
                   {/* Content Section */}
-                  <div className="flex flex-col p-2 sm:p-3 bg-white dark:bg-neutral-900">
+                  <div className="flex flex-col p-4 bg-white dark:bg-zinc-950">
                     {/* Footer with name and menu */}
                     <div className="flex items-center justify-between">
-                      <h3 className="line-clamp-1 text-xs sm:text-sm font-bold text-[#1e3a8a] dark:text-white" title={theme.name}>
+                      <h3 className="line-clamp-1 text-sm font-bold text-slate-900 dark:text-white" title={theme.name}>
                         {theme.name}
                       </h3>
                       <div className="relative menu-container">
@@ -329,37 +344,38 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
                             e.stopPropagation();
                             setActiveMenu(activeMenu === theme.id ? null : theme.id);
                           }}
-                          className="text-slate-300 hover:text-[#06b6d4] dark:text-neutral-500 dark:hover:text-[#06b6d4]"
+                          className="text-slate-400 hover:text-[#06b6d4] dark:text-zinc-500 dark:hover:text-[#06b6d4] transition-colors"
                         >
-                          <MoreHorizontal size={14} />
+                          <MoreHorizontal size={18} />
                         </button>
                         {activeMenu === theme.id && (
-                          <div className="absolute right-0 bottom-full mb-1 w-36 rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg z-50">
-                            <div className="p-1">
+                          <div className="absolute right-0 bottom-full mb-2 w-44 rounded-xl border border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xl z-50 overflow-hidden">
+                            <div className="p-1.5">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setPreviewTheme(theme);
                                   setActiveMenu(null);
                                 }}
-                                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800"
+                                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 font-medium transition-colors"
                               >
-                                <Eye size={14} /> {t.preview || "Preview"}
+                                <Eye size={16} /> {t.preview || "Preview"}
                               </button>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   openDeleteConfirm(theme);
                                 }}
-                                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 font-medium transition-colors mt-1"
                               >
-                                <Trash2 size={14} /> {t.delete || "Delete"}
+                                <Trash2 size={16} /> {t.delete || "Delete"}
                               </button>
                             </div>
                           </div>
                         )}
                       </div>
                     </div>
+                    <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 font-medium">{getFontName(theme)}</p>
                   </div>
                 </div>
               );
@@ -367,7 +383,7 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
           </div>
         ) : (
           /* List View */
-          <div className="space-y-2">
+          <div className="space-y-4">
             {themes.map((theme) => {
               const themeColors = resolveThemeColors(theme);
               const bgImage = getBackgroundImage(theme);
@@ -378,11 +394,11 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
                 <div
                   key={theme.id}
                   onClick={() => setPreviewTheme(theme)}
-                  className="group flex items-center gap-2 sm:gap-4 rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-2 sm:p-3 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-md cursor-pointer"
+                  className="group flex items-center gap-5 rounded-[20px] border border-slate-200/80 shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] ring-1 ring-slate-900/5 dark:ring-0 dark:border-white/10 dark:shadow-none bg-white transition-all duration-300 hover:border-[#06b6d4]/50 hover:-translate-y-0.5 p-4 dark:bg-zinc-950 cursor-pointer"
                 >
                   {/* Theme Preview - mini slide */}
                   <div 
-                    className="w-20 h-14 sm:w-28 sm:h-20 flex-shrink-0 rounded-lg relative overflow-hidden"
+                    className="w-24 h-16 sm:w-32 sm:h-20 flex-shrink-0 rounded-[14px] relative overflow-hidden transition-transform duration-500 group-hover:scale-105 border border-slate-100 dark:border-zinc-800"
                     style={{ 
                       backgroundColor: themeColors.background,
                       backgroundImage: bgImage ? `url(${bgImage})` : undefined,
@@ -416,12 +432,12 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-sm sm:text-base font-bold text-[#1e3a8a] dark:text-white truncate">{theme.name}</h3>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-1.5 py-0.5 text-[8px] font-semibold text-white">
+                      <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate group-hover:text-[#06b6d4] transition-colors">{theme.name}</h3>
+                      <span className="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 px-2 py-0.5 text-[9px] font-bold tracking-wide text-white uppercase">
                         ✨ Custom
                       </span>
                     </div>
-                    <p className="text-[10px] sm:text-xs text-slate-500 dark:text-neutral-400">{getFontName(theme)}</p>
+                    <p className="text-[11px] sm:text-xs text-slate-500 dark:text-zinc-400 font-medium">{getFontName(theme)}</p>
                   </div>
 
                   {/* Actions */}
@@ -431,31 +447,31 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
                         e.stopPropagation();
                         setActiveMenu(activeMenu === theme.id ? null : theme.id);
                       }}
-                      className="text-slate-300 hover:text-[#06b6d4] dark:text-neutral-500 dark:hover:text-[#06b6d4]"
+                      className="p-2 rounded-xl text-slate-400 hover:text-[#06b6d4] hover:bg-[#06b6d4]/10 dark:text-zinc-500 dark:hover:text-[#06b6d4] transition-colors"
                     >
-                      <MoreHorizontal size={18} />
+                      <MoreHorizontal size={20} />
                     </button>
                     {activeMenu === theme.id && (
-                      <div className="absolute right-0 top-full mt-1 w-36 rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg z-50">
-                        <div className="p-1">
+                      <div className="absolute right-0 top-full mt-2 w-44 rounded-xl border border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xl z-50 overflow-hidden">
+                        <div className="p-1.5">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               setPreviewTheme(theme);
                               setActiveMenu(null);
                             }}
-                            className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800"
+                            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 font-medium transition-colors"
                           >
-                            <Eye size={14} /> {t.preview || "Preview"}
+                            <Eye size={16} /> {t.preview || "Preview"}
                           </button>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               openDeleteConfirm(theme);
                             }}
-                            className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 font-medium transition-colors mt-1"
                           >
-                            <Trash2 size={14} /> {t.delete || "Delete"}
+                            <Trash2 size={16} /> {t.delete || "Delete"}
                           </button>
                         </div>
                       </div>
@@ -466,7 +482,7 @@ export default function ThemesContent({ initialThemes }: ThemesContentProps) {
             })}
           </div>
         )}
-      </div>
+      </div></div>
 
       {/* Delete Confirmation Popup - No overlay */}
       {deleteConfirm && (

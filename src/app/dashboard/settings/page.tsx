@@ -123,18 +123,6 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 py-4">
-      <DashboardStickyHeader
-        icon={
-          <>
-            <Monitor size={18} className="sm:hidden" />
-            <Monitor size={22} className="hidden sm:block" />
-          </>
-        }
-        title={t.settingsTitle || "Settings"}
-        stickyIcon={<Monitor size={18} />}
-        stickyTitle={t.settingsTitle || "Settings"}
-      />
-
       <div className="flex flex-col gap-6 lg:flex-row">
         <aside className="w-full lg:w-64 shrink-0">
           <nav className="flex flex-col gap-2">

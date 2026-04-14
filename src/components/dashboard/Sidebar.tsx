@@ -124,9 +124,9 @@ export default function Sidebar({ isCollapsed, subscriptionPlan, onCloseMobile }
   return (
     <aside
       className={cn(
-        "relative flex h-screen flex-col border-r-0 bg-[#f0f4f8] dark:bg-zinc-900 transition-all duration-300",
+        "relative flex h-screen flex-col border-r border-slate-200/80 shadow-[4px_0_24px_rgba(0,0,0,0.06)] bg-[#f8fafc] dark:bg-zinc-950 dark:border-white/10 dark:shadow-none transition-all duration-300 z-40",
         // On mobile, always show full width; on desktop, respect collapsed state
-        "w-72 lg:w-72",
+        "w-64 lg:w-72",
         isCollapsed && "lg:w-20"
       )}
     >
@@ -134,16 +134,26 @@ export default function Sidebar({ isCollapsed, subscriptionPlan, onCloseMobile }
       <div className="flex h-16 lg:h-20 items-center px-4 lg:px-6">
         {/* Logo - centered when expanded, centered icon when collapsed */}
         <div className={cn(
-          "flex items-center justify-center flex-1",
+          "flex items-center justify-center flex-1 overflow-hidden"
         )}>
-          <img 
-            src="/logo.png" 
-            alt="PPTMaster Logo" 
-            className={cn(
-              "w-auto transition-all",
-              isCollapsed ? "lg:h-8" : "h-8 lg:h-10"
-            )} 
-          />
+          {isCollapsed ? (
+            <img 
+              src="/icon.png" 
+              alt="PPTMaster Icon" 
+              className="w-auto h-8 lg:h-9 object-contain"
+              onError={(e) => {
+                // Fallback if icon.png doesn't exist
+                (e.target as HTMLImageElement).src = "/logo.png";
+                (e.target as HTMLImageElement).className = "w-auto h-8 lg:h-9 object-cover object-left max-w-[32px]";
+              }}
+            />
+          ) : (
+            <img 
+              src="/logo.png" 
+              alt="PPTMaster Logo" 
+              className="w-auto h-8 lg:h-9 object-contain"
+            />
+          )}
         </div>
         
         {/* Mobile close button */}
@@ -156,18 +166,18 @@ export default function Sidebar({ isCollapsed, subscriptionPlan, onCloseMobile }
       </div>
 
       {/* Navigation */}
-      <div className="flex-1 overflow-y-auto px-3 lg:px-4 py-2">
-        <nav className="space-y-4 lg:space-y-6">
-          {navGroups.map((group) => (
-            <div key={group.title}>
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 no-scrollbar">
+        <nav className="space-y-4">
+          {navGroups.map((group, index) => (
+            <div key={group.title} className={cn(index > 0 && "pt-4 border-t border-slate-200/60 dark:border-zinc-800/60")}>
               {/* Show group titles on mobile always, on desktop only when not collapsed */}
               <h3 className={cn(
-                "mb-2 px-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-500",
+                "mb-2 px-3 text-[10px] font-extrabold uppercase tracking-[0.1em] text-slate-400 dark:text-zinc-500",
                 isCollapsed && "lg:hidden"
               )}>
                 {group.title}
               </h3>
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 {group.items.map((item) => {
                   // For presentations link (href="/"), consider active if on "/" or "/dashboard"
                   const isActive = item.href === "/"
@@ -175,37 +185,30 @@ export default function Sidebar({ isCollapsed, subscriptionPlan, onCloseMobile }
                     : pathname === item.href;
                   
                   const itemClasses = cn(
-                    "group flex items-center gap-3 rounded-lg px-4 py-2.5 text-[14px] font-semibold transition-all scale-95 active:scale-90",
+                    "group relative flex items-center gap-3 rounded-xl px-3 py-2 text-[13.5px] font-semibold transition-all duration-200 select-none outline-none",
                     isActive
-                      ? "bg-[#f1f5f9]/50 text-[#0b97c2] border-r-4 border-[#0b97c2] shadow-sm dark:bg-zinc-800 dark:text-[#0b97c2]"
-                      : "text-slate-500 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white",
-                    isCollapsed && "lg:justify-center lg:px-2",
-                    isActive && "cursor-default font-bold"
+                      ? "bg-slate-900 text-white shadow-sm shadow-slate-900/10 dark:bg-white dark:text-black"
+                      : "text-slate-500 hover:bg-slate-100/80 hover:text-slate-900 hover:translate-x-1 dark:text-zinc-400 dark:hover:bg-zinc-800/50 dark:hover:text-white",
+                    isCollapsed && "lg:justify-center lg:px-0 hover:translate-x-0"
                   );
 
                   const content = (
                     <>
                       <item.icon
-                        size={20}
-                        strokeWidth={isActive ? 2.5 : 1.5}
+                        size={16}
+                        strokeWidth={isActive ? 2.5 : 2}
                         className={cn(
                           "transition-colors flex-shrink-0",
-                          isActive ? "text-[#0b97c2]" : "text-slate-500 group-hover:text-slate-700 dark:text-zinc-500 dark:group-hover:text-white"
+                          isActive ? "text-white dark:text-black" : "text-slate-400 group-hover:text-slate-700 dark:text-zinc-500 dark:group-hover:text-zinc-200"
                         )}
                       />
                       {/* Show text on mobile always, on desktop only when not collapsed */}
                       <span className={cn(
-                        "flex-1",
+                        "flex-1 tracking-wide",
                         isCollapsed && "lg:hidden"
                       )}>
                         {item.name}
                       </span>
-                      {isActive && (
-                        <div className={cn(
-                          "h-1.5 w-1.5 rounded-full bg-[#06b6d4]",
-                          isCollapsed && "lg:hidden"
-                        )} />
-                      )}
                     </>
                   );
 

@@ -121,26 +121,35 @@ export default function CollaborationPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-[400px] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-[#06b6d4]" />
+      <div className="max-w-7xl mx-auto space-y-6 p-4 sm:p-6 lg:p-8 h-full">
+        {/* Tabs skeleton */}
+        <div className="flex gap-2 border-b border-slate-200 dark:border-neutral-800 pb-2">
+          {[1, 2].map((i) => (
+            <div key={i} className="h-10 w-32 bg-slate-200 dark:bg-neutral-800 rounded animate-pulse" />
+          ))}
+        </div>
+
+        {/* Content skeleton */}
+        <div className="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900 p-6">
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 p-4">
+                <div className="h-10 w-10 rounded-lg bg-slate-200 dark:bg-neutral-800 animate-pulse" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-3/4 bg-slate-200 dark:bg-neutral-800 rounded animate-pulse" />
+                  <div className="h-3 w-1/2 bg-slate-100 dark:bg-neutral-700 rounded animate-pulse" />
+                </div>
+                <div className="h-8 w-20 bg-slate-200 dark:bg-neutral-800 rounded animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 h-full">
-      <DashboardStickyHeader
-        icon={
-          <>
-            <Users size={18} className="sm:hidden" />
-            <Users size={22} className="hidden sm:block" />
-          </>
-        }
-        title={t.collaborationTitle || "Collaboration"}
-        stickyIcon={<Users size={18} />}
-        stickyTitle={t.collaborationTitle || "Collaboration"}
-      />
-
+    <div className="max-w-7xl mx-auto space-y-6 p-4 sm:p-6 lg:p-8 h-full">
       <div className="flex gap-2 border-b border-slate-200 dark:border-neutral-800">
         <button
           onClick={() => setActiveTab("shared-with-me")}

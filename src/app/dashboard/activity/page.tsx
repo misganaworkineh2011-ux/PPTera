@@ -217,43 +217,11 @@ export default function ActivityPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 h-full">
-        {/* Header - static with sticky behavior */}
-        <DashboardStickyHeader
-          icon={
-            <>
-              <History size={18} className="sm:hidden" />
-              <History size={22} className="hidden sm:block" />
-            </>
-          }
-          title={t.activityTitle || "Activity"}
-          stickyIcon={<History size={18} />}
-          stickyTitle={t.activityTitle || "Activity"}
-          actions={
-            <button
-              disabled
-              className="flex items-center gap-1.5 md:gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-slate-400 dark:border-neutral-700 dark:bg-neutral-800 whitespace-nowrap"
-            >
-              <RefreshCw size={14} />
-              <span className="hidden sm:inline">{t.refresh}</span>
-            </button>
-          }
-        />
-
-        {/* Filter buttons - static */}
+      <div className="max-w-7xl mx-auto space-y-6 p-4 sm:p-6 lg:p-8 h-full">
+        {/* Filter buttons skeleton */}
         <div className="flex gap-2 overflow-x-auto pb-2">
-          {activityTypes.map((type) => (
-            <button
-              key={type}
-              disabled
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap ${
-                type === "all"
-                  ? "bg-[#1e3a8a] text-white"
-                  : "bg-slate-100 text-slate-400 dark:bg-neutral-800 dark:text-neutral-500"
-              }`}
-            >
-              {getFilterLabel(type)}
-            </button>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-9 w-20 bg-slate-200 dark:bg-neutral-800 rounded-lg animate-pulse shrink-0" />
           ))}
         </div>
 
@@ -283,29 +251,7 @@ export default function ActivityPage() {
   }
 
   return (
-    <div className="space-y-6 h-full">
-      <DashboardStickyHeader
-        icon={
-          <>
-            <History size={18} className="sm:hidden" />
-            <History size={22} className="hidden sm:block" />
-          </>
-        }
-        title={t.activityTitle || "Activity"}
-        stickyIcon={<History size={18} />}
-        stickyTitle={t.activityTitle || "Activity"}
-        actions={
-          <button
-            onClick={() => fetchActivities(currentPage, filter, false)}
-            disabled={isPageLoading}
-            className="flex items-center gap-1.5 md:gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-[#1e3a8a] hover:border-[#1e3a8a]/20 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700 disabled:opacity-50 whitespace-nowrap"
-          >
-            <RefreshCw size={14} className={isPageLoading ? "animate-spin" : ""} />
-            <span className="hidden sm:inline">{t.refresh}</span>
-          </button>
-        }
-      />
-
+    <div className="max-w-7xl mx-auto space-y-6 p-4 sm:p-6 lg:p-8 h-full">
       <div className="flex gap-2 overflow-x-auto pb-2">
         {activityTypes.map((type) => (
           <button

@@ -50,7 +50,7 @@ export default function ShareTab({
           const data = await res.json();
           setSharePassword(data.sharePassword || "");
           if (data.shareExpiresAt) {
-            setShareExpiresAt(new Date(data.shareExpiresAt).toISOString().split('T')[0]);
+            setShareExpiresAt(new Date(data.shareExpiresAt).toISOString().split('T')[0] ?? null);
           }
         }
       } catch (err) {

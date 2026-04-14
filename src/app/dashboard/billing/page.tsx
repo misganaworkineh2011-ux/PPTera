@@ -94,15 +94,6 @@ export default function BillingPage() {
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto space-y-6 py-6">
-        {/* Header - static with sticky behavior */}
-        <DashboardStickyHeader
-          icon={<CreditCard size={22} />}
-          title={t.billingTitle || "Billing"}
-          subtitle={t.billingSubtitle || "Manage your subscription and credits"}
-          stickyIcon={<CreditCard size={18} />}
-          stickyTitle={t.billingTitle || "Billing"}
-        />
-
         {/* Current Plan Skeleton */}
         <div className="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 p-6">
           <div className="flex items-center justify-between mb-6">
@@ -213,15 +204,6 @@ export default function BillingPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 py-6">
-      {/* Header with sticky behavior */}
-      <DashboardStickyHeader
-        icon={<CreditCard size={22} />}
-        title={t.billingTitle || "Billing"}
-        subtitle={t.billingSubtitle || "Manage your subscription and credits"}
-        stickyIcon={<CreditCard size={18} />}
-        stickyTitle={t.billingTitle || "Billing"}
-      />
-
       {/* Current Plan */}
       <div className="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 p-6">
         <div className="flex items-center justify-between mb-6">

@@ -75,10 +75,10 @@ export default function ThemesPageClient({ initialThemes }: ThemesPageClientProp
   return (
     <div className="space-y-4 sm:space-y-6 lg:space-y-8 h-full">
       {/* Sticky Header Section */}
-      <ThemesStickyHeader onCreateClick={handleCreateClick} />
+      <ThemesStickyHeader />
 
       {/* Themes Content */}
-      <ThemesContent initialThemes={themes} />
+      <ThemesContent initialThemes={themes} onCreateClick={handleCreateClick} />
 
       {/* Custom Theme Creator Modal */}
       <CustomThemeCreator

@@ -125,65 +125,40 @@ export default function ImagesPageClient({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header with sticky behavior */}
-      <DashboardStickyHeader
-        icon={
-          <>
-            <ImageIcon size={18} className="sm:hidden" />
-            <ImageIcon size={22} className="hidden sm:block" />
-          </>
-        }
-        title={t.imagesTitle || "Images"}
-        stickyIcon={<ImageIcon size={18} />}
-        stickyTitle={t.imagesTitle || "Images"}
-        actions={
-          <button
-            onClick={() => setShowGenerator(true)}
-            className="flex items-center gap-1.5 md:gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-white shadow-lg shadow-[#06b6d4]/20 transition-all hover:from-[#172554] hover:to-[#0891b2] hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap"
-          >
-            <Sparkles size={16} className="md:w-[18px] md:h-[18px]" />
-            <span className="hidden sm:inline">{t.generateWithAI || "Generate with AI"}</span>
-            <span className="sm:hidden">{t.generate || "Generate"}</span>
-          </button>
-        }
-      />
-
-      {/* Search and View Toggle */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <input
-            type="text"
-            placeholder={t.searchImages || "Search images..."}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent"
-          />
-        </div>
-        <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-neutral-800 rounded-lg">
-          <button
-            onClick={() => setViewMode("grid")}
-            className={cn(
-              "p-2 rounded-md transition",
-              viewMode === "grid"
-                ? "bg-white dark:bg-neutral-700 shadow-sm text-[#06b6d4] dark:text-white"
-                : "text-slate-500 hover:text-slate-700 dark:text-neutral-400 dark:hover:text-white"
-            )}
-          >
-            <Grid className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => setViewMode("list")}
-            className={cn(
-              "p-2 rounded-md transition",
-              viewMode === "list"
-                ? "bg-white dark:bg-neutral-700 shadow-sm text-[#06b6d4] dark:text-white"
-                : "text-slate-500 hover:text-slate-700 dark:text-neutral-400 dark:hover:text-white"
-            )}
-          >
-            <ListIcon className="h-4 w-4" />
-          </button>
+    <div className="mx-auto max-w-[1400px] w-full p-4 md:p-5 lg:px-6 lg:py-4">
+      {/* Quick Actions & Controls Bar */}
+      <div className="mb-4 flex flex-col gap-3">
+        {/* Controls Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/60 dark:border-zinc-800/60 pb-3">
+          <div className="relative w-full sm:max-w-xs md:max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder={t.searchImages || "Search images..."}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 shadow-sm shadow-slate-200/50 dark:shadow-none focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all"
+            />
+          </div>
+          
+          <div className="flex items-center rounded-2xl bg-white border border-slate-200 shadow-sm shadow-slate-200/50 dark:bg-zinc-900 dark:border-zinc-800 dark:shadow-none p-1">
+            <button
+              onClick={() => setViewMode("grid")}
+              title="Grid View"
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all outline-none ${viewMode === "grid" ? "bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm" : "text-slate-400 hover:text-slate-600"}`}
+            >
+              <Grid size={16} />
+              <span className="text-[11px] font-bold uppercase tracking-wider hidden sm:block">Grid</span>
+            </button>
+            <button
+              onClick={() => setViewMode("list")}
+              title="List View"
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all outline-none ${viewMode === "list" ? "bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm" : "text-slate-400 hover:text-slate-600"}`}
+            >
+              <ListIcon size={16} />
+              <span className="text-[11px] font-bold uppercase tracking-wider hidden sm:block">List</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -213,15 +188,15 @@ export default function ImagesPageClient({
             )}
           </div>
         ) : viewMode === "grid" ? (
-          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {filteredImages.map((img) => (
               <div
                 key={img.id}
                 onClick={() => setSelectedImage(img)}
-                className="group relative flex flex-col overflow-hidden rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm transition-all hover:border-[#06b6d4]/50 hover:shadow-lg hover:shadow-[#06b6d4]/10 cursor-pointer"
+                className="group relative flex flex-col overflow-hidden rounded-[20px] border border-slate-200/80 shadow-md ring-1 ring-slate-900/5 dark:ring-0 dark:border-white/10 dark:shadow-none bg-white dark:bg-zinc-950 transition-all duration-300 hover:border-[#06b6d4]/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 cursor-pointer"
               >
                 {/* Image Thumbnail */}
-                <div className="aspect-square w-full bg-gradient-to-br from-[#1e3a8a]/10 to-[#06b6d4]/10 relative overflow-hidden">
+                <div className="aspect-square w-full bg-slate-50 dark:bg-zinc-900 border-b border-slate-100 dark:border-zinc-800 relative overflow-hidden">
                   {img.url && !failedImages.has(img.id) ? (
                     <Image
                       src={img.url}
@@ -279,8 +254,8 @@ export default function ImagesPageClient({
                 </div>
 
                 {/* Content Section */}
-                <div className="flex flex-col p-3">
-                  <h3 className="line-clamp-1 text-sm font-medium text-slate-900 dark:text-white" title={img.filename}>
+                <div className="flex flex-col p-4 lg:p-5">
+                  <h3 className="line-clamp-1 text-[14px] font-bold text-slate-900 dark:text-white leading-snug group-hover:text-[#06b6d4] transition-colors" title={img.filename}>
                     {img.filename}
                   </h3>
                 </div>
@@ -289,14 +264,14 @@ export default function ImagesPageClient({
           </div>
         ) : (
           /* List View */
-          <div className="space-y-2">
+          <div className="space-y-3">
             {filteredImages.map((img) => (
               <div
                 key={img.id}
                 onClick={() => setSelectedImage(img)}
-                className="flex items-center gap-4 p-3 rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-[#06b6d4]/50 cursor-pointer transition"
+                className="group flex items-center gap-5 rounded-[20px] border border-slate-200/80 shadow-sm ring-1 ring-slate-900/5 dark:ring-0 dark:border-white/10 dark:shadow-none bg-white dark:bg-zinc-950 p-3 transition-all duration-300 hover:border-[#06b6d4]/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-0.5 cursor-pointer"
               >
-                <div className="h-16 w-16 rounded-lg overflow-hidden bg-slate-100 dark:bg-neutral-800 flex-shrink-0">
+                <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-[14px] overflow-hidden bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 flex-shrink-0 transition-transform duration-500 group-hover:scale-105">
                   {img.url && !failedImages.has(img.id) ? (
                     <Image
                       src={img.url}
@@ -319,10 +294,10 @@ export default function ImagesPageClient({
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-slate-900 dark:text-white truncate">
+                  <h3 className="text-[15px] font-bold text-slate-900 dark:text-white truncate group-hover:text-[#06b6d4] transition-colors mb-1">
                     {img.filename}
                   </h3>
-                  <p className="text-sm text-slate-500 dark:text-neutral-400">
+                  <p className="text-[11px] font-semibold text-slate-400 dark:text-zinc-500">
                     {formatDate(img.createdAt)}
                   </p>
                 </div>
@@ -332,7 +307,7 @@ export default function ImagesPageClient({
                     setDeleteConfirmId(img.id);
                   }}
                   disabled={deletingId === img.id}
-                  className="p-2 text-slate-400 hover:text-red-500 transition"
+                  className="p-3 text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-xl transition"
                 >
                   {deletingId === img.id ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

@@ -1,4 +1,5 @@
-
+const fs = require('fs');
+const content = `
 "use client";
 
 import { Palette, Plus, Grid, List as ListIcon } from "lucide-react";
@@ -13,13 +14,13 @@ function Shimmer() {
 export default function ThemesLoading() {
   return (
     <>
-      <style jsx global>{`
+      <style jsx global>{\`
         @keyframes shimmer {
           100% {
             transform: translateX(100%);
           }
         }
-      `}</style>
+      \`}</style>
 
       <div className="mx-auto max-w-[1400px] w-full p-4 md:p-5 lg:px-6 lg:py-4 space-y-4 sm:space-y-6 lg:space-y-8 h-full">
         {/* Sticky Header Simulation */}
@@ -74,7 +75,7 @@ export default function ThemesLoading() {
               <div
                 key={i}
                 className="group relative flex flex-col overflow-hidden rounded-[20px] border border-slate-200/80 shadow-[0_4px_24px_rgba(0,0,0,0.06)] ring-1 ring-slate-900/5 dark:ring-0 dark:border-white/10 dark:shadow-none bg-white transition-all duration-300 dark:bg-zinc-950"
-                style={{ animationDelay: `${i * 50}ms` }}
+                style={{ animationDelay: \`\${i * 50}ms\` }}
               >
                 {/* Theme Preview */}
                 <div className="aspect-[16/10] w-full relative overflow-hidden border-b border-slate-100 dark:border-zinc-800 bg-slate-100/80 dark:bg-zinc-900/80">
@@ -98,3 +99,5 @@ export default function ThemesLoading() {
     </>
   );
 }
+`;
+fs.writeFileSync('src/app/dashboard/themes/loading.tsx', content);

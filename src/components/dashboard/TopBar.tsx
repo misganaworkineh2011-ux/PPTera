@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bell, Search, Sparkles, Gift, AlertCircle, AlertTriangle, FileText, Image as ImageIcon, BarChart, Palette, Sparkles as SparklesIcon, Users, History, Menu, Settings } from "lucide-react";
+import { Bell, Search, Sparkles, Gift, AlertCircle, AlertTriangle, FileText, Image as ImageIcon, BarChart, Palette, Sparkles as SparklesIcon, Users, History, Menu, Settings, Upload, Plus } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
 import { useStickyContext } from "./DashboardLayout";
 import { usePathname } from "next/navigation";
@@ -9,6 +9,8 @@ import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
 import { useDashboard } from "~/contexts/DashboardContext";
 import PricingModal from "./PricingModal";
+import * as Dialog from "@radix-ui/react-dialog";
+import ProjectCreationWizard from "./ProjectCreationWizard";
 
 interface Notification {
   id: string;
@@ -33,6 +35,7 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
   const [loading, setLoading] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
   const { user } = useDashboard();
   const pathname = usePathname();
   const { language } = useLanguage();
@@ -139,78 +142,91 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
   }, [showNotifications]);
 
   return (
-    <header className="md:sticky top-0 z-30 flex h-14 lg:h-20 items-center justify-between bg-[#f0f4f8]/95 backdrop-blur-[12px] dark:bg-zinc-900/95 px-3 sm:px-4 lg:px-8 border-b border-[#bdc8cf]/20 dark:border-zinc-800 gap-2 lg:gap-4">
+    <header className="md:sticky top-0 z-30 flex h-14 lg:h-20 items-center justify-between bg-white/80 backdrop-blur-md dark:bg-zinc-950/80 px-4 lg:px-10 border-b border-slate-200/80 shadow-[0_4px_24px_rgba(0,0,0,0.06)] dark:border-white/10 dark:shadow-none gap-4">
       {/* Left: Mobile menu button + Title */}
-      <div className="flex items-center gap-2 lg:gap-3 shrink-0">
+      <div className="flex items-center gap-3 shrink-0">
         {/* Mobile menu button */}
         <button
           data-onboarding="mobile-menu"
           onClick={() => setIsMobileSidebarOpen(true)}
-          className="lg:hidden p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800"
+          className="lg:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-900"
         >
           <Menu size={22} />
         </button>
-        
-        {/* Sticky title content - only show on md+ screens */}
-        {isTitleSticky && stickyTitleContent ? (
-          <div className="hidden md:flex items-center gap-2">{stickyTitleContent}</div>
-        ) : null}
       </div>
 
-      {/* Right: Search Bar and Actions */}
-      <div className="flex items-center gap-2 lg:gap-3 flex-1 justify-end">
-        {/* Search Bar - Hidden on mobile, shown on sm+ */}
-        <div className={`relative transition-all hidden sm:block ${isTitleSticky ? "max-w-xs" : "max-w-md"} ${isTitleSticky ? "w-48 lg:w-64" : "w-full"}`}>
-          <Search className="absolute left-3 lg:left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-zinc-500" />
+      {/* Center: Action Buttons + Search Bar */}
+      <div className="hidden sm:flex flex-1 items-center justify-start px-4 gap-4">
+        
+        {/* Action Buttons (Before Search Bar) */}
+        <div className="flex items-center gap-3 shrink-0 ml-4">
+           <button className="flex items-center gap-2 rounded-full bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 px-5 py-2.5 text-[14px] font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-zinc-800 transition-all active:scale-95">
+              <Upload size={16} className="text-slate-500" />
+              Import
+           </button>
+           <button onClick={() => setIsWizardOpen(true)} className="group flex items-center gap-2 rounded-full bg-slate-900 dark:bg-white px-5 py-2.5 text-[14px] font-bold text-white dark:text-black hover:bg-slate-800 hover:shadow-[0_4px_14px_rgba(0,0,0,0.1)] transition-all outline-none focus:ring-4 focus:ring-slate-900/10 active:scale-95">
+              <Plus size={16} className="group-hover:scale-110 transition-transform" />
+              New AI PPT
+           </button>
+        </div>
+
+        <div className="relative w-[360px] max-w-full">
+          <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-zinc-500" />
           <input
             type="text"
             value={searchQuery}
             onChange={handleSearchChange}
-            placeholder={t.search || "Search..."}
-            className="w-full rounded-full border-none bg-white dark:bg-zinc-800 pl-9 lg:pl-11 pr-3 lg:pr-4 py-2 lg:py-2.5 text-sm font-medium text-slate-700 dark:text-white shadow-sm ring-1 ring-slate-200 dark:ring-zinc-700 placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]/20 dark:focus:ring-white/20"
+            placeholder={t.search || "Search projects..."}
+            className="w-full rounded-2xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900 pl-11 pr-4 py-2.5 text-sm font-medium text-slate-700 dark:text-white transition-all focus:bg-white dark:focus:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 dark:focus:ring-[#06b6d4]/10 focus:border-[#06b6d4]"
           />
         </div>
-        
+      </div>
+
+      {/* Right: Actions and System Info */}
+      <div className="flex items-center shrink-0">
         {/* Mobile search button */}
         <button
           onClick={() => setShowMobileSearch(!showMobileSearch)}
-          className="sm:hidden p-2 rounded-full bg-white dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 shadow-sm ring-1 ring-slate-200 dark:ring-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-700"
+          className="sm:hidden p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white mr-2"
         >
           <Search size={18} />
         </button>
         
-        {/* Upgrade Button - Always visible, text shows from xl+ */}
-        <button
-          data-onboarding="upgrade"
-          onClick={() => setShowPricingModal(true)}
-          className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 px-2.5 xl:px-4 py-1.5 xl:py-2 text-sm font-semibold text-white shadow-sm transition hover:shadow-md"
-        >
-          <Sparkles size={14} />
-          <span className="hidden xl:inline">{t.upgrade || "Upgrade"}</span>
-        </button>
-        
-        {/* Credits Badge - Hidden on small screens */}
-        <button
-          onClick={() => setShowPricingModal(true)}
-          className="hidden md:flex items-center gap-2 rounded-full bg-white dark:bg-zinc-800 px-3 lg:px-4 py-2 text-xs lg:text-sm font-semibold text-slate-700 dark:text-white shadow-sm ring-1 ring-slate-200 dark:ring-zinc-700 transition hover:ring-[#06b6d4] hover:shadow-md cursor-pointer"
-        >
-          <span className="flex h-2 w-2 rounded-full bg-[#06b6d4]"></span>
-          <span>{credits}</span>
-          <span className="hidden lg:inline">{t.credits || "Credits"}</span>
-        </button>
-        
-        {/* Notifications */}
-        <div className="relative notifications-container">
+        {/* System Info Cluster */}
+        <div className="hidden md:flex items-center gap-2 mr-3">
+          {/* Subtle Credits Indicator */}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-zinc-900/80 text-[12px] font-bold text-slate-500 dark:text-zinc-400">
+            <Sparkles size={12} className="text-[#06b6d4]" />
+            <span>{credits}</span>
+            <span className="font-semibold text-slate-400">Credits</span>
+          </div>
+          
+          {/* Upgrade Button */}
           <button
-            onClick={() => setShowNotifications(!showNotifications)}
-            className="relative flex h-9 w-9 lg:h-10 lg:w-10 items-center justify-center rounded-full bg-white dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 shadow-sm ring-1 ring-slate-200 dark:ring-zinc-700 transition hover:bg-slate-50 dark:hover:bg-zinc-700 hover:text-slate-700 dark:hover:text-white"
+            data-onboarding="upgrade"
+            onClick={() => setShowPricingModal(true)}
+            className="flex items-center gap-1.5 rounded-full bg-[#06b6d4]/10 dark:bg-[#06b6d4]/20 border border-[#06b6d4]/20 px-4 py-1.5 text-[12px] font-black uppercase tracking-wider text-[#06b6d4] transition-all hover:bg-[#06b6d4] hover:text-white active:scale-95"
           >
-            <Bell size={18} className="lg:hidden" />
-            <Bell size={20} className="hidden lg:block" />
-            {unreadCount > 0 && (
-              <span className="absolute right-2 top-2 lg:right-2.5 lg:top-2.5 h-2 w-2 rounded-full border-2 border-white dark:border-zinc-800 bg-[#06b6d4]"></span>
-            )}
+            {t.upgrade || "Upgrade"}
           </button>
+        </div>
+        
+        {/* Divider */}
+        <div className="hidden sm:block h-6 w-px bg-slate-200 dark:bg-zinc-800 mx-2" />
+
+        {/* Account Cluster */}
+        <div className="flex items-center gap-2 ml-1">
+          {/* Notifications */}
+          <div className="relative notifications-container flex items-center">
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="relative p-2 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-900 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-white transition-colors"
+            >
+              <Bell size={20} />
+              {unreadCount > 0 && (
+                <span className="absolute right-2 top-2 h-2 w-2 rounded-full border-2 border-white dark:border-zinc-950 bg-[#06b6d4]"></span>
+              )}
+            </button>
 
           {/* Notifications Dropdown */}
           {showNotifications && (
@@ -302,10 +318,11 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
           afterSignOutUrl="/"
           appearance={{
             elements: {
-              avatarBox: "h-8 w-8 lg:h-10 lg:w-10 ring-2 ring-slate-200 hover:ring-[#06b6d4] transition-all",
+              avatarBox: "h-8 w-8 lg:h-9 lg:w-9 ring-2 ring-slate-100 hover:ring-[#06b6d4] transition-all",
             },
           }}
         />
+        </div>
       </div>
       
       {/* Mobile Search Overlay */}
@@ -331,6 +348,22 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
         onClose={() => setShowPricingModal(false)}
         currentPlan={user?.subscriptionPlan}
       />
+
+      {/* Project Wizard Modal */}
+      <Dialog.Root open={isWizardOpen} onOpenChange={setIsWizardOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm transition-opacity" />
+          <Dialog.Content className="fixed left-1/2 top-1/2 z-[9999] w-[95vw] sm:w-full max-w-2xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl bg-transparent shadow-2xl outline-none">
+            <Dialog.Title className="sr-only">{t.createNewPresentation || "Create New Presentation"}</Dialog.Title>
+            <ProjectCreationWizard 
+              userId={user?.id || ""} 
+              credits={credits || 0} 
+              onClose={() => setIsWizardOpen(false)} 
+            />
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
     </header>
   );
 }

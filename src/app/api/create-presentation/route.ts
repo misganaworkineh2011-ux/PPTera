@@ -133,13 +133,12 @@ export async function POST(request: Request) {
     const isFreeUser = !user.subscriptionPlan || user.subscriptionPlan.toLowerCase() === 'free';
     const requestedSlideCount = slides.length;
     
-    // For free users: generate all slides, but mark which are locked
-    // Show first half fully, one slide half-blurred, rest hidden
-    const freeSlideLimit = Math.floor(requestedSlideCount / 2); // e.g., 5 for 10 slides, 4 for 8 slides
-    const halfBlurredSlideIndex = freeSlideLimit; // The slide after the free ones (0-indexed)
+    // For free users: show all 10 slides (no blurring anymore)
+    const freeSlideLimit = requestedSlideCount; 
+    const halfBlurredSlideIndex = -1; // No blurring
     
-    // All slides will be created, but we'll mark the locked state
-    const slidesToCreate = slides; // Generate ALL slides
+    // All slides will be created
+    const slidesToCreate = slides; 
     const actualSlideCount = slidesToCreate.length;
 
     console.log("[create-presentation] Slide limiting:", {
@@ -152,7 +151,7 @@ export async function POST(request: Request) {
       willShowBlurred: isFreeUser && requestedSlideCount > freeSlideLimit,
     });
 
-    // Credit check: 4 credits per slide (only for slides we're actually creating)
+    // Credit check: 4 credits per slide
     const creditsNeeded = calculateSlideCredits(actualSlideCount);
 
     if (user.credits < creditsNeeded) {
@@ -214,21 +213,21 @@ export async function POST(request: Request) {
       });
 
       // Deduct credits based on actual slides created (4 credits per slide)
-      // Outline generation itself is free; we only charge when presentation is created
       const creditsUsed = calculateSlideCredits(actualSlideCount);
-      await db.user.update({
-        where: { id: user.id },
-        data: { credits: { decrement: creditsUsed } },
-      });
+      if (creditsUsed > 0) {
+        await db.user.update({
+          where: { id: user.id },
+          data: { credits: { decrement: creditsUsed } },
+        });
+      }
 
       console.log("[create-presentation] Created presentation with outlineId:", validOutlineId, {
         isFreeUser,
         requestedSlides: requestedSlideCount,
         createdSlides: actualSlideCount,
-        hasLockedSlides: isFreeUser && requestedSlideCount > 5,
       });
 
-      const redirectUrl = `/presentation/${slug}-${presentation.id}?mode=ai&streaming=true${isFreeUser && requestedSlideCount > freeSlideLimit ? '&showUpgrade=true' : ''}`;
+      const redirectUrl = `/presentation/${slug}-${presentation.id}?mode=ai&streaming=true`;
 
       return NextResponse.json({
         success: true,
@@ -237,16 +236,11 @@ export async function POST(request: Request) {
         slug,
         redirectUrl,
         streaming: true,
-        isLimited: isFreeUser && requestedSlideCount > freeSlideLimit,
+        isLimited: false,
         createdSlides: actualSlideCount,
         totalSlides: requestedSlideCount,
-        freeSlideLimit: isFreeUser ? freeSlideLimit : undefined,
-        halfBlurredSlideIndex: isFreeUser ? halfBlurredSlideIndex : undefined,
-        // Include info about locked slides
-        ...(isFreeUser && requestedSlideCount > freeSlideLimit ? {
-          lockedSlidesCount: requestedSlideCount - freeSlideLimit - 1, // -1 for the half-blurred slide
-          showUpgradePrompt: true,
-        } : {}),
+        freeSlideLimit: requestedSlideCount,
+        halfBlurredSlideIndex: -1,
       });
     }
 

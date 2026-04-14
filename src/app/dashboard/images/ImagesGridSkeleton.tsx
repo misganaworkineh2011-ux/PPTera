@@ -2,70 +2,61 @@
 
 import { Grid, List as ListIcon, Search, Sparkles } from "lucide-react";
 
+// Shimmer effect component
+function Shimmer() {
+  return (
+    <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+  );
+}
+
 export default function ImagesGridSkeleton() {
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[#1e3a8a] dark:text-white">
-            Images
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Manage your images and generate new ones with AI
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            disabled
-            className="flex items-center gap-1.5 md:gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-white shadow-lg shadow-[#06b6d4]/20 opacity-80"
-          >
-            <Sparkles size={16} className="md:w-[18px] md:h-[18px]" />
-            <span className="hidden sm:inline">Generate with AI</span>
-            <span className="sm:hidden">Generate</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Search and View Toggle */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search images..."
-            disabled
-            className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-slate-900 dark:text-white placeholder-slate-400"
-          />
-        </div>
-        <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-neutral-900 rounded-lg">
-          <button className="p-2 rounded-md bg-white dark:bg-neutral-800 shadow-sm text-[#06b6d4]">
-            <Grid className="h-4 w-4" />
-          </button>
-          <button className="p-2 rounded-md text-slate-500">
-            <ListIcon className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-
-      {/* Skeleton Grid */}
-      <div className="min-h-[400px]">
-        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 animate-pulse">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <div
-              key={i}
-              className="flex flex-col overflow-hidden rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900"
-            >
-              {/* Image Thumbnail Skeleton */}
-              <div className="aspect-square w-full bg-slate-200 dark:bg-neutral-800" />
-              {/* Content Section */}
-              <div className="p-3">
-                <div className="h-4 w-3/4 bg-slate-200 dark:bg-neutral-800 rounded" />
-              </div>
+    <>
+      <style jsx global>{`
+        @keyframes shimmer {
+          100% {
+            transform: translateX(100%);
+          }
+        }
+      `}</style>
+      
+      <div className="mx-auto max-w-[1400px] w-full p-4 md:p-5 lg:px-6 lg:py-4">
+        {/* Quick Actions & Controls Bar completely simulated to match actual UI */}
+        <div className="mb-4 flex flex-col gap-3">
+          {/* Controls Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/60 dark:border-zinc-800/60 pb-3">
+            <div className="h-10 w-[200px] sm:w-[320px] bg-slate-200 dark:bg-zinc-800 rounded-2xl relative overflow-hidden">
+               <Shimmer />
             </div>
-          ))}
+            <div className="h-9 w-[140px] bg-slate-200 dark:bg-zinc-800 rounded-2xl relative overflow-hidden">
+               <Shimmer />
+            </div>
+          </div>
+        </div>
+
+        {/* Skeleton Grid */}
+        <div className="min-h-[400px] pb-16">
+          <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 animate-pulse">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex flex-col overflow-hidden rounded-[20px] border border-slate-200/80 shadow-md ring-1 ring-slate-900/5 dark:ring-0 dark:border-white/10 dark:shadow-none bg-white dark:bg-zinc-950"
+              >
+                {/* Image Thumbnail Skeleton */}
+                <div className="aspect-square w-full bg-slate-100 dark:bg-zinc-900 border-b border-slate-100 dark:border-zinc-800 relative overflow-hidden">
+                   <Shimmer />
+                </div>
+                {/* Content Section */}
+                <div className="p-4 lg:p-5">
+                  <div className="h-4 w-3/4 bg-slate-200 dark:bg-zinc-800 rounded relative overflow-hidden">
+                     <Shimmer />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -57,6 +57,14 @@ interface PresentationContentAreaProps {
   onShowNavbarInFullscreen: () => void;
   onHideNavbarInFullscreen: () => void;
   onShare: () => void;
+  onCopySlide: (index: number) => void;
+  onPasteSlide: (index: number) => void;
+  onDeleteSlide: (index: number) => void;
+  onUpgrade?: () => void;
+  subscriptionPlan?: string;
+  isFreeUserLimited?: boolean;
+  freeSlideLimit?: number;
+  halfBlurredSlideIndex?: number | null;
 }
 
 export function PresentationContentArea({
@@ -97,6 +105,14 @@ export function PresentationContentArea({
   onShowNavbarInFullscreen,
   onHideNavbarInFullscreen,
   onShare,
+  onCopySlide,
+  onPasteSlide,
+  onDeleteSlide,
+  onUpgrade,
+  subscriptionPlan,
+  isFreeUserLimited,
+  freeSlideLimit,
+  halfBlurredSlideIndex
 }: PresentationContentAreaProps) {
   const ui = getUIColors(getThemeType(theme));
 
