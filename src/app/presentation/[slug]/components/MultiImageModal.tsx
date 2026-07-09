@@ -10,6 +10,7 @@ import { getModalColors } from "~/app/presentation/[slug]/components/ui-colors";
 import PricingModal from "~/components/dashboard/PricingModal";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
+import { ImageUploadButton } from "~/components/presentation/ImageUploadButton";
 
 // AI Image model options with credit costs - matches CreatePresentationClient
 const AI_IMAGE_MODELS = [
@@ -385,6 +386,21 @@ export function MultiImageModal({
                 >
                   Paste a direct link to an image (JPG, PNG, WebP).
                 </p>
+
+                <div className="mt-3 flex items-center gap-3">
+                  <div className="h-px flex-1" style={{ backgroundColor: colors.border }} />
+                  <span className="text-xs" style={{ color: colors.textMuted }}>
+                    {t.orLabel || "or"}
+                  </span>
+                  <div className="h-px flex-1" style={{ backgroundColor: colors.border }} />
+                </div>
+                <ImageUploadButton
+                  presentationId={presentationId}
+                  onUploaded={(url) => onUrlChange(url)}
+                  label="Upload from computer"
+                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-60"
+                  style={{ borderColor: colors.border, color: colors.text, backgroundColor: colors.surface }}
+                />
 
                 {imageUrl && (
                   <div 

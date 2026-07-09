@@ -25,6 +25,7 @@ async function PresentationsGrid({ userId, userName }: { userId: string; userNam
         updatedAt: true,
         thumbnailUrl: true,
         shareToken: true,
+        outlineId: true,
       },
     }),
     db.presentation.count({

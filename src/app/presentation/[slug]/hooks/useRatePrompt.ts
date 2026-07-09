@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import type { Dispatch, SetStateAction } from "react";
-import { checkExistingReview, incrementPresentationCount } from "~/components/RateUsModal";
+import { checkExistingReview, incrementPresentationCount } from "~/components/rate-us-utils";
 
 interface UseRatePromptParams {
   isOwner: boolean;

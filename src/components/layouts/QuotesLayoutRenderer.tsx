@@ -10,6 +10,8 @@ import type {
 import EditableText from "~/components/presentation/EditableText";
 import type { Theme } from "~/lib/themes";
 import { CONTENT_FONT_SIZE } from "~/components/presentation/slide-typography";
+import { alpha } from "~/components/presentation/PremiumComponents";
+import { containerVariantsFor, itemMotionProps } from "~/components/presentation/item-animations";
 
 // Animation variants for staggered quote animations
 const containerVariants = {
@@ -95,6 +97,8 @@ interface QuotesLayoutRendererProps {
   isNarrowSpace?: boolean;
   isPresenting?: boolean;
   animationKey?: string;
+  itemAnimation?: string;
+  revealCount?: number;
   // Editing props
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
@@ -136,6 +140,8 @@ export function QuotesLayoutRenderer({
   hasImage = false, // New prop to indicate if slide has image
   isPresenting = false,
   animationKey,
+  itemAnimation,
+  revealCount,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -214,6 +220,31 @@ export function QuotesLayoutRenderer({
     const isDragOver = dragOverIndex === idx;
     return `${isDragging ? "opacity-50" : ""} ${isDragOver ? "ring-2 ring-blue-500 ring-offset-2" : ""}`;
   };
+
+  if (layoutId.startsWith("quote-style-")) {
+    return (
+      <ExtendedQuotes
+        layoutId={layoutId}
+        items={displayItems}
+        themeStyles={themeStyles}
+        className={className}
+        isPresenting={isPresenting}
+        animationKey={animationKey}
+        itemAnimation={itemAnimation}
+        revealCount={revealCount}
+        isEditing={isEditing}
+        editingText={editingText}
+        onStartEditLabel={onStartEditLabel}
+        onStartEditText={onStartEditText}
+        onUpdateLabel={onUpdateLabel}
+        onUpdateText={onUpdateText}
+        onFinishEditing={onFinishEditing}
+        onDeleteItem={onDeleteItem}
+        isOwner={isOwner}
+        isHovered={isHovered}
+      />
+    );
+  }
 
   if (layoutId === "quote-bubble") {
     return (
@@ -520,6 +551,10 @@ function MarksQuotes({
   };
 
   // When no image, use row layout with content-driven sizing
+  const accentHex = /^#[0-9a-f]{6}$/i.test(themeStyles.accentColor) ? themeStyles.accentColor : null;
+  const premiumBg = accentHex
+    ? `radial-gradient(110% 110% at 0% 0%, ${accentHex}12 0%, transparent 50%), ${themeStyles.cardBgColor}`
+    : themeStyles.cardBgColor;
   const containerClass = hasImage
     ? `flex flex-wrap gap-8 justify-center ${className}`
     : `flex gap-6 items-stretch w-full ${className}`;
@@ -574,9 +609,9 @@ function MarksQuotes({
               </div>
             )}
             <div
-              className={isPresenting ? "h-full rounded-xl p-8 pt-10 relative shadow-sm border" : "h-full rounded-xl p-8 pt-10 relative shadow-sm border hover:shadow-md transition-all"}
+              className={isPresenting ? "h-full rounded-xl p-8 pt-10 relative ppt-tile border" : "h-full rounded-xl p-8 pt-10 relative ppt-tile border"}
               style={{
-                backgroundColor: themeStyles.cardBgColor,
+                background: premiumBg,
                 borderColor: themeStyles.cardBorderColor,
               }}
             >
@@ -626,16 +661,14 @@ function MarksQuotes({
                     onFinish={onFinishEditing || (() => {})}
                     onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
                     className="leading-relaxed italic flex-1"
-                    style={{ fontSize: CONTENT_FONT_SIZE.normal }}
-                    style={{ color: themeStyles.bodyColor }}
+                    style={{ fontSize: CONTENT_FONT_SIZE.normal, color: themeStyles.bodyColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
                   />
                 ) : (
                   <p
                     className="leading-relaxed italic flex-1"
-                    style={{ fontSize: CONTENT_FONT_SIZE.normal }}
-                    style={{ color: themeStyles.bodyColor }}
+                    style={{ fontSize: CONTENT_FONT_SIZE.normal, color: themeStyles.bodyColor }}
                   >
                     {item.text}
                   </p>
@@ -670,6 +703,289 @@ function MarksQuotes({
       })}
     </Container>
   );
+}
+
+// Styles 3-12: extended testimonial treatments (avatars, ratings, pull-quotes)
+function ExtendedQuotes({
+  layoutId,
+  items,
+  themeStyles,
+  className,
+  isPresenting = false,
+  animationKey,
+  itemAnimation,
+  revealCount,
+  isEditing = false,
+  editingText = null,
+  onStartEditLabel,
+  onStartEditText,
+  onUpdateLabel,
+  onUpdateText,
+  onFinishEditing,
+  onDeleteItem,
+  isOwner = false,
+  isHovered = false,
+}: {
+  layoutId: string;
+  items: QuoteContentItem[];
+  themeStyles: ThemeStyles;
+  className: string;
+  isPresenting?: boolean;
+  animationKey?: string;
+  itemAnimation?: string;
+  revealCount?: number;
+  isEditing?: boolean;
+  editingText?: { field: string; bulletIndex?: number } | null;
+  onStartEditLabel?: (index: number) => void;
+  onStartEditText?: (index: number) => void;
+  onUpdateLabel?: (index: number, value: string) => void;
+  onUpdateText?: (index: number, value: string) => void;
+  onFinishEditing?: () => void;
+  onDeleteItem?: (index: number) => void;
+  isOwner?: boolean;
+  isHovered?: boolean;
+}) {
+  const accent = themeStyles.accentColor;
+  const titleColor = themeStyles.titleColor;
+  const bodyColor = themeStyles.bodyColor;
+  const cardBg = themeStyles.cardBgColor;
+  const cardBorder = themeStyles.cardBorderColor;
+
+  const Container = isPresenting ? motion.div : "div";
+  const cProps = isPresenting
+    ? { variants: containerVariantsFor(itemAnimation), initial: "hidden" as const, animate: "visible" as const }
+    : {};
+  const CItem = isPresenting ? motion.div : "div";
+  const itemMotion = (i: number) => itemMotionProps(isPresenting, itemAnimation, revealCount, i);
+
+  const initialsOf = (name?: string) => {
+    const w = (name || "").trim().split(/\s+/).filter(Boolean);
+    if (!w.length) return "❞";
+    return ((w[0]![0] || "") + (w[1]?.[0] || "")).toUpperCase();
+  };
+
+  const editText = (item: QuoteContentItem, index: number, cls: string, style?: React.CSSProperties) =>
+    onStartEditText ? (
+      <EditableText value={item.text} isEditing={isEditing && editingText?.field === `content-text-${index}`}
+        onStartEdit={() => onStartEditText(index)} onChange={(val) => onUpdateText?.(index, val)}
+        onFinish={onFinishEditing || (() => {})} onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
+        className={cls} style={{ color: bodyColor, ...style }} isOwner={isOwner} isHovered={isHovered} />
+    ) : (
+      <p className={cls} style={{ color: bodyColor, ...style }}>{item.text}</p>
+    );
+
+  const editLabel = (item: QuoteContentItem, index: number, cls: string, style?: React.CSSProperties) =>
+    item.label ? (
+      onStartEditLabel ? (
+        <EditableText value={item.label} isEditing={isEditing && editingText?.field === `content-label-${index}`}
+          onStartEdit={() => onStartEditLabel(index)} onChange={(val) => onUpdateLabel?.(index, val)}
+          onFinish={onFinishEditing || (() => {})} onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
+          className={cls} style={{ color: titleColor, ...style }} isOwner={isOwner} isHovered={isHovered} />
+      ) : (
+        <h3 className={cls} style={{ color: titleColor, ...style }}>{item.label}</h3>
+      )
+    ) : null;
+
+  const avatar = (item: QuoteContentItem, sizeRem: number, ring = false) => {
+    const inner = (
+      <div className="flex items-center justify-center rounded-full font-bold" style={{ width: `${sizeRem}rem`, height: `${sizeRem}rem`, background: alpha(accent, "22"), color: accent, fontSize: `${sizeRem * 0.4}rem` }}>
+        {initialsOf(item.author || item.label)}
+      </div>
+    );
+    if (!ring) return inner;
+    return (
+      <div className="flex items-center justify-center rounded-full" style={{ padding: 2, background: `conic-gradient(from 140deg, ${accent}, ${alpha(accent, "33")}, ${accent})` }}>
+        <div className="rounded-full" style={{ background: cardBg, padding: 2 }}>{inner}</div>
+      </div>
+    );
+  };
+
+  const stars = () => (
+    <div className="flex gap-0.5 text-base leading-none" aria-hidden>
+      {Array.from({ length: 5 }).map((_, i) => <span key={i} style={{ color: accent }}>★</span>)}
+    </div>
+  );
+
+  const gridCols = (n: number) => (n <= 2 ? n : n <= 4 ? 2 : 3);
+  const frame = `w-full h-full ${className}`;
+  const hero = items[0];
+  const n = items.length;
+
+  // == QUOTE-STYLE-3: BIG QUOTE — one hero centered pull-quote
+  if (layoutId === "quote-style-3" && hero) {
+    return (
+      <Container className={`${frame} flex flex-col items-center justify-center text-center px-10`} key={animationKey} {...cProps}>
+        <CItem className="max-w-3xl" style={{}} {...itemMotion(0)}>
+          <QuoteIcon className="mx-auto mb-4 h-12 w-12 rotate-180" color={alpha(accent, "66")} />
+          {editText(hero, 0, "text-2xl sm:text-3xl font-semibold italic leading-snug", { color: titleColor })}
+          {hero.author && (
+            <div className="mt-6 flex items-center justify-center gap-3">
+              <span className="h-px w-8" style={{ background: cardBorder }} />
+              <span className="text-sm font-bold uppercase tracking-wider" style={{ color: accent }}>{hero.author}</span>
+            </div>
+          )}
+        </CItem>
+      </Container>
+    );
+  }
+
+  // == QUOTE-STYLE-4: AUTHOR CARD — quote card with an avatar chip footer
+  if (layoutId === "quote-style-4") {
+    return (
+      <Container className={`${frame} grid items-stretch gap-5`} style={{ gridTemplateColumns: `repeat(${gridCols(n)}, minmax(0, 1fr))` }} key={animationKey} {...cProps}>
+        {items.map((item, index) => (
+          <CItem key={index} className="ppt-tile flex flex-col rounded-2xl p-6" style={{ background: cardBg, border: `1px solid ${cardBorder}` }} {...itemMotion(index)}>
+            <QuoteIcon className="mb-3 h-7 w-7 rotate-180" color={alpha(accent, "80")} />
+            {editText(item, index, "flex-1 text-sm sm:text-base italic leading-relaxed")}
+            <div className="mt-5 flex items-center gap-3 border-t pt-4" style={{ borderColor: cardBorder }}>
+              {avatar(item, 2.5)}
+              <div className="min-w-0">
+                {item.author && <div className="text-sm font-bold" style={{ color: titleColor }}>{item.author}</div>}
+                {editLabel(item, index, "text-xs leading-snug", { color: accent })}
+              </div>
+            </div>
+          </CItem>
+        ))}
+      </Container>
+    );
+  }
+
+  // == QUOTE-STYLE-5: SIDE PORTRAIT — avatar left, quote right, author beneath
+  if (layoutId === "quote-style-5") {
+    return (
+      <Container className={`${frame} grid items-center gap-6`} style={{ gridTemplateColumns: `repeat(${n <= 2 ? n : 2}, minmax(0, 1fr))` }} key={animationKey} {...cProps}>
+        {items.map((item, index) => (
+          <CItem key={index} className="flex items-start gap-4" {...itemMotion(index)}>
+            <div className="shrink-0">{avatar(item, 3.5, true)}</div>
+            <div className="min-w-0 flex-1">
+              {editText(item, index, "text-sm sm:text-base italic leading-relaxed")}
+              {item.author && <div className="mt-2 text-sm font-bold" style={{ color: accent }}>{item.author}</div>}
+              {editLabel(item, index, "text-xs leading-snug", { color: bodyColor })}
+            </div>
+          </CItem>
+        ))}
+      </Container>
+    );
+  }
+
+  // == QUOTE-STYLE-6: MINIMAL LINE — chromeless italic quote, accent left rule
+  if (layoutId === "quote-style-6") {
+    return (
+      <Container className={`${frame} grid content-center gap-x-10 gap-y-6`} style={{ gridTemplateColumns: `repeat(${n <= 3 ? 1 : 2}, minmax(0, 1fr))` }} key={animationKey} {...cProps}>
+        {items.map((item, index) => (
+          <CItem key={index} className="border-l-2 pl-5" style={{ borderColor: accent }} {...itemMotion(index)}>
+            {editText(item, index, "text-base sm:text-lg italic leading-relaxed", { color: titleColor })}
+            {item.author && <div className="mt-2.5 text-xs font-bold uppercase tracking-[0.16em]" style={{ color: accent }}>{item.author}</div>}
+          </CItem>
+        ))}
+      </Container>
+    );
+  }
+
+  // == QUOTE-STYLE-7: RATING CARD — a five-star row above the quote
+  if (layoutId === "quote-style-7") {
+    return (
+      <Container className={`${frame} grid items-stretch gap-5`} style={{ gridTemplateColumns: `repeat(${gridCols(n)}, minmax(0, 1fr))` }} key={animationKey} {...cProps}>
+        {items.map((item, index) => (
+          <CItem key={index} className="ppt-tile flex flex-col rounded-2xl p-6" style={{ background: cardBg, border: `1px solid ${cardBorder}` }} {...itemMotion(index)}>
+            {stars()}
+            {editText(item, index, "mt-3 flex-1 text-sm sm:text-base leading-relaxed")}
+            {item.author && (
+              <div className="mt-4 flex items-center gap-2.5 border-t pt-3.5" style={{ borderColor: cardBorder }}>
+                {avatar(item, 2.25)}
+                <span className="text-sm font-bold" style={{ color: titleColor }}>{item.author}</span>
+              </div>
+            )}
+          </CItem>
+        ))}
+      </Container>
+    );
+  }
+
+  // == QUOTE-STYLE-8: GRADIENT QUOTE — accent-gradient card, white text
+  if (layoutId === "quote-style-8") {
+    return (
+      <Container className={`${frame} grid items-stretch gap-5`} style={{ gridTemplateColumns: `repeat(${gridCols(n)}, minmax(0, 1fr))` }} key={animationKey} {...cProps}>
+        {items.map((item, index) => (
+          <CItem key={index} className="flex flex-col rounded-2xl p-6" style={{ background: `linear-gradient(150deg, ${accent}, ${alpha(accent, "b3")})`, boxShadow: `0 12px 30px -14px ${alpha(accent, "99")}` }} {...itemMotion(index)}>
+            <QuoteIcon className="mb-3 h-8 w-8 rotate-180" color="rgba(255,255,255,0.55)" />
+            {editText(item, index, "flex-1 text-sm sm:text-base font-medium leading-relaxed", { color: "#ffffff" })}
+            {item.author && (
+              <div className="mt-5 border-t pt-3.5" style={{ borderColor: "rgba(255,255,255,0.25)" }}>
+                <span className="text-sm font-bold" style={{ color: "#ffffff" }}>{item.author}</span>
+              </div>
+            )}
+          </CItem>
+        ))}
+      </Container>
+    );
+  }
+
+  // == QUOTE-STYLE-9: GHOST MARK — a huge ghost quotation mark behind the quote
+  if (layoutId === "quote-style-9") {
+    return (
+      <Container className={`${frame} grid items-stretch gap-5`} style={{ gridTemplateColumns: `repeat(${n <= 2 ? n : 2}, minmax(0, 1fr))` }} key={animationKey} {...cProps}>
+        {items.map((item, index) => (
+          <CItem key={index} className="ppt-tile relative flex flex-col overflow-hidden rounded-2xl p-7" style={{ background: cardBg, border: `1px solid ${cardBorder}` }} {...itemMotion(index)}>
+            <span aria-hidden className="pointer-events-none absolute -top-6 left-2 select-none font-serif leading-none" style={{ fontSize: "9rem", color: alpha(accent, "14") }}>“</span>
+            <div className="relative flex flex-1 flex-col">
+              {editText(item, index, "flex-1 text-base sm:text-lg italic leading-relaxed", { color: titleColor })}
+              {item.author && <div className="mt-4 text-sm font-bold" style={{ color: accent }}>— {item.author}</div>}
+            </div>
+          </CItem>
+        ))}
+      </Container>
+    );
+  }
+
+  // == QUOTE-STYLE-10: SPEECH ROWS — alternating speech-bubble rows with avatars
+  if (layoutId === "quote-style-10") {
+    return (
+      <Container className={`${frame} flex flex-col justify-center gap-4`} key={animationKey} {...cProps}>
+        {items.map((item, index) => {
+          const left = index % 2 === 0;
+          return (
+            <CItem key={index} className={`flex items-end gap-3 ${left ? "" : "flex-row-reverse"}`} {...itemMotion(index)}>
+              <div className="shrink-0">{avatar(item, 2.75)}</div>
+              <div className="max-w-[78%] rounded-2xl px-5 py-3.5" style={{ background: alpha(accent, "17"), border: `1px solid ${alpha(accent, "2e")}`, [left ? "borderBottomLeftRadius" : "borderBottomRightRadius"]: 4 }}>
+                {editText(item, index, `text-sm leading-relaxed ${left ? "" : "text-right"}`, { color: titleColor })}
+                {item.author && <div className={`mt-1 text-xs font-bold ${left ? "" : "text-right"}`} style={{ color: accent }}>{item.author}</div>}
+              </div>
+            </CItem>
+          );
+        })}
+      </Container>
+    );
+  }
+
+  // == QUOTE-STYLE-11: EDITORIAL PULL — oversized pull-quote framed by rules
+  if (layoutId === "quote-style-11" && hero) {
+    return (
+      <Container className={`${frame} flex items-center justify-center px-10`} key={animationKey} {...cProps}>
+        <CItem className="max-w-4xl py-8 text-center" style={{ borderTop: `2px solid ${alpha(accent, "40")}`, borderBottom: `2px solid ${alpha(accent, "40")}` }} {...itemMotion(0)}>
+          {editText(hero, 0, "text-3xl sm:text-4xl font-bold italic leading-[1.14] tracking-tight", { color: titleColor })}
+          {hero.author && <div className="mt-5 text-sm font-bold uppercase tracking-[0.2em]" style={{ color: accent }}>{hero.author}</div>}
+        </CItem>
+      </Container>
+    );
+  }
+
+  // == QUOTE-STYLE-12: COMPACT GRID — tighter cards with a mark and author
+  if (layoutId === "quote-style-12") {
+    return (
+      <Container className={`${frame} grid content-center items-stretch gap-3.5`} style={{ gridTemplateColumns: `repeat(${n <= 4 ? 2 : 3}, minmax(0, 1fr))` }} key={animationKey} {...cProps}>
+        {items.map((item, index) => (
+          <CItem key={index} className="flex flex-col rounded-xl p-4" style={{ background: cardBg, border: `1px solid ${cardBorder}` }} {...itemMotion(index)}>
+            <QuoteIcon className="mb-2 h-5 w-5 rotate-180" color={alpha(accent, "80")} />
+            {editText(item, index, "flex-1 text-xs sm:text-sm leading-relaxed")}
+            {item.author && <div className="mt-2.5 text-xs font-bold" style={{ color: accent }}>{item.author}</div>}
+          </CItem>
+        ))}
+      </Container>
+    );
+  }
+
+  return null;
 }
 
 export default QuotesLayoutRenderer;

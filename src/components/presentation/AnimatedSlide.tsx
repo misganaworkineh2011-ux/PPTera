@@ -48,6 +48,21 @@ const getOptimizedAnimation = (animation: typeof ANIMATION_PRESETS[0]) => {
      };
   }
   
+  // Keep zoom transitions on-screen. Some premium presets used scale 3–5, which
+  // blew the slide up far past the viewport in fullscreen/present mode (it looked
+  // broken mid-transition). Cap any scale value at 1.2x so a "focus-in" stays
+  // subtle and readable; zoom-from-small (scale < 1) is untouched.
+  const clampScale = (obj: Record<string, unknown>) => {
+    for (const key of ["scale", "scaleX", "scaleY"]) {
+      const v = obj[key];
+      if (typeof v === "number" && v > 1.2) obj[key] = 1.2;
+    }
+    return obj;
+  };
+  clampScale(initial);
+  clampScale(animate);
+  clampScale(exit);
+
   return { initial, animate, exit, transition: optimizedTransition };
 };
 
@@ -87,7 +102,10 @@ export default function AnimatedSlide({
 
   return (
     <div style={{ perspective: "1500px", width: "100%", height: "100%", overflow: "hidden" }}>
-      <AnimatePresence mode="wait" initial={false}>
+      {/* initial must stay enabled: with initial={false} the FIRST slide's
+          content items inherit the suppressed-initial presence context and
+          snap in without their entrance animation. */}
+      <AnimatePresence mode="wait" initial>
         <motion.div
           key={`slide-${slideKey}`}
           className="w-full h-full"

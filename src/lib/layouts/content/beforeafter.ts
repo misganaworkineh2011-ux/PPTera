@@ -12,7 +12,31 @@ export interface BeforeAfterContentItem {
 }
 
 // Before/After layout type identifier
-export type BeforeAfterLayoutType = "beforeafter-circle";
+// beforeafter-circle: hub with before arc on the left, after arc on the right
+// beforeafter-style-2: Split Panel — muted BEFORE panel, accent AFTER panel, arrow
+// beforeafter-style-3: Arrow Transform — before items → big arrow → after items
+// beforeafter-style-4: Two Columns — BEFORE column vs AFTER column with headers
+// beforeafter-style-5: Ledger Rows — paired before → after rows
+// beforeafter-style-6: Diagonal Split — a diagonal before/after split
+// beforeafter-style-7: Metric Deltas — before value → after value with a delta
+// beforeafter-style-8: Stacked Compare — before card stacked above after per item
+// beforeafter-style-9: Slider — a before/after divider with a center handle
+// beforeafter-style-10: Timeline Transform — before → transformation → after
+// beforeafter-style-11: Mirror Split — mirrored before/after with a center seam
+// beforeafter-style-12: Toggle Cards — dim before cards brightening to after
+export type BeforeAfterLayoutType =
+  | "beforeafter-circle"
+  | "beforeafter-style-2"
+  | "beforeafter-style-3"
+  | "beforeafter-style-4"
+  | "beforeafter-style-5"
+  | "beforeafter-style-6"
+  | "beforeafter-style-7"
+  | "beforeafter-style-8"
+  | "beforeafter-style-9"
+  | "beforeafter-style-10"
+  | "beforeafter-style-11"
+  | "beforeafter-style-12";
 
 // Before/After layout definition interface
 export interface BeforeAfterLayout {
@@ -47,6 +71,18 @@ export const beforeAfterLayouts: BeforeAfterLayout[] = [
       style: "circle-comparison",
     },
   },
+  ...(["beforeafter-style-2","beforeafter-style-3","beforeafter-style-4","beforeafter-style-5","beforeafter-style-6","beforeafter-style-7","beforeafter-style-8","beforeafter-style-9","beforeafter-style-10","beforeafter-style-11","beforeafter-style-12"] as const).map((id, i) => ({
+    id,
+    name: ["Split Panel","Arrow Transform","Two Columns","Ledger Rows","Diagonal Split","Metric Deltas","Stacked Compare","Slider","Timeline Transform","Mirror Split","Toggle Cards"][i]!,
+    description: ["Muted before panel and accent after panel with an arrow","Before items flow through a big arrow into after items","Before column versus after column with headers","Paired before → after rows","A diagonal before/after split","Before value → after value with a delta","A before card stacked above the after card","A before/after divider with a center handle","Before → transformation → after in a timeline","Mirrored before/after with a center seam","Dim before cards brightening into after"][i]!,
+    category: "beforeafter" as const,
+    minItems: 4,
+    maxItems: 12,
+    idealItems: 8,
+    adaptive: true as const,
+    supportsIcons: true as const,
+    preview: { style: "circle-comparison" as const },
+  })),
 ];
 
 // Get before/after layout by ID

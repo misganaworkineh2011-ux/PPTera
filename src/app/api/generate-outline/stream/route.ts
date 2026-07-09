@@ -1,9 +1,31 @@
 import { auth } from "@clerk/nextjs/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 import { env } from "~/env";
 import { db } from "~/server/db";
+import { AI_MODELS } from "~/lib/ai/models";
+import { LAYOUT_REGISTRY } from "~/lib/presentation/smart-layout/registry/layout-registry";
+
+/**
+ * Structural contract per layout, generated from the SAME registry the
+ * scoring engine uses — so the outline LLM chooses a layout knowing its exact
+ * item budget and text shape, and writes the outline to FIT it. Because this
+ * derives from LAYOUT_REGISTRY, prompt and scorer can never drift apart.
+ */
+function buildLayoutStructureCatalog(): string {
+  return LAYOUT_REGISTRY.map((def) => {
+    const { min, max } = def.capacity.bulletCount;
+    // bullet lengths are in characters; ~6 chars per word
+    const maxChars =
+      def.capacity.maxBulletLength?.max ?? def.capacity.avgBulletLength?.max ?? 60;
+    const maxWords = Math.max(4, Math.round(maxChars / 6));
+    const image = def.capacity.supportsImage ? "image OK" : "NO image";
+    return `- "${def.category}": ${min}-${max} items, each "Label: text" with text ≤${maxWords} words (${image})`;
+  }).join("\n");
+}
 
 const gemini = env.GEMINI_API_KEY ? new GoogleGenerativeAI(env.GEMINI_API_KEY) : null;
+const openai = env.OPENAI_API_KEY ? new OpenAI({ apiKey: env.OPENAI_API_KEY }) : null;
 
 // Define slide limits by plan
 const PLAN_SLIDE_LIMITS = {
@@ -75,12 +97,42 @@ function getSanitizedErrorMessage(error: unknown): string {
   return "Something went wrong. Please try again.";
 }
 
+// Bullets must be plain strings for the rest of the pipeline. The model
+// sometimes returns structured objects ({label,text} / {heading,description});
+// coerce them to strings at the source so nothing downstream renders an object.
+function coerceBulletToString(b: unknown): string {
+  if (typeof b === "string") return b;
+  if (b && typeof b === "object") {
+    const o = b as Record<string, unknown>;
+    const label =
+      typeof o.label === "string" ? o.label :
+      typeof o.heading === "string" ? o.heading :
+      typeof o.title === "string" ? o.title : "";
+    const text =
+      typeof o.text === "string" ? o.text :
+      typeof o.description === "string" ? o.description :
+      typeof o.content === "string" ? o.content : "";
+    if (label && text) return `${label}: ${text}`;
+    return text || label || "";
+  }
+  return b == null ? "" : String(b);
+}
+
+function normalizeSlideBullets(slide: any): any {
+  if (slide && Array.isArray(slide.bulletPoints)) {
+    slide.bulletPoints = slide.bulletPoints
+      .map(coerceBulletToString)
+      .filter((s: string) => s.trim().length > 0);
+  }
+  return slide;
+}
+
 /**
  * Validate and normalize slide metadata for smart layout selection
  * Ensures all required fields are present with fallback values
  */
 function validateAndNormalizeSlideMetadata(slide: any): any {
-  const normalized = { ...slide };
+  const normalized = normalizeSlideBullets({ ...slide });
   let hasWarnings = false;
   
   // Only validate content slides (title slides don't need layout metadata)
@@ -193,7 +245,8 @@ export async function POST(req: Request) {
     );
   }
 
-  const { description, numberOfSlides, tone, language, outlineId } = body as {
+  const { description, numberOfSlides, tone, language, outlineId, textDensity } = body as {
+    textDensity?: string;
     description?: string;
     numberOfSlides?: number;
     tone?: string;
@@ -333,16 +386,63 @@ Fields:
 Suggest a content layout CATEGORY based on the slide's semantic meaning.
 IMPORTANT: This is just a hint - the presentation generator will make the final decision based on content density and image placement.
 
-Choose ONE category that best matches the content's nature:
-- "boxes": Distinct concepts, features, benefits, categories that deserve equal visual weight
-- "bullets": Traditional lists, supporting details, hierarchical content
-- "sequence": Sequential processes, timelines, chronological flows where order matters
-- "steps": Step-by-step guides, tutorials, procedural instructions with numbered steps
-- "quotes": Testimonials, quotes, statements, expert opinions
-- "circles": Interconnected concepts, cycles, circular relationships
-- "numbers": Statistics, metrics, data points, numerical highlights
+Choose ONE category that best matches the content's nature. Each renders as a DISTINCT visual treatment — pick the one whose shape fits the idea:
+- "boxes": cards in a grid — distinct concepts, features, or benefits shown side by side
+- "bullets": a clean vertical list — supporting details or hierarchical points
+- "sequence": a connected timeline/flow — chronological or ordered progression where order matters
+- "steps": numbered step-by-step blocks — procedures, how-tos, tutorials
+- "quotes": one large centered quotation — testimonials or expert statements (full-width, no image)
+- "circles": a circular/cyclical arrangement — interconnected concepts or loops (full-width, no image)
+- "numbers": big bold statistics — metrics and numerical highlights rendered as hero numbers
+- "comparison": a side-by-side split — two options, before/after, or pros vs cons
+- "funnel": narrowing stages — conversion flows, drop-off, or prioritization
+- "images": an image gallery/grid — visual-first slides (requires images)
+- "bento": an asymmetric card mosaic with one hero card — features, categories, or a product overview
+- "timeline": a horizontal roadmap with milestones on a spine — chronological phases, history, or a plan
+- "spotlight": ONE bold centered statement — a thesis, key insight, or punchy takeaway (use for "statement" slides; keep to 1-2 short items)
+- "agenda": a numbered table of contents / agenda — section overviews or "what we'll cover"
+- "pyramid": a layered hierarchy from apex to base — priorities, maturity levels, or a hierarchy of needs
+- "matrix": a 2x2 quadrant grid — strategic trade-offs, four categories, or an effort/impact split (best with exactly 4 items)
+- "callout": a highlighted key-note box — an important note, warning, or takeaway to spotlight
+- "table": a clean data table — structured rows of label/value pairs or side-by-side comparisons
+- "dashboard": KPI metric cards — several numbers/metrics shown together (each item should contain a number)
+- "team": people cards with avatar initials — team members, contributors, or roles (label = name, text = role)
+- "icongrid": a feature grid with icon chips — capabilities or benefits at a glance
+- "hubspoke": a central hub with radiating spokes — one core idea connected to related parts (first item = the hub)
+- "cycle": a circular loop — repeating processes or continuous cycles where the end feeds the start
+- "showcase": a split editorial layout — a big lead idea on the left with supporting feature points on the right
+- "checklist": a checkmark list — takeaways, requirements, action items, or do's (handles detailed points well)
+- "roadmap": a vertical timeline with a spine — phases, milestones, or a plan (room for longer descriptions)
+- "zigzag": alternating left/right cards down the slide — a process or story told with some detail
+- "definitionlist": a term → definition list — glossaries, concepts, or "what each means" (handles long definitions)
+- "editorial": magazine-style numbered content — oversized ghost numerals, number-badge cards, or header-band cards; great for "3 things to remember", principles, lessons, or ranked points (handles longer text well)
+- "orbit": circle-based relationship diagrams — concentric rings around a core idea, three overlapping circles, phase-status circles, or a spectrum line (SHORT labels only, 3-5 items)
 
-LAYOUT DISTRIBUTION: Aim for variety - use at least 3-4 different categories across a 10-slide deck.
+LAYOUT STRUCTURE CATALOG (exact budgets — the outline MUST fit the layout you choose):
+${buildLayoutStructureCatalog()}
+
+WRITE THE OUTLINE TO FIT YOUR CHOSEN LAYOUT (critical):
+- After picking a slide's contentLayoutHint, its bulletPoints COUNT must fall inside that layout's item range from the catalog above.
+- Write every bullet as "Label: text" — Label 1-4 words, text within the layout's word budget.
+- Examples: "matrix" needs exactly 4 quadrant items; "spotlight" needs 1 statement; "orbit" needs 3-4 very short items; "editorial" fits 3-6 fuller items.
+${
+  textDensity === "minimal"
+    ? `- TEXT DENSITY = MINIMAL: the user wants very little text per card. Favor visual/diagram layouts (orbit, cycle, icongrid, spotlight, timeline, matrix) and keep even text layouts to short fragments.`
+    : textDensity === "detailed" || textDensity === "extensive"
+      ? `- TEXT DENSITY = ${textDensity.toUpperCase()}: the user wants substantial text per card. Prefer text-friendly layouts (editorial, boxes, bullets, checklist, definitionlist, showcase, zigzag, roadmap) and use diagram layouts sparingly (max 1-2 per deck).`
+      : ""
+}
+
+FIT THE LAYOUT TO THE TEXT LENGTH (critical):
+- Diagram layouts — "cycle", "pyramid", "hubspoke", "funnel", "matrix", "orbit" — only look good with SHORT labels (a few words per item). Do NOT choose them when the items carry full-sentence or long descriptions; the text won't fit.
+- For items with longer descriptions or full sentences, prefer text-friendly layouts: "boxes", "bullets", "checklist", "definitionlist", "editorial", "roadmap", "zigzag", "showcase", or "agenda".
+- "quotes" is ONLY for a single real quotation with its author — never use it to hold several distinct points.
+
+DECK DESIGN PLAN — think like an art director, not a list-maker. The layout catalog is LARGE; use its breadth:
+1. RHYTHM ARC: design the deck as visual beats — open with context (agenda/editorial/bento), build with substance (boxes/checklist/definitionlist/showcase), punctuate with VISUAL MOMENTS (a diagram, a chart, a spotlight statement), and close with a decisive beat (checklist of next steps, spotlight, or callout). Alternate dense and airy slides — never three text-heavy layouts in a row.
+2. HARD VARIETY QUOTAS: in a 10+ slide deck use AT LEAST 7 distinct categories; NO category more than twice per deck; NEVER the same contentLayoutHint on two consecutive slides. Include at least ONE diagram-family slide (orbit/cycle/pyramid/hubspoke/matrix/funnel), ONE data moment (chart or "dashboard"/"numbers"), and ONE statement beat ("spotlight" or "quotes") when the deck has 8+ slides.
+3. SHAPE MATCHING (pick the sharpest fit, not the safest): process → "sequence"/"timeline"/"roadmap"/"funnel"; contrast or trade-off → "comparison"/"proscons"/"beforeafter"/"matrix"; transformation → "beforeafter"; statistics → "numbers"/"dashboard" (+ chart); ranked lessons or principles → "editorial"; ecosystem or one-idea-many-parts → "hubspoke"/"orbit"; recurring loop → "cycle"; hierarchy → "pyramid"; people → "team"; requirements/actions → "checklist"; glossary → "definitionlist"; overview/menu → "agenda"/"bento"; a single conviction → "spotlight".
+4. Never default everything to "boxes" or "bullets" — reach for the specific layout that makes each idea LOOK like what it means.
 TITLE slides do not need this field.
 
 4. "assets":
@@ -356,7 +456,9 @@ Some content layouts are INCOMPATIBLE with images and will automatically remove 
 - "sequence" layout: Some styles incompatible (vertical sequences like sequence-style-3, sequence-style-4)
 - "steps" layout: Some styles incompatible (pyramid, arrows, bars styles)
 - "images" layout: ALWAYS requires images (this layout is specifically for image galleries). When using this layout, the system will automatically generate 2-3 images for the slide to create a proper image gallery.
-- "boxes", "bullets", "numbers": Generally compatible with images
+- IMAGE-COMPATIBLE layouts (use ONE of these whenever you want a supporting image on the slide): "boxes", "bullets", "numbers", "callout", "checklist", "agenda", "definitionlist", "editorial", "spotlight", "images"
+- "spotlight" with an image becomes a striking full-bleed photo with the statement overlaid — great for a bold key message or section divider.
+- NOT image-compatible (a requested image will be REMOVED): diagram layouts — "circles", "cycle", "pyramid", "hubspoke", "funnel", "matrix", "timeline", "comparison", "orbit", "quotes". If you want a slide to show an image, do NOT pick one of these; pick an image-compatible layout instead.
 
 IMPORTANT: When suggesting contentLayoutHint, consider image compatibility:
 - If you suggest "circles" or "quotes", set image.required to FALSE (these layouts cannot have images)
@@ -369,11 +471,32 @@ IMPORTANT: When suggesting contentLayoutHint, consider image compatibility:
   - pexelsPromptHint: Short search keywords for Pexels API (3-5 words). MUST START with either "[people]" or "[no people]" to indicate if humans should appear, followed by concise search keywords that are Pexels-supported and represent the BEST use case for this slide. The prompt should summarize the full slide content by capturing ONE key/famous point that partially or fully represents the slide's main message. Think: "What is the most iconic, searchable visual that represents this slide's core idea?" Examples: "[people] business team collaboration" or "[no people] laptop workspace minimal". Keep it SHORT, Pexels-searchable, and focused on the slide's most representative visual concept.
   - aiPromptHint: Detailed, comprehensive description for AI image generation (50-100 words). Include: the main topic/theme from the user's original request, how this specific slide relates to that main topic, visual elements from the slide title and bullet points, style and mood, composition details. Be descriptive and wordy - this is for AI generation, not search. Example: "A professional illustration representing [main topic] focusing on [slide-specific concept]. The image should show [visual elements from title/bullets] in a [style] aesthetic, conveying [mood/feeling]. Include [specific details] to connect this slide's content back to the overarching theme of [main topic]."
 
-VISUAL BALANCING RULES:
-- TITLE slide ALWAYS requires an image
-- Content slides: 6-9 out of 10 slides should have images, BUT respect layout-image compatibility rules
-- If suggesting "circles" or "quotes" layout, do NOT request images (set required: false)
-- If suggesting "images" layout, ALWAYS request images (set required: true)
+VISUAL BALANCING RULES (USE IMAGES — they make the deck look professional and finished):
+- TITLE slide ALWAYS requires an image.
+- AT LEAST HALF of the content slides MUST carry a supporting image. For each of those slides, give it an IMAGE-COMPATIBLE content layout (boxes/bullets/numbers/callout/checklist/agenda/definitionlist/editorial/spotlight/images) AND set assets.image.required = true.
+- Spread the images evenly across the deck (don't cluster them at the start) and vary the layout so consecutive image slides don't look identical.
+- Only a MINORITY of slides should be text-only or diagram layouts. Reserve the diagram layouts (circles/cycle/pyramid/hubspoke/funnel/matrix/timeline/orbit) and "quotes" for those few slides, and set image required: false for them (the image would be removed anyway).
+- If suggesting "images" layout, ALWAYS request images (set required: true).
+
+CHARTS (real data visuals — use them!):
+- For 1-2 slides per deck whose idea is inherently NUMERIC (growth, market size, share, comparison of quantities, budget split, conversion funnel, KPIs), add to that slide's assets:
+  "chart": { "type": "bar" | "horizontal-bar" | "line" | "area" | "pie" | "donut" | "funnel" | "radar" | "kpi", "purpose": "one line describing what the chart shows" }
+- Pick the type that matches the data shape: trends→line/area, composition→pie/donut, ranking/comparison→bar, stages→funnel, single headline metric→kpi, multi-dimension profile→radar.
+- Chart slides should use a text-friendly contentLayoutHint ("bullets" or "editorial") and set assets.image.required = false (the chart IS the visual).
+- Do NOT add charts to slides without genuinely quantitative content.
+
+––––––––––––––––––––––––––––––––––––––
+DECK-WIDE ART DIRECTION (CRITICAL FOR VISUAL COHESION)
+––––––––––––––––––––––––––––––––––––––
+Define ONE consistent art direction for the ENTIRE deck and return it in metadata.artDirection. A cohesive set of images looks designed; a pile of unrelated stock photos looks generic. Every aiPromptHint you write MUST conform to this same art direction so all images read as a single, intentional set.
+
+metadata.artDirection fields:
+- style: the visual medium and treatment used for ALL images (e.g., "editorial photography", "flat vector illustration", "isometric 3D render", "cinematic photography")
+- palette: one consistent color mood (e.g., "warm earth tones", "cool muted blues", "high-contrast neon")
+- mood: the emotional tone (e.g., "calm and premium", "energetic and bold")
+- lighting: one consistent lighting style (e.g., "soft natural light", "dramatic low-key")
+
+When writing each aiPromptHint, weave in this SAME style + palette + mood + lighting so the whole deck is visually consistent. Do not switch mediums between slides (e.g., don't mix photos and cartoons).
 
 The outline must be well-structured, engaging, written in ${languageDescription}, using a ${toneDescription} tone, and applicable to any field. Output format must be a valid JSON object with a "slides" array.`;
 
@@ -396,11 +519,14 @@ CRITICAL REQUIREMENTS:
 2. CONTENT slides (${contentSlides} slides):
 Each slide MUST include (IN THIS ORDER):
    - "type": "content"
+   - "slideRole": one of "content" | "statement" | "data-moment" (see RHYTHM pacing rules below). Most slides are "content".
    - "title": catchy, attention-grabbing headline (max 5-7 words) use questions, bold claims, metaphors, or vivid phrases that spark curiosity and represent the slide's core message
+   - "kicker": a SHORT 1-3 word UPPERCASE eyebrow label categorizing the slide (e.g. "STEP 2", "KEY INSIGHT", "THE PROBLEM", "OUR APPROACH", "BY THE NUMBERS"). Punchy and specific to THIS slide — must be different from the title, not a generic word like "CONTENT".
    - "semanticIntent": core meaning label (free-form, e.g., "process", "comparison", "framework")
    - "visualStrategy": { primary, pattern, emphasis } describing visual expression
-   - "contentLayoutHint": Category suggestion from: "boxes", "bullets", "sequence", "steps", "quotes", "circles", or "numbers" based on content analysis
+   - "contentLayoutHint": Category suggestion from: "boxes", "bullets", "sequence", "steps", "quotes", "circles", "numbers", "comparison", "funnel", "images", "bento", "timeline", "spotlight", "agenda", "pyramid", "matrix", "callout", "table", "dashboard", "team", "icongrid", "hubspoke", "cycle", "showcase", "checklist", "roadmap", "zigzag", "definitionlist", "editorial", or "orbit" — chosen to match the idea's shape AND text length
    - "bulletPoints": Each bullet must be a complete, informative statement that delivers real value:
+     * FORMAT: each bulletPoints entry MUST be a plain string (a full sentence) — NEVER an object like {"label": ..., "text": ...}
      * QUALITY: Write descriptive, self-contained statements — each bullet should explain, describe, or inform about the slide's topic
      * NOT commands ("Do this"), NOT labels ("Key point:"), NOT fragments — full sentences with substance
      * Each bullet should stand alone as useful information, not just hint at a concept
@@ -414,6 +540,11 @@ Each slide MUST include (IN THIS ORDER):
    - MIDDLE (body):
      - Flow adapts naturally to the topic type
      - Each slide builds logically on the previous
+   - RHYTHM (pacing — makes the deck breathe like a designed presentation, not a uniform list):
+     * Most slides are "content".
+     * Include 1-2 "statement" slides at key turning points — a single bold idea or claim meant to land as a full-bleed visual moment. Keep these minimal: a short punchy title, NO bullets or just one, and request an image (these become full-bleed background slides).
+     * Include a "data-moment" slide when one striking statistic anchors the point — built around a single hero number (use contentLayoutHint "numbers").
+     * Do NOT place two non-"content" slides back to back; space them out for rhythm.
    - LAST (closing):
      - NO generic titles (no "Conclusion" or "Summary")
      * The conclusion should feel like a natural, creative culmination of the entire presentation, not a formulaic ending.
@@ -452,14 +583,16 @@ Return ONLY a valid JSON object in this exact structure:
     },
     {
       "type": "content",
+      "slideRole": "content | statement | data-moment",
       "title": "catchy headline (max 5-7 words) — questions, bold claims, metaphors, vivid phrases",
+      "kicker": "SHORT UPPERCASE EYEBROW (1-3 words, e.g. KEY INSIGHT)",
       "semanticIntent": "core meaning label (free-form)",
       "visualStrategy": {
         "primary": "dominant visual form",
         "pattern": "layout metaphor",
         "emphasis": "visual focus"
       },
-      "contentLayoutHint": "boxes | bullets | sequence | steps | quotes | circles | numbers",
+      "contentLayoutHint": "boxes | bullets | sequence | steps | quotes | circles | numbers | comparison | funnel | images | bento | timeline | spotlight | agenda | pyramid | matrix | callout | table | dashboard | team | icongrid | hubspoke | cycle | showcase | checklist | roadmap | zigzag | definitionlist | editorial | orbit",
       "bulletPoints": [
         "Bullet point 1",
         "Bullet point 2",
@@ -480,7 +613,13 @@ Return ONLY a valid JSON object in this exact structure:
     "topic": "${description}",
     "totalSlides": ${numberOfSlides},
     "tone": "${toneDescription}",
-    "language": "${languageDescription}"
+    "language": "${languageDescription}",
+    "artDirection": {
+      "style": "ONE consistent visual medium/treatment for ALL images",
+      "palette": "ONE consistent color mood",
+      "mood": "emotional tone",
+      "lighting": "ONE consistent lighting style"
+    }
   }
 }
 `;
@@ -566,7 +705,7 @@ Return ONLY a valid JSON object in this exact structure:
                   try {
                     const slideJson = completedSlideStrings[i];
                     if (slideJson) {
-                      const slide = JSON.parse(slideJson);
+                      const slide = normalizeSlideBullets(JSON.parse(slideJson));
                       sendEvent(controller, "slideComplete", {
                         slideIndex: i,
                         slide,
@@ -591,8 +730,8 @@ Return ONLY a valid JSON object in this exact structure:
       async function* geminiStream(): AsyncIterable<string> {
         if (!gemini) throw new Error("Gemini API not configured");
         
-        const model = gemini.getGenerativeModel({ 
-          model: "gemini-2.5-flash-lite",
+        const model = gemini.getGenerativeModel({
+          model: AI_MODELS.outline,
           generationConfig: {
             temperature: 1,
             maxOutputTokens: 14000,
@@ -611,6 +750,7 @@ Return ONLY a valid JSON object in this exact structure:
 
       // OpenAI Responses API streaming generator with web search
       async function* openaiStream(): AsyncIterable<string> {
+        if (!openai) throw new Error("OpenAI API not configured");
         const response = await openai.responses.create({
           model: "gpt-4o-mini", // Using 4o-mini as fallback
           input: [

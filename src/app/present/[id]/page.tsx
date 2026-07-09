@@ -17,10 +17,14 @@ import {
 } from "lucide-react";
 import { cn } from "~/lib/utils";
 import SlideRenderer from "~/components/presentation/SlideRenderer";
+import SlideScaler from "~/components/presentation/SlideScaler";
 import AnimatedSlide from "~/components/presentation/AnimatedSlide";
+import { TitleSlide } from "~/app/presentation/[slug]/components/TitleSlide";
+import { RevealContext, layoutSupportsReveal } from "~/components/presentation/item-animations";
+import MasterSlideOverlay from "~/components/presentation/MasterSlideOverlay";
 import { getThemeById, getDefaultTheme, type Theme } from "~/lib/themes";
 import { convertCustomThemeToTheme } from "~/lib/custom-theme-utils";
-import { type PresentationData } from "~/components/presentation/types";
+import { type PresentationData, coverUsesFullBleed } from "~/components/presentation/types";
 
 interface PresenterPageProps {
   params: Promise<{ id: string }>;
@@ -211,21 +215,55 @@ export default function PresenterPage({ params }: PresenterPageProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [currentSlide, presentation, isFullscreen]);
 
+  // Click-to-reveal builds: when a slide has itemBuild enabled, Next first
+  // reveals its content items one by one before advancing to the next slide.
+  const [revealCount, setRevealCount] = useState(0);
+
+  const countItems = useCallback((s?: PresentationResponse["slides"][number]) => {
+    if (!s || s.type === "title") return 0;
+    if (s.sections && s.sections.length > 0) return s.sections.length;
+    const transformedItems = s.transformedContent?.items?.filter((it) => it.label);
+    if (transformedItems && transformedItems.length > 0) return transformedItems.length;
+    return s.bulletPoints?.length ?? 0;
+  }, []);
+
+  const buildActiveFor = useCallback((s?: PresentationResponse["slides"][number]) =>
+    !!s && s.itemBuild === true && s.contentAnimation !== false &&
+    layoutSupportsReveal(s.contentLayout) && countItems(s) > 0,
+  [countItems]);
+
   const goNext = useCallback(() => {
-    if (presentation && currentSlide < presentation.slides.length - 1) {
-      setCurrentSlide((prev) => prev + 1);
+    if (!presentation) return;
+    const s = presentation.slides[currentSlide];
+    if (buildActiveFor(s) && revealCount < countItems(s)) {
+      setRevealCount((c) => c + 1);
+      return;
     }
-  }, [currentSlide, presentation]);
+    if (currentSlide < presentation.slides.length - 1) {
+      setCurrentSlide((prev) => prev + 1);
+      setRevealCount(0);
+    }
+  }, [currentSlide, presentation, revealCount, buildActiveFor, countItems]);
 
   const goPrev = useCallback(() => {
-    if (currentSlide > 0) {
-      setCurrentSlide((prev) => prev - 1);
+    if (!presentation) return;
+    const s = presentation.slides[currentSlide];
+    if (buildActiveFor(s) && revealCount > 0) {
+      setRevealCount((c) => c - 1);
+      return;
     }
-  }, [currentSlide]);
+    if (currentSlide > 0) {
+      const prevSlide = presentation.slides[currentSlide - 1];
+      setCurrentSlide((prev) => prev - 1);
+      // Arriving backwards shows the previous slide fully revealed
+      setRevealCount(buildActiveFor(prevSlide) ? countItems(prevSlide) : 0);
+    }
+  }, [currentSlide, presentation, revealCount, buildActiveFor, countItems]);
 
   const goToSlide = useCallback((index: number) => {
     if (presentation && index >= 0 && index < presentation.slides.length) {
       setCurrentSlide(index);
+      setRevealCount(0);
     }
   }, [presentation]);
 
@@ -276,6 +314,15 @@ export default function PresenterPage({ params }: PresenterPageProps) {
   const nextSlide = presentation.slides[currentSlide + 1];
 
   if (!slide) return null;
+
+  // Title slides render through the same TitleSlide component as the editor so
+  // covers (theme signature or picked cover style) look identical when
+  // presenting. Editorial draws its own image panel and Minimal is image-free,
+  // so the full-bleed backdrop only renders for the other compositions.
+  const isTitleCover = slide.type === "title" && !slide.slideLayout;
+  const coverFullBleed = coverUsesFullBleed(slide.coverLayout);
+  const titleImageUrl =
+    slide.image?.url && slide.image.source !== "placeholder" ? slide.image.url : null;
 
   return (
     <div className="h-screen bg-slate-900 text-white flex flex-col select-none">
@@ -342,23 +389,62 @@ export default function PresenterPage({ params }: PresenterPageProps) {
                 animationId={slide.animation || "fade-up"}
                 isPresenting={true}
               >
-                <SlideRenderer
-                  slide={slide}
-                  index={currentSlide}
-                  totalSlides={presentation.slides.length}
-                  theme={theme}
-                  isOwner={false}
-                  isFullscreen={true}
-                  isHovered={false}
-                  isEditing={false}
-                  editingText={null}
-                  isPresenting={true}
-                  onStartEditing={() => { }}
-                  onUpdateContent={() => { }}
-                  onFinishEditing={() => { }}
-                  onAddBullet={() => { }}
-                  onDeleteBullet={() => { }}
-                />
+                {isTitleCover && coverFullBleed && titleImageUrl && (
+                  <img
+                    src={titleImageUrl}
+                    alt={slide.title}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                )}
+                <SlideScaler
+                  overlay={
+                    <MasterSlideOverlay
+                      settings={presentation.content?.masterSlide}
+                      slideNumber={currentSlide + 1}
+                      totalSlides={presentation.slides.length}
+                      theme={theme}
+                      isTitle={currentSlide === 0 || slide.type === "title"}
+                    />
+                  }
+                >
+                  {isTitleCover ? (
+                    <TitleSlide
+                      slide={slide}
+                      index={currentSlide}
+                      totalSlides={presentation.slides.length}
+                      theme={theme}
+                      hasImage={!!titleImageUrl && coverFullBleed}
+                      isOwner={false}
+                      isFullscreen={true}
+                      isHovered={false}
+                      isEditing={false}
+                      editingText={null}
+                      onStartEditing={() => { }}
+                      onUpdateContent={() => { }}
+                      onFinishEditing={() => { }}
+                    />
+                  ) : (
+                    <RevealContext.Provider value={buildActiveFor(slide) ? revealCount : undefined}>
+                    <SlideRenderer
+                      slide={slide}
+                      index={currentSlide}
+                      totalSlides={presentation.slides.length}
+                      theme={theme}
+                      isOwner={false}
+                      isFullscreen={true}
+                      isHovered={false}
+                      isEditing={false}
+                      editingText={null}
+                      isPresenting={true}
+                      onStartEditing={() => { }}
+                      onUpdateContent={() => { }}
+                      onFinishEditing={() => { }}
+                      onAddBullet={() => { }}
+                      onDeleteBullet={() => { }}
+                    />
+                    </RevealContext.Provider>
+                  )}
+                </SlideScaler>
               </AnimatedSlide>
             </div>
           </div>

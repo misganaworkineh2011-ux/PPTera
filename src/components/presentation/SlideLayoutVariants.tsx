@@ -10,6 +10,7 @@ import type { ImageShape, SlideLayoutType } from "~/lib/layouts/slide";
 import { getImageShapeClipPath } from "~/lib/layouts/slide";
 import EditableText from "./EditableText";
 import SlideImg from "./SlideImage";
+import SlideImageDesign from "./SlideImageDesign";
 import ImageHoverToolbar from "./ImageHoverToolbar";
 import ImageDragZones from "./ImageDragZones";
 
@@ -144,11 +145,14 @@ export function renderSlideLayoutVariants(props: SlideLayoutVariantsProps): Reac
               onMouseEnter={() => canEdit && setHoveredImageIndex(0)}
               onMouseLeave={() => setHoveredImageIndex(null)}
             >
-              <SlideImg
+              <SlideImageDesign
                 image={firstImage}
                 alt={firstImage.alt || slide.title}
-                className="w-full h-full object-cover"
-                style={{ cursor: canEdit && onChangeImagePosition ? "grab" : "default" }}
+                shape={imageShape}
+                orientation="top"
+                accent={colors.accent}
+                isDark={isThemeDark}
+                imgCursor={canEdit && onChangeImagePosition ? "grab" : "default"}
                 draggable={canEdit && !!onChangeImagePosition}
                 onDragStart={(e) => {
                   if (!canEdit || !onChangeImagePosition) return;
@@ -230,11 +234,14 @@ export function renderSlideLayoutVariants(props: SlideLayoutVariantsProps): Reac
               onMouseEnter={() => canEdit && setHoveredImageIndex(0)}
               onMouseLeave={() => setHoveredImageIndex(null)}
             >
-              <SlideImg
+              <SlideImageDesign
                 image={firstImage}
                 alt={firstImage.alt || slide.title}
-                className="w-full h-full object-cover"
-                style={{ cursor: canEdit && onChangeImagePosition ? "grab" : "default" }}
+                shape={imageShape}
+                orientation="bottom"
+                accent={colors.accent}
+                isDark={isThemeDark}
+                imgCursor={canEdit && onChangeImagePosition ? "grab" : "default"}
                 draggable={canEdit && !!onChangeImagePosition}
                 onDragStart={(e) => {
                   if (!canEdit || !onChangeImagePosition) return;
@@ -306,7 +313,7 @@ export function renderSlideLayoutVariants(props: SlideLayoutVariantsProps): Reac
                 ? "p-4 sm:p-8 md:p-12 pt-12 sm:pt-8 md:pt-12"
                 : "p-4 sm:p-6 md:p-8 pt-12 sm:pt-8 md:pt-12"
           } ${hasImage || shouldCenterTitleSlide ? "text-center" : ""} ${
-            shouldCenterTitleSlide ? "" : "overflow-y-auto"
+            shouldCenterTitleSlide ? "" : "overflow-visible"
           }`}
         >
           {hasImage && (

@@ -18,10 +18,11 @@ import {
 } from "lucide-react";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
+import { ImageUploadButton } from "~/components/presentation/ImageUploadButton";
 
 // Google Fonts URL for preview
 const GOOGLE_FONTS_URL =
-  "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Poppins:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Lato:wght@400;700&family=Open+Sans:wght@400;600;700&family=Playfair+Display:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Source+Code+Pro:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap";
+  "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Poppins:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Lato:wght@400;700&family=Open+Sans:wght@400;600;700&family=Playfair+Display:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Source+Code+Pro:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Work+Sans:wght@400;500;600;700&family=Raleway:wght@400;500;600;700&family=Nunito:wght@400;600;700&family=Sora:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Crimson+Pro:wght@400;500;600;700&display=swap";
 
 interface CustomThemeData {
   // Step 1: Colors
@@ -252,6 +253,16 @@ const FONT_OPTIONS = [
   { id: "merriweather", name: "Merriweather", family: "'Merriweather', serif", style: "Traditional" },
   { id: "source-code", name: "Source Code Pro", family: "'Source Code Pro', monospace", style: "Technical" },
   { id: "space-grotesk", name: "Space Grotesk", family: "'Space Grotesk', sans-serif", style: "Futuristic" },
+  { id: "manrope", name: "Manrope", family: "'Manrope', sans-serif", style: "Refined & Airy" },
+  { id: "dm-sans", name: "DM Sans", family: "'DM Sans', sans-serif", style: "Geometric & Crisp" },
+  { id: "work-sans", name: "Work Sans", family: "'Work Sans', sans-serif", style: "Versatile" },
+  { id: "raleway", name: "Raleway", family: "'Raleway', sans-serif", style: "Light & Stylish" },
+  { id: "nunito", name: "Nunito", family: "'Nunito', sans-serif", style: "Rounded & Soft" },
+  { id: "sora", name: "Sora", family: "'Sora', sans-serif", style: "Tech Startup" },
+  { id: "outfit", name: "Outfit", family: "'Outfit', sans-serif", style: "Contemporary" },
+  { id: "libre-baskerville", name: "Libre Baskerville", family: "'Libre Baskerville', serif", style: "Editorial Serif" },
+  { id: "ibm-plex-sans", name: "IBM Plex Sans", family: "'IBM Plex Sans', sans-serif", style: "Corporate Precision" },
+  { id: "crimson-pro", name: "Crimson Pro", family: "'Crimson Pro', serif", style: "Literary" },
 ];
 
 const CARD_STYLES = [
@@ -979,6 +990,14 @@ function Step4Background({
             Apply
           </button>
         </div>
+        <ImageUploadButton
+          onUploaded={(url) => {
+            setImageUrl(url);
+            setThemeData((prev) => ({ ...prev, backgroundImageUrl: url }));
+          }}
+          className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-[#06b6d4] hover:text-[#06b6d4] disabled:opacity-60 dark:border-neutral-700 dark:text-neutral-300"
+          label="Upload from computer"
+        />
       </div>
 
       {/* Divider */}

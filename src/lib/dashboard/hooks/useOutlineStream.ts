@@ -41,6 +41,8 @@ export interface Slide {
   image?: SlideImage;
   // Content layout hint from outline (e.g., "boxes", "bullets", "sequence")
   contentLayoutHint?: string;
+  // Short uppercase eyebrow/kicker label shown above a content slide's heading
+  kicker?: string;
 }
 
 export interface OutlineMetadata {
@@ -68,6 +70,8 @@ interface StreamPayload {
   tone: string;
   language: string;
   outlineId?: string | null;
+  /** "Amount of text per card" — biases layout choice at outline time. */
+  textDensity?: string;
 }
 
 export function useOutlineStream() {

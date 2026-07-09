@@ -11,6 +11,7 @@ import {
   FileText,
   Minimize2,
   Lock,
+  Plus,
 } from "lucide-react";
 import type { Theme } from "~/lib/themes";
 import type { SlideData } from "~/components/presentation/types";
@@ -28,6 +29,8 @@ interface AgentPanelProps {
   presentationTitle: string;
   presentationId: string;
   onUpdateSlide: (index: number, slide: SlideData) => void;
+  /** Replace the whole deck at once (used for structural AI edits: add/delete/reorder). */
+  onReplaceSlides?: (slides: SlideData[]) => void;
   onSetEditingSlide?: (index: number | null) => void;
   subscriptionPlan?: string | null;
 }
@@ -78,6 +81,14 @@ const quickActions: QuickAction[] = [
     category: "content",
   },
   {
+    id: "add-slide",
+    label: "Add a slide",
+    icon: <Plus size={14} />,
+    prompt:
+      "Add ONE new slide that best strengthens this deck (for example a missing overview, comparison, or next-steps slide). Insert it at the most logical position and keep every other slide exactly as it is.",
+    category: "content",
+  },
+  {
     id: "shorter",
     label: "makeShorter",
     icon: <Minimize2 size={14} />,
@@ -112,6 +123,7 @@ export function AgentPanel({
   presentationTitle,
   presentationId,
   onUpdateSlide,
+  onReplaceSlides,
   onSetEditingSlide,
   subscriptionPlan,
 }: AgentPanelProps) {
@@ -264,6 +276,18 @@ export function AgentPanel({
           slides.map(() => ({ status: "pending" as const }))
         );
 
+        // Snapshot the deck to version history before a deck-wide AI edit,
+        // so the user can always roll back. Never blocks the edit itself.
+        try {
+          await fetch(`/api/presentations/${presentationId}/versions`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ label: "Before AI edit" }),
+          });
+        } catch {
+          // best-effort snapshot
+        }
+
         const response = await fetch("/api/ai/edit-presentation-stream", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -300,6 +324,12 @@ export function AgentPanel({
         const reader = response.body?.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
+
+        // Structural-edit state: when the AI adds/deletes/reorders slides,
+        // we assemble the final deck here and apply it in one replacement at
+        // the end (live per-index updates would corrupt a changed structure).
+        let structureChanged = false;
+        let pendingDeck: (SlideData | null)[] = [];
 
         if (reader) {
           while (true) {
@@ -338,6 +368,33 @@ export function AgentPanel({
                     setCredits(data.creditsRemaining);
                     break;
 
+                  case "deckStructure": {
+                    // Detect add/delete/reorder up front
+                    const structure = (data.structure ?? []) as Array<{
+                      newIndex: number;
+                      sourceIndex: number | null;
+                    }>;
+                    structureChanged =
+                      data.finalCount !== slidesRef.current.length ||
+                      structure.some((s) => s.sourceIndex !== s.newIndex);
+                    if (structureChanged) {
+                      // Seed the pending deck from each slide's ORIGINAL so
+                      // non-text fields (charts, embeds, offsets) survive.
+                      pendingDeck = structure.map((s) =>
+                        s.sourceIndex !== null
+                          ? { ...slidesRef.current[s.sourceIndex]! }
+                          : null
+                      );
+                    }
+                    // Progress list should reflect the FINAL deck size
+                    setSlideProgress(
+                      Array.from({ length: data.finalCount as number }, () => ({
+                        status: "pending" as const,
+                      }))
+                    );
+                    break;
+                  }
+
                   case "slideProcessing":
                     setSlideProgress((prev) => {
                       const newProgress = [...prev];
@@ -362,23 +419,35 @@ export function AgentPanel({
                     });
                     break;
 
-                  case "slideComplete":
-                    // Update the slide in real-time - use ref to get latest slide data
-                    const existingSlide = slidesRef.current[data.slideIndex];
-                    const updatedSlide: SlideData = {
-                      ...existingSlide,
-                      ...data.slide,
-                      // Ensure type is set
-                      type: data.slide.type || existingSlide?.type || "content",
-                    };
-                    
-                    // Update our local ref immediately so subsequent updates use fresh data
-                    const newSlidesArray = [...slidesRef.current];
-                    newSlidesArray[data.slideIndex] = updatedSlide;
-                    slidesRef.current = newSlidesArray;
-                    
-                    onUpdateSlide(data.slideIndex, updatedSlide);
-                    
+                  case "slideComplete": {
+                    if (structureChanged) {
+                      // Assemble into the pending deck; applied wholesale on
+                      // "complete" via onReplaceSlides.
+                      const base = pendingDeck[data.slideIndex];
+                      pendingDeck[data.slideIndex] = {
+                        ...(base ?? {}),
+                        ...data.slide,
+                        type:
+                          data.slide.type || base?.type || "content",
+                      } as SlideData;
+                    } else {
+                      // Same structure — live per-slide updates as before.
+                      const existingSlide = slidesRef.current[data.slideIndex];
+                      const updatedSlide: SlideData = {
+                        ...existingSlide,
+                        ...data.slide,
+                        // Ensure type is set
+                        type: data.slide.type || existingSlide?.type || "content",
+                      };
+
+                      // Update our local ref immediately so subsequent updates use fresh data
+                      const newSlidesArray = [...slidesRef.current];
+                      newSlidesArray[data.slideIndex] = updatedSlide;
+                      slidesRef.current = newSlidesArray;
+
+                      onUpdateSlide(data.slideIndex, updatedSlide);
+                    }
+
                     setSlideProgress((prev) => {
                       const newProgress = [...prev];
                       newProgress[data.slideIndex] = {
@@ -388,8 +457,25 @@ export function AgentPanel({
                       return newProgress;
                     });
                     break;
+                  }
 
-                  case "complete":
+                  case "complete": {
+                    // Structural edit: swap in the assembled final deck as
+                    // ONE history step (fully undoable).
+                    if (structureChanged) {
+                      const finalDeck = pendingDeck.filter(
+                        (s): s is SlideData => s !== null
+                      );
+                      if (finalDeck.length > 0) {
+                        slidesRef.current = finalDeck;
+                        if (onReplaceSlides) {
+                          onReplaceSlides(finalDeck);
+                        } else {
+                          // Fallback: per-index application (no add/delete)
+                          finalDeck.forEach((s, idx) => onUpdateSlide(idx, s));
+                        }
+                      }
+                    }
                     setCredits(data.creditsRemaining);
                     setPrompt("");
                     // Clear editing state
@@ -397,6 +483,7 @@ export function AgentPanel({
                     // Clear progress after a delay
                     setTimeout(() => setSlideProgress([]), 2000);
                     break;
+                  }
 
                   case "error":
                     setError(data.message);

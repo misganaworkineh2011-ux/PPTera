@@ -2,12 +2,14 @@
 
 import type React from "react";
 import { useState, useEffect, useRef } from "react";
-import { X, Check, Loader2, Sparkles } from "lucide-react";
+import { X, Check, Loader2, Sparkles, Plus, Crown } from "lucide-react";
+import { toast } from "sonner";
 import { themes, type Theme, getSlideShapeStyles } from "~/lib/themes";
 import { getThemeThumbnailUrl } from "~/lib/themes/cloudinary";
 import { getModalColors } from "./ui-colors";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
+import CustomThemeCreator from "~/app/dashboard/themes/CustomThemeCreator";
 
 // All theme fonts for preview - loaded when sidebar opens
 const THEME_FONTS_URL = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Lato:wght@400;700&family=Cormorant+Garamond:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Nunito+Sans:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap";
@@ -93,6 +95,8 @@ interface ThemeSidebarProps {
   onThemeChange: (themeId: string, customThemeData?: CustomTheme) => void;
   presentationId: string;
   theme?: Theme;
+  subscriptionPlan?: string | null;
+  onUpgrade?: () => void;
 }
 
 export function ThemeSidebar({
@@ -102,13 +106,19 @@ export function ThemeSidebar({
   onThemeChange,
   presentationId,
   theme,
+  subscriptionPlan,
+  onUpgrade,
 }: ThemeSidebarProps) {
   const { language } = useLanguage();
   const t = dashboardTranslations[language] || dashboardTranslations.en;
   const [customThemes, setCustomThemes] = useState<CustomTheme[]>([]);
   const [isLoadingThemes, setIsLoadingThemes] = useState(false);
   const [changingTheme, setChangingTheme] = useState<string | null>(null);
+  const [showCreator, setShowCreator] = useState(false);
+  const [activeThemeTab, setActiveThemeTab] = useState<"builtin" | "custom">("builtin");
   const hasFetched = useRef(false);
+
+  const canCreateThemes = !!subscriptionPlan && ["pro", "ultra"].includes(subscriptionPlan.toLowerCase());
 
   // Get theme-aware colors using the helper - use modalColors for ALL themes
   const modalColors = theme ? getModalColors(theme) : null;
@@ -199,6 +209,44 @@ export function ThemeSidebar({
     }
   };
 
+  const handleCreateClick = () => {
+    if (!canCreateThemes) {
+      if (onUpgrade) {
+        onUpgrade();
+      } else {
+        toast.info("Custom themes are a Pro feature — upgrade to create your own.");
+      }
+      return;
+    }
+    setShowCreator(true);
+  };
+
+  const handleSaveTheme = async (themeData: unknown) => {
+    const response = await fetch("/api/themes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(themeData),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error || "Failed to create theme");
+    }
+
+    const data = await response.json();
+    const newTheme = data.theme as CustomTheme;
+
+    // Surface it immediately and bust the shared cache so it persists across opens.
+    setCustomThemes((prev) => [newTheme, ...prev]);
+    customThemesCache.invalidate();
+    setShowCreator(false);
+    setActiveThemeTab("custom");
+    toast.success("Theme created");
+
+    // Apply the freshly created theme to this presentation.
+    await handleThemeSelect(`custom-${newTheme.id}`, newTheme);
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -243,16 +291,48 @@ export function ThemeSidebar({
           </button>
         </div>
 
+        {/* Tabs: Built-in vs. Your Custom themes */}
+        <div className="flex gap-1 px-3 pt-3">
+          {([
+            { id: "builtin" as const, label: t.builtInThemes || "Built-in", count: themes.length },
+            { id: "custom" as const, label: t.yourCustomThemes || "Custom", count: customThemes.length },
+          ]).map((tab) => {
+            const active = activeThemeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveThemeTab(tab.id)}
+                className="flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-all"
+                style={{
+                  backgroundColor: active ? `${colors.accent}1a` : "transparent",
+                  color: active ? colors.accent : colors.textMuted,
+                  boxShadow: active ? `inset 0 0 0 1px ${colors.accent}59` : "none",
+                }}
+                onMouseEnter={(e) => {
+                  if (!active) e.currentTarget.style.backgroundColor = colors.hoverBg;
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) e.currentTarget.style.backgroundColor = "transparent";
+                }}
+              >
+                {tab.label}
+                <span
+                  className="rounded-full px-1.5 text-[10px] font-semibold leading-5"
+                  style={{
+                    backgroundColor: active ? `${colors.accent}26` : colors.hoverBg,
+                    color: active ? colors.accent : colors.textMuted,
+                  }}
+                >
+                  {tab.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
         {/* Theme List */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-6">
-          {/* Built-in Themes */}
-          <div>
-            <h3 
-              className="text-xs font-medium uppercase tracking-wider mb-3"
-              style={{ color: colors.textMuted }}
-            >
-              {t.builtInThemes || "Built-in Themes"}
-            </h3>
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {activeThemeTab === "builtin" ? (
             <div className="grid grid-cols-2 gap-3">
               {themes.map((thm) => (
                 <ThemeCard
@@ -266,22 +346,53 @@ export function ThemeSidebar({
                 />
               ))}
             </div>
-          </div>
-
-          {/* Custom Themes */}
-          {(customThemes.length > 0 || isLoadingThemes) && (
-            <div>
-              <h3 
-                className="text-xs font-medium uppercase tracking-wider mb-3"
-                style={{ color: colors.textMuted }}
+          ) : (
+            <>
+              {/* Create your own theme */}
+              <button
+                onClick={handleCreateClick}
+                className="group/create w-full rounded-xl border-2 border-dashed p-3.5 flex items-center gap-3 text-left transition-all duration-200"
+                style={{ borderColor: `${colors.accent}59` }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = colors.accent;
+                  e.currentTarget.style.backgroundColor = `${colors.accent}0d`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = `${colors.accent}59`;
+                  e.currentTarget.style.backgroundColor = "transparent";
+                }}
               >
-                {t.yourCustomThemes || "Your Custom Themes"}
-              </h3>
+                <div
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-white transition-transform duration-200 group-hover/create:scale-105"
+                  style={{ background: `linear-gradient(135deg, ${colors.accent}, ${colors.accent}99)` }}
+                >
+                  <Plus size={20} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-semibold" style={{ color: colors.text }}>
+                      {t.createYourOwnTheme || "Create your own theme"}
+                    </span>
+                    {!canCreateThemes && (
+                      <span
+                        className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white"
+                        style={{ background: "linear-gradient(to right, #9333ea, #ec4899)" }}
+                      >
+                        <Crown size={9} /> Pro
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-xs" style={{ color: colors.textMuted }}>
+                    {t.createYourOwnThemeSubtitle || "Your colors, fonts & style"}
+                  </span>
+                </div>
+              </button>
+
               {isLoadingThemes ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 size={20} className="animate-spin" style={{ color: colors.textMuted }} />
                 </div>
-              ) : (
+              ) : customThemes.length > 0 ? (
                 <div className="grid grid-cols-2 gap-3">
                   {customThemes.map((thm) => (
                     <CustomThemeCard
@@ -295,11 +406,28 @@ export function ThemeSidebar({
                     />
                   ))}
                 </div>
+              ) : (
+                <div className="rounded-xl border border-dashed px-4 py-8 text-center" style={{ borderColor: colors.border }}>
+                  <p className="text-sm font-medium" style={{ color: colors.text }}>
+                    {t.noCustomThemesYet || "No custom themes yet"}
+                  </p>
+                  <p className="mt-1 text-xs" style={{ color: colors.textMuted }}>
+                    {t.noCustomThemesHint || "Create one above to see it here."}
+                  </p>
+                </div>
               )}
-            </div>
+            </>
           )}
         </div>
       </div>
+
+      {/* Custom theme creator (portal modal, overlays the sidebar) */}
+      <CustomThemeCreator
+        isOpen={showCreator}
+        onClose={() => setShowCreator(false)}
+        onSave={handleSaveTheme}
+        subscriptionPlan={subscriptionPlan}
+      />
     </>
   );
 }

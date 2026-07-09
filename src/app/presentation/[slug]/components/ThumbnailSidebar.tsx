@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { X, LayoutGrid, List } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { X, LayoutGrid, List, Copy, Plus, ArrowUp, ArrowDown, Trash2 } from "lucide-react";
 import type { Theme } from "~/lib/themes";
 import type { SlideData } from "~/components/presentation/types";
 import { getUIColors, getModalColors } from "./ui-colors";
@@ -34,6 +35,11 @@ interface ThumbnailSidebarProps {
   isFreeUserLimited?: boolean;
   freeSlideLimit?: number;
   halfBlurredSlideIndex?: number;
+  // Right-click slide actions
+  onDuplicateSlide?: (index: number) => void;
+  onMoveSlide?: (index: number, direction: "up" | "down") => void;
+  onDeleteSlide?: (index: number) => void;
+  onAddSlideAfter?: (index: number) => void;
 }
 
 export function ThumbnailSidebar({
@@ -46,12 +52,103 @@ export function ThumbnailSidebar({
   isFreeUserLimited = false,
   freeSlideLimit,
   halfBlurredSlideIndex,
+  onDuplicateSlide,
+  onMoveSlide,
+  onDeleteSlide,
+  onAddSlideAfter,
 }: ThumbnailSidebarProps) {
   const themeType = getThemeType(theme);
   const ui = getUIColors(themeType);
   const modalColors = getModalColors(theme);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  
+
+  // Keep the active slide's thumbnail scrolled into view so its highlight is
+  // always visible when navigating via arrows, keyboard, or clicks.
+  const activeRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    activeRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [currentSlide, viewMode]);
+
+  // Right-click context menu, positioned at the cursor.
+  const hasMenuActions = !!(onDuplicateSlide || onMoveSlide || onDeleteSlide || onAddSlideAfter);
+  const [menu, setMenu] = useState<{ index: number; x: number; y: number } | null>(null);
+  useEffect(() => {
+    if (!menu) return;
+    const close = () => setMenu(null);
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMenu(null); };
+    window.addEventListener("click", close);
+    window.addEventListener("contextmenu", close);
+    window.addEventListener("resize", close);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("click", close);
+      window.removeEventListener("contextmenu", close);
+      window.removeEventListener("resize", close);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [menu]);
+
+  const openMenu = (e: React.MouseEvent, index: number) => {
+    if (!hasMenuActions) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setMenu({ index, x: e.clientX, y: e.clientY });
+  };
+
+  const renderContextMenu = () => {
+    if (!menu) return null;
+    const items = [
+      onDuplicateSlide && { icon: <Copy size={14} />, label: "Duplicate", onClick: () => onDuplicateSlide(menu.index) },
+      onAddSlideAfter && { icon: <Plus size={14} />, label: "Add slide after", onClick: () => onAddSlideAfter(menu.index) },
+      onMoveSlide && { icon: <ArrowUp size={14} />, label: "Move up", disabled: menu.index === 0, onClick: () => onMoveSlide(menu.index, "up") },
+      onMoveSlide && { icon: <ArrowDown size={14} />, label: "Move down", disabled: menu.index === slides.length - 1, onClick: () => onMoveSlide(menu.index, "down") },
+    ].filter(Boolean) as { icon: React.ReactNode; label: string; disabled?: boolean; onClick: () => void }[];
+
+    const W = 196;
+    const H = 52 + items.length * 34 + (onDeleteSlide ? 46 : 0);
+    const left = Math.min(menu.x, window.innerWidth - W - 8);
+    const top = Math.min(menu.y, window.innerHeight - H - 8);
+
+    return createPortal(
+      <div
+        className="fixed z-[120] min-w-[196px] overflow-hidden rounded-xl border py-1 shadow-2xl animate-in fade-in zoom-in-95 duration-100"
+        style={{ top, left, background: modalColors.bg, borderColor: modalColors.border }}
+        onClick={(e) => e.stopPropagation()}
+        onContextMenu={(e) => e.preventDefault()}
+      >
+        <div className="px-3 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ color: modalColors.textMuted }}>
+          Slide {menu.index + 1}
+        </div>
+        {items.map((it, i) => (
+          <button
+            key={i}
+            disabled={it.disabled}
+            onClick={() => { it.onClick(); setMenu(null); }}
+            className="flex w-full items-center gap-2.5 px-3 py-1.5 text-left text-sm transition-colors disabled:opacity-40"
+            style={{ color: modalColors.text }}
+            onMouseEnter={(e) => { if (!it.disabled) e.currentTarget.style.backgroundColor = modalColors.hoverBg; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+          >
+            <span style={{ color: modalColors.textMuted }}>{it.icon}</span>
+            {it.label}
+          </button>
+        ))}
+        {onDeleteSlide && (
+          <>
+            <div className="my-1 h-px" style={{ backgroundColor: modalColors.border }} />
+            <button
+              onClick={() => { onDeleteSlide(menu.index); setMenu(null); }}
+              className="flex w-full items-center gap-2.5 px-3 py-1.5 text-left text-sm text-red-500 transition-colors hover:bg-red-500/10"
+            >
+              <Trash2 size={14} /> Delete
+            </button>
+          </>
+        )}
+      </div>,
+      document.body,
+    );
+  };
+
   // Filter slides based on lock status
   const visibleSlides = slides.filter((_, index) => {
     if (!isFreeUserLimited) return true;
@@ -127,7 +224,9 @@ export function ThumbnailSidebar({
               return (
                 <button
                   key={originalIndex}
+                  ref={currentSlide === originalIndex ? activeRef : undefined}
                   onClick={() => onSlideClick(originalIndex)}
+                  onContextMenu={(e) => openMenu(e, originalIndex)}
                   className="w-full flex items-center gap-1.5"
                 >
                   <div
@@ -155,6 +254,7 @@ export function ThumbnailSidebar({
             })}
           </div>
         </aside>
+        {renderContextMenu()}
       </div>
     );
   }
@@ -215,15 +315,19 @@ export function ThumbnailSidebar({
           return (
             <button
               key={originalIndex}
+              ref={currentSlide === originalIndex ? activeRef : undefined}
               onClick={() => onSlideClick(originalIndex)}
+              onContextMenu={(e) => openMenu(e, originalIndex)}
               className="w-full group relative"
             >
               <div
-                className="aspect-video overflow-hidden rounded ring-1"
+                className="aspect-video overflow-hidden rounded ring-1 pointer-events-none transition-shadow duration-200"
                 style={{
-                  boxShadow: currentSlide === originalIndex ? `0 0 0 2px ${modalColors.accent}` : undefined,
-                  ["--tw-ring-color" as string]: currentSlide === originalIndex 
-                    ? modalColors.accent 
+                  boxShadow: currentSlide === originalIndex
+                    ? `0 0 0 2.5px ${modalColors.accent}, 0 6px 16px -4px ${modalColors.accent}66`
+                    : undefined,
+                  ["--tw-ring-color" as string]: currentSlide === originalIndex
+                    ? modalColors.accent
                     : modalColors.border,
                   willChange: "box-shadow",
                 }}
@@ -231,10 +335,12 @@ export function ThumbnailSidebar({
                 {renderSlide(slide, originalIndex, false)}
               </div>
               <div
-                className="absolute bottom-1 left-1 px-1 py-0.5 rounded text-[8px] font-semibold"
-                style={{ 
-                  backgroundColor: modalColors.isDark ? "rgba(0, 0, 0, 0.7)" : "rgba(255, 255, 255, 0.9)",
-                  color: modalColors.text
+                className="absolute bottom-1 left-1 px-1 py-0.5 rounded text-[8px] font-semibold transition-colors"
+                style={{
+                  backgroundColor: currentSlide === originalIndex
+                    ? modalColors.accent
+                    : modalColors.isDark ? "rgba(0, 0, 0, 0.7)" : "rgba(255, 255, 255, 0.9)",
+                  color: currentSlide === originalIndex ? "#ffffff" : modalColors.text,
                 }}
               >
                 {originalIndex + 1}
@@ -243,6 +349,7 @@ export function ThumbnailSidebar({
           );
         })}
       </div>
+      {renderContextMenu()}
     </aside>
   );
 }

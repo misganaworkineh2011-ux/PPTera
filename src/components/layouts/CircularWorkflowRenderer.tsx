@@ -240,7 +240,6 @@ export function CircularWorkflowRenderer({
 
   const Container = isPresenting ? motion.div : "div";
   const containerProps = isPresenting ? {
-    key: animationKey,
     variants: containerVariants,
     initial: "hidden",
     animate: "visible"
@@ -258,7 +257,7 @@ export function CircularWorkflowRenderer({
   return (
     <Container
       className={`w-full h-full flex items-center justify-center p-8 gap-12 ${className}`}
-      {...containerProps}
+      key={animationKey} {...containerProps}
     >
       {/* Left Side: Circular Arrow Diagram */}
       <div className="flex-shrink-0 relative" style={{ width: svgSize, height: svgSize }}>
@@ -397,7 +396,7 @@ export function CircularWorkflowRenderer({
                          />
                        </div>
                     ) : (
-                      <span className="truncate w-full">{item.label}</span>
+                      <span className="break-words w-full">{item.label}</span>
                     )
                   )}
                 </div>

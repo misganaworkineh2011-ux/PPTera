@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "~/server/db";
 import { fetchImagesForSlides, type SlideWithVisualMetadata, searchPexelsPhotos } from "~/lib/pexels";
 import { getThemeById } from "~/lib/themes";
+import { pickThemeForTopic } from "~/lib/themes/theme-matcher";
 import {
   generateImagesForSlides as generateAIImages,
   generateImageFromSpec,
@@ -19,6 +20,8 @@ import type { SlideLayoutType, ImageSize, ImageShape } from "~/lib/layouts/slide
 import type { SlideImage as OutlineSlideImage } from "~/lib/dashboard/hooks/useOutlineStream";
 import { generateSlug } from "~/lib/utils";
 import { selectLayout, type LayoutSelectionContext } from "~/lib/presentation/smart-layout";
+import { selectLayoutFromCatalog } from "~/lib/presentation/catalog-layout-selector";
+import { buildDeckArtDirection } from "~/lib/presentation/generate-ai-image";
 
 interface SlideInput {
   type: "title" | "content";
@@ -30,6 +33,8 @@ interface SlideInput {
   assets?: SlideAssets;
   image?: OutlineSlideImage;
   contentLayoutHint?: string; // Content layout hint from outline (e.g., "boxes", "sequence", "steps")
+  slideRole?: string; // Narrative role from outline: "content" | "statement" | "data-moment"
+  kicker?: string; // Short uppercase eyebrow label above the heading
 }
 
 interface CreatePresentationRequest {
@@ -65,7 +70,9 @@ interface PresentationSlide {
   slideDescription?: string;
   // New: tagline for title slides
   tagline?: string;
-  chart?: null;
+  // Short uppercase kicker/eyebrow label above a content slide's heading
+  kicker?: string;
+  chart?: Record<string, unknown> | null;
   icons?: undefined;
   image?: {
     url: string;
@@ -141,7 +148,8 @@ async function processImageBatch(
   imageSource: string,
   imageModel: string | undefined,
   controller: ReadableStreamDefaultController,
-  presentationSlides: PresentationSlide[]
+  presentationSlides: PresentationSlide[],
+  artStyle?: string | null
 ): Promise<void> {
   if (imageSource === "stock-photos") {
     const slidesWithMetadata: SlideWithVisualMetadata[] = slideIndices.map(i => {
@@ -186,7 +194,7 @@ async function processImageBatch(
       };
     });
 
-    const imageMap = await generateAIImages(slidesWithMetadata, imageModel as any);
+    const imageMap = await generateAIImages(slidesWithMetadata, imageModel as any, artStyle);
 
     let mapIndex = 0;
     for (const slideIndex of slideIndices) {
@@ -239,7 +247,49 @@ export async function POST(request: Request) {
     );
   }
 
-  const themeConfig = getThemeById(theme);
+  // Brand kit: when the user has one enabled, new decks come out on-brand.
+  // The brand theme (a custom Theme row managed by /api/user/brand-kit)
+  // overrides topic matching; the logo/footer land on every slide via a
+  // default master-slide overlay.
+  let brandThemeId: string | null = null;
+  let brandMasterSlide: Record<string, unknown> | null = null;
+  try {
+    const brandKit = await db.brandKit.findUnique({
+      where: { userId: user.id },
+    });
+    if (brandKit?.enabled) {
+      if (brandKit.logoUrl || brandKit.footerText) {
+        brandMasterSlide = {
+          logo: brandKit.logoUrl
+            ? { url: brandKit.logoUrl, position: "top-right", size: 40, opacity: 0.95 }
+            : null,
+          footer: brandKit.footerText
+            ? { text: brandKit.footerText, show: true, align: "left" }
+            : null,
+          slideNumbers: { show: true, align: "right" },
+          hideOnTitle: true,
+        };
+      }
+      const brandTheme = await db.theme.findFirst({
+        where: { userId: user.id, name: "My Brand Kit" },
+        select: { id: true },
+      });
+      if (brandTheme) brandThemeId = `custom-${brandTheme.id}`;
+    }
+  } catch (brandError) {
+    console.error("Brand kit lookup failed (generation continues):", brandError);
+  }
+
+  // Auto-match a theme to the topic when the caller didn't make a deliberate choice.
+  // The client default is "corporate-clean", so treat that (or empty) as "no choice"
+  // and pick a topic-appropriate theme instead — a finance pitch and a wedding deck
+  // shouldn't open with the same look. An enabled brand theme beats both.
+  const resolvedTheme =
+    brandThemeId ??
+    (!theme || theme === "corporate-clean" ? pickThemeForTopic(metadata.topic) : theme);
+  const themeConfig = getThemeById(resolvedTheme);
+  // One cohesive art-direction descriptor for every AI image in this deck.
+  const deckArtDirection = buildDeckArtDirection(themeConfig?.category);
   const presentationTitle = slides[0]?.type === "title" && slides[0]?.title
     ? slides[0].title
     : metadata.topic || "Untitled Presentation";
@@ -274,14 +324,18 @@ export async function POST(request: Request) {
             title: presentationTitle,
             description: metadata.topic,
             thumbnailUrl: null,
+            // Link the source outline via the FK column too (not just the
+            // content JSON) so lists can offer "Edit outline" cheaply.
+            outlineId: outlineId || null,
             content: JSON.parse(JSON.stringify({
-              theme,
+              theme: resolvedTheme,
               themeConfig: themeConfig || null,
               imageSource,
               textDensity,
               metadata,
               createdFrom: "outline",
               outlineId, // Store outlineId in content JSON
+              ...(brandMasterSlide ? { masterSlide: brandMasterSlide } : {}),
             })),
             slides: JSON.parse(JSON.stringify([])),
             userId: user.id,
@@ -302,13 +356,21 @@ export async function POST(request: Request) {
         sendEvent(controller, "transformingStart", { totalSlides: slides.length });
 
         // Transform outline to presentation using LLM (streams slide by slide)
-        const outlineSlides = slides.map(s => ({
-          type: s.type,
-          title: s.title,
-          subtitle: s.subtitle,
-          bulletPoints: s.bulletPoints,
-          contentLayoutHint: s.contentLayoutHint, // Include content layout hint from outline
-        }));
+        const outlineSlides = slides.map(s => {
+          const chartIntent = (s.assets as { chart?: { type?: string; purpose?: string } } | undefined)?.chart;
+          return {
+            type: s.type,
+            title: s.title,
+            subtitle: s.subtitle,
+            bulletPoints: s.bulletPoints,
+            contentLayoutHint: s.contentLayoutHint, // Include content layout hint from outline
+            // Chart intent from the outline — the transform LLM turns this
+            // into real chart data (type + points) for the slide.
+            wantsChart: Boolean(chartIntent),
+            chartType: chartIntent?.type,
+            chartPurpose: chartIntent?.purpose,
+          };
+        });
 
         const transformStream = transformOutlineToPresentationStream(outlineSlides, {
           tone: metadata.tone,
@@ -368,6 +430,55 @@ export async function POST(request: Request) {
             },
           });
 
+          // ==========================================
+          // LLM CATALOG OVERRIDE
+          // Hand the full family-level layout catalog to an LLM so it can pick
+          // the single most suitable content-layout family + style for this
+          // slide's text and reshape the items to fit that family's format.
+          // Overrides the deterministic selection above; falls back to it on any
+          // failure. Skipped for title slides (they render via TitleSlide).
+          // ==========================================
+          if (transformedSlide.type !== "title") {
+            try {
+              const willHaveImage = layoutSelection.slideLayout !== "no-image";
+              const catalogChoice = await selectLayoutFromCatalog(
+                {
+                  title: transformedSlide.title,
+                  subtitle: transformedSlide.subtitle,
+                  bulletPoints: transformedSlide.bulletPoints,
+                  sections: transformedSlide.sections,
+                  semanticIntent: originalSlide.semanticIntent,
+                  visualStrategy: originalSlide.visualStrategy,
+                  contentLayoutHint: originalSlide.contentLayoutHint,
+                },
+                { hasImage: willHaveImage }
+              );
+              if (catalogChoice) {
+                // Redirect the deterministic pick to the LLM's choice so the
+                // context tracking and slide creation below both use it.
+                layoutSelection.category = catalogChoice.category;
+                layoutSelection.style = catalogChoice.style;
+                // Reshape content into the chosen family's item format
+                // (getBoxContentItems reads sections first: heading→label, description→text).
+                if (catalogChoice.items && catalogChoice.items.length > 0) {
+                  transformedSlide.sections = catalogChoice.items.map((it) => ({
+                    heading: it.label,
+                    description: it.text,
+                  }));
+                }
+                console.log(
+                  `[create-presentation] Slide ${slideIndex}: catalog layout → ${catalogChoice.category}/${catalogChoice.style}` +
+                    (catalogChoice.reasoning ? ` (${catalogChoice.reasoning})` : "")
+                );
+              }
+            } catch (catalogError) {
+              console.warn(
+                `[create-presentation] Slide ${slideIndex}: catalog override failed, keeping deterministic selection:`,
+                catalogError
+              );
+            }
+          }
+
           // Track selection for context (for next slides)
           layoutContext.previousLayouts.push({
             slideIndex,
@@ -399,6 +510,7 @@ export async function POST(request: Request) {
             title: transformedSlide.title,
             subtitle: transformedSlide.subtitle,
             tagline: transformedSlide.tagline,
+            kicker: transformedSlide.kicker ?? originalSlide.kicker,
             slideDescription: transformedSlide.slideDescription,
             introText: transformedSlide.introText,
             bulletPoints: transformedSlide.bulletPoints,
@@ -407,8 +519,11 @@ export async function POST(request: Request) {
             chart: null,
             icons: undefined,
             image: null,
-            // New canonical slide layout system from smart selection
-            slideLayout: layoutSelection.slideLayout,
+            // New canonical slide layout system from smart selection.
+            // Title slides stay layout-free so they render through TitleSlide
+            // (theme signature / cover styles) with a full-bleed image backdrop
+            // instead of the generic side-image split.
+            slideLayout: transformedSlide.type === "title" ? undefined : layoutSelection.slideLayout,
             imageSize: layoutSelection.imageSize,
             imageShape: layoutSelection.imageShape,
             // Legacy layout for renderer compatibility
@@ -424,6 +539,49 @@ export async function POST(request: Request) {
             semanticIntent: originalSlide.semanticIntent,
             visualStrategy: originalSlide.visualStrategy,
           };
+
+          // Attach an AI-generated chart when the transform produced one
+          // (outline flagged the slide with assets.chart). The chart becomes
+          // the slide's visual hero via the chart-right split layout.
+          const aiChart = transformedSlide.chart;
+          if (aiChart && Array.isArray(aiChart.data) && aiChart.data.length >= 2) {
+            const VALID_CHART_TYPES = [
+              "bar", "horizontal-bar", "line", "area", "pie", "donut",
+              "funnel", "radar", "kpi", "progress", "gauge", "scatter",
+            ];
+            const chartType = VALID_CHART_TYPES.includes(aiChart.type) ? aiChart.type : "bar";
+            presentationSlide.chart = {
+              type: chartType,
+              title: aiChart.title || transformedSlide.title,
+              data: aiChart.data.slice(0, 8).map((d) => ({
+                label: String(d.label).slice(0, 28),
+                value: Number(d.value) || 0,
+              })),
+              config: {
+                showValues: true,
+                showLegend: chartType === "pie" || chartType === "donut",
+                showGrid: ["bar", "line", "area", "scatter"].includes(chartType),
+                colorScheme: "theme",
+                ...(aiChart.unit ? { unit: aiChart.unit } : {}),
+                ...(chartType === "donut" ? { donutHole: 0.6 } : {}),
+              },
+            };
+            presentationSlide.slideLayout = "chart-right";
+            presentationSlide.image = null;
+          }
+
+          // Narrative pacing: turn "statement" slides into full-bleed image moments
+          // when the layout engine kept an image for them. This gives the deck rhythm
+          // — a bold visual beat between dense content slides.
+          if (
+            originalSlide.slideRole === "statement" &&
+            layoutSelection.slideLayout &&
+            layoutSelection.slideLayout !== "no-image" &&
+            !imageWasOverridden
+          ) {
+            presentationSlide.slideLayout = "image-background";
+            presentationSlide.layout = "image-background";
+          }
 
           presentationSlides.push(presentationSlide);
 
@@ -481,8 +639,8 @@ export async function POST(request: Request) {
           }
 
           // Send slide complete
-          sendEvent(controller, "slideComplete", { 
-            slideIndex, 
+          sendEvent(controller, "slideComplete", {
+            slideIndex,
             slide: presentationSlide,
             // Include layout selection metadata for debugging
             layoutSelection: {
@@ -494,6 +652,21 @@ export async function POST(request: Request) {
               imageOverrideReason: imageOverrideReason,
             },
           });
+
+          // Persist progress after EVERY slide so an interrupted generation
+          // (closed tab, back navigation, crash) leaves a usable partial deck
+          // instead of a permanently empty one. Failures never stop the stream.
+          try {
+            await db.presentation.update({
+              where: { id: presentation.id },
+              data: { slides: JSON.parse(JSON.stringify(presentationSlides)) },
+            });
+          } catch (persistError) {
+            console.error(
+              `[create-presentation] Incremental save failed after slide ${slideIndex}:`,
+              persistError,
+            );
+          }
         }
 
         // Process images in batches of 4-5
@@ -533,13 +706,28 @@ export async function POST(request: Request) {
                 imageSource,
                 imageModel,
                 controller,
-                presentationSlides
+                presentationSlides,
+                deckArtDirection
               );
 
               sendEvent(controller, "imageBatchComplete", {
                 batchIndex,
                 totalBatches: batches.length,
               });
+
+              // Persist after each image batch too — images arrive after the
+              // text pass and should survive an interruption as well.
+              try {
+                await db.presentation.update({
+                  where: { id: presentation.id },
+                  data: { slides: JSON.parse(JSON.stringify(presentationSlides)) },
+                });
+              } catch (persistError) {
+                console.error(
+                  `[create-presentation] Incremental save failed after image batch ${batchIndex}:`,
+                  persistError,
+                );
+              }
             }
           }
 
@@ -629,7 +817,7 @@ export async function POST(request: Request) {
                 
                 if (imageSpec?.required && imageSpec.aiPromptHint) {
                   try {
-                    const result = await generateImageFromSpec(imageSpec, imageModel as any);
+                    const result = await generateImageFromSpec(imageSpec, imageModel as any, deckArtDirection);
                     if (result.url) {
                       additionalImages.push({
                         url: result.url,

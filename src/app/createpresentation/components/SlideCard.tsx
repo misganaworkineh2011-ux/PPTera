@@ -4,6 +4,20 @@ import { useState } from "react";
 import { GripVertical, Trash2, Edit3, Check, X } from "lucide-react";
 import type { Slide } from "~/lib/dashboard/hooks/useOutlineStream";
 
+// Bullets should be strings, but the model occasionally returns structured
+// objects (e.g. { label, text }). Coerce to a readable string so React never
+// gets handed an object to render.
+function bulletToString(bullet: unknown): string {
+  if (typeof bullet === "string") return bullet;
+  if (bullet && typeof bullet === "object") {
+    const o = bullet as { label?: string; text?: string; description?: string };
+    const body = o.text ?? o.description ?? "";
+    if (o.label) return body ? `${o.label}: ${body}` : o.label;
+    return body;
+  }
+  return String(bullet ?? "");
+}
+
 interface SlideCardProps {
   slide: Slide;
   index: number;
@@ -31,7 +45,7 @@ export default function SlideCard({
 }: SlideCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(slide.title);
-  const [editedBullets, setEditedBullets] = useState(slide.bulletPoints?.join("\n") || "");
+  const [editedBullets, setEditedBullets] = useState((slide.bulletPoints ?? []).map(bulletToString).join("\n"));
 
   const handleSave = () => {
     if (onEdit) {
@@ -46,7 +60,7 @@ export default function SlideCard({
 
   const handleCancel = () => {
     setEditedTitle(slide.title);
-    setEditedBullets(slide.bulletPoints?.join("\n") || "");
+    setEditedBullets((slide.bulletPoints ?? []).map(bulletToString).join("\n"));
     setIsEditing(false);
   };
 
@@ -123,7 +137,7 @@ export default function SlideCard({
                   {slide.bulletPoints.map((bullet, i) => (
                     <li key={i} className="flex gap-2 leading-relaxed">
                       <span className="text-[#06b6d4] flex-shrink-0">•</span>
-                      <span>{bullet}</span>
+                      <span>{bulletToString(bullet)}</span>
                     </li>
                   ))}
                 </ul>

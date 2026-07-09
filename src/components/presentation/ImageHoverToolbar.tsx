@@ -36,32 +36,83 @@ const ShapePreview = ({
   isActive: boolean;
   isDark: boolean;
 }) => {
-  const baseClass = `w-8 h-6 ${isActive ? (isDark ? "bg-blue-500" : "bg-blue-600") : isDark ? "bg-zinc-400" : "bg-slate-500"}`;
+  const fill = isActive ? (isDark ? "#3b82f6" : "#2563eb") : isDark ? "#a1a1aa" : "#64748b";
+  const faint = isActive ? (isDark ? "#3b82f680" : "#2563eb80") : isDark ? "#a1a1aa66" : "#64748b66";
+  const baseClass = "w-8 h-6";
+  const box: React.CSSProperties = { backgroundColor: fill };
 
   switch (shape) {
     case "arc":
-      return (
-        <div
-          className={`${baseClass} relative overflow-hidden`}
-          style={{ borderRadius: "0 0 50% 50% / 0 0 30% 30%" }}
-        />
-      );
+      return <div className={baseClass} style={{ ...box, borderRadius: "0 0 50% 50% / 0 0 30% 30%" }} />;
     case "rectangle":
-      return <div className={baseClass} />;
+      return <div className={baseClass} style={box} />;
     case "rounded":
-      return <div className={`${baseClass} rounded-md`} />;
+      return <div className={`${baseClass} rounded-md`} style={box} />;
     case "wave":
       return (
         <div
-          className={`${baseClass} relative`}
-          style={{
-            clipPath:
-              "polygon(0 20%, 25% 0, 50% 15%, 75% 0, 100% 20%, 100% 100%, 0 100%)",
-          }}
+          className={baseClass}
+          style={{ ...box, clipPath: "polygon(0 20%, 25% 0, 50% 15%, 75% 0, 100% 20%, 100% 100%, 0 100%)" }}
         />
       );
+    case "frame":
+      return (
+        <div className={`${baseClass} rounded-[4px] p-[3px]`} style={{ border: `1.5px solid ${fill}` }}>
+          <div className="w-full h-full rounded-[2px]" style={box} />
+        </div>
+      );
+    case "archway":
+      return <div className="w-6 h-7" style={{ ...box, borderRadius: "999px 999px 3px 3px" }} />;
+    case "portal":
+      return (
+        <div className="w-7 h-7 rounded-full p-[3px]" style={{ border: `1.5px solid ${fill}` }}>
+          <div className="w-full h-full rounded-full" style={box} />
+        </div>
+      );
+    case "layered":
+      return (
+        <div className="relative w-8 h-6">
+          <div className="absolute inset-0 translate-x-[3px] translate-y-[3px] rounded-[3px]" style={{ backgroundColor: faint }} />
+          <div className="absolute inset-0 rounded-[3px]" style={box} />
+        </div>
+      );
+    case "polaroid":
+      return (
+        <div className="w-7 h-7 rotate-3 rounded-[2px] bg-white p-[2px] pb-[6px] shadow">
+          <div className="w-full h-full" style={box} />
+        </div>
+      );
+    case "slats":
+      return (
+        <div className="flex w-8 h-6 gap-[2px] items-center">
+          <div className="flex-1 h-[80%] rounded-sm" style={box} />
+          <div className="flex-1 h-full rounded-sm" style={box} />
+          <div className="flex-1 h-[80%] rounded-sm" style={box} />
+        </div>
+      );
+    case "organic":
+      return <div className="w-7 h-7" style={{ ...box, borderRadius: "58% 42% 55% 45% / 52% 48% 60% 40%" }} />;
+    case "cornercut":
+      return (
+        <div className={baseClass} style={{ ...box, clipPath: "polygon(0 0, 100% 0, 100% 100%, 28% 100%, 0 70%)" }} />
+      );
+    case "duotone":
+      return (
+        <div
+          className={`${baseClass} rounded-[3px]`}
+          style={{ background: `linear-gradient(135deg, ${fill} 0%, ${faint} 55%, transparent 100%)`, border: `1px solid ${faint}` }}
+        />
+      );
+    case "lframe":
+      return (
+        <div className="relative w-8 h-6">
+          <div className="absolute inset-[2px] left-[4px] bottom-[4px] rounded-[2px]" style={box} />
+          <div className="absolute left-0 bottom-0 w-[2.5px] h-[75%]" style={{ backgroundColor: fill }} />
+          <div className="absolute left-0 bottom-0 h-[2.5px] w-[70%]" style={{ backgroundColor: fill }} />
+        </div>
+      );
     default:
-      return <div className={baseClass} />;
+      return <div className={baseClass} style={box} />;
   }
 };
 
@@ -70,6 +121,16 @@ const shapeOptions: { shape: ImageShape; label: string }[] = [
   { shape: "rounded", label: "Rounded" },
   { shape: "arc", label: "Arc" },
   { shape: "wave", label: "Wave" },
+  { shape: "frame", label: "Gallery Frame" },
+  { shape: "archway", label: "Arch Window" },
+  { shape: "portal", label: "Portal" },
+  { shape: "layered", label: "Layered" },
+  { shape: "polaroid", label: "Polaroid" },
+  { shape: "slats", label: "Slats" },
+  { shape: "organic", label: "Organic" },
+  { shape: "cornercut", label: "Corner Cut" },
+  { shape: "duotone", label: "Duotone" },
+  { shape: "lframe", label: "L-Frame" },
 ];
 
 export default function ImageHoverToolbar({
@@ -121,12 +182,12 @@ export default function ImageHoverToolbar({
 
         {showShapeMenu && (
           <div
-            className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 ${bgClass} border ${borderClass} rounded-lg shadow-xl p-2 min-w-[160px]`}
+            className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 ${bgClass} border ${borderClass} rounded-lg shadow-xl p-2 min-w-[248px]`}
           >
             <p className="text-[10px] text-center mb-2 opacity-60">
-              Image Shape
+              Image Design
             </p>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-1.5 max-h-[264px] overflow-y-auto pr-0.5">
               {shapeOptions.map((option) => (
                 <button
                   key={option.shape}
@@ -134,7 +195,7 @@ export default function ImageHoverToolbar({
                     onChangeShape(option.shape);
                     setShowShapeMenu(false);
                   }}
-                  className={`p-2 rounded-md ${hoverClass} transition-colors flex flex-col items-center gap-1.5 ${
+                  className={`p-2 rounded-md ${hoverClass} transition-colors flex flex-col items-center justify-end gap-1.5 ${
                     currentShape === option.shape ? activeClass : ""
                   }`}
                   title={option.label}
@@ -144,7 +205,7 @@ export default function ImageHoverToolbar({
                     isActive={currentShape === option.shape}
                     isDark={isDark}
                   />
-                  <span className="text-[10px]">{option.label}</span>
+                  <span className="text-[9px] leading-tight text-center whitespace-nowrap">{option.label}</span>
                 </button>
               ))}
             </div>

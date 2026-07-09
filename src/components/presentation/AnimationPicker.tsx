@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, type Transition } from "framer-motion";
 import { X, Sparkles, Play, Check, Layers, Crown, Lock } from "lucide-react";
 import {
@@ -9,20 +9,34 @@ import {
   type AnimationPreset,
   type AnimationCategory,
 } from "~/lib/animations";
+import { ITEM_ANIMATIONS } from "./item-animations";
 import type { Theme } from "~/lib/themes";
 import { useLanguage } from "~/contexts/LanguageContext";
+
+// Remember the user's last "Apply to" choice (all slides vs. current slide) for
+// deck-wide transitions, so reopening the picker keeps their preferred scope.
+const APPLY_SCOPE_STORAGE_KEY = "ppt:transition-apply-scope";
 
 interface AnimationPickerProps {
   isOpen: boolean;
   currentAnimation?: string;
   contentAnimation?: boolean;
+  // Per-item entrance style + click-to-reveal build for the current slide
+  itemAnimation?: string;
+  itemBuild?: boolean;
   theme: Theme;
   isPaidUser?: boolean;
   subscriptionPlan?: string | null;
-  onSelect: (animationId: string) => void;
+  onSelect: (animationId: string, applyToAllSlides?: boolean) => void;
   onContentAnimationChange?: (enabled: boolean) => void;
+  onItemAnimationChange?: (animationId: string, applyToAllSlides?: boolean) => void;
+  onItemBuildChange?: (enabled: boolean) => void;
   onUpgrade?: () => void;
   onClose: () => void;
+  // Deck-wide mode: offer a scope choice (all slides vs. just the current one).
+  applyToAll?: boolean;
+  slideCount?: number;
+  currentSlideNumber?: number;
 }
 
 // Helper to determine if theme is dark
@@ -179,17 +193,38 @@ export default function AnimationPicker({
   isOpen,
   currentAnimation = "fade",
   contentAnimation = true,
+  itemAnimation = "fade-up",
+  itemBuild = false,
   theme,
   isPaidUser = false,
   subscriptionPlan,
   onSelect,
   onContentAnimationChange,
+  onItemAnimationChange,
+  onItemBuildChange,
   onUpgrade,
   onClose,
+  applyToAll = false,
+  slideCount,
+  currentSlideNumber,
 }: AnimationPickerProps) {
   const { t } = useLanguage();
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<AnimationCategory | "all">("all");
+  // In deck-wide mode the user can target every slide or just the current one.
+  // Restore their last choice so the picker reopens with the same scope.
+  const [applyScope, setApplyScope] = useState<"all" | "current">(() => {
+    if (typeof window === "undefined") return "all";
+    const saved = window.localStorage.getItem(APPLY_SCOPE_STORAGE_KEY);
+    return saved === "current" || saved === "all" ? saved : "all";
+  });
+
+  // Persist the scope whenever it changes.
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(APPLY_SCOPE_STORAGE_KEY, applyScope);
+    }
+  }, [applyScope]);
 
   const categories = getAnimationCategories();
   const isDark = isThemeDark(theme);
@@ -261,10 +296,14 @@ export default function AnimationPicker({
             </div>
             <div>
               <h2 className="text-lg font-bold" style={{ color: textPrimary }}>
-                {t.animationPickerTitle || "Slide Animation"}
+                {applyToAll ? "Presentation Transitions" : (t.animationPickerTitle || "Slide Animation")}
               </h2>
               <p className="text-sm" style={{ color: textSecondary }}>
-                {t.animationPickerSubtitle || "Choose how this slide appears during presentation"}
+                {applyToAll
+                  ? (applyScope === "all"
+                      ? `Applies to all ${slideCount ?? ""} slides`.replace("  ", " ")
+                      : `Applies to slide ${currentSlideNumber ?? ""}`.replace("  ", " "))
+                  : (t.animationPickerSubtitle || "Choose how this slide appears during presentation")}
               </p>
             </div>
           </div>
@@ -277,15 +316,20 @@ export default function AnimationPicker({
           </button>
         </div>
 
-        {/* Category Tabs */}
-        <div
-          className="px-5 py-3 border-b overflow-x-auto flex-shrink-0"
-          style={{ borderColor }}
-        >
-          <div className="flex gap-2">
+        {/* Category Tabs — horizontal scroll with edge fade + hidden scrollbar */}
+        <div className="px-5 py-3 border-b flex-shrink-0" style={{ borderColor }}>
+          <div
+            className="flex gap-2 overflow-x-auto scroll-smooth pb-1 -mb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+            style={{
+              maskImage:
+                "linear-gradient(to right, transparent, #000 18px, #000 calc(100% - 18px), transparent)",
+              WebkitMaskImage:
+                "linear-gradient(to right, transparent, #000 18px, #000 calc(100% - 18px), transparent)",
+            }}
+          >
             <button
               onClick={() => setSelectedCategory("all")}
-              className="px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap"
+              className="shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap"
               style={{
                 backgroundColor:
                   selectedCategory === "all" ? accentColor : "rgba(255,255,255,0.05)",
@@ -300,7 +344,7 @@ export default function AnimationPicker({
                 <button
                   key={cat.category}
                   onClick={() => setSelectedCategory(cat.category)}
-                  className="px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap flex items-center gap-1.5"
+                  className="shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap flex items-center gap-1.5"
                   style={{
                     backgroundColor:
                       selectedCategory === cat.category
@@ -316,6 +360,35 @@ export default function AnimationPicker({
               ))}
           </div>
         </div>
+
+        {/* Scope toggle — deck-wide mode lets the user target all slides or just one */}
+        {applyToAll && (
+          <div className="px-5 py-2.5 border-b flex items-center gap-3 flex-shrink-0" style={{ borderColor }}>
+            <span className="text-xs font-medium" style={{ color: textSecondary }}>Apply to</span>
+            <div className="flex rounded-lg p-0.5" style={{ backgroundColor: "rgba(255,255,255,0.06)" }}>
+              <button
+                onClick={() => setApplyScope("all")}
+                className="px-3 py-1 rounded-md text-xs font-semibold transition-colors"
+                style={{
+                  backgroundColor: applyScope === "all" ? accentColor : "transparent",
+                  color: applyScope === "all" ? "#ffffff" : textSecondary,
+                }}
+              >
+                All slides
+              </button>
+              <button
+                onClick={() => setApplyScope("current")}
+                className="px-3 py-1 rounded-md text-xs font-semibold transition-colors"
+                style={{
+                  backgroundColor: applyScope === "current" ? accentColor : "transparent",
+                  color: applyScope === "current" ? "#ffffff" : textSecondary,
+                }}
+              >
+                This slide{currentSlideNumber ? ` (${currentSlideNumber})` : ""}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Animation Grid - Scrollable */}
         <div className="flex-1 overflow-y-auto p-5 min-h-0">
@@ -355,7 +428,7 @@ export default function AnimationPicker({
                     if (isLocked && onUpgrade) {
                       onUpgrade();
                     } else {
-                      onSelect(animation.id);
+                      onSelect(animation.id, applyScope === "all");
                     }
                   }}
                 />
@@ -411,6 +484,69 @@ export default function AnimationPicker({
               />
             </button>
           </div>
+
+          {/* Item entrance style + click-to-reveal build */}
+          {onItemAnimationChange && contentAnimation && (
+            <div className="mt-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: textSecondary }}>
+                  Item entrance style
+                </p>
+                <button
+                  onClick={() => onItemAnimationChange(itemAnimation, true)}
+                  className="text-[11px] font-medium px-2 py-1 rounded-md transition-colors hover:bg-white/10"
+                  style={{ color: accentColor }}
+                >
+                  Apply to all slides
+                </button>
+              </div>
+              <div className="grid grid-cols-3 gap-1.5">
+                {ITEM_ANIMATIONS.map((anim) => {
+                  const isSelected = anim.id === itemAnimation;
+                  return (
+                    <button
+                      key={anim.id}
+                      onClick={() => onItemAnimationChange(anim.id)}
+                      title={anim.description}
+                      className="flex items-center justify-between gap-1.5 px-2.5 py-2 rounded-lg text-left transition-all"
+                      style={{
+                        border: `1px solid ${isSelected ? accentColor : borderColor}`,
+                        background: isSelected ? `${accentColor}1a` : "transparent",
+                      }}
+                    >
+                      <span className="text-xs font-medium truncate" style={{ color: isSelected ? accentColor : textPrimary }}>
+                        {anim.name}
+                      </span>
+                      {isSelected && <Check size={12} style={{ color: accentColor }} className="flex-shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {onItemBuildChange && (
+                <div className="flex items-center justify-between mt-4">
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: textPrimary }}>
+                      Reveal items one by one
+                    </p>
+                    <p className="text-xs" style={{ color: textSecondary }}>
+                      While presenting, each Next press brings in the next item
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => onItemBuildChange(!itemBuild)}
+                    className="relative w-12 h-6 rounded-full transition-colors flex-shrink-0"
+                    style={{ backgroundColor: itemBuild ? accentColor : "#475569" }}
+                  >
+                    <div
+                      className="absolute top-1 w-4 h-4 rounded-full bg-white transition-transform"
+                      style={{ left: itemBuild ? "28px" : "4px" }}
+                    />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Footer */}

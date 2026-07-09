@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { type SlideData, type EditingState } from "~/components/presentation/types";
+import { type SlideData, type EditingState, type CoverLayoutId } from "~/components/presentation/types";
 import { type LayoutType } from "~/lib/slide-layouts";
 import { type SlideLayoutType, type ImageSize, type ImageShape } from "~/lib/layouts/slide";
 import { type ContentLayoutId } from "~/components/presentation/ContentLayoutPanel";
@@ -32,6 +32,7 @@ export function useSlideOperations({
     const slide: SlideData = { ...existingSlide };
     if (field === "title") slide.title = value;
     else if (field === "subtitle") slide.subtitle = value;
+    else if (field === "tagline") slide.tagline = value;
     else if (field === "bullet" && bulletIndex !== undefined) {
       const bullets = [...(slide.bulletPoints || [])];
       bullets[bulletIndex] = value;
@@ -95,6 +96,39 @@ export function useSlideOperations({
     }
   }, [slidesData, updateSlidesWithSave]);
 
+  const changeItemAnimation = useCallback((slideIndex: number, animationId: string, applyToAllSlides?: boolean) => {
+    if (applyToAllSlides) {
+      updateSlidesWithSave(slidesData.map((s) => ({ ...s, itemAnimation: animationId })));
+      return;
+    }
+    const newSlides = [...slidesData];
+    const existingSlide = newSlides[slideIndex];
+    if (existingSlide) {
+      newSlides[slideIndex] = { ...existingSlide, itemAnimation: animationId };
+      updateSlidesWithSave(newSlides);
+    }
+  }, [slidesData, updateSlidesWithSave]);
+
+  const changeItemBuild = useCallback((slideIndex: number, enabled: boolean) => {
+    const newSlides = [...slidesData];
+    const existingSlide = newSlides[slideIndex];
+    if (existingSlide) {
+      newSlides[slideIndex] = { ...existingSlide, itemBuild: enabled };
+      updateSlidesWithSave(newSlides);
+    }
+  }, [slidesData, updateSlidesWithSave]);
+
+  const changeCoverLayout = useCallback((slideIndex: number, layoutId: CoverLayoutId) => {
+    const newSlides = [...slidesData];
+    const existingSlide = newSlides[slideIndex];
+    if (existingSlide && existingSlide.type === "title") {
+      // Clear any slideLayout (older decks' side-image split) so the slide
+      // renders through TitleSlide, where cover compositions live.
+      newSlides[slideIndex] = { ...existingSlide, coverLayout: layoutId, slideLayout: undefined };
+      updateSlidesWithSave(newSlides);
+    }
+  }, [slidesData, updateSlidesWithSave]);
+
   const changeSlideAnimation = useCallback((slideIndex: number, animationId: string) => {
     const newSlides = [...slidesData];
     const existingSlide = newSlides[slideIndex];
@@ -111,6 +145,15 @@ export function useSlideOperations({
       newSlides[slideIndex] = { ...existingSlide, contentAnimation: enabled };
       updateSlidesWithSave(newSlides);
     }
+  }, [slidesData, updateSlidesWithSave]);
+
+  // Apply one transition to the WHOLE presentation (every slide).
+  const changeAllSlidesAnimation = useCallback((animationId: string) => {
+    updateSlidesWithSave(slidesData.map((s) => ({ ...s, animation: animationId })));
+  }, [slidesData, updateSlidesWithSave]);
+
+  const changeAllSlidesContentAnimation = useCallback((enabled: boolean) => {
+    updateSlidesWithSave(slidesData.map((s) => ({ ...s, contentAnimation: enabled })));
   }, [slidesData, updateSlidesWithSave]);
 
   const duplicateSlide = useCallback((index: number) => {
@@ -408,8 +451,13 @@ export function useSlideOperations({
     updateSlideContent,
     changeSlideLayout,
     changeContentLayout,
+    changeCoverLayout,
     changeSlideAnimation,
+    changeItemAnimation,
+    changeItemBuild,
     changeContentAnimation,
+    changeAllSlidesAnimation,
+    changeAllSlidesContentAnimation,
     duplicateSlide,
     addSlideAt,
     deleteSlide,

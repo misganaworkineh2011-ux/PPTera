@@ -12,6 +12,7 @@ import type {
   ContentAnalysis,
   VisualStrategy,
 } from "../types";
+import { ContentType } from "../types";
 import { calculateContentDensity, isDensityCompatible } from "./capacity-evaluator";
 
 /**
@@ -25,13 +26,25 @@ import { calculateContentDensity, isDensityCompatible } from "./capacity-evaluat
  * @param input - Scoring input with content analysis
  * @returns Score 0-80 (40 * affinity multiplier up to 2.0)
  */
+/**
+ * Floor affinity for GENERIC content on layouts that don't declare one.
+ * GENERIC means "no strong content signal", so most layouts are plausible —
+ * without a floor, only the few broad categories (boxes/bullets) that list
+ * GENERIC can score here, and every deck collapses onto them. Specific
+ * detected types (COMPARISON, TIMELINE, …) still require an explicit entry.
+ */
+const GENERIC_FLOOR_AFFINITY = 0.7;
+
 export function scoreContentType(
   layout: LayoutDefinition,
   input: LayoutScoringInput
 ): number {
   const contentType = input.analysis.contentType;
-  const affinity = layout.contentTypeAffinity[contentType] || 0;
-  
+  const declared = layout.contentTypeAffinity[contentType];
+  const affinity =
+    declared ??
+    (contentType === ContentType.GENERIC ? GENERIC_FLOOR_AFFINITY : 0);
+
   // Base score is 40 points, multiplied by affinity
   return 40 * affinity;
 }
@@ -349,16 +362,23 @@ export function calculateConfidenceBonus(confidence: number): number {
 
 /**
  * Calculate repetition penalty
- * 
- * Applies penalty if the same layout category appears in
- * consecutive slides:
- * - 2 consecutive: -5 points
- * - 3+ consecutive: -15 points
- * 
+ *
+ * Discourages monotony so a deck doesn't collapse onto one or two layouts.
+ * Two stacked effects:
+ * - Deck-wide usage: every prior use of this category anywhere in the deck
+ *   costs -7 (capped at -28), so a heavily used layout genuinely loses to
+ *   fresh ones instead of just avoiding back-to-back repeats. The old
+ *   4-slide window let a deck oscillate A-B-A-B forever.
+ * - Consecutive repeats sting extra: one immediately-previous use adds -8,
+ *   two-or-more adds -15 on top of the usage penalty.
+ *
  * @param layoutCategory - Current layout category being scored
- * @param previousLayouts - Array of previous layout categories
+ * @param previousLayouts - All previous layout categories in the deck
  * @returns Penalty points (negative)
  */
+const USAGE_PENALTY_PER_USE = 7;
+const USAGE_PENALTY_CAP_USES = 4;
+
 export function calculateRepetitionPenalty(
   layoutCategory: string,
   previousLayouts: string[]
@@ -366,7 +386,14 @@ export function calculateRepetitionPenalty(
   if (previousLayouts.length === 0) {
     return 0;
   }
-  
+
+  // Deck-wide usage penalty (guard totalUses of 0 so we never emit -0)
+  const totalUses = previousLayouts.filter((c) => c === layoutCategory).length;
+  let penalty =
+    totalUses > 0
+      ? -USAGE_PENALTY_PER_USE * Math.min(totalUses, USAGE_PENALTY_CAP_USES)
+      : 0;
+
   // Count consecutive occurrences of this layout at the end of previous layouts
   let consecutiveCount = 0;
   for (let i = previousLayouts.length - 1; i >= 0; i--) {
@@ -376,15 +403,37 @@ export function calculateRepetitionPenalty(
       break;
     }
   }
-  
-  // Apply penalty based on consecutive count
+
+  // Consecutive repetition is the strongest signal — extra sting on top
   if (consecutiveCount >= 2) {
-    return -15; // 3+ consecutive (2 previous + current)
+    penalty -= 15;
   } else if (consecutiveCount === 1) {
-    return -5; // 2 consecutive (1 previous + current)
-  } else {
-    return 0; // No repetition
+    penalty -= 8;
   }
+
+  return penalty;
+}
+
+/**
+ * Calculate hint bonus (28 points)
+ *
+ * The outline LLM plans deck-wide layout variety via contentLayoutHint (its
+ * prompt forbids consecutive repeats and demands 5-6 distinct categories).
+ * Honoring that plan requires the hinted category to actually win scoring —
+ * previously this bonus existed in the breakdown type but was hardcoded to 0,
+ * so any hint that missed the fast-path bar was discarded entirely.
+ *
+ * @param layoutCategory - Current layout category being scored
+ * @param contentLayoutHint - Category hint from the outline LLM (if any)
+ * @returns Bonus points (0 or HINT_MATCH_BONUS)
+ */
+export const HINT_MATCH_BONUS = 28;
+
+export function calculateHintBonus(
+  layoutCategory: string,
+  contentLayoutHint: string | undefined
+): number {
+  return contentLayoutHint === layoutCategory ? HINT_MATCH_BONUS : 0;
 }
 
 /**

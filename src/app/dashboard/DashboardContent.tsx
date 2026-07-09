@@ -2,7 +2,9 @@
 
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
-import { Filter, Grid, List as ListIcon, MoreHorizontal, Upload, Globe, Lock, Share2, Edit3, Copy, Trash2, Link2, Loader2, Heart, Sparkles } from "lucide-react";
+import { Filter, Grid, List as ListIcon, MoreHorizontal, Upload, Globe, Lock, Share2, Edit3, Copy, Trash2, Link2, Loader2, Heart, Sparkles, ListTree } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useNavigation } from "~/contexts/NavigationContext";
 import Image from "next/image";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
@@ -23,6 +25,7 @@ interface Presentation {
   updatedAt: Date;
   thumbnailUrl: string | null;
   shareToken?: string | null;
+  outlineId?: string | null;
 }
 
 interface PaginationInfo {
@@ -47,6 +50,8 @@ type FilterMode = "all" | "favorites" | "public" | "private";
 export default function DashboardContent({ presentations: propPresentations, userName, searchQuery = "", pagination, onLoadMore, isLoadingMore }: DashboardContentProps) {
   const { user: clerkUser } = useUser();
   const { user: dashboardUser } = useDashboard();
+  const router = useRouter();
+  const { startNavigating } = useNavigation();
   const subscriptionPlan = dashboardUser?.subscriptionPlan;
   
   const [localPresentations, setLocalPresentations] = useState(propPresentations);
@@ -193,6 +198,18 @@ export default function DashboardContent({ presentations: propPresentations, use
           toast.success(t.linkCopied || "Link copied!");
         } catch (error) { console.error(error); }
         break;
+      case "editOutline": {
+        setActiveMenu(null);
+        setMenuPosition(null);
+        const outlinePres = presentations.find(p => p.id === presId);
+        if (outlinePres?.outlineId) {
+          startNavigating(); // instant branded loading feedback
+          router.push(`/createpresentation/outline/${outlinePres.outlineId}?mode=ai`);
+        } else {
+          toast.error("This presentation has no saved outline.");
+        }
+        break;
+      }
       case "delete":
         setActiveMenu(null);
         setMenuPosition(null);
@@ -331,6 +348,14 @@ export default function DashboardContent({ presentations: propPresentations, use
                 <a
                   key={pres.id}
                   href={getPresentationUrl(pres.id, pres.title)}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    setMenuPosition({
+                      top: Math.min(window.innerHeight - 360, e.clientY),
+                      left: e.clientX,
+                    });
+                    setActiveMenu(pres.id);
+                  }}
                   className={`group relative flex flex-col overflow-hidden rounded-[20px] border border-slate-200/80 shadow-md ring-1 ring-slate-900/5 dark:ring-0 dark:border-white/10 dark:shadow-none bg-white dark:bg-zinc-950 transition-all duration-300 hover:border-[#06b6d4]/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 cursor-pointer ${animationClass}`}
                   style={animationStyle}
                 >
@@ -369,7 +394,7 @@ export default function DashboardContent({ presentations: propPresentations, use
         ) : (
           <div className="space-y-3">
             {filteredPresentations.map((pres, index) => (
-              <a key={pres.id} href={getPresentationUrl(pres.id, pres.title)} className="group flex items-center gap-5 rounded-[20px] border border-slate-200/80 shadow-sm ring-1 ring-slate-900/5 dark:ring-0 dark:border-white/10 dark:shadow-none bg-white dark:bg-zinc-950 p-3 transition-all duration-300 hover:border-[#06b6d4]/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-0.5 cursor-pointer">
+              <a key={pres.id} href={getPresentationUrl(pres.id, pres.title)} onContextMenu={(e) => { e.preventDefault(); setMenuPosition({ top: Math.min(window.innerHeight - 360, e.clientY), left: e.clientX }); setActiveMenu(pres.id); }} className="group flex items-center gap-5 rounded-[20px] border border-slate-200/80 shadow-sm ring-1 ring-slate-900/5 dark:ring-0 dark:border-white/10 dark:shadow-none bg-white dark:bg-zinc-950 p-3 transition-all duration-300 hover:border-[#06b6d4]/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-0.5 cursor-pointer">
                 <div className="w-24 h-16 sm:w-32 sm:h-20 flex-shrink-0 bg-slate-50 dark:bg-zinc-900 rounded-[14px] relative overflow-hidden border border-slate-100 dark:border-zinc-800">
                   <Image src={getThumbnail(pres)} alt={pres.title} fill className={`${getThumbnail(pres) === "/logo.png" ? "object-contain p-4 opacity-20" : "object-cover"} transition-transform duration-500 group-hover:scale-105`} />
                 </div>
@@ -441,6 +466,9 @@ export default function DashboardContent({ presentations: propPresentations, use
           <div className="fixed w-56 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-2xl z-[9999] animate-in fade-in slide-in-from-top-2 duration-200 p-2" style={{ top: menuPosition.top, left: Math.min(window.innerWidth - 240, Math.max(8, menuPosition.left)) }}>
             <button onClick={(e) => handleMenuAction("share", activeMenu, undefined, e)} className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-900 transition-colors"><Share2 size={16} /> Share</button>
             <button onClick={(e) => handleMenuAction("rename", activeMenu, undefined, e)} className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-900 transition-colors"><Edit3 size={16} /> Rename</button>
+            {presentations.find(p => p.id === activeMenu)?.outlineId && (
+              <button onClick={(e) => handleMenuAction("editOutline", activeMenu, undefined, e)} className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-900 transition-colors"><ListTree size={16} /> Edit Outline</button>
+            )}
             <button onClick={(e) => handleMenuAction("favorite", activeMenu, undefined, e)} className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-900 transition-colors">
               <Heart size={16} className={presentations.find(p => p.id === activeMenu)?.isPinned ? "fill-yellow-500 text-yellow-500" : ""} />
               {presentations.find(p => p.id === activeMenu)?.isPinned ? "Unfavorite" : "Favorite"}

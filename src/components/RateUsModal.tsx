@@ -6,9 +6,9 @@ import { cn } from "~/lib/utils";
 import { useUser } from "@clerk/nextjs";
 import type { Theme } from "~/lib/themes";
 import { getModalColors } from "~/app/presentation/[slug]/components/ui-colors";
+import { PRESENTATIONS_THRESHOLD, markAsReviewed, markAsSkipped } from "./rate-us-utils";
 
-const STORAGE_KEY = "pptmaster_rate_prompt";
-const PRESENTATIONS_THRESHOLD = 5;
+export { incrementPresentationCount, checkExistingReview, shouldShowRatePrompt, markAsReviewed } from "./rate-us-utils";
 
 // Helper to determine if a color is dark
 function isColorDark(hexColor: string): boolean {
@@ -105,10 +105,7 @@ export function RateUsModal({ onClose, theme }: RateUsModalProps) {
 
   const handleSkip = () => {
     // Increment skip count, will prompt again after another 5 presentations
-    const data = getRatePromptData();
-    data.skippedCount = (data.skippedCount || 0) + 1;
-    data.lastSkipped = Date.now();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    markAsSkipped();
     onClose();
   };
 
@@ -277,65 +274,3 @@ export function RateUsModal({ onClose, theme }: RateUsModalProps) {
   );
 }
 
-// Helper functions for tracking
-interface RatePromptData {
-  presentationCount: number;
-  hasReviewed: boolean;
-  skippedCount: number;
-  lastSkipped: number | null;
-}
-
-function getRatePromptData(): RatePromptData {
-  if (typeof window === "undefined") {
-    return { presentationCount: 0, hasReviewed: false, skippedCount: 0, lastSkipped: null };
-  }
-  try {
-    const data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : { presentationCount: 0, hasReviewed: false, skippedCount: 0, lastSkipped: null };
-  } catch {
-    return { presentationCount: 0, hasReviewed: false, skippedCount: 0, lastSkipped: null };
-  }
-}
-
-function markAsReviewed() {
-  const data = getRatePromptData();
-  data.hasReviewed = true;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-}
-
-// Call this after successful presentation creation
-export function incrementPresentationCount(): boolean {
-  const data = getRatePromptData();
-  data.presentationCount = (data.presentationCount || 0) + 1;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  return shouldShowRatePrompt();
-}
-
-// Check if we should show the rate prompt
-export function shouldShowRatePrompt(): boolean {
-  const data = getRatePromptData();
-  
-  // Never show if already reviewed
-  if (data.hasReviewed) return false;
-  
-  // Show every 5 presentations (5, 10, 15, etc.) but max 3 times
-  if (data.skippedCount >= 3) return false;
-  
-  const threshold = PRESENTATIONS_THRESHOLD * (1 + (data.skippedCount || 0));
-  return data.presentationCount >= threshold && data.presentationCount % PRESENTATIONS_THRESHOLD === 0;
-}
-
-// Check on page load if user has existing review
-export async function checkExistingReview(): Promise<boolean> {
-  try {
-    const res = await fetch("/api/reviews?my=true");
-    const data = await res.json();
-    if (data.review) {
-      markAsReviewed();
-      return true;
-    }
-    return false;
-  } catch {
-    return false;
-  }
-}

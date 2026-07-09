@@ -15,7 +15,36 @@ export type SlideLayoutType =
 
 export type ImageSize = "small" | "medium" | "large" | "full";
 
-export type ImageShape = "rectangle" | "arc" | "rounded" | "wave";
+export type ImageShape =
+  // Edge shapes: full-bleed column clipped on the edge facing content
+  | "rectangle"
+  | "arc"
+  | "rounded"
+  | "wave"
+  // Design treatments: the image floats inside the column with a styled frame
+  // (rendered by SlideImageDesign, not by a column clip-path)
+  | "frame"     // gallery frame: inset, rounded, hairline accent border + shadow
+  | "archway"   // arch window: fully rounded top, gallery-poster look
+  | "portal"    // circle/capsule portal with accent ring
+  | "layered"   // offset accent panel + outline echo behind the image
+  | "polaroid"  // white matte with thick bottom + slight tilt
+  | "slats"     // image split into three parallel slats
+  | "organic"   // soft blob mask with blurred accent echo
+  | "cornercut" // one bold diagonal corner cut with accent wedge
+  | "duotone"   // accent gradient wash over the image
+  | "lframe";   // editorial L-shaped accent frame on two edges
+
+/** Shapes rendered as full-bleed columns with an edge clip (the legacy system). */
+export const EDGE_IMAGE_SHAPES: ImageShape[] = ["rectangle", "arc", "rounded", "wave"];
+
+/** Shapes rendered as floating design treatments by SlideImageDesign. */
+export const DESIGN_IMAGE_SHAPES: ImageShape[] = [
+  "frame", "archway", "portal", "layered", "polaroid",
+  "slats", "organic", "cornercut", "duotone", "lframe",
+];
+
+export const isDesignImageShape = (shape: ImageShape): boolean =>
+  DESIGN_IMAGE_SHAPES.includes(shape);
 
 // Helper to get CSS clip-path for image shapes based on image position
 // The clip-path is applied to the edge FACING the content
@@ -24,8 +53,8 @@ export const getImageShapeClipPath = (
   shape: ImageShape,
   imagePosition: "left" | "right" | "top" | "bottom"
 ): string => {
-  if (shape === "rectangle") {
-    return "none"; // No clip-path, straight edges
+  if (shape === "rectangle" || isDesignImageShape(shape)) {
+    return "none"; // No clip-path: straight edges, or handled by SlideImageDesign
   }
 
   if (shape === "arc") {

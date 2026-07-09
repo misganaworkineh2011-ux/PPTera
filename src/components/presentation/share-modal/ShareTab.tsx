@@ -265,6 +265,42 @@ export default function ShareTab({
               </div>
             </div>
 
+            {/* Publish as webpage — Gamma-style scrolling article view */}
+            <div
+              className="flex items-center justify-between gap-3 rounded-xl border px-4 py-3"
+              style={{ backgroundColor: colors.cardBg, borderColor: colors.border }}
+            >
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold" style={{ color: colors.text }}>
+                  Web page view
+                </p>
+                <p className="mt-0.5 truncate text-xs" style={{ color: colors.textMuted }}>
+                  The same link as a scrolling, mobile-friendly webpage
+                </p>
+              </div>
+              <div className="flex shrink-0 items-center gap-1.5">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${shareUrl}/web`);
+                  }}
+                  className="rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition"
+                  style={{ borderColor: colors.border, color: colors.text, backgroundColor: colors.copyBtnBg }}
+                  title="Copy web page link"
+                >
+                  Copy
+                </button>
+                <a
+                  href={`${shareUrl}/web`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white transition"
+                  style={{ backgroundColor: colors.btnBg }}
+                >
+                  Open
+                </a>
+              </div>
+            </div>
+
             <div className="flex items-center gap-2">
               <button
                 onClick={copyToClipboard}

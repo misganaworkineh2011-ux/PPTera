@@ -14,6 +14,7 @@ interface Presentation {
   updatedAt: Date;
   thumbnailUrl: string | null;
   shareToken?: string | null;
+  outlineId?: string | null;
 }
 
 interface DashboardContentWrapperProps {

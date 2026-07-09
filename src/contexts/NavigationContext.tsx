@@ -1,180 +1,223 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, Suspense, useRef, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  Suspense,
+  type ReactNode,
+} from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import BrandedLoader from "~/components/BrandedLoader";
 
 interface NavigationContextType {
+  /** True while a client-side route transition is in flight. */
   isNavigating: boolean;
+  /** Manually flag that a navigation is starting (e.g. before router.push). */
+  startNavigating: () => void;
 }
 
 const NavigationContext = createContext<NavigationContextType>({
   isNavigating: false,
+  startNavigating: () => {},
 });
 
-// Loading overlay component - minimal spinner
-function LoadingOverlay() {
-  return (
-    <div 
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        width: '100vw',
-        height: '100vh',
-        zIndex: 99999,
-        backgroundColor: 'white',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ position: 'relative', width: 40, height: 40, margin: '0 auto 12px' }}>
-          <div style={{ 
-            position: 'absolute', 
-            inset: 0, 
-            border: '3px solid #e2e8f0', 
-            borderRadius: '50%' 
-          }}></div>
-          <div style={{ 
-            position: 'absolute', 
-            inset: 0, 
-            border: '3px solid transparent',
-            borderTopColor: '#1e3a8a',
-            borderRightColor: '#06b6d4',
-            borderRadius: '50%',
-            animation: 'spin 0.8s linear infinite',
-          }}></div>
-        </div>
-        <p style={{ fontSize: 14, color: '#64748b' }}>Loading...</p>
-      </div>
-      <style>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
-    </div>
-  );
+export function useNavigation() {
+  return useContext(NavigationContext);
 }
 
-// Inner provider that tracks route changes
-function NavigationProviderInner({ 
-  children, 
-  isNavigating, 
-  setIsNavigating,
-}: { 
-  children: ReactNode;
-  isNavigating: boolean;
-  setIsNavigating: (v: boolean) => void;
-}) {
+// How long a navigation must run before the full-screen branded loader fades in.
+// Fast navigations only ever show the slim top bar (no jarring full-screen flash);
+// genuinely slow ones — the "click does nothing until the page comes" case — get
+// the loading screen.
+const OVERLAY_DELAY_MS = 500;
+// If a route change is never observed, release the loader so it can't get stuck.
+const SAFETY_TIMEOUT_MS = 12000;
+
+function NavigationProgress({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const prevPathRef = useRef(pathname);
-  const prevSearchRef = useRef(searchParams?.toString());
+  const routeKey = `${pathname}?${searchParams?.toString() ?? ""}`;
 
-  // Reset navigation state when route changes complete
+  const [active, setActive] = useState(false); // a navigation is in flight
+  const [visible, setVisible] = useState(false); // top bar mounted (kept on during fade-out)
+  const [progress, setProgress] = useState(0); // 0–100 width of the bar
+  const [showOverlay, setShowOverlay] = useState(false); // branded loading screen
+
+  const prevRouteKey = useRef(routeKey);
+  const trickle = useRef<ReturnType<typeof setInterval> | null>(null);
+  const overlayTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fadeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearTimers = useCallback(() => {
+    if (trickle.current) {
+      clearInterval(trickle.current);
+      trickle.current = null;
+    }
+    if (overlayTimer.current) {
+      clearTimeout(overlayTimer.current);
+      overlayTimer.current = null;
+    }
+    if (fadeTimer.current) {
+      clearTimeout(fadeTimer.current);
+      fadeTimer.current = null;
+    }
+  }, []);
+
+  // Begin (or refresh) a loading cycle. Idempotent — repeated calls while a
+  // navigation is already in flight are no-ops beyond keeping it alive.
+  const startNavigating = useCallback(() => {
+    if (fadeTimer.current) {
+      clearTimeout(fadeTimer.current);
+      fadeTimer.current = null;
+    }
+    setVisible(true);
+    setActive(true);
+    setProgress((p) => (p < 8 ? 8 : p));
+
+    if (!trickle.current) {
+      trickle.current = setInterval(() => {
+        setProgress((p) => {
+          if (p >= 90) return p;
+          const step = p < 40 ? 9 : p < 65 ? 5 : p < 80 ? 2.5 : 1;
+          return Math.min(90, p + Math.random() * step);
+        });
+      }, 280);
+    }
+    if (!overlayTimer.current) {
+      overlayTimer.current = setTimeout(() => setShowOverlay(true), OVERLAY_DELAY_MS);
+    }
+  }, []);
+
+  // Finish the loading cycle: snap to 100%, drop the overlay, then fade the bar.
+  const completeNavigating = useCallback(() => {
+    clearTimers();
+    setActive(false);
+    setShowOverlay(false);
+    setProgress(100);
+    fadeTimer.current = setTimeout(() => {
+      setVisible(false);
+      setProgress(0);
+    }, 360);
+  }, [clearTimers]);
+
+  // Detect navigation START. App Router updates the URL through the History API
+  // for <Link> clicks and router.push(), so patching pushState plus popstate and
+  // anchor clicks catches every client-side navigation. The state update is
+  // deferred to a microtask because Next/React can call pushState *during* an
+  // insertion-effect commit (including hydration), where scheduling a React
+  // update synchronously is illegal ("useInsertionEffect must not schedule
+  // updates"). A `ready` flag ignores the history syncs that fire on first mount.
   useEffect(() => {
-    setIsNavigating(false);
-    prevPathRef.current = pathname;
-    prevSearchRef.current = searchParams?.toString();
-  }, [pathname, searchParams, setIsNavigating]);
+    let ready = false;
+    const readyId = window.requestAnimationFrame(() => {
+      ready = true;
+    });
+
+    const trigger = () => {
+      if (!ready) return;
+      queueMicrotask(() => startNavigating());
+    };
+
+    // Only pushState is patched. replaceState is mostly used for non-navigation
+    // state syncs (query/scroll restoration, hydration), so reacting to it caused
+    // false loaders; leave it untouched.
+    const origPush = window.history.pushState;
+    window.history.pushState = function (this: History, ...args) {
+      const result = origPush.apply(this, args as Parameters<typeof origPush>);
+      trigger();
+      return result;
+    };
+
+    const onPopState = () => trigger();
+    window.addEventListener("popstate", onPopState);
+
+    // Anchor clicks give near-instant feedback for <Link> navigations.
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+        return;
+      }
+      const anchor = (e.target as HTMLElement | null)?.closest("a");
+      const href = anchor?.getAttribute("href");
+      if (!anchor || !href) return;
+      if (
+        anchor.target === "_blank" ||
+        anchor.hasAttribute("download") ||
+        href.startsWith("#") ||
+        href.startsWith("http") ||
+        href.startsWith("mailto:") ||
+        href.startsWith("tel:")
+      ) {
+        return;
+      }
+      // Don't show the loader for a link to the page we're already on.
+      if (href === window.location.pathname || href === window.location.pathname + window.location.search) {
+        return;
+      }
+      trigger();
+    };
+    document.addEventListener("click", onClick, true);
+
+    return () => {
+      window.cancelAnimationFrame(readyId);
+      window.history.pushState = origPush;
+      window.removeEventListener("popstate", onPopState);
+      document.removeEventListener("click", onClick, true);
+    };
+    // Patch the History API once; startNavigating is stable.
+  }, [startNavigating]);
+
+  // Detect navigation COMPLETE: the committed route (path + query) changed.
+  useEffect(() => {
+    if (routeKey !== prevRouteKey.current) {
+      prevRouteKey.current = routeKey;
+      completeNavigating();
+    }
+  }, [routeKey, completeNavigating]);
+
+  // Failsafe: never let the loader hang if a route change isn't observed.
+  useEffect(() => {
+    if (!active) return;
+    const t = setTimeout(completeNavigating, SAFETY_TIMEOUT_MS);
+    return () => clearTimeout(t);
+  }, [active, completeNavigating]);
+
+  useEffect(() => clearTimers, [clearTimers]);
 
   return (
-    <NavigationContext.Provider value={{ isNavigating }}>
+    <NavigationContext.Provider value={{ isNavigating: active, startNavigating }}>
       {children}
-      {isNavigating && <LoadingOverlay />}
+
+      {visible && (
+        <div aria-hidden className="ppt-nav-bar-track">
+          <div
+            className="ppt-nav-bar"
+            style={{ width: `${progress}%`, opacity: progress >= 100 ? 0 : 1 }}
+          >
+            <span className="ppt-nav-bar-glow" />
+          </div>
+        </div>
+      )}
+
+      {showOverlay && <BrandedLoader label="Preparing your slides…" />}
+
+      <style>{NAV_STYLES}</style>
     </NavigationContext.Provider>
   );
 }
 
 export function NavigationProvider({ children }: { children: ReactNode }) {
-  const [isNavigating, setIsNavigating] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
-  // Mark as mounted after initial render to prevent showing loading on first page load
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  // Intercept all link clicks globally
-  useEffect(() => {
-    if (!isMounted) return;
-
-    const handleClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      
-      // Skip if clicking on a button or inside a button (for menu actions, favorites, etc.)
-      if (target.closest("button")) {
-        return;
-      }
-      
-      const anchor = target.closest("a");
-      
-      if (!anchor) return;
-      
-      const href = anchor.getAttribute("href");
-      if (!href) return;
-      
-      // Skip external links, anchors, mailto, tel, etc.
-      if (
-        href.startsWith("http") ||
-        href.startsWith("#") ||
-        href.startsWith("mailto:") ||
-        href.startsWith("tel:") ||
-        href.startsWith("javascript:") ||
-        anchor.target === "_blank" ||
-        e.ctrlKey ||
-        e.metaKey ||
-        e.shiftKey
-      ) {
-        return;
-      }
-      
-      // Skip dashboard routes - they have their own loading
-      if (href.startsWith("/dashboard") || window.location.pathname.startsWith("/dashboard")) {
-        return;
-      }
-      
-      // Skip createpresentation routes - they have their own loading
-      if (href.startsWith("/createpresentation") || window.location.pathname.startsWith("/createpresentation")) {
-        return;
-      }
-      
-      // Skip sign-in/sign-up routes to avoid conflicts with Clerk
-      if (href.startsWith("/sign-in") || href.startsWith("/sign-up")) {
-        return;
-      }
-      
-      // Show loading immediately for internal navigation
-      setIsNavigating(true);
-    };
-
-    // Use capture phase to catch clicks before they propagate
-    document.addEventListener("click", handleClick, true);
-    
-    return () => {
-      document.removeEventListener("click", handleClick, true);
-    };
-  }, [isMounted]);
-
-  // Safety timeout - if navigation takes too long, reset the state
-  useEffect(() => {
-    if (!isNavigating) return;
-    
-    const timeout = setTimeout(() => {
-      setIsNavigating(false);
-    }, 10000); // 10 second timeout
-    
-    return () => clearTimeout(timeout);
-  }, [isNavigating]);
-
-  // Don't use Suspense during initial mount to avoid hydration issues
-  if (!isMounted) {
+  // Before hydration completes, render children plainly so there's no SSR/CSR
+  // mismatch and no loader flash on the very first page load.
+  if (!mounted) {
     return (
-      <NavigationContext.Provider value={{ isNavigating: false }}>
+      <NavigationContext.Provider value={{ isNavigating: false, startNavigating: () => {} }}>
         {children}
       </NavigationContext.Provider>
     );
@@ -182,16 +225,52 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
   return (
     <Suspense fallback={children}>
-      <NavigationProviderInner 
-        isNavigating={isNavigating}
-        setIsNavigating={setIsNavigating}
-      >
-        {children}
-      </NavigationProviderInner>
+      <NavigationProgress>{children}</NavigationProgress>
     </Suspense>
   );
 }
 
-export function useNavigation() {
-  return useContext(NavigationContext);
+// All loader styling lives here so the whole feature is one self-contained file.
+const NAV_STYLES = `
+.ppt-nav-bar-track {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 99999;
+  pointer-events: none;
 }
+.ppt-nav-bar {
+  position: relative;
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+  background: linear-gradient(90deg, #1e3a8a 0%, #2563eb 35%, #06b6d4 70%, #22d3ee 100%);
+  background-size: 200% 100%;
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.7), 0 0 4px rgba(30, 58, 138, 0.6);
+  transition: width 0.2s ease, opacity 0.35s ease 0.05s;
+  animation: ppt-nav-flow 1.6s linear infinite;
+}
+.ppt-nav-bar-glow {
+  position: absolute;
+  right: 0;
+  top: -2px;
+  height: 7px;
+  width: 90px;
+  transform: translateX(40%);
+  border-radius: 50%;
+  background: rgba(34, 211, 238, 0.65);
+  filter: blur(6px);
+}
+@keyframes ppt-nav-flow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ppt-nav-bar {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+`;

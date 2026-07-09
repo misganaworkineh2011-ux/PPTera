@@ -1,6 +1,8 @@
 "use client";
 
+import { useCallback, useContext } from "react";
 import type { ReactNode } from "react";
+import { RevealContext } from "./item-animations";
 import { Plus } from "lucide-react";
 import type { Theme } from "~/lib/themes";
 import type { BoxContentItem, BoxLayoutType } from "~/lib/layouts/content/boxes";
@@ -13,7 +15,29 @@ import type { CascadingLayoutType } from "~/lib/layouts/content/cascading";
 import type { ChevronLayoutType } from "~/lib/layouts/content/chevron";
 import type { FunnelLayoutType } from "~/lib/layouts/content/funnel";
 import type { ProsConsLayoutType } from "~/lib/layouts/content/proscons";
+import type { BeforeAfterLayoutType } from "~/lib/layouts/content/beforeafter";
+import type { ComparisonLayoutType } from "~/lib/layouts/content/comparison";
 import type { ImageLayoutType, ImageContentItem } from "~/lib/layouts/content/images";
+import type { BentoLayoutType } from "~/lib/layouts/content/bento";
+import type { TimelineLayoutType } from "~/lib/layouts/content/timeline";
+import type { SpotlightLayoutType } from "~/lib/layouts/content/spotlight";
+import type { AgendaLayoutType } from "~/lib/layouts/content/agenda";
+import type { PyramidLayoutType } from "~/lib/layouts/content/pyramid";
+import type { MatrixLayoutType } from "~/lib/layouts/content/matrix";
+import type { CalloutLayoutType } from "~/lib/layouts/content/callout";
+import type { TableLayoutType } from "~/lib/layouts/content/table";
+import type { DashboardLayoutType } from "~/lib/layouts/content/dashboard";
+import type { TeamLayoutType } from "~/lib/layouts/content/team";
+import type { IconGridLayoutType } from "~/lib/layouts/content/icongrid";
+import type { HubSpokeLayoutType } from "~/lib/layouts/content/hubspoke";
+import type { CycleLayoutType } from "~/lib/layouts/content/cycle";
+import type { ShowcaseLayoutType } from "~/lib/layouts/content/showcase";
+import type { ChecklistLayoutType } from "~/lib/layouts/content/checklist";
+import type { RoadmapLayoutType } from "~/lib/layouts/content/roadmap";
+import type { ZigzagLayoutType } from "~/lib/layouts/content/zigzag";
+import type { DefinitionListLayoutType } from "~/lib/layouts/content/definitionlist";
+import type { EditorialLayoutType } from "~/lib/layouts/content/editorial";
+import type { OrbitLayoutType } from "~/lib/layouts/content/orbit";
 import type { SlideData, EditingState, SlideImage } from "./types";
 import { getLayoutCategory, type LayoutVariant } from "./slide-layout-utils";
 import ChartRenderer from "./ChartRenderer";
@@ -30,6 +54,30 @@ import { ProsConsRenderer } from "~/components/layouts/ProsConsRenderer";
 import { BeforeAfterRenderer } from "~/components/layouts/BeforeAfterRenderer";
 import { ComparisonRenderer } from "~/components/layouts/ComparisonRenderer";
 import { ImageLayoutRenderer } from "~/components/layouts/ImageLayoutRenderer";
+import { BentoGridRenderer } from "~/components/layouts/BentoGridRenderer";
+import { TimelineRoadmapRenderer } from "~/components/layouts/TimelineRoadmapRenderer";
+import { SpotlightStatementRenderer } from "~/components/layouts/SpotlightStatementRenderer";
+import { AgendaListRenderer } from "~/components/layouts/AgendaListRenderer";
+import { PyramidRenderer } from "~/components/layouts/PyramidRenderer";
+import { QuadrantMatrixRenderer } from "~/components/layouts/QuadrantMatrixRenderer";
+import { PricingRenderer } from "~/components/layouts/PricingRenderer";
+import { FeatureMatrixRenderer } from "~/components/layouts/FeatureMatrixRenderer";
+import { KanbanRenderer } from "~/components/layouts/KanbanRenderer";
+import { OrgChartRenderer } from "~/components/layouts/OrgChartRenderer";
+import { CalloutBoxRenderer } from "~/components/layouts/CalloutBoxRenderer";
+import { DataTableRenderer } from "~/components/layouts/DataTableRenderer";
+import { StatDashboardRenderer } from "~/components/layouts/StatDashboardRenderer";
+import { TeamGridRenderer } from "~/components/layouts/TeamGridRenderer";
+import { IconGridRenderer } from "~/components/layouts/IconGridRenderer";
+import { HubSpokeRenderer } from "~/components/layouts/HubSpokeRenderer";
+import { CycleDiagramRenderer } from "~/components/layouts/CycleDiagramRenderer";
+import { FeatureShowcaseRenderer } from "~/components/layouts/FeatureShowcaseRenderer";
+import { ChecklistRenderer } from "~/components/layouts/ChecklistRenderer";
+import { RoadmapRenderer } from "~/components/layouts/RoadmapRenderer";
+import { ZigzagRenderer } from "~/components/layouts/ZigzagRenderer";
+import { DefinitionListRenderer } from "~/components/layouts/DefinitionListRenderer";
+import { EditorialListRenderer } from "~/components/layouts/EditorialListRenderer";
+import { OrbitDiagramRenderer } from "~/components/layouts/OrbitDiagramRenderer";
 import { ChangeLayoutButton } from "./SlideChrome";
 
 interface SlideEnhancedContentProps {
@@ -47,6 +95,10 @@ interface SlideEnhancedContentProps {
   editingText: EditingState | null;
   spotlightIndex?: number;
   isSpotlightMode: boolean;
+  // Present-mode item entrance animations + click-to-reveal builds
+  isPresenting?: boolean;
+  itemAnimation?: string;
+  revealCount?: number;
   hasBoxContent: boolean;
   hasImage: boolean;
   boxContentItems: BoxContentItem[];
@@ -77,6 +129,9 @@ export default function SlideEnhancedContent({
   editingText,
   spotlightIndex,
   isSpotlightMode,
+  isPresenting = false,
+  itemAnimation,
+  revealCount: revealCountProp,
   hasBoxContent,
   hasImage,
   boxContentItems,
@@ -94,18 +149,31 @@ export default function SlideEnhancedContent({
   onChartTitleChange,
   renderBulletPoints,
 }: SlideEnhancedContentProps) {
-  const ContentWrapper = ({ children }: { children: ReactNode }) => (
-    <div className="relative">
-      <ChangeLayoutButton
-        placement="inline"
-        canEdit={canEdit}
-        hasBoxContent={hasBoxContent}
-        theme={theme}
-        onOpenSelector={onOpenLayoutSelector}
-        onOpenContentLayoutPanel={onOpenContentLayoutPanel}
-      />
-      {children}
-    </div>
+  // Reveal counter arrives via context so the memoized SlideRenderer above
+  // never re-renders on a reveal press (its inline content components would
+  // get new identities and remount, replaying already-revealed items). The
+  // prop form remains as an override for tests / direct embedding.
+  const revealCountCtx = useContext(RevealContext);
+  const revealCount = revealCountProp ?? revealCountCtx;
+
+  // Stable identity across re-renders (useCallback): if this were recreated
+  // per render, a context-driven reveal update would remount the whole
+  // renderer subtree and replay every already-revealed item's entrance.
+  const ContentWrapper = useCallback(
+    ({ children }: { children: ReactNode }) => (
+      <div className="relative">
+        <ChangeLayoutButton
+          placement="inline"
+          canEdit={canEdit}
+          hasBoxContent={hasBoxContent}
+          theme={theme}
+          onOpenSelector={onOpenLayoutSelector}
+          onOpenContentLayoutPanel={onOpenContentLayoutPanel}
+        />
+        {children}
+      </div>
+    ),
+    [canEdit, hasBoxContent, theme, onOpenLayoutSelector, onOpenContentLayoutPanel],
   );
 
   if (slide.contentLayout && boxContentItems.length > 0) {
@@ -172,7 +240,22 @@ export default function SlideEnhancedContent({
         isHovered,
         spotlightIndex: isSpotlightMode ? (spotlightIndex !== undefined ? spotlightIndex - headerOffset : undefined) : undefined,
         isSpotlightMode,
+        // Present-mode entrance animations: forwarding these activates each
+        // renderer's staggered item animation and (where supported) the
+        // user-picked style + click-to-reveal builds.
+        isPresenting,
+        animationKey: `s${index}`,
+        itemAnimation,
+        revealCount,
       };
+
+      // TEMP DIAGNOSTIC: proves the new animation code is what the browser is
+      // actually running. Remove once animations are confirmed working.
+      if (isPresenting && typeof window !== "undefined") {
+        console.log(
+          `[item-anim] slide ${index + 1} presenting · style=${itemAnimation ?? "fade-up"} · reveal=${revealCount ?? "auto"} · layout=${slide.contentLayout ?? "?"}`
+        );
+      }
 
       switch (layoutCategory) {
         case "sequence":
@@ -242,6 +325,7 @@ export default function SlideEnhancedContent({
         case "cascading":
           return (
             <CascadingWorkflowRenderer
+              layoutId={slide.contentLayout}
               items={boxContentItems}
               theme={theme}
               accentColor={accentColor}
@@ -253,6 +337,7 @@ export default function SlideEnhancedContent({
         case "chevron":
           return (
             <ChevronFlowRenderer
+              layoutId={slide.contentLayout}
               items={boxContentItems}
               theme={theme}
               accentColor={accentColor}
@@ -264,6 +349,7 @@ export default function SlideEnhancedContent({
         case "funnel":
           return (
             <FunnelStepsRenderer
+              layoutId={slide.contentLayout}
               items={boxContentItems}
               theme={theme}
               accentColor={accentColor}
@@ -275,6 +361,7 @@ export default function SlideEnhancedContent({
         case "proscons":
           return (
             <ProsConsRenderer
+              layoutId={slide.contentLayout as ProsConsLayoutType}
               items={boxContentItems}
               theme={theme}
               accentColor={accentColor}
@@ -286,9 +373,11 @@ export default function SlideEnhancedContent({
         case "beforeafter":
           return (
             <BeforeAfterRenderer
+              layoutId={slide.contentLayout as BeforeAfterLayoutType}
               items={boxContentItems}
               theme={theme}
               accentColor={accentColor}
+              centerText={slide.introText || slide.title}
               className="w-full min-h-[300px]"
               {...editingProps}
             />
@@ -297,6 +386,7 @@ export default function SlideEnhancedContent({
         case "comparison":
           return (
             <ComparisonRenderer
+              layoutId={slide.contentLayout as ComparisonLayoutType}
               items={boxContentItems}
               theme={theme}
               accentColor={accentColor}
@@ -340,6 +430,275 @@ export default function SlideEnhancedContent({
             />
           );
         }
+
+        case "bento":
+          return (
+            <BentoGridRenderer
+              layoutId={slide.contentLayout as BentoLayoutType}
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              {...editingProps}
+            />
+          );
+
+        case "timeline":
+          return (
+            <TimelineRoadmapRenderer
+              layoutId={slide.contentLayout as TimelineLayoutType}
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              {...editingProps}
+            />
+          );
+
+        case "spotlight":
+          return (
+            <SpotlightStatementRenderer
+              layoutId={slide.contentLayout as SpotlightLayoutType}
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              {...editingProps}
+            />
+          );
+
+        case "agenda":
+          return (
+            <AgendaListRenderer
+              layoutId={slide.contentLayout as AgendaLayoutType}
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              {...editingProps}
+            />
+          );
+
+        case "pyramid":
+          return (
+            <PyramidRenderer
+              layoutId={slide.contentLayout as PyramidLayoutType}
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              {...editingProps}
+            />
+          );
+
+        case "matrix":
+          return (
+            <QuadrantMatrixRenderer
+              layoutId={slide.contentLayout as MatrixLayoutType}
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              {...editingProps}
+            />
+          );
+
+        case "pricing":
+          return (
+            <PricingRenderer
+              layoutId={slide.contentLayout}
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              className="w-full min-h-[300px]"
+              {...editingProps}
+            />
+          );
+
+        case "featurematrix":
+          return (
+            <FeatureMatrixRenderer
+              layoutId={slide.contentLayout}
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              className="w-full min-h-[300px]"
+              {...editingProps}
+            />
+          );
+
+        case "kanban":
+          return (
+            <KanbanRenderer
+              layoutId={slide.contentLayout}
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              className="w-full min-h-[300px]"
+              {...editingProps}
+            />
+          );
+
+        case "orgchart":
+          return (
+            <OrgChartRenderer
+              layoutId={slide.contentLayout}
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              className="w-full min-h-[300px]"
+              {...editingProps}
+            />
+          );
+
+        case "callout":
+          return (
+            <CalloutBoxRenderer
+              layoutId={slide.contentLayout as CalloutLayoutType}
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              {...editingProps}
+            />
+          );
+
+        case "table":
+          return (
+            <DataTableRenderer
+              layoutId={slide.contentLayout as TableLayoutType}
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              {...editingProps}
+            />
+          );
+
+        case "dashboard":
+          return (
+            <StatDashboardRenderer
+              layoutId={slide.contentLayout as DashboardLayoutType}
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              {...editingProps}
+            />
+          );
+
+        case "team":
+          return (
+            <TeamGridRenderer
+              layoutId={slide.contentLayout as TeamLayoutType}
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              {...editingProps}
+            />
+          );
+
+        case "icongrid":
+          return (
+            <IconGridRenderer
+              layoutId={slide.contentLayout as IconGridLayoutType}
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              {...editingProps}
+            />
+          );
+
+        case "hubspoke":
+          return (
+            <HubSpokeRenderer
+              layoutId={slide.contentLayout as HubSpokeLayoutType}
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              {...editingProps}
+            />
+          );
+
+        case "cycle":
+          return (
+            <CycleDiagramRenderer
+              layoutId={slide.contentLayout as CycleLayoutType}
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              {...editingProps}
+            />
+          );
+
+        case "showcase":
+          return (
+            <FeatureShowcaseRenderer
+              layoutId={slide.contentLayout as ShowcaseLayoutType}
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              {...editingProps}
+            />
+          );
+
+        case "checklist":
+          return (
+            <ChecklistRenderer
+              layoutId={slide.contentLayout as ChecklistLayoutType}
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              {...editingProps}
+            />
+          );
+
+        case "roadmap":
+          return (
+            <RoadmapRenderer
+              layoutId={slide.contentLayout as RoadmapLayoutType}
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              {...editingProps}
+            />
+          );
+
+        case "zigzag":
+          return (
+            <ZigzagRenderer
+              layoutId={slide.contentLayout as ZigzagLayoutType}
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              {...editingProps}
+            />
+          );
+
+        case "definitionlist":
+          return (
+            <DefinitionListRenderer
+              layoutId={slide.contentLayout as DefinitionListLayoutType}
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              {...editingProps}
+            />
+          );
+
+        case "editorial":
+          return (
+            <EditorialListRenderer
+              layoutId={slide.contentLayout as EditorialLayoutType}
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              {...editingProps}
+            />
+          );
+
+        case "orbit":
+          return (
+            <OrbitDiagramRenderer
+              layoutId={slide.contentLayout as OrbitLayoutType}
+              items={boxContentItems}
+              theme={theme}
+              accentColor={accentColor}
+              centerText={slide.introText || slide.title}
+              {...editingProps}
+            />
+          );
 
         case "boxes":
         default:

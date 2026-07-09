@@ -10,12 +10,19 @@ export interface SequenceContentItem {
   icon?: string;
 }
 
-// Sequence layout type identifier - corresponding to the 4 requested styles
+// Sequence layout type identifier
 export type SequenceLayoutType =
   | "sequence-style-1" // Horizontal Top Process
   | "sequence-style-2" // Horizontal Timeline
   | "sequence-style-3" // Vertical List
-  | "sequence-style-4"; // Vertical Alternating
+  | "sequence-style-4" // Vertical Alternating
+  | "sequence-style-5" // Wave Flow — nodes at alternating heights on a flowing polyline
+  | "sequence-style-6" // Hop Arcs — dotted arcs hopping node to node with arrowheads
+  | "sequence-style-7" // Paper Chain — cards joined by interlocked chain rings
+  | "sequence-style-8" // Handoff Lanes — indented bars passing the baton downward
+  | "sequence-style-9" // Breadcrumb Trail — chips flowing with › separators
+  | "sequence-style-10" // Fold Ribbon — a folded ribbon strip of alternating facets
+  | "sequence-style-11"; // Signal Path — dashed line with amplifier nodes, mono numbering
 
 // Sequence layout definition interface
 export interface SequenceLayout {
@@ -31,7 +38,7 @@ export interface SequenceLayout {
   // Preview configuration
   preview: {
     orientation: "horizontal" | "vertical";
-    style: "top" | "center" | "left" | "alternating";
+    style: "top" | "center" | "left" | "alternating" | "wave" | "hops" | "chain" | "handoff" | "breadcrumb" | "fold" | "signal";
   };
 }
 
@@ -103,6 +110,104 @@ export const sequenceLayouts: SequenceLayout[] = [
       orientation: "vertical",
       style: "alternating",
     },
+  },
+
+  // Style 5: Wave Flow — nodes at alternating heights on a flowing polyline
+  {
+    id: "sequence-style-5",
+    name: "Wave Flow",
+    description: "Numbered nodes riding a flowing wave connector",
+    category: "sequence",
+    minItems: 3,
+    maxItems: 5,
+    idealItems: 4,
+    adaptive: true,
+    supportsIcons: true,
+    preview: { orientation: "horizontal", style: "wave" },
+  },
+
+  // Style 6: Hop Arcs — dotted arcs hopping node to node
+  {
+    id: "sequence-style-6",
+    name: "Hop Arcs",
+    description: "Dotted arcs hopping from node to node with arrowheads",
+    category: "sequence",
+    minItems: 3,
+    maxItems: 5,
+    idealItems: 4,
+    adaptive: true,
+    supportsIcons: true,
+    preview: { orientation: "horizontal", style: "hops" },
+  },
+
+  // Style 7: Paper Chain — cards joined by interlocked rings
+  {
+    id: "sequence-style-7",
+    name: "Paper Chain",
+    description: "Cards joined by interlocked chain-link rings",
+    category: "sequence",
+    minItems: 3,
+    maxItems: 4,
+    idealItems: 4,
+    adaptive: true,
+    supportsIcons: true,
+    preview: { orientation: "horizontal", style: "chain" },
+  },
+
+  // Style 8: Handoff Lanes — indented bars passing the baton downward
+  {
+    id: "sequence-style-8",
+    name: "Handoff Lanes",
+    description: "Indented bars passing the baton with corner connectors",
+    category: "sequence",
+    minItems: 3,
+    maxItems: 5,
+    idealItems: 4,
+    adaptive: true,
+    supportsIcons: true,
+    preview: { orientation: "vertical", style: "handoff" },
+  },
+
+  // Style 9: Breadcrumb Trail — chips flowing with › separators
+  {
+    id: "sequence-style-9",
+    name: "Breadcrumb Trail",
+    description: "Soft chips flowing left to right with accent separators",
+    category: "sequence",
+    minItems: 3,
+    maxItems: 6,
+    idealItems: 4,
+    adaptive: true,
+    supportsIcons: true,
+    preview: { orientation: "horizontal", style: "breadcrumb" },
+  },
+
+  // Style 10: Fold Ribbon — a folded ribbon strip of alternating facets
+  {
+    id: "sequence-style-10",
+    name: "Fold Ribbon",
+    description: "A folded ribbon strip whose facets alternate light and dark",
+    category: "sequence",
+    minItems: 3,
+    maxItems: 5,
+    idealItems: 4,
+    adaptive: true,
+    supportsIcons: true,
+    preview: { orientation: "horizontal", style: "fold" },
+  },
+
+  // Style 11: Signal Path — dashed line with amplifier nodes
+  {
+    id: "sequence-style-11",
+    name: "Signal Path",
+    description: "A dashed signal line through amplifier nodes, mono numbering",
+    category: "sequence",
+    minItems: 3,
+    maxItems: 5,
+    idealItems: 4,
+    adaptive: true,
+    supportsIcons: true,
+    preview: { orientation: "horizontal", style: "signal" },
   },
 ];
 

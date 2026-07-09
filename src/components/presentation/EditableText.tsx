@@ -48,6 +48,7 @@ interface EditableTextProps {
   isOwner: boolean;
   onDelete?: () => void;
   isHovered?: boolean; // Added but not used - prevents unmounting on hover changes
+  disableHover?: boolean; // Accepted but not used - hover suppression is handled by parents
 }
 
 interface ToolbarPosition {
@@ -629,7 +630,7 @@ function EditableTextComponent({
   return (
     <div className="relative group/editable">
       <div
-        className={`${className} px-2 py-1 rounded min-h-[1.5em] ${isOwner ? "cursor-text group-hover/editable:ring-1 group-hover/editable:ring-white/30" : ""} ${!isOwner ? "pointer-events-none select-none" : ""}`}
+        className={`${className} ${isOwner ? "cursor-text rounded group-hover/editable:ring-1 group-hover/editable:ring-white/30" : ""} ${!isOwner ? "pointer-events-none select-none" : ""}`}
         style={style}
         onMouseDown={isOwner ? (e) => { e.stopPropagation(); onStartEdit(); } : undefined}
         dangerouslySetInnerHTML={{ __html: displayContent }}

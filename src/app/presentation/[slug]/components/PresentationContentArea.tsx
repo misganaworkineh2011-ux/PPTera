@@ -47,6 +47,7 @@ interface PresentationContentAreaProps {
   onAddSlideAt: (index: number) => void;
   onAddAISlide: (index: number, prompt: string) => Promise<void>;
   onGoToSlide: (index: number) => void;
+  onActiveSlideChange?: (index: number) => void;
   onPrevSlide: () => void;
   onNextSlide: () => void;
   onCloseThumbnails: () => void;
@@ -60,6 +61,8 @@ interface PresentationContentAreaProps {
   onCopySlide: (index: number) => void;
   onPasteSlide: (index: number) => void;
   onDeleteSlide: (index: number) => void;
+  onDuplicateSlide: (index: number) => void;
+  onMoveSlide: (index: number, direction: "up" | "down") => void;
   onUpgrade?: () => void;
   subscriptionPlan?: string;
   isFreeUserLimited?: boolean;
@@ -95,6 +98,7 @@ export function PresentationContentArea({
   onAddSlideAt,
   onAddAISlide,
   onGoToSlide,
+  onActiveSlideChange,
   onPrevSlide,
   onNextSlide,
   onCloseThumbnails,
@@ -108,6 +112,8 @@ export function PresentationContentArea({
   onCopySlide,
   onPasteSlide,
   onDeleteSlide,
+  onDuplicateSlide,
+  onMoveSlide,
   onUpgrade,
   subscriptionPlan,
   isFreeUserLimited,
@@ -139,14 +145,21 @@ export function PresentationContentArea({
                 <ThumbnailSidebar
                   slides={slides}
                   currentSlide={currentSlide}
-                  onSlideClick={(index) =>
+                  onSlideClick={(index) => {
+                    // Mark the clicked slide active (so the navigator highlight moves)
+                    // and scroll it into view in the continuous view.
+                    onGoToSlide(index);
                     document
                       .getElementById(`slide-${index}`)
-                      ?.scrollIntoView({ behavior: "smooth", block: "center" })
-                  }
+                      ?.scrollIntoView({ behavior: "smooth", block: "center" });
+                  }}
                   onClose={onCloseThumbnails}
                   renderSlide={renderSlide}
                   theme={theme}
+                  onDuplicateSlide={onDuplicateSlide}
+                  onMoveSlide={onMoveSlide}
+                  onDeleteSlide={onDeleteSlide}
+                  onAddSlideAfter={onAddSlideAt}
                 />
               )}
               <div className="mx-auto" style={{ maxWidth: "1300px" }}>
@@ -163,6 +176,7 @@ export function PresentationContentArea({
                   onAddSlideAt={onAddSlideAt}
                   onAddAISlide={onAddAISlide}
                   presentationTitle={presentationTitle}
+                  onActiveSlideChange={onActiveSlideChange}
                 />
               </div>
             </div>
@@ -188,6 +202,10 @@ export function PresentationContentArea({
                   onClose={onCloseThumbnails}
                   renderSlide={renderSlide}
                   theme={theme}
+                  onDuplicateSlide={onDuplicateSlide}
+                  onMoveSlide={onMoveSlide}
+                  onDeleteSlide={onDeleteSlide}
+                  onAddSlideAfter={onAddSlideAt}
                 />
               )}
 
@@ -195,68 +213,58 @@ export function PresentationContentArea({
                 className={`flex-1 flex flex-col ${isFullscreen || isPresenting ? "h-full justify-center items-center w-full" : ""} max-w-full overflow-hidden`}
               >
                 {(() => {
-                  const isTitle = currentSlideData.type === "title";
-                  const bulletCount = currentSlideData.bulletPoints?.length || 0;
-                  const useFixedRatio =
-                    isFullscreen || isPresenting || isTitle || bulletCount <= 3;
-                  const dynamicHeight = Math.max(450, 380 + bulletCount * 65);
+                  // Every slide renders into the SAME 16:9 canvas in every context:
+                  // - Editor: a width-constrained 16:9 box.
+                  // - Fullscreen/present: the same 16:9 box scaled to fit the screen and
+                  //   centered with letterbox bars, so a 16:10 / ultrawide monitor never
+                  //   stretches the slide. This keeps viewer and fullscreen proportions
+                  //   identical and makes every slide exactly the same size.
+                  const isImmersive = isFullscreen || isPresenting;
 
-                  if (useFixedRatio) {
-                    return (
-                      <div
-                        className={`relative overflow-hidden ${isFullscreen || isPresenting ? "w-screen h-screen flex items-center justify-center" : `w-full rounded-lg shadow-2xl ring-1 ${ui.ring}`} ${isShaking ? "animate-shake" : ""}`}
-                        style={{
-                          ...(!isFullscreen && !isPresenting
-                            ? { aspectRatio: "16/9", maxHeight: "calc(100vh - 200px)" }
-                            : {}),
-                        }}
-                      >
-                        <AnimatedSlide
-                          slideKey={currentSlide}
-                          animationId={currentSlideData.animation}
-                          isPresenting={isFullscreen || isPresenting || isPublicView}
-                        >
-                          <div
-                            className="w-full h-full"
-                            style={{
-                              ...((isFullscreen || isPresenting) && presentZoom !== 100
-                                ? {
-                                    zoom: presentZoom / 100,
-                                    transition: "zoom 0.3s ease",
-                                  }
-                                : {}),
-                            }}
-                          >
-                            {renderSlide(
-                              currentSlideData,
-                              currentSlide,
-                              true,
-                              (isFullscreen || isPresenting) && isSpotlightActive
-                                ? spotlightContentIndex
-                                : undefined,
-                            )}
-                          </div>
-                        </AnimatedSlide>
-                      </div>
-                    );
-                  }
-
-                  return (
+                  const slideBox = (
                     <div
-                      className={`relative overflow-hidden w-full rounded-lg shadow-2xl ring-1 ${ui.ring} ${isShaking ? "animate-shake" : ""}`}
-                      style={{ height: 'auto', minHeight: '600px', aspectRatio: '16/9' }}
+                      className={`relative overflow-hidden aspect-video ${
+                        isImmersive
+                          ? "w-full max-h-screen max-w-[calc(100vh*16/9)]"
+                          : `w-full rounded-lg shadow-2xl ring-1 ${ui.ring}`
+                      } ${isShaking ? "animate-shake" : ""}`}
+                      style={isImmersive ? {} : { maxHeight: "calc(100vh - 200px)" }}
                     >
                       <AnimatedSlide
                         slideKey={currentSlide}
                         animationId={currentSlideData.animation}
                         isPresenting={isFullscreen || isPresenting || isPublicView}
                       >
-                        <div className="w-full h-full">
-                          {renderSlide(currentSlideData, currentSlide, true)}
+                        <div
+                          className="w-full h-full"
+                          style={{
+                            ...(isImmersive && presentZoom !== 100
+                              ? { zoom: presentZoom / 100, transition: "zoom 0.3s ease" }
+                              : {}),
+                          }}
+                        >
+                          {renderSlide(
+                            currentSlideData,
+                            currentSlide,
+                            true,
+                            isImmersive && isSpotlightActive
+                              ? spotlightContentIndex
+                              : undefined,
+                          )}
                         </div>
                       </AnimatedSlide>
                     </div>
                   );
+
+                  if (isImmersive) {
+                    // Center the 16:9 box on screen; black bars fill any leftover space.
+                    return (
+                      <div className="w-screen h-screen flex items-center justify-center bg-black">
+                        {slideBox}
+                      </div>
+                    );
+                  }
+                  return slideBox;
                 })()}
 
                 {!isPresenting && (

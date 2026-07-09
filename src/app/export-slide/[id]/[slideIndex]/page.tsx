@@ -4,9 +4,12 @@ import { useState, useEffect, use, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import SlideRenderer from "~/components/presentation/SlideRenderer";
+import SlideScaler from "~/components/presentation/SlideScaler";
+import MasterSlideOverlay from "~/components/presentation/MasterSlideOverlay";
+import { TitleSlide } from "~/app/presentation/[slug]/components/TitleSlide";
 import { getThemeById, getDefaultTheme, type Theme } from "~/lib/themes";
 import { convertCustomThemeToTheme } from "~/lib/custom-theme-utils";
-import { type SlideData } from "~/components/presentation/types";
+import { type SlideData, type MasterSlideSettings, coverUsesFullBleed } from "~/components/presentation/types";
 
 interface ExportSlidePageProps {
   params: Promise<{ id: string; slideIndex: string }>;
@@ -21,6 +24,7 @@ function ExportSlideContent({ params }: ExportSlidePageProps) {
 
   const [slide, setSlide] = useState<SlideData | null>(null);
   const [totalSlides, setTotalSlides] = useState(1);
+  const [masterSlide, setMasterSlide] = useState<MasterSlideSettings | null>(null);
   const [theme, setTheme] = useState<Theme>(getDefaultTheme());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,6 +39,7 @@ function ExportSlideContent({ params }: ExportSlidePageProps) {
 
         const slides = data.slides || [];
         setTotalSlides(slides.length);
+        setMasterSlide(data.masterSlide ?? null);
 
         if (slideIndex >= 0 && slideIndex < slides.length) {
           setSlide(slides[slideIndex]);
@@ -89,22 +94,89 @@ function ExportSlideContent({ params }: ExportSlidePageProps) {
       data-slide-container="true"
       style={{ background: theme.pageBackgroundGradient || theme.pageBackground || theme.colors.background }}
     >
-      <SlideRenderer
-        slide={slide}
-        index={slideIndex}
-        totalSlides={totalSlides}
-        theme={theme}
-        isOwner={false}
-        isFullscreen={true}
-        isHovered={false}
-        isEditing={false}
-        editingText={null}
-        onStartEditing={() => {}}
-        onUpdateContent={() => {}}
-        onFinishEditing={() => {}}
-        onAddBullet={() => {}}
-        onDeleteBullet={() => {}}
-      />
+      {(() => {
+        // Render title slides through TitleSlide (same as the editor) so the
+        // cover — theme signature or a picked cover style — exports 1:1.
+        const isTitleCover = slide.type === "title" && !slide.slideLayout;
+        const coverFullBleed = coverUsesFullBleed(slide.coverLayout);
+        const titleImageUrl =
+          slide.image?.url && slide.image.source !== "placeholder" ? slide.image.url : null;
+
+        if (!isTitleCover) {
+          return (
+            <SlideRenderer
+              slide={slide}
+              index={slideIndex}
+              totalSlides={totalSlides}
+              theme={theme}
+              isOwner={false}
+              isFullscreen={true}
+              isHovered={false}
+              isEditing={false}
+              editingText={null}
+              onStartEditing={() => {}}
+              onUpdateContent={() => {}}
+              onFinishEditing={() => {}}
+              onAddBullet={() => {}}
+              onDeleteBullet={() => {}}
+            />
+          );
+        }
+
+        return (
+          <>
+            {coverFullBleed && titleImageUrl && (
+              <img
+                src={titleImageUrl}
+                alt={slide.title}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            )}
+            <SlideScaler>
+              <TitleSlide
+                slide={slide}
+                index={slideIndex}
+                totalSlides={totalSlides}
+                theme={theme}
+                hasImage={!!titleImageUrl && coverFullBleed}
+                isOwner={false}
+                isFullscreen={true}
+                isHovered={false}
+                isEditing={false}
+                editingText={null}
+                onStartEditing={() => {}}
+                onUpdateContent={() => {}}
+                onFinishEditing={() => {}}
+              />
+            </SlideScaler>
+          </>
+        );
+      })()}
+
+      {/* Master-slide elements (logo, footer, numbers, date, accent bar, tag).
+          The overlay uses 1280x720 canvas coordinates, so scale it to 1920x1080. */}
+      {masterSlide && (
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: 1280,
+            height: 720,
+            transform: "scale(1.5)",
+            transformOrigin: "top left",
+            pointerEvents: "none",
+          }}
+        >
+          <MasterSlideOverlay
+            settings={masterSlide}
+            slideNumber={slideIndex + 1}
+            totalSlides={totalSlides}
+            theme={theme}
+            isTitle={slideIndex === 0 || slide.type === "title"}
+          />
+        </div>
+      )}
 
       {/* Watermark for free users - larger with solid background */}
       {addWatermark && (

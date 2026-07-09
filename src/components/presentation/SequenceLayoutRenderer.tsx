@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import type { Theme } from "~/lib/themes";
 import type {
@@ -14,7 +14,9 @@ import {
   getRecommendedSequenceLayout,
 } from "~/lib/layouts/content/sequence";
 import EditableText from "./EditableText";
+import { alpha } from "./PremiumComponents";
 import { CONTENT_FONT_SIZE } from "./slide-typography";
+import { containerVariantsFor, itemMotionProps } from "./item-animations";
 
 // Animation variants for staggered sequence animations
 const containerVariants = {
@@ -55,6 +57,8 @@ interface SequenceLayoutRendererProps {
   isNarrowSpace?: boolean; // true when image is left/right, false when top/bottom
   isPresenting?: boolean;
   animationKey?: string;
+  itemAnimation?: string;
+  revealCount?: number;
   // Editing props
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
@@ -95,6 +99,8 @@ export default function SequenceLayoutRenderer({
   isNarrowSpace = false,
   isPresenting = false,
   animationKey,
+  itemAnimation,
+  revealCount,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -130,36 +136,46 @@ export default function SequenceLayoutRenderer({
 
   // Container and item wrapper for animations
   const Container = isPresenting ? motion.div : "div";
-  const containerProps = isPresenting ? { 
-    key: animationKey,
-    variants: containerVariants, 
-    initial: "hidden", 
-    animate: "visible" 
+  const containerProps = isPresenting ? {
+    variants: containerVariantsFor(itemAnimation),
+    initial: "hidden",
+    animate: "visible"
   } : {};
+  const SItem = isPresenting ? motion.div : "div";
+  // Per-item motion: user-picked entrance style + optional click-to-reveal.
+  const itemMotion = (i: number) => itemMotionProps(isPresenting, itemAnimation, revealCount, i);
+  const accent = baseStyles.dotColor;
+  const surface = theme.cardBox?.background || theme.colors.surface || "rgba(255,255,255,0.05)";
+  const cardBorder = theme.cardBox?.borderColor || theme.colors.border || "rgba(0,0,0,0.08)";
+  const pad2 = (n: number) => String(n).padStart(2, "0");
 
   // Render dot or icon marker
   const renderMarker = (item: SequenceContentItem, index: number) => {
     const markerSize = compact ? "12px" : "16px";
     const iconSize = compact ? "24px" : "32px";
     
+    // Accent halo ring + soft glow (was a hardcoded white halo, which drew
+    // fuzzy bright rings on dark themes)
+    const markerGlow = `0 0 0 4px ${alpha(baseStyles.dotColor, "1f")}, 0 3px 10px ${alpha(baseStyles.dotColor, "4d")}`;
+
     if (item.icon && showIcons) {
       return (
         <div
           className="rounded-full flex items-center justify-center flex-shrink-0 z-10"
           style={{
-            backgroundColor: baseStyles.dotColor,
+            background: `linear-gradient(135deg, ${baseStyles.dotColor}, ${alpha(baseStyles.dotColor, "cc")})`,
             width: iconSize,
             height: iconSize,
             color: "white",
             fontSize: compact ? "14px" : "18px",
-            boxShadow: "0 0 0 4px rgba(255,255,255,0.5)", // White halo effect
+            boxShadow: markerGlow,
           }}
         >
           {item.icon}
         </div>
       );
     }
-    
+
     // Default dot
     return (
       <div
@@ -168,7 +184,7 @@ export default function SequenceLayoutRenderer({
           backgroundColor: baseStyles.dotColor,
           width: markerSize,
           height: markerSize,
-          boxShadow: "0 0 0 4px rgba(255,255,255,0.5)", // White halo effect
+          boxShadow: markerGlow,
         }}
       />
     );
@@ -249,10 +265,314 @@ export default function SequenceLayoutRenderer({
     );
   };
 
+  // == SEQUENCE-STYLE-5: WAVE FLOW — nodes riding a flowing wave connector
+  if (layout.id === "sequence-style-5") {
+    const wItems = items.slice(0, 5);
+    const n = wItems.length;
+    const xFor = (i: number) => ((i + 0.5) / n) * 1280;
+    const yFor = (i: number) => (i % 2 === 0 ? 70 : 175);
+    let d = `M ${xFor(0)} ${yFor(0)}`;
+    for (let i = 1; i < n; i++) {
+      const x0 = xFor(i - 1);
+      const x1 = xFor(i);
+      const dx = (x1 - x0) / 2.4;
+      d += ` C ${x0 + dx} ${yFor(i - 1)}, ${x1 - dx} ${yFor(i)}, ${x1} ${yFor(i)}`;
+    }
+    return (
+      <Container className={`w-full h-full flex flex-col justify-center ${className}`} key={animationKey} {...containerProps}>
+        <div className="relative mb-4" style={{ height: 240 }}>
+          <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1280 240" preserveAspectRatio="none" aria-hidden>
+            <path d={d} fill="none" stroke={alpha(accent, "21")} strokeWidth={13} strokeLinecap="round" />
+            <path d={d} fill="none" stroke={accent} strokeWidth={2.5} strokeLinecap="round" />
+          </svg>
+          {wItems.map((_, index) => (
+            <div
+              key={index}
+              className="absolute z-10 flex items-center justify-center rounded-full font-bold tabular-nums"
+              style={{
+                left: `${((index + 0.5) / n) * 100}%`,
+                top: `${(yFor(index) / 240) * 100}%`,
+                transform: "translate(-50%, -50%)",
+                width: 34,
+                height: 34,
+                fontSize: 13,
+                background: `linear-gradient(135deg, ${accent}, ${alpha(accent, "cc")})`,
+                color: "#ffffff",
+                boxShadow: `0 0 0 4px ${surface}, 0 3px 10px ${alpha(accent, "4d")}`,
+              }}
+            >
+              {index + 1}
+            </div>
+          ))}
+        </div>
+        <div className="flex justify-between gap-4">
+          {wItems.map((item, index) => (
+            <SItem key={index} className="min-w-0 flex-1" style={getStyle(index)} {...itemMotion(index)}>
+              {renderContent(item, index, "center")}
+            </SItem>
+          ))}
+        </div>
+      </Container>
+    );
+  }
+
+  // == SEQUENCE-STYLE-6: HOP ARCS — dotted arcs hopping node to node
+  if (layout.id === "sequence-style-6") {
+    const hItems = items.slice(0, 5);
+    const n = hItems.length;
+    const xFor = (i: number) => ((i + 0.5) / n) * 1280;
+    const BASE = 96;
+    return (
+      <Container className={`w-full h-full flex flex-col justify-center ${className}`} key={animationKey} {...containerProps}>
+        <div className="relative mb-5" style={{ height: 118 }}>
+          <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1280 118" preserveAspectRatio="none" aria-hidden>
+            <line x1={40} y1={BASE} x2={1240} y2={BASE} stroke={alpha(accent, "33")} strokeWidth={2} />
+            {hItems.slice(0, -1).map((_, i) => {
+              const x0 = xFor(i);
+              const x1 = xFor(i + 1);
+              return (
+                <g key={i}>
+                  <path
+                    d={`M ${x0} ${BASE - 14} Q ${(x0 + x1) / 2} 6, ${x1 - 26} ${BASE - 22}`}
+                    fill="none"
+                    stroke={accent}
+                    strokeWidth={2.5}
+                    strokeDasharray="7 7"
+                    strokeLinecap="round"
+                  />
+                  <polygon
+                    points={`${x1 - 30},${BASE - 34} ${x1 - 12},${BASE - 20} ${x1 - 34},${BASE - 12}`}
+                    fill={accent}
+                  />
+                </g>
+              );
+            })}
+          </svg>
+          {hItems.map((_, index) => (
+            <div
+              key={index}
+              className="absolute z-10 flex items-center justify-center rounded-full font-bold tabular-nums"
+              style={{
+                left: `${((index + 0.5) / n) * 100}%`,
+                top: `${(BASE / 118) * 100}%`,
+                transform: "translate(-50%, -50%)",
+                width: 30,
+                height: 30,
+                fontSize: 12,
+                background: surface,
+                border: `3px solid ${accent}`,
+                color: baseStyles.textColor,
+                boxShadow: `0 0 0 4px ${alpha(accent, "14")}`,
+              }}
+            >
+              {index + 1}
+            </div>
+          ))}
+        </div>
+        <div className="flex justify-between gap-4">
+          {hItems.map((item, index) => (
+            <SItem key={index} className="min-w-0 flex-1" style={getStyle(index)} {...itemMotion(index)}>
+              {renderContent(item, index, "center")}
+            </SItem>
+          ))}
+        </div>
+      </Container>
+    );
+  }
+
+  // == SEQUENCE-STYLE-7: PAPER CHAIN — cards joined by interlocked rings
+  if (layout.id === "sequence-style-7") {
+    const cItems = items.slice(0, 4);
+    return (
+      <Container className={`w-full h-full flex items-center ${className}`} key={animationKey} {...containerProps}>
+        <div className="flex w-full items-stretch">
+          {cItems.map((item, index) => (
+            <React.Fragment key={index}>
+              <SItem
+                className="min-w-0 flex-1 rounded-2xl p-4"
+                style={{ background: surface, border: `1px solid ${cardBorder}`, ...getStyle(index) }}
+                {...itemMotion(index)}
+              >
+                <span
+                  className="mb-2.5 inline-flex h-7 w-7 items-center justify-center rounded-lg text-xs font-extrabold tabular-nums"
+                  style={{ background: alpha(accent, "1f"), color: accent, border: `1px solid ${alpha(accent, "40")}` }}
+                >
+                  {index + 1}
+                </span>
+                {renderContent(item, index, "left")}
+              </SItem>
+              {index < cItems.length - 1 && (
+                <div className="flex shrink-0 items-center px-1.5" aria-hidden>
+                  <span className="block h-4 w-4 rounded-full" style={{ border: `3px solid ${accent}` }} />
+                  <span className="-ml-1.5 mt-2 block h-4 w-4 rounded-full" style={{ border: `3px solid ${alpha(accent, "66")}` }} />
+                </div>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+      </Container>
+    );
+  }
+
+  // == SEQUENCE-STYLE-8: HANDOFF LANES — indented bars passing the baton
+  if (layout.id === "sequence-style-8") {
+    const lItems = items.slice(0, 5);
+    const n = lItems.length;
+    return (
+      <Container className={`w-full h-full flex flex-col justify-center gap-2.5 px-2 ${className}`} key={animationKey} {...containerProps}>
+        {lItems.map((item, index) => {
+          const indent = n <= 1 ? 0 : (index * 50) / (n - 1);
+          return (
+            <SItem
+              key={index}
+              className="relative min-w-0 rounded-xl px-4 py-2.5"
+              style={{
+                marginLeft: `${indent}%`,
+                width: "50%",
+                minWidth: "42%",
+                background: surface,
+                border: `1px solid ${cardBorder}`,
+                borderLeft: `3px solid ${accent}`,
+                ...getStyle(index),
+              }}
+              {...itemMotion(index)}
+            >
+              {/* Corner connector picking up from the lane above */}
+              {index > 0 && (
+                <div
+                  className="absolute rounded-bl-lg"
+                  style={{ left: -16, top: -12, width: 14, height: 26, borderLeft: `2px solid ${alpha(accent, "59")}`, borderBottom: `2px solid ${alpha(accent, "59")}` }}
+                  aria-hidden
+                />
+              )}
+              <span className="font-mono text-[10px] font-bold tracking-[0.2em]" style={{ color: accent }}>
+                {pad2(index + 1)}
+              </span>
+              {renderContent(item, index, "left")}
+            </SItem>
+          );
+        })}
+      </Container>
+    );
+  }
+
+  // == SEQUENCE-STYLE-9: BREADCRUMB TRAIL — chips with accent separators
+  if (layout.id === "sequence-style-9") {
+    const bItems = items.slice(0, 6);
+    return (
+      <Container className={`w-full h-full flex items-center justify-center ${className}`} key={animationKey} {...containerProps}>
+        <div className="flex flex-wrap items-center justify-center gap-y-5">
+          {bItems.map((item, index) => (
+            <React.Fragment key={index}>
+              <SItem
+                className="min-w-0 max-w-[30%] rounded-xl px-4 py-3"
+                style={{
+                  background: alpha(accent, "0f"),
+                  border: `1px solid ${alpha(accent, "26")}`,
+                  ...getStyle(index),
+                }}
+                {...itemMotion(index)}
+              >
+                <span className="font-mono text-[10px] font-bold tracking-[0.2em]" style={{ color: accent }}>
+                  {pad2(index + 1)}
+                </span>
+                {renderContent(item, index, "left")}
+              </SItem>
+              {index < bItems.length - 1 && (
+                <span className="px-2.5 text-xl font-bold" style={{ color: alpha(accent, "8c") }} aria-hidden>
+                  ›
+                </span>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+      </Container>
+    );
+  }
+
+  // == SEQUENCE-STYLE-10: FOLD RIBBON — folded facets alternating light/dark
+  if (layout.id === "sequence-style-10") {
+    const fItems = items.slice(0, 5);
+    return (
+      <Container className={`w-full h-full flex flex-col justify-center ${className}`} key={animationKey} {...containerProps}>
+        <div className="mb-6 flex" aria-hidden>
+          {fItems.map((_, index) => {
+            const up = index % 2 === 0;
+            return (
+              <div
+                key={index}
+                className="flex h-14 flex-1 items-center justify-center"
+                style={{
+                  background: up
+                    ? `linear-gradient(180deg, ${accent}, ${alpha(accent, "d9")})`
+                    : `linear-gradient(180deg, ${alpha(accent, "8c")}, ${alpha(accent, "66")})`,
+                  clipPath: up
+                    ? "polygon(0 0, 100% 16%, 100% 100%, 0 84%)"
+                    : "polygon(0 16%, 100% 0, 100% 84%, 0 100%)",
+                }}
+              >
+                <span className="text-base font-extrabold tabular-nums text-white">{pad2(index + 1)}</span>
+              </div>
+            );
+          })}
+        </div>
+        <div className="flex justify-between gap-4">
+          {fItems.map((item, index) => (
+            <SItem key={index} className="min-w-0 flex-1" style={getStyle(index)} {...itemMotion(index)}>
+              {renderContent(item, index, "center")}
+            </SItem>
+          ))}
+        </div>
+      </Container>
+    );
+  }
+
+  // == SEQUENCE-STYLE-11: SIGNAL PATH — dashed line through amplifier nodes
+  if (layout.id === "sequence-style-11") {
+    const sgItems = items.slice(0, 5);
+    return (
+      <Container className={`w-full h-full flex flex-col justify-center ${className}`} key={animationKey} {...containerProps}>
+        <div className="relative mb-6" style={{ height: 58 }}>
+          <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2" style={{ borderTop: `2px dashed ${alpha(accent, "59")}` }} />
+          <div className="flex h-full">
+            {sgItems.map((_, index) => (
+              <div key={index} className="relative flex flex-1 items-center justify-center">
+                <span className="absolute -top-1 font-mono text-[10px] font-bold tracking-[0.25em]" style={{ color: accent }}>
+                  {pad2(index + 1)}
+                </span>
+                {/* Pulse dot feeding the amplifier */}
+                <span className="mr-1.5 h-1.5 w-1.5 rounded-full" style={{ background: accent, boxShadow: `0 0 8px ${alpha(accent, "8c")}` }} />
+                {/* Amplifier triangle */}
+                <span
+                  aria-hidden
+                  style={{
+                    width: 0,
+                    height: 0,
+                    borderTop: "10px solid transparent",
+                    borderBottom: "10px solid transparent",
+                    borderLeft: `16px solid ${accent}`,
+                    filter: `drop-shadow(0 2px 6px ${alpha(accent, "40")})`,
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="flex justify-between gap-4">
+          {sgItems.map((item, index) => (
+            <SItem key={index} className="min-w-0 flex-1" style={getStyle(index)} {...itemMotion(index)}>
+              {renderContent(item, index, "center")}
+            </SItem>
+          ))}
+        </div>
+      </Container>
+    );
+  }
+
   // Style 1: Horizontal Top Process
   if (layout.id === "sequence-style-1") {
     return (
-      <Container className={className} style={{ width: "100%" }} {...containerProps}>
+      <Container className={className} style={{ width: "100%" }} key={animationKey} {...containerProps}>
         {/* Top horizontal line */}
         <div className="relative mb-8 pt-4">
           <div
@@ -304,7 +624,7 @@ export default function SequenceLayoutRenderer({
   // Content alternates above and below the center line
   if (layout.id === "sequence-style-2") {
     return (
-      <Container className={className} style={{ width: "100%" }} {...containerProps}>
+      <Container className={className} style={{ width: "100%" }} key={animationKey} {...containerProps}>
         {/* Container with grid layout for precise positioning */}
         <div className="relative w-full">
           
@@ -424,7 +744,7 @@ export default function SequenceLayoutRenderer({
     const lineLeftPosition = 20; // Fixed position for the vertical line from left edge
     
     return (
-      <Container className={className} style={{ width: "100%" }} {...containerProps}>
+      <Container className={className} style={{ width: "100%" }} key={animationKey} {...containerProps}>
         <div className="relative" style={{ paddingLeft: `${lineLeftPosition + dotSize/2 + connectorLength + gapAfterConnector}px` }}>
           {/* Vertical line - positioned to pass through dot centers */}
           <div
@@ -494,7 +814,7 @@ export default function SequenceLayoutRenderer({
     const gapAfterConnector = 16; // Gap between connector and content
     
     return (
-      <Container className={className} style={{ width: "100%" }} {...containerProps}>
+      <Container className={className} style={{ width: "100%" }} key={animationKey} {...containerProps}>
         <div className="relative w-full">
           {/* Center vertical line - passes through all dots */}
           <div

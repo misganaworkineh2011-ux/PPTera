@@ -73,7 +73,7 @@ export function TitleBlock({
             color: colors.text,
             letterSpacing: "-0.03em",
             textAlign: align,
-            fontSize: showSubtitle && isTitleSlide ? "clamp(1.5rem, 4vw + 0.5rem, 4rem)" : "clamp(0.875rem, 2.5vw + 0.25rem, 2.5rem)",
+            fontSize: showSubtitle && isTitleSlide ? "clamp(1.5rem, 4cqw + 0.5rem, 4rem)" : "clamp(0.875rem, 2.5cqw + 0.25rem, 2.5rem)",
           }}
           isOwner={canEdit}
           isHovered={isHovered}
@@ -93,7 +93,7 @@ export function TitleBlock({
               fontFamily: theme.fonts.body.family,
               color: colors.textMuted,
               textAlign: align,
-              fontSize: "clamp(0.875rem, 1.5vw + 0.25rem, 1.5rem)",
+              fontSize: "clamp(0.875rem, 1.5cqw + 0.25rem, 1.5rem)",
             }}
             isOwner={canEdit}
             isHovered={isHovered}
@@ -132,7 +132,12 @@ export function SlideDescriptionBlock({
   const fieldName = isTitleSlide ? "subtitle" : "slideDescription";
   
   if (!description) return null;
-  
+
+  // For content slides this line is the "key takeaway" hero — render it with
+  // stronger visual weight so each slide has a clear focal point. Title slides
+  // keep their lighter subtitle treatment.
+  const isHero = !isTitleSlide;
+
   return (
     <div>
       <EditableText
@@ -141,11 +146,11 @@ export function SlideDescriptionBlock({
         onStartEdit={() => onStartEditing(index, fieldName)}
         onChange={(val) => onUpdateContent(index, fieldName, val)}
         onFinish={onFinishEditing}
-        className={`text-sm sm:text-base md:text-lg leading-relaxed mb-3 sm:mb-4 md:mb-5 ${className}`}
+        className={`${isHero ? "text-base sm:text-lg md:text-xl font-medium" : "text-sm sm:text-base md:text-lg"} leading-relaxed mb-3 sm:mb-4 md:mb-5 ${className}`}
         style={{
           fontFamily: theme.fonts.body.family,
-          color: colors.textMuted || colors.text,
-          opacity: 0.8,
+          color: isHero ? colors.text : (colors.textMuted || colors.text),
+          opacity: isHero ? 0.95 : 0.8,
           textAlign: align,
           ...getSpotlightStyle(1),
         }}
@@ -208,8 +213,12 @@ export function BulletPointsBlock({
         >
           <div className={`${compact ? "mt-1.5" : "mt-2"} flex items-center gap-1 sm:gap-2 shrink-0`}>
             <div
-              className={`${compact ? "w-1.5 h-1.5 sm:w-2 sm:h-2" : "w-2 h-2 sm:w-2.5 sm:h-2.5"} rounded-full ${!isCustomTheme ? colors.accentMuted : ""}`}
-              style={bulletDotStyle}
+              className={`${
+                i === 0
+                  ? compact ? "w-2 h-2 sm:w-2.5 sm:h-2.5" : "w-2.5 h-2.5 sm:w-3 sm:h-3"
+                  : compact ? "w-1.5 h-1.5 sm:w-2 sm:h-2" : "w-2 h-2 sm:w-2.5 sm:h-2.5"
+              } rounded-full ${!isCustomTheme && i !== 0 ? colors.accentMuted : ""}`}
+              style={i === 0 ? { backgroundColor: theme.colors.primary } : bulletDotStyle}
             />
           </div>
           <div className="flex-1">
@@ -253,7 +262,9 @@ export function BulletPointsBlock({
                 className="leading-relaxed"
                 style={{
                   fontFamily: theme.fonts.body.family,
-                  color: colors.textMuted,
+                  // Lead bullet (index 0) is the focal point: full-strength color + weight.
+                  color: i === 0 ? colors.text : colors.textMuted,
+                  fontWeight: i === 0 ? 600 : undefined,
                   fontSize: compact ? CONTENT_FONT_SIZE.compact : CONTENT_FONT_SIZE.normal,
                 }}
                 isOwner={canEdit}
@@ -269,7 +280,7 @@ export function BulletPointsBlock({
           <button
             onClick={() => onAddBullet(index)}
             className={`flex items-center gap-1 sm:gap-2 ${colors.indicatorMuted} ${colors.hoverAccent} transition-colors ml-4 sm:ml-5`}
-            style={{ fontSize: "clamp(0.625rem, 1.2vw + 0.15rem, 0.875rem)" }}
+            style={{ fontSize: "clamp(0.625rem, 1.2cqw + 0.15rem, 0.875rem)" }}
             tabIndex={isHovered ? 0 : -1}
           >
             <span className="sm:hidden">Add</span>

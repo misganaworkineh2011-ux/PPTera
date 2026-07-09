@@ -25,7 +25,9 @@ describe("Layout Registry Utilities", () => {
     it("should return all layout definitions", () => {
       const layouts = getAllLayouts();
       expect(layouts).toBe(LAYOUT_REGISTRY);
-      expect(layouts.length).toBe(8);
+      // Registry has grown past the original 8 — guard the floor, not an
+      // exact count that goes stale with every new category.
+      expect(layouts.length).toBeGreaterThanOrEqual(8);
     });
   });
 
@@ -231,7 +233,7 @@ describe("Layout Registry Utilities", () => {
   describe("getLayoutCategoriesByPriority", () => {
     it("should return categories in priority order", () => {
       const categories = getLayoutCategoriesByPriority();
-      expect(categories.length).toBe(8);
+      expect(categories.length).toBe(LAYOUT_REGISTRY.length);
       
       // Find indices of different priority levels
       const highPriorityIndices = categories
@@ -260,8 +262,8 @@ describe("Layout Registry Utilities", () => {
   });
 
   describe("Registry Validation", () => {
-    it("should have exactly 8 layouts", () => {
-      expect(LAYOUT_REGISTRY.length).toBe(8);
+    it("should have at least the 8 core layouts", () => {
+      expect(LAYOUT_REGISTRY.length).toBeGreaterThanOrEqual(8);
     });
 
     it("should have unique categories", () => {

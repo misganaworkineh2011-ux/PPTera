@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, memo } from "react";
+import EmbedSlideView from "./EmbedSlideView";
+import { Eyebrow } from "./PremiumComponents";
 import type { CSSProperties, ReactNode } from "react";
 import { type Theme } from "~/lib/themes";
 import { type SlideData, type EditingState, type SlideChartData } from "./types";
@@ -13,6 +15,7 @@ import { SlideIndicator as SlideIndicatorChrome } from "./SlideChrome";
 import { TitleBlock, SlideDescriptionBlock, BulletPointsBlock } from "./SlideTextBlocks";
 import { SlideImageBlock, SlideImageGallery } from "./SlideImageBlocks";
 import SlideEnhancedContent from "./SlideEnhancedContent";
+import DraggableBlock from "./DraggableBlock";
 import SlideChartLayouts from "./SlideChartLayouts";
 import SlideSideImageLayouts from "./SlideSideImageLayouts";
 import { renderLayoutSetA } from "./layout-sets/SlideLayoutSetA";
@@ -35,6 +38,9 @@ interface SlideRendererProps {
   editingText: EditingState | null;
   showPageNumber?: boolean;
   isPresenting?: boolean; // Enable content animations during presentation
+  // Click-to-reveal builds: number of content items currently revealed while
+  // presenting (undefined = no build, items auto-stagger in).
+  revealCount?: number;
   spotlightIndex?: number; // Which content element is highlighted (undefined = no spotlight)
   onStartEditing: (slideIndex: number, field: string, bulletIndex?: number) => void;
   onUpdateContent: (slideIndex: number, field: string, value: string, bulletIndex?: number) => void;
@@ -53,6 +59,8 @@ interface SlideRendererProps {
   onChangeImageShape?: (slideIndex: number, shape: ImageShape) => void;
   onChangeImagePosition?: (slideIndex: number, position: SlideLayoutType) => void;
   onReorderImages?: (slideIndex: number, fromIndex: number, toIndex: number) => void;
+  // Persist a manual drag offset / resize for a block ("title" | "content" | "image").
+  onMoveBlock?: (blockId: string, offset: { x: number; y: number; w?: number; h?: number }) => void;
 }
 
 function SlideRendererComponent({
@@ -67,6 +75,7 @@ function SlideRendererComponent({
   editingText,
   showPageNumber = true,
   isPresenting = false,
+  revealCount,
   spotlightIndex,
   onStartEditing,
   onUpdateContent,
@@ -84,10 +93,17 @@ function SlideRendererComponent({
   onChangeImageShape,
   onChangeImagePosition,
   onReorderImages,
+  onMoveBlock,
 }: SlideRendererProps) {
   const [showContentLayoutSelector, setShowContentLayoutSelector] = useState(false);
   const [hoveredImageIndex, setHoveredImageIndex] = useState<number | null>(null);
   const [isDraggingImage, setIsDraggingImage] = useState(false);
+
+  // Embed slides (video / web page / prototype) render a dedicated full-slide
+  // view. All hooks above run first, so this early return is safe.
+  if (slide.embed?.url) {
+    return <EmbedSlideView slide={slide} theme={theme} />;
+  }
 
   const allImages = getSlideImages(slide);
   const hasAnyImage = allImages.length > 0;
@@ -249,26 +265,34 @@ function SlideRendererComponent({
   );
 
   const Title = ({ className = "", align = "left", showSubtitle = false }: { className?: string; align?: "left" | "center" | "right"; showSubtitle?: boolean }) => (
-    <TitleBlock
-      slide={slide}
-      theme={theme}
-      colors={colors}
-      isEditing={isEditing}
-      editingText={editingText}
-      canEdit={canEdit}
-      isHovered={isHovered}
-      index={index}
-      onStartEditing={onStartEditing}
-      onUpdateContent={onUpdateContent}
-      onFinishEditing={onFinishEditing}
-      onDeleteTitle={onDeleteTitle}
-      onDeleteSubtitle={onDeleteSubtitle}
-      getSpotlightStyle={getSpotlightStyle}
-      isTitleSlide={isTitleSlide}
-      className={className}
-      align={align}
-      showSubtitle={showSubtitle}
-    />
+    <DraggableBlock blockId="title" fitContent offset={slide.blockOffsets?.title} editable={canEdit} onMove={onMoveBlock}>
+      {/* Kicker / eyebrow pill above the heading on content slides (Gamma-style). */}
+      {!isTitleSlide && slide.kicker && (
+        <div className={`mb-2.5 flex ${align === "center" ? "justify-center" : align === "right" ? "justify-end" : "justify-start"}`}>
+          <Eyebrow theme={theme}>{slide.kicker}</Eyebrow>
+        </div>
+      )}
+      <TitleBlock
+        slide={slide}
+        theme={theme}
+        colors={colors}
+        isEditing={isEditing}
+        editingText={editingText}
+        canEdit={canEdit}
+        isHovered={isHovered}
+        index={index}
+        onStartEditing={onStartEditing}
+        onUpdateContent={onUpdateContent}
+        onFinishEditing={onFinishEditing}
+        onDeleteTitle={onDeleteTitle}
+        onDeleteSubtitle={onDeleteSubtitle}
+        getSpotlightStyle={getSpotlightStyle}
+        isTitleSlide={isTitleSlide}
+        className={className}
+        align={align}
+        showSubtitle={showSubtitle}
+      />
+    </DraggableBlock>
   );
 
   const BulletPoints = ({ compact = false }: { compact?: boolean }) => (
@@ -294,63 +318,70 @@ function SlideRendererComponent({
   );
 
   const EnhancedContent = ({ compact = false }: { compact?: boolean }) => (
-    <SlideEnhancedContent
-      slide={slide}
-      index={index}
-      theme={theme}
-      layout={layout}
-      colors={{
-        indicatorMuted: colors.indicatorMuted,
-        hoverAccent: colors.hoverAccent,
-      }}
-      canEdit={canEdit}
-      isHovered={isHovered}
-      isEditing={isEditing}
-      editingText={editingText}
-      spotlightIndex={spotlightIndex}
-      isSpotlightMode={isSpotlightMode}
-      hasBoxContent={hasBoxContent}
-      hasImage={hasImage}
-      boxContentItems={boxContentItems}
-      allImages={allImages}
-      compact={compact}
-      onStartEditing={onStartEditing}
-      onUpdateContent={onUpdateContent}
-      onFinishEditing={onFinishEditing}
-      onAddBullet={onAddBullet}
-      onDeleteBullet={onDeleteBullet}
-      onReorderContent={onReorderContent}
-      onOpenContentLayoutPanel={onOpenContentLayoutPanel}
-      onOpenLayoutSelector={handleOpenLayoutSelector}
-      onOpenImageModal={onOpenImageModal}
-      onChartTitleChange={handleChartTitleChange}
-      renderBulletPoints={(isCompact) => <BulletPoints compact={isCompact} />}
-    />
+    <DraggableBlock blockId="content" fill fitContent offset={slide.blockOffsets?.content} editable={canEdit} onMove={onMoveBlock}>
+      <SlideEnhancedContent
+        slide={slide}
+        index={index}
+        theme={theme}
+        layout={layout}
+        isPresenting={isPresenting && slide.contentAnimation !== false}
+        itemAnimation={slide.itemAnimation}
+        revealCount={revealCount}
+        colors={{
+          indicatorMuted: colors.indicatorMuted,
+          hoverAccent: colors.hoverAccent,
+        }}
+        canEdit={canEdit}
+        isHovered={isHovered}
+        isEditing={isEditing}
+        editingText={editingText}
+        spotlightIndex={spotlightIndex}
+        isSpotlightMode={isSpotlightMode}
+        hasBoxContent={hasBoxContent}
+        hasImage={hasImage}
+        boxContentItems={boxContentItems}
+        allImages={allImages}
+        compact={compact}
+        onStartEditing={onStartEditing}
+        onUpdateContent={onUpdateContent}
+        onFinishEditing={onFinishEditing}
+        onAddBullet={onAddBullet}
+        onDeleteBullet={onDeleteBullet}
+        onReorderContent={onReorderContent}
+        onOpenContentLayoutPanel={onOpenContentLayoutPanel}
+        onOpenLayoutSelector={handleOpenLayoutSelector}
+        onOpenImageModal={onOpenImageModal}
+        onChartTitleChange={handleChartTitleChange}
+        renderBulletPoints={(isCompact) => <BulletPoints compact={isCompact} />}
+      />
+    </DraggableBlock>
   );
 
   const isThemeDark = ["dark", "sunset", "ocean", "aurora", "ember", "midnight", "cyber", "alien", "cosmic", "architectural", "hacker", "custom-dark"].includes(themeType);
 
   const ImageBlock = ({ className = "", size = "large", imageIndex = 0 }: { className?: string; size?: "small" | "medium" | "large"; imageIndex?: number }) => (
-    <SlideImageBlock
-      images={allImages}
-      slide={slide}
-      colors={colors}
-      canEdit={canEdit}
-      hoveredImageIndex={hoveredImageIndex}
-      setHoveredImageIndex={setHoveredImageIndex}
-      index={index}
-      imageShape={imageShape}
-      isThemeDark={isThemeDark}
-      hasMultipleImages={hasMultipleImages}
-      onOpenImageModal={onOpenImageModal}
-      onRemoveImage={onRemoveImage}
-      onChangeImageShape={onChangeImageShape}
-      onChangeImagePosition={onChangeImagePosition}
-      onReorderImages={onReorderImages}
-      className={className}
-      size={size}
-      imageIndex={imageIndex}
-    />
+    <DraggableBlock blockId="image" offset={slide.blockOffsets?.image} editable={canEdit} onMove={onMoveBlock}>
+      <SlideImageBlock
+        images={allImages}
+        slide={slide}
+        colors={colors}
+        canEdit={canEdit}
+        hoveredImageIndex={hoveredImageIndex}
+        setHoveredImageIndex={setHoveredImageIndex}
+        index={index}
+        imageShape={imageShape}
+        isThemeDark={isThemeDark}
+        hasMultipleImages={hasMultipleImages}
+        onOpenImageModal={onOpenImageModal}
+        onRemoveImage={onRemoveImage}
+        onChangeImageShape={onChangeImageShape}
+        onChangeImagePosition={onChangeImagePosition}
+        onReorderImages={onReorderImages}
+        className={className}
+        size={size}
+        imageIndex={imageIndex}
+      />
+    </DraggableBlock>
   );
 
   const ImageGallery = ({ className = "", layout: galleryLayout = "grid" }: { className?: string; layout?: "grid" | "row" | "stack" }) => (
@@ -413,6 +444,7 @@ function SlideRendererComponent({
           orb1: colors.orb1,
           orb2: colors.orb2,
           borderLine: colors.borderLine,
+          accent: colors.accent,
         }}
         useGradientClasses={useGradientClasses}
         customBgStyle={customBgStyle}
@@ -765,6 +797,7 @@ const SlideRenderer = memo(SlideRendererComponent, (prevProps, nextProps) => {
     prevProps.editingText === nextProps.editingText &&
     prevProps.showPageNumber === nextProps.showPageNumber &&
     prevProps.isPresenting === nextProps.isPresenting &&
+    prevProps.revealCount === nextProps.revealCount &&
     prevProps.spotlightIndex === nextProps.spotlightIndex &&
     prevProps.isHovered === nextProps.isHovered
   );

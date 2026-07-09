@@ -35,9 +35,13 @@ export async function GET(
       );
     }
 
-    // Get theme ID
-    const themeId =
-      (presentation.content as { theme?: string })?.theme || "corporate-clean";
+    // Get theme ID + master-slide settings
+    const content = presentation.content as {
+      theme?: string;
+      masterSlide?: unknown;
+    } | null;
+    const themeId = content?.theme || "corporate-clean";
+    const masterSlide = content?.masterSlide ?? null;
 
     // Get custom theme data if applicable
     let customTheme = null;
@@ -60,6 +64,7 @@ export async function GET(
       slides: presentation.slides,
       themeId,
       customTheme,
+      masterSlide,
     });
   } catch (error) {
     console.error("[Export Data] Error:", error);

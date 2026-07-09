@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import type { Theme } from "~/lib/themes";
 import type { CascadingContentItem } from "~/lib/layouts/content/cascading";
 import EditableText from "~/components/presentation/EditableText";
+import { containerVariantsFor, itemMotionProps } from "~/components/presentation/item-animations";
 
 // --- Animation Variants ---
 const containerVariants = {
@@ -89,8 +90,11 @@ interface CascadingWorkflowRendererProps {
   theme?: Theme;
   accentColor?: string;
   className?: string;
+  layoutId?: string;
   isPresenting?: boolean;
   animationKey?: string;
+  itemAnimation?: string;
+  revealCount?: number;
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
   onStartEditLabel?: (index: number) => void;
@@ -110,8 +114,11 @@ export function CascadingWorkflowRenderer({
   theme,
   accentColor,
   className = "",
+  layoutId,
   isPresenting = false,
   animationKey,
+  itemAnimation,
+  revealCount,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -142,6 +149,285 @@ export function CascadingWorkflowRenderer({
   const Container = isPresenting ? motion.div : "div";
   const ItemWrapper = isPresenting ? motion.div : "div";
 
+  // ---- Shared bits for the added styles (2-8) ----
+  const accent = accentColor || theme?.colors.accent || theme?.colors.primary || "#6366f1";
+  const surface = theme?.cardBox?.background || theme?.colors.surface || "rgba(255,255,255,0.05)";
+  const cardBorder = theme?.cardBox?.borderColor || theme?.colors.border || "rgba(0,0,0,0.08)";
+  const pad2 = (n: number) => String(n).padStart(2, "0");
+  const cProps = isPresenting
+    ? { variants: containerVariantsFor(itemAnimation), initial: "hidden" as const, animate: "visible" as const }
+    : {};
+  const itemMotion = (i: number) => itemMotionProps(isPresenting, itemAnimation, revealCount, i);
+
+  const editLabel = (item: CascadingContentItem, index: number, cls: string, style?: React.CSSProperties) =>
+    item.label ? (
+      onStartEditLabel ? (
+        <EditableText
+          value={item.label}
+          isEditing={isEditing && editingText?.field === `content-label-${index}`}
+          onStartEdit={() => onStartEditLabel(index)}
+          onChange={(val) => onUpdateLabel?.(index, val)}
+          onFinish={onFinishEditing || (() => {})}
+          onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
+          className={cls}
+          style={{ color: themeStyles.titleColor, ...style }}
+          isOwner={isOwner}
+          isHovered={isHovered}
+        />
+      ) : (
+        <h3 className={cls} style={{ color: themeStyles.titleColor, ...style }}>{item.label}</h3>
+      )
+    ) : null;
+
+  const editText = (item: CascadingContentItem, index: number, cls: string, style?: React.CSSProperties) =>
+    onStartEditText ? (
+      <EditableText
+        value={item.text}
+        isEditing={isEditing && editingText?.field === `content-text-${index}`}
+        onStartEdit={() => onStartEditText(index)}
+        onChange={(val) => onUpdateText?.(index, val)}
+        onFinish={onFinishEditing || (() => {})}
+        onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
+        className={cls}
+        style={{ color: themeStyles.bodyColor, ...style }}
+        isOwner={isOwner}
+        isHovered={isHovered}
+      />
+    ) : (
+      <p className={cls} style={{ color: themeStyles.bodyColor, ...style }}>{item.text}</p>
+    );
+
+  // == CASCADING-STYLE-2: TERRACE STEPS — leading blocks grow row by row
+  if (layoutId === "cascading-style-2") {
+    const tItems = items.slice(0, 6);
+    return (
+      <Container className={`w-full h-full flex flex-col justify-center gap-3 px-2 ${className}`} key={animationKey} {...cProps}>
+        {tItems.map((item, index) => (
+          <ItemWrapper key={index} className="flex items-center gap-4 min-w-0" style={getSpotlightStyle(index)} {...itemMotion(index)}>
+            <div
+              className="flex h-11 shrink-0 items-center justify-end rounded-r-lg pr-3"
+              style={{
+                width: 44 + index * 34,
+                background: `linear-gradient(90deg, ${accent}33, ${accent})`,
+                boxShadow: `0 3px 10px ${accent}26`,
+              }}
+            >
+              <span className="text-sm font-extrabold tabular-nums text-white">{pad2(index + 1)}</span>
+            </div>
+            <div className="min-w-0 flex-1 pb-1" style={{ borderBottom: `1px solid ${cardBorder}` }}>
+              {editLabel(item, index, "text-sm font-bold tracking-tight")}
+              {editText(item, index, "mt-0.5 text-xs leading-snug break-words")}
+            </div>
+          </ItemWrapper>
+        ))}
+      </Container>
+    );
+  }
+
+  // == CASCADING-STYLE-3: HANGING TAGS — cards on strings at staggered depths
+  if (layoutId === "cascading-style-3") {
+    const hItems = items.slice(0, 5);
+    return (
+      <Container className={`w-full h-full flex flex-col justify-start pt-6 px-2 ${className}`} key={animationKey} {...cProps}>
+        {/* The rail everything hangs from */}
+        <div className="h-[3px] rounded-full" style={{ background: `linear-gradient(90deg, ${accent}, ${accent}33)` }} />
+        <div className="flex items-start justify-between gap-3">
+          {hItems.map((item, index) => (
+            <ItemWrapper key={index} className="flex min-w-0 flex-1 flex-col items-center" style={getSpotlightStyle(index)} {...itemMotion(index)}>
+              {/* String */}
+              <div style={{ height: 16 + index * 22, borderLeft: `2px dashed ${accent}59` }} aria-hidden />
+              {/* Tag with punched hole */}
+              <div className="relative w-full rounded-xl px-3.5 pb-3 pt-5" style={{ background: surface, border: `1px solid ${cardBorder}`, boxShadow: `0 6px 16px ${accent}14` }}>
+                <span
+                  className="absolute left-1/2 top-2 h-2.5 w-2.5 -translate-x-1/2 rounded-full"
+                  style={{ border: `2px solid ${accent}`, background: "transparent" }}
+                  aria-hidden
+                />
+                <span className="font-mono text-[10px] font-bold tracking-[0.2em]" style={{ color: accent }}>
+                  {pad2(index + 1)}
+                </span>
+                {editLabel(item, index, "mt-0.5 text-sm font-bold tracking-tight")}
+                {editText(item, index, "mt-1 text-xs leading-snug break-words")}
+              </div>
+            </ItemWrapper>
+          ))}
+        </div>
+      </Container>
+    );
+  }
+
+  // == CASCADING-STYLE-4: ELBOW BRANCH — L-connectors stepping down-right
+  if (layoutId === "cascading-style-4") {
+    const eItems = items.slice(0, 5);
+    const n = eItems.length;
+    return (
+      <Container className={`w-full h-full flex flex-col justify-center gap-2.5 px-2 ${className}`} key={animationKey} {...cProps}>
+        {eItems.map((item, index) => (
+          <ItemWrapper
+            key={index}
+            className="relative flex items-center gap-3 min-w-0"
+            style={{ marginLeft: `${(index * 36) / Math.max(n - 1, 1)}%`, width: "62%", minWidth: "48%", ...getSpotlightStyle(index) }}
+            {...itemMotion(index)}
+          >
+            {index > 0 && (
+              <div
+                className="absolute rounded-bl-xl"
+                style={{ left: 14, top: -22, width: 26, height: 30, borderLeft: `2.5px solid ${accent}66`, borderBottom: `2.5px solid ${accent}66` }}
+                aria-hidden
+              />
+            )}
+            <span
+              className="z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-extrabold tabular-nums text-white"
+              style={{ background: `linear-gradient(135deg, ${accent}, ${accent}cc)`, boxShadow: `0 0 0 4px ${surface}` }}
+            >
+              {index + 1}
+            </span>
+            <div className="min-w-0 flex-1 rounded-xl px-3.5 py-2" style={{ background: surface, border: `1px solid ${cardBorder}` }}>
+              {editLabel(item, index, "text-sm font-bold tracking-tight")}
+              {editText(item, index, "mt-0.5 text-xs leading-snug break-words")}
+            </div>
+          </ItemWrapper>
+        ))}
+      </Container>
+    );
+  }
+
+  // == CASCADING-STYLE-5: DIAGONAL RAIL — cards docked along a diagonal
+  if (layoutId === "cascading-style-5") {
+    const dItems = items.slice(0, 4);
+    const n = dItems.length;
+    return (
+      <Container className={`relative w-full h-full flex flex-col justify-between py-6 px-2 ${className}`} key={animationKey} {...cProps}>
+        <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
+          <line x1={7} y1={6} x2={93} y2={94} stroke={`${accent}40`} strokeWidth={1.2} />
+        </svg>
+        {dItems.map((item, index) => (
+          <ItemWrapper
+            key={index}
+            className="relative flex items-start gap-3 min-w-0"
+            style={{ marginLeft: `${(index * 58) / Math.max(n - 1, 1)}%`, width: "40%", minWidth: "34%", ...getSpotlightStyle(index) }}
+            {...itemMotion(index)}
+          >
+            <span
+              className="z-10 mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-extrabold tabular-nums"
+              style={{ background: accent, color: "#ffffff", boxShadow: `0 3px 10px ${accent}40` }}
+            >
+              {index + 1}
+            </span>
+            <div className="min-w-0 flex-1 rounded-xl px-3.5 py-2.5" style={{ background: surface, border: `1px solid ${cardBorder}` }}>
+              {editLabel(item, index, "text-sm font-bold tracking-tight")}
+              {editText(item, index, "mt-0.5 text-xs leading-snug break-words")}
+            </div>
+          </ItemWrapper>
+        ))}
+      </Container>
+    );
+  }
+
+  // == CASCADING-STYLE-6: PAPER FAN — overlapping sheets stepping down-right
+  if (layoutId === "cascading-style-6") {
+    const pItems = items.slice(0, 4);
+    const n = pItems.length;
+    return (
+      <Container className={`w-full h-full flex flex-col justify-center px-2 ${className}`} key={animationKey} {...cProps}>
+        <div className="flex flex-col">
+          {pItems.map((item, index) => (
+            <ItemWrapper
+              key={index}
+              className="relative min-w-0 rounded-xl p-4 pr-12"
+              style={{
+                marginLeft: `${(index * 42) / Math.max(n - 1, 1)}%`,
+                marginTop: index === 0 ? 0 : -18,
+                width: "54%",
+                minWidth: "46%",
+                zIndex: index + 1,
+                transform: `rotate(${(index - (n - 1) / 2) * 0.9}deg)`,
+                background: surface,
+                border: `1px solid ${cardBorder}`,
+                boxShadow: `0 10px 24px ${accent}1f`,
+                ...getSpotlightStyle(index),
+              }}
+              {...itemMotion(index)}
+            >
+              <span
+                className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full text-xs font-extrabold tabular-nums"
+                style={{ background: `${accent}1f`, color: accent, border: `1px solid ${accent}40` }}
+              >
+                {index + 1}
+              </span>
+              {editLabel(item, index, "text-sm font-bold tracking-tight")}
+              {editText(item, index, "mt-0.5 text-xs leading-snug break-words")}
+            </ItemWrapper>
+          ))}
+        </div>
+      </Container>
+    );
+  }
+
+  // == CASCADING-STYLE-7: INDENT RETURNS — code-style tab stops with ↳
+  if (layoutId === "cascading-style-7") {
+    const iItems = items.slice(0, 6);
+    return (
+      <Container className={`w-full h-full flex flex-col justify-center gap-3.5 px-3 ${className}`} key={animationKey} {...cProps}>
+        {iItems.map((item, index) => (
+          <ItemWrapper
+            key={index}
+            className="flex items-start gap-3 min-w-0"
+            style={{ marginLeft: `${index * 2.6}rem`, ...getSpotlightStyle(index) }}
+            {...itemMotion(index)}
+          >
+            {index > 0 && (
+              <span className="shrink-0 font-mono text-lg font-bold leading-none" style={{ color: `${accent}8c` }} aria-hidden>
+                ↳
+              </span>
+            )}
+            <span className="shrink-0 font-mono text-[11px] font-bold pt-1" style={{ color: accent }}>
+              {pad2(index + 1)}
+            </span>
+            <div className="min-w-0">
+              {editLabel(item, index, "font-mono text-sm font-bold tracking-tight")}
+              {editText(item, index, "mt-0.5 text-xs leading-snug break-words")}
+            </div>
+          </ItemWrapper>
+        ))}
+      </Container>
+    );
+  }
+
+  // == CASCADING-STYLE-8: RIPPLE DROP — ripple nodes descending diagonally
+  if (layoutId === "cascading-style-8") {
+    const rItems = items.slice(0, 5);
+    const n = rItems.length;
+    return (
+      <Container className={`w-full h-full flex flex-col justify-center gap-3 px-2 ${className}`} key={animationKey} {...cProps}>
+        {rItems.map((item, index) => (
+          <ItemWrapper
+            key={index}
+            className="flex items-center gap-4 min-w-0"
+            style={{ marginLeft: `${(index * 30) / Math.max(n - 1, 1)}%`, width: "66%", minWidth: "54%", ...getSpotlightStyle(index) }}
+            {...itemMotion(index)}
+          >
+            {/* Ripple node */}
+            <span className="relative flex h-11 w-11 shrink-0 items-center justify-center" aria-hidden={false}>
+              <span className="absolute inset-0 rounded-full" style={{ border: `1.5px solid ${accent}26` }} />
+              <span className="absolute inset-[6px] rounded-full" style={{ border: `1.5px solid ${accent}59` }} />
+              <span
+                className="relative flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-extrabold tabular-nums text-white"
+                style={{ background: accent }}
+              >
+                {index + 1}
+              </span>
+            </span>
+            <div className="min-w-0 flex-1">
+              {editLabel(item, index, "text-sm font-bold tracking-tight")}
+              {editText(item, index, "mt-0.5 text-xs leading-snug break-words")}
+            </div>
+          </ItemWrapper>
+        ))}
+      </Container>
+    );
+  }
+
   return (
     <Container
       className={`w-full max-w-5xl mx-auto py-8 px-4 ${className}`}
@@ -160,6 +446,9 @@ export function CascadingWorkflowRenderer({
           const colorStep = getStepColors(index, accentColor, theme?.colors.secondary);
           const mainColor = colorStep.main;
           const bgColor = colorStep.bg;
+          // Theme-aware node base (was hardcoded white — a bright box on dark themes)
+          const nodeBg =
+            theme?.cardBox?.background || theme?.colors.surface || "#ffffff";
 
           return (
             <ItemWrapper
@@ -234,11 +523,11 @@ export function CascadingWorkflowRenderer({
 
               {/* --- CENTER COLUMN (The Box) --- */}
               <div className="flex justify-center relative z-10 my-2">
-                <div 
-                  className="w-48 h-20 md:w-60 md:h-24 rounded border-[3px] flex items-center justify-center relative bg-white shadow-md"
-                  style={{ 
+                <div
+                  className="w-48 h-20 md:w-60 md:h-24 rounded border-[3px] flex items-center justify-center relative shadow-md"
+                  style={{
                     borderColor: mainColor,
-                    background: `linear-gradient(135deg, white 40%, ${bgColor} 100%)`
+                    background: `linear-gradient(135deg, ${nodeBg} 40%, ${bgColor} 100%)`
                   }}
                 >
                   {/* Icon */}

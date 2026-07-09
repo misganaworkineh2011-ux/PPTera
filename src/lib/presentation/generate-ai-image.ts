@@ -44,6 +44,33 @@ const STYLE_PROMPTS: Record<string, string> = {
 };
 
 /**
+ * Build a single deck-wide art-direction descriptor so every generated image in
+ * a presentation shares a cohesive look (medium, mood, palette, lighting).
+ * Derived from the deck's theme category so imagery matches the slide design.
+ *
+ * Passed as the `artStyle` argument to image generation, which makes it the
+ * Style modifier for every image in the deck — the difference between a designed
+ * set and a pile of unrelated stock photos.
+ */
+export function buildDeckArtDirection(themeCategory?: string | null): string {
+  const base =
+    "consistent art direction across the whole set, professional presentation imagery, minimal and uncluttered, no text or watermarks";
+  switch ((themeCategory || "").toLowerCase()) {
+    case "dark":
+      return `cinematic photography, moody low-key lighting, deep shadows, rich contrast, ${base}`;
+    case "bold":
+    case "creative":
+      return `vibrant modern editorial illustration, dynamic composition, saturated yet harmonious palette, confident lighting, ${base}`;
+    case "minimal":
+    case "light":
+      return `clean editorial photography, bright and airy, soft natural light, neutral muted palette, generous negative space, ${base}`;
+    case "professional":
+    default:
+      return `polished editorial photography, soft natural lighting, shallow depth of field, balanced professional palette, ${base}`;
+  }
+}
+
+/**
  * Build image generation prompt from slide data
  */
 function buildImagePrompt(promptHint: string, style?: string | null, artStyle?: string | null): string {

@@ -106,7 +106,7 @@ export function renderLayoutSetB(props: SlideLayoutSetBProps): ReactNode | null 
 
           {renderIndicator("top-left")}
 
-          <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-8 md:pt-12 overflow-y-auto">
+          <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-8 md:pt-12 overflow-visible">
             <div className="mb-4 sm:mb-6 md:mb-8">
               <span className="text-[#00ff41]/50 font-mono text-[10px] sm:text-xs uppercase tracking-widest">// System Output</span>
               {renderTitle({ className: "text-xl sm:text-3xl md:text-4xl lg:text-5xl mt-1 sm:mt-2", align: "left" })}
@@ -161,7 +161,7 @@ export function renderLayoutSetB(props: SlideLayoutSetBProps): ReactNode | null 
 
         {renderIndicator("top-left")}
 
-        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
+        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-visible">
           {renderTitle({ className: "text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8", showSubtitle: isTitleSlide })}
           {!isTitleSlide && renderDescription({ className: "mb-3 sm:mb-4" })}
 
@@ -216,7 +216,7 @@ export function renderLayoutSetB(props: SlideLayoutSetBProps): ReactNode | null 
 
         {renderIndicator("top-left")}
 
-        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
+        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-visible">
           {renderTitle({ className: "text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8", showSubtitle: isTitleSlide })}
           {!isTitleSlide && renderDescription({ className: "mb-3 sm:mb-4" })}
 
@@ -292,7 +292,7 @@ export function renderLayoutSetB(props: SlideLayoutSetBProps): ReactNode | null 
 
         {renderIndicator("top-left")}
 
-        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
+        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-visible">
           {renderTitle({ className: "text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8 text-center", align: "center", showSubtitle: isTitleSlide })}
           {!isTitleSlide && renderDescription({ className: "mb-3 sm:mb-4", align: "center" })}
 
@@ -320,7 +320,7 @@ export function renderLayoutSetB(props: SlideLayoutSetBProps): ReactNode | null 
 
         {renderIndicator("top-left")}
 
-        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
+        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-visible">
           {renderTitle({ className: "text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8" })}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-5 max-w-4xl">
@@ -371,7 +371,7 @@ export function renderLayoutSetB(props: SlideLayoutSetBProps): ReactNode | null 
 
         {renderIndicator("top-left")}
 
-        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 flex flex-col justify-center overflow-y-auto">
+        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 flex flex-col justify-center overflow-visible">
           {renderTitle({ className: "text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8" })}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
@@ -419,7 +419,7 @@ export function renderLayoutSetB(props: SlideLayoutSetBProps): ReactNode | null 
 
         {renderIndicator("top-left")}
 
-        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 flex flex-col justify-center overflow-y-auto">
+        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 flex flex-col justify-center overflow-visible">
           {renderTitle({ className: "text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8 text-center", align: "center" })}
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
@@ -471,7 +471,7 @@ export function renderLayoutSetB(props: SlideLayoutSetBProps): ReactNode | null 
 
         {renderIndicator("top-left")}
 
-        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
+        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-visible">
           {renderTitle({ className: "text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8 text-center", align: "center", showSubtitle: isTitleSlide })}
           {!isTitleSlide && renderDescription({ className: "mb-3 sm:mb-4", align: "center" })}
 
@@ -547,7 +547,7 @@ export function renderLayoutSetB(props: SlideLayoutSetBProps): ReactNode | null 
 
         {renderIndicator("top-left")}
 
-        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-y-auto">
+        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 overflow-visible">
           {renderTitle({ className: "text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-6 sm:mb-8 md:mb-10 text-center", align: "center" })}
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6 max-w-5xl mx-auto">
@@ -668,7 +668,7 @@ export function renderLayoutSetB(props: SlideLayoutSetBProps): ReactNode | null 
 
         {renderIndicator("top-left")}
 
-        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 flex flex-col justify-center overflow-y-auto">
+        <div className="relative h-full p-4 sm:p-8 md:p-12 pt-12 sm:pt-16 md:pt-20 flex flex-col justify-center overflow-visible">
           {renderTitle({ className: "text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 text-center", align: "center" })}
 
           {hasImage && firstImage && (

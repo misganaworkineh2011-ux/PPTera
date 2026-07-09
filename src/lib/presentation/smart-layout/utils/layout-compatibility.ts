@@ -63,7 +63,7 @@ export interface ContentLayoutCharacteristics {
  * Complete compatibility definitions for all content layout categories
  * Based on LAYOUT_SYSTEM_REFERENCE.md
  */
-export const CONTENT_LAYOUT_COMPATIBILITY: Record<ContentLayoutCategory, ContentLayoutCharacteristics> = {
+export const CONTENT_LAYOUT_COMPATIBILITY: Partial<Record<ContentLayoutCategory, ContentLayoutCharacteristics>> = {
   // ========================================================================
   // BOXES - Card-based layouts, very flexible
   // ========================================================================
@@ -278,12 +278,22 @@ export const CONTENT_LAYOUT_COMPATIBILITY: Record<ContentLayoutCategory, Content
     orientation: "flexible",
     fullSlideSpace: false,
   },
+
+  // ========================================================================
+  // SPOTLIGHT - A single big statement; shines as a full-bleed text-over-image
+  // ========================================================================
+  spotlight: {
+    supportsImages: true,
+    requiresImages: false,
+    orientation: "flexible",
+    fullSlideSpace: false,
+  },
 };
 
 /**
  * Default slide layout compatibility for content layouts
  */
-export const DEFAULT_SLIDE_LAYOUT_COMPATIBILITY: Record<ContentLayoutCategory, SlideLayoutCompatibility> = {
+export const DEFAULT_SLIDE_LAYOUT_COMPATIBILITY: Partial<Record<ContentLayoutCategory, SlideLayoutCompatibility>> = {
   boxes: {
     best: ["no-image", "image-top", "image-bottom"],
     good: ["image-left", "image-right"],
@@ -332,6 +342,43 @@ export const DEFAULT_SLIDE_LAYOUT_COMPATIBILITY: Record<ContentLayoutCategory, S
     caution: [],
     avoid: ["image-background", "image-full"],
   },
+  // Spotlight is a full-width statement, so it only pairs with a full-bleed
+  // image (text overlaid on a dramatic photo) — side images would cramp it.
+  spotlight: {
+    best: ["image-background", "no-image"],
+    good: [],
+    caution: ["image-top", "image-bottom"],
+    avoid: ["image-left", "image-right", "image-full"],
+  },
+};
+
+// ============================================================================
+// FALLBACKS FOR UNREGISTERED CATEGORIES
+// ============================================================================
+
+/**
+ * Fallback used when a content layout category has no explicit entry in the
+ * tables above (e.g. newer categories such as callout, checklist, agenda,
+ * definitionlist, bento, timeline, spotlight, pyramid, matrix, table, dashboard,
+ * team, icongrid, hubspoke, cycle, showcase, roadmap, zigzag). Treated as a
+ * flexible, image-friendly layout so that (a) lookups never crash on an
+ * undefined entry and (b) a requested image is never silently dropped — it gets
+ * a sensible side/top placement instead. Diagram-style new categories still end
+ * up image-free because the outline sets image.required = false for them, which
+ * short-circuits before these tables are consulted.
+ */
+const FALLBACK_CHARACTERISTICS: ContentLayoutCharacteristics = {
+  supportsImages: true,
+  requiresImages: false,
+  orientation: "flexible",
+  fullSlideSpace: false,
+};
+
+const FALLBACK_SLIDE_LAYOUT_COMPATIBILITY: SlideLayoutCompatibility = {
+  best: ["no-image", "image-left", "image-right", "image-top", "image-bottom"],
+  good: [],
+  caution: ["image-background"],
+  avoid: ["image-full"],
 };
 
 // ============================================================================
@@ -351,8 +398,8 @@ export function getCompatibilityLevel(
   slideLayout: SlideLayoutType,
   contentStyle?: string
 ): CompatibilityLevel {
-  const compatibility = DEFAULT_SLIDE_LAYOUT_COMPATIBILITY[contentLayout];
-  const characteristics = CONTENT_LAYOUT_COMPATIBILITY[contentLayout];
+  const compatibility = DEFAULT_SLIDE_LAYOUT_COMPATIBILITY[contentLayout] ?? FALLBACK_SLIDE_LAYOUT_COMPATIBILITY;
+  const characteristics = CONTENT_LAYOUT_COMPATIBILITY[contentLayout] ?? FALLBACK_CHARACTERISTICS;
   
   // Check for style-specific overrides
   if (contentStyle && characteristics.styleOverrides?.[contentStyle]) {
@@ -380,7 +427,7 @@ export function getCompatibilityLevel(
  * @returns Whether images are supported
  */
 export function isImageCompatible(contentLayout: ContentLayoutCategory): boolean {
-  return CONTENT_LAYOUT_COMPATIBILITY[contentLayout].supportsImages;
+  return (CONTENT_LAYOUT_COMPATIBILITY[contentLayout] ?? FALLBACK_CHARACTERISTICS).supportsImages;
 }
 
 /**
@@ -390,7 +437,7 @@ export function isImageCompatible(contentLayout: ContentLayoutCategory): boolean
  * @returns Whether images are required
  */
 export function requiresImages(contentLayout: ContentLayoutCategory): boolean {
-  return CONTENT_LAYOUT_COMPATIBILITY[contentLayout].requiresImages;
+  return (CONTENT_LAYOUT_COMPATIBILITY[contentLayout] ?? FALLBACK_CHARACTERISTICS).requiresImages;
 }
 
 /**
@@ -404,8 +451,8 @@ export function getBestSlideLayouts(
   contentLayout: ContentLayoutCategory,
   contentStyle?: string
 ): SlideLayoutType[] {
-  const compatibility = DEFAULT_SLIDE_LAYOUT_COMPATIBILITY[contentLayout];
-  const characteristics = CONTENT_LAYOUT_COMPATIBILITY[contentLayout];
+  const compatibility = DEFAULT_SLIDE_LAYOUT_COMPATIBILITY[contentLayout] ?? FALLBACK_SLIDE_LAYOUT_COMPATIBILITY;
+  const characteristics = CONTENT_LAYOUT_COMPATIBILITY[contentLayout] ?? FALLBACK_CHARACTERISTICS;
   
   // Check for style-specific overrides
   if (contentStyle && characteristics.styleOverrides?.[contentStyle]?.best) {
@@ -426,8 +473,8 @@ export function getCompatibleSlideLayouts(
   contentLayout: ContentLayoutCategory,
   contentStyle?: string
 ): SlideLayoutType[] {
-  const compatibility = DEFAULT_SLIDE_LAYOUT_COMPATIBILITY[contentLayout];
-  const characteristics = CONTENT_LAYOUT_COMPATIBILITY[contentLayout];
+  const compatibility = DEFAULT_SLIDE_LAYOUT_COMPATIBILITY[contentLayout] ?? FALLBACK_SLIDE_LAYOUT_COMPATIBILITY;
+  const characteristics = CONTENT_LAYOUT_COMPATIBILITY[contentLayout] ?? FALLBACK_CHARACTERISTICS;
   
   let best = [...compatibility.best];
   let good = [...compatibility.good];
@@ -487,7 +534,7 @@ export function determineOptimalSlideLayout(
   previousSlideLayouts: SlideLayoutType[] = []
 ): SlideLayoutResult {
   console.log(`[determineOptimalSlideLayout] INPUT: category=${contentLayout}, style=${contentStyle}, hasImage=${hasImageRequested}`);
-  const characteristics = CONTENT_LAYOUT_COMPATIBILITY[contentLayout];
+  const characteristics = CONTENT_LAYOUT_COMPATIBILITY[contentLayout] ?? FALLBACK_CHARACTERISTICS;
   
   // ========================================================================
   // RULE 1: CIRCLES - NEVER compatible with images
@@ -663,51 +710,40 @@ export function determineOptimalSlideLayout(
   }
   
   // ========================================================================
-  // RULE 9: Apply true randomness with repetition limit
-  // If same side (left/right) appears 3+ times in a row, inhibit that side
-  // Then randomly select from remaining options
+  // RULE 9: Avoid repeating the previous slide's image position
+  // Inhibit whatever image layout the immediately-previous slide used so two
+  // consecutive image slides never sit in the same spot, then pick randomly
+  // from the remaining candidates.
   // ========================================================================
-  
-  // Get last 3 slide layouts to check for repetition
-  const lastThreeLayouts = previousSlideLayouts.slice(-3);
-  
-  // Check if we have 3 consecutive same-side images
-  let inhibitedSide: "image-left" | "image-right" | null = null;
-  if (lastThreeLayouts.length >= 3) {
-    const allLeft = lastThreeLayouts.every(l => l === "image-left");
-    const allRight = lastThreeLayouts.every(l => l === "image-right");
-    
-    if (allLeft) {
-      inhibitedSide = "image-left";
-      console.log(`[determineOptimalSlideLayout] Inhibiting image-left (3+ consecutive)`);
-    } else if (allRight) {
-      inhibitedSide = "image-right";
-      console.log(`[determineOptimalSlideLayout] Inhibiting image-right (3+ consecutive)`);
-    }
-  }
-  
+
+  const previousLayout =
+    previousSlideLayouts.length > 0
+      ? previousSlideLayouts[previousSlideLayouts.length - 1]
+      : undefined;
+
   let selectedLayout: SlideLayoutType;
-  
-  // Filter out inhibited side if applicable
+
+  // Filter out the previous slide's image layout when alternatives remain.
   let candidateLayouts = preferredLayouts;
-  if (inhibitedSide && preferredLayouts.length > 1) {
-    candidateLayouts = preferredLayouts.filter(l => l !== inhibitedSide);
-    // If filtering removed all options, use all preferred layouts (fallback)
-    if (candidateLayouts.length === 0) {
-      candidateLayouts = preferredLayouts;
-      console.log(`[determineOptimalSlideLayout] Warning: All options were inhibited, using all preferred layouts`);
+  if (
+    previousLayout &&
+    previousLayout !== "no-image" &&
+    preferredLayouts.length > 1
+  ) {
+    const filtered = preferredLayouts.filter((l) => l !== previousLayout);
+    if (filtered.length > 0) {
+      candidateLayouts = filtered;
     }
   }
-  
-  // Use random selection from candidate layouts
+
+  // Random selection from candidate layouts
   if (candidateLayouts.length > 1) {
-    // True random selection from available candidates
     const randomIndex = Math.floor(Math.random() * candidateLayouts.length);
     selectedLayout = candidateLayouts[randomIndex]!;
-    
-    console.log(`[determineOptimalSlideLayout] Random selection: chose ${selectedLayout} from [${candidateLayouts.join(', ')}]${inhibitedSide ? ` (inhibited ${inhibitedSide})` : ''}`);
+    console.log(
+      `[determineOptimalSlideLayout] Random selection: chose ${selectedLayout} from [${candidateLayouts.join(", ")}]${previousLayout && previousLayout !== "no-image" ? ` (avoided ${previousLayout})` : ""}`,
+    );
   } else {
-    // Only one option available
     selectedLayout = candidateLayouts[0]!;
     console.log(`[determineOptimalSlideLayout] Single option: ${selectedLayout}`);
   }
@@ -715,23 +751,30 @@ export function determineOptimalSlideLayout(
   // ========================================================================
   // RULE 10: Determine image size and shape
   // ========================================================================
-  
+
   let imageSize: ImageSize = "medium";
-  let imageShape: ImageShape = "rounded";
-  
+
   // Boxes and bullets work well with medium images
   if (contentLayout === "boxes" || contentLayout === "bullets") {
     imageSize = "medium";
-    imageShape = "rounded";
   }
-  
+
   // Sequence and steps work better with smaller images
   if (contentLayout === "sequence" || contentLayout === "steps") {
     imageSize = "small";
-    imageShape = "arc";
   }
-  
-  
+
+  // Rotate through a curated mix of full-bleed edge shapes and floating design
+  // treatments so decks get varied, professional image styling. Keyed to the
+  // slide position (previousSlideLayouts.length) for deterministic variety.
+  const IMAGE_DESIGN_ROTATION: ImageShape[] = [
+    "frame", "rounded", "archway", "duotone", "portal", "arc",
+    "layered", "organic", "lframe", "rounded", "slats", "cornercut",
+  ];
+  const imageShape: ImageShape =
+    IMAGE_DESIGN_ROTATION[previousSlideLayouts.length % IMAGE_DESIGN_ROTATION.length]!;
+
+
   console.log(`[determineOptimalSlideLayout] OUTPUT: slideLayout=${selectedLayout}, imageSize=${imageSize}, imageShape=${imageShape}`);
   
   return {
@@ -774,7 +817,7 @@ export function getCompatibilityExplanation(
   contentStyle?: string
 ): string {
   const level = getCompatibilityLevel(contentLayout, slideLayout, contentStyle);
-  const characteristics = CONTENT_LAYOUT_COMPATIBILITY[contentLayout];
+  const characteristics = CONTENT_LAYOUT_COMPATIBILITY[contentLayout] ?? FALLBACK_CHARACTERISTICS;
   
   switch (level) {
     case "best":

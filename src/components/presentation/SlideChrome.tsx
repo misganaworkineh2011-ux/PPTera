@@ -73,14 +73,14 @@ export function SlideIndicator({
     <div className={`absolute ${posClass} flex items-center gap-1 sm:gap-2 md:gap-3 z-10`}>
       <span
         className="font-mono font-medium"
-        style={{ color: colors.accent, fontSize: "clamp(0.5rem, 1.2vw + 0.15rem, 0.875rem)" }}
+        style={{ color: colors.accent, fontSize: "clamp(0.5rem, 1.2cqw + 0.15rem, 0.875rem)" }}
       >
         {String(index + 1).padStart(2, "0")}
       </span>
       <div className={`w-4 sm:w-8 md:w-12 h-px bg-gradient-to-r ${colors.accentLine} to-transparent`} />
       <span
         className={`font-medium uppercase tracking-widest ${colors.indicatorMuted}`}
-        style={{ fontSize: "clamp(0.4rem, 1vw + 0.1rem, 0.75rem)" }}
+        style={{ fontSize: "clamp(0.4rem, 1cqw + 0.1rem, 0.75rem)" }}
       >
         / {String(totalSlides).padStart(2, "0")}
       </span>

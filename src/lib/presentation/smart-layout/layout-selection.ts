@@ -119,9 +119,14 @@ function logPerformanceWarning(
 
 /**
  * Fast path score threshold
- * If hint matches and scores above this, skip other evaluations
+ * If hint matches and scores above this, skip other evaluations.
+ *
+ * Set high (85) so the fast path only short-circuits on very strong hint matches.
+ * For merely-decent matches we run full scoring instead, which applies the
+ * repetition/diversity penalty — this keeps layout variety across a deck rather
+ * than letting a repeated hint collapse every slide onto the same layout.
  */
-const FAST_PATH_SCORE_THRESHOLD = 70;
+const FAST_PATH_SCORE_THRESHOLD = 85;
 
 /**
  * Try fast path selection using contentLayoutHint
@@ -444,12 +449,31 @@ async function selectLayoutInternal(
     // If contentLayoutHint matches and scores > 70, skip full scoring
     // ========================================================================
     
-    const fastPathMatch = tryFastPath(
+    let fastPathMatch = tryFastPath(
       metadata.contentLayoutHint,
       scoringInput,
       enableDebugLogging
     );
-    
+
+    // If the fast-path layout would repeat the previous slide's layout, skip it
+    // and fall through to full scoring so a different layout can win — keeping
+    // consecutive slides visually distinct.
+    const prevFastCategory =
+      input.context.previousLayouts[input.context.previousLayouts.length - 1]
+        ?.category;
+    if (
+      fastPathMatch &&
+      prevFastCategory &&
+      fastPathMatch.category === prevFastCategory
+    ) {
+      if (enableDebugLogging) {
+        console.log(
+          `[layout-selection] Fast-path '${fastPathMatch.category}' repeats the previous slide; using full scoring for variety`,
+        );
+      }
+      fastPathMatch = null;
+    }
+
     let matches: LayoutMatch[];
     let scoringTime: number;
     let usedFastPath = false;
@@ -503,32 +527,55 @@ async function selectLayoutInternal(
     metrics.selection = selectionTime;
     logPerformanceWarning("selection", selectionTime, PERFORMANCE_THRESHOLDS.selection);
     
+    // Never reuse the SAME content layout as the slide immediately before this
+    // one, so consecutive slides never look identical. If the top-scoring layout
+    // is the same category as the previous slide, fall to the best
+    // different-category layout that still scores reasonably.
+    const prevCategory =
+      input.context.previousLayouts[input.context.previousLayouts.length - 1]
+        ?.category;
+    let effectiveBest = bestMatch;
+    if (bestMatch && prevCategory && bestMatch.category === prevCategory) {
+      const alt = matches
+        .filter((m) => m.category !== prevCategory && m.score >= 20)
+        .sort((a, b) => b.score - a.score)[0];
+      if (alt) {
+        if (enableDebugLogging) {
+          console.log(
+            `[layout-selection] Avoiding consecutive '${prevCategory}': ` +
+              `'${bestMatch.category}'(${bestMatch.score}) -> '${alt.category}'(${alt.score})`,
+          );
+        }
+        effectiveBest = alt;
+      }
+    }
+
     // Handle fallback if no suitable match
     let selectedCategory: ContentLayoutCategory;
     let selectedScore: number;
     let selectedConfidence: "high" | "medium" | "low";
     let selectedBreakdown;
-    
-    if (!bestMatch || bestMatch.score < 30) {
+
+    if (!effectiveBest || effectiveBest.score < 30) {
       selectedCategory = getFallbackLayout(analysis);
       selectedScore = 0;
       selectedConfidence = "low";
-      selectedBreakdown = bestMatch?.scoreBreakdown ?? createEmptyBreakdown();
-      
+      selectedBreakdown = effectiveBest?.scoreBreakdown ?? createEmptyBreakdown();
+
       // Requirement 10.6: Log warning for low confidence (fallback)
       console.warn(
         `[layout-selection] Low confidence: Using fallback layout '${selectedCategory}' ` +
-        `(best score: ${bestMatch?.score ?? 0})`
+        `(best score: ${effectiveBest?.score ?? 0})`
       );
-      
+
       if (enableDebugLogging) {
         console.log("[layout-selection] Using fallback layout:", selectedCategory);
       }
     } else {
-      selectedCategory = bestMatch.category;
-      selectedScore = bestMatch.score;
-      selectedConfidence = bestMatch.confidence;
-      selectedBreakdown = bestMatch.scoreBreakdown;
+      selectedCategory = effectiveBest.category;
+      selectedScore = effectiveBest.score;
+      selectedConfidence = effectiveBest.confidence;
+      selectedBreakdown = effectiveBest.scoreBreakdown;
       
       // Requirement 10.2: Log which factors contributed most to selection
       const topFactors = Object.entries(selectedBreakdown)
@@ -593,8 +640,8 @@ async function selectLayoutInternal(
       .slice(0, 3);
     
     // Generate explanation
-    const explanation = bestMatch
-      ? generateExplanation(bestMatch, analysis)
+    const explanation = effectiveBest
+      ? generateExplanation(effectiveBest, analysis)
       : `Using fallback layout '${selectedCategory}' (no layouts scored above threshold).`;
     
     // Get top factors

@@ -18,6 +18,9 @@ import {
   ChevronDown,
   Eye,
   Sparkles,
+  Wand2,
+  Layers,
+  Command,
   Monitor,
   Maximize,
   FileText,
@@ -26,6 +29,7 @@ import {
   Plus,
   Users,
   Crown,
+  History as HistoryIcon,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { UserButton } from "@clerk/nextjs";
@@ -76,6 +80,10 @@ interface HeaderProps {
   onUndo?: () => void;
   onRedo?: () => void;
   onOpenThemes?: () => void;
+  onOpenTransitions?: () => void;
+  onOpenMaster?: () => void;
+  onOpenHistory?: () => void;
+  onOpenCommand?: () => void;
   onOpenAgent?: () => void;
   // Presentation mode callbacks
   onZoomChange?: (zoom: number) => void;
@@ -123,6 +131,10 @@ export function Header({
   onUndo,
   onRedo,
   onOpenThemes,
+  onOpenTransitions,
+  onOpenMaster,
+  onOpenHistory,
+  onOpenCommand,
   onOpenAgent,
   onZoomChange,
   onSpotlightToggle,
@@ -409,6 +421,54 @@ export function Header({
             >
               <Palette size={16} />
               <span>{t.themeBtn || "Theme"}</span>
+            </button>
+          )}
+
+          {/* Command palette launcher */}
+          {isOwner && onOpenCommand && (
+            <button
+              onClick={onOpenCommand}
+              className={`hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm transition-colors ${ui.headerHover} ${ui.headerText}`}
+              title="Command menu (Ctrl / ⌘ K)"
+            >
+              <Command size={15} />
+              <span className="text-xs opacity-70">⌘K</span>
+            </button>
+          )}
+
+          {/* Transitions button - deck-wide slide transitions */}
+          {isOwner && onOpenTransitions && (
+            <button
+              onClick={onOpenTransitions}
+              className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${ui.headerHover} ${ui.headerText}`}
+              title="Slide transitions — applies to all slides"
+            >
+              <Wand2 size={16} />
+              <span>Transitions</span>
+            </button>
+          )}
+
+          {/* Master slide button - logo, footer & numbers on every slide */}
+          {isOwner && onOpenMaster && (
+            <button
+              onClick={onOpenMaster}
+              className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${ui.headerHover} ${ui.headerText}`}
+              title="Master slide — logo, footer & numbers on every slide"
+            >
+              <Layers size={16} />
+              <span>Master</span>
+            </button>
+          )}
+
+          {/* Version history button */}
+          {isOwner && onOpenHistory && (
+            <button
+              onClick={onOpenHistory}
+              className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${ui.headerHover} ${ui.headerText}`}
+              title="Version history — snapshots & restore"
+            >
+              <HistoryIcon size={16} />
+              <span>History</span>
             </button>
           )}
 

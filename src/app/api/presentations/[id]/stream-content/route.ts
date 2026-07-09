@@ -14,6 +14,7 @@ import {
 import { selectLayout, type LayoutSelectionContext } from "~/lib/presentation/smart-layout";
 import { env } from "~/env.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { AI_MODELS } from "~/lib/ai/models";
 
 const gemini = env.GEMINI_API_KEY ? new GoogleGenerativeAI(env.GEMINI_API_KEY) : null;
 
@@ -70,6 +71,147 @@ function sendEvent(
 // Helper function to add a small delay for visual streaming effect
 function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Transformed content for a single slide (from the one batched request)
+interface BatchSlideContent {
+  subtitle?: string;
+  tagline?: string;
+  slideDescription?: string;
+  introText?: string;
+  bullets?: string[];
+}
+
+// Lenient JSON parse for the batched model response (strips code fences, trims to
+// the outer object, and attempts a brace/bracket repair if the output truncated).
+function parseBatchJson(text: string): { slides?: unknown[] } | null {
+  let t = (text || "").trim();
+  if (t.startsWith("```")) t = t.replace(/^```[a-zA-Z]*\s*/, "").replace(/```$/, "").trim();
+  const first = t.indexOf("{");
+  const last = t.lastIndexOf("}");
+  if (first !== -1 && last !== -1 && last > first) t = t.slice(first, last + 1);
+  try {
+    return JSON.parse(t) as { slides?: unknown[] };
+  } catch {
+    try {
+      let repaired = t;
+      const open = (repaired.match(/\{/g) || []).length;
+      const close = (repaired.match(/\}/g) || []).length;
+      const openB = (repaired.match(/\[/g) || []).length;
+      const closeB = (repaired.match(/\]/g) || []).length;
+      repaired += "]".repeat(Math.max(0, openB - closeB));
+      repaired += "}".repeat(Math.max(0, open - close));
+      return JSON.parse(repaired) as { slides?: unknown[] };
+    } catch {
+      return null;
+    }
+  }
+}
+
+// Generate slide-ready content for ALL slides in ONE request, returned as JSON
+// and aligned back to the input order. Replaces the old per-slide LLM calls.
+async function generateAllSlidesContent(
+  slides: Array<{ type: string; title: string; subtitle?: string; bulletPoints?: string[] }>,
+  options: { tone?: string; language?: string; textDensity?: string }
+): Promise<BatchSlideContent[]> {
+  const empty: BatchSlideContent[] = slides.map(() => ({}));
+  if (!gemini || slides.length === 0) return empty;
+
+  const densityGuidance: Record<string, string> = {
+    minimal: "very brief — short phrases only",
+    concise: "concise — one clear sentence per point",
+    detailed: "detailed — 1-2 sentences per point",
+    extensive: "comprehensive with examples",
+  };
+
+  // Compact spec to keep the single response within the output budget
+  const slidesSpec = slides.map((s, i) => ({
+    i,
+    type: s.type,
+    title: s.title,
+    ...(s.subtitle ? { subtitle: s.subtitle } : {}),
+    ...(s.bulletPoints && s.bulletPoints.length ? { bullets: s.bulletPoints } : {}),
+  }));
+
+  const prompt = `You are an expert presentation content writer. Transform EVERY outline slide below into slide-ready content in a SINGLE response.
+
+Return ONLY a valid JSON object of this exact shape:
+{ "slides": [ { "i": <slide index from input>, "subtitle"?: string, "tagline"?: string, "slideDescription"?: string, "bullets"?: string[] } ] }
+
+Rules:
+- Output exactly one entry per input slide, in the same order, each with the matching "i".
+- TITLE slides: include "subtitle" (a compelling line that expands the title) and "tagline" (a short impactful phrase). No bullets.
+- CONTENT slides: include "bullets" — transform EVERY outline bullet into one item formatted "ShortTitle — Description" where ShortTitle is a 2-5 word noun phrase (no colon), then the separator " — " (space, em dash, space), then a description of MAX 30 words expanded with real detail, context, or examples. Do not skip any bullet; keep descriptions within a slide roughly equal length. Optionally include "slideDescription": a 1-2 sentence factual statement (encyclopedia-style — never begin with "Exploring", "Understanding", "The key to", "Examining"); omit it if not needed.
+- NEVER change slide titles.
+- Tone: ${options.tone || "professional"}. Language: ${options.language || "English"}. Text density: ${densityGuidance[options.textDensity || "concise"] || densityGuidance.concise}.
+
+INPUT SLIDES (JSON):
+${JSON.stringify(slidesSpec)}`;
+
+  try {
+    const model = gemini.getGenerativeModel({
+      model: AI_MODELS.content,
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 16384,
+        responseMimeType: "application/json",
+      },
+    });
+    const result = await model.generateContent(prompt);
+    const parsed = parseBatchJson(result.response.text());
+    if (!parsed || !Array.isArray(parsed.slides)) {
+      console.warn("[stream-content] Batch content parse failed; using original outline content");
+      return empty;
+    }
+
+    const out: BatchSlideContent[] = slides.map(() => ({}));
+    for (const raw of parsed.slides) {
+      const entry = raw as Record<string, unknown>;
+      const idx = typeof entry.i === "number" ? entry.i : -1;
+      if (idx >= 0 && idx < out.length) {
+        out[idx] = {
+          subtitle: typeof entry.subtitle === "string" ? entry.subtitle : undefined,
+          tagline: typeof entry.tagline === "string" ? entry.tagline : undefined,
+          slideDescription: typeof entry.slideDescription === "string" ? entry.slideDescription : undefined,
+          introText: typeof entry.introText === "string" ? entry.introText : undefined,
+          bullets: Array.isArray(entry.bullets)
+            ? entry.bullets.filter((b): b is string => typeof b === "string")
+            : undefined,
+        };
+      }
+    }
+    return out;
+  } catch (error) {
+    console.error("[stream-content] Batch content generation failed:", error);
+    return empty;
+  }
+}
+
+// Emit the per-slide streaming events from already-generated batch content.
+// Yields the same event shape the consumer loop expects (title/subtitle/tagline/
+// slideDesc/intro/bullet) — no per-slide LLM call.
+function* streamFromContent(
+  slide: { type: string; title: string; subtitle?: string; bulletPoints?: string[] },
+  content: BatchSlideContent
+): Generator<{ type: string; content: string }> {
+  // Title is fixed — never changed
+  yield { type: "title", content: slide.title };
+
+  if (slide.type === "title") {
+    const subtitle = content.subtitle || slide.subtitle;
+    if (subtitle) yield { type: "subtitle", content: subtitle };
+    if (content.tagline) yield { type: "tagline", content: content.tagline };
+    return;
+  }
+
+  // Content slide
+  if (content.slideDescription) yield { type: "slideDesc", content: content.slideDescription };
+  if (content.introText) yield { type: "intro", content: content.introText };
+
+  const bullets = content.bullets && content.bullets.length ? content.bullets : (slide.bulletPoints || []);
+  for (const b of bullets) {
+    if (b && b.trim()) yield { type: "bullet", content: b };
+  }
 }
 
 // LLM transformation for a single slide with character streaming
@@ -252,10 +394,7 @@ DO NOT output any [TITLE] tag - the title is fixed and will not change.`;
             currentTag = result.tag;
             currentContent = result.content;
             if (result.event) {
-              const encoder = new TextEncoder();
-              await writer.write(
-                encoder.encode(`data: ${JSON.stringify(result.event)}\n\n`)
-              );
+              yield result.event;
             }
           }
         }
@@ -267,41 +406,10 @@ DO NOT output any [TITLE] tag - the title is fixed and will not change.`;
       useGeminiFallback = true;
     }
 
-    // Try OpenAI fallback if Gemini failed or wasn't configured
-    if (useGeminiFallback && env.OPENAI_API_KEY) {
-      console.log("[stream-content] Using OpenAI API (fallback)...");
-      try {
-        throw new Error("OpenAI fallback disabled");        let currentTag = "";
-        let currentContent = "";
-
-        for await (const chunk of completion) {
-          const text = chunk.choices[0]?.delta?.content || "";
-          if (!text) continue;
-
-          // Process each character
-          for (const char of text) {
-            const result = processChar(char, currentTag, currentContent);
-            currentTag = result.tag;
-            currentContent = result.content;
-            if (result.event) {
-              yield result.event;
-            }
-          }
-        }
-
-        // Yield any remaining content (skip if it's title)
-        if (currentTag && currentTag !== "skipTitle" && currentContent && !currentContent.includes("[")) {
-          yield { type: currentTag, content: currentContent };
-        }
-        
-        return; // Success with OpenAI
-      } catch (openaiError) {
-        console.error("[stream-content] OpenAI failed:", openaiError);
-      }
+    // OpenAI fallback is disabled here; if Gemini failed, fall back to original content
+    if (useGeminiFallback) {
+      throw new Error("No API keys configured");
     }
-
-    // No API keys available - fallback to original content
-    throw new Error("No API keys configured");
   } catch (error) {
     console.error(`[stream-content] Error streaming slide ${slideIndex}:`, error);
     // Fallback to original content (title already yielded at start)
@@ -353,6 +461,8 @@ DO NOT output any [TITLE] tag - the title is fixed and will not change.`;
     contentLayoutHint?: string;
     // Back-compat: older outlines may have used `contentLayout`
     contentLayout?: string;
+    // Data chart attached from spreadsheet analysis (Excel/CSV upload)
+    chartData?: unknown;
   }> | undefined;
   const metadata = content?.metadata as { tone?: string; language?: string } | undefined;
   const imageSource = content?.imageSource as string | undefined;
@@ -449,7 +559,15 @@ DO NOT output any [TITLE] tag - the title is fixed and will not change.`;
         // Track image loading promises per slide (for parallel loading)
         const imagePromises: Promise<void>[] = [];
 
-        // Process each slide (text streaming)
+        // Generate ALL slide contents in ONE request, then organize them per slide below
+        console.log(`[stream-content] Generating content for ${pendingSlides.length} slides in one request`);
+        const batchContent = await generateAllSlidesContent(pendingSlides, {
+          tone: metadata?.tone,
+          language: metadata?.language,
+          textDensity,
+        });
+
+        // Process each slide (text streaming from the batched content)
         console.log(`[stream-content] Starting to process ${pendingSlides.length} slides`);
         for (let i = 0; i < pendingSlides.length; i++) {
           if (isClosed.value) {
@@ -563,14 +681,14 @@ DO NOT output any [TITLE] tag - the title is fixed and will not change.`;
             bulletPoints: [],
           };
 
-          // Stream transformed content
-          console.log(`[stream-content] Starting transformation for slide ${i}`);
-          const streamGen = streamSlideTransformation(
-            slide,
-            i,
-            pendingSlides.length,
-            { tone: metadata?.tone, language: metadata?.language, textDensity }
-          );
+          // Attach a data chart (from analyzed Excel/CSV) when the slide carries one
+          if (slide.chartData) {
+            slideData.chart = slide.chartData;
+          }
+
+          // Emit transformed content for this slide from the single batched response
+          console.log(`[stream-content] Emitting content for slide ${i}`);
+          const streamGen = streamFromContent(slide, batchContent[i] ?? {});
 
           let chunkCount = 0;
           for await (const chunk of streamGen) {
@@ -721,8 +839,10 @@ DO NOT output any [TITLE] tag - the title is fixed and will not change.`;
 
           // Apply selected layout to slide data
           // In "no-images" mode, always force a no-image layout so content uses full width.
+          // Title slides stay layout-free so they render through TitleSlide
+          // (theme signature / cover styles) with a full-bleed image backdrop.
           const effectiveSlideLayout = imageSource === "no-images" ? "no-image" : layoutSelection.slideLayout;
-          slideData.slideLayout = effectiveSlideLayout;
+          slideData.slideLayout = slide.type === "title" ? undefined : effectiveSlideLayout;
           slideData.imageSize = layoutSelection.imageSize;
           slideData.imageShape = layoutSelection.imageShape;
           
@@ -741,7 +861,7 @@ DO NOT output any [TITLE] tag - the title is fixed and will not change.`;
           // Send layout update immediately so placeholders appear in correct position
           sendEvent(controller, "layoutUpdate", {
             slideIndex: i,
-            slideLayout: effectiveSlideLayout,
+            slideLayout: slide.type === "title" ? undefined : effectiveSlideLayout,
             contentLayout: layoutSelection.style,
             imageSize: layoutSelection.imageSize,
             imageShape: layoutSelection.imageShape,

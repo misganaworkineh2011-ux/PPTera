@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import { Sparkles } from "lucide-react";
 import type { Theme } from "~/lib/themes";
 import { getSlideShapeStyles } from "~/lib/themes";
@@ -31,6 +31,9 @@ interface ScrollableSlidesViewProps {
   presentationTitle: string;
   showFeedback?: boolean;
   presentationId?: string;
+  // Reports the slide that is most in view as the user scrolls, so the navigator
+  // highlight stays in sync with the main viewer.
+  onActiveSlideChange?: (index: number) => void;
 }
 
 export function ScrollableSlidesView({
@@ -48,13 +51,52 @@ export function ScrollableSlidesView({
   presentationTitle,
   showFeedback,
   presentationId,
+  onActiveSlideChange,
 }: ScrollableSlidesViewProps) {
   const ui = getUIColors(getThemeType(theme));
   const isCurrentlyStreaming = streamingStatus === "streaming";
   const slideShapeStyles = getSlideShapeStyles(theme.slideShape);
 
+  // Track which slide is most visible and report it (highlight sync on scroll).
+  const containerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!onActiveSlideChange) return;
+    const root = containerRef.current;
+    if (!root) return;
+    const els = Array.from(root.querySelectorAll<HTMLElement>('[id^="slide-"]'));
+    if (!els.length) return;
+
+    const ratios = new Map<number, number>();
+    let last = -1;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const idx = Number((entry.target as HTMLElement).id.replace("slide-", ""));
+          if (!Number.isNaN(idx)) {
+            ratios.set(idx, entry.isIntersecting ? entry.intersectionRatio : 0);
+          }
+        }
+        let best = -1;
+        let bestRatio = 0;
+        ratios.forEach((r, idx) => {
+          if (r > bestRatio) {
+            bestRatio = r;
+            best = idx;
+          }
+        });
+        if (best !== -1 && best !== last && bestRatio > 0.35) {
+          last = best;
+          onActiveSlideChange(best);
+        }
+      },
+      { threshold: [0.2, 0.4, 0.6, 0.8] },
+    );
+    els.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [onActiveSlideChange, slides.length]);
+
   return (
-    <div className="w-full mx-auto space-y-4 sm:space-y-8 md:space-y-12 pb-12 px-3 sm:px-4" style={{ maxWidth: "1209.33px" }}>
+    <div ref={containerRef} className="w-full mx-auto space-y-4 sm:space-y-8 md:space-y-12 pb-12 px-3 sm:px-4" style={{ maxWidth: "1209.33px" }}>
       {slides.map((slide, index) => {
         const isTitle = slide.type === "title";
         const isSlideStreaming = isCurrentlyStreaming && streamingSlideIndex === index;
@@ -66,7 +108,8 @@ export function ScrollableSlidesView({
             id={`slide-${index}`}
             className={`w-full overflow-hidden scroll-mt-20 ring-1 ${ui.ring} ${isNewSlide ? "animate-fade-in" : ""} ${isSlideStreaming || isAiEditing ? "ring-2" : ""} relative`}
             style={{
-              ...(isMobile ? { minHeight: "280px", maxWidth: "100%" } : { width: "1209.33px", maxWidth: "100%", height: "auto", minHeight: "400px" }),
+              // Fixed 16:9 canvas so the title slide matches every other slide's size.
+              ...(isMobile ? { maxWidth: "100%", aspectRatio: "16/9" } : { width: "1209.33px", maxWidth: "100%", aspectRatio: "16/9" }),
               ...(isSlideStreaming || isAiEditing ? { boxShadow: `0 0 20px ${theme.colors.primary}40` } : {}),
               ...slideShapeStyles,
             }}
@@ -182,12 +225,6 @@ function ScrollSlideContent({
 }) {
   const themeType = getThemeType(theme);
 
-  const slideLayout = slide.slideLayout;
-  const layout = slide.layout as string | undefined;
-  const isFullImageLayout = slideLayout === "image-full" || layout === "full-image";
-  const isImageBackgroundLayout = slideLayout === "image-background" || layout === "image-background";
-  const needsFixedAspectRatio = isFullImageLayout || isImageBackgroundLayout;
-
   const isCustomTheme = theme.id.startsWith("custom-");
 
   const bgColors: Record<ThemeType, string> = {
@@ -214,21 +251,11 @@ function ScrollSlideContent({
   const bgClass = isCustomTheme ? "" : (hasCustomPageBg ? "" : bgColors[themeType]);
   const bgStyle = isCustomTheme || hasCustomPageBg ? { background: theme.pageBackground || theme.colors.background } : {};
 
-  if (needsFixedAspectRatio) {
-    return (
-      <div
-        className={`w-full ${bgClass} relative`}
-        style={{ aspectRatio: "16/9", ...bgStyle }}
-      >
-        {renderSlide(slide, index, true)}
-      </div>
-    );
-  }
-
+  // All slides use a fixed 16:9 canvas so every slide in the feed is the same size.
   return (
     <div
       className={`w-full ${bgClass} relative`}
-      style={{ ...bgStyle }}
+      style={{ aspectRatio: "16/9", ...bgStyle }}
     >
       {renderSlide(slide, index, true)}
     </div>

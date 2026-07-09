@@ -50,24 +50,36 @@ export function usePresentationKeyboard({
 }: UsePresentationKeyboardOptions) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
+      const target = e.target as HTMLElement;
+      const isTyping = target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable ||
+        !!target.closest('[contenteditable="true"]');
+      const typing = !!editingText || isTyping;
+      // Normalize so Shift / Caps variants (e.key === "Z") still match.
+      const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+
+      // Deck-level undo / redo. Only when NOT typing, so focused inputs keep
+      // their own native undo stack. (Previously these ran before the typing
+      // guard and hijacked text undo; and Ctrl+Shift+Z never matched because
+      // e.key is "Z" under Shift.)
+      if (!typing && (e.ctrlKey || e.metaKey) && key === "z" && !e.shiftKey) {
         e.preventDefault();
         undo();
         return;
       }
-      if ((e.ctrlKey || e.metaKey) && (e.key === "y" || (e.key === "z" && e.shiftKey))) {
+      if (!typing && (e.ctrlKey || e.metaKey) && (key === "y" || (key === "z" && e.shiftKey))) {
         e.preventDefault();
         redo();
         return;
       }
 
-      const target = e.target as HTMLElement;
-      const isTyping = target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.isContentEditable ||
-        target.closest('[contenteditable="true"]');
+      if (typing) return;
 
-      if (editingText || isTyping) return;
+      // Everything below is a bare-key shortcut — ignore browser combos
+      // (Cmd/Ctrl+F, Alt+←, Cmd++/- zoom, …) so they aren't hijacked or
+      // double-fired. Shift is allowed (needed for "+" on many keyboards).
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
 
       const currentSlideData = slidesRef.current[currentSlide];
       const contentCount = currentSlideData
@@ -117,6 +129,10 @@ export function usePresentationKeyboard({
           if (spotlightContentIndex < contentCount - 1) {
             setSpotlightContentIndex(prev => prev + 1);
           }
+        } else {
+          // Down arrow advances to the next slide (like Right / Space).
+          e.preventDefault();
+          nextSlide();
         }
       } else if (e.key === "ArrowUp") {
         if (isSpotlightActive && (isFullscreen || isPresenting)) {
@@ -124,6 +140,10 @@ export function usePresentationKeyboard({
           if (spotlightContentIndex > 0) {
             setSpotlightContentIndex(prev => prev - 1);
           }
+        } else {
+          // Up arrow goes to the previous slide (like Left).
+          e.preventDefault();
+          prevSlide();
         }
       } else if (e.key === "Escape") {
         if (isFullscreen) document.exitFullscreen();
@@ -135,7 +155,8 @@ export function usePresentationKeyboard({
           setIsSpotlightActive(false);
         }
         setEditingText(null);
-      } else if (e.key === "f") {
+      } else if (e.key === "f" || e.key === "F") {
+        e.preventDefault();
         toggleFullscreen();
       } else if ((isFullscreen || isPresenting) && (e.key === "s" || e.key === "S")) {
         e.preventDefault();

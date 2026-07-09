@@ -4,6 +4,10 @@ import type { Theme } from "~/lib/themes";
 import type { SlideData, EditingState } from "~/components/presentation/types";
 import EditableText from "~/components/presentation/EditableText";
 import { getThemeType } from "./types";
+import {
+  EditorialCover, BandCover, MinimalCover, FrameCover,
+  AngleCover, GlassCardCover, RailCover, PosterCover, SwissCover, WashCover, PortalCover,
+} from "./CoverLayouts";
 
 interface TitleSlideProps {
   slide: SlideData;
@@ -53,21 +57,36 @@ export function TitleSlide({
     <>
       <style jsx global>{`
         .title-slide-heading {
-          font-size: clamp(1rem, 3.5vw + 0.5rem, 4.5rem);
+          font-size: clamp(1rem, 3.5cqw + 0.5rem, 4.5rem);
         }
         .title-slide-subtitle {
-          font-size: clamp(0.75rem, 1.5vw + 0.25rem, 1.5rem);
+          font-size: clamp(0.75rem, 1.5cqw + 0.25rem, 1.5rem);
         }
         @media (max-width: 640px) {
           .title-slide-heading {
-            font-size: clamp(1.25rem, 5vw, 2rem);
+            font-size: clamp(1.25rem, 5cqw, 2rem);
           }
           .title-slide-subtitle {
-            font-size: clamp(0.75rem, 3vw, 1rem);
+            font-size: clamp(0.75rem, 3cqw, 1rem);
           }
         }
       `}</style>
       {(() => {
+        // User-selected cover composition (theme-aware). "signature"/unset
+        // falls through to the theme's own hero design below.
+        switch (slide.coverLayout) {
+          case "editorial": return <EditorialCover {...props} />;
+          case "band": return <BandCover {...props} />;
+          case "minimal": return <MinimalCover {...props} />;
+          case "frame": return <FrameCover {...props} />;
+          case "angle": return <AngleCover {...props} />;
+          case "glasscard": return <GlassCardCover {...props} />;
+          case "rail": return <RailCover {...props} />;
+          case "poster": return <PosterCover {...props} />;
+          case "swiss": return <SwissCover {...props} />;
+          case "wash": return <WashCover {...props} />;
+          case "portal": return <PortalCover {...props} />;
+        }
         switch (themeType) {
           case "dark": return <DarkTitleSlide {...props} />;
           case "light": return <LightTitleSlide {...props} />;

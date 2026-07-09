@@ -68,9 +68,12 @@
     "svix": "^1.82.0",
     "tailwind-merge": "^3.3.1",
     "unpdf": "^1.4.0",
+    "xlsx": "^0.18.5",
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.2",
     "@types/jszip": "^3.4.0",
     "@types/node": "^20.14.10",
     "@types/react": "^19.0.0",
@@ -80,6 +83,7 @@
     "eslint": "^9.23.0",
     "eslint-config-next": "^15.2.3",
     "fast-check": "^4.5.3",
+    "jsdom": "^29.1.1",
     "postcss": "^8.5.3",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",

@@ -7,6 +7,7 @@ import type { StepsLayoutType, StepContentItem } from "~/lib/layouts/content/ste
 import EditableText from "~/components/presentation/EditableText";
 import type { Theme } from "~/lib/themes";
 import { CONTENT_FONT_SIZE } from "~/components/presentation/slide-typography";
+import { containerVariantsFor, itemMotionProps } from "~/components/presentation/item-animations";
 
 // Animation variants for staggered step animations
 const containerVariants = {
@@ -92,6 +93,8 @@ interface StepsLayoutRendererProps {
   isNarrowSpace?: boolean;
   isPresenting?: boolean;
   animationKey?: string;
+  itemAnimation?: string;
+  revealCount?: number;
   // Editing props
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
@@ -132,6 +135,8 @@ export function StepsLayoutRenderer({
   isNarrowSpace = false,
   isPresenting = false,
   animationKey,
+  itemAnimation,
+  revealCount,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -200,6 +205,427 @@ export function StepsLayoutRenderer({
     onDragEnd: handleDragEnd,
     canDrag: isOwner && !!onReorderItems && !isPresenting,
   };
+
+  // ---- Shared bits for the added styles (ladder / circuit / pipeline / blueprint) ----
+  const accent = themeStyles.accentColor;
+  const SContainer = isPresenting ? motion.div : "div";
+  const sContainerProps = isPresenting
+    ? { variants: containerVariantsFor(itemAnimation), initial: "hidden" as const, animate: "visible" as const }
+    : {};
+  const SItem = isPresenting ? motion.div : "div";
+  // Per-item motion: user-picked entrance style + optional click-to-reveal.
+  const sItemMotion = (i: number) => itemMotionProps(isPresenting, itemAnimation, revealCount, i);
+
+  const editLabel = (item: StepContentItem, index: number, cls: string, style?: React.CSSProperties) =>
+    item.label ? (
+      onStartEditLabel ? (
+        <EditableText
+          value={item.label}
+          isEditing={isEditing && editingText?.field === `content-label-${index}`}
+          onStartEdit={() => onStartEditLabel(index)}
+          onChange={(val) => onUpdateLabel?.(index, val)}
+          onFinish={onFinishEditing || (() => {})}
+          onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
+          className={cls}
+          style={{ color: themeStyles.titleColor, ...style }}
+          isOwner={isOwner}
+          isHovered={isHovered}
+        />
+      ) : (
+        <h3 className={cls} style={{ color: themeStyles.titleColor, ...style }}>{item.label}</h3>
+      )
+    ) : null;
+
+  const editText = (item: StepContentItem, index: number, cls: string, style?: React.CSSProperties) =>
+    onStartEditText ? (
+      <EditableText
+        value={item.text}
+        isEditing={isEditing && editingText?.field === `content-text-${index}`}
+        onStartEdit={() => onStartEditText(index)}
+        onChange={(val) => onUpdateText?.(index, val)}
+        onFinish={onFinishEditing || (() => {})}
+        onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
+        className={cls}
+        style={{ color: themeStyles.bodyColor, ...style }}
+        isOwner={isOwner}
+        isHovered={isHovered}
+      />
+    ) : (
+      <p className={cls} style={{ color: themeStyles.bodyColor, ...style }}>{item.text}</p>
+    );
+
+  // == STEPS-LADDER: cards standing on stair blocks that rise step by step
+  if (layoutId === "steps-ladder") {
+    const lItems = displayItems.slice(0, 5);
+    const n = lItems.length;
+    return (
+      <SContainer className={`w-full h-full flex flex-col justify-end px-6 pb-6 pt-4 ${className}`} key={animationKey} {...sContainerProps}>
+        <div className="flex items-end justify-between gap-2.5">
+          {lItems.map((item, index) => {
+            const rise = 34 + index * 24;
+            const isLast = index === n - 1;
+            return (
+              <SItem
+                key={index}
+                className="flex-1 flex flex-col justify-end min-w-0"
+                style={getSpotlightStyle(index, spotlightIndex, isSpotlightMode)}
+                {...sItemMotion(index)}
+              >
+                <div
+                  className="rounded-xl px-3.5 py-2.5 mb-2"
+                  style={{ background: themeStyles.cardBgColor, border: `1px solid ${themeStyles.cardBorderColor}` }}
+                >
+                  {editLabel(item, index, "font-bold text-sm leading-tight mb-1")}
+                  {editText(item, index, "text-xs leading-snug break-words")}
+                </div>
+                {/* Stair block — the final step reads strongest */}
+                <div
+                  className="relative rounded-t-lg"
+                  style={{
+                    height: rise,
+                    background: `linear-gradient(180deg, ${accent}${isLast ? "40" : "26"}, ${accent}0d)`,
+                    borderTop: `3px solid ${accent}`,
+                  }}
+                >
+                  <div
+                    className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center rounded-md font-bold tabular-nums"
+                    style={{ top: 6, width: 24, height: 24, fontSize: 11, background: accent, color: "#ffffff" }}
+                  >
+                    {index + 1}
+                  </div>
+                </div>
+              </SItem>
+            );
+          })}
+        </div>
+      </SContainer>
+    );
+  }
+
+  // == STEPS-CIRCUIT: right-angle circuit traces between alternating cards
+  if (layoutId === "steps-circuit") {
+    const cItems = displayItems.slice(0, 5);
+    return (
+      <SContainer className={`w-full h-full flex flex-col justify-center px-10 py-4 ${className}`} key={animationKey} {...sContainerProps}>
+        <div className="flex flex-col">
+          {cItems.map((item, index) => {
+            const onLeft = index % 2 === 0;
+            const isLast = index === cItems.length - 1;
+            return (
+              <SItem key={index} className="min-w-0" style={getSpotlightStyle(index, spotlightIndex, isSpotlightMode)} {...sItemMotion(index)}>
+                <div
+                  className={`flex items-start gap-3 ${onLeft ? "" : "flex-row-reverse"}`}
+                  style={{ width: "58%", marginLeft: onLeft ? 0 : "42%" }}
+                >
+                  {/* Square circuit node */}
+                  <div
+                    className="flex-shrink-0 flex items-center justify-center font-mono font-bold rounded-[5px]"
+                    style={{
+                      width: 26,
+                      height: 26,
+                      fontSize: 10,
+                      marginTop: 4,
+                      background: `${accent}1f`,
+                      border: `2px solid ${accent}`,
+                      color: accent,
+                    }}
+                  >
+                    {String(index + 1).padStart(2, "0")}
+                  </div>
+                  <div
+                    className="flex-1 rounded-xl px-3.5 py-2 min-w-0"
+                    style={{ background: themeStyles.cardBgColor, border: `1px solid ${themeStyles.cardBorderColor}` }}
+                  >
+                    {editLabel(item, index, "font-bold text-sm leading-tight mb-0.5")}
+                    {editText(item, index, "text-xs leading-snug break-words")}
+                  </div>
+                </div>
+                {/* Right-angle trace to the next node */}
+                {!isLast && (
+                  <div className="relative" style={{ height: 18 }}>
+                    <div className="absolute w-[2px]" style={{ ...(onLeft ? { left: 12 } : { right: 12 }), top: -2, height: 11, background: `${accent}59` }} />
+                    <div className="absolute h-[2px]" style={{ left: 12, right: 12, top: 9, background: `${accent}59` }} />
+                    <div className="absolute w-[2px]" style={{ ...(onLeft ? { right: 12 } : { left: 12 }), top: 9, height: 11, background: `${accent}59` }} />
+                    {/* Terminal dots at the corners */}
+                    <div className="absolute rounded-[1px]" style={{ ...(onLeft ? { left: 10 } : { right: 10 }), top: 7, width: 6, height: 6, background: accent }} />
+                    <div className="absolute rounded-[1px]" style={{ ...(onLeft ? { right: 10 } : { left: 10 }), top: 7, width: 6, height: 6, background: accent }} />
+                  </div>
+                )}
+              </SItem>
+            );
+          })}
+        </div>
+      </SContainer>
+    );
+  }
+
+  // == STEPS-PIPELINE: one segmented chevron pipeline with cards below
+  if (layoutId === "steps-pipeline") {
+    const pItems = displayItems.slice(0, 5);
+    const n = pItems.length;
+    const notch = 16;
+    const segmentAlpha = ["e6", "cc", "b3", "99", "80"];
+    return (
+      <SContainer className={`w-full h-full flex flex-col justify-center px-6 py-6 ${className}`} key={animationKey} {...sContainerProps}>
+        <div className="flex mb-5" style={{ gap: 4 }}>
+          {pItems.map((_, index) => {
+            const first = index === 0;
+            const last = index === n - 1;
+            return (
+              <div
+                key={index}
+                className="flex-1 relative flex items-center justify-center"
+                style={{
+                  height: 34,
+                  background: `${accent}${segmentAlpha[index] ?? "80"}`,
+                  clipPath: first
+                    ? `polygon(0 0, calc(100% - ${notch}px) 0, 100% 50%, calc(100% - ${notch}px) 100%, 0 100%)`
+                    : last
+                      ? `polygon(0 0, 100% 0, 100% 100%, 0 100%, ${notch}px 50%)`
+                      : `polygon(0 0, calc(100% - ${notch}px) 0, 100% 50%, calc(100% - ${notch}px) 100%, 0 100%, ${notch}px 50%)`,
+                }}
+              >
+                <span className="font-bold tabular-nums" style={{ fontSize: 13, color: "#ffffff" }}>{index + 1}</span>
+              </div>
+            );
+          })}
+        </div>
+        <div className="flex gap-2.5">
+          {pItems.map((item, index) => (
+            <SItem key={index} className="flex-1 min-w-0" style={getSpotlightStyle(index, spotlightIndex, isSpotlightMode)} {...sItemMotion(index)}>
+              <div
+                className="h-full rounded-xl px-3.5 py-2.5"
+                style={{ background: themeStyles.cardBgColor, border: `1px solid ${themeStyles.cardBorderColor}`, borderTop: `3px solid ${accent}` }}
+              >
+                {editLabel(item, index, "font-bold text-sm leading-tight mb-1")}
+                {editText(item, index, "text-xs leading-snug break-words")}
+              </div>
+            </SItem>
+          ))}
+        </div>
+      </SContainer>
+    );
+  }
+
+  // == STEPS-BLUEPRINT: dashed technical-drawing cards with corner marks
+  if (layoutId === "steps-blueprint") {
+    const bItems = displayItems.slice(0, 5);
+    return (
+      <SContainer className={`w-full h-full flex items-center px-6 py-6 ${className}`} key={animationKey} {...sContainerProps}>
+        <div className="flex items-stretch w-full">
+          {bItems.map((item, index) => {
+            const isLast = index === bItems.length - 1;
+            return (
+              <React.Fragment key={index}>
+                <SItem className="flex-1 min-w-0" style={getSpotlightStyle(index, spotlightIndex, isSpotlightMode)} {...sItemMotion(index)}>
+                  <div
+                    className="relative h-full rounded-lg px-4 pt-5 pb-4"
+                    style={{ border: `1.5px dashed ${accent}66`, background: themeStyles.cardBgColor }}
+                  >
+                    {/* Corner marks */}
+                    <div className="absolute" style={{ top: -1, left: -1, width: 10, height: 10, borderTop: `2px solid ${accent}`, borderLeft: `2px solid ${accent}`, borderTopLeftRadius: 8 }} />
+                    <div className="absolute" style={{ top: -1, right: -1, width: 10, height: 10, borderTop: `2px solid ${accent}`, borderRight: `2px solid ${accent}`, borderTopRightRadius: 8 }} />
+                    <div className="absolute" style={{ bottom: -1, left: -1, width: 10, height: 10, borderBottom: `2px solid ${accent}`, borderLeft: `2px solid ${accent}`, borderBottomLeftRadius: 8 }} />
+                    <div className="absolute" style={{ bottom: -1, right: -1, width: 10, height: 10, borderBottom: `2px solid ${accent}`, borderRight: `2px solid ${accent}`, borderBottomRightRadius: 8 }} />
+                    <span className="font-mono text-[10px] font-semibold tracking-[0.25em] uppercase" style={{ color: accent }}>
+                      Step {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <div className="mt-1.5">
+                      {editLabel(item, index, "font-bold text-sm leading-tight mb-1")}
+                      {editText(item, index, "text-xs leading-snug break-words")}
+                    </div>
+                  </div>
+                </SItem>
+                {!isLast && (
+                  <div className="self-center flex-shrink-0" style={{ width: 22, borderTop: `2px dashed ${accent}66` }} />
+                )}
+              </React.Fragment>
+            );
+          })}
+        </div>
+      </SContainer>
+    );
+  }
+
+  // == STEPS-STAIRLINE: a staircase line climbing tread by tread
+  if (layoutId === "steps-stairline") {
+    const sItems = displayItems.slice(0, 5);
+    const n = sItems.length;
+    const stepPct = n <= 1 ? 0 : 66 / (n - 1); // vertical rise per tread (% of the stair zone)
+    return (
+      <SContainer className={`w-full h-full flex flex-col px-6 py-5 ${className}`} key={animationKey} {...sContainerProps}>
+        <div className="flex items-stretch flex-1 min-h-0">
+          {sItems.map((item, index) => {
+            const treadBottom = 10 + index * stepPct;
+            const isLast = index === n - 1;
+            return (
+              <SItem
+                key={index}
+                className="flex-1 flex flex-col min-w-0"
+                style={getSpotlightStyle(index, spotlightIndex, isSpotlightMode)}
+                {...sItemMotion(index)}
+              >
+                {/* Stair zone */}
+                <div className="relative flex-1 min-h-0">
+                  {/* Tread */}
+                  <div className="absolute left-0 right-0 rounded-full" style={{ bottom: `${treadBottom}%`, height: 3, background: accent }} />
+                  {/* Riser up to the next tread */}
+                  {!isLast && (
+                    <div
+                      className="absolute rounded-full"
+                      style={{ right: -1.5, bottom: `${treadBottom}%`, height: `${stepPct}%`, width: 3, background: `${accent}66` }}
+                    />
+                  )}
+                  {/* Numbered landing on the tread */}
+                  <div
+                    className="absolute left-1/2 -translate-x-1/2 translate-y-1/2 z-10 flex items-center justify-center rounded-full font-bold tabular-nums"
+                    style={{
+                      bottom: `${treadBottom}%`,
+                      width: 26,
+                      height: 26,
+                      fontSize: 11,
+                      background: accent,
+                      color: "#ffffff",
+                      boxShadow: `0 0 0 4px ${themeStyles.cardBgColor}`,
+                    }}
+                  >
+                    {index + 1}
+                  </div>
+                  {/* Dotted guide down to the card */}
+                  <div className="absolute left-1/2" style={{ top: `${100 - treadBottom}%`, bottom: 0, borderLeft: `2px dotted ${accent}33` }} />
+                </div>
+                <div
+                  className="rounded-xl px-3.5 py-2.5 mt-2 mx-1"
+                  style={{ background: themeStyles.cardBgColor, border: `1px solid ${themeStyles.cardBorderColor}` }}
+                >
+                  {editLabel(item, index, "font-bold text-sm leading-tight mb-1")}
+                  {editText(item, index, "text-xs leading-snug break-words")}
+                </div>
+              </SItem>
+            );
+          })}
+        </div>
+      </SContainer>
+    );
+  }
+
+  // == STEPS-HEXCHAIN: hexagon nodes linked in a chain, cards below
+  if (layoutId === "steps-hexchain") {
+    const hItems = displayItems.slice(0, 5);
+    return (
+      <SContainer className={`w-full h-full flex flex-col justify-center px-6 py-6 ${className}`} key={animationKey} {...sContainerProps}>
+        <div className="relative flex items-start justify-between gap-3">
+          {/* Chain link through the hex centers */}
+          <div className="absolute left-6 right-6 rounded-full" style={{ top: 24, height: 3, background: `linear-gradient(90deg, ${accent}26, ${accent}, ${accent}26)` }} />
+          {hItems.map((item, index) => (
+            <SItem
+              key={index}
+              className="relative flex-1 flex flex-col items-center min-w-0"
+              style={getSpotlightStyle(index, spotlightIndex, isSpotlightMode)}
+              {...sItemMotion(index)}
+            >
+              {/* Hexagon node */}
+              <div
+                className="z-10 flex items-center justify-center font-bold tabular-nums"
+                style={{
+                  width: 52,
+                  height: 48,
+                  fontSize: 14,
+                  color: "#ffffff",
+                  background: `linear-gradient(135deg, ${accent}, ${accent}cc)`,
+                  clipPath: "polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%)",
+                }}
+              >
+                {index + 1}
+              </div>
+              <div className="w-[2px] h-3 flex-shrink-0" style={{ backgroundColor: accent, opacity: 0.5 }} />
+              <div
+                className="w-full rounded-xl px-3.5 py-2.5"
+                style={{ background: themeStyles.cardBgColor, border: `1px solid ${themeStyles.cardBorderColor}` }}
+              >
+                {editLabel(item, index, "font-bold text-sm leading-tight mb-1")}
+                {editText(item, index, "text-xs leading-snug break-words")}
+              </div>
+            </SItem>
+          ))}
+        </div>
+      </SContainer>
+    );
+  }
+
+  // == STEPS-DOTMETER: progress dots fill step by step above each card
+  if (layoutId === "steps-dotmeter") {
+    const dItems = displayItems.slice(0, 5);
+    const n = dItems.length;
+    return (
+      <SContainer className={`w-full h-full flex items-center px-6 py-6 ${className}`} key={animationKey} {...sContainerProps}>
+        <div className="flex items-stretch justify-between gap-3 w-full">
+          {dItems.map((item, index) => (
+            <SItem
+              key={index}
+              className="flex-1 flex flex-col min-w-0"
+              style={getSpotlightStyle(index, spotlightIndex, isSpotlightMode)}
+              {...sItemMotion(index)}
+            >
+              {/* Meter: dots filled up to this step */}
+              <div className="flex items-center gap-1.5 mb-2 px-1">
+                {Array.from({ length: n }, (_, d) => (
+                  <span
+                    key={d}
+                    className="rounded-full"
+                    style={{
+                      width: 9,
+                      height: 9,
+                      background: d <= index ? accent : "transparent",
+                      border: d <= index ? "none" : `1.5px solid ${themeStyles.cardBorderColor}`,
+                    }}
+                  />
+                ))}
+                <span className="ml-auto font-mono text-[11px] font-semibold" style={{ color: accent }}>
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+              </div>
+              <div
+                className="flex-1 rounded-xl px-3.5 py-2.5"
+                style={{ background: themeStyles.cardBgColor, border: `1px solid ${themeStyles.cardBorderColor}` }}
+              >
+                {editLabel(item, index, "font-bold text-sm leading-tight mb-1")}
+                {editText(item, index, "text-xs leading-snug break-words")}
+              </div>
+            </SItem>
+          ))}
+        </div>
+      </SContainer>
+    );
+  }
+
+  // == STEPS-BRACKETS: editorial bracket-framed steps with mono numbering
+  if (layoutId === "steps-brackets") {
+    const bItems = displayItems.slice(0, 5);
+    return (
+      <SContainer className={`w-full h-full flex items-center px-6 py-6 ${className}`} key={animationKey} {...sContainerProps}>
+        <div className="flex items-stretch justify-between gap-5 w-full">
+          {bItems.map((item, index) => (
+            <SItem
+              key={index}
+              className="relative flex-1 min-w-0 px-5 py-4"
+              style={getSpotlightStyle(index, spotlightIndex, isSpotlightMode)}
+              {...sItemMotion(index)}
+            >
+              {/* Opening and closing brackets */}
+              <div className="absolute left-0 top-0 bottom-0 pointer-events-none" style={{ width: 12, borderLeft: `2.5px solid ${accent}`, borderTop: `2.5px solid ${accent}`, borderBottom: `2.5px solid ${accent}` }} />
+              <div className="absolute right-0 top-0 bottom-0 pointer-events-none" style={{ width: 12, borderRight: `2.5px solid ${themeStyles.cardBorderColor}`, borderTop: `2.5px solid ${themeStyles.cardBorderColor}`, borderBottom: `2.5px solid ${themeStyles.cardBorderColor}` }} />
+              <div className="font-mono text-2xl font-bold leading-none mb-2" style={{ color: accent }}>
+                {String(index + 1).padStart(2, "0")}
+              </div>
+              {editLabel(item, index, "font-bold text-sm leading-tight mb-1")}
+              {editText(item, index, "text-xs leading-snug break-words")}
+            </SItem>
+          ))}
+        </div>
+      </SContainer>
+    );
+  }
 
   if (layoutId === "steps-pyramid") {
     return (
@@ -557,14 +983,14 @@ function PyramidSteps({
                       onChange={(val) => onUpdateLabel?.(index, val)}
                       onFinish={onFinishEditing || (() => {})}
                       onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                      className="text-lg font-semibold mb-1"
+                      className="text-lg font-bold tracking-tight mb-1"
                       style={{ color: themeStyles.titleColor }}
                       isOwner={isOwner}
                       isHovered={isHovered}
                     />
                   ) : (
                     <h3
-                      className="text-lg font-semibold mb-1"
+                      className="text-lg font-bold tracking-tight mb-1"
                       style={{ color: themeStyles.titleColor }}
                     >
                       {item.label}
@@ -749,13 +1175,13 @@ function ArrowSteps({
                     onChange={(val) => onUpdateLabel?.(index, val)}
                     onFinish={onFinishEditing || (() => {})}
                     onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                    className="text-lg font-semibold mb-1"
+                    className="text-lg font-bold tracking-tight mb-1"
                     style={{ color: themeStyles.titleColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
                   />
                 ) : (
-                  <h3 className="text-lg font-semibold mb-1" style={{ color: themeStyles.titleColor }}>
+                  <h3 className="text-lg font-bold tracking-tight mb-1" style={{ color: themeStyles.titleColor }}>
                     {item.label}
                   </h3>
                 )
@@ -879,6 +1305,10 @@ function CardSteps({
   };
   
   const itemCount = items.length;
+  const accentHex = /^#[0-9a-f]{6}$/i.test(themeStyles.accentColor) ? themeStyles.accentColor : null;
+  const premiumBg = accentHex
+    ? `radial-gradient(110% 110% at 0% 0%, ${accentHex}1f 0%, transparent 55%), ${themeStyles.cardBgColor}`
+    : themeStyles.cardBgColor;
   const baseMinHeight = 120;
   const baseMaxHeight = 200;
   const contentRefs = React.useRef<(HTMLDivElement | null)[]>([]);
@@ -936,13 +1366,13 @@ function CardSteps({
               onDragLeave={onDragLeave}
               onDrop={(e) => onDrop(e, index)}
               onDragEnd={onDragEnd}
-              className={`rounded-xl p-5 transition-all ${
+              className={`rounded-xl p-5 ppt-tile transition-all ${
                 isDragging ? "opacity-50 scale-95" : ""
               } ${isDragOver ? "ring-2 ring-cyan-500" : ""} ${
                 canDrag ? "cursor-grab active:cursor-grabbing" : ""
               }`}
               style={{
-                backgroundColor: themeStyles.cardBgColor,
+                background: premiumBg,
                 border: `1px solid ${themeStyles.cardBorderColor}`,
                 borderLeftWidth: "3px",
                 borderLeftColor: themeStyles.accentColor,
@@ -963,13 +1393,13 @@ function CardSteps({
                     onChange={(val) => onUpdateLabel?.(index, val)}
                     onFinish={onFinishEditing || (() => {})}
                     onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                    className="text-base font-semibold mb-2"
+                    className="text-base font-bold tracking-tight mb-2"
                     style={{ color: themeStyles.titleColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
                   />
                 ) : (
-                  <h3 className="text-base font-semibold mb-2" style={{ color: themeStyles.titleColor }}>
+                  <h3 className="text-base font-bold tracking-tight mb-2" style={{ color: themeStyles.titleColor }}>
                     {item.label}
                   </h3>
                 )
@@ -1017,13 +1447,13 @@ function CardSteps({
             onDragLeave={onDragLeave}
             onDrop={(e) => onDrop(e, index)}
             onDragEnd={onDragEnd}
-            className={`flex-1 rounded-2xl p-6 flex flex-col transition-all ${
+            className={`flex-1 rounded-2xl p-6 ppt-tile flex flex-col transition-all ${
               isDragging ? "opacity-50 scale-95" : ""
             } ${isDragOver ? "ring-2 ring-cyan-500" : ""} ${
               canDrag ? "cursor-grab active:cursor-grabbing" : ""
             }`}
             style={{
-              backgroundColor: themeStyles.cardBgColor,
+              background: premiumBg,
               border: `1px solid ${themeStyles.cardBorderColor}`,
               borderLeftWidth: "4px",
               borderLeftColor: themeStyles.accentColor,
@@ -1045,13 +1475,13 @@ function CardSteps({
                   onChange={(val) => onUpdateLabel?.(index, val)}
                   onFinish={onFinishEditing || (() => {})}
                   onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                  className="text-base font-semibold mb-2"
+                  className="text-base font-bold tracking-tight mb-2"
                   style={{ color: themeStyles.titleColor }}
                   isOwner={isOwner}
                   isHovered={isHovered}
                 />
               ) : (
-                <h3 className="text-base font-semibold mb-2" style={{ color: themeStyles.titleColor }}>
+                <h3 className="text-base font-bold tracking-tight mb-2" style={{ color: themeStyles.titleColor }}>
                   {item.label}
                 </h3>
               )
@@ -1234,14 +1664,14 @@ function BarSteps({
                     onChange={(val) => onUpdateLabel?.(index, val)}
                     onFinish={onFinishEditing || (() => {})}
                     onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                    className="text-base font-semibold mb-1"
+                    className="text-base font-bold tracking-tight mb-1"
                     style={{ color: themeStyles.accentColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
                   />
                 ) : (
                   <h3
-                    className="text-base font-semibold mb-1"
+                    className="text-base font-bold tracking-tight mb-1"
                     style={{ color: themeStyles.accentColor }}
                   >
                     {item.label}

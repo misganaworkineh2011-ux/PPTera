@@ -38,3 +38,4 @@ prisma/migrations
 
 # Adobe PDF Services SDK samples (contains credentials)
 PDFServicesSDK-Node.jsSamples/
+.env*

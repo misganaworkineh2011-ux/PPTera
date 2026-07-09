@@ -201,15 +201,13 @@ export function CircularPetalRenderer({
   };
 
   const Container = isPresenting ? motion.div : "div";
-  const containerProps = isPresenting ? {
-    key: animationKey,
-    variants: containerVariants,
+  const containerProps = isPresenting ? {    variants: containerVariants,
     initial: "hidden",
     animate: "visible"
   } : {};
 
   return (
-    <Container className={`relative w-full h-full min-h-[600px] flex items-center justify-center ${className}`} {...containerProps}>
+    <Container className={`relative w-full h-full min-h-[600px] flex items-center justify-center ${className}`} key={animationKey} {...containerProps}>
       {/* Central SVG Diagram */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <svg

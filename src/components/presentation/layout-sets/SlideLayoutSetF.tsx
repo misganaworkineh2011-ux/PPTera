@@ -2093,7 +2093,7 @@ export function renderLayoutSetF(props: SlideLayoutSetFProps): ReactNode | null 
             <span className="ml-2 sm:ml-3 md:ml-4 text-[#00ff41]/70 text-[10px] sm:text-xs font-mono truncate">root@kali:~# ./presentation --slide {index + 1}</span>
           </div>
 
-          <div className="p-3 sm:p-5 md:p-8 h-[calc(100%-1.75rem)] sm:h-[calc(100%-2rem)] md:h-[calc(100%-2.5rem)] flex flex-col justify-center overflow-y-auto">
+          <div className="p-3 sm:p-5 md:p-8 h-[calc(100%-1.75rem)] sm:h-[calc(100%-2rem)] md:h-[calc(100%-2.5rem)] flex flex-col justify-center overflow-visible">
             <div className="mb-3 sm:mb-4 md:mb-6">
               <span className="text-[#00ff41]/60 font-mono text-[10px] sm:text-xs md:text-sm">$ cat slide_{index + 1}.txt</span>
             </div>
@@ -2158,7 +2158,7 @@ export function renderLayoutSetF(props: SlideLayoutSetFProps): ReactNode | null 
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-8 md:pt-12 overflow-y-auto">
+        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-8 md:pt-12 overflow-visible">
           <div className="mb-4 sm:mb-6 md:mb-8">
             <span className="text-[#00ff41]/50 font-mono text-[10px] sm:text-xs uppercase tracking-widest">// System Output</span>
             <Title className="text-xl sm:text-3xl md:text-4xl lg:text-5xl mt-1 sm:mt-2" align="left" />
@@ -2218,7 +2218,7 @@ export function renderLayoutSetF(props: SlideLayoutSetFProps): ReactNode | null 
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full flex items-center p-3 sm:p-6 md:p-12 pt-10 sm:pt-6 md:pt-12 overflow-y-auto">
+        <div className="relative h-full flex items-center p-3 sm:p-6 md:p-12 pt-10 sm:pt-6 md:pt-12 overflow-visible">
           <div className="w-full max-w-5xl mx-auto">
             {/* Code editor style container */}
             <div className="rounded-lg sm:rounded-xl border border-[#00ff41]/30 bg-[#0d0d0d]/80 backdrop-blur-sm overflow-hidden">
@@ -2300,7 +2300,7 @@ export function renderLayoutSetF(props: SlideLayoutSetFProps): ReactNode | null 
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-8 md:pt-12 overflow-y-auto">
+        <div className="relative h-full flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-8 md:pt-12 overflow-visible">
           <div className="max-w-4xl">
             {/* Command prompt header */}
             <div className="mb-3 sm:mb-4 md:mb-6 flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm md:text-base">
@@ -2384,7 +2384,7 @@ export function renderLayoutSetF(props: SlideLayoutSetFProps): ReactNode | null 
 
         <SlideIndicator position="top-left" />
 
-        <div className="relative h-full flex items-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-8 md:pt-12 overflow-y-auto">
+        <div className="relative h-full flex items-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-8 md:pt-12 overflow-visible">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8 w-full max-w-6xl mx-auto">
             {/* Left: Title */}
             <div className="flex flex-col justify-center">
@@ -2459,7 +2459,7 @@ export function renderLayoutSetF(props: SlideLayoutSetFProps): ReactNode | null 
 
         <div className="relative h-full flex flex-col sm:flex-row pb-8 sm:pb-0">
           {/* Left side - Content */}
-          <div className="w-full sm:w-1/2 flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-8 md:pt-12 sm:pr-8 md:pr-16 overflow-y-auto">
+          <div className="w-full sm:w-1/2 flex flex-col justify-center p-4 sm:p-8 md:p-12 pt-12 sm:pt-8 md:pt-12 sm:pr-8 md:pr-16 overflow-visible">
             <div className="mb-3 sm:mb-4 md:mb-6">
               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3 md:mb-4">
                 <div className="px-2 sm:px-3 py-0.5 sm:py-1 border border-[#00ff41]/40 bg-[#00ff41]/10 rounded">

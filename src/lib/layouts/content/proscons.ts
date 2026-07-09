@@ -12,7 +12,31 @@ export interface ProsConsContentItem {
 }
 
 // Pros/Cons layout type identifier
-export type ProsConsLayoutType = "proscons-split";
+// proscons-split: puzzle-circle center with pros left / cons right
+// proscons-style-2: Two Columns — ✓ pros column vs ✗ cons column
+// proscons-style-3: Balance Scale — a scale weighing pros against cons
+// proscons-style-4: Ledger — a plus/minus ledger with hairline rows
+// proscons-style-5: VS Split — a diagonal split with a VS badge
+// proscons-style-6: Thumbs — 👍 pros / 👎 cons columns of cards
+// proscons-style-7: Checklist Duo — two check/cross checklist cards
+// proscons-style-8: Weighted Bars — pros/cons as weighted count bars
+// proscons-style-9: Card Stacks — tinted green pros and red cons card stacks
+// proscons-style-10: Plus/Minus Grid — paired pro-vs-con rows
+// proscons-style-11: Tug of War — a bar pulled left by pros, right by cons
+// proscons-style-12: Sticky Columns — sticky-note pros and cons columns
+export type ProsConsLayoutType =
+  | "proscons-split"
+  | "proscons-style-2"
+  | "proscons-style-3"
+  | "proscons-style-4"
+  | "proscons-style-5"
+  | "proscons-style-6"
+  | "proscons-style-7"
+  | "proscons-style-8"
+  | "proscons-style-9"
+  | "proscons-style-10"
+  | "proscons-style-11"
+  | "proscons-style-12";
 
 // Pros/Cons layout definition interface
 export interface ProsConsLayout {
@@ -47,6 +71,18 @@ export const prosConsLayouts: ProsConsLayout[] = [
       style: "split-circle",
     },
   },
+  ...(["proscons-style-2","proscons-style-3","proscons-style-4","proscons-style-5","proscons-style-6","proscons-style-7","proscons-style-8","proscons-style-9","proscons-style-10","proscons-style-11","proscons-style-12"] as const).map((id, i) => ({
+    id,
+    name: ["Two Columns","Balance Scale","Ledger","VS Split","Thumbs","Checklist Duo","Weighted Bars","Card Stacks","Plus/Minus Grid","Tug of War","Sticky Columns"][i]!,
+    description: ["Green pros and red cons in two clean columns","A scale weighing pros against cons","A plus/minus ledger with hairline rows","A diagonal split with a VS badge","Thumbs-up pros and thumbs-down cons cards","Two check and cross checklist cards","Pros and cons as weighted count bars","Tinted green pros and red cons card stacks","Paired pro-vs-con rows","A bar pulled left by pros and right by cons","Sticky-note pros and cons columns"][i]!,
+    category: "proscons" as const,
+    minItems: 4,
+    maxItems: 12,
+    idealItems: 8,
+    adaptive: true as const,
+    supportsIcons: true as const,
+    preview: { style: "split-circle" as const },
+  })),
 ];
 
 // Get pros/cons layout by ID

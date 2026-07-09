@@ -1,17 +1,42 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { flushSync } from "react-dom";
 import { useRouter } from "next/navigation";
-import { Sparkles, ChevronDown } from "lucide-react";
+import {
+  Sparkles,
+  ChevronDown,
+  Plus,
+  Copy,
+  Palette,
+  Layers,
+  Wand2,
+  Image as ImageIcon,
+  BarChart3,
+  Video,
+  Download,
+  Share2,
+  Play,
+  FileText,
+  History,
+  ListTree,
+  LayoutGrid,
+} from "lucide-react";
+import CommandPalette, { type Command } from "~/components/presentation/CommandPalette";
 import { toast } from "sonner";
 import {
   type SlideData,
   type PresentationData,
   type EditingState,
   type ContentLayoutType,
+  type MasterSlideSettings,
 } from "~/components/presentation/types";
 import { type PresentationViewerProps } from "./types";
+import { MasterSlideEditor } from "./components/MasterSlideEditor";
+import { HistoryPanel } from "./components/HistoryPanel";
+import { InsightsModal } from "./components/InsightsModal";
+import { CommentsPanel } from "./components/CommentsPanel";
+import { beautifyDeck } from "./utils/beautify";
 import {
   type ExportFormat,
   type ExportOptions,
@@ -78,6 +103,27 @@ export default function PresentationViewer({
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState(presentation.title);
   const [showPageNumbers, setShowPageNumbers] = useState(false);
+  const [showMasterEditor, setShowMasterEditor] = useState(false);
+  const [showHistoryPanel, setShowHistoryPanel] = useState(false);
+  const [showInsightsModal, setShowInsightsModal] = useState(false);
+  const [showCommentsPanel, setShowCommentsPanel] = useState(false);
+  const [masterSlide, setMasterSlide] = useState<MasterSlideSettings | null>(
+    presentation.content?.masterSlide ?? null,
+  );
+  const masterSaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Update master-slide settings optimistically and persist (debounced).
+  const updateMasterSettings = (next: MasterSlideSettings | null) => {
+    setMasterSlide(next);
+    if (masterSaveTimeout.current) clearTimeout(masterSaveTimeout.current);
+    masterSaveTimeout.current = setTimeout(() => {
+      fetch(`/api/presentations/${presentation.id}/master-settings`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ masterSlide: next }),
+      }).catch((e) => console.error("Failed to save master settings:", e));
+    }, 600);
+  };
 
   useSyncedTitle({
     title: presentation.title,
@@ -155,8 +201,50 @@ export default function PresentationViewer({
   const [isLoadingImage, setIsLoadingImage] = useState(false);
   // Chart modal state
   const [showChartModal, setShowChartModal] = useState<number | null>(null);
+  // Embed modal state
+  const [showEmbedModal, setShowEmbedModal] = useState<number | null>(null);
+  // Command palette (⌘K / Ctrl+K)
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && (e.key === "k" || e.key === "K")) {
+        e.preventDefault();
+        setShowCommandPalette((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
   // Animation picker modal state
   const [showAnimationPicker, setShowAnimationPicker] = useState<number | null>(null);
+  // Public-view engagement beacon: report per-slide dwell time for analytics
+  const dwellRef = useRef<{ idx: number; t: number } | null>(null);
+  useEffect(() => {
+    if (!isPublicView) return;
+    const send = (idx: number, ms: number) => {
+      if (ms < 500) return;
+      try {
+        navigator.sendBeacon(
+          `/api/presentations/${presentation.id}/engagement`,
+          new Blob([JSON.stringify({ slideIndex: idx, ms })], {
+            type: "application/json",
+          }),
+        );
+      } catch {
+        // best-effort
+      }
+    };
+    const prev = dwellRef.current;
+    if (prev && prev.idx !== currentSlide) send(prev.idx, Date.now() - prev.t);
+    dwellRef.current = { idx: currentSlide, t: Date.now() };
+    const onHide = () => {
+      const cur = dwellRef.current;
+      if (cur) send(cur.idx, Date.now() - cur.t);
+      dwellRef.current = null;
+    };
+    window.addEventListener("pagehide", onHide);
+    return () => window.removeEventListener("pagehide", onHide);
+  }, [currentSlide, isPublicView, presentation.id]);
   // AI editing state - tracks which slide is being edited by AI
   const [aiEditingSlideIndex, setAiEditingSlideIndex] = useState<number | null>(null);
   // In-tab presentation mode (not fullscreen, but focused view)
@@ -278,7 +366,7 @@ export default function PresentationViewer({
     }
   };
 
-  const { goToSlide, nextSlide, prevSlide } = useSlideNavigation({
+  const { goToSlide, nextSlide, prevSlide, revealCount } = useSlideNavigation({
     slidesLength: slides.length,
     currentSlide,
     isAnimating,
@@ -288,6 +376,10 @@ export default function PresentationViewer({
     isFreeUserLimited,
     halfBlurredSlideIndex,
     onUpgrade: () => setShowPricingModal(true),
+    // Click-to-reveal builds run on every presenting surface (main Present
+    // button = browser fullscreen, "in this tab", and the public view).
+    slidesData,
+    revealBuildsActive: isPresenting || isFullscreen || isPublicView,
   });
 
   // Update lastHoveredSlideIndex when a slide is hovered
@@ -305,7 +397,6 @@ export default function PresentationViewer({
 
   const handleCopySlide = async () => {};
   const handlePasteSlide = async () => {};
-  const handleDeleteSlide = async () => {};
 
   usePresentationKeyboard({
     nextSlide,
@@ -335,8 +426,13 @@ export default function PresentationViewer({
   const {
     updateSlideContent,
     changeContentLayout,
+    changeCoverLayout,
     changeSlideAnimation,
     changeContentAnimation,
+    changeAllSlidesAnimation,
+    changeAllSlidesContentAnimation,
+    changeItemAnimation,
+    changeItemBuild,
     duplicateSlide,
     addSlideAt,
     deleteSlide,
@@ -400,17 +496,43 @@ export default function PresentationViewer({
       );
     }
 
+    // An empty deck almost always means generation was interrupted before it
+    // finished. The outline survives generation, so offer to resume from it.
+    const sourceOutlineId = (presentation.content as Record<string, unknown> | undefined)
+      ?.outlineId as string | undefined;
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="text-center">
           <Sparkles size={48} className="mx-auto mb-4 text-[#06b6d4] opacity-70" />
           <p className="text-xl text-[#1e3a8a] font-medium">No slides found in this presentation.</p>
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="mt-6 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold shadow-lg shadow-cyan-500/25 transition-all hover:opacity-90 hover:shadow-xl hover:scale-105 active:scale-95"
-          >
-            Back to Dashboard
-          </button>
+          {isOwner && sourceOutlineId && (
+            <p className="mt-2 text-sm text-slate-500">
+              It looks like generation was interrupted — you can resume from the saved outline.
+            </p>
+          )}
+          <div className="mt-6 flex items-center justify-center gap-3">
+            {isOwner && sourceOutlineId && (
+              <button
+                onClick={() =>
+                  router.push(`/createpresentation/outline/${sourceOutlineId}?mode=ai`)
+                }
+                className="px-6 py-2.5 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold shadow-lg shadow-cyan-500/25 transition-all hover:opacity-90 hover:shadow-xl hover:scale-105 active:scale-95"
+              >
+                Resume generation
+              </button>
+            )}
+            <button
+              onClick={() => router.push("/dashboard")}
+              className={
+                isOwner && sourceOutlineId
+                  ? "px-6 py-2.5 rounded-full border border-slate-300 text-slate-600 font-semibold transition-all hover:bg-slate-100"
+                  : "px-6 py-2.5 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold shadow-lg shadow-cyan-500/25 transition-all hover:opacity-90 hover:shadow-xl hover:scale-105 active:scale-95"
+              }
+            >
+              Back to Dashboard
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -422,6 +544,14 @@ export default function PresentationViewer({
       index={index}
       isMain={isMain}
       spotlightIndex={spotlightIndex}
+      revealCount={
+        // Single-slide surfaces only. Fullscreen via the main Present button
+        // keeps viewMode "scroll" while rendering the single-slide branch, so
+        // gate on the same condition PresentationContentArea uses.
+        viewMode === "slides" || isFullscreen || isPresenting
+          ? revealCount
+          : undefined
+      }
       theme={theme}
       slidesLength={slides.length}
       slidesData={slidesData}
@@ -469,6 +599,7 @@ export default function PresentationViewer({
       deleteSlide={deleteSlide}
       subscriptionPlan={subscriptionPlan}
       onUpgrade={() => setShowPricingModal(true)}
+      masterSlide={masterSlide}
     />
   );
 
@@ -576,7 +707,11 @@ export default function PresentationViewer({
             onUndo={undo}
             onRedo={redo}
             onOpenThemes={() => setShowThemeSidebar(true)}
+            onOpenTransitions={() => setShowAnimationPicker(-1)}
+            onOpenMaster={() => setShowMasterEditor(true)}
+            onOpenCommand={() => setShowCommandPalette(true)}
             onOpenAgent={() => setShowAgentPanel(true)}
+            onOpenHistory={() => setShowHistoryPanel(true)}
             onZoomChange={setPresentZoom}
             onSpotlightToggle={() => {
               setIsSpotlightActive(prev => {
@@ -617,6 +752,7 @@ export default function PresentationViewer({
           onAddSlideAt={addSlideAt}
           onAddAISlide={handleAddAISlide}
           onGoToSlide={goToSlide}
+          onActiveSlideChange={setCurrentSlide}
           onPrevSlide={prevSlide}
           onNextSlide={nextSlide}
           onCloseThumbnails={() => setShowThumbnails(false)}
@@ -632,7 +768,9 @@ export default function PresentationViewer({
           }}
           onCopySlide={handleCopySlide}
           onPasteSlide={handlePasteSlide}
-          onDeleteSlide={handleDeleteSlide}
+          onDeleteSlide={deleteSlide}
+          onDuplicateSlide={duplicateSlide}
+          onMoveSlide={moveSlide}
           onZoomChange={setPresentZoom}
           onShowNavbarInFullscreen={() => setShowNavbarInFullscreen(true)}
           onHideNavbarInFullscreen={() => setShowNavbarInFullscreen(false)}
@@ -661,6 +799,7 @@ export default function PresentationViewer({
           showShareModal={showShareModal}
           showRateModal={showRateModal}
           showChartModal={showChartModal}
+          showEmbedModal={showEmbedModal}
           showAnimationPicker={showAnimationPicker}
           showImageEditor={canEdit ? showImageEditor : null}
           getSlideImages={getSlideImages}
@@ -671,6 +810,10 @@ export default function PresentationViewer({
           updateSlidesWithSave={updateSlidesWithSave}
           changeSlideAnimation={changeSlideAnimation}
           changeContentAnimation={changeContentAnimation}
+          changeAllSlidesAnimation={changeAllSlidesAnimation}
+          changeAllSlidesContentAnimation={changeAllSlidesContentAnimation}
+          changeItemAnimation={changeItemAnimation}
+          changeItemBuild={changeItemBuild}
           onExport={handleExport}
           onSetShowImageModal={setShowImageModal}
           onSetImageUrl={setImageUrl}
@@ -679,6 +822,7 @@ export default function PresentationViewer({
           onSetShowShareModal={setShowShareModal}
           onSetShowRateModal={setShowRateModal}
           onSetShowChartModal={setShowChartModal}
+          onSetShowEmbedModal={setShowEmbedModal}
           onSetShowAnimationPicker={setShowAnimationPicker}
           onSetShowImageEditor={setShowImageEditor}
           onSetShowImageModalAndEditor={(slideIndex, imageIndex) => {
@@ -711,13 +855,158 @@ export default function PresentationViewer({
           newSlides[index] = slide;
           updateSlidesWithSave(newSlides);
         }}
+        onReplaceSlides={(newSlides) => {
+          // Structural AI edits (add/delete/reorder) land as one undoable step
+          updateSlidesWithSave(newSlides);
+          setCurrentSlide((prev) => Math.min(prev, Math.max(0, newSlides.length - 1)));
+        }}
         onSetEditingSlide={setAiEditingSlideIndex}
         onSelectContentLayout={(layoutId) => {
           if (activeSlideIndex !== null) {
             changeContentLayout(activeSlideIndex, layoutId as ContentLayoutType);
           }
         }}
+        onSelectCoverLayout={(layoutId) => {
+          if (activeSlideIndex !== null) {
+            changeCoverLayout(activeSlideIndex, layoutId);
+          }
+        }}
         onClosePricingModal={() => setShowPricingModal(false)}
+        onUpgrade={() => setShowPricingModal(true)}
+      />
+
+      <MasterSlideEditor
+        isOpen={showMasterEditor}
+        onClose={() => setShowMasterEditor(false)}
+        settings={masterSlide}
+        onChange={updateMasterSettings}
+        theme={theme}
+        presentationId={presentation.id}
+      />
+
+      <HistoryPanel
+        isOpen={showHistoryPanel}
+        onClose={() => setShowHistoryPanel(false)}
+        theme={theme}
+        presentationId={presentation.id}
+        onRestored={(restoredSlides, restoredTitle) => {
+          updateSlidesWithSave(restoredSlides);
+          presentation.title = restoredTitle;
+          setEditedTitle(restoredTitle);
+          setCurrentSlide(0);
+          setShowHistoryPanel(false);
+          toast.success("Version restored");
+        }}
+      />
+
+      <InsightsModal
+        isOpen={showInsightsModal}
+        onClose={() => setShowInsightsModal(false)}
+        theme={theme}
+        presentationId={presentation.id}
+        slides={slidesData}
+      />
+
+      <CommentsPanel
+        isOpen={showCommentsPanel}
+        onClose={() => setShowCommentsPanel(false)}
+        theme={theme}
+        presentationId={presentation.id}
+        currentSlide={currentSlide}
+        totalSlides={slidesData.length}
+        onGoToSlide={(index) => goToSlide(index)}
+      />
+
+      <CommandPalette
+        isOpen={showCommandPalette}
+        onClose={() => setShowCommandPalette(false)}
+        theme={theme}
+        commands={[
+          { id: "add-slide", label: "Add slide", group: "Slide", icon: <Plus size={15} />, keywords: "new", run: () => addSlideAt(currentSlide) },
+          { id: "duplicate-slide", label: "Duplicate slide", group: "Slide", icon: <Copy size={15} />, run: () => duplicateSlide(currentSlide) },
+          { id: "theme", label: "Change theme", group: "Design", icon: <Palette size={15} />, keywords: "color style", run: () => setShowThemeSidebar(true) },
+          { id: "master", label: "Master slide — logo, footer, numbers", group: "Design", icon: <Layers size={15} />, keywords: "logo footer brand", run: () => setShowMasterEditor(true) },
+          { id: "transitions", label: "Slide transitions", group: "Design", icon: <Wand2 size={15} />, keywords: "animation motion", run: () => setShowAnimationPicker(-1) },
+          { id: "insert-image", label: "Insert image", group: "Insert", icon: <ImageIcon size={15} />, keywords: "photo picture upload", run: () => setShowImageModal(currentSlide) },
+          { id: "insert-chart", label: "Insert chart", group: "Insert", icon: <BarChart3 size={15} />, keywords: "graph data", run: () => setShowChartModal(currentSlide) },
+          { id: "insert-embed", label: "Embed video or web page", group: "Insert", icon: <Video size={15} />, keywords: "youtube vimeo loom figma iframe video", run: () => setShowEmbedModal(currentSlide) },
+          { id: "ai", label: "Ask AI to edit", group: "AI", icon: <Sparkles size={15} />, keywords: "agent assistant rewrite add remove slide", run: () => setShowAgentPanel(true) },
+          { id: "history", label: "Version history", group: "File", icon: <History size={15} />, keywords: "restore undo snapshot versions", run: () => setShowHistoryPanel(true) },
+          ...((() => {
+            const deckOutlineId = (presentation.content as Record<string, unknown> | undefined)
+              ?.outlineId as string | undefined;
+            return deckOutlineId
+              ? [{
+                  id: "edit-outline",
+                  label: "Edit outline",
+                  group: "File",
+                  icon: <ListTree size={15} />,
+                  keywords: "structure plan regenerate outline slides",
+                  run: () => router.push(`/createpresentation/outline/${deckOutlineId}?mode=ai`),
+                }]
+              : [];
+          })()),
+          { id: "insights", label: "Viewer analytics", group: "File", icon: <BarChart3 size={15} />, keywords: "views engagement stats analytics insights", run: () => setShowInsightsModal(true) },
+          { id: "comments", label: "Comments", group: "Collaborate", icon: <FileText size={15} />, keywords: "review feedback notes resolve", run: () => setShowCommentsPanel(true) },
+          {
+            id: "save-template",
+            label: "Save as template",
+            group: "File",
+            icon: <Copy size={15} />,
+            keywords: "template reuse skeleton structure",
+            run: () => {
+              const job = fetch("/api/templates", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ presentationId: presentation.id }),
+              }).then(async (res) => {
+                if (!res.ok) throw new Error((await res.json()).error || "Failed");
+              });
+              toast.promise(job, {
+                loading: "Saving deck structure as a template…",
+                success: "Template saved — find it under Dashboard → Templates.",
+                error: "Failed to save template.",
+              });
+            },
+          },
+          {
+            id: "beautify",
+            label: "Beautify deck (AI restyle layouts)",
+            group: "AI",
+            icon: <Wand2 size={15} />,
+            keywords: "restyle redesign layouts polish premium",
+            run: () => {
+              const job = (async () => {
+                // Snapshot first so beautify is always reversible from History
+                await fetch(`/api/presentations/${presentation.id}/versions`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ label: "Before beautify" }),
+                }).catch(() => {});
+                const restyled = await beautifyDeck(slidesRef.current);
+                updateSlidesWithSave(restyled);
+              })();
+              toast.promise(job, {
+                loading: "Beautifying deck — re-selecting layouts…",
+                success: "Deck restyled. Undo or restore from History if needed.",
+                error: "Beautify failed — deck unchanged.",
+              });
+            },
+          },
+          { id: "cover-style", label: "Cover style", group: "Deck", icon: <LayoutGrid size={15} />, keywords: "title slide hero cover composition", run: () => { goToSlide(0); setActiveSlideIndex(0); setShowContentLayoutPanel(true); } },
+          { id: "present", label: "Present", group: "Deck", icon: <Play size={15} />, keywords: "fullscreen slideshow play", run: () => router.push(`/present/${presentation.id}`) },
+          { id: "export", label: "Export (PDF, PPTX, images)", group: "Deck", icon: <Download size={15} />, keywords: "download pdf pptx png", run: () => setShowExportModal(true) },
+          { id: "share", label: "Share", group: "Deck", icon: <Share2 size={15} />, keywords: "link public publish", run: () => setShowShareModal(true) },
+          ...slidesData.map((s, i): Command => ({
+            id: `goto-${i}`,
+            label: `Go to: ${s.title || `Slide ${i + 1}`}`,
+            group: "Slides",
+            hint: String(i + 1),
+            icon: <FileText size={15} />,
+            keywords: `slide ${i + 1}`,
+            run: () => goToSlide(i),
+          })),
+        ]}
       />
     </>
   );

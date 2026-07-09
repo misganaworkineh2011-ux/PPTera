@@ -46,6 +46,8 @@ interface StoredSlide {
   };
   // Content layout hint (e.g., "boxes", "bullets", "sequence")
   contentLayoutHint?: string;
+  // Short uppercase eyebrow/kicker label above a content slide's heading
+  kicker?: string;
 }
 
 export default async function OutlinePage({ params, searchParams }: OutlinePageProps) {
@@ -102,6 +104,8 @@ export default async function OutlinePage({ params, searchParams }: OutlinePageP
     // Include content layout hint for box layouts
     // Support both new field (contentLayoutHint) and legacy field (contentLayout)
     contentLayoutHint: slide.contentLayoutHint || (slide as any).contentLayout,
+    // Eyebrow/kicker label (drives the Gamma-style pill above the heading)
+    kicker: slide.kicker,
   }));
 
   return (

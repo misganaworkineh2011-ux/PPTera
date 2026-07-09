@@ -284,6 +284,8 @@ function StylingPanel({
   };
 
   const showContentLayout = slideType !== "title" && onChangeContentLayout;
+  // Title slides pick a cover composition via the same panel (cover mode).
+  const showCoverStyle = slideType === "title" && onChangeContentLayout;
 
   // Get animation display name
   const getAnimationName = (animationId?: string) => {
@@ -306,6 +308,14 @@ function StylingPanel({
           <MenuButton
             icon={<LayoutGrid size={15} />}
             label={t.contentLayout || "Content layout"}
+            colors={colors}
+            onClick={handleAction(onChangeContentLayout)}
+          />
+        )}
+        {showCoverStyle && (
+          <MenuButton
+            icon={<LayoutGrid size={15} />}
+            label={t.coverStyle || "Cover style"}
             colors={colors}
             onClick={handleAction(onChangeContentLayout)}
           />

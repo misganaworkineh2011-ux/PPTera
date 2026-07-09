@@ -4,7 +4,7 @@ import type { ReactNode, CSSProperties } from "react";
 import type { SlideData, SlideImage } from "./types";
 import type { ImageShape, SlideLayoutType } from "~/lib/layouts/slide";
 import { getImageShapeClipPath } from "~/lib/layouts/slide";
-import SlideImg from "./SlideImage";
+import SlideImageDesign from "./SlideImageDesign";
 import ImageHoverToolbar from "./ImageHoverToolbar";
 import ImageDragZones from "./ImageDragZones";
 
@@ -19,6 +19,7 @@ interface SlideSideImageLayoutsProps {
     orb1: string;
     orb2: string;
     borderLine: string;
+    accent: string;
   };
   useGradientClasses: boolean;
   customBgStyle?: CSSProperties;
@@ -103,11 +104,14 @@ export default function SlideSideImageLayouts({
                 onMouseEnter={() => canEdit && setHoveredImageIndex(0)}
                 onMouseLeave={() => setHoveredImageIndex(null)}
               >
-                <SlideImg
+                <SlideImageDesign
                   image={firstImage}
                   alt={firstImage.alt || slide.title}
-                  className="w-full h-full object-cover"
-                  style={{ display: "block", minHeight: "100%", cursor: canEdit && onChangeImagePosition ? "grab" : "default" }}
+                  shape={imageShape}
+                  orientation="right"
+                  accent={colors.accent}
+                  isDark={isThemeDark}
+                  imgCursor={canEdit && onChangeImagePosition ? "grab" : "default"}
                   draggable={canEdit && !!onChangeImagePosition}
                   onDragStart={(e) => {
                     if (!canEdit || !onChangeImagePosition) return;
@@ -145,11 +149,14 @@ export default function SlideSideImageLayouts({
                 onMouseEnter={() => canEdit && setHoveredImageIndex(0)}
                 onMouseLeave={() => setHoveredImageIndex(null)}
               >
-                <SlideImg
+                <SlideImageDesign
                   image={firstImage}
                   alt={firstImage.alt || slide.title}
-                  className="w-full h-full object-cover"
-                  style={{ display: "block", minHeight: "100%", cursor: canEdit && onChangeImagePosition ? "grab" : "default" }}
+                  shape={imageShape}
+                  orientation="left"
+                  accent={colors.accent}
+                  isDark={isThemeDark}
+                  imgCursor={canEdit && onChangeImagePosition ? "grab" : "default"}
                   draggable={canEdit && !!onChangeImagePosition}
                   onDragStart={(e) => {
                     if (!canEdit || !onChangeImagePosition) return;

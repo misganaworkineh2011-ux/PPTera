@@ -2,7 +2,7 @@
 
 import ContentLayoutPanel from "~/components/presentation/ContentLayoutPanel";
 import PricingModal from "~/components/dashboard/PricingModal";
-import type { SlideData } from "~/components/presentation/types";
+import type { SlideData, CoverLayoutId } from "~/components/presentation/types";
 import type { Theme } from "~/lib/themes";
 import { ThemeSidebar } from "./ThemeSidebar";
 import { AgentPanel } from "./AgentPanel";
@@ -25,9 +25,12 @@ interface PresentationPanelsProps {
   onCloseAgentPanel: () => void;
   onCloseContentLayoutPanel: () => void;
   onUpdateSlide: (index: number, slide: SlideData) => void;
+  onReplaceSlides?: (slides: SlideData[]) => void;
   onSetEditingSlide: (index: number | null) => void;
   onSelectContentLayout: (layoutId: string) => void;
+  onSelectCoverLayout: (layoutId: CoverLayoutId) => void;
   onClosePricingModal: () => void;
+  onUpgrade?: () => void;
 }
 
 export function PresentationPanels({
@@ -48,10 +51,22 @@ export function PresentationPanels({
   onCloseAgentPanel,
   onCloseContentLayoutPanel,
   onUpdateSlide,
+  onReplaceSlides,
   onSetEditingSlide,
   onSelectContentLayout,
+  onSelectCoverLayout,
   onClosePricingModal,
+  onUpgrade,
 }: PresentationPanelsProps) {
+  const activeSlide = activeSlideIndex !== null ? slidesData[activeSlideIndex] : null;
+  // Title slides pick a cover composition instead of a content layout — even
+  // when an older deck's title slide carries a slideLayout (side-image split);
+  // selecting a cover style clears it and switches to the cover system.
+  const isCoverSlide = !!activeSlide && activeSlide.type === "title";
+  // While a slideLayout-based cover is active, no cover style is "current".
+  const currentCoverLayout = activeSlide?.slideLayout
+    ? undefined
+    : (activeSlide?.coverLayout ?? "signature");
   return (
     <>
       <ThemeSidebar
@@ -61,6 +76,8 @@ export function PresentationPanels({
         onThemeChange={onThemeChange}
         presentationId={presentationId}
         theme={theme}
+        subscriptionPlan={subscriptionPlan}
+        onUpgrade={onUpgrade}
       />
 
       <AgentPanel
@@ -72,6 +89,7 @@ export function PresentationPanels({
         presentationTitle={presentationTitle}
         presentationId={presentationId}
         onUpdateSlide={onUpdateSlide}
+        onReplaceSlides={onReplaceSlides}
         onSetEditingSlide={onSetEditingSlide}
         subscriptionPlan={subscriptionPlan}
       />
@@ -132,6 +150,13 @@ export function PresentationPanels({
           }
         }}
         onClose={onCloseContentLayoutPanel}
+        coverSlide={isCoverSlide}
+        currentCoverLayout={currentCoverLayout}
+        onSelectCoverLayout={(layoutId) => {
+          if (activeSlideIndex !== null) {
+            onSelectCoverLayout(layoutId);
+          }
+        }}
       />
 
       <PricingModal

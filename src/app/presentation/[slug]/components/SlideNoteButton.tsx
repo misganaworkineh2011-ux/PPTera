@@ -120,11 +120,18 @@ export function SlideNoteButton({
         ref={buttonRef}
         onClick={() => (showPanel ? setShowPanel(false) : openPanel())}
         onMouseDown={(e) => e.stopPropagation()}
-        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all duration-200 ${
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all duration-200 shadow-lg ${showPanel ? "" : "ring-1 ring-black/10"}`}
+        style={
           showPanel
-            ? "bg-amber-500 text-white shadow-lg"
-            : "bg-white/95 hover:bg-amber-50 text-slate-600 hover:text-amber-600 shadow-lg border border-slate-300 ring-1 ring-black/10 hover:border-amber-300"
-        }`}
+            ? { background: "#f59e0b", color: "#ffffff" }
+            : { background: panelBg, color: mutedColor, border: `1px solid ${panelBorder}` }
+        }
+        onMouseEnter={(e) => {
+          if (!showPanel) e.currentTarget.style.color = "#d97706";
+        }}
+        onMouseLeave={(e) => {
+          if (!showPanel) e.currentTarget.style.color = mutedColor;
+        }}
       >
         <StickyNote size={15} />
         <span className="text-xs font-medium">

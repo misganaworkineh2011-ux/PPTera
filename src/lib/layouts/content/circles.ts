@@ -11,12 +11,30 @@ export interface CircleContentItem {
 }
 
 // Circle layout type identifier
+// circle-style-6: Orbit Nodes — numbered nodes evenly spaced on a dashed ring
+// circle-style-7: Pie Segments — a filled pie split into wedges, legend beside
+// circle-style-8: Donut Legend — a donut chart with a centered core and legend
+// circle-style-9: Radial Bars — bars radiating from a hub like a sunburst
+// circle-style-10: Concentric Rings — items as nested rings around a core
+// circle-style-11: Compass — cardinal-point nodes on a compass rose
+// circle-style-12: Segmented Wheel — a colour wheel of segments with a hub label
+// circle-style-13: Bubble Ring — soft bubble nodes ringing a central bubble
+// circle-style-14: Clock Steps — numbered steps around a clock-face dial
 export type CircleLayoutType =
   | "circle-arc" // Arc/semi-circle with dynamic segments, content around edges
   | "circle-ring" // Full ring with dynamic segments, content distributed around
   | "circle-workflow" // Circular workflow with arrows and numbered steps
   | "circle-focus" // Core focus areas with radiating segments and callouts
-  | "circle-petal"; // Iterative cycle with overlapping petal circles
+  | "circle-petal" // Iterative cycle with overlapping petal circles
+  | "circle-style-6"
+  | "circle-style-7"
+  | "circle-style-8"
+  | "circle-style-9"
+  | "circle-style-10"
+  | "circle-style-11"
+  | "circle-style-12"
+  | "circle-style-13"
+  | "circle-style-14";
 
 // Circle layout definition interface
 export interface CircleLayout {
@@ -101,6 +119,87 @@ export const circleLayouts: CircleLayout[] = [
       shape: "ring",
       segments: 5,
     },
+  },
+  {
+    id: "circle-style-6",
+    name: "Orbit Nodes",
+    description: "Numbered nodes evenly spaced on a dashed ring",
+    category: "circles",
+    minItems: 3, maxItems: 8, idealItems: 5,
+    adaptive: true, supportsIcons: true,
+    preview: { shape: "ring", segments: 6 },
+  },
+  {
+    id: "circle-style-7",
+    name: "Pie Segments",
+    description: "A filled pie split into wedges with a legend beside",
+    category: "circles",
+    minItems: 3, maxItems: 6, idealItems: 4,
+    adaptive: true, supportsIcons: true,
+    preview: { shape: "ring", segments: 4 },
+  },
+  {
+    id: "circle-style-8",
+    name: "Donut Legend",
+    description: "A donut chart with a centered core and a legend",
+    category: "circles",
+    minItems: 3, maxItems: 6, idealItems: 4,
+    adaptive: true, supportsIcons: true,
+    preview: { shape: "ring", segments: 4 },
+  },
+  {
+    id: "circle-style-9",
+    name: "Radial Bars",
+    description: "Bars radiating from a hub like a sunburst",
+    category: "circles",
+    minItems: 3, maxItems: 8, idealItems: 6,
+    adaptive: true, supportsIcons: true,
+    preview: { shape: "ring", segments: 6 },
+  },
+  {
+    id: "circle-style-10",
+    name: "Concentric Rings",
+    description: "Items as nested rings around a core",
+    category: "circles",
+    minItems: 3, maxItems: 5, idealItems: 4,
+    adaptive: true, supportsIcons: true,
+    preview: { shape: "ring", segments: 4 },
+  },
+  {
+    id: "circle-style-11",
+    name: "Compass",
+    description: "Cardinal-point nodes on a compass rose",
+    category: "circles",
+    minItems: 3, maxItems: 4, idealItems: 4,
+    adaptive: true, supportsIcons: true,
+    preview: { shape: "ring", segments: 4 },
+  },
+  {
+    id: "circle-style-12",
+    name: "Segmented Wheel",
+    description: "A colour wheel of segments with a hub label",
+    category: "circles",
+    minItems: 3, maxItems: 8, idealItems: 6,
+    adaptive: true, supportsIcons: true,
+    preview: { shape: "ring", segments: 6 },
+  },
+  {
+    id: "circle-style-13",
+    name: "Bubble Ring",
+    description: "Soft bubble nodes ringing a central bubble",
+    category: "circles",
+    minItems: 3, maxItems: 7, idealItems: 5,
+    adaptive: true, supportsIcons: true,
+    preview: { shape: "ring", segments: 5 },
+  },
+  {
+    id: "circle-style-14",
+    name: "Clock Steps",
+    description: "Numbered steps around a clock-face dial",
+    category: "circles",
+    minItems: 3, maxItems: 8, idealItems: 6,
+    adaptive: true, supportsIcons: true,
+    preview: { shape: "ring", segments: 6 },
   },
 ];
 

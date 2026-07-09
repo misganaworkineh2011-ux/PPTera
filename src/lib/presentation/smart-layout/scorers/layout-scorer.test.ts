@@ -20,6 +20,7 @@ import {
   calculatePriorityBonus,
   calculateConfidenceBonus,
   calculateRepetitionPenalty,
+  calculateHintBonus,
 } from "./scoring-factors";
 import { evaluateCapacity } from "./capacity-evaluator";
 import { LAYOUT_DEFINITIONS } from "../registry/layout-definitions";
@@ -141,7 +142,7 @@ describe("Property 5: Scoring Consistency", () => {
           
           // Calculate expected total from breakdown
           const breakdown = match.scoreBreakdown;
-          const expectedTotal = 
+          const expectedTotal =
             breakdown.contentType +
             breakdown.pattern +
             breakdown.capacity +
@@ -152,7 +153,8 @@ describe("Property 5: Scoring Consistency", () => {
             breakdown.bulletLength +
             breakdown.priority +
             breakdown.confidenceBonus +
-            breakdown.repetitionPenalty;
+            breakdown.repetitionPenalty +
+            breakdown.hintBonus;
           
           // Total score should equal sum of all factors
           expect(match.score).toBe(expectedTotal);
@@ -193,6 +195,7 @@ describe("Property 5: Scoring Consistency", () => {
           expect(breakdown.priority).toBe(calculatePriorityBonus(layout));
           expect(breakdown.confidenceBonus).toBe(calculateConfidenceBonus(input.analysis.contentTypeConfidence));
           expect(breakdown.repetitionPenalty).toBe(calculateRepetitionPenalty(layout.category, input.previousLayouts));
+          expect(breakdown.hintBonus).toBe(calculateHintBonus(layout.category, input.contentLayoutHint));
         }
       ),
       { numRuns: 100 }
@@ -214,9 +217,14 @@ describe("Property 5: Scoring Consistency", () => {
           }
           
           const contentType = input.analysis.contentType;
-          const affinity = layout.contentTypeAffinity[contentType] || 0;
+          // Mirror scoreContentType: undeclared affinity gets a 0.7 floor for
+          // GENERIC content (so no layout is locked out of typical slides),
+          // and 0 for specific content types.
+          const affinity =
+            layout.contentTypeAffinity[contentType] ??
+            (contentType === ("GENERIC" as typeof contentType) ? 0.7 : 0);
           const expectedScore = 40 * affinity;
-          
+
           expect(match.scoreBreakdown.contentType).toBe(expectedScore);
         }
       ),
@@ -418,11 +426,22 @@ describe("Property 5: Scoring Consistency", () => {
               break;
             }
           }
-          
-          const expectedPenalty = 
-            consecutiveCount >= 2 ? -15 :
-            consecutiveCount === 1 ? -5 : 0;
-          
+
+          // Mirror calculateRepetitionPenalty: deck-wide usage (-7/use, cap 4)
+          // plus a consecutive extra (-8 for one, -15 for two-or-more).
+          let expectedPenalty = 0;
+          if (input.previousLayouts.length > 0) {
+            const totalUses = input.previousLayouts.filter(
+              (c) => c === layout.category
+            ).length;
+            expectedPenalty = totalUses > 0 ? -7 * Math.min(totalUses, 4) : 0;
+            if (consecutiveCount >= 2) {
+              expectedPenalty -= 15;
+            } else if (consecutiveCount === 1) {
+              expectedPenalty -= 8;
+            }
+          }
+
           expect(match.scoreBreakdown.repetitionPenalty).toBe(expectedPenalty);
         }
       ),

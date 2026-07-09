@@ -81,7 +81,7 @@ export function renderLayoutSetC(props: SlideLayoutSetCProps): ReactNode | null 
 
         {renderIndicator("top-left")}
 
-        <div className="relative h-full flex flex-col justify-center overflow-y-auto">
+        <div className="relative h-full flex flex-col justify-center overflow-visible">
           {hasImage && firstImage && (
             <div className="relative h-1/3 sm:h-2/5 shrink-0">
               <SlideImg image={firstImage} alt={firstImage.alt || slide.title} className="w-full h-full object-cover" />

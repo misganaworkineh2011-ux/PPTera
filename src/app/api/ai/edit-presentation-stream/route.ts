@@ -87,6 +87,11 @@ interface SlideContent {
   images?: SlideImage[];
   imageSearch?: string;
   removeImage?: boolean;
+  // Structural editing: which ORIGINAL slide this entry derives from.
+  // An integer index = keep/edit that slide (position in the returned array
+  // is its NEW position, enabling reorders). null/undefined on a returned
+  // slide = a brand-new slide. Original indices never referenced = deleted.
+  sourceIndex?: number | null;
   // Transformed content for advanced layouts
   transformedContent?: {
     intro?: string;
@@ -223,6 +228,16 @@ ${IMAGE_SIZES.join(", ")}
 1. Only edit those specific slides
 2. Keep all other slides EXACTLY as they are
 
+### STRUCTURAL EDITS — you can ADD, DELETE, and REORDER slides:
+The returned "slides" array is the COMPLETE FINAL DECK in its final order.
+Every returned slide MUST include a "sourceIndex" field:
+- Existing slide (kept or edited): "sourceIndex" = its ORIGINAL 0-based position (Slide 1 in the context = 0, Slide 2 = 1, ...)
+- Brand-new slide (user asked to add one): "sourceIndex": null — and you MUST provide full content (title, bulletPoints) plus an "imageSearch" if it should have an image
+- Deleting a slide: simply do NOT include any entry with that sourceIndex
+- Reordering: return the entries in the new order (each keeps its original sourceIndex)
+Examples: "add a competitors slide after slide 3" → return all original slides in order, with a new { "sourceIndex": null, ... } entry inserted after the slide whose sourceIndex is 2. "delete the last slide" → return every slide except the last. "move the pricing slide before the team slide" → same entries, reordered.
+NEVER delete or add slides unless the user explicitly asks for it.
+
 ### When user asks about LAYOUTS:
 1. You can change contentLayout to any of the available content layouts listed above
 2. You can change slideLayout to control image positioning
@@ -240,10 +255,11 @@ ${IMAGE_SIZES.join(", ")}
 - The system will automatically parse and display the content correctly
 
 ## RESPONSE FORMAT:
-Return JSON with "slides" array containing ALL ${slides.length} slides.
+Return JSON with "slides" array containing the COMPLETE FINAL DECK (usually all ${slides.length} slides, unless the user asked to add or remove slides). EVERY slide must carry "sourceIndex".
 
 For TITLE slides (can include imageSearch for background):
 {
+  "sourceIndex": 0,
   "type": "title",
   "title": "New Presentation Title",
   "subtitle": "New subtitle",
@@ -253,11 +269,24 @@ For TITLE slides (can include imageSearch for background):
 
 For CONTENT slides (ALWAYS use bulletPoints for content):
 {
+  "sourceIndex": 1,
   "type": "content",
   "title": "New Slide Title",
   "bulletPoints": ["Label 1: Description text here", "Label 2: Another description", "Label 3: More content"],
   "imageSearch": "relevant search term for new topic",
   "contentLayout": "box-style-1",
+  "slideLayout": "image-right",
+  "imageSize": "medium"
+}
+
+For a NEWLY ADDED slide (only when the user asked for one):
+{
+  "sourceIndex": null,
+  "type": "content",
+  "title": "Competitive Landscape",
+  "bulletPoints": ["Rival A: Strong in enterprise", "Rival B: Price leader", "Our edge: Speed and design"],
+  "imageSearch": "business competition chess strategy",
+  "contentLayout": "box-style-2",
   "slideLayout": "image-right",
   "imageSize": "medium"
 }
@@ -269,7 +298,7 @@ For CONTENT slides (ALWAYS use bulletPoints for content):
 
 ## ABSOLUTE RULES:
 1. Return ONLY valid JSON
-2. Return ALL ${slides.length} slides
+2. Return the COMPLETE final deck — every slide the presentation should end up with, each carrying "sourceIndex" (integer for existing slides, null for added ones). Do not add or delete slides unless the user asked.
 3. When changing topics, EVERY slide must have NEW content - no old topic references
 4. Content slides MUST have bulletPoints array
 5. When changing topics, ALWAYS include imageSearch for content slides
@@ -334,12 +363,47 @@ CRITICAL INSTRUCTIONS:
             return;
           }
 
+          // Structural mapping: when the model tags slides with sourceIndex,
+          // merge each returned slide onto ITS original (enabling add/delete/
+          // reorder). Old-style responses without sourceIndex fall back to
+          // positional mapping, preserving the previous behavior exactly.
+          const usesSourceIndex = result.slides.some(
+            (s) => s.sourceIndex !== undefined
+          );
+
+          // Tell the client the final deck shape up front so it can decide
+          // between live per-slide updates and a whole-deck replacement.
+          sendEvent("deckStructure", {
+            finalCount: result.slides.length,
+            originalCount: slides.length,
+            structure: result.slides.map((s, idx) => ({
+              newIndex: idx,
+              sourceIndex: usesSourceIndex
+                ? typeof s.sourceIndex === "number"
+                  ? s.sourceIndex
+                  : null
+                : idx,
+              title: s.title,
+            })),
+          });
+
           // Process each slide and stream updates
           for (let i = 0; i < result.slides.length; i++) {
             const aiSlide = result.slides[i]!;
-            const originalSlide: SlideContent = slides[i] ?? { title: "" };
+            const mappedOriginal = usesSourceIndex
+              ? typeof aiSlide.sourceIndex === "number"
+                ? slides[aiSlide.sourceIndex]
+                : undefined
+              : slides[i];
+            const isNewSlide = usesSourceIndex
+              ? typeof aiSlide.sourceIndex !== "number"
+              : false;
+            const originalSlide: SlideContent = mappedOriginal ?? { title: "" };
             const isFirstSlide = i === 0;
-            const isTitleSlide = aiSlide.type === "title" || originalSlide.type === "title" || isFirstSlide;
+            const isTitleSlide =
+              aiSlide.type === "title" ||
+              originalSlide.type === "title" ||
+              (isFirstSlide && !isNewSlide);
             
             // Send processing event
             sendEvent("slideProcessing", { slideIndex: i, title: aiSlide.title });
@@ -376,7 +440,16 @@ CRITICAL INSTRUCTIONS:
               }
               
               // Send completed title slide
-              sendEvent("slideComplete", { slideIndex: i, slide: titleSlide });
+              sendEvent("slideComplete", {
+                slideIndex: i,
+                sourceIndex: usesSourceIndex
+                  ? typeof aiSlide.sourceIndex === "number"
+                    ? aiSlide.sourceIndex
+                    : null
+                  : i,
+                isNew: isNewSlide,
+                slide: titleSlide,
+              });
             } else {
               // For content slides, merge with original preserving structure
               const mergedSlide: SlideContent = {
@@ -497,7 +570,16 @@ CRITICAL INSTRUCTIONS:
               }
 
               // Send completed content slide
-              sendEvent("slideComplete", { slideIndex: i, slide: mergedSlide });
+              sendEvent("slideComplete", {
+                slideIndex: i,
+                sourceIndex: usesSourceIndex
+                  ? typeof aiSlide.sourceIndex === "number"
+                    ? aiSlide.sourceIndex
+                    : null
+                  : i,
+                isNew: isNewSlide,
+                slide: mergedSlide,
+              });
             }
 
             // Small delay for visual effect

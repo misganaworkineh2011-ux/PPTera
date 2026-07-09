@@ -3,20 +3,24 @@ import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { type Theme } from "~/lib/themes";
 import { type SlideLayoutType, type ImageShape } from "~/lib/layouts/slide";
-import { type SlideData, type EditingState } from "~/components/presentation/types";
+import { type SlideData, type EditingState, type MasterSlideSettings, coverUsesFullBleed } from "~/components/presentation/types";
+import { layoutSupportsReveal, RevealContext } from "~/components/presentation/item-animations";
 import SlideRenderer from "~/components/presentation/SlideRenderer";
+import SlideScaler from "~/components/presentation/SlideScaler";
+import MasterSlideOverlay from "~/components/presentation/MasterSlideOverlay";
 import { type ContentLayoutId } from "~/components/presentation/ContentLayoutPanel";
-import { stripHtml, getTitleSlideColors } from "../utils";
 import { SlideMenu } from "./SlideMenu";
 import { SlideNoteButton } from "./SlideNoteButton";
 import { TitleSlide } from "./TitleSlide";
 import { getThemeType, type ThemeType } from "./types";
-import { getUIColors } from "./ui-colors";
 import { type StreamingStatus } from "../hooks/usePresentationStreaming";
 
 interface PresentationSlideProps {
   slide: SlideData;
   index: number;
+  // Click-to-reveal builds: how many content items are currently revealed
+  // while presenting (undefined = no build; items auto-stagger).
+  revealCount?: number;
   isMain?: boolean;
   spotlightIndex?: number;
   theme: Theme;
@@ -66,11 +70,13 @@ interface PresentationSlideProps {
   deleteSlide: (index: number) => void;
   subscriptionPlan?: string | null;
   onUpgrade?: () => void;
+  masterSlide?: MasterSlideSettings | null;
 }
 
 export function PresentationSlide({
   slide,
   index,
+  revealCount,
   isMain = false,
   spotlightIndex,
   theme,
@@ -120,11 +126,16 @@ export function PresentationSlide({
   deleteSlide,
   subscriptionPlan,
   onUpgrade,
+  masterSlide,
 }: PresentationSlideProps) {
   const hasImage = slide.image?.url && slide.image.source !== "placeholder";
   const isImageLoading = imagesLoading.has(index);
   const isImageLoaded = imageLoadedStates[index];
   const isTitle = slide.type === "title";
+  // Covers that keep the title image as a full-bleed backdrop; the others
+  // draw their own image treatment (side panel, slant, circle) or are
+  // image-free, so the outer full-bleed <img> must not render for those.
+  const coverFullBleed = coverUsesFullBleed(slide.coverLayout);
   const isHovered = activeSlideIndex === index || editingText?.slideIndex === index;
   const isEditing = editingText?.slideIndex === index;
   const isCurrentlyStreaming = streamingStatus === "streaming" && streamingSlideIndex === index;
@@ -141,7 +152,7 @@ export function PresentationSlide({
   };
 
   let backgroundStyle: CSSProperties = {};
-  if (isTitle && hasImage) {
+  if (isTitle && hasImage && coverFullBleed) {
     backgroundStyle = { backgroundImage: `url(${slide.image!.url})`, backgroundSize: "cover", backgroundPosition: "center" };
   } else if (isTitle) {
     backgroundStyle = getThemeBackground();
@@ -149,7 +160,6 @@ export function PresentationSlide({
 
   if (!isMain) {
     const themeType = getThemeType(theme);
-    const ui = getUIColors(themeType);
     const bgColors: Record<ThemeType, string> = {
       dark: "#0a0a0b",
       light: "#f8fafc",
@@ -173,7 +183,7 @@ export function PresentationSlide({
 
     return (
       <div className="w-full h-full relative overflow-hidden" style={thumbnailBg}>
-        {isTitle && hasImage && slide.image?.url && (
+        {isTitle && !slide.slideLayout && coverFullBleed && hasImage && slide.image?.url && (
           <>
             <img
               src={slide.image.url}
@@ -187,24 +197,32 @@ export function PresentationSlide({
             <div className={`absolute inset-0 ${themeType === "light" ? "bg-gradient-to-t from-white/70 via-white/30 to-transparent" : "bg-gradient-to-t from-black/70 via-black/30 to-transparent"}`} />
           </>
         )}
-        {isTitle && isImageLoading && (
+        {isTitle && !slide.slideLayout && isImageLoading && (
           <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center">
             <div className="w-4 h-4 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
           </div>
         )}
-        <div className="absolute inset-0 transform scale-[0.18] origin-top-left" style={{ width: "555%", height: "555%" }}>
+        {/* Render through the SAME SlideScaler + TitleSlide/SlideRenderer path as
+            the main and fullscreen views so the navigator thumbnail is pixel-
+            identical (just scaled), instead of a separate scale hack. */}
+        <SlideScaler>
           {isTitle && !slide.slideLayout ? (
-            <div className={`h-full flex flex-col items-center justify-center p-12 text-center ${hasImage ? "" : ui.titleBg}`}>
-              {!hasImage && <div className={`absolute top-0 right-0 w-96 h-96 ${ui.orb1} rounded-full blur-3xl`} />}
-              <h1 className="text-5xl font-bold mb-4 relative" style={{ fontFamily: theme.fonts.heading.family, color: getTitleSlideColors(themeType, !!hasImage).title }}>
-                {stripHtml(slide.title) || (isCurrentlyStreaming ? "..." : "")}
-              </h1>
-              {slide.subtitle && (
-                <p className="text-2xl opacity-80 relative" style={{ fontFamily: theme.fonts.body.family, color: getTitleSlideColors(themeType, !!hasImage).subtitle }}>
-                  {stripHtml(slide.subtitle)}
-                </p>
-              )}
-            </div>
+            <TitleSlide
+              slide={slide}
+              index={index}
+              totalSlides={slidesLength}
+              theme={theme}
+              hasImage={!!hasImage && coverFullBleed}
+              isOwner={false}
+              isFullscreen={false}
+              isHovered={false}
+              isEditing={false}
+              editingText={null}
+              showPageNumber={showPageNumbers}
+              onStartEditing={() => {}}
+              onUpdateContent={() => {}}
+              onFinishEditing={() => {}}
+            />
           ) : (
             <SlideRenderer
               slide={slide}
@@ -225,13 +243,32 @@ export function PresentationSlide({
               onChangeContentLayout={changeContentLayout}
             />
           )}
-        </div>
+        </SlideScaler>
         {isCurrentlyStreaming && (
           <div className="absolute bottom-1 right-1 w-2 h-2 rounded-full bg-green-500 animate-pulse" />
         )}
       </div>
     );
   }
+
+  const handleMoveBlock = (
+    blockId: string,
+    offset: { x: number; y: number; w?: number; h?: number }
+  ) => {
+    const newSlides = [...slidesData];
+    const existing = newSlides[index];
+    if (!existing) return;
+    const nextOffsets = { ...(existing.blockOffsets ?? {}) };
+    // Drop the entry only when the block is fully back to automatic layout:
+    // no translation AND no explicit size.
+    if (offset.x === 0 && offset.y === 0 && offset.w == null && offset.h == null) {
+      delete nextOffsets[blockId];
+    } else {
+      nextOffsets[blockId] = offset;
+    }
+    newSlides[index] = { ...existing, blockOffsets: nextOffsets };
+    updateSlidesWithSave(newSlides);
+  };
 
   return (
     <div
@@ -260,7 +297,7 @@ export function PresentationSlide({
         }
       }}
     >
-      {isTitle && !slide.slideLayout && hasImage && slide.image?.url && (
+      {isTitle && !slide.slideLayout && coverFullBleed && hasImage && slide.image?.url && (
         <>
           <img
             src={slide.image.url}
@@ -407,54 +444,90 @@ export function PresentationSlide({
         </div>
       )}
 
-      {isTitle && !slide.slideLayout ? (
-        <TitleSlide
-          slide={slide}
-          index={index}
-          totalSlides={slidesLength}
-          theme={theme}
-          hasImage={!!hasImage}
-          isOwner={canEdit && !isPresenting}
-          isFullscreen={isFullscreen || isPublicView || isPresenting}
-          isHovered={isHovered ?? false}
-          isEditing={isEditing ?? false}
-          editingText={editingText}
-          showPageNumber={showPageNumbers}
-          onStartEditing={startEditing}
-          onUpdateContent={updateSlideContent}
-          onFinishEditing={() => setEditingText(null)}
-        />
-      ) : (
-        <SlideRenderer
-          slide={slide}
-          index={index}
-          totalSlides={slidesLength}
-          theme={theme}
-          isOwner={canEdit && !isPresenting}
-          isFullscreen={isFullscreen || isPublicView || isPresenting}
-          isHovered={isHovered ?? false}
-          isEditing={isEditing ?? false}
-          editingText={editingText}
-          showPageNumber={showPageNumbers}
-          isPresenting={isPresenting}
-          spotlightIndex={spotlightIndex}
-          onStartEditing={startEditing}
-          onUpdateContent={updateSlideContent}
-          onFinishEditing={() => setEditingText(null)}
-          onAddBullet={addBulletPoint}
-          onDeleteBullet={deleteBulletPoint}
-          onDeleteTitle={deleteTitle}
-          onDeleteSubtitle={deleteSubtitle}
-          onReorderContent={reorderContent}
-          onChangeContentLayout={changeContentLayout}
-          onOpenContentLayoutPanel={() => { setActiveSlideIndex(index); setShowContentLayoutPanel(true); }}
-          onOpenImageModal={openImageModal}
-          onRemoveImage={removeSlideImage}
-          onChangeImageShape={changeImageShape}
-          onChangeImagePosition={changeImagePosition}
-          onReorderImages={reorderSlideImages}
-        />
-      )}
+      <SlideScaler
+        overlay={
+          <MasterSlideOverlay
+            settings={masterSlide}
+            slideNumber={index + 1}
+            totalSlides={slidesLength}
+            theme={theme}
+            isTitle={isTitle}
+          />
+        }
+      >
+        {isTitle && !slide.slideLayout ? (
+          <TitleSlide
+            slide={slide}
+            index={index}
+            totalSlides={slidesLength}
+            theme={theme}
+            hasImage={!!hasImage && coverFullBleed}
+            isOwner={canEdit && !isPresenting}
+            isFullscreen={isFullscreen || isPublicView || isPresenting}
+            isHovered={isHovered ?? false}
+            isEditing={isEditing ?? false}
+            editingText={editingText}
+            showPageNumber={showPageNumbers}
+            onStartEditing={startEditing}
+            onUpdateContent={updateSlideContent}
+            onFinishEditing={() => setEditingText(null)}
+          />
+        ) : (
+          /* The reveal counter travels via context, NOT a SlideRenderer prop:
+             SlideRenderer defines its content blocks inline, so a prop-driven
+             re-render would remount them and replay every already-revealed
+             item's entrance on each press. Context penetrates the memo and
+             re-renders only the consuming renderer. */
+          <RevealContext.Provider
+            value={
+              revealCount !== undefined &&
+              slide.itemBuild === true &&
+              slide.contentAnimation !== false &&
+              slide.type !== "title" &&
+              layoutSupportsReveal(slide.contentLayout) &&
+              (isPresenting || isFullscreen || isPublicView)
+                ? revealCount
+                : undefined
+            }
+          >
+            <SlideRenderer
+              slide={slide}
+              index={index}
+              totalSlides={slidesLength}
+              theme={theme}
+              isOwner={canEdit && !isPresenting}
+              isFullscreen={isFullscreen || isPublicView || isPresenting}
+              isHovered={isHovered ?? false}
+              isEditing={isEditing ?? false}
+              editingText={editingText}
+              showPageNumber={showPageNumbers}
+              /* Content-item entrance animations must run in EVERY presenting
+                 surface: in-tab present (isPresenting), the main Present
+                 button which only requests browser fullscreen (isFullscreen),
+                 and the public share view. Slide transitions already key off
+                 this trio in PresentationContentArea. */
+              isPresenting={isPresenting || isFullscreen || isPublicView}
+              spotlightIndex={spotlightIndex}
+              onStartEditing={startEditing}
+              onUpdateContent={updateSlideContent}
+              onFinishEditing={() => setEditingText(null)}
+              onAddBullet={addBulletPoint}
+              onDeleteBullet={deleteBulletPoint}
+              onDeleteTitle={deleteTitle}
+              onDeleteSubtitle={deleteSubtitle}
+              onReorderContent={reorderContent}
+              onChangeContentLayout={changeContentLayout}
+              onOpenContentLayoutPanel={() => { setActiveSlideIndex(index); setShowContentLayoutPanel(true); }}
+              onOpenImageModal={openImageModal}
+              onRemoveImage={removeSlideImage}
+              onChangeImageShape={changeImageShape}
+              onChangeImagePosition={changeImagePosition}
+              onReorderImages={reorderSlideImages}
+              onMoveBlock={handleMoveBlock}
+            />
+          </RevealContext.Provider>
+        )}
+      </SlideScaler>
     </div>
   );
 }

@@ -257,15 +257,13 @@ export function CircularFocusRenderer({
   };
 
   const Container = isPresenting ? motion.div : "div";
-  const containerProps = isPresenting ? {
-    key: animationKey,
-    variants: containerVariants,
+  const containerProps = isPresenting ? {    variants: containerVariants,
     initial: "hidden",
     animate: "visible"
   } : {};
 
   return (
-    <Container className={`w-full flex items-center justify-center py-8 ${className}`} {...containerProps}>
+    <Container className={`w-full flex items-center justify-center py-8 ${className}`} key={animationKey} {...containerProps}>
       <div
         className="relative overflow-visible"
         style={{

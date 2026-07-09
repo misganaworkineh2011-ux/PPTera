@@ -10,12 +10,22 @@ export interface BoxContentItem {
   icon?: string;
 }
 
-// Box layout type identifier - corresponding to the 4 requested styles
+// Box layout type identifier
 export type BoxLayoutType =
   | "box-style-1" // Side accent bar
   | "box-style-2" // Minimal clean
   | "box-style-3" // Icon on top
-  | "box-style-4"; // Header accent
+  | "box-style-4" // Header accent
+  | "box-style-5" // Corner Number — translucent number watermark, left-aligned
+  | "box-style-6" // Gradient Frame — thin gradient border ring
+  | "box-style-7" // Glass Icon Tile — glowing chip top-left, left-aligned
+  | "box-style-8" // Underline Stack — chromeless, thick accent underline
+  | "box-style-9" // Duotone Panel — tinted header band + surface body
+  | "box-style-10" // Notched Card — clipped corner with mono number
+  | "box-style-11" // Shadow Lift — solid offset shadow, print look
+  | "box-style-12" // Badge Left — number badge overlapping the top-left edge
+  | "box-style-13" // Pill Header — label in an accent pill, dashed card
+  | "box-style-14"; // Ticket Stub — perforated stub edge with number
 
 // Box layout definition interface
 export interface BoxLayout {
@@ -104,6 +114,126 @@ export const boxLayouts: BoxLayout[] = [
       columns: 3,
       rows: 1,
     },
+  },
+  {
+    id: "box-style-5",
+    name: "Corner Number",
+    description: "Big translucent number in the corner, left-aligned content",
+    category: "boxes",
+    minItems: 1,
+    maxItems: 6,
+    idealItems: 3,
+    adaptive: true,
+    supportsIcons: false,
+    preview: { columns: 3, rows: 1 },
+  },
+  {
+    id: "box-style-6",
+    name: "Gradient Frame",
+    description: "Card wrapped in a thin accent gradient frame",
+    category: "boxes",
+    minItems: 1,
+    maxItems: 6,
+    idealItems: 3,
+    adaptive: true,
+    supportsIcons: false,
+    preview: { columns: 3, rows: 1 },
+  },
+  {
+    id: "box-style-7",
+    name: "Glass Icon Tile",
+    description: "Glowing icon chip at the top-left, left-aligned content",
+    category: "boxes",
+    minItems: 1,
+    maxItems: 6,
+    idealItems: 3,
+    adaptive: true,
+    supportsIcons: true,
+    preview: { columns: 3, rows: 1 },
+  },
+  {
+    id: "box-style-8",
+    name: "Underline Stack",
+    description: "Chromeless column with a thick accent underline",
+    category: "boxes",
+    minItems: 1,
+    maxItems: 6,
+    idealItems: 3,
+    adaptive: true,
+    supportsIcons: false,
+    preview: { columns: 3, rows: 1 },
+  },
+  {
+    id: "box-style-9",
+    name: "Duotone Panel",
+    description: "Accent-tinted header band over a surface body",
+    category: "boxes",
+    minItems: 1,
+    maxItems: 6,
+    idealItems: 3,
+    adaptive: true,
+    supportsIcons: true,
+    preview: { columns: 3, rows: 1 },
+  },
+  {
+    id: "box-style-10",
+    name: "Notched Card",
+    description: "Clipped corner card with mono numbering",
+    category: "boxes",
+    minItems: 1,
+    maxItems: 6,
+    idealItems: 3,
+    adaptive: true,
+    supportsIcons: false,
+    preview: { columns: 3, rows: 1 },
+  },
+  {
+    id: "box-style-11",
+    name: "Shadow Lift",
+    description: "Bold border with a solid offset shadow, print poster look",
+    category: "boxes",
+    minItems: 1,
+    maxItems: 6,
+    idealItems: 3,
+    adaptive: true,
+    supportsIcons: false,
+    preview: { columns: 3, rows: 1 },
+  },
+  {
+    id: "box-style-12",
+    name: "Badge Left",
+    description: "Number badge overlapping the card's top-left edge",
+    category: "boxes",
+    minItems: 1,
+    maxItems: 6,
+    idealItems: 3,
+    adaptive: true,
+    supportsIcons: true,
+    preview: { columns: 3, rows: 1 },
+  },
+  {
+    id: "box-style-13",
+    name: "Pill Header",
+    description: "Label in an accent pill above the text, dashed card",
+    category: "boxes",
+    minItems: 1,
+    maxItems: 6,
+    idealItems: 3,
+    adaptive: true,
+    supportsIcons: false,
+    preview: { columns: 3, rows: 1 },
+  },
+  {
+    id: "box-style-14",
+    name: "Ticket Stub",
+    description: "Perforated ticket edge with the number in the stub",
+    category: "boxes",
+    minItems: 1,
+    maxItems: 6,
+    idealItems: 3,
+    adaptive: true,
+    supportsIcons: false,
+    preview: { columns: 3, rows: 1 },
   },
 ];
 

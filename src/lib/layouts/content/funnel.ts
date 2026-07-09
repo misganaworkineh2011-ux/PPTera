@@ -11,7 +11,19 @@ export interface FunnelContentItem {
 }
 
 // Funnel layout type identifier
-export type FunnelLayoutType = "funnel-steps";
+// funnel-steps: shrinking pill bars with icon + STEP label, content on right
+// funnel-style-2: Centered Funnel — symmetric narrowing trapezoid segments
+// funnel-style-3: Split Funnel — narrowing trapezoid tabs on the left, content right
+// funnel-style-4: Conversion Drop — shrinking bars with percentage drop tags
+// funnel-style-5: Funnel Silhouette — SVG funnel outline with stage nodes, content beside
+// funnel-style-6: Narrowing Cards — centered cards shrinking in width, readable
+export type FunnelLayoutType =
+  | "funnel-steps"
+  | "funnel-style-2"
+  | "funnel-style-3"
+  | "funnel-style-4"
+  | "funnel-style-5"
+  | "funnel-style-6";
 
 // Funnel layout definition interface
 export interface FunnelLayout {
@@ -26,11 +38,11 @@ export interface FunnelLayout {
   supportsIcons: true;
   // Preview configuration
   preview: {
-    style: "funnel-bars";
+    style: "funnel-bars" | "centered" | "split" | "conversion" | "silhouette" | "cards";
   };
 }
 
-// Funnel Layout Definition
+// Funnel Layout Definitions
 export const funnelLayouts: FunnelLayout[] = [
   {
     id: "funnel-steps",
@@ -42,9 +54,67 @@ export const funnelLayouts: FunnelLayout[] = [
     idealItems: 4,
     adaptive: true,
     supportsIcons: true,
-    preview: {
-      style: "funnel-bars",
-    },
+    preview: { style: "funnel-bars" },
+  },
+  {
+    id: "funnel-style-2",
+    name: "Centered Funnel",
+    description: "Symmetric narrowing trapezoid segments, classic funnel",
+    category: "funnel",
+    minItems: 3,
+    maxItems: 5,
+    idealItems: 4,
+    adaptive: true,
+    supportsIcons: true,
+    preview: { style: "centered" },
+  },
+  {
+    id: "funnel-style-3",
+    name: "Split Funnel",
+    description: "Narrowing trapezoid tabs on the left, content on the right",
+    category: "funnel",
+    minItems: 3,
+    maxItems: 5,
+    idealItems: 4,
+    adaptive: true,
+    supportsIcons: true,
+    preview: { style: "split" },
+  },
+  {
+    id: "funnel-style-4",
+    name: "Conversion Drop",
+    description: "Shrinking bars with percentage drop tags at each stage",
+    category: "funnel",
+    minItems: 3,
+    maxItems: 5,
+    idealItems: 4,
+    adaptive: true,
+    supportsIcons: true,
+    preview: { style: "conversion" },
+  },
+  {
+    id: "funnel-style-5",
+    name: "Funnel Silhouette",
+    description: "A funnel outline with numbered stage nodes, content beside",
+    category: "funnel",
+    minItems: 3,
+    maxItems: 5,
+    idealItems: 4,
+    adaptive: true,
+    supportsIcons: true,
+    preview: { style: "silhouette" },
+  },
+  {
+    id: "funnel-style-6",
+    name: "Narrowing Cards",
+    description: "Centered cards shrinking in width down the funnel",
+    category: "funnel",
+    minItems: 3,
+    maxItems: 5,
+    idealItems: 4,
+    adaptive: true,
+    supportsIcons: true,
+    preview: { style: "cards" },
   },
 ];
 

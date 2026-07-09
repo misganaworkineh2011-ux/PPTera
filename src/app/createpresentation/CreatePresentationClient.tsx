@@ -82,6 +82,8 @@ export default function CreatePresentationClient({
   // File upload state for docs mode
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [pastedContent, setPastedContent] = useState("");
+  // Analyzed spreadsheet (Excel/CSV) data — summary feeds generation, charts are ready for data slides
+  const [analyzedData, setAnalyzedData] = useState<{ summary: string; charts: unknown[] } | null>(null);
 
   // Form data
   const [formData, setFormData] = useState({
@@ -280,6 +282,9 @@ export default function CreatePresentationClient({
       tone: formData.tone,
       language: formData.language,
       outlineId: idForStream,
+      // Text density informs LAYOUT choice at outline time (minimal → visual
+      // diagram layouts welcome; extensive → text-friendly layouts).
+      textDensity: formData.textDensity,
     });
   };
 
@@ -380,18 +385,40 @@ export default function CreatePresentationClient({
         assets: slide.assets,
         image: slide.image,
         contentLayoutHint: slide.contentLayoutHint, // Include content layout hint for box layouts
+        kicker: slide.kicker, // Eyebrow/kicker label above the heading
+        chartData: undefined as unknown,
       }));
+
+      // Append one slide per chart from an analyzed spreadsheet (Excel/CSV upload).
+      // Each carries `chartData`, which the streaming route attaches to the slide as a real chart.
+      const chartSlides = (analyzedData?.charts ?? []).map((chart) => {
+        const c = (chart ?? {}) as { title?: string };
+        return {
+          type: "content" as const,
+          title: c.title || "Data insight",
+          subtitle: undefined,
+          bulletPoints: [] as string[],
+          semanticIntent: "data insight",
+          visualStrategy: undefined,
+          assets: undefined,
+          image: undefined,
+          contentLayoutHint: undefined,
+          kicker: undefined as string | undefined,
+          chartData: chart,
+        };
+      });
+      const allSlides = [...slidesWithMetadata, ...chartSlides];
 
       // Build request body
       const requestBody = {
         outlineId: finalOutlineId,
-        slides: slidesWithMetadata,
+        slides: allSlides,
         theme: formData.theme,
         imageSource: formData.imageSource,
         textDensity: formData.textDensity,
         metadata: {
           topic: formData.description || existingOutline?.metadata?.topic || "Presentation",
-          totalSlides: slides.length,
+          totalSlides: allSlides.length,
           tone: formData.tone,
           language: formData.language,
         },
@@ -649,44 +676,79 @@ export default function CreatePresentationClient({
                             <input
                               type="file"
                               id="file-upload"
-                              accept=".pdf,.doc,.docx,.txt,.ppt,.pptx"
+                              accept=".pdf,.doc,.docx,.txt,.ppt,.pptx,.xlsx,.xls,.csv"
                               onChange={async (e) => {
                                 const file = e.target.files?.[0];
-                                if (file) {
-                                  setUploadedFile(file);
+                                if (!file) return;
+                                setUploadedFile(file);
 
-                                  const formData = new FormData();
-                                  formData.append("file", file);
+                                const formData = new FormData();
+                                formData.append("file", file);
 
-                                  const loadingToast = toast.loading(t.parsingDocument);
+                                const lower = file.name.toLowerCase();
+                                const isSpreadsheet =
+                                  lower.endsWith(".xlsx") || lower.endsWith(".xls") || lower.endsWith(".csv");
 
+                                // Spreadsheets: analyze the data and feed the insight summary into generation
+                                if (isSpreadsheet) {
+                                  const loadingToast = toast.loading("Analyzing spreadsheet...");
                                   try {
-                                    const response = await fetch("/api/parse-document", {
+                                    const response = await fetch("/api/analyze-excel", {
                                       method: "POST",
                                       body: formData,
                                     });
-
                                     if (!response.ok) {
                                       const text = await response.text();
-                                      console.error(`Upload failed: ${response.status} ${response.statusText}`, text);
-
-                                      try {
-                                        const errorData = JSON.parse(text);
-                                        throw new Error(errorData.error || `Upload failed: ${response.status}`);
-                                      } catch (e) {
-                                        throw new Error(`Server error (${response.status}): Check console for details.`);
-                                      }
+                                      let msg = `Analysis failed (${response.status})`;
+                                      try { msg = JSON.parse(text).error || msg; } catch { /* ignore */ }
+                                      throw new Error(msg);
                                     }
-
                                     const data = await response.json();
-                                    handleChange("description", data.text);
-                                    setPastedContent(data.text);
-                                    toast.success(t.documentParsedSuccess, { id: loadingToast });
+                                    setAnalyzedData({ summary: data.summary, charts: data.charts || [] });
+                                    handleChange("description", data.summary);
+                                    setPastedContent(data.summary);
+                                    const chartCount = Array.isArray(data.charts) ? data.charts.length : 0;
+                                    toast.success(
+                                      `Spreadsheet analyzed — ${chartCount} chart${chartCount === 1 ? "" : "s"} ready`,
+                                      { id: loadingToast }
+                                    );
                                   } catch (error) {
-                                    console.error("Parsing error:", error);
-                                    toast.error(error instanceof Error ? error.message : "Failed to parse document", { id: loadingToast });
+                                    console.error("Excel analysis error:", error);
+                                    toast.error(error instanceof Error ? error.message : "Failed to analyze spreadsheet", { id: loadingToast });
                                     setUploadedFile(null);
+                                    setAnalyzedData(null);
                                   }
+                                  return;
+                                }
+
+                                // Documents (PDF/Word/PowerPoint/text): extract text
+                                const loadingToast = toast.loading(t.parsingDocument);
+                                try {
+                                  const response = await fetch("/api/parse-document", {
+                                    method: "POST",
+                                    body: formData,
+                                  });
+
+                                  if (!response.ok) {
+                                    const text = await response.text();
+                                    console.error(`Upload failed: ${response.status} ${response.statusText}`, text);
+
+                                    try {
+                                      const errorData = JSON.parse(text);
+                                      throw new Error(errorData.error || `Upload failed: ${response.status}`);
+                                    } catch (e) {
+                                      throw new Error(`Server error (${response.status}): Check console for details.`);
+                                    }
+                                  }
+
+                                  const data = await response.json();
+                                  handleChange("description", data.text);
+                                  setPastedContent(data.text);
+                                  toast.success(t.documentParsedSuccess, { id: loadingToast });
+                                } catch (error) {
+                                  console.error("Parsing error:", error);
+                                  toast.error(error instanceof Error ? error.message : "Failed to parse document", { id: loadingToast });
+                                  setUploadedFile(null);
                                 }
                               }}
                               className="hidden"
@@ -719,7 +781,11 @@ export default function CreatePresentationClient({
                                 </p>
                                 <div className="flex items-center gap-1.5 mt-1">
                                   <Check className="w-3.5 h-3.5 text-emerald-500" />
-                                  <span className="text-xs font-medium text-emerald-600">Document uploaded successfully</span>
+                                  <span className="text-xs font-medium text-emerald-600">
+                                    {analyzedData
+                                      ? `Analyzed — ${analyzedData.charts.length} chart${analyzedData.charts.length === 1 ? "" : "s"} ready from your data`
+                                      : "Document uploaded successfully"}
+                                  </span>
                                 </div>
                               </div>
                               {/* Remove Button */}
@@ -727,6 +793,7 @@ export default function CreatePresentationClient({
                                 onClick={() => {
                                   setUploadedFile(null);
                                   setPastedContent("");
+                                  setAnalyzedData(null);
                                   handleChange("description", "");
                                 }}
                                 className="flex-shrink-0 p-2 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"

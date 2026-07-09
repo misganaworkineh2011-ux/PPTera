@@ -18,6 +18,7 @@ import {
   calculatePriorityBonus,
   calculateConfidenceBonus,
   calculateRepetitionPenalty,
+  calculateHintBonus,
 } from "./scoring-factors";
 import { LAYOUT_DEFINITIONS } from "../registry/layout-definitions";
 import { ContentType, BulletPattern } from "../types";
@@ -77,6 +78,21 @@ describe("Scoring Factors", () => {
 
       const score = scoreContentType(boxesLayout, input);
       expect(score).toBe(0);
+    });
+
+    it("should apply the floor affinity for GENERIC content with no declared affinity", () => {
+      // GENERIC means "no strong signal" — layouts without a GENERIC entry
+      // get a 0.7 floor so they aren't mathematically locked out of typical
+      // content (which previously collapsed every deck onto boxes/bullets).
+      const layoutWithoutGeneric = LAYOUT_DEFINITIONS.find(
+        l => l.contentTypeAffinity[ContentType.GENERIC] === undefined
+      )!;
+      const input = createMockInput({
+        analysis: createMockAnalysis({ contentType: ContentType.GENERIC }),
+      });
+
+      const score = scoreContentType(layoutWithoutGeneric, input);
+      expect(score).toBe(40 * 0.7);
     });
   });
 
@@ -284,6 +300,9 @@ describe("Scoring Factors", () => {
   });
 
   describe("calculateRepetitionPenalty", () => {
+    // Formula: -7 per prior use anywhere in the deck (capped at 4 uses),
+    // plus -8 if the immediately-previous slide used it, or -15 for 2+
+    // consecutive previous uses.
     it("should return 0 for no repetition", () => {
       const penalty = calculateRepetitionPenalty("boxes", []);
       expect(penalty).toBe(0);
@@ -294,24 +313,50 @@ describe("Scoring Factors", () => {
       expect(penalty).toBe(0);
     });
 
-    it("should return -5 for 2 consecutive (1 previous + current)", () => {
+    it("should return -15 for 2 consecutive (usage -7 + consecutive -8)", () => {
       const penalty = calculateRepetitionPenalty("boxes", ["boxes"]);
-      expect(penalty).toBe(-5);
-    });
-
-    it("should return -15 for 3+ consecutive (2+ previous + current)", () => {
-      const penalty = calculateRepetitionPenalty("boxes", ["boxes", "boxes"]);
       expect(penalty).toBe(-15);
     });
 
-    it("should only count consecutive at end", () => {
-      const penalty = calculateRepetitionPenalty("boxes", ["boxes", "bullets", "sequence"]);
-      expect(penalty).toBe(0);
+    it("should return -29 for 3+ consecutive (usage -14 + consecutive -15)", () => {
+      const penalty = calculateRepetitionPenalty("boxes", ["boxes", "boxes"]);
+      expect(penalty).toBe(-29);
     });
 
-    it("should handle mixed previous layouts correctly", () => {
+    it("should keep the deck-wide usage penalty even outside the recent window", () => {
+      // boxes was used once earlier in the deck — usage penalty persists (-7)
+      const penalty = calculateRepetitionPenalty("boxes", ["boxes", "bullets", "sequence", "circles", "numbers"]);
+      expect(penalty).toBe(-7);
+    });
+
+    it("should penalize non-consecutive recent repeat (A-B-A-B) via usage", () => {
+      const penalty = calculateRepetitionPenalty("boxes", ["boxes", "bullets"]);
+      expect(penalty).toBe(-7);
+    });
+
+    it("should stack usage and consecutive penalties", () => {
       const penalty = calculateRepetitionPenalty("boxes", ["bullets", "boxes"]);
-      expect(penalty).toBe(-5);
+      expect(penalty).toBe(-15);
+    });
+
+    it("should cap the usage penalty at 4 uses", () => {
+      // 5 prior non-consecutive uses → capped at -28, no consecutive extra
+      const penalty = calculateRepetitionPenalty("boxes", [
+        "boxes", "bullets", "boxes", "sequence", "boxes", "circles", "boxes", "numbers", "boxes", "team",
+      ]);
+      expect(penalty).toBe(-28);
+    });
+  });
+
+  describe("calculateHintBonus", () => {
+    it("should award the bonus when the hint matches the category", () => {
+      const bonus = calculateHintBonus("editorial", "editorial");
+      expect(bonus).toBe(28);
+    });
+
+    it("should award nothing when the hint differs or is absent", () => {
+      expect(calculateHintBonus("boxes", "editorial")).toBe(0);
+      expect(calculateHintBonus("boxes", undefined)).toBe(0);
     });
   });
 });

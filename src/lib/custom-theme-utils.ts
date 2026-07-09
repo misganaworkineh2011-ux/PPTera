@@ -12,6 +12,16 @@ const fontFamilyMap: Record<string, string> = {
   merriweather: "'Merriweather', serif",
   "source-code": "'Source Code Pro', monospace",
   "space-grotesk": "'Space Grotesk', sans-serif",
+  manrope: "'Manrope', sans-serif",
+  "dm-sans": "'DM Sans', sans-serif",
+  "work-sans": "'Work Sans', sans-serif",
+  raleway: "'Raleway', sans-serif",
+  nunito: "'Nunito', sans-serif",
+  sora: "'Sora', sans-serif",
+  outfit: "'Outfit', sans-serif",
+  "libre-baskerville": "'Libre Baskerville', serif",
+  "ibm-plex-sans": "'IBM Plex Sans', sans-serif",
+  "crimson-pro": "'Crimson Pro', serif",
 };
 
 // Curated color palettes - fallback for older themes

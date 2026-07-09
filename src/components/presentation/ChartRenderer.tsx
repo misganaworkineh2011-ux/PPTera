@@ -53,11 +53,11 @@ export default function ChartRenderer({
   // Ensure we have valid data array
   let chartData = chart.data;
   if (!chartData || !Array.isArray(chartData) || chartData.length === 0) {
-    // Create default data if none provided
+    // Create default data if none provided — use theme colors so it stays on-palette
     chartData = [
-      { label: "Category A", value: 75, color: "#06b6d4" },
-      { label: "Category B", value: 60, color: "#1e3a8a" },
-      { label: "Category C", value: 45, color: "#10b981" },
+      { label: "Category A", value: 75, color: theme.colors.primary },
+      { label: "Category B", value: 60, color: theme.colors.secondary || theme.colors.accent },
+      { label: "Category C", value: 45, color: theme.colors.accent },
     ];
   }
 
@@ -99,7 +99,7 @@ export default function ChartRenderer({
       maxValue: chart.config?.maxValue,
       unit: chart.config?.unit,
       showAnimation: chart.config?.showAnimation ?? true,
-      showGrid: chart.config?.showGrid ?? true,
+      showGrid: chart.config?.showGrid ?? false, // Cleaner look by default — gridlines read as "default chart"
       colorScheme: chart.config?.colorScheme ?? "theme", // Default to theme colors for slides
       lineSmooth: true, // Enable smooth curves by default
       // Pass through any other config options

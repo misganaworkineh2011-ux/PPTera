@@ -57,6 +57,7 @@ export async function GET(req: Request) {
         updatedAt: true,
         slides: true,
         shareToken: true,
+        outlineId: true,
         // Don't include heavy fields like content unless needed
       },
     });

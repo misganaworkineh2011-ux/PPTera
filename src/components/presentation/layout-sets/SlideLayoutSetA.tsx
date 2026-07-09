@@ -281,7 +281,7 @@ export function renderLayoutSetA(props: SlideLayoutSetAProps): ReactNode | null 
                 ? "p-4 sm:p-8 md:p-12 pt-12 sm:pt-8 md:pt-12"
                 : "p-4 sm:p-6 md:p-8 pt-12 sm:pt-8 md:pt-12"
           } ${hasImage || shouldCenterTitleSlide ? "text-center" : ""} ${
-            shouldCenterTitleSlide ? "" : "overflow-y-auto"
+            shouldCenterTitleSlide ? "" : "overflow-visible"
           }`}
         >
           {hasImage && (

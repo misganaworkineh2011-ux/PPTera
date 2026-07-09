@@ -30,6 +30,7 @@ import {
   calculatePriorityBonus,
   calculateConfidenceBonus,
   calculateRepetitionPenalty,
+  calculateHintBonus,
 } from "./scoring-factors";
 
 // ============================================================================
@@ -135,15 +136,15 @@ export function scoreLayout(
     priority: calculatePriorityBonus(layout),
     confidenceBonus: calculateConfidenceBonus(input.analysis.contentTypeConfidence),
     repetitionPenalty: calculateRepetitionPenalty(layout.category, input.previousLayouts),
-    hintBonus: 0,
+    hintBonus: calculateHintBonus(layout.category, input.contentLayoutHint),
   };
-  
+
   // Calculate media constraints score (image + space)
   const mediaScores = scoreMediaConstraints(layout, input);
   breakdown.media = mediaScores.image + mediaScores.space;
-  
+
   // Calculate total score (including capacity penalty if applicable)
-  const totalScore = 
+  const totalScore =
     breakdown.contentType +
     breakdown.pattern +
     breakdown.capacity +
@@ -154,7 +155,8 @@ export function scoreLayout(
     breakdown.bulletLength +
     breakdown.priority +
     breakdown.confidenceBonus +
-    breakdown.repetitionPenalty;
+    breakdown.repetitionPenalty +
+    breakdown.hintBonus;
   
   // Determine confidence level based on score
   let confidence: "high" | "medium" | "low";

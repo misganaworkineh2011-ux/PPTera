@@ -9,6 +9,7 @@ import { RateUsModal } from "~/components/RateUsModal";
 import ExportModal from "~/components/presentation/ExportModal";
 import ShareModal from "~/components/presentation/ShareModal";
 import ChartModal from "~/components/charts/ChartModal";
+import EmbedModal from "~/components/presentation/EmbedModal";
 import AnimationPicker from "~/components/presentation/AnimationPicker";
 import { MultiImageModal } from "./MultiImageModal";
 import type { ExportFormat, ExportOptions } from "../utils";
@@ -30,6 +31,7 @@ interface PresentationModalsProps {
   showShareModal: boolean;
   showRateModal: boolean;
   showChartModal: number | null;
+  showEmbedModal: number | null;
   showAnimationPicker: number | null;
   showImageEditor: { slideIndex: number; imageIndex: number } | null;
   getSlideImages: (slide: SlideData) => SlideImage[];
@@ -40,6 +42,10 @@ interface PresentationModalsProps {
   updateSlidesWithSave: (slides: SlideData[]) => void;
   changeSlideAnimation: (slideIndex: number, animationId: string) => void;
   changeContentAnimation: (slideIndex: number, enabled: boolean) => void;
+  changeAllSlidesAnimation: (animationId: string) => void;
+  changeAllSlidesContentAnimation: (enabled: boolean) => void;
+  changeItemAnimation: (slideIndex: number, animationId: string, applyToAllSlides?: boolean) => void;
+  changeItemBuild: (slideIndex: number, enabled: boolean) => void;
   onExport: (format: ExportFormat, options?: ExportOptions) => void;
   onSetShowImageModal: (value: number | null) => void;
   onSetImageUrl: (value: string) => void;
@@ -48,6 +54,7 @@ interface PresentationModalsProps {
   onSetShowShareModal: (value: boolean) => void;
   onSetShowRateModal: (value: boolean) => void;
   onSetShowChartModal: (value: number | null) => void;
+  onSetShowEmbedModal: (value: number | null) => void;
   onSetShowAnimationPicker: (value: number | null) => void;
   onSetShowImageEditor: (value: { slideIndex: number; imageIndex: number } | null) => void;
   onSetShowImageModalAndEditor: (slideIndex: number, imageIndex: number) => void;
@@ -72,6 +79,7 @@ export function PresentationModals({
   showShareModal,
   showRateModal,
   showChartModal,
+  showEmbedModal,
   showAnimationPicker,
   showImageEditor,
   getSlideImages,
@@ -82,6 +90,10 @@ export function PresentationModals({
   updateSlidesWithSave,
   changeSlideAnimation,
   changeContentAnimation,
+  changeAllSlidesAnimation,
+  changeAllSlidesContentAnimation,
+  changeItemAnimation,
+  changeItemBuild,
   onExport,
   onSetShowImageModal,
   onSetImageUrl,
@@ -90,6 +102,7 @@ export function PresentationModals({
   onSetShowShareModal,
   onSetShowRateModal,
   onSetShowChartModal,
+  onSetShowEmbedModal,
   onSetShowAnimationPicker,
   onSetShowImageEditor,
   onSetShowImageModalAndEditor,
@@ -183,29 +196,95 @@ export function PresentationModals({
         />
       )}
 
-      {showAnimationPicker !== null && (
-        <AnimationPicker
+      {showEmbedModal !== null && (
+        <EmbedModal
           isOpen={true}
           theme={theme}
-          currentAnimation={slidesData[showAnimationPicker]?.animation || "fade"}
-          contentAnimation={slidesData[showAnimationPicker]?.contentAnimation !== false}
-          isPaidUser={!!subscriptionPlan && ["plus", "pro", "ultra"].includes(subscriptionPlan.toLowerCase())}
-          subscriptionPlan={subscriptionPlan}
-          onClose={() => onSetShowAnimationPicker(null)}
-          onSelect={(animationId: string) => {
-            changeSlideAnimation(showAnimationPicker, animationId);
-            toast.success("Animation updated");
-            onSetShowAnimationPicker(null);
+          existingEmbed={slidesData[showEmbedModal]?.embed ?? null}
+          onClose={() => onSetShowEmbedModal(null)}
+          onInsert={(embed) => {
+            const slideIndex = showEmbedModal;
+            const existed = !!slidesData[slideIndex]?.embed;
+            const newSlides = slidesData.map((slide, idx) =>
+              idx === slideIndex ? { ...slide, embed } : slide,
+            );
+            updateSlidesWithSave(newSlides);
+            toast.success(existed ? "Embed updated" : "Embed added to slide");
+            onSetShowEmbedModal(null);
           }}
-          onContentAnimationChange={(enabled: boolean) => {
-            changeContentAnimation(showAnimationPicker, enabled);
-            toast.success(enabled ? "Content animation enabled" : "Content animation disabled");
-          }}
-          onUpgrade={() => {
-            onUpgrade();
+          onRemove={() => {
+            const slideIndex = showEmbedModal;
+            const newSlides = slidesData.map((slide, idx) =>
+              idx === slideIndex ? { ...slide, embed: null } : slide,
+            );
+            updateSlidesWithSave(newSlides);
+            toast.success("Embed removed");
+            onSetShowEmbedModal(null);
           }}
         />
       )}
+
+      {showAnimationPicker !== null && (() => {
+        // -1 is the sentinel for the deck-wide "Transitions" picker (applies to
+        // every slide); any other index edits that single slide.
+        const isDeckWide = showAnimationPicker === -1;
+        const refIndex = isDeckWide ? 0 : showAnimationPicker;
+        return (
+          <AnimationPicker
+            isOpen={true}
+            theme={theme}
+            applyToAll={isDeckWide}
+            slideCount={slidesData.length}
+            currentSlideNumber={currentSlide + 1}
+            currentAnimation={slidesData[refIndex]?.animation || "fade"}
+            contentAnimation={slidesData[refIndex]?.contentAnimation !== false}
+            itemAnimation={slidesData[refIndex]?.itemAnimation || "fade-up"}
+            itemBuild={slidesData[refIndex]?.itemBuild === true}
+            isPaidUser={!!subscriptionPlan && ["plus", "pro", "ultra"].includes(subscriptionPlan.toLowerCase())}
+            subscriptionPlan={subscriptionPlan}
+            onClose={() => onSetShowAnimationPicker(null)}
+            onSelect={(animationId: string, applyToAllSlides?: boolean) => {
+              if (isDeckWide) {
+                if (applyToAllSlides) {
+                  changeAllSlidesAnimation(animationId);
+                  toast.success("Transition applied to all slides");
+                } else {
+                  changeSlideAnimation(currentSlide, animationId);
+                  toast.success(`Transition applied to slide ${currentSlide + 1}`);
+                }
+              } else {
+                changeSlideAnimation(showAnimationPicker, animationId);
+                toast.success("Animation updated");
+              }
+              onSetShowAnimationPicker(null);
+            }}
+            onContentAnimationChange={(enabled: boolean) => {
+              if (isDeckWide) {
+                changeAllSlidesContentAnimation(enabled);
+              } else {
+                changeContentAnimation(showAnimationPicker, enabled);
+              }
+              toast.success(enabled ? "Content animation enabled" : "Content animation disabled");
+            }}
+            onItemAnimationChange={(animationId: string, applyToAllSlides?: boolean) => {
+              const targetIndex = isDeckWide ? currentSlide : showAnimationPicker;
+              changeItemAnimation(targetIndex, animationId, applyToAllSlides || isDeckWide);
+              toast.success(
+                applyToAllSlides || isDeckWide
+                  ? "Item animation applied to all slides"
+                  : "Item animation updated"
+              );
+            }}
+            onItemBuildChange={(enabled: boolean) => {
+              changeItemBuild(isDeckWide ? currentSlide : showAnimationPicker, enabled);
+              toast.success(enabled ? "Items will reveal one by one on Next" : "Items appear together again");
+            }}
+            onUpgrade={() => {
+              onUpgrade();
+            }}
+          />
+        );
+      })()}
 
       {showImageEditor && (() => {
         const slide = slidesData[showImageEditor.slideIndex];

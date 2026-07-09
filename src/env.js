@@ -17,6 +17,7 @@ export const env = createEnv({
     POLAR_PRODUCT_YEARLY_PLUS: z.string().optional(),
     POLAR_PRODUCT_YEARLY_PRO: z.string().optional(),
     POLAR_PRODUCT_YEARLY_ULTRA: z.string().optional(),
+    POLAR_PRODUCT_LIFETIME: z.string().optional(),
     POLAR_TOPUP_500: z.string().optional(),
     POLAR_TOPUP_1000: z.string().optional(),
     POLAR_TOPUP_2500: z.string().optional(),
@@ -24,6 +25,10 @@ export const env = createEnv({
     OPENAI_API_KEY: z.string(),
     PEXELS_API_KEY: z.string().optional(),
     GEMINI_API_KEY: z.string().optional(),
+    // Tiered generation models: a stronger model for the creative outline/visual-strategy
+    // step, a cheaper one for mechanical content expansion. Override via env to tune cost/latency.
+    GEMINI_OUTLINE_MODEL: z.string().default("gemini-2.5-pro"),
+    GEMINI_CONTENT_MODEL: z.string().default("gemini-2.5-flash-lite"),
     // Cloudinary configuration (optional, required for AI image uploads)
     CLOUDINARY_CLOUD_NAME: z.string().optional(),
     CLOUDINARY_UPLOAD_PRESET: z.string().optional(),
@@ -52,6 +57,7 @@ export const env = createEnv({
     POLAR_PRODUCT_YEARLY_PLUS: process.env.POLAR_PRODUCT_YEARLY_PLUS,
     POLAR_PRODUCT_YEARLY_PRO: process.env.POLAR_PRODUCT_YEARLY_PRO,
     POLAR_PRODUCT_YEARLY_ULTRA: process.env.POLAR_PRODUCT_YEARLY_ULTRA,
+    POLAR_PRODUCT_LIFETIME: process.env.POLAR_PRODUCT_LIFETIME,
     POLAR_TOPUP_500: process.env.POLAR_TOPUP_500,
     POLAR_TOPUP_1000: process.env.POLAR_TOPUP_1000,
     POLAR_TOPUP_2500: process.env.POLAR_TOPUP_2500,
@@ -59,6 +65,8 @@ export const env = createEnv({
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     PEXELS_API_KEY: process.env.PEXELS_API_KEY,
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+    GEMINI_OUTLINE_MODEL: process.env.GEMINI_OUTLINE_MODEL,
+    GEMINI_CONTENT_MODEL: process.env.GEMINI_CONTENT_MODEL,
     CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
     CLOUDINARY_UPLOAD_PRESET: process.env.CLOUDINARY_UPLOAD_PRESET,
     RESEND_API_KEY: process.env.RESEND_API_KEY,

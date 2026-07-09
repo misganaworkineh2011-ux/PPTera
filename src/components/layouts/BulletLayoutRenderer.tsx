@@ -7,6 +7,7 @@ import type { BulletLayoutType, BulletContentItem } from "~/lib/layouts/content/
 import { calculateBulletGridDimensions } from "~/lib/layouts/content/bullets";
 import EditableText from "~/components/presentation/EditableText";
 import type { Theme } from "~/lib/themes";
+import { containerVariantsFor, itemMotionProps } from "~/components/presentation/item-animations";
 
 // Animation variants for staggered bullet animations
 const containerVariants = {
@@ -100,6 +101,8 @@ interface BulletLayoutRendererProps {
   isNarrowSpace?: boolean;
   isPresenting?: boolean;
   animationKey?: string; // Stable key to prevent animation replay
+  itemAnimation?: string;
+  revealCount?: number;
   // Editing props
   isEditing?: boolean;
   editingText?: { field: string; bulletIndex?: number } | null;
@@ -140,6 +143,8 @@ export function BulletLayoutRenderer({
   isNarrowSpace = false,
   isPresenting = false,
   animationKey,
+  itemAnimation,
+  revealCount,
   isEditing = false,
   editingText = null,
   onStartEditLabel,
@@ -218,6 +223,356 @@ export function BulletLayoutRenderer({
     const isDragOver = dragOverIndex === idx;
     return `${isDragging ? "opacity-50" : ""} ${isDragOver ? "ring-2 ring-blue-500 ring-offset-2" : ""}`;
   };
+
+  // ---- Shared bits for the added styles (5-9) ----
+  const BContainer = isPresenting ? motion.div : "div";
+  const bContainerProps = isPresenting
+    ? { variants: containerVariantsFor(itemAnimation), initial: "hidden" as const, animate: "visible" as const }
+    : {};
+  const BItem = isPresenting ? motion.div : "div";
+  // Per-item motion: user-picked entrance style + optional click-to-reveal.
+  const bItemMotion = (i: number) => itemMotionProps(isPresenting, itemAnimation, revealCount, i);
+  const spotStyle = (i: number): React.CSSProperties =>
+    effectiveSpotlightIndex >= 0
+      ? { opacity: effectiveSpotlightIndex === i ? 1 : 0.3, transition: "all 0.4s ease-out" }
+      : {};
+
+  const editLabel = (item: BulletContentItem, index: number, cls: string, style?: React.CSSProperties) =>
+    item.label ? (
+      onStartEditLabel ? (
+        <EditableText
+          value={item.label}
+          isEditing={isEditing && editingText?.field === `content-label-${index}`}
+          onStartEdit={() => onStartEditLabel(index)}
+          onChange={(val) => onUpdateLabel?.(index, val)}
+          onFinish={onFinishEditing || (() => {})}
+          onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
+          className={cls}
+          style={{ color: themeStyles.titleColor, ...style }}
+          isOwner={isOwner}
+          isHovered={isHovered}
+        />
+      ) : (
+        <h3 className={cls} style={{ color: themeStyles.titleColor, ...style }}>{item.label}</h3>
+      )
+    ) : null;
+
+  const editText = (item: BulletContentItem, index: number, cls: string, style?: React.CSSProperties) =>
+    onStartEditText ? (
+      <EditableText
+        value={item.text}
+        isEditing={isEditing && editingText?.field === `content-text-${index}`}
+        onStartEdit={() => onStartEditText(index)}
+        onChange={(val) => onUpdateText?.(index, val)}
+        onFinish={onFinishEditing || (() => {})}
+        onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
+        className={cls}
+        style={{ color: themeStyles.bodyColor, ...style }}
+        isOwner={isOwner}
+        isHovered={isHovered}
+      />
+    ) : (
+      <p className={cls} style={{ color: themeStyles.bodyColor, ...style }}>{item.text}</p>
+    );
+
+  // == BULLET-STYLE-5: DIAMOND MARKERS — airy two-column with hairline stems
+  if (layoutId === "bullet-style-5") {
+    const dItems = items.slice(0, 6);
+    return (
+      <BContainer
+        className={`w-full h-full flex items-center px-2 ${className}`}
+        key={animationKey}
+        {...bContainerProps}
+      >
+        <div className="grid w-full grid-cols-2 gap-x-12 gap-y-6">
+          {dItems.map((item, index) => (
+            <BItem key={index} className="flex items-start gap-3.5 min-w-0" style={spotStyle(index)} {...bItemMotion(index)}>
+              <span className="mt-1.5 flex items-center gap-2 shrink-0">
+                <span
+                  className="rotate-45"
+                  style={{ width: 10, height: 10, background: themeStyles.accentColor, boxShadow: `0 0 8px ${themeStyles.accentColor}59` }}
+                />
+                <span className="h-px w-4" style={{ background: themeStyles.cardBorderColor }} />
+              </span>
+              <div className="min-w-0">
+                {editLabel(item, index, "text-sm font-bold tracking-tight mb-0.5")}
+                {editText(item, index, "text-xs leading-relaxed break-words")}
+              </div>
+            </BItem>
+          ))}
+        </div>
+      </BContainer>
+    );
+  }
+
+  // == BULLET-STYLE-6: HIGHLIGHT LINES — marker-pen sweep behind each lead-in
+  if (layoutId === "bullet-style-6") {
+    const hItems = items.slice(0, 5);
+    return (
+      <BContainer
+        className={`w-full h-full flex flex-col justify-center px-2 ${className}`}
+        key={animationKey}
+        {...bContainerProps}
+      >
+        <div className="flex flex-col">
+          {hItems.map((item, index) => (
+            <BItem
+              key={index}
+              className="py-3 min-w-0"
+              style={{
+                borderBottom: index === hItems.length - 1 ? "none" : `1px solid ${themeStyles.cardBorderColor}`,
+                ...spotStyle(index),
+              }}
+              {...bItemMotion(index)}
+            >
+              <span
+                className="inline-block px-1.5 -mx-1"
+                style={{ background: `linear-gradient(180deg, transparent 52%, ${themeStyles.accentColor}40 52%)` }}
+              >
+                {editLabel(item, index, "inline text-base font-extrabold tracking-tight")}
+              </span>
+              {editText(item, index, "mt-1 text-xs leading-relaxed break-words")}
+            </BItem>
+          ))}
+        </div>
+      </BContainer>
+    );
+  }
+
+  // == BULLET-STYLE-7: LEAD-IN DASH — bold inline lead-ins with an accent dash
+  if (layoutId === "bullet-style-7") {
+    const lItems = items.slice(0, 6);
+    return (
+      <BContainer
+        className={`w-full h-full flex items-center px-2 ${className}`}
+        key={animationKey}
+        {...bContainerProps}
+      >
+        <div className="grid w-full grid-cols-2 gap-x-12 gap-y-1">
+          {lItems.map((item, index) => (
+            <BItem
+              key={index}
+              className="flex items-baseline flex-wrap gap-x-2 py-2.5 min-w-0"
+              style={{ borderBottom: `1px solid ${themeStyles.cardBorderColor}`, ...spotStyle(index) }}
+              {...bItemMotion(index)}
+            >
+              <span className="shrink-0 self-center" style={{ width: 7, height: 7, background: themeStyles.accentColor }} />
+              {editLabel(item, index, "text-sm font-bold tracking-tight")}
+              <span className="font-bold" style={{ color: themeStyles.accentColor }}>—</span>
+              {editText(item, index, "text-xs leading-relaxed break-words flex-1 min-w-[55%]")}
+            </BItem>
+          ))}
+        </div>
+      </BContainer>
+    );
+  }
+
+  // == BULLET-STYLE-8: NOTCH CARDS — clipped corner with an accent notch fill
+  if (layoutId === "bullet-style-8") {
+    const nItems = items.slice(0, 6);
+    const cols = nItems.length <= 3 ? nItems.length : nItems.length === 4 ? 2 : 3;
+    return (
+      <BContainer
+        className={`w-full h-full flex items-center px-2 ${className}`}
+        key={animationKey}
+        {...bContainerProps}
+      >
+        <div className="grid w-full gap-4" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
+          {nItems.map((item, index) => (
+            <BItem key={index} className="relative min-w-0" style={spotStyle(index)} {...bItemMotion(index)}>
+              <div
+                className="relative h-full px-4 pt-4 pb-3.5"
+                style={{
+                  background: themeStyles.cardBgColor,
+                  border: `1px solid ${themeStyles.cardBorderColor}`,
+                  clipPath: "polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 0 100%)",
+                }}
+              >
+                {/* Accent fill inside the clipped corner */}
+                <div
+                  className="absolute top-0 right-0 pointer-events-none"
+                  style={{
+                    width: 0,
+                    height: 0,
+                    borderTop: `24px solid ${themeStyles.accentColor}`,
+                    borderLeft: "24px solid transparent",
+                  }}
+                />
+                <span className="font-mono text-[11px] font-semibold" style={{ color: themeStyles.accentColor }}>
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                {editLabel(item, index, "mt-1 mb-1 text-sm font-bold tracking-tight")}
+                {editText(item, index, "text-xs leading-snug break-words")}
+              </div>
+            </BItem>
+          ))}
+        </div>
+      </BContainer>
+    );
+  }
+
+  // == BULLET-STYLE-9: KEYWORD BLOCKS — oversized keywords with accent periods
+  if (layoutId === "bullet-style-9") {
+    const kItems = items.slice(0, 4);
+    return (
+      <BContainer
+        className={`w-full h-full flex items-center px-2 ${className}`}
+        key={animationKey}
+        {...bContainerProps}
+      >
+        <div className="grid w-full gap-8" style={{ gridTemplateColumns: `repeat(${kItems.length}, minmax(0, 1fr))` }}>
+          {kItems.map((item, index) => (
+            <BItem key={index} className="min-w-0" style={spotStyle(index)} {...bItemMotion(index)}>
+              <div className="flex items-baseline">
+                {editLabel(item, index, "text-xl font-extrabold tracking-tight leading-tight break-words", {
+                  fontFamily: theme?.fonts.heading.family,
+                })}
+                <span className="text-2xl font-extrabold leading-none" style={{ color: themeStyles.accentColor }}>.</span>
+              </div>
+              <div className="my-2.5 h-px w-full" style={{ background: themeStyles.cardBorderColor }} />
+              {editText(item, index, "text-xs leading-relaxed break-words")}
+            </BItem>
+          ))}
+        </div>
+      </BContainer>
+    );
+  }
+
+  // == BULLET-STYLE-10: SLASH LIST — mono double-slash markers, indent guide
+  if (layoutId === "bullet-style-10") {
+    const sItems = items.slice(0, 5);
+    return (
+      <BContainer
+        className={`w-full h-full flex flex-col justify-center px-2 ${className}`}
+        key={animationKey}
+        {...bContainerProps}
+      >
+        <div className="flex flex-col gap-4">
+          {sItems.map((item, index) => (
+            <BItem key={index} className="flex items-start gap-3.5 min-w-0" style={spotStyle(index)} {...bItemMotion(index)}>
+              <span
+                className="shrink-0 font-mono text-lg font-bold leading-tight select-none"
+                style={{ color: themeStyles.accentColor }}
+              >
+                {"//"}
+              </span>
+              <div
+                className="min-w-0 pl-3.5"
+                style={{ borderLeft: `1px solid ${themeStyles.cardBorderColor}` }}
+              >
+                {editLabel(item, index, "font-mono text-sm font-bold tracking-tight mb-0.5")}
+                {editText(item, index, "text-xs leading-relaxed break-words")}
+              </div>
+            </BItem>
+          ))}
+        </div>
+      </BContainer>
+    );
+  }
+
+  // == BULLET-STYLE-11: PILL ROWS — label pills alternating solid and soft
+  if (layoutId === "bullet-style-11") {
+    const pItems = items.slice(0, 6);
+    return (
+      <BContainer
+        className={`w-full h-full flex flex-col justify-center px-2 ${className}`}
+        key={animationKey}
+        {...bContainerProps}
+      >
+        <div className="flex flex-col gap-3">
+          {pItems.map((item, index) => {
+            const solid = index % 2 === 0;
+            return (
+              <BItem key={index} className="flex items-center gap-4 min-w-0" style={spotStyle(index)} {...bItemMotion(index)}>
+                <span
+                  className="shrink-0 rounded-full px-3.5 py-1.5"
+                  style={{
+                    background: solid ? themeStyles.accentColor : `${themeStyles.accentColor}1f`,
+                    border: solid ? "none" : `1px solid ${themeStyles.accentColor}59`,
+                  }}
+                >
+                  {editLabel(item, index, "text-xs font-bold tracking-tight whitespace-nowrap", {
+                    color: solid ? "#ffffff" : themeStyles.accentColor,
+                  })}
+                </span>
+                {editText(item, index, "flex-1 min-w-0 text-xs leading-relaxed break-words")}
+              </BItem>
+            );
+          })}
+        </div>
+      </BContainer>
+    );
+  }
+
+  // == BULLET-STYLE-12: BASELINE NUMBERS — thin numerals on one shared rule
+  if (layoutId === "bullet-style-12") {
+    const nItems = items.slice(0, 5);
+    return (
+      <BContainer
+        className={`w-full h-full flex items-center px-2 ${className}`}
+        key={animationKey}
+        {...bContainerProps}
+      >
+        <div className="relative w-full">
+          {/* The continuous baseline every numeral stands on */}
+          <div className="absolute left-0 right-0" style={{ top: 52, height: 2, background: themeStyles.cardBorderColor }} />
+          <div className="absolute left-0" style={{ top: 52, height: 2, width: 56, background: themeStyles.accentColor }} />
+          <div className="grid gap-7" style={{ gridTemplateColumns: `repeat(${nItems.length}, minmax(0, 1fr))` }}>
+            {nItems.map((item, index) => (
+              <BItem key={index} className="min-w-0" style={spotStyle(index)} {...bItemMotion(index)}>
+                <div className="flex h-[52px] items-end">
+                  <span
+                    className="font-light leading-none tabular-nums"
+                    style={{ fontSize: 46, color: themeStyles.accentColor, fontFamily: theme?.fonts.heading.family }}
+                  >
+                    {index + 1}
+                  </span>
+                </div>
+                {editLabel(item, index, "mt-3 mb-1 text-sm font-bold tracking-tight")}
+                {editText(item, index, "text-xs leading-snug break-words")}
+              </BItem>
+            ))}
+          </div>
+        </div>
+      </BContainer>
+    );
+  }
+
+  // == BULLET-STYLE-13: CHECKER TINTS — checkerboard of tint and hairline cells
+  if (layoutId === "bullet-style-13") {
+    const cItems = items.slice(0, 6);
+    return (
+      <BContainer
+        className={`w-full h-full flex items-center px-2 ${className}`}
+        key={animationKey}
+        {...bContainerProps}
+      >
+        <div className="grid w-full grid-cols-2 gap-3">
+          {cItems.map((item, index) => {
+            const tinted = (Math.floor(index / 2) + (index % 2)) % 2 === 0;
+            return (
+              <BItem
+                key={index}
+                className="rounded-xl p-4 min-w-0"
+                style={{
+                  background: tinted ? `${themeStyles.accentColor}12` : "transparent",
+                  border: `1px solid ${tinted ? `${themeStyles.accentColor}30` : themeStyles.cardBorderColor}`,
+                  ...spotStyle(index),
+                }}
+                {...bItemMotion(index)}
+              >
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="rounded-full" style={{ width: 7, height: 7, background: themeStyles.accentColor }} />
+                  {editLabel(item, index, "text-sm font-bold tracking-tight")}
+                </div>
+                {editText(item, index, "text-xs leading-snug break-words")}
+              </BItem>
+            );
+          })}
+        </div>
+      </BContainer>
+    );
+  }
 
   // Style 1: Cards with filled circle bullets, grid layout
   if (layoutId === "bullet-style-1") {
@@ -420,15 +775,13 @@ function CardBullets({
   // Special 2-1 layout for 3 items
   if (specialLayout === "2-1" && items.length === 3) {
     const Container = isPresenting ? motion.div : "div";
-    const containerProps = isPresenting ? { 
-      key: animationKey,
-      variants: containerVariants, 
+    const containerProps = isPresenting ? {       variants: containerVariants, 
       initial: "hidden", 
       animate: "visible" 
     } : {};
     
     return (
-      <Container className={`flex flex-col gap-4 ${className}`} {...containerProps}>
+      <Container className={`flex flex-col gap-4 ${className}`} key={animationKey} {...containerProps}>
         {/* Top row - 2 items */}
         <div className="grid grid-cols-2 gap-4">
           {items.slice(0, 2).map((item, idx) => (
@@ -490,9 +843,7 @@ function CardBullets({
 
   // Use motion container when presenting
   const Container = isPresenting ? motion.div : "div";
-  const containerProps = isPresenting ? { 
-    key: animationKey,
-    variants: containerVariants, 
+  const containerProps = isPresenting ? {     variants: containerVariants, 
     initial: "hidden", 
     animate: "visible" 
   } : {};
@@ -503,7 +854,7 @@ function CardBullets({
       style={{
         gridTemplateColumns: `repeat(${columns}, 1fr)`,
       }}
-      {...containerProps}
+      key={animationKey} {...containerProps}
     >
       {items.map((item, idx) => (
         <BulletCard
@@ -589,15 +940,19 @@ function BulletCard({
   const wrapperProps = isPresenting ? { variants: bulletVariants } : { ...itemHandlers };
   
   // Disable hover classes during presentation
-  const wrapperClassName = isPresenting 
-    ? `rounded-2xl p-5 relative ${dragClasses}`
-    : `rounded-2xl p-5 relative group/drag-item ${dragClasses}`;
-  
+  const accentHex = /^#[0-9a-f]{6}$/i.test(themeStyles.accentColor) ? themeStyles.accentColor : null;
+  const premiumBg = accentHex
+    ? `radial-gradient(110% 110% at 0% 0%, ${accentHex}1f 0%, transparent 55%), ${themeStyles.cardBgColor}`
+    : themeStyles.cardBgColor;
+  const wrapperClassName = isPresenting
+    ? `rounded-2xl p-5 relative ppt-tile ${dragClasses}`
+    : `rounded-2xl p-5 relative group/drag-item ppt-tile ${dragClasses}`;
+
   return (
     <Wrapper
       className={wrapperClassName}
       style={{
-        backgroundColor: themeStyles.cardBgColor,
+        background: premiumBg,
         border: `1px solid ${themeStyles.cardBorderColor}`,
         cursor: canDrag && !isPresenting ? "grab" : "default",
         ...style,
@@ -642,13 +997,13 @@ function BulletCard({
                 onChange={(val) => onUpdateLabel?.(index, val)}
                 onFinish={onFinishEditing || (() => {})}
                 onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-                className="text-lg font-semibold mb-2"
+                className="text-lg font-bold tracking-tight mb-2"
                 style={{ color: themeStyles.titleColor }}
                 isOwner={isOwner}
                 isHovered={isHovered}
               />
             ) : (
-              <h3 className="text-lg font-semibold mb-2" style={{ color: themeStyles.titleColor }}>
+              <h3 className="text-lg font-bold tracking-tight mb-2" style={{ color: themeStyles.titleColor }}>
                 {item.label}
               </h3>
             )
@@ -748,9 +1103,7 @@ function SimpleBullets({
   };
 
   const Container = isPresenting ? motion.div : "div";
-  const containerProps = isPresenting ? { 
-    key: animationKey,
-    variants: containerVariants, 
+  const containerProps = isPresenting ? {     variants: containerVariants, 
     initial: "hidden", 
     animate: "visible" 
   } : {};
@@ -758,7 +1111,7 @@ function SimpleBullets({
   // For 3 items: 2 columns on top row, 1 on bottom
   if (items.length === 3 && !isNarrowSpace) {
     return (
-      <Container className={`flex flex-col gap-6 ${className}`} {...containerProps}>
+      <Container className={`flex flex-col gap-6 ${className}`} key={animationKey} {...containerProps}>
         {/* Top row - 2 items */}
         <div className="grid grid-cols-2 gap-8">
           {items.slice(0, 2).map((item, idx) => (
@@ -951,13 +1304,13 @@ function SimpleBulletItem({
               onChange={(val) => onUpdateLabel?.(index, val)}
               onFinish={onFinishEditing || (() => {})}
               onDelete={onDeleteItem ? () => onDeleteItem(index) : undefined}
-              className="text-lg font-semibold mb-1"
+              className="text-lg font-bold tracking-tight mb-1"
               style={{ color: themeStyles.titleColor }}
               isOwner={isOwner}
               isHovered={isHovered}
             />
           ) : (
-            <h3 className="text-lg font-semibold mb-1" style={{ color: themeStyles.titleColor }}>
+            <h3 className="text-lg font-bold tracking-tight mb-1" style={{ color: themeStyles.titleColor }}>
               {item.label}
             </h3>
           )
@@ -1057,9 +1410,7 @@ function ArrowBullets({
   const columns = isNarrowSpace ? 1 : items.length <= 4 ? 1 : 2;
 
   const Container = isPresenting ? motion.div : "div";
-  const containerProps = isPresenting ? { 
-    key: animationKey,
-    variants: containerVariants, 
+  const containerProps = isPresenting ? {     variants: containerVariants, 
     initial: "hidden", 
     animate: "visible" 
   } : {};
@@ -1072,7 +1423,7 @@ function ArrowBullets({
       style={{
         gridTemplateColumns: `repeat(${columns}, 1fr)`,
       }}
-      {...containerProps}
+      key={animationKey} {...containerProps}
     >
       {items.map((item, idx) => {
         const dragClasses = getDragClasses ? getDragClasses(idx) : "";
@@ -1128,13 +1479,13 @@ function ArrowBullets({
                     onChange={(val) => onUpdateLabel?.(idx, val)}
                     onFinish={onFinishEditing || (() => {})}
                     onDelete={onDeleteItem ? () => onDeleteItem(idx) : undefined}
-                    className="text-base font-semibold mb-1"
+                    className="text-base font-bold tracking-tight mb-1"
                     style={{ color: themeStyles.titleColor }}
                     isOwner={isOwner}
                     isHovered={isHovered}
                   />
                 ) : (
-                  <h3 className="text-base font-semibold mb-1" style={{ color: themeStyles.titleColor }}>
+                  <h3 className="text-base font-bold tracking-tight mb-1" style={{ color: themeStyles.titleColor }}>
                     {item.label}
                   </h3>
                 )

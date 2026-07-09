@@ -11,6 +11,7 @@ import { describe, it, expect } from "vitest";
 import * as fc from "fast-check";
 import { selectLayout, type LayoutSelectionInput } from "./layout-selection";
 import { ContentType, BulletPattern, SemanticMarkers } from "./types";
+import { LAYOUT_REGISTRY } from "./registry/layout-registry";
 import type { ContentLayoutCategory } from "~/lib/layouts/content";
 
 // ============================================================================
@@ -190,27 +191,26 @@ describe("Layout Selection Orchestrator - Property Tests", () => {
         expect(result.factors).toBeDefined();
         expect(Array.isArray(result.factors)).toBe(true);
         
-        // Valid category values
-        const validCategories: ContentLayoutCategory[] = [
-          "boxes",
-          "bullets",
-          "sequence",
-          "steps",
-          "quotes",
-          "circles",
-          "numbers",
-          "images",
-        ];
+        // Valid category values — any category present in the layout registry
+        // (derived, so newly registered categories don't go stale here)
+        const validCategories: ContentLayoutCategory[] = LAYOUT_REGISTRY.map(
+          (def) => def.category,
+        );
         expect(validCategories).toContain(result.category);
         
-        // Valid slide layout values
+        // Valid slide layout values — mirrors the SlideLayoutType union in
+        // ~/lib/layouts/slide (plus legacy "full-image" spelling)
         const validSlideLayouts = [
           "no-image",
           "image-left",
           "image-right",
           "image-top",
           "image-bottom",
+          "image-background",
+          "image-full",
           "full-image",
+          "chart-left",
+          "chart-right",
         ];
         expect(validSlideLayouts).toContain(result.slideLayout);
       }),

@@ -22,8 +22,11 @@ describe("Layout Definition Completeness", () => {
    * - Compatibility rules (contentTypeAffinity, patternAffinity, semanticIntentCompatibility, visualStrategyCompatibility)
    */
   
-  it("should have all 8 expected layout categories", () => {
-    const expectedCategories = [
+  it("should include the 8 core layout categories with no duplicates", () => {
+    // The registry has grown well beyond the original 8 — assert the core set
+    // is still present and every category is defined exactly once, rather
+    // than pinning a total count that goes stale with each new category.
+    const coreCategories = [
       "boxes",
       "bullets",
       "sequence",
@@ -33,11 +36,12 @@ describe("Layout Definition Completeness", () => {
       "numbers",
       "images",
     ];
-    
+
     const actualCategories = LAYOUT_DEFINITIONS.map(def => def.category);
-    
-    expect(actualCategories).toHaveLength(8);
-    expectedCategories.forEach(category => {
+
+    expect(actualCategories.length).toBeGreaterThanOrEqual(coreCategories.length);
+    expect(new Set(actualCategories).size).toBe(actualCategories.length);
+    coreCategories.forEach(category => {
       expect(actualCategories).toContain(category);
     });
   });

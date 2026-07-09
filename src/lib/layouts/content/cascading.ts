@@ -11,7 +11,23 @@ export interface CascadingContentItem {
 }
 
 // Cascading layout type identifier
-export type CascadingLayoutType = "cascading-workflow";
+// cascading-workflow: staggered boxes with numbered items and connecting lines
+// cascading-style-2: Terrace Steps — leading blocks grow row by row
+// cascading-style-3: Hanging Tags — cards on strings at staggered depths
+// cascading-style-4: Elbow Branch — L-connectors stepping down-right
+// cascading-style-5: Diagonal Rail — cards docked along one diagonal line
+// cascading-style-6: Paper Fan — overlapping sheets stepping down-right
+// cascading-style-7: Indent Returns — code-style tab stops with return arrows
+// cascading-style-8: Ripple Drop — ripple nodes descending diagonally
+export type CascadingLayoutType =
+  | "cascading-workflow"
+  | "cascading-style-2"
+  | "cascading-style-3"
+  | "cascading-style-4"
+  | "cascading-style-5"
+  | "cascading-style-6"
+  | "cascading-style-7"
+  | "cascading-style-8";
 
 // Cascading layout definition interface
 export interface CascadingLayout {
@@ -26,11 +42,11 @@ export interface CascadingLayout {
   supportsIcons: true;
   // Preview configuration
   preview: {
-    style: "staggered";
+    style: "staggered" | "terrace" | "tags" | "elbow" | "diagonal" | "fan" | "indent" | "ripple";
   };
 }
 
-// Cascading Layout Definition
+// Cascading Layout Definitions
 export const cascadingLayouts: CascadingLayout[] = [
   {
     id: "cascading-workflow",
@@ -45,6 +61,90 @@ export const cascadingLayouts: CascadingLayout[] = [
     preview: {
       style: "staggered",
     },
+  },
+  {
+    id: "cascading-style-2",
+    name: "Terrace Steps",
+    description: "Leading accent blocks that grow row by row into terraces",
+    category: "cascading",
+    minItems: 3,
+    maxItems: 6,
+    idealItems: 4,
+    adaptive: true,
+    supportsIcons: true,
+    preview: { style: "terrace" },
+  },
+  {
+    id: "cascading-style-3",
+    name: "Hanging Tags",
+    description: "Tag cards hanging from a rail at staggered depths",
+    category: "cascading",
+    minItems: 3,
+    maxItems: 5,
+    idealItems: 4,
+    adaptive: true,
+    supportsIcons: true,
+    preview: { style: "tags" },
+  },
+  {
+    id: "cascading-style-4",
+    name: "Elbow Branch",
+    description: "Numbered nodes stepping down-right on elbow connectors",
+    category: "cascading",
+    minItems: 3,
+    maxItems: 5,
+    idealItems: 4,
+    adaptive: true,
+    supportsIcons: true,
+    preview: { style: "elbow" },
+  },
+  {
+    id: "cascading-style-5",
+    name: "Diagonal Rail",
+    description: "Cards docked along one diagonal accent line",
+    category: "cascading",
+    minItems: 3,
+    maxItems: 4,
+    idealItems: 4,
+    adaptive: true,
+    supportsIcons: true,
+    preview: { style: "diagonal" },
+  },
+  {
+    id: "cascading-style-6",
+    name: "Paper Fan",
+    description: "Overlapping tilted sheets stepping down-right",
+    category: "cascading",
+    minItems: 3,
+    maxItems: 4,
+    idealItems: 4,
+    adaptive: true,
+    supportsIcons: true,
+    preview: { style: "fan" },
+  },
+  {
+    id: "cascading-style-7",
+    name: "Indent Returns",
+    description: "Code-style tab stops with return arrows and mono numbering",
+    category: "cascading",
+    minItems: 3,
+    maxItems: 6,
+    idealItems: 4,
+    adaptive: true,
+    supportsIcons: true,
+    preview: { style: "indent" },
+  },
+  {
+    id: "cascading-style-8",
+    name: "Ripple Drop",
+    description: "Ripple-ring nodes descending diagonally with content beside",
+    category: "cascading",
+    minItems: 3,
+    maxItems: 5,
+    idealItems: 4,
+    adaptive: true,
+    supportsIcons: true,
+    preview: { style: "ripple" },
   },
 ];
 
