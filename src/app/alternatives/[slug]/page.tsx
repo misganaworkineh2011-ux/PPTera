@@ -77,7 +77,7 @@ export default async function AlternativePage({
         description: content.metaDescription,
         about: {
             "@type": "SoftwareApplication",
-            name: "PPTMaster",
+            name: "PPTera",
             applicationCategory: "BusinessApplication",
         },
     };
@@ -101,8 +101,8 @@ export default async function AlternativePage({
 
             <SEOFeatureGrid
                 features={content.features}
-                title={`Why PPTMaster vs ${alt.name}?`}
-                subtitle="See why professionals choose PPTMaster"
+                title={`Why PPTera vs ${alt.name}?`}
+                subtitle="See why professionals choose PPTera"
             />
 
             <SEOHowItWorks />

@@ -5,14 +5,14 @@ import { getTranslations } from "~/lib/i18n";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Help Center - AI PowerPoint Generator Support | PPTMaster",
-  description: "Get help with PPTMaster AI PowerPoint generator. Find tutorials, FAQs, troubleshooting guides, and learn how to create stunning presentations with AI.",
+  title: "Help Center - AI PowerPoint Generator Support | PPTera",
+  description: "Get help with PPTera AI PowerPoint generator. Find tutorials, FAQs, troubleshooting guides, and learn how to create stunning presentations with AI.",
   alternates: {
     canonical: "https://www.pptmaster.app/help",
   },
   openGraph: {
-    title: "Help Center - AI PowerPoint Generator Support | PPTMaster",
-    description: "Get help with PPTMaster AI PowerPoint generator. Find tutorials, FAQs, and troubleshooting guides.",
+    title: "Help Center - AI PowerPoint Generator Support | PPTera",
+    description: "Get help with PPTera AI PowerPoint generator. Find tutorials, FAQs, and troubleshooting guides.",
     url: "/help",
     type: "website",
     images: [
@@ -20,14 +20,14 @@ export const metadata: Metadata = {
         url: "/og-image.jpeg",
         width: 1200,
         height: 630,
-        alt: "PPTMaster Help Center",
+        alt: "PPTera Help Center",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Help Center - AI PowerPoint Generator Support | PPTMaster",
-    description: "Get help with PPTMaster. Find tutorials, FAQs, and troubleshooting guides.",
+    title: "Help Center - AI PowerPoint Generator Support | PPTera",
+    description: "Get help with PPTera. Find tutorials, FAQs, and troubleshooting guides.",
     images: ["/og-image.jpeg"],
   },
 };
@@ -137,10 +137,10 @@ function getHelpContent(t: ReturnType<typeof getTranslations>) {
         "Free users get 200 credits to start. Paid plans include monthly credits: Plus (1,000), Pro (4,000), Ultra (20,000).",
     },
     {
-      question: t.helpFaq2Question || "Can I use PPTMaster offline?",
+      question: t.helpFaq2Question || "Can I use PPTera offline?",
       answer:
         t.helpFaq2Answer ||
-        "PPTMaster requires an internet connection for AI generation and real-time collaboration. However, you can download presentations and work on them offline.",
+        "PPTera requires an internet connection for AI generation and real-time collaboration. However, you can download presentations and work on them offline.",
     },
     {
       question: t.helpFaq3Question || "Is my data secure?",
@@ -231,7 +231,7 @@ export default async function HelpPage() {
           </h1>
           <p className="text-xl text-slate-600 max-w-2xl mx-auto animate-fade-in-up [animation-delay:150ms]">
             {t.helpSubtitle ||
-              "Find answers to common questions and learn how to get the most out of PPT Master."}
+              "Find answers to common questions and learn how to get the most out of PPTera."}
           </p>
         </div>
       </section>

@@ -35,7 +35,7 @@ export function TermsContent() {
             {/* Introduction */}
             <div className="mb-12 p-6 bg-amber-50 border-l-4 border-amber-500 rounded-r-lg">
               <p className="text-sm leading-relaxed text-slate-700 mb-0">
-                <strong>PLEASE READ THIS TERMS OF USE AGREEMENT.</strong> These Terms of Use (&quot;Terms&quot;) govern your use of the PPTMaster Tech, Inc. (&quot;PPTMaster&quot;, &quot;our&quot;, &quot;us&quot; and &quot;we&quot;) Site located at https://www.pptmaster.app (the &quot;Site&quot;) and online services available through the Site (collectively, the &quot;Services&quot;). BY ACCESSING OR USING THE SITE, YOU REPRESENT THAT (1) YOU HAVE READ AND AGREE TO BE BOUND BY THE TERMS, (2) YOU ARE OF LEGAL AGE TO FORM A BINDING CONTRACT, AND (3) YOU HAVE THE AUTHORITY TO ENTER INTO THESE TERMS.
+                <strong>PLEASE READ THIS TERMS OF USE AGREEMENT.</strong> These Terms of Use (&quot;Terms&quot;) govern your use of the PPTera Tech, Inc. (&quot;PPTera&quot;, &quot;our&quot;, &quot;us&quot; and &quot;we&quot;) Site located at https://www.pptmaster.app (the &quot;Site&quot;) and online services available through the Site (collectively, the &quot;Services&quot;). BY ACCESSING OR USING THE SITE, YOU REPRESENT THAT (1) YOU HAVE READ AND AGREE TO BE BOUND BY THE TERMS, (2) YOU ARE OF LEGAL AGE TO FORM A BINDING CONTRACT, AND (3) YOU HAVE THE AUTHORITY TO ENTER INTO THESE TERMS.
               </p>
             </div>
 
@@ -47,7 +47,7 @@ export function TermsContent() {
               
               <h3 className="text-lg font-semibold text-slate-900 mt-6 mb-3">1.1 License to the Services</h3>
               <p className="text-slate-700 leading-relaxed mb-4">
-                Subject to your compliance with this Agreement, PPTMaster grants you a limited, non-exclusive, non-transferable license to access and use the Services for your personal or internal business purposes.
+                Subject to your compliance with this Agreement, PPTera grants you a limited, non-exclusive, non-transferable license to access and use the Services for your personal or internal business purposes.
               </p>
 
               <h3 className="text-lg font-semibold text-slate-900 mt-6 mb-3">1.2 Use of AI</h3>
@@ -86,11 +86,11 @@ export function TermsContent() {
               </h2>
               
               <p className="text-slate-700 leading-relaxed mb-4">
-                You retain ownership of content you create using the Services (&quot;Your Content&quot;). However, you grant PPTMaster a license to use Your Content to operate and provide the Services.
+                You retain ownership of content you create using the Services (&quot;Your Content&quot;). However, you grant PPTera a license to use Your Content to operate and provide the Services.
               </p>
 
               <p className="text-slate-700 leading-relaxed mb-4">
-                The Services, including all software, designs, text, graphics, and other content (excluding Your Content), are owned by PPTMaster and protected by intellectual property laws.
+                The Services, including all software, designs, text, graphics, and other content (excluding Your Content), are owned by PPTera and protected by intellectual property laws.
               </p>
             </div>
 
@@ -116,7 +116,7 @@ export function TermsContent() {
               </h2>
               <div className="p-6 bg-slate-50 rounded-lg border border-slate-200">
                 <p className="text-slate-700 leading-relaxed mb-0">
-                  <strong>THE SERVICES ARE PROVIDED &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; WITHOUT WARRANTIES OF ANY KIND.</strong> PPTMaster disclaims all warranties, express or implied, including warranties of merchantability, fitness for a particular purpose, and non-infringement.
+                  <strong>THE SERVICES ARE PROVIDED &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; WITHOUT WARRANTIES OF ANY KIND.</strong> PPTera disclaims all warranties, express or implied, including warranties of merchantability, fitness for a particular purpose, and non-infringement.
                 </p>
               </div>
             </div>
@@ -128,7 +128,7 @@ export function TermsContent() {
               </h2>
               <div className="p-6 bg-slate-50 rounded-lg border border-slate-200">
                 <p className="text-slate-700 leading-relaxed mb-0">
-                  <strong>TO THE MAXIMUM EXTENT PERMITTED BY LAW, PPTMASTER SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES.</strong> Our total liability shall not exceed the greater of (a) the amount you paid us in the past month, or (b) $100.
+                  <strong>TO THE MAXIMUM EXTENT PERMITTED BY LAW, PPTERA SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES.</strong> Our total liability shall not exceed the greater of (a) the amount you paid us in the past month, or (b) $100.
                 </p>
               </div>
             </div>
@@ -139,7 +139,7 @@ export function TermsContent() {
                 7. TERMINATION
               </h2>
               <p className="text-slate-700 leading-relaxed mb-4">
-                PPTMaster may suspend or terminate your access to the Services at any time for any reason. You may terminate by closing your account. Upon termination, your right to use the Services ceases immediately.
+                PPTera may suspend or terminate your access to the Services at any time for any reason. You may terminate by closing your account. Upon termination, your right to use the Services ceases immediately.
               </p>
             </div>
 
@@ -167,7 +167,7 @@ export function TermsContent() {
             {/* Footer */}
             <div className="mt-16 p-8 rounded-2xl bg-gradient-to-br from-[#1e3a8a]/5 to-[#06b6d4]/5 border border-[#06b6d4]/20">
               <p className="text-sm text-slate-600 text-center">
-                By using PPTMaster, you acknowledge that you have read, understood, and agree to be bound by these Terms of Use.
+                By using PPTera, you acknowledge that you have read, understood, and agree to be bound by these Terms of Use.
               </p>
             </div>
 

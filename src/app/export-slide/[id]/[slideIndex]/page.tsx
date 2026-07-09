@@ -187,9 +187,9 @@ function ExportSlideContent({ params }: ExportSlidePageProps) {
             backdropFilter: 'blur(4px)',
           }}
         >
-          <img src="/logo.png" alt="PPTMaster" className="h-8 w-auto" />
+          <img src="/logo.png" alt="PPTera" className="h-8 w-auto" />
           <span className="text-xl font-semibold text-white">
-            Made with PPTMaster
+            Made with PPTera
           </span>
         </div>
       )}

@@ -78,14 +78,14 @@ export default async function HowToPage({
         totalTime: "PT5M",
         tool: {
             "@type": "HowToTool",
-            name: "PPTMaster AI",
+            name: "PPTera AI",
         },
         step: [
             {
                 "@type": "HowToStep",
                 position: 1,
-                name: "Open PPTMaster",
-                text: "Navigate to PPTMaster and sign up for free",
+                name: "Open PPTera",
+                text: "Navigate to PPTera and sign up for free",
             },
             {
                 "@type": "HowToStep",

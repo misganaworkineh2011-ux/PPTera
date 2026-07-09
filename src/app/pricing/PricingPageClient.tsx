@@ -175,7 +175,7 @@ export default function PricingPageClient({ currentLang }: PricingPageClientProp
         t.credits1000 || "1,000 monthly credits", 
         t.upTo20Slides || "20 cards per prompt", 
         t.exportFormatsAll || "Export to PDF, PPTX & PNG",
-        t.removeBranding || "Remove PPTMaster branding", 
+        t.removeBranding || "Remove PPTera branding", 
         t.advancedAIModels || "Basic AI image models",
         t.basicAnimations || "Basic slide animations"
       ], 
@@ -191,7 +191,7 @@ export default function PricingPageClient({ currentLang }: PricingPageClientProp
       features: [
         t.credits4000 || "4,000 monthly credits", 
         t.upTo60Slides || "60 cards per prompt", 
-        t.removeBranding || "Remove PPTMaster branding", 
+        t.removeBranding || "Remove PPTera branding", 
         t.exportFormatsAll || "Export to PDF, PPTX & PNG",
         t.premiumAIModels || "Pro AI models & 2K exports", 
         t.premiumAnimations || "Advanced animations",
@@ -210,7 +210,7 @@ export default function PricingPageClient({ currentLang }: PricingPageClientProp
       features: [
         t.credits20000 || "20,000 monthly credits", 
         t.upTo75Slides || "75 cards per prompt", 
-        t.removeBranding || "Remove PPTMaster branding", 
+        t.removeBranding || "Remove PPTera branding", 
         t.exportFormatsAll || "Export to PDF, PPTX & PNG",
         t.premiumAIModels || "Pro AI models & 2K exports",
         t.mostAdvancedModels || "Most advanced AI models", 

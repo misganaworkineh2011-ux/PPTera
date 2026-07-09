@@ -38,7 +38,7 @@ export function toEmbedUrl(raw: string): string {
       if (url.pathname.startsWith("/embed/")) return raw;
     }
     if (host === "figma.com" && !url.pathname.startsWith("/embed")) {
-      return `https://www.figma.com/embed?embed_host=pptmaster&url=${encodeURIComponent(raw)}`;
+      return `https://www.figma.com/embed?embed_host=pptera&url=${encodeURIComponent(raw)}`;
     }
     return raw;
   } catch {

@@ -41,7 +41,7 @@ export function ReferralCard() {
   };
 
   const shareOnTwitter = () => {
-    const text = t.twitterShareText || `I'm using PPT Master to create amazing AI presentations! Sign up with my link and we both get 10 free credits 🎁`;
+    const text = t.twitterShareText || `I'm using PPTera to create amazing AI presentations! Sign up with my link and we both get 10 free credits 🎁`;
     const url = data?.referralLink || "";
     window.open(
       `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
@@ -152,7 +152,7 @@ export function ReferralCard() {
           onClick={() => {
             if (navigator.share) {
               navigator.share({
-                title: "Join PPT Master",
+                title: "Join PPTera",
                 text: t.shareText || "Sign up with my link and we both get 10 free credits!",
                 url: data.referralLink,
               });

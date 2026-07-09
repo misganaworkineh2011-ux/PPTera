@@ -22,11 +22,11 @@ export function getResendClient(): Resend {
 
 export const emailConfig = {
   // For automated emails (welcome, notifications) - no reply
-  fromNoReply: "PPT Master <noreply@pptmaster.app>",
+  fromNoReply: "PPTera <noreply@pptmaster.app>",
   // For emails that should allow replies (contact, support)
   from: RESEND_FROM_EMAIL
-    ? `PPT Master <${RESEND_FROM_EMAIL}>`
-    : "PPT Master <hello@pptmaster.app>",
+    ? `PPTera <${RESEND_FROM_EMAIL}>`
+    : "PPTera <hello@pptmaster.app>",
   replyTo: RESEND_REPLY_TO_EMAIL ?? "pptmaster.app@gmail.com",
 } as const;
 

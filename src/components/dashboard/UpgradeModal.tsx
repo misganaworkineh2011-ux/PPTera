@@ -28,7 +28,7 @@ const PLAN_INFO = {
   plus: {
     name: 'Plus',
     color: 'from-blue-500 to-cyan-500',
-    features: ['1,000 monthly credits', '20 cards per prompt', 'Export to PDF, PPTX & PNG', 'Remove PPTMaster branding', 'Basic AI image models', 'Basic slide animations'],
+    features: ['1,000 monthly credits', '20 cards per prompt', 'Export to PDF, PPTX & PNG', 'Remove PPTera branding', 'Basic AI image models', 'Basic slide animations'],
     includesText: 'Everything in Free, and:',
   },
   pro: {
@@ -37,7 +37,7 @@ const PLAN_INFO = {
     features: [
       '4,000 monthly credits', 
       '60 cards per prompt', 
-      'Remove PPTMaster branding',
+      'Remove PPTera branding',
       'Export to PDF, PPTX & PNG',
       'Pro AI models & 2K exports', 
       'Advanced animations', 
@@ -52,7 +52,7 @@ const PLAN_INFO = {
     features: [
       '20,000 monthly credits', 
       '75 cards per prompt', 
-      'Remove PPTMaster branding',
+      'Remove PPTera branding',
       'Export to PDF, PPTX & PNG',
       'Pro AI models & 2K exports',
       'Most advanced AI models', 

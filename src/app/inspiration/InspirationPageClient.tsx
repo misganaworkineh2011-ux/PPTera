@@ -130,7 +130,7 @@ export default function InspirationPageClient({ currentLang = "en" }: Inspiratio
           </p>
 
           <p className="text-lg text-slate-500 max-w-2xl mx-auto mt-4 leading-relaxed animate-fade-in-up [animation-delay:300ms]">
-            {t.inspirationExtendedDesc || "Each design showcases the power of PPT Master's AI presentation generator. Use these examples as starting points for your own professional presentations, or let them inspire your next creative project."}
+            {t.inspirationExtendedDesc || "Each design showcases the power of PPTera's AI presentation generator. Use these examples as starting points for your own professional presentations, or let them inspire your next creative project."}
           </p>
         </div>
       </section>
@@ -280,7 +280,7 @@ export default function InspirationPageClient({ currentLang = "en" }: Inspiratio
 
           <div className="mt-12 text-center">
             <p className="text-slate-600 mb-6">
-              {t.readyToCreateOwn || "Ready to create your own stunning presentation? PPT Master's AI will help you apply these design principles automatically."}
+              {t.readyToCreateOwn || "Ready to create your own stunning presentation? PPTera's AI will help you apply these design principles automatically."}
             </p>
             <a
               href="/sign-up"

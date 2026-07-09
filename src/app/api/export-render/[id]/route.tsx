@@ -215,8 +215,8 @@ function generateSlideHtml(
   // Watermark for free users
   const watermarkHtml = addWatermark ? `
     <div style="position: absolute; bottom: 20px; right: 24px; display: flex; align-items: center; gap: 8px; z-index: 10; opacity: 0.7;">
-      <img src="/logo.png" style="height: 20px; width: auto;" alt="PPTMaster" />
-      <span style="font-size: 12px; color: #666; font-family: ${theme.fonts.body.family};">Made with PPTMaster</span>
+      <img src="/logo.png" style="height: 20px; width: auto;" alt="PPTera" />
+      <span style="font-size: 12px; color: #666; font-family: ${theme.fonts.body.family};">Made with PPTera</span>
     </div>
   ` : "";
 

@@ -63,7 +63,7 @@ export function ExportReady({
           </Text>
 
           <Text style={footer}>
-            © {new Date().getFullYear()} PPTMaster. All rights reserved.
+            © {new Date().getFullYear()} PPTera. All rights reserved.
           </Text>
         </Container>
       </Body>

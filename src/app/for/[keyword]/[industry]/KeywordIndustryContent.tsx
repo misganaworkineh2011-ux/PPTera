@@ -144,7 +144,7 @@ export function KeywordIndustryContent({ keyword, industry }: KeywordIndustryCon
             Ready to Create Your {industry.name} Presentation?
           </h2>
           <p className="text-xl mb-8 opacity-90">
-            Join thousands of {industry.name.toLowerCase()} professionals using PPTMaster
+            Join thousands of {industry.name.toLowerCase()} professionals using PPTera
           </p>
           <Link
             href="/createpresentation"

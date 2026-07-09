@@ -14,11 +14,11 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   const t = getTranslations(lang);
   
   return {
-    title: `${t.cookieNotice || "Cookie Notice"} - PPT Master`,
-    description: t.cookieNoticeDesc || "Learn how PPT Master uses cookies and similar technologies to improve your experience. Manage your cookie preferences easily.",
+    title: `${t.cookieNotice || "Cookie Notice"} - PPTera`,
+    description: t.cookieNoticeDesc || "Learn how PPTera uses cookies and similar technologies to improve your experience. Manage your cookie preferences easily.",
     openGraph: {
-      title: `${t.cookieNotice || "Cookie Notice"} - PPT Master`,
-      description: t.cookieNoticeDesc || "Learn how PPT Master uses cookies and similar technologies.",
+      title: `${t.cookieNotice || "Cookie Notice"} - PPTera`,
+      description: t.cookieNoticeDesc || "Learn how PPTera uses cookies and similar technologies.",
       type: "website",
     },
   };

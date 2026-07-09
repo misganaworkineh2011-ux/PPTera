@@ -24,7 +24,7 @@ export interface ExportOptions {
 }
 
 // Slide Master names
-const WATERMARK_MASTER = "PPTMASTER_BRANDED";
+const WATERMARK_MASTER = "PPTERA_BRANDED";
 const PLAIN_MASTER = "PLAIN_SLIDE";
 
 // Helper to load logo as base64
@@ -99,10 +99,10 @@ function defineSlideMasters(
       });
     }
 
-    // Add "Made with PPTMaster" text - white bold, centered vertically
+    // Add "Made with PPTera" text - white bold, centered vertically
     masterObjects.push({
       text: {
-        text: "Made with PPTMaster",
+        text: "Made with PPTera",
         options: {
           x: logoBase64 ? badgeX + 0.4 : badgeX + 0.15,
           y: badgeY,
@@ -424,7 +424,7 @@ function createSimpleWatermarkXml(
   const textX = hasLogo ? badgeX + 0.4 : badgeX + 0.15;
   const textW = hasLogo ? 1.7 : 1.5;
 
-  // Add "Made with PPTMaster" text shape
+  // Add "Made with PPTera" text shape
   shapes.push(`
     <p:sp>
       <p:nvSpPr>
@@ -454,7 +454,7 @@ function createSimpleWatermarkXml(
               </a:solidFill>
               <a:latin typeface="Arial"/>
             </a:rPr>
-            <a:t>Made with PPTMaster</a:t>
+            <a:t>Made with PPTera</a:t>
           </a:r>
         </a:p>
       </p:txBody>
@@ -473,7 +473,7 @@ export async function generatePptx(options: ExportOptions): Promise<Buffer> {
   const pptx = new PptxGenJS();
 
   pptx.title = title;
-  pptx.author = "PPTMaster";
+  pptx.author = "PPTera";
   pptx.layout = "LAYOUT_16x9";
 
   const logoBase64 = addWatermark ? await getLogoBase64() : null;

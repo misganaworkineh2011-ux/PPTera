@@ -139,7 +139,7 @@ export default function Sidebar({ isCollapsed, subscriptionPlan, onCloseMobile }
           {isCollapsed ? (
             <img 
               src="/icon.png" 
-              alt="PPTMaster Icon" 
+              alt="PPTera Icon" 
               className="w-auto h-8 lg:h-9 object-contain"
               onError={(e) => {
                 // Fallback if icon.png doesn't exist
@@ -150,7 +150,7 @@ export default function Sidebar({ isCollapsed, subscriptionPlan, onCloseMobile }
           ) : (
             <img 
               src="/logo.png" 
-              alt="PPTMaster Logo" 
+              alt="PPTera Logo" 
               className="w-auto h-8 lg:h-9 object-contain"
             />
           )}

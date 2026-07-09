@@ -209,7 +209,7 @@ export default function ImagesPageClient({
                     <div className="absolute inset-0 flex items-center justify-center p-4">
                       <Image
                         src="/logo.png"
-                        alt="PPT Master"
+                        alt="PPTera"
                         width={64}
                         height={64}
                         className="opacity-60 group-hover:opacity-80 transition-opacity"
@@ -285,7 +285,7 @@ export default function ImagesPageClient({
                     <div className="w-full h-full flex items-center justify-center">
                       <Image
                         src="/logo.png"
-                        alt="PPT Master"
+                        alt="PPTera"
                         width={32}
                         height={32}
                         className="opacity-60"

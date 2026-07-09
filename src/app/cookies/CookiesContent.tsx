@@ -33,7 +33,7 @@ export function CookiesContent() {
             {/* Introduction */}
             <div className="mb-12">
               <p className="text-lg text-slate-700 leading-relaxed mb-6">
-                This Cookie Notice explains how PPT Master (&quot;PPT Master&quot;, &quot;we&quot;, &quot;us&quot; or &quot;our&quot;) uses cookies and other similar technologies on its website that links to this Cookie Notice (the &quot;Site&quot;), as well as in our emails, and your related choices in relation to the same.
+                This Cookie Notice explains how PPTera (&quot;PPTera&quot;, &quot;we&quot;, &quot;us&quot; or &quot;our&quot;) uses cookies and other similar technologies on its website that links to this Cookie Notice (the &quot;Site&quot;), as well as in our emails, and your related choices in relation to the same.
               </p>
               <p className="text-lg text-slate-700 leading-relaxed">
                 Please refer to our <a href="/privacy" className="text-[#06b6d4] hover:underline font-semibold">Privacy Policy</a> for more information on our privacy practices.
@@ -53,7 +53,7 @@ export function CookiesContent() {
 
             {/* What types of technologies */}
             <div className="mb-12">
-              <h2 className="text-3xl font-bold text-slate-900 mb-6">What types of technologies does PPT Master use?</h2>
+              <h2 className="text-3xl font-bold text-slate-900 mb-6">What types of technologies does PPTera use?</h2>
               <p className="text-slate-700 leading-relaxed mb-6">
                 We may use any or all of the following &quot;technologies&quot; on our Site and in our emails:
               </p>
@@ -65,7 +65,7 @@ export function CookiesContent() {
                     A cookie is a very small text file that may be placed on your browser or in the storage on your device. There are two types: &quot;session cookies&quot; and &quot;persistent cookies&quot;. Session cookies are cookies that disappear from your device or browser when you close your browser. Persistent cookies stay on your device even after you close your browser.
                   </p>
                   <p className="text-slate-700 leading-relaxed">
-                    Please note that both PPT Master and third-party service providers may set cookies on our Site - these &apos;third-party cookies&apos; are set by domains other than those we control and may recognise your device across different websites.
+                    Please note that both PPTera and third-party service providers may set cookies on our Site - these &apos;third-party cookies&apos; are set by domains other than those we control and may recognise your device across different websites.
                   </p>
                 </div>
 

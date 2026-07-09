@@ -22,17 +22,17 @@ async function sendWelcomeEmail(email: string, unsubscribeToken: string): Promis
     const unsubscribeUrl = `${baseUrl}/api/newsletter/unsubscribe?token=${unsubscribeToken}`;
 
     const result = await resend.emails.send({
-      from: `PPTMaster <${fromEmail}>`,
+      from: `PPTera <${fromEmail}>`,
       to: [email],
-      subject: "Welcome to PPTMaster Newsletter! 🎉",
+      subject: "Welcome to PPTera Newsletter! 🎉",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #1a1a1a; font-size: 28px; margin: 0;">Welcome to PPTMaster! 🎉</h1>
+            <h1 style="color: #1a1a1a; font-size: 28px; margin: 0;">Welcome to PPTera! 🎉</h1>
           </div>
           
           <p style="color: #4a4a4a; font-size: 16px; line-height: 26px;">
-            Thanks for subscribing to our newsletter! You're now part of the PPTMaster community.
+            Thanks for subscribing to our newsletter! You're now part of the PPTera community.
           </p>
           
           <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; margin: 24px 0;">
@@ -59,7 +59,7 @@ async function sendWelcomeEmail(email: string, unsubscribeToken: string): Promis
           <hr style="border: none; border-top: 1px solid #e6e6e6; margin: 32px 0;" />
           
           <p style="color: #8898aa; font-size: 14px;">
-            — The PPTMaster Team
+            — The PPTera Team
           </p>
           
           <div style="margin-top: 24px; padding: 12px; background-color: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb;">

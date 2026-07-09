@@ -18,7 +18,7 @@ export function ContactConfirmation({ userName, subject }: ContactConfirmationPr
   return (
     <Html>
       <Head />
-      <Preview>We received your message - PPTMaster Support</Preview>
+      <Preview>We received your message - PPTera Support</Preview>
       <Body style={main}>
         <Container style={container}>
           <Heading style={h1}>We Got Your Message! 📬</Heading>
@@ -41,7 +41,7 @@ export function ContactConfirmation({ userName, subject }: ContactConfirmationPr
           <Hr style={hr} />
 
           <Text style={footer}>
-            — The PPTMaster Support Team
+            — The PPTera Support Team
           </Text>
         </Container>
       </Body>

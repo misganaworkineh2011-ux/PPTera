@@ -52,7 +52,7 @@ export const PLAN_CONFIG = {
       "1,000 monthly credits",
       "20 cards per prompt",
       "Export to PDF, PPTX & PNG",
-      "Remove PPTMaster branding",
+      "Remove PPTera branding",
       "Basic AI image models",
       "Basic slide animations",
     ],
@@ -63,7 +63,7 @@ export const PLAN_CONFIG = {
     features: [
       "4,000 monthly credits",
       "60 cards per prompt",
-      "Remove PPTMaster branding",
+      "Remove PPTera branding",
       "Export to PDF, PPTX & PNG",
       "Pro AI models & 2K exports",
       "Advanced animations",
@@ -77,7 +77,7 @@ export const PLAN_CONFIG = {
     features: [
       "20,000 monthly credits",
       "75 cards per prompt",
-      "Remove PPTMaster branding",
+      "Remove PPTera branding",
       "Export to PDF, PPTX & PNG",
       "Pro AI models & 2K exports",
       "All slide animations & effects",

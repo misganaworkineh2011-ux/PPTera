@@ -18,7 +18,7 @@ export async function sendNewsletterConfirmation({
     const { data, error } = await resend.emails.send({
       from: emailConfig.from,
       to,
-      subject: "Confirm your PPTMaster newsletter subscription",
+      subject: "Confirm your PPTera newsletter subscription",
       react: NewsletterConfirmation({ confirmUrl }),
     });
 

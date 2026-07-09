@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Education - PPT Master for Students & Teachers",
-  description: "Special pricing for students, teachers, and schools. Get 50% off on PPT Master Pro plans with full premium access to AI presentation tools.",
+  title: "Education - PPTera for Students & Teachers",
+  description: "Special pricing for students, teachers, and schools. Get 50% off on PPTera Pro plans with full premium access to AI presentation tools.",
   alternates: {
     canonical: "https://www.pptmaster.app/education",
   },
   openGraph: {
-    title: "Education - PPT Master for Students & Teachers",
-    description: "Special pricing for students, teachers, and schools. Get 50% off on PPT Master Pro plans.",
+    title: "Education - PPTera for Students & Teachers",
+    description: "Special pricing for students, teachers, and schools. Get 50% off on PPTera Pro plans.",
     url: "/education",
     type: "website",
     images: [
@@ -16,13 +16,13 @@ export const metadata: Metadata = {
         url: "/og-image.jpeg",
         width: 1200,
         height: 630,
-        alt: "PPT Master Education Plans",
+        alt: "PPTera Education Plans",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Education - PPT Master for Students & Teachers",
+    title: "Education - PPTera for Students & Teachers",
     description: "Special pricing for students, teachers, and schools. Get 50% off on Pro plans.",
     images: ["/og-image.jpeg"],
   },

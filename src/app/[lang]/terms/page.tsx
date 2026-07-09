@@ -14,11 +14,11 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   const t = getTranslations(lang);
   
   return {
-    title: `${t.termsOfService || "Terms of Service"} - PPT Master`,
-    description: t.termsOfServiceDesc || "Read PPT Master's terms of service to understand the rules and guidelines for using our AI presentation platform.",
+    title: `${t.termsOfService || "Terms of Service"} - PPTera`,
+    description: t.termsOfServiceDesc || "Read PPTera's terms of service to understand the rules and guidelines for using our AI presentation platform.",
     openGraph: {
-      title: `${t.termsOfService || "Terms of Service"} - PPT Master`,
-      description: t.termsOfServiceDesc || "Read PPT Master's terms of service to understand the rules and guidelines.",
+      title: `${t.termsOfService || "Terms of Service"} - PPTera`,
+      description: t.termsOfServiceDesc || "Read PPTera's terms of service to understand the rules and guidelines.",
       type: "website",
     },
   };

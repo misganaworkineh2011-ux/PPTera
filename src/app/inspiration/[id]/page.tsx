@@ -90,7 +90,7 @@ export default function InspirationItemPage({ currentLang = "en" }: InspirationI
       try {
         await navigator.share({
           title: item.title,
-          text: item.description || `Check out this ${item.category} presentation design on PPTMaster`,
+          text: item.description || `Check out this ${item.category} presentation design on PPTera`,
           url: window.location.href,
         });
         return;
@@ -174,11 +174,11 @@ export default function InspirationItemPage({ currentLang = "en" }: InspirationI
             dateModified: item.updatedAt,
             author: {
               "@type": "Person",
-              name: item.authorName || "PPTMaster Team",
+              name: item.authorName || "PPTera Team",
             },
             publisher: {
               "@type": "Organization",
-              name: "PPTMaster",
+              name: "PPTera",
               logo: {
                 "@type": "ImageObject",
                 url: "https://www.pptmaster.app/logo.png",
@@ -329,7 +329,7 @@ export default function InspirationItemPage({ currentLang = "en" }: InspirationI
               Ready to create your own?
             </h2>
             <p className="text-lg mb-6 text-white/90">
-              Use PPTMaster AI to generate stunning presentations like this in minutes.
+              Use PPTera AI to generate stunning presentations like this in minutes.
             </p>
             <button
               onClick={() => router.push("/dashboard")}

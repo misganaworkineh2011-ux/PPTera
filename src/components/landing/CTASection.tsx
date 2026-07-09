@@ -129,7 +129,7 @@ export function CTASection({ t, currentLang }: CTASectionProps) {
       {/* Full Image - Responsive sizes for better performance */}
       <Image
         src="/background.png"
-        alt="Get started with PPT Master"
+        alt="Get started with PPTera"
         width={1920}
         height={1080}
         sizes="100vw"

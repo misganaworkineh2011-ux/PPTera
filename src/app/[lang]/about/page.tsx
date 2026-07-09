@@ -14,8 +14,8 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   const t = getTranslations(lang);
   
   return {
-    title: `${t.aboutUs || "About Us"} - PPT Master`,
-    description: t.aboutHeroDesc || "Learn about PPT Master's mission to make professional AI presentations accessible to everyone. Meet our team and story.",
+    title: `${t.aboutUs || "About Us"} - PPTera`,
+    description: t.aboutHeroDesc || "Learn about PPTera's mission to make professional AI presentations accessible to everyone. Meet our team and story.",
   };
 }
 

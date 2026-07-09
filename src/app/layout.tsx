@@ -16,12 +16,12 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://www.pptmaster.app'),
   title: {
-    default: "PPTMaster: Free Stunning PowerPoint Generator",
-    template: "%s | PPTMaster"
+    default: "PPTera: Free Stunning PowerPoint Generator",
+    template: "%s | PPTera"
   },
-  description: "PPTMaster creates professional presentations in seconds with AI. Free slide generator with 100+ themes. No design skills needed.",
+  description: "PPTera creates professional presentations in seconds with AI. Free slide generator with 100+ themes. No design skills needed.",
   keywords: [
-    "PPTMaster",
+    "PPTera",
     "best free ai powerpoint generator",
     "ai powerpoint slide generator",
     "ai powerpoint presentation generator",
@@ -48,12 +48,12 @@ export const metadata: Metadata = {
     "PowerPoint slides",
     "PowerPoint backgrounds"
   ],
-  authors: [{ name: "PPTMaster" }],
-  creator: "PPTMaster",
-  publisher: "PPTMaster",
-  applicationName: "PPT Master",
+  authors: [{ name: "PPTera" }],
+  creator: "PPTera",
+  publisher: "PPTera",
+  applicationName: "PPTera",
   appleWebApp: {
-    title: "PPT Master",
+    title: "PPTera",
     statusBarStyle: "default",
     capable: true,
   },
@@ -87,33 +87,33 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "/",
-    siteName: "PPT Master",
-    title: "PPTMaster: Free Stunning PowerPoint Generator",
-    description: "PPTMaster creates professional presentations in seconds with AI. Free slide generator with 100+ themes.",
+    siteName: "PPTera",
+    title: "PPTera: Free Stunning PowerPoint Generator",
+    description: "PPTera creates professional presentations in seconds with AI. Free slide generator with 100+ themes.",
     images: [
       {
         url: "/og-image.jpeg",
         width: 1200,
         height: 630,
-        alt: "PPTMaster - Free AI PowerPoint Generator",
+        alt: "PPTera - Free AI PowerPoint Generator",
         type: "image/jpeg",
       }
     ]
   },
   twitter: {
     card: "summary_large_image",
-    title: "PPTMaster: Free Stunning PowerPoint Generator",
-    description: "PPTMaster creates professional presentations in seconds with AI. Free slide generator with 100+ themes.",
+    title: "PPTera: Free Stunning PowerPoint Generator",
+    description: "PPTera creates professional presentations in seconds with AI. Free slide generator with 100+ themes.",
     images: [
       {
         url: "/og-image.jpeg",
         width: 1200,
         height: 630,
-        alt: "PPT Master - Free AI PowerPoint Generator",
+        alt: "PPTera - Free AI PowerPoint Generator",
       }
     ],
-    site: "@pptmaster",
-    creator: "@pptmaster",
+    site: "@pptera",
+    creator: "@pptera",
   },
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
@@ -128,10 +128,10 @@ export default function RootLayout({
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "PPTMaster",
-    "alternateName": ["PPT Master", "PPTMaster"],
+    "name": "PPTera",
+    "alternateName": ["PPTera", "PPTera"],
     "url": process.env.NEXT_PUBLIC_APP_URL || "https://www.pptmaster.app",
-    "description": "PPTMaster is your free AI-powered design partner for creating stunning presentations effortlessly. No coding or design skills required.",
+    "description": "PPTera is your free AI-powered design partner for creating stunning presentations effortlessly. No coding or design skills required.",
     "potentialAction": {
       "@type": "SearchAction",
       "target": {
@@ -145,11 +145,11 @@ export default function RootLayout({
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": "PPTMaster",
-    "alternateName": ["PPT Master", "PPTMaster"],
+    "name": "PPTera",
+    "alternateName": ["PPTera", "PPTera"],
     "url": process.env.NEXT_PUBLIC_APP_URL || "https://www.pptmaster.app",
     "logo": `${process.env.NEXT_PUBLIC_APP_URL || "https://www.pptmaster.app"}/logo.png`,
-    "description": "PPTMaster (PPT Master) is the best AI-powered PowerPoint generator for creating professional presentations.",
+    "description": "PPTera (PPTera) is the best AI-powered PowerPoint generator for creating professional presentations.",
     "foundingDate": "2024",
     "contactPoint": {
       "@type": "ContactPoint",
@@ -163,11 +163,11 @@ export default function RootLayout({
   const softwareApplicationSchema = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    "name": "PPTMaster",
-    "alternateName": ["PPT Master", "PPTMaster"],
+    "name": "PPTera",
+    "alternateName": ["PPTera", "PPTera"],
     "applicationCategory": "BusinessApplication",
     "operatingSystem": "Web",
-    "description": "PPTMaster (PPT Master) is the best AI PowerPoint generator for creating professional presentations with artificial intelligence.",
+    "description": "PPTera (PPTera) is the best AI PowerPoint generator for creating professional presentations with artificial intelligence.",
     "offers": {
       "@type": "Offer",
       "price": "0",

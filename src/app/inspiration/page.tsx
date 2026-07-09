@@ -2,14 +2,14 @@ import InspirationPageClient from "./InspirationPageClient";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Inspiration Gallery - AI PowerPoint Examples & Templates | PPTMaster",
-  description: "Browse 1000+ stunning AI-generated PowerPoint examples. Get inspired by professional presentation designs, business slides, and creative templates from PPTMaster.",
-  keywords: "presentation inspiration, PowerPoint examples, slide design, presentation templates, PPTMaster gallery, AI presentations, design inspiration",
+  title: "Inspiration Gallery - AI PowerPoint Examples & Templates | PPTera",
+  description: "Browse 1000+ stunning AI-generated PowerPoint examples. Get inspired by professional presentation designs, business slides, and creative templates from PPTera.",
+  keywords: "presentation inspiration, PowerPoint examples, slide design, presentation templates, PPTera gallery, AI presentations, design inspiration",
   alternates: {
     canonical: "https://www.pptmaster.app/inspiration",
   },
   openGraph: {
-    title: "Inspiration Gallery - AI PowerPoint Examples | PPTMaster",
+    title: "Inspiration Gallery - AI PowerPoint Examples | PPTera",
     description: "Browse 1000+ stunning AI-generated PowerPoint examples. Get inspired by professional presentation designs.",
     url: "https://www.pptmaster.app/inspiration",
     type: "website",
@@ -18,13 +18,13 @@ export const metadata: Metadata = {
         url: "https://www.pptmaster.app/og-image.jpeg",
         width: 1200,
         height: 630,
-        alt: "PPTMaster Inspiration Gallery",
+        alt: "PPTera Inspiration Gallery",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Inspiration Gallery - AI PowerPoint Examples | PPTMaster",
+    title: "Inspiration Gallery - AI PowerPoint Examples | PPTera",
     description: "Browse 1000+ stunning AI-generated PowerPoint examples. Get inspired by professional designs.",
     images: ["https://www.pptmaster.app/og-image.jpeg"],
   },

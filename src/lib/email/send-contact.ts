@@ -30,7 +30,7 @@ export async function sendContactEmails({
       from: emailConfig.from,
       to: userEmail,
       replyTo: emailConfig.replyTo,
-      subject: "We received your message - PPTMaster",
+      subject: "We received your message - PPTera",
       react: ContactConfirmation({ userName, subject }),
     });
 

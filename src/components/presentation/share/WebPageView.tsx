@@ -317,7 +317,7 @@ export default function WebPageView({
             className="font-semibold hover:underline"
             style={{ color: accent }}
           >
-            Made with PPTMaster — create yours free
+            Made with PPTera — create yours free
           </a>
         ) : (
           <span>{title}</span>

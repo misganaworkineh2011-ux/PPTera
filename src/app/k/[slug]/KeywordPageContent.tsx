@@ -68,7 +68,7 @@ export function KeywordPageContent({ keyword }: KeywordPageContentProps) {
       <section className="container mx-auto px-4 py-16 bg-white">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-12">
-            Why Choose PPTMaster for {formattedKeyword}?
+            Why Choose PPTera for {formattedKeyword}?
           </h2>
           
           <div className="grid md:grid-cols-3 gap-8">
@@ -89,7 +89,7 @@ export function KeywordPageContent({ keyword }: KeywordPageContentProps) {
       <section className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-12">
-            How to Use PPTMaster for {formattedKeyword}
+            How to Use PPTera for {formattedKeyword}
           </h2>
           
           <div className="space-y-8">
@@ -135,7 +135,7 @@ export function KeywordPageContent({ keyword }: KeywordPageContentProps) {
             Ready to Create Your Presentation?
           </h2>
           <p className="text-xl mb-8 opacity-90">
-            Join thousands of users creating stunning presentations with PPTMaster
+            Join thousands of users creating stunning presentations with PPTera
           </p>
           <Link
             href="/createpresentation"
@@ -184,7 +184,7 @@ function getHeroDescription(keyword: KeywordData): string {
     return 'Create professional presentations instantly with our free AI-powered generator. No credit card required, no hidden fees.';
   }
   if (kw.includes('best')) {
-    return 'Discover why PPTMaster is the top choice for creating stunning presentations with AI technology.';
+    return 'Discover why PPTera is the top choice for creating stunning presentations with AI technology.';
   }
   if (kw.includes('how to')) {
     return 'Learn how to create amazing presentations quickly and easily with our step-by-step guide and AI assistance.';
@@ -224,7 +224,7 @@ function getSteps(keyword: KeywordData) {
     },
     {
       title: 'AI Generates Content',
-      description: 'Watch as PPTMaster creates professional slides with relevant content and images.',
+      description: 'Watch as PPTera creates professional slides with relevant content and images.',
     },
     {
       title: 'Customize & Export',

@@ -23,11 +23,11 @@ export async function generateMetadata({
   const t = getTranslations(lang);
 
   return {
-    title: `${t.helpTitle || "Help Center"} - PPT Master`,
-    description: t.helpSubtitle || "Get help with PPT Master. Find answers to common questions and learn how to use our AI presentation generator effectively.",
+    title: `${t.helpTitle || "Help Center"} - PPTera`,
+    description: t.helpSubtitle || "Get help with PPTera. Find answers to common questions and learn how to use our AI presentation generator effectively.",
     openGraph: {
-      title: `${t.helpTitle || "Help Center"} - PPT Master`,
-      description: t.helpSubtitle || "Get help with PPT Master. Find answers to common questions.",
+      title: `${t.helpTitle || "Help Center"} - PPTera`,
+      description: t.helpSubtitle || "Get help with PPTera. Find answers to common questions.",
       type: "website",
     },
   };
@@ -138,10 +138,10 @@ function getHelpContent(t: ReturnType<typeof getTranslations>) {
         "Free users get 200 credits to start. Paid plans include monthly credits: Plus (1,000), Pro (4,000), Ultra (20,000).",
     },
     {
-      question: t.helpFaq2Question || "Can I use PPTMaster offline?",
+      question: t.helpFaq2Question || "Can I use PPTera offline?",
       answer:
         t.helpFaq2Answer ||
-        "PPTMaster requires an internet connection for AI generation and real-time collaboration. However, you can download presentations and work on them offline.",
+        "PPTera requires an internet connection for AI generation and real-time collaboration. However, you can download presentations and work on them offline.",
     },
     {
       question: t.helpFaq3Question || "Is my data secure?",
@@ -199,7 +199,7 @@ export default async function HelpPage({
           </h1>
           <p className="text-xl text-slate-600 max-w-2xl mx-auto animate-fade-in-up [animation-delay:150ms]">
             {t.helpSubtitle ||
-              "Find answers to common questions and learn how to get the most out of PPT Master."}
+              "Find answers to common questions and learn how to get the most out of PPTera."}
           </p>
         </div>
       </section>

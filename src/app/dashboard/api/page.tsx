@@ -343,7 +343,7 @@ export default function ApiWebhooksPage() {
                   </label>
                   <input
                     type="url"
-                    placeholder="https://your-app.com/api/webhooks/pptmaster"
+                    placeholder="https://your-app.com/api/webhooks/pptera"
                     value={webhookUrl}
                     onChange={(e) => setWebhookUrl(e.target.value)}
                     className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-800/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"

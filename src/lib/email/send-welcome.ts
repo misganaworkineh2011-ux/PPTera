@@ -17,7 +17,7 @@ export async function sendWelcomeEmail({
     const { data, error } = await resend.emails.send({
       from: emailConfig.fromNoReply,
       to,
-      subject: "Welcome to PPT Master! 🎉",
+      subject: "Welcome to PPTera! 🎉",
       react: WelcomeEmail({ userName, dashboardUrl }),
     });
 

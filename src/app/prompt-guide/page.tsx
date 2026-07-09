@@ -4,13 +4,13 @@ import { PromptGuideContent } from "./PromptGuideContent";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "AI Prompt Guide - Write Better PowerPoint Prompts | PPTMaster",
-  description: "Master AI prompt writing for stunning PowerPoint presentations. Learn tips, examples, and best practices to create professional slides with PPTMaster AI generator.",
+  title: "AI Prompt Guide - Write Better PowerPoint Prompts | PPTera",
+  description: "Master AI prompt writing for stunning PowerPoint presentations. Learn tips, examples, and best practices to create professional slides with PPTera AI generator.",
   alternates: {
     canonical: "https://www.pptmaster.app/prompt-guide",
   },
   openGraph: {
-    title: "AI Prompt Guide - Write Better PowerPoint Prompts | PPTMaster",
+    title: "AI Prompt Guide - Write Better PowerPoint Prompts | PPTera",
     description: "Master AI prompt writing for stunning PowerPoint presentations. Learn tips, examples, and best practices.",
     url: "/prompt-guide",
     type: "website",
@@ -19,13 +19,13 @@ export const metadata: Metadata = {
         url: "/og-image.jpeg",
         width: 1200,
         height: 630,
-        alt: "PPTMaster Prompt Guide",
+        alt: "PPTera Prompt Guide",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "AI Prompt Guide - Write Better Prompts | PPTMaster",
+    title: "AI Prompt Guide - Write Better Prompts | PPTera",
     description: "Master AI prompt writing for stunning PowerPoint presentations.",
     images: ["/og-image.jpeg"],
   },
@@ -38,7 +38,7 @@ const howToSchema = {
   "@context": "https://schema.org",
   "@type": "HowTo",
   "name": "How to Write Effective AI Prompts for Presentations",
-  "description": "Learn how to write effective prompts for PPT Master's AI presentation generator to create stunning, professional slides.",
+  "description": "Learn how to write effective prompts for PPTera's AI presentation generator to create stunning, professional slides.",
   "totalTime": "PT5M",
   "step": [
     {

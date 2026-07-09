@@ -39,21 +39,21 @@ export async function generateMetadata({
   }
 
   const title = `${formatTitle(keyword.original)} for ${industry.name}`;
-  const description = `Create ${industry.name.toLowerCase()} presentations with ${keyword.original}. PPTMaster's AI-powered generator helps ${industry.name.toLowerCase()} professionals create stunning presentations in minutes.`;
+  const description = `Create ${industry.name.toLowerCase()} presentations with ${keyword.original}. PPTera's AI-powered generator helps ${industry.name.toLowerCase()} professionals create stunning presentations in minutes.`;
 
   return {
-    title: `${title} | PPTMaster`,
+    title: `${title} | PPTera`,
     description,
-    keywords: [keyword.original, industry.name, 'ai presentation', 'powerpoint generator', 'pptmaster'],
+    keywords: [keyword.original, industry.name, 'ai presentation', 'powerpoint generator', 'pptera'],
     openGraph: {
-      title: `${title} | PPTMaster`,
+      title: `${title} | PPTera`,
       description,
       type: 'website',
       url: `https://www.pptmaster.app/for/${keywordSlug}/${industrySlug}`,
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${title} | PPTMaster`,
+      title: `${title} | PPTera`,
       description,
     },
     alternates: {

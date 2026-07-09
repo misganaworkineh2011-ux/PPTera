@@ -15,10 +15,10 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   const t = getTranslations(lang);
   
   return {
-    title: `${t.insights || "Insights"} - PPT Master | ${t.insightsHeroTitle} ${t.insightsHeroHighlight}`,
+    title: `${t.insights || "Insights"} - PPTera | ${t.insightsHeroTitle} ${t.insightsHeroHighlight}`,
     description: t.insightsHeroDesc || "Discover tips, guides, and expert insights to help you create better presentations with AI. Learn best practices and boost productivity.",
     openGraph: {
-      title: `${t.insights || "Insights"} - PPT Master`,
+      title: `${t.insights || "Insights"} - PPTera`,
       description: t.insightsHeroDesc,
       type: "website",
     },

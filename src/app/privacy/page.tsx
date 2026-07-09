@@ -4,14 +4,14 @@ import { PrivacyContent } from "./PrivacyContent";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy - Data Protection & Security | PPTMaster",
-  description: "Read PPTMaster's privacy policy. Learn how we collect, use, protect your data, and ensure security when using our AI PowerPoint generator.",
+  title: "Privacy Policy - Data Protection & Security | PPTera",
+  description: "Read PPTera's privacy policy. Learn how we collect, use, protect your data, and ensure security when using our AI PowerPoint generator.",
   alternates: {
     canonical: "https://www.pptmaster.app/privacy",
   },
   openGraph: {
-    title: "Privacy Policy - Data Protection & Security | PPTMaster",
-    description: "Learn how PPTMaster collects, uses, and protects your data when using our AI PowerPoint generator.",
+    title: "Privacy Policy - Data Protection & Security | PPTera",
+    description: "Learn how PPTera collects, uses, and protects your data when using our AI PowerPoint generator.",
     url: "/privacy",
     type: "website",
     images: [
@@ -19,14 +19,14 @@ export const metadata: Metadata = {
         url: "/og-image.jpeg",
         width: 1200,
         height: 630,
-        alt: "PPTMaster Privacy Policy",
+        alt: "PPTera Privacy Policy",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Privacy Policy | PPTMaster",
-    description: "Learn how PPTMaster collects, uses, and protects your data.",
+    title: "Privacy Policy | PPTera",
+    description: "Learn how PPTera collects, uses, and protects your data.",
     images: ["/og-image.jpeg"],
   },
 };

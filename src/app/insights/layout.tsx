@@ -1,21 +1,21 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Insights & Blog | PPT Master - AI PowerPoint Generator Tips & Guides",
+  title: "Insights & Blog | PPTera - AI PowerPoint Generator Tips & Guides",
   description:
-    "Discover expert tips, design guides, and best practices for creating stunning presentations with PPT Master. Learn how to leverage AI powerpoint generator tools for professional slides.",
+    "Discover expert tips, design guides, and best practices for creating stunning presentations with PPTera. Learn how to leverage AI powerpoint generator tools for professional slides.",
   openGraph: {
-    title: "Insights & Blog | PPT Master - AI PowerPoint Generator",
+    title: "Insights & Blog | PPTera - AI PowerPoint Generator",
     description:
       "Expert tips and guides for creating stunning presentations with AI powerpoint generator tools. Learn design principles, best practices, and presentation techniques.",
     url: "https://www.pptmaster.app/insights",
-    siteName: "PPT Master - AI PowerPoint Generator",
+    siteName: "PPTera - AI PowerPoint Generator",
     images: [
       {
         url: "https://www.pptmaster.app/og-image.jpeg",
         width: 1200,
         height: 630,
-        alt: "PPT Master Insights - Presentation Design Tips",
+        alt: "PPTera Insights - Presentation Design Tips",
       },
     ],
     type: "website",
@@ -23,15 +23,15 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Insights & Blog | PPT Master - AI PowerPoint Generator",
+    title: "Insights & Blog | PPTera - AI PowerPoint Generator",
     description:
       "Expert tips and guides for creating stunning presentations with AI powerpoint generator tools.",
     images: ["https://www.pptmaster.app/og-image.jpeg"],
-    creator: "@pptmaster",
-    site: "@pptmaster",
+    creator: "@pptera",
+    site: "@pptera",
   },
   keywords: [
-    "ppt master",
+    "pptera",
     "ai powerpoint generator",
     "presentation tips",
     "powerpoint design",

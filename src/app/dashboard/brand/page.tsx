@@ -3,7 +3,7 @@ import { db } from "~/server/db";
 import BrandKitClient, { type BrandKitData } from "./BrandKitClient";
 
 export const metadata = {
-  title: "Brand Kit | PPTMaster",
+  title: "Brand Kit | PPTera",
   description: "Set your brand once — every presentation comes out on-brand.",
 };
 

@@ -20,13 +20,13 @@ export function NewsletterConfirmation({ confirmUrl }: NewsletterConfirmationPro
   return (
     <Html>
       <Head />
-      <Preview>Confirm your PPTMaster newsletter subscription</Preview>
+      <Preview>Confirm your PPTera newsletter subscription</Preview>
       <Body style={main}>
         <Container style={container}>
           <Heading style={h1}>Confirm Your Subscription 📧</Heading>
           
           <Text style={text}>
-            Thanks for subscribing to the PPTMaster newsletter! 
+            Thanks for subscribing to the PPTera newsletter! 
           </Text>
 
           <Text style={text}>
@@ -53,7 +53,7 @@ export function NewsletterConfirmation({ confirmUrl }: NewsletterConfirmationPro
           </Text>
 
           <Text style={footer}>
-            — The PPTMaster Team
+            — The PPTera Team
           </Text>
         </Container>
       </Body>

@@ -51,10 +51,10 @@ export default function PasswordProtectedView({
           >
             <img 
               src="/logo.png" 
-              alt="PPTMaster" 
+              alt="PPTera" 
               className="w-5 h-5 object-contain"
             />
-            Made with PPTMaster
+            Made with PPTera
           </a>
         )}
       </div>
@@ -104,7 +104,7 @@ export default function PasswordProtectedView({
 
         <div className="pt-4 text-center">
           <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">
-            Powered by PPTMaster Security
+            Powered by PPTera Security
           </p>
         </div>
       </div>

@@ -123,7 +123,7 @@ export function ContactPageClient({ currentLang }: ContactPageClientProps) {
           </h1>
 
           <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed animate-fade-in-up [animation-delay:200ms]">
-            {t.contactDesc || "Have a question about PPT Master or our AI PowerPoint generator? We'd love to hear from you."}
+            {t.contactDesc || "Have a question about PPTera or our AI PowerPoint generator? We'd love to hear from you."}
           </p>
         </div>
       </section>

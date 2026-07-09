@@ -148,7 +148,7 @@ export default function CommunityPageClient({ currentLang = "en" }: CommunityPag
     },
     {
       title: t.guidelineTopicTitle || "Stay On Topic",
-      description: t.guidelineTopicDesc || "Keep discussions relevant to presentations, design, and PPTMaster features."
+      description: t.guidelineTopicDesc || "Keep discussions relevant to presentations, design, and PPTera features."
     },
     {
       title: t.guidelineReportTitle || "Report Issues",
@@ -174,7 +174,7 @@ export default function CommunityPageClient({ currentLang = "en" }: CommunityPag
           </div>
 
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 mb-6 animate-fade-in-up [animation-delay:100ms]">
-            {t.communityHeroTitle || "Join the"} <span className="bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] bg-clip-text text-transparent">PPTMaster</span> {t.community}
+            {t.communityHeroTitle || "Join the"} <span className="bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] bg-clip-text text-transparent">PPTera</span> {t.community}
           </h1>
 
           <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed animate-fade-in-up [animation-delay:200ms]">

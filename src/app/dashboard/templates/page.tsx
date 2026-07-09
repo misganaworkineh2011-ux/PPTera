@@ -1,7 +1,7 @@
 import TemplatesClient from "./TemplatesClient";
 
 export const metadata = {
-  title: "Templates | PPTMaster",
+  title: "Templates | PPTera",
   description: "Start from a professionally structured deck template.",
 };
 

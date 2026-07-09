@@ -39,7 +39,7 @@ export async function dispatchWebhook(userId: string, event: string, payload: an
           headers: {
             "Content-Type": "application/json",
             "X-PPTM-Signature": signature,
-            "User-Agent": "PPTMaster-Webhooks/1.0",
+            "User-Agent": "PPTera-Webhooks/1.0",
           },
           body,
           // Add a short timeout to prevent blocking

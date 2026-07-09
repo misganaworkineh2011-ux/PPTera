@@ -16,7 +16,7 @@ export async function generateMetadata({
 
   if (!presentation || !presentation.isPublic) {
     return {
-      title: "Presentation Not Found | PPTMaster",
+      title: "Presentation Not Found | PPTera",
     };
   }
 
@@ -38,7 +38,7 @@ export async function generateMetadata({
   const ogImage = titleSlide?.image?.url || titleSlide?.images?.[0]?.url || "/og-image.jpeg";
   
   const title = `${presentation.title}`;
-  const description = presentation.description || `View "${presentation.title}" presentation created with PPTMaster`;
+  const description = presentation.description || `View "${presentation.title}" presentation created with PPTera`;
 
   return {
     title,
@@ -199,10 +199,10 @@ export default async function SharedPresentationPage({
             >
               <img 
                 src="/logo.png" 
-                alt="PPTMaster" 
+                alt="PPTera" 
                 className="w-5 h-5 object-contain"
               />
-              Made with PPTMaster
+              Made with PPTera
             </a>
           )}
         </>

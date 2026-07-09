@@ -77,7 +77,7 @@ export default async function TemplatePage({
         description: content.metaDescription,
         creator: {
             "@type": "Organization",
-            name: "PPTMaster",
+            name: "PPTera",
         },
     };
 

@@ -2,15 +2,15 @@ import PricingPageClient from "./PricingPageClient";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Pricing Plans - Free AI PowerPoint Generator | PPTMaster",
-  description: "Compare PPTMaster pricing plans. Start free with 200 credits. Upgrade to Plus ($9/mo), Pro ($19/mo), or Ultra ($49/mo) for more AI PowerPoint features and credits.",
-  keywords: ["pricing", "plans", "subscription", "free presentation maker", "PPT pricing", "affordable AI", "presentation plans", "PPTMaster", "PPT Master", "PowerPoint pricing", "AI PowerPoint plans", "best PowerPoint generator"],
+  title: "Pricing Plans - Free AI PowerPoint Generator | PPTera",
+  description: "Compare PPTera pricing plans. Start free with 200 credits. Upgrade to Plus ($9/mo), Pro ($19/mo), or Ultra ($49/mo) for more AI PowerPoint features and credits.",
+  keywords: ["pricing", "plans", "subscription", "free presentation maker", "PPT pricing", "affordable AI", "presentation plans", "PPTera", "PPTera", "PowerPoint pricing", "AI PowerPoint plans", "best PowerPoint generator"],
   alternates: {
     canonical: "https://www.pptmaster.app/pricing",
   },
   openGraph: {
-    title: "Pricing Plans - Free AI PowerPoint Generator | PPTMaster",
-    description: "Compare PPTMaster pricing plans. Start free with 200 credits. Upgrade for more AI PowerPoint features and credits.",
+    title: "Pricing Plans - Free AI PowerPoint Generator | PPTera",
+    description: "Compare PPTera pricing plans. Start free with 200 credits. Upgrade for more AI PowerPoint features and credits.",
     url: "/pricing",
     type: "website",
     images: [
@@ -18,14 +18,14 @@ export const metadata: Metadata = {
         url: "/og-image.jpeg",
         width: 1200,
         height: 630,
-        alt: "PPTMaster Pricing Plans",
+        alt: "PPTera Pricing Plans",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Pricing Plans - Free AI PowerPoint Generator | PPTMaster",
-    description: "Compare PPTMaster pricing plans. Start free with 200 credits. Upgrade for more AI PowerPoint features.",
+    title: "Pricing Plans - Free AI PowerPoint Generator | PPTera",
+    description: "Compare PPTera pricing plans. Start free with 200 credits. Upgrade for more AI PowerPoint features.",
     images: ["/og-image.jpeg"],
   },
 };
@@ -37,10 +37,10 @@ const pricingFaqSchema = {
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "How much does PPTMaster cost?",
+      "name": "How much does PPTera cost?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "PPTMaster (PPT Master) offers a free plan with 200 credits. Paid plans start at $9/month for Plus (1,000 credits), $19/month for Pro (4,000 credits), and $49/month for Ultra (20,000 credits).",
+        "text": "PPTera (PPTera) offers a free plan with 200 credits. Paid plans start at $9/month for Plus (1,000 credits), $19/month for Pro (4,000 credits), and $49/month for Ultra (20,000 credits).",
       },
     },
     {
@@ -56,7 +56,7 @@ const pricingFaqSchema = {
       "name": "Can I cancel my subscription anytime?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes, you can cancel your PPTMaster subscription at any time from your account settings. Your access continues until the end of your billing period.",
+        "text": "Yes, you can cancel your PPTera subscription at any time from your account settings. Your access continues until the end of your billing period.",
       },
     },
     {

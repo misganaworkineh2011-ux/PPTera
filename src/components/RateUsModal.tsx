@@ -147,7 +147,7 @@ export function RateUsModal({ onClose, theme }: RateUsModalProps) {
             Thank You! 🎉
           </h3>
           <p style={{ color: colors.textMuted }}>
-            Your feedback helps us improve PPTMaster for everyone.
+            Your feedback helps us improve PPTera for everyone.
           </p>
         </div>
       </div>
@@ -164,7 +164,7 @@ export function RateUsModal({ onClose, theme }: RateUsModalProps) {
         <div className="flex justify-between items-start mb-4">
           <div>
             <h2 className="text-xl font-bold" style={{ color: colors.text }}>
-              Enjoying PPTMaster? ⭐
+              Enjoying PPTera? ⭐
             </h2>
             <p className="text-sm mt-1" style={{ color: colors.textMuted }}>
               You&apos;ve created {PRESENTATIONS_THRESHOLD}+ presentations! We&apos;d love your feedback.

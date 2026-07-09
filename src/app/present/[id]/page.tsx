@@ -622,8 +622,8 @@ export default function PresenterPage({ params }: PresenterPageProps) {
           rel="noopener noreferrer"
           className="fixed bottom-4 right-4 z-50 px-4 py-2 bg-slate-800 border border-slate-700 rounded-full text-white text-sm font-medium hover:bg-slate-700 transition flex items-center gap-2 shadow-lg"
         >
-          <img src="/logo.png" alt="PPTMaster" className="h-5 w-5" />
-          Made with PPTMaster
+          <img src="/logo.png" alt="PPTera" className="h-5 w-5" />
+          Made with PPTera
         </a>
       )}
     </div>

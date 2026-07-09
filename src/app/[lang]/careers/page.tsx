@@ -12,10 +12,10 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   const t = getTranslations(lang);
   
   return {
-    title: `${t.careers || "Careers"} - PPT Master | ${t.careersHeroTitle} ${t.careersHeroHighlight}`,
-    description: t.careersHeroDesc || "Join PPT Master and help build the future of AI-powered presentations. View open positions and apply today to join our team.",
+    title: `${t.careers || "Careers"} - PPTera | ${t.careersHeroTitle} ${t.careersHeroHighlight}`,
+    description: t.careersHeroDesc || "Join PPTera and help build the future of AI-powered presentations. View open positions and apply today to join our team.",
     openGraph: {
-      title: `${t.careers || "Careers"} - PPT Master`,
+      title: `${t.careers || "Careers"} - PPTera`,
       description: t.careersHeroDesc,
       type: "website",
     },

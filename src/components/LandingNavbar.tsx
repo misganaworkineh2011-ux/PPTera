@@ -53,7 +53,7 @@ export const LandingNavbar = ({ currentLang }: LandingNavbarProps) => {
             <Link href={localPath("/")} className="flex items-center">
               <Image
                 src="/logo.png"
-                alt="PPTMaster"
+                alt="PPTera"
                 width={180}
                 height={48}
                 className="h-12 w-auto"

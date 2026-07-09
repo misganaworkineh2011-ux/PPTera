@@ -35,10 +35,10 @@ export function PrivacyContent() {
             {/* Introduction */}
             <div className="mb-12">
               <p className="text-slate-700 leading-relaxed mb-4">
-                This Privacy Policy describes how PPTMaster Tech, Inc. (&quot;PPTMaster,&quot; &quot;we,&quot; &quot;us&quot; or &quot;our&quot;) processes personal information that we collect through our website, services, and platform that link to this Privacy Policy (collectively, the &quot;Service&quot;).
+                This Privacy Policy describes how PPTera Tech, Inc. (&quot;PPTera,&quot; &quot;we,&quot; &quot;us&quot; or &quot;our&quot;) processes personal information that we collect through our website, services, and platform that link to this Privacy Policy (collectively, the &quot;Service&quot;).
               </p>
               <p className="text-slate-700 leading-relaxed mb-4">
-                PPTMaster provides an AI-powered platform that generates and optimizes presentations. This Privacy Policy explains how we collect, use, share, and protect your personal information.
+                PPTera provides an AI-powered platform that generates and optimizes presentations. This Privacy Policy explains how we collect, use, share, and protect your personal information.
               </p>
             </div>
 

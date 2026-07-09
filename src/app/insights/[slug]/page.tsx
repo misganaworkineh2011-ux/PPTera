@@ -162,7 +162,7 @@ export default function InsightPostPage({ currentLang = "en" }: InsightPostPageP
             },
             publisher: {
               "@type": "Organization",
-              name: "PPTMaster",
+              name: "PPTera",
               logo: {
                 "@type": "ImageObject",
                 url: "https://www.pptmaster.app/logo.png",

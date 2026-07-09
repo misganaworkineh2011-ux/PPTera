@@ -241,7 +241,7 @@ function EmbedPageContent({ params }: EmbedPageProps) {
                             target="_blank"
                             className="text-white/80 text-xs hover:text-white font-medium drop-shadow-md"
                         >
-                            PPTMaster
+                            PPTera
                         </Link>
                     </div>
                 </div>

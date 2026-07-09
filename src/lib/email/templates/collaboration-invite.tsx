@@ -48,7 +48,7 @@ export function CollaborationInvite({
     <Html>
       <Head />
       <Preview>
-        {senderName} invited you to {roleText} a presentation on PPTMaster
+        {senderName} invited you to {roleText} a presentation on PPTera
       </Preview>
       <Body style={main}>
         <Container style={container}>
@@ -56,7 +56,7 @@ export function CollaborationInvite({
           <Section style={logoSection}>
             <Img
               src={logoUrl}
-              alt="PPTMaster"
+              alt="PPTera"
               style={logo}
             />
           </Section>
@@ -98,7 +98,7 @@ export function CollaborationInvite({
           <Section style={footer}>
             <Text style={footerText}>
               <Link href={baseUrl} style={footerLink}>
-                PPTMaster
+                PPTera
               </Link>
               {" · "}
               <Link href={`${baseUrl}/pricing`} style={footerLink}>

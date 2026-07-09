@@ -45,14 +45,14 @@ export function ShareNotification({
   return (
     <Html>
       <Head />
-      <Preview>{senderName} shared a presentation with you on PPTMaster</Preview>
+      <Preview>{senderName} shared a presentation with you on PPTera</Preview>
       <Body style={main}>
         <Container style={container}>
           {/* Logo Section */}
           <Section style={logoSection}>
             <Img
               src={logoUrl}
-              alt="PPTMaster"
+              alt="PPTera"
               style={logo}
             />
           </Section>
@@ -88,15 +88,15 @@ export function ShareNotification({
 
           <Hr style={divider} />
 
-          {/* Try PPTMaster Section */}
+          {/* Try PPTera Section */}
           <Section style={ctaSection}>
             <Text style={ctaHeading}>Create your own presentations</Text>
             <Text style={ctaText}>
-              PPTMaster helps you create professional presentations in minutes with AI-powered content generation.
+              PPTera helps you create professional presentations in minutes with AI-powered content generation.
             </Text>
             <Section style={buttonSection}>
               <Button style={secondaryButton} href={`${baseUrl}?ref=share`}>
-                Try PPTMaster Free
+                Try PPTera Free
               </Button>
             </Section>
           </Section>
@@ -104,7 +104,7 @@ export function ShareNotification({
           {/* Footer */}
           <Section style={footer}>
             <Text style={footerText}>
-              <Link href={baseUrl} style={footerLink}>PPTMaster</Link>
+              <Link href={baseUrl} style={footerLink}>PPTera</Link>
               {" · "}
               <Link href={`${baseUrl}/pricing`} style={footerLink}>Pricing</Link>
               {" · "}

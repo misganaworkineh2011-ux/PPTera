@@ -149,7 +149,7 @@ export function PromptGuideContent({ currentLang = "en" }: PromptGuideContentPro
           </h1>
 
           <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed animate-fade-in-up [animation-delay:200ms]">
-            {t.promptGuideSubtitle || "Learn how to write effective prompts to get the best results from PPTMaster AI."}
+            {t.promptGuideSubtitle || "Learn how to write effective prompts to get the best results from PPTera AI."}
           </p>
         </div>
       </section>

@@ -16,10 +16,10 @@ export async function generateMetadata({
   const t = getTranslations(lang);
 
   return {
-    title: `${t.pricing} - PPT Master | ${t.pricingTitle}`,
+    title: `${t.pricing} - PPTera | ${t.pricingTitle}`,
     description: t.pricingSubtitle,
     openGraph: {
-      title: `${t.pricing} - PPT Master`,
+      title: `${t.pricing} - PPTera`,
       description: t.pricingSubtitle,
       type: "website",
     },

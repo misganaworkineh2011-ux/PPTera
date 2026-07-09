@@ -429,7 +429,7 @@ export default function CommunityPostClient({
               Join the conversation
             </h3>
             <p className="text-slate-600 mb-4">
-              Share your own experiences and tips with the PPTMaster community
+              Share your own experiences and tips with the PPTera community
             </p>
             <Link
               href="/community"

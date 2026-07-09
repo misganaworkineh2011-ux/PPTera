@@ -12,7 +12,7 @@ interface SEOFeatureGridProps {
 
 export function SEOFeatureGrid({
     features,
-    title = "Why Choose PPTMaster?",
+    title = "Why Choose PPTera?",
     subtitle = "Everything you need to create stunning presentations"
 }: SEOFeatureGridProps) {
     return (

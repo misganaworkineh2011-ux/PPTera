@@ -204,7 +204,7 @@ export function ScrollableSlidesView({
             className={`mt-3 sm:mt-4 text-[10px] sm:text-xs md:text-sm ${ui.endMuted}`}
             style={theme.pageBackground ? { color: theme.colors.textMuted } : {}}
           >
-            {slides.length} slides • Created with PPT Master
+            {slides.length} slides • Created with PPTera
           </p>
         </div>
       )}

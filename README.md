@@ -1,4 +1,4 @@
-# PPTMaster - AI-Powered Presentation Generator
+# PPTera - AI-Powered Presentation Generator
 
 An AI-powered SaaS application that generates professional PowerPoint presentations using OpenAI, built with Next.js, Clerk, Prisma, Neon, and Polar.
 

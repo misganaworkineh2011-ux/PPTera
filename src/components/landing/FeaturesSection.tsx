@@ -131,7 +131,7 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
                   <LazyVideo
                     src={FEATURE_DEMO_VIDEO}
                     className="absolute inset-0 w-full h-full object-cover"
-                    title="PPT Master AI presentation demo"
+                    title="PPTera AI presentation demo"
                   />
                 </div>
               </div>
@@ -168,7 +168,7 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
           <p className="text-center mt-2">
             <SignInButton mode="modal">
               <button className="text-zinc-900 font-medium underline underline-offset-4 hover:text-zinc-600 transition" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
-                {t.tryPPTMasterAI || "Try PPT Master AI"}
+                {t.tryPPTeraAI || "Try PPTera AI"}
               </button>
             </SignInButton>
           </p>
@@ -342,7 +342,7 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
               {t.getInspiredTitle || "Get inspired by amazing presentations."}
             </h3>
             <p className="text-zinc-600">
-              {t.getInspiredDesc || "Browse our gallery of AI-generated presentations. Find inspiration and see what's possible with PPT Master."}
+              {t.getInspiredDesc || "Browse our gallery of AI-generated presentations. Find inspiration and see what's possible with PPTera."}
             </p>
             <span className="inline-block mt-4 text-zinc-900 font-medium underline underline-offset-4 group-hover:text-zinc-600 transition">
               {t.exploreInspiration || "Explore inspiration"}
@@ -389,7 +389,7 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
                   <button className="flex items-start gap-3 text-left w-full" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
                     <Share2 className="w-5 h-5 text-zinc-900 mt-0.5" />
                     <div>
-                      <h3 className="font-semibold text-zinc-900 mb-2 group-hover:text-zinc-600 transition">{t.presentDirectly || "Present directly from PPT Master"}</h3>
+                      <h3 className="font-semibold text-zinc-900 mb-2 group-hover:text-zinc-600 transition">{t.presentDirectly || "Present directly from PPTera"}</h3>
                     </div>
                   </button>
                 </SignInButton>
@@ -427,7 +427,7 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
 
             {/* Floating Profile Card */}
             <div className="absolute -right-4 top-8 bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] rounded-xl p-4 w-48 text-white shadow-xl">
-              <div className="text-xs text-cyan-100 mb-3">PPT Master / {t.export || "Export"}</div>
+              <div className="text-xs text-cyan-100 mb-3">PPTera / {t.export || "Export"}</div>
               <div className="flex flex-col items-center">
                 <div className="w-14 h-14 rounded-full bg-white/20 mb-2 flex items-center justify-center">
                   <Share2 className="w-6 h-6 text-white" />

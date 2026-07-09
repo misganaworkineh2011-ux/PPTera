@@ -50,7 +50,7 @@ const UI_DESCRIPTIONS: Record<string, string> = {
 • ~1,000 slides (4 credits each)
 • ~400 AI images (10 credits each)
 • 60 cards per prompt
-• Remove PPTMaster branding
+• Remove PPTera branding
 • Export to PowerPoint (PPTX)
 • Premium AI image models (HD: 15 credits)
 • Premium templates

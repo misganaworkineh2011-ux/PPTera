@@ -17,7 +17,7 @@ export async function generateMetadata({
   });
 
   if (!presentation || !presentation.isPublic) {
-    return { title: "Presentation Not Found | PPTMaster" };
+    return { title: "Presentation Not Found | PPTera" };
   }
 
   const slides = (Array.isArray(presentation.slides)
@@ -27,7 +27,7 @@ export async function generateMetadata({
     slides[0]?.image?.url || slides[0]?.images?.[0]?.url || "/og-image.jpeg";
   const description =
     presentation.description ||
-    `Read "${presentation.title}" as a web page — created with PPTMaster`;
+    `Read "${presentation.title}" as a web page — created with PPTera`;
 
   return {
     title: presentation.title,

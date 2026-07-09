@@ -206,14 +206,14 @@ export default function ReviewWidget() {
         <h2 className="text-xl font-bold text-slate-900 dark:text-white">
           {isEditing ? (t.editYourReview || "Edit Your Review") : (t.shareYourFeedback || "Share Your Feedback")}
         </h2>
-        <p className="text-sm font-medium text-slate-500 dark:text-zinc-400 mt-1">{t.helpUsImprove || "Help us improve PPTMaster"}</p>
+        <p className="text-sm font-medium text-slate-500 dark:text-zinc-400 mt-1">{t.helpUsImprove || "Help us improve PPTera"}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Rating */}
         <div>
           <label className="block text-sm font-bold text-slate-700 mb-3 dark:text-zinc-300">
-            {t.howWouldYouRate || "How would you rate PPTMaster?"}
+            {t.howWouldYouRate || "How would you rate PPTera?"}
           </label>
           <StarRating
             rating={formData.rating}
@@ -278,7 +278,7 @@ export default function ReviewWidget() {
             value={formData.content}
             onChange={(e) => setFormData({ ...formData, content: e.target.value })}
             className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white resize-none transition-all"
-            placeholder={t.tellUsWhatYouLove || "Tell us what you love about PPTMaster and how we can improve..."}
+            placeholder={t.tellUsWhatYouLove || "Tell us what you love about PPTera and how we can improve..."}
           />
         </div>
 

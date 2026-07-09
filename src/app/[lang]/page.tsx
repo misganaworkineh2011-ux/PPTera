@@ -16,10 +16,10 @@ export async function generateMetadata({
   const t = getTranslations(lang);
 
   return {
-    title: `PPTMaster – ${t.heroTitle} ${t.heroSubtitle} ${t.heroSubtitle2}`,
+    title: `PPTera – ${t.heroTitle} ${t.heroSubtitle} ${t.heroSubtitle2}`,
     description: t.heroDescription,
     openGraph: {
-      title: `PPTMaster – ${t.heroTitle} ${t.heroSubtitle} ${t.heroSubtitle2}`,
+      title: `PPTera – ${t.heroTitle} ${t.heroSubtitle} ${t.heroSubtitle2}`,
       description: t.heroDescription,
       type: "website",
     },
@@ -36,8 +36,8 @@ function LandingPageServer({ lang }: { lang: Language }) {
     <>
       {/* Critical SEO content - server-rendered for Google */}
       <div className="sr-only" aria-hidden="false">
-        <h1>PPTMaster — {t.heroTitle} {t.heroSubtitle} {t.heroSubtitle2}</h1>
-        <p><strong>PPT Master</strong> (PPTMaster) - {t.heroDescription}</p>
+        <h1>PPTera — {t.heroTitle} {t.heroSubtitle} {t.heroSubtitle2}</h1>
+        <p><strong>PPTera</strong> (PPTera) - {t.heroDescription}</p>
         <ul>
           <li>{t.aiPresentations}</li>
           <li>{t.templates}</li>

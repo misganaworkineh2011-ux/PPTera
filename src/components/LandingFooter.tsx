@@ -62,7 +62,7 @@ export const LandingFooter = ({ currentLang }: LandingFooterProps) => {
             <LoadingLink href={localPath("/")} className="inline-block mb-6">
               <Image
                 src="/logo.png"
-                alt="PPTMaster"
+                alt="PPTera"
                 width={120}
                 height={40}
                 className="h-8 w-auto brightness-0 invert"
@@ -138,7 +138,7 @@ export const LandingFooter = ({ currentLang }: LandingFooterProps) => {
       {/* Bottom Bar */}
       <div className="border-t border-zinc-800">
         <div className="mx-auto max-w-[1400px] px-6 lg:px-8 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-zinc-500">© 2025 PPTMaster Tech, Inc.</p>
+          <p className="text-sm text-zinc-500">© 2025 PPTera Tech, Inc.</p>
           <div className="flex gap-6 text-sm text-zinc-500">
             <LoadingLink href={localPath("/privacy")} className="hover:text-white transition">{t.privacyPolicy}</LoadingLink>
             <LoadingLink href={localPath("/terms")} className="hover:text-white transition">{t.termsOfService}</LoadingLink>

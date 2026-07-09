@@ -157,7 +157,7 @@ function calculatePriority(keyword: string): number {
   if (kw.includes('generator') || kw.includes('maker')) priority += 0.05;
 
   // Brand mentions
-  if (kw.includes('pptmaster')) priority += 0.2;
+  if (kw.includes('pptera')) priority += 0.2;
 
   return Math.min(priority, 1.0);
 }

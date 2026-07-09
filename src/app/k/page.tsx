@@ -4,7 +4,7 @@ import { KEYWORD_CATEGORIES, TOTAL_KEYWORDS, TOTAL_UNIQUE_SLUGS } from '~/lib/se
 import { Search, Sparkles } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'AI Presentation Tools & Keywords | PPTMaster',
+  title: 'AI Presentation Tools & Keywords | PPTera',
   description: 'Explore all AI presentation tools, PowerPoint generators, and presentation makers. Find the perfect tool for creating stunning presentations.',
   keywords: ['ai presentation', 'powerpoint generator', 'presentation maker', 'ai tools'],
 };
@@ -83,7 +83,7 @@ export default function KeywordsIndexPage() {
             Ready to Create Your Presentation?
           </h2>
           <p className="text-xl mb-8 opacity-90">
-            Use PPTMaster's AI to generate professional presentations in seconds
+            Use PPTera's AI to generate professional presentations in seconds
           </p>
           <Link
             href="/createpresentation"

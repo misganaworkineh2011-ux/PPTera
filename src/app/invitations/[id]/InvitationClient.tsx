@@ -174,7 +174,7 @@ export default function InvitationClient({
         <p className="text-center text-xs text-slate-500 mt-6">
           Powered by{" "}
           <a href="/" className="text-[#1e3a8a] hover:underline">
-            PPTMaster
+            PPTera
           </a>
         </p>
       </div>

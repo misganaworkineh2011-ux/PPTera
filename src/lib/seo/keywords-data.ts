@@ -1,5 +1,5 @@
 // ============================================
-// PPTMaster pSEO - ALL Keywords from keywords.txt
+// PPTera pSEO - ALL Keywords from keywords.txt
 // ============================================
 // Total: 331 unique keywords - ALL included for maximum SEO coverage
 

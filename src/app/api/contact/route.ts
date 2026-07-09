@@ -52,7 +52,7 @@ export async function POST(req: Request) {
           : fromEmail;
 
         const result = await resend.emails.send({
-          from: `PPT Master Contact <${fromEmailAddress}>`,
+          from: `PPTera Contact <${fromEmailAddress}>`,
           to: [toEmail],
           replyTo: data.email,
           subject: `[${data.category.toUpperCase()}] ${data.subject} - from ${data.name}`,

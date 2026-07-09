@@ -139,7 +139,7 @@ export function ComboPageContent({ keyword, useCase }: ComboPageContentProps) {
               <div>
                 <h3 className="text-xl font-semibold mb-2">AI Creates Your Presentation</h3>
                 <p className="text-gray-600">
-                  Watch as PPTMaster generates professional slides with content, images, and design.
+                  Watch as PPTera generates professional slides with content, images, and design.
                 </p>
               </div>
             </div>
@@ -166,7 +166,7 @@ export function ComboPageContent({ keyword, useCase }: ComboPageContentProps) {
             Ready to Create Your {useCase.name}?
           </h2>
           <p className="text-xl mb-8 opacity-90">
-            Join thousands creating professional presentations with PPTMaster
+            Join thousands creating professional presentations with PPTera
           </p>
           <Link
             href="/createpresentation"

@@ -1,5 +1,5 @@
 // ============================================
-// PPTMaster pSEO - Static Data Configuration
+// PPTera pSEO - Static Data Configuration
 // ============================================
 
 // Industries for generating pages
@@ -108,10 +108,10 @@ export const TOOLS = [
     { slug: 'ai-slide-builder', keyword: 'ai slide builder', title: 'AI Slide Builder' },
     { slug: 'gamma-app-presentation-ai', keyword: 'gamma app presentation ai', title: 'Gamma App Presentation AI' },
     { slug: 'presentation-ai-tools', keyword: 'presentation ai tools', title: 'Presentation AI Tools' },
-    { slug: 'pptmaster', keyword: 'PPTMaster', title: 'PPTMaster' },
-    { slug: 'pptmaster-ai', keyword: 'PPTMaster AI', title: 'PPTMaster AI' },
-    { slug: 'pptmaster-presentation-generator', keyword: 'PPTMaster presentation generator', title: 'PPTMaster Presentation Generator' },
-    { slug: 'pptmaster-powerpoint-ai', keyword: 'PPTMaster PowerPoint AI', title: 'PPTMaster PowerPoint AI' },
+    { slug: 'pptera', keyword: 'PPTera', title: 'PPTera' },
+    { slug: 'pptera-ai', keyword: 'PPTera AI', title: 'PPTera AI' },
+    { slug: 'pptera-presentation-generator', keyword: 'PPTera presentation generator', title: 'PPTera Presentation Generator' },
+    { slug: 'pptera-powerpoint-ai', keyword: 'PPTera PowerPoint AI', title: 'PPTera PowerPoint AI' },
     // Additional keywords from keywords.txt (Jan 2026)
     { slug: 'powerpoint-download', keyword: 'powerpoint download', title: 'PowerPoint Download' },
     { slug: 'powerpoint-night-ideas', keyword: 'powerpoint night ideas', title: 'PowerPoint Night Ideas' },

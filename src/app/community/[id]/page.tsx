@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!post) {
     return {
-      title: "Post Not Found | PPTMaster Community",
+      title: "Post Not Found | PPTera Community",
     };
   }
 
@@ -50,12 +50,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 
   return {
-    title: `${post.title} | PPTMaster Community`,
+    title: `${post.title} | PPTera Community`,
     description,
     alternates: {
       canonical: `https://www.pptmaster.app/community/${id}`,
     },
-    keywords: `PPTMaster community, ${categoryLabels[post.category] || post.category}, presentation tips, ${post.authorName}`,
+    keywords: `PPTera community, ${categoryLabels[post.category] || post.category}, presentation tips, ${post.authorName}`,
     openGraph: {
       title: post.title,
       description,

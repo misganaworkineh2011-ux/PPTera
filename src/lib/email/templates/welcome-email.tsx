@@ -22,10 +22,10 @@ export function WelcomeEmail({ userName, dashboardUrl }: WelcomeEmailProps) {
   return (
     <Html>
       <Head />
-      <Preview>Welcome to PPTMaster - Create stunning presentations with AI</Preview>
+      <Preview>Welcome to PPTera - Create stunning presentations with AI</Preview>
       <Body style={main}>
         <Container style={container}>
-          <Heading style={h1}>Welcome to PPT Master! 🎉</Heading>
+          <Heading style={h1}>Welcome to PPTera! 🎉</Heading>
           
           <Text style={text}>Hi {userName},</Text>
           
@@ -60,13 +60,13 @@ export function WelcomeEmail({ userName, dashboardUrl }: WelcomeEmailProps) {
           </Text>
 
           <Text style={footer}>
-            — The PPT Master Team
+            — The PPTera Team
           </Text>
 
           <Hr style={hr} />
 
           <Text style={automatedNotice}>
-            This is an automated message from PPT Master. Please do not reply to this email.
+            This is an automated message from PPTera. Please do not reply to this email.
             If you need assistance, visit our{" "}
             <Link href="https://pptmaster.app/help" style={link}>
               Help Center

@@ -98,7 +98,7 @@ export function DiscountBadgeBanner({ subscriptionPlan }: CyberMondayDealsProps)
             <div className="relative group-hover:scale-110 transition-transform duration-500 shrink-0">
               <div className="absolute inset-0 bg-[#006482] blur-md opacity-20 group-hover:opacity-40" />
               <div className="relative p-4 rounded-[1.5rem] bg-white shadow-lg shadow-[#006482]/20">
-                <img src="/logo.png" alt="PPTMaster Logo" className="h-10 w-10 md:h-12 md:w-12 object-contain" />
+                <img src="/logo.png" alt="PPTera Logo" className="h-10 w-10 md:h-12 md:w-12 object-contain" />
               </div>
             </div>
             

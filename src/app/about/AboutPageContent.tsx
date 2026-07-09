@@ -34,7 +34,7 @@ export function AboutPageContent({ currentLang = "en" }: AboutPageContentProps) 
           </h1>
 
           <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed animate-fade-in-up [animation-delay:200ms]">
-            {t.aboutHeroDesc || "PPT Master is on a mission to empower everyone to create beautiful, professional PowerPoint presentations with the power of AI. As the best AI PowerPoint generator, we make it easy—no design skills required."}
+            {t.aboutHeroDesc || "PPTera is on a mission to empower everyone to create beautiful, professional PowerPoint presentations with the power of AI. As the best AI PowerPoint generator, we make it easy—no design skills required."}
           </p>
         </div>
       </section>
@@ -54,10 +54,10 @@ export function AboutPageContent({ currentLang = "en" }: AboutPageContentProps) 
                 {t.missionTitle || "Making design accessible to everyone"}
               </h2>
               <p className="text-lg text-slate-600 leading-relaxed mb-6">
-                {t.missionDesc1 || "We believe that great ideas shouldn't be held back by design limitations. That's why PPT Master is building the best AI PowerPoint generator that helps anyone create stunning presentations in minutes."}
+                {t.missionDesc1 || "We believe that great ideas shouldn't be held back by design limitations. That's why PPTera is building the best AI PowerPoint generator that helps anyone create stunning presentations in minutes."}
               </p>
               <p className="text-lg text-slate-600 leading-relaxed">
-                {t.missionDesc2 || "From students to Fortune 500 companies, over 50 million people trust PPT Master to bring their PowerPoint ideas to life with our AI-powered presentation maker."}
+                {t.missionDesc2 || "From students to Fortune 500 companies, over 50 million people trust PPTera to bring their PowerPoint ideas to life with our AI-powered presentation maker."}
               </p>
             </div>
 
@@ -203,7 +203,7 @@ export function AboutPageContent({ currentLang = "en" }: AboutPageContentProps) 
               <div className="p-6 rounded-2xl bg-white border border-slate-200 hover:shadow-lg transition-all">
                 <h3 className="text-xl font-bold text-slate-900 mb-3">{t.advancedAIModels || "Advanced AI Models"}</h3>
                 <p className="text-slate-600 leading-relaxed">
-                  {t.advancedAIModelsDesc || "PPT Master leverages state-of-the-art large language models and generative AI to understand your content and create visually stunning presentations. Our AI analyzes your input, structures information logically, and generates professional designs automatically."}
+                  {t.advancedAIModelsDesc || "PPTera leverages state-of-the-art large language models and generative AI to understand your content and create visually stunning presentations. Our AI analyzes your input, structures information logically, and generates professional designs automatically."}
                 </p>
               </div>
               <div className="p-6 rounded-2xl bg-white border border-slate-200 hover:shadow-lg transition-all">
@@ -215,7 +215,7 @@ export function AboutPageContent({ currentLang = "en" }: AboutPageContentProps) 
               <div className="p-6 rounded-2xl bg-white border border-slate-200 hover:shadow-lg transition-all">
                 <h3 className="text-xl font-bold text-slate-900 mb-3">{t.continuousLearning || "Continuous Learning"}</h3>
                 <p className="text-slate-600 leading-relaxed">
-                  {t.continuousLearningDesc || "PPT Master continuously improves through user feedback and advanced machine learning techniques. Every presentation created helps our AI become smarter, delivering better results with each iteration."}
+                  {t.continuousLearningDesc || "PPTera continuously improves through user feedback and advanced machine learning techniques. Every presentation created helps our AI become smarter, delivering better results with each iteration."}
                 </p>
               </div>
             </div>
@@ -223,7 +223,7 @@ export function AboutPageContent({ currentLang = "en" }: AboutPageContentProps) 
               <div className="aspect-square rounded-3xl bg-gradient-to-br from-[#06b6d4] to-[#1e3a8a] p-1 -rotate-3 hover:rotate-0 transition-transform duration-500">
                 <img
                   src="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=800&fit=crop&q=80"
-                  alt="AI Technology powering PPT Master"
+                  alt="AI Technology powering PPTera"
                   className="h-full w-full rounded-3xl object-cover"
                 />
               </div>
@@ -239,7 +239,7 @@ export function AboutPageContent({ currentLang = "en" }: AboutPageContentProps) 
             {t.trustedWorldwide || "Trusted Worldwide"}
           </h2>
           <p className="text-lg text-slate-600 max-w-3xl mx-auto mb-12 leading-relaxed">
-            {t.trustedWorldwideDesc || "From startups to Fortune 500 companies, educators to entrepreneurs, PPT Master serves users across 150+ countries. Our platform supports multiple languages and is designed to meet the diverse presentation needs of a global audience. Whether you're preparing a business pitch, academic lecture, or creative portfolio, PPT Master helps you communicate your ideas effectively."}
+            {t.trustedWorldwideDesc || "From startups to Fortune 500 companies, educators to entrepreneurs, PPTera serves users across 150+ countries. Our platform supports multiple languages and is designed to meet the diverse presentation needs of a global audience. Whether you're preparing a business pitch, academic lecture, or creative portfolio, PPTera helps you communicate your ideas effectively."}
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="p-6 rounded-2xl bg-slate-50">

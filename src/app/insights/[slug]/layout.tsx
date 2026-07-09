@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       };
     }
 
-    const title = `${post.title} | PPTMaster Insights`;
+    const title = `${post.title} | PPTera Insights`;
     const description = post.excerpt;
     const url = `https://www.pptmaster.app/insights/${params.slug}`;
 
@@ -64,14 +64,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description,
         images: [post.coverImage || "/og-image.jpeg"],
       },
-      keywords: [post.category, ...post.tags, "presentation design", "PPTMaster", "insights", "tips"].join(", "),
+      keywords: [post.category, ...post.tags, "presentation design", "PPTera", "insights", "tips"].join(", "),
       authors: [{ name: post.author }],
     };
   } catch (error) {
     console.error("Error generating metadata:", error);
     return {
-      title: "Insights | PPTMaster",
-      description: "Presentation design insights and tips from PPTMaster",
+      title: "Insights | PPTera",
+      description: "Presentation design insights and tips from PPTera",
     };
   }
 }

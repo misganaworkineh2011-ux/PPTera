@@ -28,8 +28,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       };
     }
 
-    const title = `${item.title} | PPTMaster Inspiration`;
-    const description = item.description || `${item.category} presentation design inspiration from PPTMaster`;
+    const title = `${item.title} | PPTera Inspiration`;
+    const description = item.description || `${item.category} presentation design inspiration from PPTera`;
     const url = `https://www.pptmaster.app/inspiration/${params.id}`;
 
     return {
@@ -60,13 +60,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description,
         images: [item.imageUrl || "/og-image.jpeg"],
       },
-      keywords: [item.category, ...item.tags, "presentation design", "PPTMaster", "inspiration"].join(", "),
+      keywords: [item.category, ...item.tags, "presentation design", "PPTera", "inspiration"].join(", "),
     };
   } catch (error) {
     console.error("Error generating metadata:", error);
     return {
-      title: "Inspiration | PPTMaster",
-      description: "Presentation design inspiration from PPTMaster",
+      title: "Inspiration | PPTera",
+      description: "Presentation design inspiration from PPTera",
     };
   }
 }

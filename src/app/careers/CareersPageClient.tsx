@@ -134,7 +134,7 @@ export default function CareersPageClient({ currentLang = "en" }: CareersPageCli
           </h1>
 
           <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed animate-fade-in-up [animation-delay:200ms]">
-            {t.careersHeroDesc || "Join PPT Master, a team of passionate innovators building the best AI PowerPoint generator that empowers millions of people worldwide to create stunning presentations."}
+            {t.careersHeroDesc || "Join PPTera, a team of passionate innovators building the best AI PowerPoint generator that empowers millions of people worldwide to create stunning presentations."}
           </p>
 
           <p className="text-lg text-slate-500 max-w-2xl mx-auto mt-4 leading-relaxed animate-fade-in-up [animation-delay:250ms]">
@@ -313,7 +313,7 @@ export default function CareersPageClient({ currentLang = "en" }: CareersPageCli
               {t.ourCulture || "Our Culture"}
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              {t.ourCultureDesc || "What it's like to work at PPT Master"}
+              {t.ourCultureDesc || "What it's like to work at PPTera"}
             </p>
           </div>
 

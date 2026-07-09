@@ -473,7 +473,7 @@ DO NOT output any [TITLE] tag - the title is fixed and will not change.`;
   const streamingComplete = content?.streamingComplete as boolean | undefined;
 
   // Obfuscate imageModel to avoid exposing internal model details
-  const obfuscatedImageModel = imageModel ? "pptmaster-image-engine" : undefined;
+  const obfuscatedImageModel = imageModel ? "pptera-image-engine" : undefined;
   
   console.log("[stream-content] Content parsed:", {
     imageSource,
@@ -632,7 +632,7 @@ DO NOT output any [TITLE] tag - the title is fixed and will not change.`;
                     console.log(`[stream-content] Image ready for slide ${i}`);
                   }
                 } else if (imageSource === "ai-generated") {
-                  console.log(`[stream-content] Generating AI image for slide ${i}, model: pptmaster-image-engine, artStyle: ${imageArtStyle}`);
+                  console.log(`[stream-content] Generating AI image for slide ${i}, model: pptera-image-engine, artStyle: ${imageArtStyle}`);
                   const slidesWithMetadata = [{
                     type: slide.type,
                     title: slide.title,
