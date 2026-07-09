@@ -86,7 +86,7 @@ async function generateAllTemplates() {
         const pptx = new PptxGenJS();
         pptx.layout = "LAYOUT_16x9";
         pptx.title = `${theme.name} - ${layout}`;
-        pptx.author = "PPTMaster";
+        pptx.author = "PPTera";
 
         const slideData = getMockSlideData(layout);
 

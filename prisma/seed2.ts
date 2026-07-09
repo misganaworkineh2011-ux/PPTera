@@ -9,11 +9,11 @@ const insights = [
     excerpt: "After years of wrestling with generic slide decks, I found a better way to create presentations that actually connect with audiences.",
     content: `I used to spend hours tweaking PowerPoint templates, trying to make them look less... templated. You know the drill - download a free ppt template, realize it looks like everyone else's deck, then waste time customizing fonts and colors.
 
-Then I discovered PPTMaster and honestly, it changed how I think about presentation design entirely.
+Then I discovered PPTera and honestly, it changed how I think about presentation design entirely.
 
 The thing about traditional PowerPoint slide design is that you're always starting from someone else's vision. Even the best ppt templates feel generic because thousands of other people are using the same layouts. Your quarterly report ends up looking identical to your competitor's pitch deck.
 
-What I love about using an AI presentation maker like pptmaster is that every deck feels custom. I just describe what I need, and it generates slides that actually match my content - not the other way around.
+What I love about using an AI presentation maker like PPTera is that every deck feels custom. I just describe what I need, and it generates slides that actually match my content - not the other way around.
 
 Here's what surprised me most: the time savings are real. What used to take me 3-4 hours of slide deck creation now takes maybe 30 minutes. And the results look way more professional than anything I cobbled together from free PowerPoint templates.
 
@@ -36,7 +36,7 @@ For anyone still manually building presentations slide by slide, seriously consi
 
 The problem isn't that people don't care. It's that creating a good PowerPoint presentation is genuinely hard. You need design skills, storytelling ability, and way too much time.
 
-I started using PPT Master about six months ago after bombing a client pitch. The feedback was brutal - "your slides were confusing and looked unprofessional." Ouch.
+I started using PPTera about six months ago after bombing a client pitch. The feedback was brutal - "your slides were confusing and looked unprofessional." Ouch.
 
 Here's what I've learned about effective presentation design since then:
 
@@ -50,7 +50,7 @@ The shift from manually building PowerPoint slides to using an AI slide generato
 
 Now my decks get compliments. Clients actually engage with the content instead of zoning out. And I'm not staying up until midnight tweaking font sizes.
 
-If your presentations aren't landing, it might not be your content - it might be your slides. Tools like pptmaster can help bridge that gap between what you want to say and how it looks on screen.`,
+If your presentations aren't landing, it might not be your content - it might be your slides. Tools like PPTera can help bridge that gap between what you want to say and how it looks on screen.`,
     coverImage: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200",
     category: "business",
     tags: ["presentation tips", "business", "slide design", "professional"],
@@ -69,11 +69,11 @@ If your presentations aren't landing, it might not be your content - it might be
 
 But here's the thing - you still need killer pitch decks. Investors see hundreds of presentations. Yours needs to stand out.
 
-I've been using PPTMaster for all my investor presentations for the past year, and it's been a game changer. Here's my actual workflow:
+I've been using PPTera for all my investor presentations for the past year, and it's been a game changer. Here's my actual workflow:
 
 First, I outline my key points in a doc. Just bullet points - problem, solution, market size, traction, team, ask. Takes maybe 15 minutes.
 
-Then I feed that into ppt master and let the AI presentation generator do its thing. The first draft is usually 80% there. I spend another 20-30 minutes tweaking specific slides, adding our actual metrics, and making sure the story flows.
+Then I feed that into PPTera and let the AI presentation generator do its thing. The first draft is usually 80% there. I spend another 20-30 minutes tweaking specific slides, adding our actual metrics, and making sure the story flows.
 
 Compare that to my old process: 4-6 hours minimum, usually spread across multiple days because I'd get frustrated and walk away.
 
@@ -103,7 +103,7 @@ Seriously, if you're still manually building PowerPoint presentations for invest
 
 Spoiler: I wasn't. My slides were functional but boring. Students would zone out, scroll their phones, or just not show up.
 
-Last semester, I started experimenting with PPT Master for my lecture materials. The difference in student engagement has been remarkable.
+Last semester, I started experimenting with PPTera for my lecture materials. The difference in student engagement has been remarkable.
 
 Here's what changed:
 
@@ -113,7 +113,7 @@ The visual consistency improved dramatically. Before, my slide decks were a mish
 
 I'm also saving significant prep time. Creating a new lecture used to take 2-3 hours of PowerPoint work. Now I can generate a solid foundation in 20 minutes and spend my time on what actually matters - the content and how I'll explain it.
 
-Some colleagues are skeptical about using AI for educational materials. I get it. But pptmaster isn't replacing my expertise - it's handling the design work so I can focus on teaching.
+Some colleagues are skeptical about using AI for educational materials. I get it. But PPTera isn't replacing my expertise - it's handling the design work so I can focus on teaching.
 
 If you're an educator still manually building every slide, consider trying an AI slide generator. Your students might actually look up from their phones.`,
     coverImage: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=1200",
@@ -135,7 +135,7 @@ If you're an educator still manually building every slide, consider trying an AI
 Here are the mistakes I was making (and probably you are too):
 
 1. Reading directly from slides
-My slides had so much text that I was basically reading a document out loud. Nobody wants that. Now I use PPTMaster to create visual slides with minimal text, and I actually talk to my audience instead of at them.
+My slides had so much text that I was basically reading a document out loud. Nobody wants that. Now I use PPTera to create visual slides with minimal text, and I actually talk to my audience instead of at them.
 
 2. Inconsistent design
 Different fonts on every slide. Colors that clashed. Animations that made no sense. My presentations looked like a ransom note. Using an AI presentation maker fixed this instantly - everything matches automatically.
@@ -144,12 +144,12 @@ Different fonts on every slide. Colors that clashed. Animations that made no sen
 I used to think more slides = more thorough. Wrong. More slides = more chances for your audience to check out. Quality over quantity, always.
 
 4. Ignoring the story arc
-A good presentation has a beginning, middle, and end. My old decks were just information dumps. Now I think about the narrative before I even open ppt master.
+A good presentation has a beginning, middle, and end. My old decks were just information dumps. Now I think about the narrative before I even open PPTera.
 
 5. Last-minute creation
 Nothing good comes from building a PowerPoint presentation at 2am the night before. Give yourself time to iterate. AI slide generators make this easier because the first draft comes together fast.
 
-The biggest shift for me was accepting that presentation design is a skill I don't have to master. Tools like pptmaster handle the visual stuff so I can focus on what I'm actually good at - knowing my content and connecting with people.
+The biggest shift for me was accepting that presentation design is a skill I don't have to master. Tools like PPTera handle the visual stuff so I can focus on what I'm actually good at - knowing my content and connecting with people.
 
 Your slides should support your message, not distract from it. If you're making these mistakes, you're working against yourself.`,
     coverImage: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200",
@@ -170,7 +170,7 @@ Your slides should support your message, not distract from it. If you're making 
 
 My PowerPoint presentations were the visual equivalent of mumbling. Cluttered, confusing, forgettable.
 
-Then a colleague showed me PPT Master and everything clicked.
+Then a colleague showed me PPTera and everything clicked.
 
 The first deck I created with the AI presentation generator was for a team meeting. Nothing high stakes. But when I pulled up the slides, my manager actually said "wow, these look professional." That had literally never happened before.
 
@@ -180,7 +180,7 @@ I stopped trying to be a designer. I'm not one. Accepting that and letting AI ha
 
 I started thinking about presentations differently. Instead of "what information do I need to include," I ask "what do I want my audience to feel and do?" That shift alone improved my decks dramatically.
 
-I actually enjoy the process now. Using pptmaster is kind of fun? You describe what you want, and it creates something that looks way better than what you imagined. It's like having a design partner who actually knows what they're doing.
+I actually enjoy the process now. Using PPTera is kind of fun? You describe what you want, and it creates something that looks way better than what you imagined. It's like having a design partner who actually knows what they're doing.
 
 If presentations stress you out, it might not be about public speaking at all. It might be about your slides. Fix those, and the confidence follows.`,
     coverImage: "https://images.unsplash.com/photo-1531498860502-7c67cf02f657?w=1200",
@@ -199,13 +199,13 @@ If presentations stress you out, it might not be about public speaking at all. I
     excerpt: "Why AI presentation tools aren't replacing creativity - they're amplifying it.",
     content: `There's a lot of fear around AI taking over creative work. As someone who's been making presentations for 20 years, I want to offer a different perspective.
 
-AI presentation makers like PPTMaster aren't replacing human creativity. They're removing the tedious parts so we can focus on what actually matters.
+AI presentation makers like PPTera aren't replacing human creativity. They're removing the tedious parts so we can focus on what actually matters.
 
 Think about it: how much of your presentation creation time is spent on actual creative thinking versus wrestling with PowerPoint layouts? For most people, it's maybe 20% thinking, 80% clicking and dragging.
 
 That ratio is backwards.
 
-When I use ppt master, I spend my time on the story I want to tell, the points I want to make, the emotions I want to evoke. The AI handles the visual execution. That's not less creative - it's more creative, because I'm not constrained by my limited design skills.
+When I use PPTera, I spend my time on the story I want to tell, the points I want to make, the emotions I want to evoke. The AI handles the visual execution. That's not less creative - it's more creative, because I'm not constrained by my limited design skills.
 
 Here's what I've noticed since switching to AI-generated slides:
 
@@ -217,7 +217,7 @@ The quality floor is higher. Even my quick, low-effort presentations look profes
 
 The future of presentation software isn't about fancier animations or more templates. It's about AI that understands what you're trying to communicate and helps you do it better.
 
-We're not there yet, but tools like pptmaster are getting close. And honestly? I'm excited about it.`,
+We're not there yet, but tools like PPTera are getting close. And honestly? I'm excited about it.`,
     coverImage: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=1200",
     category: "trends",
     tags: ["ai", "future", "creativity", "presentation software"],
@@ -236,11 +236,11 @@ We're not there yet, but tools like pptmaster are getting close. And honestly? I
 
 After years of trial and error (mostly error), here's what I've learned about creating engaging presentations:
 
-Start with a hook. Your first slide sets the tone. If it's a boring title slide with your company logo, you've already lost people. I use PPTMaster to generate opening slides that actually grab attention.
+Start with a hook. Your first slide sets the tone. If it's a boring title slide with your company logo, you've already lost people. I use PPTera to generate opening slides that actually grab attention.
 
 One idea per slide. This is the hardest rule to follow because we all want to cram in more information. Resist. Your audience can only process so much at once.
 
-Use visuals that support, not distract. Stock photos of people shaking hands or pointing at charts are worse than no images at all. The AI presentation generator in ppt master is pretty good at suggesting relevant visuals, but you still need to curate.
+Use visuals that support, not distract. Stock photos of people shaking hands or pointing at charts are worse than no images at all. The AI presentation generator in PPTera is pretty good at suggesting relevant visuals, but you still need to curate.
 
 Build in moments of interaction. Ask questions. Pause for reactions. A presentation isn't a monologue - or at least it shouldn't be.
 
@@ -273,7 +273,7 @@ They lead with the customer's problem, not your solution. Nobody cares about you
 
 They use social proof strategically. Logos of companies you've worked with, specific results you've achieved, testimonials from people like them. But don't overdo it - a wall of logos looks desperate.
 
-They're visually clean. Cluttered slides signal cluttered thinking. When I switched to using PPTMaster for my sales presentations, the visual quality jumped immediately. Prospects actually commented on how professional the decks looked.
+They're visually clean. Cluttered slides signal cluttered thinking. When I switched to using PPTera for my sales presentations, the visual quality jumped immediately. Prospects actually commented on how professional the decks looked.
 
 They tell a story. Problem → Solution → Results → Next Steps. Every slide should move this narrative forward. If a slide doesn't serve the story, cut it.
 
@@ -281,7 +281,7 @@ They end with a clear ask. "Any questions?" is not a call to action. "Let's sche
 
 The biggest mistake I see in sales decks is trying to include everything. Your PowerPoint presentation isn't a product manual. It's a conversation starter. Give them enough to be intrigued, then let the discussion fill in the gaps.
 
-I use ppt master for all my sales decks now. The AI presentation maker handles the design so I can focus on the pitch. My close rate has improved noticeably since making the switch.
+I use PPTera for all my sales decks now. The AI presentation maker handles the design so I can focus on the pitch. My close rate has improved noticeably since making the switch.
 
 Your slides are a sales tool. Treat them like one.`,
     coverImage: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1200",
@@ -304,17 +304,17 @@ Here's what actually matters for presentation design in 2025:
 
 Minimalism is winning. The trend toward cleaner, simpler slides continues. Audiences are overwhelmed with information everywhere. Your PowerPoint presentation should be a visual break, not more noise.
 
-Dark mode is mainstream. More people are presenting on screens in various lighting conditions. Dark backgrounds with light text often work better than the traditional white slides. PPTMaster has some great dark themes that look professional without being gimmicky.
+Dark mode is mainstream. More people are presenting on screens in various lighting conditions. Dark backgrounds with light text often work better than the traditional white slides. PPTera has some great dark themes that look professional without being gimmicky.
 
 Mobile-first thinking. Your slides might be viewed on phones during follow-up. Design for readability at any size. This means bigger text, simpler layouts, and fewer elements per slide.
 
 AI-generated content is normalized. Using an AI presentation maker isn't cheating anymore - it's just smart. The stigma is gone. What matters is the final result, not how you got there.
 
-Authenticity over polish. Overly slick presentations can feel corporate and cold. There's a trend toward slides that feel more human and less like they came from a marketing department. Ppt master is good at this - the AI creates professional slides that don't feel sterile.
+Authenticity over polish. Overly slick presentations can feel corporate and cold. There's a trend toward slides that feel more human and less like they came from a marketing department. PPTera is good at this - the AI creates professional slides that don't feel sterile.
 
 Video integration is expected. Static slides feel dated when you can easily embed short video clips. Even a 10-second animation can make a slide more engaging.
 
-The meta-trend is this: presentation software is becoming less about the software and more about the communication. Tools like pptmaster are part of this shift - they handle the technical stuff so you can focus on your message.
+The meta-trend is this: presentation software is becoming less about the software and more about the communication. Tools like PPTera are part of this shift - they handle the technical stuff so you can focus on your message.
 
 Don't chase trends for their own sake. Chase clarity and connection. The design should serve those goals.`,
     coverImage: "https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=1200",
@@ -342,7 +342,7 @@ What I looked for:
 - Export capabilities
 - Actual time savings
 
-PPTMaster stood out for a few reasons. The AI actually understands context - when I describe a business presentation versus an educational one, the output reflects that. The slides look professional without being generic.
+PPTera stood out for a few reasons. The AI actually understands context - when I describe a business presentation versus an educational one, the output reflects that. The slides look professional without being generic.
 
 Some tools I tried generated slides that looked like they came from 2010. Clip art vibes. Not great.
 
@@ -357,7 +357,7 @@ What doesn't work well yet:
 - Brand consistency. If you have strict brand guidelines, you'll still need to tweak things.
 - Highly technical content. The AI sometimes oversimplifies specialized topics.
 
-My workflow now: I use ppt master for the initial deck creation, then fine-tune specific slides manually. This hybrid approach gives me the speed of AI with the control I need.
+My workflow now: I use PPTera for the initial deck creation, then fine-tune specific slides manually. This hybrid approach gives me the speed of AI with the control I need.
 
 If you're still creating every PowerPoint presentation from scratch, you're working harder than you need to. The AI tools have gotten good enough to handle the heavy lifting.
 
@@ -380,7 +380,7 @@ Just don't expect magic. These are tools, not replacements for good thinking abo
 
 Cognitive load matters. Your audience has limited mental bandwidth. Every element on a slide competes for attention. This is why minimalist slides work better - they reduce cognitive load so people can focus on your message.
 
-The picture superiority effect is real. People remember images better than words. A relevant visual will stick in memory longer than bullet points. When I use PPTMaster, I specifically look for slides that lead with visuals rather than text.
+The picture superiority effect is real. People remember images better than words. A relevant visual will stick in memory longer than bullet points. When I use PPTera, I specifically look for slides that lead with visuals rather than text.
 
 Chunking helps retention. Breaking information into smaller pieces (3-5 items max) makes it easier to process and remember. This is why "one idea per slide" is such common advice - it's backed by science.
 
@@ -392,7 +392,7 @@ Emotional engagement improves memory. Slides that evoke emotion (curiosity, surp
 
 The practical application: when creating a PowerPoint presentation, think about what you want people to remember tomorrow. Design your slides to support that, not to include everything you know about the topic.
 
-AI presentation tools like ppt master are getting better at applying these principles automatically. The AI slide generator creates layouts that naturally guide attention and reduce clutter. It's not perfect, but it's a good starting point.
+AI presentation tools like PPTera are getting better at applying these principles automatically. The AI slide generator creates layouts that naturally guide attention and reduce clutter. It's not perfect, but it's a good starting point.
 
 Your slides are a cognitive tool. Design them with the brain in mind.`,
     coverImage: "https://images.unsplash.com/photo-1507413245164-6160d8298b31?w=1200",
@@ -411,7 +411,7 @@ Your slides are a cognitive tool. Design them with the brain in mind.`,
     excerpt: "Virtual presentations have different rules. Here's what actually works when your audience is a grid of tiny faces.",
     content: `Last month I presented to 500 people on Zoom. It was terrifying and educational. Here's what I learned about remote presentations:
 
-Your slides matter more than ever. In person, you can use body language and eye contact to hold attention. On Zoom, your slides are doing most of the heavy lifting. I used PPTMaster to create slides with strong visuals and minimal text - essential for small screens.
+Your slides matter more than ever. In person, you can use body language and eye contact to hold attention. On Zoom, your slides are doing most of the heavy lifting. I used PPTera to create slides with strong visuals and minimal text - essential for small screens.
 
 Pacing needs to be faster. Online attention spans are brutal. I aim for a new slide every 60-90 seconds maximum. If I'm on the same slide for 3 minutes, I've lost people.
 
@@ -423,7 +423,7 @@ Your slides need to be readable at any size. Some people are watching on phones.
 
 Dark backgrounds often work better for video calls. They're easier on the eyes and create better contrast with your video feed.
 
-I've started using ppt master specifically for remote presentations because the AI creates slides optimized for screen viewing. The layouts are cleaner and the text is more readable than what I was creating manually in PowerPoint.
+I've started using PPTera specifically for remote presentations because the AI creates slides optimized for screen viewing. The layouts are cleaner and the text is more readable than what I was creating manually in PowerPoint.
 
 The biggest mindset shift: in remote presentations, you're competing with everything else on their computer. Your slides need to be interesting enough to keep them from checking email.
 
@@ -454,7 +454,7 @@ Customization takes forever. "I'll just change a few colors" turns into an hour 
 
 Everyone uses the same templates. Your "unique" presentation looks identical to three others your audience saw this week. Not great for standing out.
 
-What I do now: I use PPTMaster to generate custom slides based on my actual content. Instead of picking a template and filling it in, I describe what I need and the AI presentation maker creates something tailored.
+What I do now: I use PPTera to generate custom slides based on my actual content. Instead of picking a template and filling it in, I describe what I need and the AI presentation maker creates something tailored.
 
 The difference is significant. My presentations feel more cohesive because every slide was designed for this specific deck, not adapted from a generic template.
 
@@ -462,7 +462,7 @@ I still keep a few ppt templates for very specific use cases - like when a clien
 
 The template era made sense when the alternative was designing everything from scratch in PowerPoint. Now that AI slide generators exist, templates feel like an unnecessary middle step.
 
-If you're still browsing template libraries, try pptmaster instead. You might not go back.`,
+If you're still browsing template libraries, try PPTera instead. You might not go back.`,
     coverImage: "https://images.unsplash.com/photo-1542744094-3a31f272c490?w=1200",
     category: "tips",
     tags: ["templates", "workflow", "productivity", "custom design"],
@@ -489,7 +489,7 @@ One chart per slide. I know you want to show the correlation between five differ
 
 Simplify ruthlessly. If a data point doesn't support your main argument, cut it. Your audience doesn't need to see everything you analyzed - they need to see what matters.
 
-Use visual hierarchy. The most important number should be the biggest thing on the slide. I use PPTMaster for data presentations because the AI is good at creating clean layouts that highlight key metrics.
+Use visual hierarchy. The most important number should be the biggest thing on the slide. I use PPTera for data presentations because the AI is good at creating clean layouts that highlight key metrics.
 
 Tell a story with your data. Numbers in isolation are forgettable. Numbers that explain why something happened and what to do about it are actionable.
 
@@ -497,7 +497,7 @@ Avoid chart junk. 3D effects, excessive gridlines, decorative elements - they al
 
 Practice explaining your charts out loud. If you can't explain a visualization in one sentence, it's too complicated.
 
-The best data presentations I've seen use ppt master or similar AI presentation tools to handle the visual design, freeing the presenter to focus on the narrative. The AI slide generator creates professional-looking data slides without the clutter I used to add manually.
+The best data presentations I've seen use PPTera or similar AI presentation tools to handle the visual design, freeing the presenter to focus on the narrative. The AI slide generator creates professional-looking data slides without the clutter I used to add manually.
 
 Your data has a story. Your job is to tell it clearly.`,
     coverImage: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200",
@@ -526,7 +526,7 @@ Quantify everything possible. "Significant improvement" is weak. "47% reduction 
 
 Design for skimmability. Use clear headers, consistent formatting, and visual hierarchy. Your PowerPoint presentation should be scannable even if someone doesn't read every word.
 
-I switched to PPTMaster for client work about a year ago. The AI presentation maker produces slides that look like they came from a top-tier consulting firm - clean, professional, and structured. Clients have actually commented on the quality improvement.
+I switched to PPTera for client work about a year ago. The AI presentation maker produces slides that look like they came from a top-tier consulting firm - clean, professional, and structured. Clients have actually commented on the quality improvement.
 
 Include a clear "so what" on every slide. Data without interpretation is just noise. Tell them what it means and what to do about it.
 
@@ -534,7 +534,7 @@ End with next steps. Never leave a client presentation without clear action item
 
 The meta-lesson: client presentations are about building trust. Every slide should demonstrate that you understand their business, you've done rigorous work, and you have a clear path forward.
 
-Ppt master helps with the visual trust signals. The strategic thinking is still on you.`,
+PPTera helps with the visual trust signals. The strategic thinking is still on you.`,
     coverImage: "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1200",
     category: "business",
     tags: ["consulting", "client work", "professional", "business strategy"],
@@ -565,7 +565,7 @@ Structure matters. Use proper heading hierarchy and logical slide order. This he
 
 Avoid flashing or rapidly moving elements. These can trigger seizures in people with photosensitive epilepsy.
 
-I've found that PPTMaster generally creates accessible slides by default - good contrast, readable fonts, clean layouts. The AI presentation maker seems to follow accessibility best practices, which saves me from having to fix issues later.
+I've found that PPTera generally creates accessible slides by default - good contrast, readable fonts, clean layouts. The AI presentation maker seems to follow accessibility best practices, which saves me from having to fix issues later.
 
 Provide materials in advance when possible. This helps people who need more time to process information or who use assistive technology.
 
@@ -573,7 +573,7 @@ Test with accessibility tools. PowerPoint has a built-in accessibility checker. 
 
 Making presentations accessible isn't about checking boxes for compliance. It's about respecting your audience enough to ensure everyone can engage with your content.
 
-Ppt master and similar AI slide generators are making this easier, but the responsibility is still yours. Build accessibility into your process from the start.`,
+PPTera and similar AI slide generators are making this easier, but the responsibility is still yours. Build accessibility into your process from the start.`,
     coverImage: "https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=1200",
     category: "education",
     tags: ["accessibility", "inclusive design", "wcag", "disability"],
@@ -602,7 +602,7 @@ Minutes 5-15: Outline the structure
 I write out my key points in a simple doc. Usually 5-7 main ideas, each with 2-3 supporting points. This becomes my slide structure.
 
 Minutes 15-25: Generate the deck
-This is where PPTMaster comes in. I feed my outline into the AI presentation maker and let it generate the initial slides. The AI slide generator usually produces something 80% usable on the first try.
+This is where PPTera comes in. I feed my outline into the AI presentation maker and let it generate the initial slides. The AI slide generator usually produces something 80% usable on the first try.
 
 Minutes 25-30: Refine and customize
 I go through each slide and make adjustments. Sometimes I swap out images, tweak headlines, or reorganize content. But I'm editing, not creating from scratch.
@@ -611,7 +611,7 @@ That's it. 30 minutes from idea to presentable deck.
 
 Compare this to my old workflow: 2-3 hours minimum, often spread across multiple sessions because I'd get frustrated with PowerPoint and walk away.
 
-The key insight: most of my old presentation time was spent on design decisions, not content decisions. Using ppt master to handle the design freed me to focus on what actually matters - the message.
+The key insight: most of my old presentation time was spent on design decisions, not content decisions. Using PPTera to handle the design freed me to focus on what actually matters - the message.
 
 Some caveats:
 - High-stakes presentations get more time for refinement
@@ -649,7 +649,7 @@ Here's what I've learned:
 
 Start strong. Conference audiences decide in the first 2 minutes whether to pay attention or check their phones. Your opening needs to hook them immediately.
 
-Use high-quality visuals. On a big screen, every design flaw is magnified. I use PPTMaster for conference talks because the AI creates slides that look professional at any size.
+Use high-quality visuals. On a big screen, every design flaw is magnified. I use PPTera for conference talks because the AI creates slides that look professional at any size.
 
 Rehearse more than you think necessary. Conference presentations should feel polished but natural. That takes practice.
 
@@ -663,7 +663,7 @@ The technical setup matters too. Arrive early, test your slides, know how the cl
 
 I've seen brilliant experts give terrible conference talks because they treated it like a regular meeting. Don't make that mistake.
 
-Ppt master helps with the visual quality, but conference success comes from preparation and practice. There's no shortcut for that.`,
+PPTera helps with the visual quality, but conference success comes from preparation and practice. There's no shortcut for that.`,
     coverImage: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200",
     category: "tips",
     tags: ["conference", "public speaking", "professional development", "events"],
@@ -700,7 +700,7 @@ Find the conflict. What's the obstacle? What makes this hard? Conflict creates t
 
 Build to a resolution. How does it end? What's different now? What should happen next?
 
-I use PPTMaster to help structure my presentations around narrative arcs. The AI presentation maker is surprisingly good at organizing content into story format - better than I expected from an AI slide generator.
+I use PPTera to help structure my presentations around narrative arcs. The AI presentation maker is surprisingly good at organizing content into story format - better than I expected from an AI slide generator.
 
 Even dry topics have stories. A quarterly report is a story about what happened and why. A product update is a story about solving customer problems. A training session is a story about transformation.
 
@@ -708,7 +708,7 @@ The facts are important. But the story is what makes people care.
 
 Next time you're building a PowerPoint presentation, don't start with "what information do I need to include." Start with "what story am I telling?"
 
-Ppt master can help with the slides. The story is yours to find.`,
+PPTera can help with the slides. The story is yours to find.`,
     coverImage: "https://images.unsplash.com/photo-1456324504439-367cee3b3c32?w=1200",
     category: "tips",
     tags: ["storytelling", "narrative", "communication", "engagement"],

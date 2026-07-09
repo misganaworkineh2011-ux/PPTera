@@ -8,7 +8,7 @@ import { ALL_KEYWORDS } from '../src/lib/seo/keyword-data';
 import { INDUSTRIES, USE_CASES, TEMPLATE_TOPICS, HOW_TO_GUIDES, ALTERNATIVES, TOOLS } from '../src/lib/seo/page-data';
 
 function countPages() {
-  console.log('🔢 PPTMaster pSEO Page Count\n');
+  console.log('🔢 PPTera pSEO Page Count\n');
   console.log('━'.repeat(60));
 
   // Existing pSEO pages
