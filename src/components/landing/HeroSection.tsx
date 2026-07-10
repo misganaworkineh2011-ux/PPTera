@@ -298,9 +298,9 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
 
   return (
     <section className="relative min-h-[600px] h-auto lg:h-[95vh] flex items-center justify-center overflow-hidden">
-      {/* Grid Background */}
+      {/* Layered background: fine grid + brand aurora */}
       <div className="absolute inset-0 z-0 bg-white">
-        <div 
+        <div
           className="absolute inset-0 opacity-[0.55]"
           style={{
             backgroundImage: `
@@ -312,6 +312,10 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
             WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 35%, black 65%, transparent 100%)'
           }}
         />
+        {/* Aurora accents in the brand palette */}
+        <div className="absolute -top-40 left-[8%] w-[560px] h-[560px] rounded-full bg-cyan-200/40 blur-[140px]" />
+        <div className="absolute top-1/4 right-[-140px] w-[520px] h-[520px] rounded-full bg-indigo-200/50 blur-[150px]" />
+        <div className="absolute bottom-[-180px] left-[35%] w-[480px] h-[480px] rounded-full bg-sky-100/60 blur-[130px]" />
         <div className="absolute inset-0 bg-gradient-to-b from-white via-transparent to-white" />
       </div>
 
@@ -319,33 +323,51 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center lg:min-h-[calc(100vh-160px)]">
           {/* Left Column */}
           <div className="flex flex-col justify-center max-w-xl">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-zinc-900 leading-[1.1] mb-6">
+            {/* Eyebrow badge */}
+            <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-zinc-200/80 bg-white/70 px-4 py-1.5 shadow-sm backdrop-blur">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-500 opacity-60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4]" />
+              </span>
+              <span className="text-[13px] font-semibold tracking-wide text-zinc-700">
+                AI presentation studio
+              </span>
+            </div>
+
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-zinc-900 leading-[1.08] mb-6">
               {t.heroTitle} <br />
-              <span className="text-zinc-400">{t.heroSubtitle}</span>
+              <span className="bg-gradient-to-r from-[#1e3a8a] via-sky-600 to-[#06b6d4] bg-clip-text text-transparent">
+                {t.heroSubtitle}
+              </span>
             </h1>
 
             <p className="text-lg text-zinc-600 mb-8 leading-relaxed">
               {t.heroDescription}
             </p>
 
-            {/* Prompt Box synced with cards */}
-            <div className="w-full bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-zinc-100 p-5 mb-8">
-              <div className="flex items-center gap-2 mb-3 border-b border-zinc-50 pb-3">
-                <Command className="w-4 h-4 text-zinc-500" />
-                <span className="text-xs font-semibold text-zinc-600 uppercase tracking-wider">
-                  {t.aiPrompt}
-                </span>
-                <span className="ml-auto text-xs text-zinc-500">
-                  {getWrappedIndex(activeIndex) + 1}/{baseCards.length}
-                </span>
-              </div>
-              <div className="min-h-[72px] flex items-start">
-                <p className="text-zinc-800 font-medium text-lg leading-relaxed">
-                  {typedText}
-                  {isTyping && (
-                    <span className="inline-block w-0.5 h-5 ml-1 bg-zinc-900 animate-pulse align-middle" />
-                  )}
-                </p>
+            {/* Prompt Box synced with cards — glass card with gradient ring */}
+            <div className="relative w-full mb-8 group">
+              <div className="absolute -inset-[1.5px] rounded-2xl bg-gradient-to-r from-[#1e3a8a]/50 via-[#06b6d4]/60 to-[#a855f7]/40 opacity-70 blur-[1.5px] transition-opacity group-hover:opacity-100" />
+              <div className="relative w-full rounded-2xl bg-white/90 p-5 shadow-[0_16px_50px_-16px_rgba(6,58,138,0.25)] backdrop-blur">
+                <div className="flex items-center gap-2 mb-3 border-b border-zinc-100 pb-3">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4]">
+                    <Command className="w-3.5 h-3.5 text-white" />
+                  </span>
+                  <span className="text-xs font-semibold text-zinc-600 uppercase tracking-wider">
+                    {t.aiPrompt}
+                  </span>
+                  <span className="ml-auto rounded-full bg-zinc-100 px-2.5 py-0.5 text-[11px] font-semibold tabular-nums text-zinc-500">
+                    {getWrappedIndex(activeIndex) + 1}/{baseCards.length}
+                  </span>
+                </div>
+                <div className="min-h-[72px] flex items-start">
+                  <p className="text-zinc-800 font-medium text-lg leading-relaxed">
+                    {typedText}
+                    {isTyping && (
+                      <span className="inline-block w-0.5 h-5 ml-1 bg-gradient-to-b from-[#1e3a8a] to-[#06b6d4] animate-pulse align-middle" />
+                    )}
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -354,9 +376,10 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
                 <SignInButton mode="modal">
                   <button
                     style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}
-                    className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] rounded-lg hover:opacity-90 transition-all shadow-lg"
+                    className="group inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] rounded-xl transition-all shadow-lg shadow-cyan-600/25 hover:shadow-xl hover:shadow-cyan-600/35 hover:brightness-110"
                   >
-                    {t.getStartedBtn || "Get Started"} <ArrowRight className="w-5 h-5" />
+                    {t.getStartedBtn || "Get Started"}
+                    <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-0.5" />
                   </button>
                 </SignInButton>
               </SignedOut>
@@ -364,13 +387,30 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
                 <div style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
                   <LoadingLink
                     href={localPath("/")}
-                    className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-zinc-900 rounded-lg hover:bg-zinc-800 transition-all shadow-lg hover:shadow-zinc-900/20"
+                    className="group inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-zinc-900 rounded-xl hover:bg-zinc-800 transition-all shadow-lg hover:shadow-zinc-900/20"
                   >
-                    {t.goToDashboard} <ArrowRight className="w-5 h-5" />
+                    {t.goToDashboard}
+                    <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-0.5" />
                   </LoadingLink>
                 </div>
               </SignedIn>
               <span className="text-sm text-zinc-500 px-2">{t.noCreditCard}</span>
+            </div>
+
+            {/* Proof strip */}
+            <div className="mt-9 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-zinc-200/70 pt-6">
+              {[
+                { value: "100+", label: "Designer themes" },
+                { value: "40+", label: "Smart layout families" },
+                { value: "< 1 min", label: "Prompt to full deck" },
+              ].map(({ value, label }) => (
+                <div key={label} className="flex flex-col">
+                  <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] bg-clip-text text-transparent">
+                    {value}
+                  </span>
+                  <span className="text-[12.5px] font-medium text-zinc-500">{label}</span>
+                </div>
+              ))}
             </div>
 
             {/* Mobile Horizontal Slider - Below CTA buttons - Fixed height to prevent CLS */}
@@ -399,7 +439,7 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
                             marginLeft: -MOBILE_CARD_WIDTH / 2,
                           }}
                         >
-                          <div className="w-full h-full overflow-hidden border border-zinc-200/50 shadow-lg relative bg-zinc-900">
+                          <div className="w-full h-full overflow-hidden rounded-xl ring-1 ring-zinc-900/10 shadow-[0_18px_50px_-20px_rgba(6,58,138,0.45)] relative bg-zinc-900">
                             <LazyVideo
                               src={card.video || ""}
                               className="absolute inset-0 w-full h-full"
@@ -440,6 +480,8 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
 
           {/* Right Column - Full Height Card Scroller (hidden on mobile) */}
           <div className="relative hidden lg:flex items-center justify-center h-full">
+            {/* Glow bed behind the scroller */}
+            <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[70%] rounded-[48px] bg-gradient-to-b from-cyan-300/25 via-indigo-300/20 to-purple-300/25 blur-[60px]" />
             <div
               ref={containerRef}
               className={`relative w-full max-w-lg overflow-hidden select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
@@ -465,8 +507,8 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
                           marginTop: -CARD_HEIGHT / 2,
                         }}
                       >
-                        {/* Sharp square card with video only - lazy loaded */}
-                        <div className="w-full h-full overflow-hidden border border-zinc-200/50 shadow-lg relative bg-zinc-900">
+                        {/* Video card - lazy loaded */}
+                        <div className="w-full h-full overflow-hidden rounded-2xl ring-1 ring-zinc-900/10 shadow-[0_24px_70px_-24px_rgba(6,58,138,0.5)] relative bg-zinc-900">
                           <LazyVideo
                             src={card.video || ""}
                             className="absolute inset-0 w-full h-full"

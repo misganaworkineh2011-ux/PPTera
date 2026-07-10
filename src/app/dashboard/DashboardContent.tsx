@@ -265,8 +265,74 @@ export default function DashboardContent({ presentations: propPresentations, use
     return "/logo.png";
   };
 
+  const firstName = (userName || clerkUser?.firstName || "").trim().split(" ")[0] || "there";
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  const totalDecks = pagination?.total ?? presentations.length;
+  const favoriteCount = presentations.filter((p) => p.isPinned).length;
+  const publicCount = presentations.filter((p) => p.isPublic).length;
+
   return (
     <div className="mx-auto max-w-[1400px] w-full p-4 md:p-5 lg:px-6 lg:py-4">
+      {/* Welcome band */}
+      <div className="relative mb-6 overflow-hidden rounded-3xl border border-slate-200/70 bg-white dark:border-zinc-800 dark:bg-zinc-950 px-6 py-7 sm:px-8">
+        {/* Aurora wash */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -top-24 right-[10%] h-64 w-64 rounded-full bg-cyan-200/40 blur-[90px] dark:bg-cyan-500/10" />
+          <div className="absolute -bottom-28 left-[5%] h-64 w-64 rounded-full bg-indigo-200/40 blur-[90px] dark:bg-indigo-500/10" />
+          <div
+            className="absolute inset-0 opacity-[0.35] dark:opacity-[0.12]"
+            style={{
+              backgroundImage:
+                "linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)",
+              backgroundSize: "36px 36px",
+              maskImage: "radial-gradient(ellipse at 20% 0%, black 0%, transparent 70%)",
+              WebkitMaskImage: "radial-gradient(ellipse at 20% 0%, black 0%, transparent 70%)",
+            }}
+          />
+        </div>
+
+        <div className="relative flex flex-wrap items-center justify-between gap-6">
+          <div>
+            <p className="text-[13px] font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
+              {greeting}
+            </p>
+            <h1 className="mt-1 text-2xl sm:text-[28px] font-black tracking-tight text-slate-900 dark:text-white">
+              Welcome back,{" "}
+              <span className="bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] bg-clip-text text-transparent">
+                {firstName}
+              </span>
+            </h1>
+            <div className="mt-4 flex flex-wrap items-center gap-2.5">
+              {[
+                { label: totalDecks === 1 ? "presentation" : "presentations", value: totalDecks },
+                { label: favoriteCount === 1 ? "favorite" : "favorites", value: favoriteCount },
+                { label: "public", value: publicCount },
+              ].map(({ label, value }) => (
+                <span
+                  key={label}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-white/70 px-3 py-1 text-[12px] font-semibold text-slate-500 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/70 dark:text-zinc-400"
+                >
+                  <span className="font-black tabular-nums text-slate-800 dark:text-white">{value}</span>
+                  {label}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <button
+            onClick={() => {
+              startNavigating();
+              router.push("/createpresentation");
+            }}
+            className="group inline-flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-6 py-3.5 text-[14px] font-bold text-white shadow-lg shadow-cyan-600/25 transition-all hover:shadow-xl hover:shadow-cyan-600/35 hover:brightness-110"
+          >
+            <Sparkles size={17} className="transition-transform group-hover:rotate-12" />
+            Create with AI
+          </button>
+        </div>
+      </div>
+
       {/* Quick Actions & Controls Bar */}
       <div className="mb-4 flex flex-col gap-3">
         {/* Controls Bar */}
@@ -323,8 +389,8 @@ export default function DashboardContent({ presentations: propPresentations, use
       <div className="min-h-[400px] pb-16">
         {filteredPresentations.length === 0 ? (
           <div className="flex h-[400px] flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 bg-white text-center px-4 dark:border-zinc-800 dark:bg-zinc-900/50">
-            <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-slate-50 shadow-inner ring-1 ring-slate-100 dark:bg-zinc-800 dark:ring-zinc-700">
-              <Upload size={32} className="text-[#06b6d4]" />
+            <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] shadow-lg shadow-cyan-600/25">
+              <Upload size={32} className="text-white" />
             </div>
             <h3 className="mb-2 text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
               {presentations.length === 0 ? "No projects yet" : "No matches found"}
