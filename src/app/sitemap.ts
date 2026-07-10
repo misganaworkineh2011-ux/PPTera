@@ -1,16 +1,6 @@
 import type { MetadataRoute } from "next";
 import { db } from "~/server/db";
 import { SUPPORTED_LANGUAGES } from "~/lib/i18n";
-import {
-  TOOLS,
-  INDUSTRIES,
-  USE_CASES,
-  TEMPLATE_TOPICS,
-  HOW_TO_GUIDES,
-  ALTERNATIVES,
-  getAllComboSlugs
-} from "~/lib/seo/page-data";
-import { ALL_KEYWORDS } from "~/lib/seo/keyword-data";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://www.pptmaster.app";
@@ -49,118 +39,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  // Dynamic pages without language versions (redirects to /en/ versions)
-  const staticPages: MetadataRoute.Sitemap = [];
-
   // ============================================
-  // PROGRAMMATIC SEO PAGES
-  // ============================================
-
-  // Tool pages (~20 pages)
-  const toolPages: MetadataRoute.Sitemap = TOOLS.map((tool) => ({
-    url: `${baseUrl}/tools/${tool.slug}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.8,
-  }));
-
-  // Industry pages (~30 pages)
-  const industryPages: MetadataRoute.Sitemap = INDUSTRIES.map((industry) => ({
-    url: `${baseUrl}/industries/${industry.slug}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.8,
-  }));
-
-  // Use case pages (~25 pages)
-  const useCasePages: MetadataRoute.Sitemap = USE_CASES.map((useCase) => ({
-    url: `${baseUrl}/create/${useCase.slug}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.8,
-  }));
-
-  // Template topic pages (~30 pages)
-  const templatePages: MetadataRoute.Sitemap = TEMPLATE_TOPICS.map((template) => ({
-    url: `${baseUrl}/templates/${template.slug}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.7,
-  }));
-
-  // How-to guide pages (~15 pages)
-  const howToPages: MetadataRoute.Sitemap = HOW_TO_GUIDES.map((guide) => ({
-    url: `${baseUrl}/how-to/${guide.slug}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.7,
-  }));
-
-  // Alternative/competitor pages (~10 pages)
-  const alternativePages: MetadataRoute.Sitemap = ALTERNATIVES.map((alt) => ({
-    url: `${baseUrl}/alternatives/${alt.slug}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.7,
-  }));
-
-  // Combo pages (industry × use case = ~750 pages)
-  const comboSlugs = getAllComboSlugs();
-  const comboPages: MetadataRoute.Sitemap = comboSlugs.map((slug) => ({
-    url: `${baseUrl}/for/${slug}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.6,
-  }));
-
-  // ============================================
-  // KEYWORD-BASED pSEO PAGES (10k+ pages)
-  // ============================================
-
-  // Individual keyword pages (~400+ pages from keywords.txt)
-  const keywordPages: MetadataRoute.Sitemap = ALL_KEYWORDS.map((keyword) => ({
-    url: `${baseUrl}/k/${keyword.slug}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: keyword.priority,
-  }));
-
-  // Keyword + Use Case combo pages (~10,000+ pages)
-  // Only generate for high-value keywords to keep sitemap manageable
-  const highValueKeywords = ALL_KEYWORDS.filter(k => 
-    k.category === 'ai-tools' || 
-    k.category === 'powerpoint' || 
-    k.category === 'presentation-tools' ||
-    k.priority >= 0.6
-  );
-
-  const keywordUseCasePages: MetadataRoute.Sitemap = [];
-  for (const keyword of highValueKeywords) {
-    for (const useCase of USE_CASES) {
-      keywordUseCasePages.push({
-        url: `${baseUrl}/use/${keyword.slug}/${useCase.slug}`,
-        lastModified: new Date(),
-        changeFrequency: "weekly" as const,
-        priority: 0.6,
-      });
-    }
-  }
-
-  // Keyword + Industry combo pages (ALL keywords for maximum coverage)
-  const keywordIndustryPages: MetadataRoute.Sitemap = [];
-  for (const keyword of ALL_KEYWORDS) {
-    for (const industry of INDUSTRIES) {
-      keywordIndustryPages.push({
-        url: `${baseUrl}/for/${keyword.slug}/${industry.slug}`,
-        lastModified: new Date(),
-        changeFrequency: "weekly" as const,
-        priority: 0.6,
-      });
-    }
-  }
-
-  // ============================================
-  // DYNAMIC DATABASE CONTENT
+  // DYNAMIC DATABASE CONTENT (natural SEO)
   // ============================================
 
   // Fetch inspiration items for dynamic URLs
@@ -231,20 +111,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...i18nUrls,
-    ...staticPages,
-    // pSEO pages
-    ...toolPages,
-    ...industryPages,
-    ...useCasePages,
-    ...templatePages,
-    ...howToPages,
-    ...alternativePages,
-    ...comboPages,
-    // Keyword-based pSEO pages (10k+)
-    ...keywordPages,
-    ...keywordUseCasePages,
-    ...keywordIndustryPages,
-    // Dynamic content
     ...inspirationPages,
     ...insightPages,
     ...communityPages,

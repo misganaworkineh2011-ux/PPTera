@@ -1,9 +1,15 @@
-import { redirect } from "next/navigation";
+import { redirect, unstable_rethrow } from "next/navigation";
 import { requireAuth } from "~/lib/clerk-server";
 import { db } from "~/server/db";
 import DashboardLayout from "~/components/dashboard/DashboardLayout";
 import { SettingsProvider } from "~/contexts/SettingsContext";
 import { DashboardProvider } from "~/contexts/DashboardContext";
+
+// The dashboard is auth-gated (Clerk reads request headers), so it can never
+// be statically prerendered. Declaring that stops `next build` from even
+// attempting it — without this, the prerender bails with DYNAMIC_SERVER_USAGE
+// errors on every /dashboard/* route.
+export const dynamic = "force-dynamic";
 
 const LOG_PREFIX = "[Dashboard Layout]";
 
@@ -63,7 +69,11 @@ export default async function Layout({ children }: { children: React.ReactNode }
       </SettingsProvider>
     );
   } catch (error) {
-    // Catch any unexpected errors and redirect gracefully
+    // Next.js control-flow errors (redirect from requireAuth, notFound,
+    // dynamic-server-usage during prerender) MUST propagate — swallowing them
+    // breaks builds and turns clean sign-in redirects into error redirects.
+    unstable_rethrow(error);
+    // Catch any genuinely unexpected errors and redirect gracefully
     console.error(`${LOG_PREFIX} Unexpected error:`, error);
     redirect("/sign-in?error=unexpected_error");
   }
