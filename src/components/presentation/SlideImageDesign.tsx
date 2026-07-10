@@ -629,6 +629,112 @@ export default function SlideImageDesign({
     );
   }
 
+  // ==========================================================================
+  // BLEND TREATMENTS — the image dissolves INTO the slide via alpha masks.
+  // Full-bleed, frameless: masked-out pixels are genuinely transparent, so the
+  // slide's own background (any theme, gradient or orbs) shows through and the
+  // photo reads as part of the composition, not a placed rectangle.
+  // ==========================================================================
+
+  // Direction the image should dissolve toward = where the content sits.
+  const fadeTo =
+    orientation === "right" ? "to left"
+    : orientation === "left" ? "to right"
+    : orientation === "top" ? "to bottom"
+    : "to top";
+
+  const masked = (mask: string, children: ReactNode, extraStyle?: CSSProperties) => (
+    <div
+      className="absolute inset-0"
+      style={{ WebkitMaskImage: mask, maskImage: mask, ...extraStyle }}
+    >
+      {children}
+    </div>
+  );
+
+  // ---- Edge Fade: dissolves toward the content side
+  if (shape === "fade") {
+    const mask = `linear-gradient(${fadeTo}, black 45%, rgba(0,0,0,0.6) 70%, transparent 97%)`;
+    return wrap(masked(mask, img()));
+  }
+
+  // ---- Soft Veil: melts away radially in every direction
+  if (shape === "veil") {
+    const center =
+      orientation === "right" ? "72% 50%"
+      : orientation === "left" ? "28% 50%"
+      : orientation === "top" ? "50% 32%"
+      : "50% 68%";
+    const mask = `radial-gradient(ellipse 85% 75% at ${center}, black 38%, rgba(0,0,0,0.55) 62%, transparent 92%)`;
+    return wrap(masked(mask, img()));
+  }
+
+  // ---- Organic Meld: diagonal + radial dissolve for an uneven, organic edge
+  if (shape === "meld") {
+    const diag =
+      orientation === "right" ? "to bottom left"
+      : orientation === "left" ? "to bottom right"
+      : orientation === "top" ? "to bottom"
+      : "to top";
+    const center =
+      orientation === "right" ? "80% 30%"
+      : orientation === "left" ? "20% 30%"
+      : orientation === "top" ? "50% 20%"
+      : "50% 80%";
+    // Layered masks multiply, so the visible area is where BOTH stay opaque —
+    // the combination melts unevenly instead of a straight gradient line.
+    const mask = `linear-gradient(${diag}, black 40%, rgba(0,0,0,0.5) 68%, transparent 96%), radial-gradient(ellipse 110% 105% at ${center}, black 45%, rgba(0,0,0,0.65) 70%, transparent 98%)`;
+    return wrap(
+      masked(mask, img(), {
+        WebkitMaskComposite: "source-in",
+        maskComposite: "intersect",
+      } as CSSProperties)
+    );
+  }
+
+  // ---- Ambient Wash: muted backdrop presence, fading early into the slide
+  if (shape === "wash") {
+    const mask = `linear-gradient(${fadeTo}, rgba(0,0,0,0.9) 25%, rgba(0,0,0,0.45) 60%, transparent 94%)`;
+    return wrap(
+      masked(
+        mask,
+        <>
+          {img("", { filter: "saturate(0.55) brightness(1.02) contrast(0.95)" })}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: `linear-gradient(${fadeTo}, transparent 30%, ${accent}26 100%)`,
+            }}
+          />
+        </>
+      )
+    );
+  }
+
+  // ---- Ink Blend: the photo adopts the theme accent, then edge-fades away
+  if (shape === "inkblend") {
+    const mask = `linear-gradient(${fadeTo}, black 40%, rgba(0,0,0,0.55) 68%, transparent 96%)`;
+    return wrap(
+      masked(
+        mask,
+        <>
+          {img("", { filter: "grayscale(1) contrast(1.08) brightness(1.02)" })}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ backgroundColor: accent, mixBlendMode: "color", opacity: 0.85 }}
+          />
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: `linear-gradient(${fadeTo}, transparent 45%, ${accent}33 100%)`,
+              mixBlendMode: isDark ? "screen" : "multiply",
+            }}
+          />
+        </>
+      )
+    );
+  }
+
   // Unknown design shape: safe full-bleed fallback.
   return (
     <SlideImg

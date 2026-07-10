@@ -192,6 +192,26 @@ const ShapePreview = ({
           <div className="absolute inset-x-0 top-1/2 h-[1.5px] -translate-y-1/2" style={{ backgroundColor: fill }} />
         </div>
       );
+    case "fade":
+      return (
+        <div className={baseClass} style={{ background: `linear-gradient(to left, ${fill} 30%, transparent 95%)` }} />
+      );
+    case "veil":
+      return (
+        <div className={baseClass} style={{ background: `radial-gradient(ellipse at 65% 50%, ${fill} 25%, transparent 80%)` }} />
+      );
+    case "meld":
+      return (
+        <div className={baseClass} style={{ background: `radial-gradient(ellipse at 80% 20%, ${fill} 20%, transparent 75%), linear-gradient(to bottom left, ${faint} 30%, transparent 85%)` }} />
+      );
+    case "wash":
+      return (
+        <div className={baseClass} style={{ background: `linear-gradient(to left, ${faint} 15%, transparent 90%)` }} />
+      );
+    case "inkblend":
+      return (
+        <div className={baseClass} style={{ background: `linear-gradient(to left, ${fill} 15%, ${faint} 50%, transparent 92%)`, filter: "saturate(1.4)" }} />
+      );
     default:
       return <div className={baseClass} style={box} />;
   }
@@ -224,6 +244,11 @@ const shapeOptions: { shape: ImageShape; label: string }[] = [
   { shape: "collage", label: "Cutout" },
   { shape: "tilt3d", label: "3D Tilt" },
   { shape: "window", label: "Window" },
+  { shape: "fade", label: "Edge Fade" },
+  { shape: "veil", label: "Soft Veil" },
+  { shape: "meld", label: "Organic Meld" },
+  { shape: "wash", label: "Ambient Wash" },
+  { shape: "inkblend", label: "Ink Blend" },
 ];
 
 export default function ImageHoverToolbar({

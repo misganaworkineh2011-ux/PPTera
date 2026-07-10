@@ -34,10 +34,10 @@ function renderShape(shape: ImageShape, orientation: "left" | "right" | "top" | 
 }
 
 describe("SlideImageDesign", () => {
-  it("edge + design shape lists cover all 26 unique shapes", () => {
+  it("edge + design shape lists cover all 31 unique shapes", () => {
     const all = [...EDGE_IMAGE_SHAPES, ...DESIGN_IMAGE_SHAPES];
-    expect(all.length).toBe(26);
-    expect(new Set(all).size).toBe(26);
+    expect(all.length).toBe(31);
+    expect(new Set(all).size).toBe(31);
   });
 
   it("legacy edge shapes render the plain full-bleed image (host clip styles it)", () => {
@@ -101,6 +101,32 @@ describe("SlideImageDesign", () => {
     expect(imgs.length).toBe(3);
     const positions = Array.from(imgs).map((el) => (el as HTMLElement).style.objectPosition);
     expect(new Set(positions).size).toBe(3);
+  });
+
+  it("blend shapes dissolve toward the content side via an alpha mask", () => {
+    // Image on the RIGHT column → content is left → fade "to left".
+    const right = renderShape("fade", "right");
+    const rightStyle = (right.container.firstElementChild as HTMLElement).getAttribute("style") ?? "";
+    expect(rightStyle).toContain("mask");
+    expect(rightStyle).toContain("to left");
+    right.unmount();
+
+    // Image on the LEFT column → content is right → fade "to right".
+    const left = renderShape("fade", "left");
+    const leftStyle = (left.container.firstElementChild as HTMLElement).getAttribute("style") ?? "";
+    expect(leftStyle).toContain("to right");
+    left.unmount();
+
+    // Top banner → content below → fade "to bottom". jsdom normalizes the
+    // default direction away, so assert the mask exists with no other direction.
+    const top = renderShape("fade", "top");
+    const inner = (top.container.firstElementChild as HTMLElement).firstElementChild as HTMLElement;
+    const topStyle = inner.getAttribute("style") ?? "";
+    expect(topStyle).toContain("mask-image");
+    expect(topStyle).not.toContain("to left");
+    expect(topStyle).not.toContain("to right");
+    expect(topStyle).not.toContain("to top");
+    top.unmount();
   });
 
   it("drag props pass through to the image", () => {

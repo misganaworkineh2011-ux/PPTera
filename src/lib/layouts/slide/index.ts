@@ -44,7 +44,14 @@ export type ImageShape =
   | "contour"   // concentric outline echoes radiating behind the image
   | "collage"   // rough-cut magazine cutout with a white sticker border
   | "tilt3d"    // 3D perspective tilt with a grounded shadow
-  | "window";   // paned window: mullion bars over the image
+  | "window"    // paned window: mullion bars over the image
+  // Blend treatments: the image dissolves INTO the slide via alpha masks —
+  // no frame, no border; the slide background shows through seamlessly
+  | "fade"      // edge fade: dissolves toward the content side
+  | "veil"      // soft radial veil: melts away in all directions
+  | "meld"      // organic melt: diagonal + radial dissolve, uneven edge
+  | "wash"      // ambient wash: muted full backdrop fading into the slide
+  | "inkblend"; // ink blend: photo recolored to the theme accent, edge-faded
 
 /** Shapes rendered as full-bleed columns with an edge clip (the legacy system). */
 export const EDGE_IMAGE_SHAPES: ImageShape[] = ["rectangle", "arc", "rounded", "wave"];
@@ -55,7 +62,11 @@ export const DESIGN_IMAGE_SHAPES: ImageShape[] = [
   "slats", "organic", "cornercut", "duotone", "lframe",
   "splitpanes", "tape", "stamp", "ticket", "hexagon", "diamond",
   "ribbon", "vignette", "contour", "collage", "tilt3d", "window",
+  "fade", "veil", "meld", "wash", "inkblend",
 ];
+
+/** Blend treatments: full-bleed, mask-based, dissolve into the slide. */
+export const BLEND_IMAGE_SHAPES: ImageShape[] = ["fade", "veil", "meld", "wash", "inkblend"];
 
 export const isDesignImageShape = (shape: ImageShape): boolean =>
   DESIGN_IMAGE_SHAPES.includes(shape);
