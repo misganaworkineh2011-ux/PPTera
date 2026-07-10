@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "Contact Us - Get Support for AI PowerPoint Generator | PPTera",
   description: "Contact PPTera support team. Get help with AI PowerPoint generation, billing, features, or partnership inquiries. We're here to help 24/7.",
   alternates: {
-    canonical: "https://www.pptmaster.app/contact",
+    canonical: "https://www.pptera.com/contact",
   },
   openGraph: {
     title: "Contact Us - Get Support for AI PowerPoint Generator | PPTera",

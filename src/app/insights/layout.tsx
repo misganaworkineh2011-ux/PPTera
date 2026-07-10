@@ -8,11 +8,11 @@ export const metadata: Metadata = {
     title: "Insights & Blog | PPTera - AI PowerPoint Generator",
     description:
       "Expert tips and guides for creating stunning presentations with AI powerpoint generator tools. Learn design principles, best practices, and presentation techniques.",
-    url: "https://www.pptmaster.app/insights",
+    url: "https://www.pptera.com/insights",
     siteName: "PPTera - AI PowerPoint Generator",
     images: [
       {
-        url: "https://www.pptmaster.app/og-image.jpeg",
+        url: "https://www.pptera.com/og-image.jpeg",
         width: 1200,
         height: 630,
         alt: "PPTera Insights - Presentation Design Tips",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     title: "Insights & Blog | PPTera - AI PowerPoint Generator",
     description:
       "Expert tips and guides for creating stunning presentations with AI powerpoint generator tools.",
-    images: ["https://www.pptmaster.app/og-image.jpeg"],
+    images: ["https://www.pptera.com/og-image.jpeg"],
     creator: "@pptera",
     site: "@pptera",
   },
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     "presentation software",
   ],
   alternates: {
-    canonical: "https://www.pptmaster.app/insights",
+    canonical: "https://www.pptera.com/insights",
   },
   robots: {
     index: true,

@@ -53,18 +53,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${post.title} | PPTera Community`,
     description,
     alternates: {
-      canonical: `https://www.pptmaster.app/community/${id}`,
+      canonical: `https://www.pptera.com/community/${id}`,
     },
     keywords: `PPTera community, ${categoryLabels[post.category] || post.category}, presentation tips, ${post.authorName}`,
     openGraph: {
       title: post.title,
       description,
-      url: `https://www.pptmaster.app/community/${id}`,
+      url: `https://www.pptera.com/community/${id}`,
       type: "article",
       authors: [post.authorName],
       images: [
         {
-          url: "https://www.pptmaster.app/og-image.jpeg",
+          url: "https://www.pptera.com/og-image.jpeg",
           width: 1200,
           height: 630,
           alt: post.title,
@@ -75,7 +75,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: "summary_large_image",
       title: post.title,
       description,
-      images: ["https://www.pptmaster.app/og-image.jpeg"],
+      images: ["https://www.pptera.com/og-image.jpeg"],
     },
     robots: {
       index: true,

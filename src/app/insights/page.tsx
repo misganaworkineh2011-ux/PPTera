@@ -12,11 +12,11 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Insights & Blog | PPTera – Presentation Tips",
     description: "Expert tips and guides for creating stunning presentations with PPTera AI powerpoint generator. Learn design principles, best practices, and presentation techniques.",
-    url: "https://www.pptmaster.app/insights",
+    url: "https://www.pptera.com/insights",
     type: "website",
     images: [
       {
-        url: "https://www.pptmaster.app/og-image.jpeg",
+        url: "https://www.pptera.com/og-image.jpeg",
         width: 1200,
         height: 630,
         alt: "PPTera Insights – Presentation Design Tips",
@@ -27,10 +27,10 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Insights & Blog | PPTera – Presentation Tips",
     description: "Expert tips and guides for creating stunning AI presentations. Learn design principles and best practices.",
-    images: ["https://www.pptmaster.app/og-image.jpeg"],
+    images: ["https://www.pptera.com/og-image.jpeg"],
   },
   alternates: {
-    canonical: "https://www.pptmaster.app/insights",
+    canonical: "https://www.pptera.com/insights",
   },
   robots: {
     index: true,
@@ -115,26 +115,26 @@ export default async function InsightsPage({ currentLang = "en" }: InsightsPageP
     "@type": "Blog",
     name: "PPTera Insights",
     description: "Expert tips, guides, and insights for creating better presentations with PPTera (PPTera) AI powerpoint generator",
-    url: "https://www.pptmaster.app/insights",
+    url: "https://www.pptera.com/insights",
     publisher: {
       "@type": "Organization",
       name: "PPTera",
       logo: {
         "@type": "ImageObject",
-        url: "https://www.pptmaster.app/logo.png",
+        url: "https://www.pptera.com/logo.png",
       },
     },
     blogPost: posts.slice(0, 10).map(post => ({
       "@type": "BlogPosting",
       headline: post.title,
       description: post.excerpt,
-      image: post.coverImage || "https://www.pptmaster.app/og-image.jpeg",
+      image: post.coverImage || "https://www.pptera.com/og-image.jpeg",
       datePublished: post.publishedAt,
       author: {
         "@type": "Person",
         name: post.author,
       },
-      url: `https://www.pptmaster.app/insights/${post.slug}`,
+      url: `https://www.pptera.com/insights/${post.slug}`,
     })),
   };
 

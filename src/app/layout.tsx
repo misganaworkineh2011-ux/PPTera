@@ -14,7 +14,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://www.pptmaster.app'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://www.pptera.com'),
   title: {
     default: "PPTera: Free Stunning PowerPoint Generator",
     template: "%s | PPTera"
@@ -130,13 +130,13 @@ export default function RootLayout({
     "@type": "WebSite",
     "name": "PPTera",
     "alternateName": ["PPTera", "PPTera"],
-    "url": process.env.NEXT_PUBLIC_APP_URL || "https://www.pptmaster.app",
+    "url": process.env.NEXT_PUBLIC_APP_URL || "https://www.pptera.com",
     "description": "PPTera is your free AI-powered design partner for creating stunning presentations effortlessly. No coding or design skills required.",
     "potentialAction": {
       "@type": "SearchAction",
       "target": {
         "@type": "EntryPoint",
-        "urlTemplate": `${process.env.NEXT_PUBLIC_APP_URL || "https://www.pptmaster.app"}/?q={search_term_string}`
+        "urlTemplate": `${process.env.NEXT_PUBLIC_APP_URL || "https://www.pptera.com"}/?q={search_term_string}`
       },
       "query-input": "required name=search_term_string"
     }
@@ -147,14 +147,14 @@ export default function RootLayout({
     "@type": "Organization",
     "name": "PPTera",
     "alternateName": ["PPTera", "PPTera"],
-    "url": process.env.NEXT_PUBLIC_APP_URL || "https://www.pptmaster.app",
-    "logo": `${process.env.NEXT_PUBLIC_APP_URL || "https://www.pptmaster.app"}/logo.png`,
+    "url": process.env.NEXT_PUBLIC_APP_URL || "https://www.pptera.com",
+    "logo": `${process.env.NEXT_PUBLIC_APP_URL || "https://www.pptera.com"}/logo.png`,
     "description": "PPTera (PPTera) is the best AI-powered PowerPoint generator for creating professional presentations.",
     "foundingDate": "2024",
     "contactPoint": {
       "@type": "ContactPoint",
       "contactType": "customer support",
-      "url": `${process.env.NEXT_PUBLIC_APP_URL || "https://www.pptmaster.app"}/contact`,
+      "url": `${process.env.NEXT_PUBLIC_APP_URL || "https://www.pptera.com"}/contact`,
       "availableLanguage": ["English", "Spanish", "French", "German", "Italian", "Portuguese", "Japanese", "Korean", "Chinese", "Arabic", "Hindi", "Russian"]
     },
     "sameAs": []

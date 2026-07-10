@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Compare PPTera pricing plans. Start free with 200 credits. Upgrade to Plus ($9/mo), Pro ($19/mo), or Ultra ($49/mo) for more AI PowerPoint features and credits.",
   keywords: ["pricing", "plans", "subscription", "free presentation maker", "PPT pricing", "affordable AI", "presentation plans", "PPTera", "PPTera", "PowerPoint pricing", "AI PowerPoint plans", "best PowerPoint generator"],
   alternates: {
-    canonical: "https://www.pptmaster.app/pricing",
+    canonical: "https://www.pptera.com/pricing",
   },
   openGraph: {
     title: "Pricing Plans - Free AI PowerPoint Generator | PPTera",
@@ -86,13 +86,13 @@ const breadcrumbSchema = {
       "@type": "ListItem",
       "position": 1,
       "name": "Home",
-      "item": "https://www.pptmaster.app",
+      "item": "https://www.pptera.com",
     },
     {
       "@type": "ListItem",
       "position": 2,
       "name": "Pricing",
-      "item": "https://www.pptmaster.app/pricing",
+      "item": "https://www.pptera.com/pricing",
     },
   ],
 };

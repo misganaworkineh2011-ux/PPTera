@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     const title = `${item.title} | PPTera Inspiration`;
     const description = item.description || `${item.category} presentation design inspiration from PPTera`;
-    const url = `https://www.pptmaster.app/inspiration/${params.id}`;
+    const url = `https://www.pptera.com/inspiration/${params.id}`;
 
     return {
       title,

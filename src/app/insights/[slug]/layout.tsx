@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     const title = `${post.title} | PPTera Insights`;
     const description = post.excerpt;
-    const url = `https://www.pptmaster.app/insights/${params.slug}`;
+    const url = `https://www.pptera.com/insights/${params.slug}`;
 
     return {
       title,

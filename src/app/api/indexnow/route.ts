@@ -84,7 +84,7 @@ export async function GET() {
           { sitemap: true },
           { path: "/pricing", allLanguages: true },
           { path: "/insights/my-new-post" },
-          { urls: ["https://www.pptmaster.app/insights/post-1", "https://www.pptmaster.app/insights/post-2"] },
+          { urls: ["https://www.pptera.com/insights/post-1", "https://www.pptera.com/insights/post-2"] },
         ],
       },
     },

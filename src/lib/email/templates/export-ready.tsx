@@ -22,7 +22,7 @@ interface ExportReadyProps {
 export function ExportReady({
   presentationTitle = "Your Presentation",
   format = "PDF",
-  downloadUrl = "https://pptmaster.app/download",
+  downloadUrl = "https://pptera.com/download",
   expiresIn = "24 hours",
   fileSize,
 }: ExportReadyProps) {

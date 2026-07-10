@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: "AI Prompt Guide - Write Better PowerPoint Prompts | PPTera",
   description: "Master AI prompt writing for stunning PowerPoint presentations. Learn tips, examples, and best practices to create professional slides with PPTera AI generator.",
   alternates: {
-    canonical: "https://www.pptmaster.app/prompt-guide",
+    canonical: "https://www.pptera.com/prompt-guide",
   },
   openGraph: {
     title: "AI Prompt Guide - Write Better PowerPoint Prompts | PPTera",
@@ -77,13 +77,13 @@ const breadcrumbSchema = {
       "@type": "ListItem",
       "position": 1,
       "name": "Home",
-      "item": "https://www.pptmaster.app",
+      "item": "https://www.pptera.com",
     },
     {
       "@type": "ListItem",
       "position": 2,
       "name": "Prompt Guide",
-      "item": "https://www.pptmaster.app/prompt-guide",
+      "item": "https://www.pptera.com/prompt-guide",
     },
   ],
 };

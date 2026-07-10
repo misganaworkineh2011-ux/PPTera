@@ -617,7 +617,7 @@ export default function PresenterPage({ params }: PresenterPageProps) {
       {/* Watermark for free users */}
       {presentation.showWatermark && (
         <a
-          href="https://www.pptmaster.app"
+          href="https://www.pptera.com"
           target="_blank"
           rel="noopener noreferrer"
           className="fixed bottom-4 right-4 z-50 px-4 py-2 bg-slate-800 border border-slate-700 rounded-full text-white text-sm font-medium hover:bg-slate-700 transition flex items-center gap-2 shadow-lg"

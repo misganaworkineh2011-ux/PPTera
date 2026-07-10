@@ -181,7 +181,7 @@ export default function InspirationItemPage({ currentLang = "en" }: InspirationI
               name: "PPTera",
               logo: {
                 "@type": "ImageObject",
-                url: "https://www.pptmaster.app/logo.png",
+                url: "https://www.pptera.com/logo.png",
               },
             },
             keywords: [item.category, ...item.tags].join(", "),

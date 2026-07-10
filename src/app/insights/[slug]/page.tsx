@@ -165,7 +165,7 @@ export default function InsightPostPage({ currentLang = "en" }: InsightPostPageP
               name: "PPTera",
               logo: {
                 "@type": "ImageObject",
-                url: "https://www.pptmaster.app/logo.png",
+                url: "https://www.pptera.com/logo.png",
               },
             },
             keywords: post.tags.join(", "),

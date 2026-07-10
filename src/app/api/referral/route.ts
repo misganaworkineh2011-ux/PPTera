@@ -58,7 +58,7 @@ export async function GET() {
 
     return NextResponse.json({
       referralCode,
-      referralLink: `${process.env.NEXT_PUBLIC_APP_URL || "https://www.pptmaster.app"}/?ref=${referralCode}`,
+      referralLink: `${process.env.NEXT_PUBLIC_APP_URL || "https://www.pptera.com"}/?ref=${referralCode}`,
       stats,
       referrals,
       creditsPerReferral: REFERRAL_CREDITS,

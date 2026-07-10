@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: "Cookie Notice",
   description: "Learn how PPTera (PPTera) uses cookies to enhance your experience. Understand our data practices and your privacy choices.",
   alternates: {
-    canonical: "https://www.pptmaster.app/cookies",
+    canonical: "https://www.pptera.com/cookies",
   },
   openGraph: {
     title: "Cookie Notice | PPTera",

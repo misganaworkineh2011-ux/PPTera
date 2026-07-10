@@ -39,7 +39,7 @@ export function Breadcrumbs() {
       "@type": "ListItem",
       "position": index + 1,
       "name": item.label,
-      "item": `${process.env.NEXT_PUBLIC_APP_URL || "https://www.pptmaster.app"}${item.href}`
+      "item": `${process.env.NEXT_PUBLIC_APP_URL || "https://www.pptera.com"}${item.href}`
     }))
   };
 

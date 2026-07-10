@@ -53,7 +53,7 @@ export function WelcomeEmail({ userName, dashboardUrl }: WelcomeEmailProps) {
 
           <Text style={footer}>
             Need help? Just reply to this email or visit our{" "}
-            <Link href="https://pptmaster.app/help" style={link}>
+            <Link href="https://pptera.com/help" style={link}>
               Help Center
             </Link>
             .
@@ -68,7 +68,7 @@ export function WelcomeEmail({ userName, dashboardUrl }: WelcomeEmailProps) {
           <Text style={automatedNotice}>
             This is an automated message from PPTera. Please do not reply to this email.
             If you need assistance, visit our{" "}
-            <Link href="https://pptmaster.app/help" style={link}>
+            <Link href="https://pptera.com/help" style={link}>
               Help Center
             </Link>{" "}
             or contact us at{" "}

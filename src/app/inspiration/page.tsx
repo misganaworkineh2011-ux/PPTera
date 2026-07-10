@@ -6,16 +6,16 @@ export const metadata: Metadata = {
   description: "Browse 1000+ stunning AI-generated PowerPoint examples. Get inspired by professional presentation designs, business slides, and creative templates from PPTera.",
   keywords: "presentation inspiration, PowerPoint examples, slide design, presentation templates, PPTera gallery, AI presentations, design inspiration",
   alternates: {
-    canonical: "https://www.pptmaster.app/inspiration",
+    canonical: "https://www.pptera.com/inspiration",
   },
   openGraph: {
     title: "Inspiration Gallery - AI PowerPoint Examples | PPTera",
     description: "Browse 1000+ stunning AI-generated PowerPoint examples. Get inspired by professional presentation designs.",
-    url: "https://www.pptmaster.app/inspiration",
+    url: "https://www.pptera.com/inspiration",
     type: "website",
     images: [
       {
-        url: "https://www.pptmaster.app/og-image.jpeg",
+        url: "https://www.pptera.com/og-image.jpeg",
         width: 1200,
         height: 630,
         alt: "PPTera Inspiration Gallery",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Inspiration Gallery - AI PowerPoint Examples | PPTera",
     description: "Browse 1000+ stunning AI-generated PowerPoint examples. Get inspired by professional designs.",
-    images: ["https://www.pptmaster.app/og-image.jpeg"],
+    images: ["https://www.pptera.com/og-image.jpeg"],
   },
   robots: {
     index: true,

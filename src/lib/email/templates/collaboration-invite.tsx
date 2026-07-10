@@ -23,7 +23,7 @@ interface CollaborationInviteProps {
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
 // Always use production URL for logo in emails (email clients can't access localhost)
-const logoUrl = "https://www.pptmaster.app/logo.png";
+const logoUrl = "https://www.pptera.com/logo.png";
 
 // App colors
 const colors = {

@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "Careers",
   description: "Join the PPTera (PPTera) team and help build the future of AI presentations. Explore open positions and apply today.",
   alternates: {
-    canonical: "https://www.pptmaster.app/careers",
+    canonical: "https://www.pptera.com/careers",
   },
   openGraph: {
     title: "Careers | PPTera – Join Our Team",

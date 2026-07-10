@@ -34,10 +34,10 @@ const config: NextConfig = {
         has: [
           {
             type: 'host',
-            value: 'pptmaster.app',
+            value: 'pptera.com',
           },
         ],
-        destination: 'https://www.pptmaster.app/:path*',
+        destination: 'https://www.pptera.com/:path*',
         permanent: true,
       },
     ];

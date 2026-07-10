@@ -20,10 +20,10 @@ interface ShareNotificationProps {
   message?: string;
 }
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://pptmaster.app";
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://pptera.com";
 
 // Always use production URL for logo in emails (email clients can't access localhost)
-const logoUrl = "https://www.pptmaster.app/logo.png";
+const logoUrl = "https://www.pptera.com/logo.png";
 
 // App colors from not-found page
 const colors = {

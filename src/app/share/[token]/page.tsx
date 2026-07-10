@@ -192,7 +192,7 @@ export default async function SharedPresentationPage({
           {/* Watermark for free users */}
           {showWatermark && (
             <a
-              href="https://www.pptmaster.app"
+              href="https://www.pptera.com"
               target="_blank"
               rel="noopener noreferrer"
               className="fixed bottom-4 right-4 z-50 flex items-center gap-2 px-4 py-2 bg-black/70 backdrop-blur-sm rounded-full text-white text-sm font-medium hover:bg-black/80 transition shadow-lg"

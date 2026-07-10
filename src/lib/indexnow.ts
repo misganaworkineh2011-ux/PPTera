@@ -11,7 +11,7 @@
  */
 
 const INDEXNOW_KEY = "ee3c5ebf5bcd4e038842d7327ece7c32";
-const SITE_HOST = "www.pptmaster.app";
+const SITE_HOST = "www.pptera.com";
 const KEY_LOCATION = `https://${SITE_HOST}/${INDEXNOW_KEY}.txt`;
 
 // All supported languages (English uses root path, others use /[lang]/ prefix)
@@ -52,7 +52,7 @@ export async function submitUrlsToIndexNow(urls: string[]): Promise<IndexNowResp
   const validUrls = urls.filter(url => {
     try {
       const parsed = new URL(url);
-      return parsed.hostname === SITE_HOST || parsed.hostname === "pptmaster.app";
+      return parsed.hostname === SITE_HOST || parsed.hostname === "pptera.com";
     } catch {
       return false;
     }

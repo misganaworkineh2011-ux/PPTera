@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: "Terms of Service - AI PowerPoint Generator Rules | PPTera",
   description: "Read PPTera's terms of service. Understand user rights, responsibilities, and policies for using our AI PowerPoint generator platform.",
   alternates: {
-    canonical: "https://www.pptmaster.app/terms",
+    canonical: "https://www.pptera.com/terms",
   },
   openGraph: {
     title: "Terms of Service - AI PowerPoint Generator | PPTera",

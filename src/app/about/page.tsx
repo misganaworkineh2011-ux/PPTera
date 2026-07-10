@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: "About Us - AI PowerPoint Generator Mission | PPTera",
   description: "Learn about PPTera's mission to democratize professional presentations with AI. Discover our story, values, and commitment to innovation in PowerPoint generation.",
   alternates: {
-    canonical: "https://www.pptmaster.app/about",
+    canonical: "https://www.pptera.com/about",
   },
   openGraph: {
     title: "About Us - AI PowerPoint Generator Mission | PPTera",

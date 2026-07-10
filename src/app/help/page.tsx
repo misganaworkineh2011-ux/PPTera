@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: "Help Center - AI PowerPoint Generator Support | PPTera",
   description: "Get help with PPTera AI PowerPoint generator. Find tutorials, FAQs, troubleshooting guides, and learn how to create stunning presentations with AI.",
   alternates: {
-    canonical: "https://www.pptmaster.app/help",
+    canonical: "https://www.pptera.com/help",
   },
   openGraph: {
     title: "Help Center - AI PowerPoint Generator Support | PPTera",
@@ -198,13 +198,13 @@ export default async function HelpPage() {
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://www.pptmaster.app",
+        "item": "https://www.pptera.com",
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": "Help Center",
-        "item": "https://www.pptmaster.app/help",
+        "item": "https://www.pptera.com/help",
       },
     ],
   };

@@ -11,7 +11,7 @@
 
 const https = require('https');
 
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.pptmaster.app';
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.pptera.com';
 
 async function submitToIndexNow(body) {
   return new Promise((resolve, reject) => {

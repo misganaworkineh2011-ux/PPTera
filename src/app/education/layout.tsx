@@ -4,7 +4,7 @@ export const metadata: Metadata = {
   title: "Education - PPTera for Students & Teachers",
   description: "Special pricing for students, teachers, and schools. Get 50% off on PPTera Pro plans with full premium access to AI presentation tools.",
   alternates: {
-    canonical: "https://www.pptmaster.app/education",
+    canonical: "https://www.pptera.com/education",
   },
   openGraph: {
     title: "Education - PPTera for Students & Teachers",

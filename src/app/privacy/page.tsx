@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: "Privacy Policy - Data Protection & Security | PPTera",
   description: "Read PPTera's privacy policy. Learn how we collect, use, protect your data, and ensure security when using our AI PowerPoint generator.",
   alternates: {
-    canonical: "https://www.pptmaster.app/privacy",
+    canonical: "https://www.pptera.com/privacy",
   },
   openGraph: {
     title: "Privacy Policy - Data Protection & Security | PPTera",

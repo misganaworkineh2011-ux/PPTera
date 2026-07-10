@@ -311,7 +311,7 @@ export default function WebPageView({
       >
         {showWatermark ? (
           <a
-            href="https://www.pptmaster.app"
+            href="https://www.pptera.com"
             target="_blank"
             rel="noopener noreferrer"
             className="font-semibold hover:underline"

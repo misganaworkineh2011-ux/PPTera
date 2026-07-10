@@ -469,12 +469,12 @@ export default function ApiWebhooksPage() {
                 <div className="bg-slate-900 rounded-xl p-4 font-mono text-sm text-cyan-400 border border-slate-800 shadow-xl overflow-x-auto">
                   <div className="flex items-center justify-between mb-2 pb-2 border-b border-slate-800">
                     <span className="text-slate-500 text-xs">Example Shell Request</span>
-                    <button onClick={() => copyToClipboard('curl -X GET "https://pptmaster.org/api/v1/presentations" \\\n  -H "X-API-Key: pptm_your_api_key_here"')} className="text-slate-500 hover:text-white transition-colors">
+                    <button onClick={() => copyToClipboard('curl -X GET "https://www.pptera.com/api/v1/presentations" \\\n  -H "X-API-Key: pptm_your_api_key_here"')} className="text-slate-500 hover:text-white transition-colors">
                       <Copy size={14} />
                     </button>
                   </div>
                   <pre className="text-xs sm:text-sm">
-                    {`curl -X GET "https://pptmaster.org/api/v1/presentations" \\
+                    {`curl -X GET "https://www.pptera.com/api/v1/presentations" \\
   -H "X-API-Key: pptm_your_api_key_here"`}
                   </pre>
                 </div>

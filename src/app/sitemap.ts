@@ -5,7 +5,7 @@ import { SUPPORTED_LANGUAGES } from "~/lib/i18n";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Follow the configured deployment domain (same source as metadataBase and
   // robots.ts) so the sitemap always lists URLs on the serving domain.
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.pptmaster.app";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.pptera.com";
 
   // Pages that should have language versions
   const i18nPages = [

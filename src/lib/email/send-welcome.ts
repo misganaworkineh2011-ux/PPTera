@@ -12,7 +12,7 @@ export async function sendWelcomeEmail({
 }: SendWelcomeEmailParams): Promise<EmailResult> {
   try {
     const resend = getResendClient();
-    const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://pptmaster.app"}/dashboard`;
+    const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://pptera.com"}/dashboard`;
 
     const { data, error } = await resend.emails.send({
       from: emailConfig.fromNoReply,

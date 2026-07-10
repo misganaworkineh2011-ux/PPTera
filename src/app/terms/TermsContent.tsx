@@ -35,7 +35,7 @@ export function TermsContent() {
             {/* Introduction */}
             <div className="mb-12 p-6 bg-amber-50 border-l-4 border-amber-500 rounded-r-lg">
               <p className="text-sm leading-relaxed text-slate-700 mb-0">
-                <strong>PLEASE READ THIS TERMS OF USE AGREEMENT.</strong> These Terms of Use (&quot;Terms&quot;) govern your use of the PPTera Tech, Inc. (&quot;PPTera&quot;, &quot;our&quot;, &quot;us&quot; and &quot;we&quot;) Site located at https://www.pptmaster.app (the &quot;Site&quot;) and online services available through the Site (collectively, the &quot;Services&quot;). BY ACCESSING OR USING THE SITE, YOU REPRESENT THAT (1) YOU HAVE READ AND AGREE TO BE BOUND BY THE TERMS, (2) YOU ARE OF LEGAL AGE TO FORM A BINDING CONTRACT, AND (3) YOU HAVE THE AUTHORITY TO ENTER INTO THESE TERMS.
+                <strong>PLEASE READ THIS TERMS OF USE AGREEMENT.</strong> These Terms of Use (&quot;Terms&quot;) govern your use of the PPTera Tech, Inc. (&quot;PPTera&quot;, &quot;our&quot;, &quot;us&quot; and &quot;we&quot;) Site located at https://www.pptera.com (the &quot;Site&quot;) and online services available through the Site (collectively, the &quot;Services&quot;). BY ACCESSING OR USING THE SITE, YOU REPRESENT THAT (1) YOU HAVE READ AND AGREE TO BE BOUND BY THE TERMS, (2) YOU ARE OF LEGAL AGE TO FORM A BINDING CONTRACT, AND (3) YOU HAVE THE AUTHORITY TO ENTER INTO THESE TERMS.
               </p>
             </div>
 

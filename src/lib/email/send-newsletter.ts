@@ -12,7 +12,7 @@ export async function sendNewsletterConfirmation({
 }: SendNewsletterConfirmationParams): Promise<EmailResult> {
   try {
     const resend = getResendClient();
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://pptmaster.app";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://pptera.com";
     const confirmUrl = `${baseUrl}/api/newsletter/confirm?token=${confirmToken}`;
 
     const { data, error } = await resend.emails.send({
