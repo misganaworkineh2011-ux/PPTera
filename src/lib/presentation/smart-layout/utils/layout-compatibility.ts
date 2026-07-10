@@ -768,8 +768,9 @@ export function determineOptimalSlideLayout(
   // treatments so decks get varied, professional image styling. Keyed to the
   // slide position (previousSlideLayouts.length) for deterministic variety.
   const IMAGE_DESIGN_ROTATION: ImageShape[] = [
-    "frame", "rounded", "archway", "duotone", "portal", "arc",
-    "layered", "organic", "lframe", "rounded", "slats", "cornercut",
+    "frame", "rounded", "archway", "vignette", "portal", "arc",
+    "layered", "splitpanes", "lframe", "contour", "slats", "window",
+    "duotone", "rounded", "organic", "tilt3d", "cornercut", "hexagon",
   ];
   const imageShape: ImageShape =
     IMAGE_DESIGN_ROTATION[previousSlideLayouts.length % IMAGE_DESIGN_ROTATION.length]!;

@@ -529,8 +529,10 @@ export const LAYOUT_DEFINITIONS: LayoutDefinition[] = [
     priority: "high",
     
     styles: [
+      // NOTE: ids must exist in the steps renderer (StepsLayoutRenderer) —
+      // the former "steps-style-1..3" were registry-only ids.
       {
-        id: "steps-style-1",
+        id: "steps-bars", // renderer "Numbered Bars"
         name: "Numbered Steps",
         description: "Clear numbered progression",
         idealBulletCount: 4,
@@ -540,7 +542,7 @@ export const LAYOUT_DEFINITIONS: LayoutDefinition[] = [
         formality: "professional",
       },
       {
-        id: "steps-style-2",
+        id: "steps-arrows", // renderer "Arrow Flow"
         name: "Icon Steps",
         description: "Steps with icon indicators",
         idealBulletCount: 3,
@@ -550,7 +552,7 @@ export const LAYOUT_DEFINITIONS: LayoutDefinition[] = [
         formality: "casual",
       },
       {
-        id: "steps-style-3",
+        id: "steps-cards", // renderer "Step Cards"
         name: "Detailed Steps",
         description: "Steps with more description space",
         idealBulletCount: 3,
@@ -679,9 +681,13 @@ export const LAYOUT_DEFINITIONS: LayoutDefinition[] = [
     
     priority: "medium",
     
+    // IMPORTANT: style ids are persisted as slide.contentLayout and MUST exist
+    // in the renderer's QuotesLayoutType (src/lib/layouts/content/quotes.ts).
+    // The former registry-only ids "quote-style-1"/"quote-style-2" had no
+    // renderer implementation, so generated quote slides rendered empty.
     styles: [
       {
-        id: "quote-style-1",
+        id: "quote-style-3", // renderer "Big Quote": hero pull-quote, exactly 1 item
         name: "Centered Quote",
         description: "Large centered quotation",
         idealBulletCount: 1,
@@ -691,7 +697,7 @@ export const LAYOUT_DEFINITIONS: LayoutDefinition[] = [
         formality: "professional",
       },
       {
-        id: "quote-style-2",
+        id: "quote-marks", // renderer "Quote Cards" (capacity 1-6)
         name: "Quote with Attribution",
         description: "Quote with author details",
         idealBulletCount: 1,
@@ -701,7 +707,7 @@ export const LAYOUT_DEFINITIONS: LayoutDefinition[] = [
         formality: "professional",
       },
       {
-        id: "quote-style-3",
+        id: "quote-bubble", // renderer "Thought Bubble" (capacity 1-6, ideal 3)
         name: "Multiple Quotes",
         description: "Several short quotes or testimonials",
         idealBulletCount: 3,
@@ -754,8 +760,11 @@ export const LAYOUT_DEFINITIONS: LayoutDefinition[] = [
     priority: "medium",
     
     styles: [
+      // NOTE: ids must exist in CircleLayoutRenderer — the former
+      // "circle-style-1..3" were registry-only ids that ExtendedCircles
+      // couldn't render (empty slides).
       {
-        id: "circle-style-1",
+        id: "circle-ring", // renderer base ring (capacity 1-8)
         name: "Circular Flow",
         description: "Items arranged in a circle",
         idealBulletCount: 4,
@@ -765,7 +774,7 @@ export const LAYOUT_DEFINITIONS: LayoutDefinition[] = [
         formality: "professional",
       },
       {
-        id: "circle-style-2",
+        id: "circle-style-8", // renderer implemented (capacity 3-6)
         name: "Icon Circles",
         description: "Circles with icon emphasis",
         idealBulletCount: 4,
@@ -775,7 +784,7 @@ export const LAYOUT_DEFINITIONS: LayoutDefinition[] = [
         formality: "casual",
       },
       {
-        id: "circle-style-3",
+        id: "circle-style-6", // renderer "connected ring" (capacity 3-8)
         name: "Connected Circles",
         description: "Circles with connecting lines",
         idealBulletCount: 4,
@@ -826,8 +835,11 @@ export const LAYOUT_DEFINITIONS: LayoutDefinition[] = [
     priority: "medium",
     
     styles: [
+      // NOTE: numbers render through the boxes/dashboard renderers — the
+      // former registry-only "number-style-1..3" ids had no renderer and fell
+      // into the generic boxes fallback. Use real, renderable style ids.
       {
-        id: "number-style-1",
+        id: "dashboard-style-1", // StatDashboardRenderer metric cards
         name: "Big Numbers",
         description: "Large prominent statistics",
         idealBulletCount: 3,
@@ -837,7 +849,7 @@ export const LAYOUT_DEFINITIONS: LayoutDefinition[] = [
         formality: "professional",
       },
       {
-        id: "number-style-2",
+        id: "box-style-2",
         name: "Metric Cards",
         description: "Numbers in card format",
         idealBulletCount: 3,
@@ -847,7 +859,7 @@ export const LAYOUT_DEFINITIONS: LayoutDefinition[] = [
         formality: "professional",
       },
       {
-        id: "number-style-3",
+        id: "box-style-1",
         name: "Comparison Numbers",
         description: "Side-by-side metric comparison",
         idealBulletCount: 2,

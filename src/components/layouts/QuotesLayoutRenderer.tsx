@@ -221,7 +221,16 @@ export function QuotesLayoutRenderer({
     return `${isDragging ? "opacity-50" : ""} ${isDragOver ? "ring-2 ring-blue-500 ring-offset-2" : ""}`;
   };
 
-  if (layoutId.startsWith("quote-style-")) {
+  // Only ids ExtendedQuotes actually implements may route there — an unknown
+  // "quote-style-*" id (e.g. legacy registry ids persisted on older decks)
+  // would fall through all its branches to `return null` and render an empty
+  // slide. Anything unrecognized drops to the MarksQuotes fallback instead.
+  const EXTENDED_QUOTE_IDS = new Set([
+    "quote-style-3", "quote-style-4", "quote-style-5", "quote-style-6",
+    "quote-style-7", "quote-style-8", "quote-style-9", "quote-style-10",
+    "quote-style-11", "quote-style-12",
+  ]);
+  if (EXTENDED_QUOTE_IDS.has(layoutId)) {
     return (
       <ExtendedQuotes
         layoutId={layoutId}

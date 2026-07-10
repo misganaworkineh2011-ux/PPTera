@@ -34,10 +34,10 @@ function renderShape(shape: ImageShape, orientation: "left" | "right" | "top" | 
 }
 
 describe("SlideImageDesign", () => {
-  it("edge + design shape lists cover all 14 unique shapes", () => {
+  it("edge + design shape lists cover all 26 unique shapes", () => {
     const all = [...EDGE_IMAGE_SHAPES, ...DESIGN_IMAGE_SHAPES];
-    expect(all.length).toBe(14);
-    expect(new Set(all).size).toBe(14);
+    expect(all.length).toBe(26);
+    expect(new Set(all).size).toBe(26);
   });
 
   it("legacy edge shapes render the plain full-bleed image (host clip styles it)", () => {

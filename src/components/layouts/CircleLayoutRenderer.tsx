@@ -172,7 +172,16 @@ export function CircleLayoutRenderer({
     ? spotlightIndex 
     : undefined;
 
-  if (typeof layoutId === "string" && layoutId.startsWith("circle-style-")) {
+  // Only route ids ExtendedCircles implements — an unknown "circle-style-*"
+  // (e.g. legacy registry ids on older decks) would fall through all its
+  // branches to `return null` and render an empty slide. Anything else drops
+  // to the base ring fallback below.
+  const EXTENDED_CIRCLE_IDS = new Set([
+    "circle-style-6", "circle-style-7", "circle-style-8", "circle-style-9",
+    "circle-style-10", "circle-style-11", "circle-style-12", "circle-style-13",
+    "circle-style-14",
+  ]);
+  if (typeof layoutId === "string" && EXTENDED_CIRCLE_IDS.has(layoutId)) {
     return (
       <ExtendedCircles
         layoutId={layoutId}

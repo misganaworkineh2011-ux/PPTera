@@ -111,6 +111,87 @@ const ShapePreview = ({
           <div className="absolute left-0 bottom-0 h-[2.5px] w-[70%]" style={{ backgroundColor: fill }} />
         </div>
       );
+    case "splitpanes":
+      return (
+        <div className="relative w-8 h-6">
+          <div className="absolute top-0 left-0 w-full h-[46%] rounded-[2px]" style={box} />
+          <div className="absolute bottom-0 left-[10%] w-full h-[46%] rounded-[2px]" style={{ backgroundColor: faint }} />
+        </div>
+      );
+    case "tape":
+      return (
+        <div className="relative w-7 h-6 rotate-[-4deg]">
+          <div className="absolute inset-0 rounded-[2px]" style={box} />
+          <div className="absolute -top-1 left-[10%] w-[45%] h-[5px] -rotate-6 rounded-[1px]" style={{ backgroundColor: faint }} />
+        </div>
+      );
+    case "stamp":
+      return (
+        <div className="w-7 h-7 p-[3px] bg-white" style={{ border: `1.5px dashed ${fill}` }}>
+          <div className="w-full h-full" style={box} />
+        </div>
+      );
+    case "ticket":
+      return (
+        <div
+          className={`${baseClass} rounded-md`}
+          style={{
+            ...box,
+            WebkitMaskImage:
+              "radial-gradient(circle 4px at 0% 60%, transparent 98%, black 100%), radial-gradient(circle 4px at 100% 60%, transparent 98%, black 100%)",
+            WebkitMaskComposite: "source-in",
+            maskComposite: "intersect",
+          }}
+        />
+      );
+    case "hexagon":
+      return (
+        <div className="w-7 h-7" style={{ ...box, clipPath: "polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%)" }} />
+      );
+    case "diamond":
+      return <div className="w-5 h-5 rotate-45 rounded-[3px]" style={box} />;
+    case "ribbon":
+      return (
+        <div className="relative w-8 h-6 overflow-hidden rounded-[2px]">
+          <div className="absolute inset-0" style={{ backgroundColor: faint }} />
+          <div className="absolute top-[2px] left-[-8px] w-[24px] h-[4px] -rotate-45" style={{ backgroundColor: fill }} />
+        </div>
+      );
+    case "vignette":
+      return (
+        <div
+          className={`${baseClass} rounded-[3px]`}
+          style={{ background: `radial-gradient(ellipse at center, ${faint} 30%, ${fill} 100%)` }}
+        />
+      );
+    case "contour":
+      return (
+        <div className="relative w-8 h-6">
+          <div className="absolute -inset-[3px] rounded-[6px]" style={{ border: `1px solid ${faint}` }} />
+          <div className="absolute inset-0 rounded-[4px]" style={box} />
+        </div>
+      );
+    case "collage":
+      return (
+        <div
+          className="w-8 h-6 rotate-2 bg-white p-[2px]"
+          style={{ clipPath: "polygon(4% 8%, 50% 0, 96% 6%, 100% 55%, 94% 96%, 40% 100%, 0 92%)" }}
+        >
+          <div className="w-full h-full" style={{ ...box, clipPath: "polygon(4% 8%, 50% 0, 96% 6%, 100% 55%, 94% 96%, 40% 100%, 0 92%)" }} />
+        </div>
+      );
+    case "tilt3d":
+      return (
+        <div className={`${baseClass} rounded-[3px]`} style={{ ...box, transform: "perspective(60px) rotateY(-16deg)" }} />
+      );
+    case "window":
+      return (
+        <div className="relative w-8 h-6 rounded-[2px] overflow-hidden" style={{ border: `1.5px solid ${fill}` }}>
+          <div className="absolute inset-0" style={{ backgroundColor: faint }} />
+          <div className="absolute inset-y-0 left-1/2 w-[1.5px] -translate-x-1/2" style={{ backgroundColor: fill }} />
+          <div className="absolute inset-x-0 top-1/2 h-[1.5px] -translate-y-1/2" style={{ backgroundColor: fill }} />
+        </div>
+      );
     default:
       return <div className={baseClass} style={box} />;
   }
@@ -131,6 +212,18 @@ const shapeOptions: { shape: ImageShape; label: string }[] = [
   { shape: "cornercut", label: "Corner Cut" },
   { shape: "duotone", label: "Duotone" },
   { shape: "lframe", label: "L-Frame" },
+  { shape: "splitpanes", label: "Split Panes" },
+  { shape: "tape", label: "Washi Tape" },
+  { shape: "stamp", label: "Postage" },
+  { shape: "ticket", label: "Ticket" },
+  { shape: "hexagon", label: "Hexagon" },
+  { shape: "diamond", label: "Diamond" },
+  { shape: "ribbon", label: "Ribbon" },
+  { shape: "vignette", label: "Vignette" },
+  { shape: "contour", label: "Contour" },
+  { shape: "collage", label: "Cutout" },
+  { shape: "tilt3d", label: "3D Tilt" },
+  { shape: "window", label: "Window" },
 ];
 
 export default function ImageHoverToolbar({

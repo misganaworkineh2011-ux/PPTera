@@ -32,7 +32,19 @@ export type ImageShape =
   | "organic"   // soft blob mask with blurred accent echo
   | "cornercut" // one bold diagonal corner cut with accent wedge
   | "duotone"   // accent gradient wash over the image
-  | "lframe";   // editorial L-shaped accent frame on two edges
+  | "lframe"    // editorial L-shaped accent frame on two edges
+  | "splitpanes" // image sliced into two offset panes
+  | "tape"      // washi-tape corners pinning a tilted photo
+  | "stamp"     // postage-stamp matte with perforated dashed border
+  | "ticket"    // ticket stub with punched side notches + dashed divider
+  | "hexagon"   // hexagonal crop with an offset echo
+  | "diamond"   // diamond crop (side) / sheared parallelogram (banner)
+  | "ribbon"    // corner ribbon banner over a rounded image
+  | "vignette"  // cinematic radial vignette + inner accent keyline
+  | "contour"   // concentric outline echoes radiating behind the image
+  | "collage"   // rough-cut magazine cutout with a white sticker border
+  | "tilt3d"    // 3D perspective tilt with a grounded shadow
+  | "window";   // paned window: mullion bars over the image
 
 /** Shapes rendered as full-bleed columns with an edge clip (the legacy system). */
 export const EDGE_IMAGE_SHAPES: ImageShape[] = ["rectangle", "arc", "rounded", "wave"];
@@ -41,6 +53,8 @@ export const EDGE_IMAGE_SHAPES: ImageShape[] = ["rectangle", "arc", "rounded", "
 export const DESIGN_IMAGE_SHAPES: ImageShape[] = [
   "frame", "archway", "portal", "layered", "polaroid",
   "slats", "organic", "cornercut", "duotone", "lframe",
+  "splitpanes", "tape", "stamp", "ticket", "hexagon", "diamond",
+  "ribbon", "vignette", "contour", "collage", "tilt3d", "window",
 ];
 
 export const isDesignImageShape = (shape: ImageShape): boolean =>
