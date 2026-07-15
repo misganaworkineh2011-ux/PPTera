@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
-import { Filter, Grid, List as ListIcon, MoreHorizontal, Upload, Globe, Lock, Share2, Edit3, Copy, Trash2, Link2, Loader2, Heart, Sparkles, ListTree } from "lucide-react";
+import { Filter, Grid, List as ListIcon, MoreHorizontal, Upload, Globe, Lock, Share2, Edit3, Copy, Trash2, Link2, Loader2, Heart, Sparkles, ListTree, ArrowUpRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useNavigation } from "~/contexts/NavigationContext";
 import Image from "next/image";
@@ -46,6 +46,28 @@ interface DashboardContentProps {
 
 type ViewMode = "grid" | "list";
 type FilterMode = "all" | "favorites" | "public" | "private";
+
+// Deterministic aurora gradient + monogram for decks without a thumbnail —
+// each deck gets a stable, branded cover instead of a washed-out logo.
+const AURORA_PAIRS: Array<[string, string]> = [
+  ["#7c3aed", "#06b6d4"], // violet → cyan
+  ["#0ea5e9", "#8b5cf6"], // sky → violet
+  ["#d946ef", "#6366f1"], // fuchsia → indigo
+  ["#06b6d4", "#3b82f6"], // cyan → blue
+  ["#8b5cf6", "#ec4899"], // violet → pink
+];
+
+function deckGradient(title: string): [string, string] {
+  let h = 0;
+  for (let i = 0; i < title.length; i++) h = (h * 31 + title.charCodeAt(i)) >>> 0;
+  return AURORA_PAIRS[h % AURORA_PAIRS.length]!;
+}
+
+function deckInitials(title: string): string {
+  const words = title.trim().split(/\s+/).filter(Boolean);
+  const letters = words.slice(0, 2).map((w) => w[0]!.toUpperCase());
+  return letters.join("") || "P";
+}
 
 export default function DashboardContent({ presentations: propPresentations, userName, searchQuery = "", pagination, onLoadMore, isLoadingMore }: DashboardContentProps) {
   const { user: clerkUser } = useUser();
@@ -403,7 +425,7 @@ export default function DashboardContent({ presentations: propPresentations, use
             )}
           </div>
         ) : viewMode === "grid" ? (
-          <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {filteredPresentations.map((pres, index) => {
               const isNewCard = !isFirstRenderRef.current && !renderedIdsRef.current.has(pres.id);
               const newItemIndex = isNewCard ? index - prevCountRef.current : 0;
@@ -422,30 +444,73 @@ export default function DashboardContent({ presentations: propPresentations, use
                     });
                     setActiveMenu(pres.id);
                   }}
-                  className={`group relative flex flex-col overflow-hidden rounded-[20px] border border-slate-200/80 shadow-md ring-1 ring-slate-900/5 dark:ring-0 dark:border-white/10 dark:shadow-none bg-white dark:bg-zinc-950 transition-all duration-300 hover:border-[#06b6d4]/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 cursor-pointer ${animationClass}`}
+                  className={`group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-md ring-1 ring-slate-900/5 transition-all duration-300 hover:-translate-y-1.5 hover:border-cyan-400/40 hover:shadow-[0_24px_60px_-20px_rgba(8,15,35,0.35)] dark:border-white/10 dark:bg-white/[0.04] dark:ring-0 dark:shadow-none dark:hover:bg-white/[0.06] dark:hover:shadow-[0_24px_60px_-24px_rgba(0,0,0,0.8)] cursor-pointer ${animationClass}`}
                   style={animationStyle}
                 >
-                  <div className="aspect-[16/10] w-full bg-slate-50 dark:bg-zinc-900 relative overflow-hidden border-b border-slate-100 dark:border-zinc-800">
-                    <Image src={getThumbnail(pres)} alt={pres.title} fill className={`${getThumbnail(pres) === "/logo.png" ? "object-contain p-8 opacity-20" : "object-cover"} transition-transform duration-700 group-hover:scale-105`} />
-                    <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMenuAction("favorite", pres.id); }} className={`absolute top-3 right-3 p-2 rounded-xl backdrop-blur-md transition-all z-10 ${pres.isPinned ? "bg-yellow-400 text-white shadow-lg shadow-yellow-400/20" : "bg-white/80 dark:bg-black/50 text-slate-400 dark:text-zinc-400 opacity-0 group-hover:opacity-100 hover:text-yellow-500 shadow-sm"}`}>
+                  {/* Aurora sheen on hover */}
+                  <div
+                    className="pointer-events-none absolute inset-0 z-10 rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                    style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.12), transparent 38%, transparent 62%, rgba(34,211,238,0.12))" }}
+                  />
+
+                  <div className="aspect-[16/10] w-full relative overflow-hidden border-b border-slate-100 dark:border-white/10">
+                    {getThumbnail(pres) === "/logo.png" ? (
+                      /* Branded monogram cover for decks without a thumbnail */
+                      <div
+                        className="absolute inset-0 flex items-center justify-center"
+                        style={{ background: `linear-gradient(135deg, ${deckGradient(pres.title)[0]}, ${deckGradient(pres.title)[1]})` }}
+                      >
+                        <div
+                          className="absolute inset-0 opacity-25"
+                          style={{
+                            backgroundImage: "linear-gradient(to right, rgba(255,255,255,0.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.35) 1px, transparent 1px)",
+                            backgroundSize: "28px 28px",
+                            maskImage: "radial-gradient(ellipse at 30% 20%, black 0%, transparent 75%)",
+                            WebkitMaskImage: "radial-gradient(ellipse at 30% 20%, black 0%, transparent 75%)",
+                          }}
+                        />
+                        <span className="relative text-5xl font-black tracking-tight text-white/90 drop-shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition-transform duration-500 group-hover:scale-110">
+                          {deckInitials(pres.title)}
+                        </span>
+                        <span className="absolute bottom-3 left-4 text-[10px] font-black uppercase tracking-[0.18em] text-white/70">
+                          PPTera deck
+                        </span>
+                      </div>
+                    ) : (
+                      <Image src={getThumbnail(pres)} alt={pres.title} fill className="object-cover transition-transform duration-700 group-hover:scale-[1.06]" />
+                    )}
+
+                    {/* Readability scrim */}
+                    <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/25 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                    <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMenuAction("favorite", pres.id); }} className={`absolute top-3 right-3 p-2 rounded-xl backdrop-blur-md transition-all z-20 ${pres.isPinned ? "bg-amber-400 text-white shadow-lg shadow-amber-400/30" : "bg-white/85 dark:bg-black/50 text-slate-400 dark:text-zinc-300 opacity-0 group-hover:opacity-100 hover:text-amber-500 shadow-sm"}`}>
                       <Heart size={16} className={pres.isPinned ? "fill-current" : ""} />
                     </button>
-                    {/* Add subtle gradient overlay at bottom of image for contrast */}
-                    <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/5 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                    {/* Open affordance */}
+                    <span className="absolute bottom-3 right-3 z-20 inline-flex translate-y-1.5 items-center gap-1.5 rounded-full bg-black/55 px-3 py-1.5 text-[11px] font-bold text-white opacity-0 backdrop-blur-md transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                      Open <ArrowUpRight size={13} strokeWidth={2.75} />
+                    </span>
                   </div>
+
                   <div className="flex flex-col flex-1 p-4 lg:p-5">
-                    <h3 className="line-clamp-2 text-[14px] font-bold text-slate-900 dark:text-white leading-snug group-hover:text-[#06b6d4] transition-colors mb-4">{pres.title}</h3>
-                    <div className="mt-auto flex items-center justify-between">
-                      <div className="flex items-center gap-2 lg:gap-3">
-                        <div className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider ${pres.isPublic ? "text-[#06b6d4]" : "text-slate-400 dark:text-zinc-500"}`}>
-                          {pres.isPublic ? <Globe size={12} strokeWidth={2.5} /> : <Lock size={12} strokeWidth={2.5} />}
+                    <h3 className="line-clamp-2 text-[15px] font-bold text-slate-900 dark:text-white leading-snug transition-colors group-hover:text-cyan-600 dark:group-hover:text-cyan-300 mb-4">{pres.title}</h3>
+                    <div className="mt-auto flex items-center justify-between gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${
+                          pres.isPublic
+                            ? "border-cyan-500/30 bg-cyan-500/10 text-cyan-600 dark:text-cyan-300"
+                            : "border-slate-200 bg-slate-50 text-slate-400 dark:border-white/10 dark:bg-white/5 dark:text-zinc-400"
+                        }`}>
+                          {pres.isPublic ? <Globe size={11} strokeWidth={2.75} /> : <Lock size={11} strokeWidth={2.75} />}
                           <span className="hidden xs:inline">{pres.isPublic ? "Public" : "Private"}</span>
-                        </div>
-                        <span className="text-slate-300 dark:text-zinc-700 mx-0.5">•</span>
-                        <span className="text-[11px] font-semibold text-slate-400 dark:text-zinc-500"> {new Date(pres.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+                        </span>
+                        <span className="truncate text-[11px] font-semibold text-slate-400 dark:text-zinc-500">
+                          Edited {new Date(pres.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                        </span>
                       </div>
                       <div className="relative menu-container">
-                        <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (activeMenu === pres.id) { setActiveMenu(null); setMenuPosition(null); } else { const rect = e.currentTarget.getBoundingClientRect(); setMenuPosition({ top: rect.top - 50, left: rect.left - 180 }); setActiveMenu(pres.id); } }} className="p-2 -mr-2 rounded-xl text-slate-300 dark:text-zinc-600 opacity-0 group-hover:opacity-100 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all"><MoreHorizontal size={18} strokeWidth={2.5} /></button>
+                        <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (activeMenu === pres.id) { setActiveMenu(null); setMenuPosition(null); } else { const rect = e.currentTarget.getBoundingClientRect(); setMenuPosition({ top: rect.top - 50, left: rect.left - 180 }); setActiveMenu(pres.id); } }} className="p-2 -mr-2 rounded-xl text-slate-300 dark:text-zinc-500 opacity-0 group-hover:opacity-100 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all"><MoreHorizontal size={18} strokeWidth={2.5} /></button>
                       </div>
                     </div>
                   </div>
@@ -460,9 +525,18 @@ export default function DashboardContent({ presentations: propPresentations, use
         ) : (
           <div className="space-y-3">
             {filteredPresentations.map((pres, index) => (
-              <a key={pres.id} href={getPresentationUrl(pres.id, pres.title)} onContextMenu={(e) => { e.preventDefault(); setMenuPosition({ top: Math.min(window.innerHeight - 360, e.clientY), left: e.clientX }); setActiveMenu(pres.id); }} className="group flex items-center gap-5 rounded-[20px] border border-slate-200/80 shadow-sm ring-1 ring-slate-900/5 dark:ring-0 dark:border-white/10 dark:shadow-none bg-white dark:bg-zinc-950 p-3 transition-all duration-300 hover:border-[#06b6d4]/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-0.5 cursor-pointer">
-                <div className="w-24 h-16 sm:w-32 sm:h-20 flex-shrink-0 bg-slate-50 dark:bg-zinc-900 rounded-[14px] relative overflow-hidden border border-slate-100 dark:border-zinc-800">
-                  <Image src={getThumbnail(pres)} alt={pres.title} fill className={`${getThumbnail(pres) === "/logo.png" ? "object-contain p-4 opacity-20" : "object-cover"} transition-transform duration-500 group-hover:scale-105`} />
+              <a key={pres.id} href={getPresentationUrl(pres.id, pres.title)} onContextMenu={(e) => { e.preventDefault(); setMenuPosition({ top: Math.min(window.innerHeight - 360, e.clientY), left: e.clientX }); setActiveMenu(pres.id); }} className="group flex items-center gap-5 rounded-2xl border border-slate-200/80 shadow-sm ring-1 ring-slate-900/5 bg-white p-3 transition-all duration-300 hover:border-cyan-400/40 hover:shadow-[0_12px_36px_-12px_rgba(8,15,35,0.3)] hover:-translate-y-0.5 dark:ring-0 dark:border-white/10 dark:shadow-none dark:bg-white/[0.04] dark:hover:bg-white/[0.06] cursor-pointer">
+                <div className="w-24 h-16 sm:w-32 sm:h-20 flex-shrink-0 rounded-[14px] relative overflow-hidden border border-slate-100 dark:border-white/10">
+                  {getThumbnail(pres) === "/logo.png" ? (
+                    <div
+                      className="absolute inset-0 flex items-center justify-center"
+                      style={{ background: `linear-gradient(135deg, ${deckGradient(pres.title)[0]}, ${deckGradient(pres.title)[1]})` }}
+                    >
+                      <span className="text-xl font-black text-white/90 drop-shadow">{deckInitials(pres.title)}</span>
+                    </div>
+                  ) : (
+                    <Image src={getThumbnail(pres)} alt={pres.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0 py-1">
                   <div className="flex items-center gap-3 mb-2">
