@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Sparkles, Wand2, Share2 } from "lucide-react";
-import { SignInButton } from "@clerk/nextjs";
+import { } from "@clerk/nextjs";
 import { LoadingLink } from "~/components/LoadingLink";
 import { LazyVideo } from "./LazyVideo";
 import { type Language } from "~/lib/i18n";
@@ -166,19 +166,16 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
             {t.createStunningPPT || "Create stunning PowerPoint presentations with just a prompt."}
           </p>
           <p className="text-center mt-2">
-            <SignInButton mode="modal">
-              <button className="text-white font-medium underline underline-offset-4 hover:text-slate-300 transition" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
+            <LoadingLink href="/sign-in" className="text-white font-medium underline underline-offset-4 hover:text-slate-300 transition">
                 {t.tryPPTeraAI || "Try PPTera AI"}
-              </button>
-            </SignInButton>
+              </LoadingLink>
           </p>
         </div>
 
         {/* Two Column Features */}
         <div className="grid lg:grid-cols-2 gap-8 mb-32">
           {/* Feature 1 - Templates */}
-          <SignInButton mode="modal">
-            <button className="group block text-left w-full" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
+          <LoadingLink href="/sign-in" className="group block text-left w-full">
               <div className="rounded-xl overflow-hidden border border-white/10 bg-white/[0.05] aspect-[4/3] mb-6 relative group-hover:border-white/25 group-hover:shadow-lg group-hover:shadow-black/40 transition-all duration-300">
                 <div className="absolute inset-0 p-3">
                   {/* Theme Preview Grid - 2 large on left, 3 stacked on right */}
@@ -293,8 +290,7 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
               <span className="inline-block mt-4 text-white font-medium underline underline-offset-4 group-hover:text-slate-300 transition">
                 {t.exploreTemplates || "Explore templates"}
               </span>
-            </button>
-          </SignInButton>
+            </LoadingLink>
 
           {/* Feature 2 - Get Inspired */}
           <LoadingLink href={localPath("/inspiration")} className="group block">
@@ -373,26 +369,22 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
 
               {/* Feature Item */}
               <div className="group block border-b border-white/10 pb-8">
-                <SignInButton mode="modal">
-                  <button className="flex items-start gap-3 text-left w-full" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
+                <LoadingLink href="/sign-in" className="flex items-start gap-3 text-left w-full">
                     <Wand2 className="w-5 h-5 text-white mt-0.5" />
                     <div>
                       <h3 className="font-semibold text-white mb-2 group-hover:text-slate-300 transition">{t.shareWithLink || "Share with a link or embed anywhere"}</h3>
                     </div>
-                  </button>
-                </SignInButton>
+                  </LoadingLink>
               </div>
 
               {/* Feature Item */}
               <div className="group block">
-                <SignInButton mode="modal">
-                  <button className="flex items-start gap-3 text-left w-full" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
+                <LoadingLink href="/sign-in" className="flex items-start gap-3 text-left w-full">
                     <Share2 className="w-5 h-5 text-white mt-0.5" />
                     <div>
                       <h3 className="font-semibold text-white mb-2 group-hover:text-slate-300 transition">{t.presentDirectly || "Present directly from PPTera"}</h3>
                     </div>
-                  </button>
-                </SignInButton>
+                  </LoadingLink>
               </div>
             </div>
           </div>
@@ -435,12 +427,8 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
                 <p className="font-medium">{t.readyToShare || "Ready to Share"}</p>
                 <p className="text-xs text-cyan-100">10 {t.slides || "slides"}</p>
                 <div className="flex gap-2 mt-3">
-                  <SignInButton mode="modal">
-                    <button className="px-3 py-1 bg-white text-[#1e3a8a] text-xs rounded-md font-medium hover:bg-cyan-50 transition" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>{t.export || "Export"}</button>
-                  </SignInButton>
-                  <SignInButton mode="modal">
-                    <button className="px-3 py-1 border border-cyan-300 text-xs rounded-md hover:bg-white/10 transition" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>{t.share || "Share"}</button>
-                  </SignInButton>
+                  <LoadingLink href="/sign-in" className="px-3 py-1 bg-white text-[#1e3a8a] text-xs rounded-md font-medium hover:bg-cyan-50 transition">{t.export || "Export"}</LoadingLink>
+                  <LoadingLink href="/sign-in" className="px-3 py-1 border border-cyan-300 text-xs rounded-md hover:bg-white/10 transition">{t.share || "Share"}</LoadingLink>
                 </div>
               </div>
             </div>

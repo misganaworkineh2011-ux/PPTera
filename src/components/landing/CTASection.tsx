@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { SignedOut, SignedIn, SignInButton } from "@clerk/nextjs";
+import { SignedOut, SignedIn } from "@clerk/nextjs";
 import { LoadingLink } from "~/components/LoadingLink";
 import { type Language } from "~/lib/i18n";
 
@@ -87,12 +87,11 @@ export function CTASection({ t, currentLang }: CTASectionProps) {
       {/* Button Container - Centered at the top edge of the image */}
       <div className="absolute top-0 left-0 right-0 z-10 flex justify-center -translate-y-1/2 px-4">
         <SignedOut>
-          <SignInButton mode="modal">
-            <button
-              className={buttonClasses}
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-            >
+          <div
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          >
+            <LoadingLink href="/sign-in" className={buttonClasses}>
               {/* White Background Layer */}
               {hoverEffectLayer}
 
@@ -101,8 +100,8 @@ export function CTASection({ t, currentLang }: CTASectionProps) {
                 {t.startNow || "Start Now"}
                 <span className="text-sm sm:text-lg md:text-xl leading-none">›</span>
               </span>
-            </button>
-          </SignInButton>
+            </LoadingLink>
+          </div>
         </SignedOut>
 
         <SignedIn>

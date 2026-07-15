@@ -1,9 +1,11 @@
 "use client";
 
+import { LoadingLink } from "~/components/LoadingLink";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkles } from "lucide-react";
-import { SignedIn, SignedOut, SignInButton, useUser } from "@clerk/nextjs";
+import { SignedIn, SignedOut, useUser } from "@clerk/nextjs";
 import { type Language } from "~/lib/i18n";
 
 interface PromptSectionProps {
@@ -108,17 +110,14 @@ export function PromptSection({ t }: PromptSectionProps) {
             </SignedIn>
 
             <SignedOut>
-              <SignInButton mode="modal">
-                <button
+              <LoadingLink href="/sign-in"
                   id="generator-signin-btn"
                   onClick={handleSignInClick}
                   className="w-full sm:w-auto px-5 sm:px-6 py-3 bg-gradient-to-r from-[#06b6d4] to-[#1e3a8a] text-white font-semibold rounded-xl shadow-lg shadow-cyan-500/30 flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all"
-                  style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}
                 >
                   <Sparkles className="w-4 h-4 md:w-5 md:h-5" />
                   {t.generate || "Generate"}
-                </button>
-              </SignInButton>
+                </LoadingLink>
             </SignedOut>
           </div>
         </div>

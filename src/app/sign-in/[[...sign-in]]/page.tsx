@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useSignIn } from "@clerk/nextjs";
@@ -20,9 +20,17 @@ import {
 
 type Mode = "signin" | "forgot" | "reset";
 
-export default function SignInPage() {
+/** Only allow same-origin relative destinations (never external URLs). */
+function sanitizeRedirect(raw: string | null): string {
+  if (raw && raw.startsWith("/") && !raw.startsWith("//")) return raw;
+  return "/";
+}
+
+function SignInForm() {
   const { isLoaded, signIn, setActive } = useSignIn();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = sanitizeRedirect(searchParams.get("redirect_url"));
 
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
@@ -41,7 +49,7 @@ export default function SignInPage() {
       await signIn.authenticateWithRedirect({
         strategy: "oauth_google",
         redirectUrl: "/sso-callback",
-        redirectUrlComplete: "/",
+        redirectUrlComplete: redirectTo,
       });
     } catch (err) {
       setError(clerkErrorMessage(err));
@@ -58,7 +66,7 @@ export default function SignInPage() {
       const result = await signIn.create({ identifier: email, password });
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
-        router.push("/");
+        router.push(redirectTo);
       } else {
         // Extra factors (e.g. 2FA) aren't handled by this simple flow.
         setError("Additional verification is required for this account.");
@@ -101,7 +109,7 @@ export default function SignInPage() {
       });
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
-        router.push("/");
+        router.push(redirectTo);
       } else {
         setError("Could not complete the password reset. Please try again.");
       }
@@ -252,5 +260,13 @@ export default function SignInPage() {
         </>
       )}
     </AuthShell>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignInForm />
+    </Suspense>
   );
 }

@@ -12,6 +12,7 @@ interface LoadingLinkProps {
   className?: string;
   showSpinner?: boolean;
   onClick?: () => void;
+  id?: string;
 }
 
 export function LoadingLink({ 
@@ -19,7 +20,8 @@ export function LoadingLink({
   children, 
   className, 
   showSpinner = true,
-  onClick 
+  onClick,
+  id 
 }: LoadingLinkProps) {
   const [isLoading, setIsLoading] = useState(false);
   const pathname = usePathname();
@@ -42,6 +44,7 @@ export function LoadingLink({
   return (
     <Link 
       href={href} 
+      id={id}
       className={cn("relative inline-flex items-center gap-2", className)}
       onClick={handleClick}
       prefetch={false}

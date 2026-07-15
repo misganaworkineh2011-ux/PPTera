@@ -1,8 +1,10 @@
 "use client";
 
+import { LoadingLink } from "~/components/LoadingLink";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { SignInButton, useUser } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import { CheckCircle2, Users, Eye, Edit3 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -155,14 +157,12 @@ export default function InvitationClient({
                     <p className="text-sm text-slate-600 text-center">
                       Sign in to accept this invitation
                     </p>
-                    <SignInButton
-                      mode="modal"
-                      forceRedirectUrl={`/invitations/${collaboration.presentationId}?token=${token}`}
+                    <LoadingLink
+                      href={`/sign-in?redirect_url=${encodeURIComponent(`/invitations/${collaboration.presentationId}?token=${token}`)}`}
+                      className="block w-full py-3 px-4 bg-gradient-to-r from-violet-600 to-cyan-500 text-white font-semibold text-center rounded-xl hover:brightness-110 transition shadow-lg shadow-cyan-500/20"
                     >
-                      <button className="w-full py-3 px-4 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold rounded-xl hover:opacity-90 transition">
-                        Sign In to Accept
-                      </button>
-                    </SignInButton>
+                      Sign In to Accept
+                    </LoadingLink>
                   </div>
                 )}
               </>

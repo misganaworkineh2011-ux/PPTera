@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { LoadingLink } from "./LoadingLink";
@@ -76,16 +76,12 @@ export const LandingNavbar = ({ currentLang }: LandingNavbarProps) => {
                   <div className="absolute top-full left-0 pt-2 w-72">
                     <div className="bg-[#0b1120]/95 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl shadow-black/50 py-2">
                       <SignedOut>
-                        <SignInButton mode="modal">
-                          <button className="block w-full text-left px-5 py-3 text-[15px] text-slate-300 hover:bg-white/5 hover:text-white transition">
+                        <LoadingLink href="/sign-in" className="block w-full text-left px-5 py-3 text-[15px] text-slate-300 hover:bg-white/5 hover:text-white transition">
                             {t.navAIPresentations || "AI Presentations"}
-                          </button>
-                        </SignInButton>
-                        <SignInButton mode="modal">
-                          <button className="block w-full text-left px-5 py-3 text-[15px] text-slate-300 hover:bg-white/5 hover:text-white transition">
+                          </LoadingLink>
+                        <LoadingLink href="/sign-in" className="block w-full text-left px-5 py-3 text-[15px] text-slate-300 hover:bg-white/5 hover:text-white transition">
                             {t.navThemes || "Themes"}
-                          </button>
-                        </SignInButton>
+                          </LoadingLink>
                       </SignedOut>
                       <SignedIn>
                         <LoadingLink href="/" className="block px-5 py-3 text-[15px] text-slate-300 hover:bg-white/5 hover:text-white transition">
@@ -168,16 +164,12 @@ export const LandingNavbar = ({ currentLang }: LandingNavbarProps) => {
             </div>
 
             <SignedOut>
-              <SignInButton mode="modal">
-                <button className="hidden lg:block px-4 py-2.5 text-[15px] text-slate-300 hover:text-white transition">
+              <LoadingLink href="/sign-in" className="hidden lg:block px-4 py-2.5 text-[15px] text-slate-300 hover:text-white transition">
                   {t.navLogin || "Log in"}
-                </button>
-              </SignInButton>
-              <SignInButton mode="modal">
-                <button className="px-5 py-2.5 text-[15px] font-medium text-white bg-gradient-to-r from-violet-600 to-cyan-500 rounded-lg shadow-lg shadow-cyan-500/20 hover:brightness-110 transition">
+                </LoadingLink>
+              <LoadingLink href="/sign-up" className="px-5 py-2.5 text-[15px] font-medium text-white bg-gradient-to-r from-violet-600 to-cyan-500 rounded-lg shadow-lg shadow-cyan-500/20 hover:brightness-110 transition">
                   Sign up
-                </button>
-              </SignInButton>
+                </LoadingLink>
             </SignedOut>
             <SignedIn>
               <LoadingLink 
@@ -216,16 +208,12 @@ export const LandingNavbar = ({ currentLang }: LandingNavbarProps) => {
               {productsOpen && (
                 <div className="pl-4 space-y-1 pb-2">
                   <SignedOut>
-                    <SignInButton mode="modal">
-                      <button className="block w-full text-left py-2 text-sm text-slate-400" onClick={() => setMobileOpen(false)}>
+                    <LoadingLink href="/sign-in" className="block w-full text-left py-2 text-sm text-slate-400" onClick={() => setMobileOpen(false)}>
                         {t.navAIPresentations || "AI Presentations"}
-                      </button>
-                    </SignInButton>
-                    <SignInButton mode="modal">
-                      <button className="block w-full text-left py-2 text-sm text-slate-400" onClick={() => setMobileOpen(false)}>
+                      </LoadingLink>
+                    <LoadingLink href="/sign-in" className="block w-full text-left py-2 text-sm text-slate-400" onClick={() => setMobileOpen(false)}>
                         {t.navThemes || "Themes"}
-                      </button>
-                    </SignInButton>
+                      </LoadingLink>
                   </SignedOut>
                   <SignedIn>
                     <LoadingLink href="/" className="block py-2 text-sm text-slate-400" onClick={() => setMobileOpen(false)}>
@@ -304,14 +292,12 @@ export const LandingNavbar = ({ currentLang }: LandingNavbarProps) => {
             {/* CTA Button */}
             <div className="mt-6">
               <SignedOut>
-                <SignInButton mode="modal">
-                  <button 
+                <LoadingLink href="/sign-in" 
                     className="w-full py-3 text-base font-medium text-white bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] rounded-lg hover:opacity-90"
                     onClick={() => setMobileOpen(false)}
                   >
                     Sign up
-                  </button>
-                </SignInButton>
+                  </LoadingLink>
               </SignedOut>
               <SignedIn>
                 <LoadingLink 

@@ -1,6 +1,6 @@
 "use client";
 
-import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { LoadingLink } from "~/components/LoadingLink";
 import { type Language } from "~/lib/i18n";
 
@@ -30,8 +30,7 @@ export function HowItWorksSection({ t, currentLang }: HowItWorksSectionProps) {
           <div className="flex gap-4 overflow-x-auto pb-4 -mx-6 px-6 lg:mx-0 lg:px-0 scrollbar-hide">
             {/* Card 1 - Themes */}
             <SignedOut>
-              <SignInButton mode="modal">
-                <button className="flex-shrink-0 w-64 bg-white/[0.06] border border-white/10 rounded-xl p-4 text-white hover:bg-white/10 transition text-left">
+              <LoadingLink href="/sign-in" className="flex-shrink-0 w-64 bg-white/[0.06] border border-white/10 rounded-xl p-4 text-white hover:bg-white/10 transition text-left">
                   <div className="flex items-center gap-2 mb-4">
                     <div className="flex -space-x-2">
                       {[1, 2, 3, 4].map((i) => (
@@ -52,8 +51,7 @@ export function HowItWorksSection({ t, currentLang }: HowItWorksSectionProps) {
                       <span className="text-slate-400">elegant-noir</span>
                     </div>
                   </div>
-                </button>
-              </SignInButton>
+                </LoadingLink>
             </SignedOut>
             <SignedIn>
               <LoadingLink href="/dashboard/themes" className="flex-shrink-0 w-64 bg-white/[0.06] border border-white/10 rounded-xl p-4 text-white hover:bg-white/10 transition">
@@ -118,11 +116,9 @@ export function HowItWorksSection({ t, currentLang }: HowItWorksSectionProps) {
         {/* Link */}
         <div className="mt-8">
           <SignedOut>
-            <SignInButton mode="modal">
-              <button className="text-white font-medium underline underline-offset-4 hover:text-slate-300 transition">
+            <LoadingLink href="/sign-in" className="text-white font-medium underline underline-offset-4 hover:text-slate-300 transition">
                 {t.exploreAllTemplates || "Explore all templates"}
-              </button>
-            </SignInButton>
+              </LoadingLink>
           </SignedOut>
           <SignedIn>
             <LoadingLink href={localPath("/")} className="text-white font-medium underline underline-offset-4 hover:text-slate-300 transition">

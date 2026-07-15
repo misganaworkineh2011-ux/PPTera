@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
-import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { ArrowRight, Command } from "lucide-react";
 import { LoadingLink } from "~/components/LoadingLink";
 import { LazyVideo } from "./LazyVideo";
@@ -357,15 +357,15 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
 
             <div className="flex flex-wrap items-center gap-4">
               <SignedOut>
-                <SignInButton mode="modal">
-                  <button
-                    style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}
+                <div style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
+                  <LoadingLink
+                    href="/sign-in"
                     className="group inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-violet-600 to-cyan-500 rounded-xl transition-all shadow-lg shadow-cyan-500/25 hover:shadow-xl hover:shadow-cyan-500/40 hover:brightness-110"
                   >
                     {t.getStartedBtn || "Get Started"}
                     <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-0.5" />
-                  </button>
-                </SignInButton>
+                  </LoadingLink>
+                </div>
               </SignedOut>
               <SignedIn>
                 <div style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
