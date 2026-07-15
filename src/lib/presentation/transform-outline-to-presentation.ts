@@ -448,6 +448,18 @@ async function transformSlideContent(
     extensive: "35-55 words per item — rich explanatory text with examples and implications",
   }[options.textDensity || "concise"];
 
+  // Proportion cap by ITEM COUNT: many items share the slide, so each one's
+  // text must shrink for everything to render large and legible; few items
+  // can afford fuller sentences. The tighter of this and the density budget
+  // (or a diagram layout budget) wins.
+  const expectedItems = Math.min(Math.max(slide.bulletPoints?.length || 3, 2), maxBullets);
+  const proportionCap =
+    expectedItems >= 6
+      ? "8-14 words per description"
+      : expectedItems >= 4
+        ? "12-18 words per description"
+        : "20-35 words per description";
+
   const prompt = `Transform this outline slide into presentation-ready content with WELL-CRAFTED, DETAILED slide bullets and DETAILED speaker notes.
 
 SLIDE ${slideIndex + 1} of ${totalSlides}:
@@ -461,6 +473,7 @@ CRITICAL REQUIREMENTS:
 - Transform ALL ${slide.bulletPoints?.length || 0} outline items - consolidate if needed to stay under ${maxBullets} items
 - Each generated item must be well-crafted, expanding on the outline with context, examples, implications
 - CARD TEXT AMOUNT (user setting): ${cardTextBudget}. A smaller diagram-layout budget below overrides this.
+- TEXT PROPORTIONS (CRITICAL for legibility): this slide will carry ~${expectedItems} items, so keep EVERY "description" to ${proportionCap} and every "heading" to 2-4 words. When this cap is tighter than the card-text amount above, THIS CAP WINS — balanced, evenly-sized items render large and clear; one bloated item shrinks the whole slide.
 - HIERARCHY: Put the most important, highest-impact point FIRST (the hero). Supporting points follow. Don't make every item identical in weight — give the slide a clear focal point.
 - PROPER FORMAT: Use direct statements, NOT quotes or citations (unless using quote layout)
 - AVOID SINGLE ITEMS: Never generate slides with only 1 item (minimum 2-3 items)

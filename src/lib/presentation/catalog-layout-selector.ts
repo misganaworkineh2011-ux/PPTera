@@ -151,6 +151,7 @@ function buildSystemPrompt(hasImage: boolean): string {
    - "images" ONLY when the slide is about images/photos.
    - "matrix" needs exactly 4 items; "spotlight"/"callout" for 1–3 big statements.
    - "dashboard"/"table" for metrics and structured data.
+   - COLUMN RULE: with 4 or more items, prefer families that arrange items in multiple columns or a grid (boxes, icongrid, bento, team, showcase, dashboard, images); with 1-3 items, prefer single-column or hero families (editorial, agenda, callout, spotlight, zigzag, cascading) so each item gets generous width.
    - Prefer varied, specific families (pricing, kanban, orgchart, featurematrix, timeline, pyramid, hubspoke, comparison, proscons, beforeafter, etc.) when the content matches — do NOT default everything to boxes/bullets.
 ${hasImage ? "   - This slide WILL show an image, so the catalog only contains image-compatible families. Pick one of them." : ""}
 

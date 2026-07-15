@@ -1,6 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { pickRandomStyle } from "../random-style-picker";
-import { ALL_STYLE_CATEGORIES, stylesForCategory } from "~/lib/layouts/style-catalog";
+import {
+  ALL_STYLE_CATEGORIES,
+  columnClassFor,
+  stylesForCategory,
+} from "~/lib/layouts/style-catalog";
 import { getLayoutCategory } from "~/components/presentation/slide-layout-utils";
 
 describe("style catalog integrity (shared panel/generation source)", () => {
@@ -118,6 +122,35 @@ describe("pickRandomStyle", () => {
     const expectedShare = maxW / totalW;
     const empiricalShare = bestCount / draws;
     expect(Math.abs(empiricalShare - expectedShare)).toBeLessThan(expectedShare * 0.35);
+  });
+
+  it("classifies columns by style override, then family, then adaptive", () => {
+    expect(columnClassFor("bullets", "bullet-style-4")).toBe("single"); // override
+    expect(columnClassFor("bullets", "bullet-style-1")).toBe("multi"); // override
+    expect(columnClassFor("editorial", "editorial-numbers")).toBe("single"); // family default
+    expect(columnClassFor("icongrid", "icongrid-style-2")).toBe("multi"); // family default
+    expect(columnClassFor("orbit", "orbit-rings")).toBeNull(); // adaptive diagram
+  });
+
+  it("4+ items never land on single-column styles (alternatives exist)", () => {
+    for (let i = 0; i < 40; i++) {
+      const id = pickRandomStyle("bullets", { itemCount: 5, rng: () => i / 40 })!;
+      expect(columnClassFor("bullets", id), `${id} is single-column for 5 items`).not.toBe("single");
+    }
+  });
+
+  it("1-3 items never land on multi-column styles (alternatives exist)", () => {
+    for (let i = 0; i < 40; i++) {
+      const id = pickRandomStyle("bullets", { itemCount: 2, rng: () => i / 40 })!;
+      expect(columnClassFor("bullets", id), `${id} is multi-column for 2 items`).not.toBe("multi");
+    }
+  });
+
+  it("column filter is soft: homogeneous families still pick a style", () => {
+    // icongrid is all multi-column; a 2-item slide must still get a style.
+    const id = pickRandomStyle("icongrid", { itemCount: 2, rng: () => 0 });
+    expect(id).toBeTruthy();
+    expect(columnClassFor("icongrid", id!)).toBe("multi");
   });
 
   it("still returns the excluded style when it is the only candidate", () => {

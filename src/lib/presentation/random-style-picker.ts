@@ -14,7 +14,12 @@
  * doesn't eliminate it.
  */
 
-import { stylesForCategory, type StyleCatalogEntry } from "~/lib/layouts/style-catalog";
+import {
+  columnClassFor,
+  stylesForCategory,
+  type ColumnClass,
+  type StyleCatalogEntry,
+} from "~/lib/layouts/style-catalog";
 
 export interface RandomStyleOptions {
   /** How many content items the slide carries (sections/bullets). */
@@ -47,6 +52,17 @@ export function pickRandomStyle(category: string, opts: RandomStyleOptions = {})
       const best = Math.min(...all.map(distance));
       candidates = all.filter((s) => distance(s) === best);
     }
+  }
+
+  // Column rule: 4+ items belong in multi-column layouts, sparser slides in
+  // single-column ones. Adaptive (unclassified) styles stay eligible either
+  // way, and the filter is soft — it never empties the pool.
+  if (typeof itemCount === "number" && itemCount > 0) {
+    const disallowed: ColumnClass = itemCount >= 4 ? "single" : "multi";
+    const preferred = candidates.filter(
+      (s) => columnClassFor(category, s.id) !== disallowed
+    );
+    if (preferred.length > 0) candidates = preferred;
   }
 
   // Avoid repeating the previous style when there is any alternative.

@@ -536,3 +536,52 @@ export const ALL_STYLE_CATEGORIES: StyleCatalogCategory[] = [
 export function stylesForCategory(category: string): StyleCatalogEntry[] {
   return ALL_STYLE_CATEGORIES.find((c) => c.id === category)?.layouts ?? [];
 }
+
+// ============================================================================
+// Column classification — generation's style picker uses this to honor the
+// rule: slides with 4+ items use multi-column layouts, sparser slides use
+// single-column ones. Families set the default; STYLE_COLUMN_OVERRIDES wins
+// per style. Anything unclassified is adaptive (eligible for any count —
+// its renderer adjusts columns to the item count itself).
+// ============================================================================
+export type ColumnClass = "single" | "multi";
+
+const SINGLE_COLUMN_FAMILIES: string[] = [
+  "editorial", "agenda", "checklist", "definitionlist", "cascading",
+  "zigzag", "callout", "spotlight", "funnel", "pyramid",
+];
+
+const MULTI_COLUMN_FAMILIES: string[] = [
+  "boxes", "icongrid", "bento", "team", "showcase", "images", "dashboard",
+  "matrix", "comparison", "proscons", "beforeafter", "pricing", "kanban",
+  "featurematrix",
+];
+
+const STYLE_COLUMN_OVERRIDES: Record<string, ColumnClass> = {
+  // bullets: grid/column spreads vs vertical lists
+  "bullet-style-1": "multi",  // cards arranged in a grid
+  "bullet-style-2": "multi",  // arranged in columns
+  "bullet-style-5": "multi",  // two-column spread
+  "bullet-style-8": "multi",  // notch cards (grid)
+  "bullet-style-4": "single", // vertical arrow list
+  "bullet-style-6": "single", // highlight lines
+  "bullet-style-7": "single", // lead-in dash lines
+  "bullet-style-9": "single", // oversized keyword rows
+  "bullet-style-10": "single", // slash list
+  // sequence: horizontal flows vs vertical journeys
+  "sequence-style-1": "multi",
+  "sequence-style-2": "multi",
+  "sequence-style-3": "single",
+  "sequence-style-4": "single",
+  // quotes: the lone hero pull-quote
+  "quote-style-3": "single",
+};
+
+/** Column behavior of a style: "single", "multi", or null (adaptive). */
+export function columnClassFor(category: string, styleId: string): ColumnClass | null {
+  const override = STYLE_COLUMN_OVERRIDES[styleId];
+  if (override) return override;
+  if (SINGLE_COLUMN_FAMILIES.includes(category)) return "single";
+  if (MULTI_COLUMN_FAMILIES.includes(category)) return "multi";
+  return null;
+}
