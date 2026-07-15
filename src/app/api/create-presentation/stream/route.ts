@@ -21,6 +21,7 @@ import type { SlideImage as OutlineSlideImage } from "~/lib/dashboard/hooks/useO
 import { generateSlug } from "~/lib/utils";
 import { selectLayout, type LayoutSelectionContext } from "~/lib/presentation/smart-layout";
 import { selectLayoutFromCatalog } from "~/lib/presentation/catalog-layout-selector";
+import { pickRandomStyle } from "~/lib/presentation/random-style-picker";
 import { buildDeckArtDirection } from "~/lib/presentation/generate-ai-image";
 
 interface SlideInput {
@@ -476,6 +477,30 @@ export async function POST(request: Request) {
                 `[create-presentation] Slide ${slideIndex}: catalog override failed, keeping deterministic selection:`,
                 catalogError
               );
+            }
+          }
+
+          // ==========================================
+          // RANDOM STYLE WITHIN THE FAMILY
+          // Once the family (category) is decided — deterministically or via
+          // the LLM catalog — the specific layout inside it is chosen at
+          // RANDOM among styles whose item capacity fits this slide, never
+          // repeating the previous slide's style. Applies to content slides.
+          // ==========================================
+          if (transformedSlide.type !== "title") {
+            const styleItemCount =
+              transformedSlide.sections?.length ?? transformedSlide.bulletPoints?.length ?? 0;
+            const prevStyle =
+              layoutContext.previousLayouts[layoutContext.previousLayouts.length - 1]?.style;
+            const randomStyle = pickRandomStyle(layoutSelection.category, {
+              itemCount: styleItemCount,
+              exclude: prevStyle,
+            });
+            if (randomStyle) {
+              console.log(
+                `[create-presentation] Slide ${slideIndex}: random style in "${layoutSelection.category}" → ${randomStyle}`
+              );
+              layoutSelection.style = randomStyle;
             }
           }
 
