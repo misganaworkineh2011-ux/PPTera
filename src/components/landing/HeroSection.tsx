@@ -298,25 +298,9 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
 
   return (
     <section className="relative min-h-[600px] h-auto lg:h-[95vh] flex items-center justify-center overflow-hidden">
-      {/* Layered background: fine grid + brand aurora */}
-      <div className="absolute inset-0 z-0 bg-white">
-        <div
-          className="absolute inset-0 opacity-[0.55]"
-          style={{
-            backgroundImage: `
-              linear-gradient(to right, #d4d4d8 1.25px, transparent 1.25px),
-              linear-gradient(to bottom, #d4d4d8 1.25px, transparent 1.25px)
-            `,
-            backgroundSize: '40px 40px',
-            maskImage: 'linear-gradient(to right, transparent 0%, black 35%, black 65%, transparent 100%)',
-            WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 35%, black 65%, transparent 100%)'
-          }}
-        />
-        {/* Aurora accents in the brand palette */}
-        <div className="absolute -top-40 left-[8%] w-[560px] h-[560px] rounded-full bg-cyan-200/40 blur-[140px]" />
-        <div className="absolute top-1/4 right-[-140px] w-[520px] h-[520px] rounded-full bg-indigo-200/50 blur-[150px]" />
-        <div className="absolute bottom-[-180px] left-[35%] w-[480px] h-[480px] rounded-full bg-sky-100/60 blur-[130px]" />
-        <div className="absolute inset-0 bg-gradient-to-b from-white via-transparent to-white" />
+      {/* Hero halo over the global atmosphere */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-120px] left-1/2 -translate-x-1/2 h-[420px] w-[720px] rounded-full bg-violet-600/[0.14] blur-[130px]" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8 w-full pt-24 pb-12 lg:py-20">
@@ -324,47 +308,47 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
           {/* Left Column */}
           <div className="flex flex-col justify-center max-w-xl">
             {/* Eyebrow badge */}
-            <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-zinc-200/80 bg-white/70 px-4 py-1.5 shadow-sm backdrop-blur">
+            <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 shadow-sm backdrop-blur">
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-500 opacity-60" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4]" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-gradient-to-r from-violet-500 to-cyan-400" />
               </span>
-              <span className="text-[13px] font-semibold tracking-wide text-zinc-700">
+              <span className="text-[13px] font-semibold tracking-wide text-slate-300">
                 AI presentation studio
               </span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-zinc-900 leading-[1.08] mb-6">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.08] mb-6">
               {t.heroTitle} <br />
-              <span className="bg-gradient-to-r from-[#1e3a8a] via-sky-600 to-[#06b6d4] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-violet-400 via-sky-300 to-cyan-300 bg-clip-text text-transparent">
                 {t.heroSubtitle}
               </span>
             </h1>
 
-            <p className="text-lg text-zinc-600 mb-8 leading-relaxed">
+            <p className="text-lg text-slate-400 mb-8 leading-relaxed">
               {t.heroDescription}
             </p>
 
             {/* Prompt Box synced with cards — glass card with gradient ring */}
             <div className="relative w-full mb-8 group">
-              <div className="absolute -inset-[1.5px] rounded-2xl bg-gradient-to-r from-[#1e3a8a]/50 via-[#06b6d4]/60 to-[#a855f7]/40 opacity-70 blur-[1.5px] transition-opacity group-hover:opacity-100" />
-              <div className="relative w-full rounded-2xl bg-white/90 p-5 shadow-[0_16px_50px_-16px_rgba(6,58,138,0.25)] backdrop-blur">
-                <div className="flex items-center gap-2 mb-3 border-b border-zinc-100 pb-3">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4]">
+              <div className="absolute -inset-[1.5px] rounded-2xl bg-gradient-to-r from-violet-500/50 via-cyan-400/50 to-fuchsia-500/40 opacity-70 blur-[1.5px] transition-opacity group-hover:opacity-100" />
+              <div className="relative w-full rounded-2xl bg-[#0b1120]/90 border border-white/10 p-5 shadow-[0_16px_50px_-16px_rgba(0,0,0,0.6)] backdrop-blur">
+                <div className="flex items-center gap-2 mb-3 border-b border-white/10 pb-3">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-violet-500 to-cyan-400">
                     <Command className="w-3.5 h-3.5 text-white" />
                   </span>
-                  <span className="text-xs font-semibold text-zinc-600 uppercase tracking-wider">
+                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                     {t.aiPrompt}
                   </span>
-                  <span className="ml-auto rounded-full bg-zinc-100 px-2.5 py-0.5 text-[11px] font-semibold tabular-nums text-zinc-500">
+                  <span className="ml-auto rounded-full bg-white/10 px-2.5 py-0.5 text-[11px] font-semibold tabular-nums text-slate-400">
                     {getWrappedIndex(activeIndex) + 1}/{baseCards.length}
                   </span>
                 </div>
                 <div className="min-h-[72px] flex items-start">
-                  <p className="text-zinc-800 font-medium text-lg leading-relaxed">
+                  <p className="text-slate-100 font-medium text-lg leading-relaxed">
                     {typedText}
                     {isTyping && (
-                      <span className="inline-block w-0.5 h-5 ml-1 bg-gradient-to-b from-[#1e3a8a] to-[#06b6d4] animate-pulse align-middle" />
+                      <span className="inline-block w-0.5 h-5 ml-1 bg-gradient-to-b from-violet-400 to-cyan-400 animate-pulse align-middle" />
                     )}
                   </p>
                 </div>
@@ -376,7 +360,7 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
                 <SignInButton mode="modal">
                   <button
                     style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}
-                    className="group inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] rounded-xl transition-all shadow-lg shadow-cyan-600/25 hover:shadow-xl hover:shadow-cyan-600/35 hover:brightness-110"
+                    className="group inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-violet-600 to-cyan-500 rounded-xl transition-all shadow-lg shadow-cyan-500/25 hover:shadow-xl hover:shadow-cyan-500/40 hover:brightness-110"
                   >
                     {t.getStartedBtn || "Get Started"}
                     <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-0.5" />
@@ -387,28 +371,28 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
                 <div style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
                   <LoadingLink
                     href={localPath("/")}
-                    className="group inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-zinc-900 rounded-xl hover:bg-zinc-800 transition-all shadow-lg hover:shadow-zinc-900/20"
+                    className="group inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-white/10 border border-white/15 rounded-xl hover:bg-white/15 transition-all shadow-lg"
                   >
                     {t.goToDashboard}
                     <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-0.5" />
                   </LoadingLink>
                 </div>
               </SignedIn>
-              <span className="text-sm text-zinc-500 px-2">{t.noCreditCard}</span>
+              <span className="text-sm text-slate-500 px-2">{t.noCreditCard}</span>
             </div>
 
             {/* Proof strip */}
-            <div className="mt-9 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-zinc-200/70 pt-6">
+            <div className="mt-9 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-white/10 pt-6">
               {[
                 { value: "100+", label: "Designer themes" },
                 { value: "40+", label: "Smart layout families" },
                 { value: "< 1 min", label: "Prompt to full deck" },
               ].map(({ value, label }) => (
                 <div key={label} className="flex flex-col">
-                  <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] bg-clip-text text-transparent">
+                  <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-violet-400 to-cyan-300 bg-clip-text text-transparent">
                     {value}
                   </span>
-                  <span className="text-[12.5px] font-medium text-zinc-500">{label}</span>
+                  <span className="text-[12.5px] font-medium text-slate-500">{label}</span>
                 </div>
               ))}
             </div>
@@ -439,7 +423,7 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
                             marginLeft: -MOBILE_CARD_WIDTH / 2,
                           }}
                         >
-                          <div className="w-full h-full overflow-hidden rounded-xl ring-1 ring-zinc-900/10 shadow-[0_18px_50px_-20px_rgba(6,58,138,0.45)] relative bg-zinc-900">
+                          <div className="w-full h-full overflow-hidden rounded-xl ring-1 ring-white/10 shadow-[0_18px_50px_-20px_rgba(0,0,0,0.75)] relative bg-zinc-900">
                             <LazyVideo
                               src={card.video || ""}
                               className="absolute inset-0 w-full h-full"
@@ -469,8 +453,8 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
                   >
                     <span className={`block rounded-full transition-all duration-400 ${
                       getWrappedIndex(activeIndex) === idx
-                        ? "w-6 h-2 bg-zinc-900"
-                        : "w-2 h-2 bg-zinc-500"
+                        ? "w-6 h-2 bg-white"
+                        : "w-2 h-2 bg-slate-600"
                     }`} />
                   </button>
                 ))}
@@ -481,7 +465,7 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
           {/* Right Column - Full Height Card Scroller (hidden on mobile) */}
           <div className="relative hidden lg:flex items-center justify-center h-full">
             {/* Glow bed behind the scroller */}
-            <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[70%] rounded-[48px] bg-gradient-to-b from-cyan-300/25 via-indigo-300/20 to-purple-300/25 blur-[60px]" />
+            <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[70%] rounded-[48px] bg-gradient-to-b from-violet-500/20 via-cyan-400/15 to-fuchsia-500/20 blur-[70px]" />
             <div
               ref={containerRef}
               className={`relative w-full max-w-lg overflow-hidden select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
@@ -508,7 +492,7 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
                         }}
                       >
                         {/* Video card - lazy loaded */}
-                        <div className="w-full h-full overflow-hidden rounded-2xl ring-1 ring-zinc-900/10 shadow-[0_24px_70px_-24px_rgba(6,58,138,0.5)] relative bg-zinc-900">
+                        <div className="w-full h-full overflow-hidden rounded-2xl ring-1 ring-white/10 shadow-[0_24px_70px_-24px_rgba(0,0,0,0.8)] relative bg-zinc-900">
                           <LazyVideo
                             src={card.video || ""}
                             className="absolute inset-0 w-full h-full"
@@ -522,8 +506,8 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
               </div>
 
               {/* Gradient Overlays */}
-              <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-white to-transparent pointer-events-none z-20" />
-              <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-white to-transparent pointer-events-none z-20" />
+              <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-[#070b14] to-transparent pointer-events-none z-20" />
+              <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[#070b14] to-transparent pointer-events-none z-20" />
             </div>
 
             {/* Indicators */}
@@ -540,8 +524,8 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
                 >
                   <span className={`block w-2 rounded-full transition-all duration-400 ${
                     getWrappedIndex(activeIndex) === idx
-                      ? "h-8 bg-zinc-900"
-                      : "h-2 bg-zinc-500 hover:bg-zinc-600"
+                      ? "h-8 bg-white"
+                      : "h-2 bg-slate-600 hover:bg-slate-400"
                   }`} />
                 </button>
               ))}

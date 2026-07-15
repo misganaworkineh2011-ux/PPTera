@@ -23,7 +23,7 @@ export function CTASection({ t, currentLang }: CTASectionProps) {
 
   // Shared classes for consistent styling - responsive text size
   const buttonClasses =
-    "group relative inline-flex items-center justify-center gap-2 px-4 py-2 text-base sm:px-6 sm:py-2.5 sm:text-xl md:px-8 md:py-3 md:text-3xl font-semibold text-white bg-zinc-900 overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105";
+    "group relative inline-flex items-center justify-center gap-2 px-4 py-2 text-base sm:px-6 sm:py-2.5 sm:text-xl md:px-8 md:py-3 md:text-3xl font-semibold text-white bg-gradient-to-r from-violet-600 to-cyan-500 overflow-hidden shadow-lg shadow-cyan-500/25 transition-all duration-300 hover:shadow-xl hover:scale-105";
 
   // The animation layer that expands from top-left
   const hoverEffectLayer = (
@@ -43,7 +43,7 @@ export function CTASection({ t, currentLang }: CTASectionProps) {
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className={`absolute rounded-full border-2 border-zinc-900/20 ${
+              className={`absolute rounded-full border-2 border-white/15 ${
                 isHovered ? "animate-ping" : ""
               }`}
               style={{
@@ -64,7 +64,7 @@ export function CTASection({ t, currentLang }: CTASectionProps) {
             {[...Array(12)].map((_, i) => (
               <div
                 key={i}
-                className="absolute w-2 h-2 rounded-full bg-zinc-900/30 animate-float"
+                className="absolute w-2 h-2 rounded-full bg-cyan-300/40 animate-float"
                 style={{
                   left: `${10 + (i * 7)}%`,
                   top: `${5 + (i % 3) * 10}%`,
@@ -78,7 +78,7 @@ export function CTASection({ t, currentLang }: CTASectionProps) {
 
         {/* Gradient sweep */}
         <div
-          className={`absolute inset-0 bg-gradient-to-b from-lime-100/50 via-transparent to-transparent transition-opacity duration-500 ${
+          className={`absolute inset-0 bg-gradient-to-b from-violet-500/10 via-transparent to-transparent transition-opacity duration-500 ${
             isHovered ? "opacity-100" : "opacity-0"
           }`}
         />

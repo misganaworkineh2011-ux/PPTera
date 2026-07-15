@@ -19,9 +19,9 @@ export function HowItWorksSection({ t, currentLang }: HowItWorksSectionProps) {
   const localPath = (path: string) => getLocalizedPath(path, currentLang);
   
   return (
-    <section className="py-24 px-6 lg:px-8 bg-lime-50">
+    <section className="py-24 px-6 lg:px-8 border-t border-white/10 bg-white/[0.02]">
       <div className="mx-auto max-w-[1400px]">
-        <h2 className="text-[2.75rem] leading-[1.15] font-semibold tracking-tight text-zinc-900 max-w-xl lg:text-[3.25rem]">
+        <h2 className="text-[2.75rem] leading-[1.15] font-semibold tracking-tight text-white max-w-xl lg:text-[3.25rem]">
           {t.professionalTemplatesTitle || "Professional templates for every presentation"}
         </h2>
 
@@ -31,50 +31,50 @@ export function HowItWorksSection({ t, currentLang }: HowItWorksSectionProps) {
             {/* Card 1 - Themes */}
             <SignedOut>
               <SignInButton mode="modal">
-                <button className="flex-shrink-0 w-64 bg-zinc-900 rounded-xl p-4 text-white hover:bg-zinc-800 transition text-left">
+                <button className="flex-shrink-0 w-64 bg-white/[0.06] border border-white/10 rounded-xl p-4 text-white hover:bg-white/10 transition text-left">
                   <div className="flex items-center gap-2 mb-4">
                     <div className="flex -space-x-2">
                       {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="w-6 h-6 rounded-full bg-zinc-700 border-2 border-zinc-900"></div>
+                        <div key={i} className="w-6 h-6 rounded-full bg-slate-600 border-2 border-[#0b1120]"></div>
                       ))}
                     </div>
                   </div>
-                  <div className="text-xs text-zinc-400 mb-2">{t.themeCorporate || "Theme/Corporate"}</div>
+                  <div className="text-xs text-slate-400 mb-2">{t.themeCorporate || "Theme/Corporate"}</div>
                   <div className="space-y-2">
                     <div className="text-xs">
-                      <span className="text-zinc-500">{t.layouts || "Layouts"}</span>
+                      <span className="text-slate-500">{t.layouts || "Layouts"}</span>
                     </div>
                     <div className="text-xs">
-                      <span className="text-zinc-500">{t.colors || "Colors"}</span>
+                      <span className="text-slate-500">{t.colors || "Colors"}</span>
                     </div>
                     <div className="flex items-center gap-2 text-xs">
-                      <div className="w-3 h-3 rounded bg-zinc-800"></div>
-                      <span className="text-zinc-400">elegant-noir</span>
+                      <div className="w-3 h-3 rounded bg-slate-700"></div>
+                      <span className="text-slate-400">elegant-noir</span>
                     </div>
                   </div>
                 </button>
               </SignInButton>
             </SignedOut>
             <SignedIn>
-              <LoadingLink href="/dashboard/themes" className="flex-shrink-0 w-64 bg-zinc-900 rounded-xl p-4 text-white hover:bg-zinc-800 transition">
+              <LoadingLink href="/dashboard/themes" className="flex-shrink-0 w-64 bg-white/[0.06] border border-white/10 rounded-xl p-4 text-white hover:bg-white/10 transition">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="flex -space-x-2">
                     {[1, 2, 3, 4].map((i) => (
-                      <div key={i} className="w-6 h-6 rounded-full bg-zinc-700 border-2 border-zinc-900"></div>
+                      <div key={i} className="w-6 h-6 rounded-full bg-slate-600 border-2 border-[#0b1120]"></div>
                     ))}
                   </div>
                 </div>
-                <div className="text-xs text-zinc-400 mb-2">{t.themeCorporate || "Theme/Corporate"}</div>
+                <div className="text-xs text-slate-400 mb-2">{t.themeCorporate || "Theme/Corporate"}</div>
                 <div className="space-y-2">
                   <div className="text-xs">
-                    <span className="text-zinc-500">{t.layouts || "Layouts"}</span>
+                    <span className="text-slate-500">{t.layouts || "Layouts"}</span>
                   </div>
                   <div className="text-xs">
-                    <span className="text-zinc-500">{t.colors || "Colors"}</span>
+                    <span className="text-slate-500">{t.colors || "Colors"}</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs">
-                    <div className="w-3 h-3 rounded bg-zinc-800"></div>
-                    <span className="text-zinc-400">elegant-noir</span>
+                    <div className="w-3 h-3 rounded bg-slate-700"></div>
+                    <span className="text-slate-400">elegant-noir</span>
                   </div>
                 </div>
               </LoadingLink>
@@ -96,13 +96,13 @@ export function HowItWorksSection({ t, currentLang }: HowItWorksSectionProps) {
             </LoadingLink>
 
             {/* Card 4 */}
-            <LoadingLink href={localPath("/inspiration")} className="flex-shrink-0 w-48 bg-white rounded-xl border border-zinc-200 overflow-hidden hover:border-zinc-300 transition">
+            <LoadingLink href={localPath("/inspiration")} className="flex-shrink-0 w-48 bg-white rounded-xl border border-white/20 overflow-hidden hover:border-white/40 transition">
               <div className="aspect-[3/4] p-4 flex flex-col justify-between">
                 <div>
                   <p className="text-4xl font-bold text-zinc-900">Q4</p>
                   <p className="text-6xl font-bold text-zinc-900">2025</p>
                 </div>
-                <div className="text-xs text-zinc-500">{t.quarterlyReview || "Quarterly Review"}</div>
+                <div className="text-xs text-slate-500">{t.quarterlyReview || "Quarterly Review"}</div>
               </div>
             </LoadingLink>
 
@@ -119,13 +119,13 @@ export function HowItWorksSection({ t, currentLang }: HowItWorksSectionProps) {
         <div className="mt-8">
           <SignedOut>
             <SignInButton mode="modal">
-              <button className="text-zinc-900 font-medium underline underline-offset-4 hover:text-zinc-600 transition">
+              <button className="text-white font-medium underline underline-offset-4 hover:text-slate-300 transition">
                 {t.exploreAllTemplates || "Explore all templates"}
               </button>
             </SignInButton>
           </SignedOut>
           <SignedIn>
-            <LoadingLink href={localPath("/")} className="text-zinc-900 font-medium underline underline-offset-4 hover:text-zinc-600 transition">
+            <LoadingLink href={localPath("/")} className="text-white font-medium underline underline-offset-4 hover:text-slate-300 transition">
               {t.exploreAllTemplates || "Explore all themes"}
             </LoadingLink>
           </SignedIn>

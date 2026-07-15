@@ -117,7 +117,7 @@ export function DiscountTopBanner({ subscriptionPlan }: CyberMondayDealsProps) {
   return (
     <div className="w-full">
       {/* Premium shining banner with top-left to bottom-right glow */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-[#006482] to-[#014457] px-8 md:px-12 py-10 md:py-12 text-white rounded-[2.5rem] border border-[#006482]/30 group shadow-[0_0_20px_rgba(0,100,130,0.15)]">
+      <div className="relative overflow-hidden bg-gradient-to-r from-violet-800/80 via-[#0b1120] to-[#0b1120] px-8 md:px-12 py-10 md:py-12 text-white rounded-[2.5rem] border border-white/10 group shadow-[0_0_28px_rgba(139,92,246,0.18)]">
         {/* Animated shining sweep from top-left to bottom-right */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           {/* Decorative glowing orbs */}
@@ -129,8 +129,8 @@ export function DiscountTopBanner({ subscriptionPlan }: CyberMondayDealsProps) {
           {/* Left Side: Premium Typography */}
           <div className="flex flex-col sm:flex-row items-center sm:items-start md:items-center gap-6 md:gap-8 text-center sm:text-left">
             <div className="relative group-hover:scale-110 transition-transform duration-500 shrink-0">
-              <div className="absolute inset-0 bg-[#006482] blur-md opacity-20 group-hover:opacity-40" />
-              <div className="relative p-4 rounded-[1.5rem] bg-white shadow-lg shadow-[#006482]/20">
+              <div className="absolute inset-0 bg-violet-600 blur-md opacity-20 group-hover:opacity-40" />
+              <div className="relative p-4 rounded-[1.5rem] bg-white shadow-lg shadow-violet-600/20">
                 <img src="/logo.png" alt="PPTera Logo" className="h-10 w-10 md:h-12 md:w-12 object-contain" />
               </div>
             </div>

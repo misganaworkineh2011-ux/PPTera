@@ -143,7 +143,7 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
   ];
 
   return (
-    <section className="py-24 px-6 lg:px-8 bg-zinc-50">
+    <section className="py-24 px-6 lg:px-8 border-t border-white/10">
       <div className="mx-auto max-w-7xl">
         {/* Banner above header */}
         <div className="mb-12 max-w-5xl mx-auto px-4 text-center">
@@ -152,10 +152,10 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
 
         {/* Header */}
         <div className="text-center mb-8">
-          <h2 className="text-[2.75rem] leading-[1.15] font-semibold tracking-tight text-zinc-900 lg:text-[3.25rem] mb-4">
+          <h2 className="text-[2.75rem] leading-[1.15] font-semibold tracking-tight text-white lg:text-[3.25rem] mb-4">
             {t.simplePricing || "Simple, transparent pricing"}
           </h2>
-          <p className="text-lg text-zinc-600 max-w-2xl mx-auto">
+          <p className="text-lg text-slate-400 max-w-2xl mx-auto">
             {t.pricingSubtitle || "Start free, upgrade when you need more power"}
           </p>
         </div>
@@ -163,13 +163,13 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
         {/* Toggle */}
         <div className="flex items-center justify-center gap-4 mb-8">
           <span
-            className={`text-sm font-medium ${!isAnnual ? "text-zinc-900" : "text-zinc-500"}`}
+            className={`text-sm font-medium ${!isAnnual ? "text-white" : "text-slate-500"}`}
           >
             {t.monthly || "Monthly"}
           </span>
           <button
             onClick={() => setIsAnnual(!isAnnual)}
-            className="relative h-7 w-12 rounded-full bg-zinc-900 p-0.5 transition-all"
+            className="relative h-7 w-12 rounded-full bg-white/15 border border-white/20 p-0.5 transition-all"
             style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}
           >
             <div
@@ -177,10 +177,10 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
             />
           </button>
           <span
-            className={`text-sm font-medium ${isAnnual ? "text-zinc-900" : "text-zinc-500"}`}
+            className={`text-sm font-medium ${isAnnual ? "text-white" : "text-slate-500"}`}
           >
             {t.yearly || "Yearly"}{" "}
-            <span className="text-emerald-600 font-semibold ml-1">
+            <span className="text-emerald-400 font-semibold ml-1">
               {t.savePercent || "Save 25%"}
             </span>
           </span>
@@ -191,10 +191,10 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
           {plans.map((plan, i) => (
             <div
               key={i}
-              className={`relative rounded-[2rem] p-8 flex flex-col h-auto transition-all duration-300 group border-2 border-slate-900 ${
+              className={`relative rounded-[2rem] p-8 flex flex-col h-auto transition-all duration-300 group border border-white/10 ${
                 plan.highlight
-                  ? "shadow-[0_20px_40px_-15px_rgba(6,182,212,0.15)] bg-gradient-to-b from-white to-cyan-50/20"
-                  : "hover:border-slate-800 hover:shadow-xl bg-white"
+                  ? "border-cyan-400/40 bg-white/[0.07] shadow-[0_20px_50px_-15px_rgba(34,211,238,0.25)]"
+                  : "hover:border-white/25 hover:bg-white/[0.06] bg-white/[0.04]"
               }`}
             >
               {plan.badge && (
@@ -202,7 +202,7 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
                   className={`absolute -top-4 left-1/2 -translate-x-1/2 text-white text-[11px] font-black tracking-[0.15em] px-5 py-1.5 rounded-full shadow-lg whitespace-nowrap z-10 uppercase ${
                     plan.badgeGradient
                       ? "bg-gradient-to-r from-purple-600 to-pink-600 shadow-purple-500/20"
-                      : "bg-[#06b6d4] shadow-cyan-500/20 shadow-lg"
+                      : "bg-gradient-to-r from-violet-600 to-cyan-500 shadow-cyan-500/20 shadow-lg"
                   }`}
                 >
                   {plan.badge}
@@ -211,12 +211,12 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
 
               <div className="mb-4">
                 <div className="flex items-center gap-2 mb-1">
-                  <h3 className="text-2xl font-black text-slate-900">
+                  <h3 className="text-2xl font-black text-white">
                     {plan.name}
                   </h3>
                   {plan.highlight && (
-                    <div className="flex items-center justify-center p-1 rounded-lg bg-cyan-50 border border-cyan-100">
-                      <Zap className="h-4 w-4 text-[#06b6d4] fill-[#06b6d4]/20" />
+                    <div className="flex items-center justify-center p-1 rounded-lg bg-cyan-400/10 border border-cyan-400/30">
+                      <Zap className="h-4 w-4 text-cyan-300 fill-cyan-300/20" />
                     </div>
                   )}
                   {plan.name === "Ultra" && (
@@ -228,12 +228,12 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
                 </p>
               </div>
 
-              <div className="mb-4 border-b border-slate-100 pb-4">
+              <div className="mb-4 border-b border-white/10 pb-4">
                 {plan.price === null ? (
-                  <div className="h-10 w-24 animate-pulse rounded-xl bg-slate-100" />
+                  <div className="h-10 w-24 animate-pulse rounded-xl bg-white/10" />
                 ) : (
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-4xl font-black tracking-tighter text-slate-900">
+                    <span className="text-4xl font-black tracking-tighter text-white">
                       {plan.price}
                     </span>
                     <span className="text-sm font-bold text-slate-400">
@@ -246,10 +246,10 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
               <ul className="space-y-3 mb-8">
                 {plan.features.map((feature, idx) => (
                   <li key={idx} className="flex items-start gap-3">
-                    <div className={`mt-0.5 h-3.5 w-3.5 rounded-full flex items-center justify-center shrink-0 ${plan.highlight ? "bg-cyan-100 text-cyan-600" : "bg-slate-100 text-slate-400"}`}>
+                    <div className={`mt-0.5 h-3.5 w-3.5 rounded-full flex items-center justify-center shrink-0 ${plan.highlight ? "bg-cyan-400/15 text-cyan-300" : "bg-white/10 text-slate-400"}`}>
                       <Check className="h-2 w-2 stroke-[4]" />
                     </div>
-                    <span className="text-[13px] font-bold text-slate-600 leading-tight">
+                    <span className="text-[13px] font-bold text-slate-300 leading-tight">
                       {feature}
                     </span>
                   </li>
@@ -259,10 +259,10 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
               <div className="mt-auto">
                 <LoadingLink
                   href={localPath("/pricing")}
-                  className={`w-full py-4 rounded-[1.2rem] text-sm font-black text-center transition-all duration-300 border-2 border-slate-900 block ${
+                  className={`w-full py-4 rounded-[1.2rem] text-sm font-black text-center transition-all duration-300 border border-white/15 block ${
                     plan.highlight
-                      ? "bg-slate-900 text-white hover:bg-black hover:scale-[1.02] shadow-xl"
-                      : "bg-white text-slate-900 hover:bg-slate-900 hover:text-white"
+                      ? "bg-gradient-to-r from-violet-600 to-cyan-500 text-white hover:brightness-110 hover:scale-[1.02] shadow-xl shadow-cyan-500/25"
+                      : "bg-white/10 text-white hover:bg-white/20"
                   }`}
                 >
                   {plan.cta}
@@ -276,7 +276,7 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
         <div className="text-center mt-8">
           <LoadingLink
             href={localPath("/pricing")}
-            className="text-zinc-900 font-medium underline underline-offset-4 hover:text-zinc-600 transition"
+            className="text-white font-medium underline underline-offset-4 hover:text-slate-300 transition"
           >
             {t.viewAllPlans || "View all plans and features"} →
           </LoadingLink>

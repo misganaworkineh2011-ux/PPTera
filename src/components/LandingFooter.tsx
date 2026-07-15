@@ -53,7 +53,7 @@ export const LandingFooter = ({ currentLang }: LandingFooterProps) => {
   };
 
   return (
-    <footer className="bg-zinc-900 text-white">
+    <footer className="relative z-10 bg-[#05070d] border-t border-white/10 text-white">
       {/* Main Footer */}
       <div className="mx-auto max-w-[1400px] px-6 lg:px-8 py-16">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 lg:gap-12">
@@ -68,7 +68,7 @@ export const LandingFooter = ({ currentLang }: LandingFooterProps) => {
                 className="h-8 w-auto brightness-0 invert"
               />
             </LoadingLink>
-            <p className="text-zinc-400 text-sm max-w-xs mb-6">
+            <p className="text-slate-400 text-sm max-w-xs mb-6">
               {t.howGoodIdeas}
             </p>
             
@@ -81,12 +81,12 @@ export const LandingFooter = ({ currentLang }: LandingFooterProps) => {
                 placeholder="Enter your email"
                 required
                 disabled={loading}
-                className="flex-1 px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-500 disabled:opacity-50"
+                className="flex-1 px-4 py-2 bg-white/5 border border-white/15 rounded-lg text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400/60 disabled:opacity-50"
               />
               <button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 bg-white text-zinc-900 text-sm font-medium rounded-lg hover:bg-zinc-100 transition disabled:opacity-50"
+                className="px-4 py-2 bg-gradient-to-r from-violet-600 to-cyan-500 text-white text-sm font-medium rounded-lg hover:brightness-110 transition disabled:opacity-50"
               >
                 {loading ? "..." : t.subscribe}
               </button>
@@ -96,7 +96,7 @@ export const LandingFooter = ({ currentLang }: LandingFooterProps) => {
           {/* Product */}
           <div>
             <h3 className="font-medium text-white mb-4 text-base">{t.productFooter}</h3>
-            <ul className="space-y-3 text-sm text-zinc-400">
+            <ul className="space-y-3 text-sm text-slate-400">
               <li><LoadingLink href={localPath("/pricing")} className="hover:text-white transition">{t.pricing}</LoadingLink></li>
               <li><LoadingLink href={localPath("/inspiration")} className="hover:text-white transition">{t.inspiration}</LoadingLink></li>
               <li><LoadingLink href={localPath("/prompt-guide")} className="hover:text-white transition">{t.promptGuide}</LoadingLink></li>
@@ -107,7 +107,7 @@ export const LandingFooter = ({ currentLang }: LandingFooterProps) => {
           {/* Company */}
           <div>
             <h3 className="font-medium text-white mb-4 text-base">{t.company}</h3>
-            <ul className="space-y-3 text-sm text-zinc-400">
+            <ul className="space-y-3 text-sm text-slate-400">
               <li><LoadingLink href={localPath("/about")} className="hover:text-white transition">{t.about}</LoadingLink></li>
               <li><LoadingLink href={localPath("/careers")} className="hover:text-white transition">{t.careers}</LoadingLink></li>
             </ul>
@@ -116,7 +116,7 @@ export const LandingFooter = ({ currentLang }: LandingFooterProps) => {
           {/* Help */}
           <div>
             <h3 className="font-medium text-white mb-4 text-base">{t.help}</h3>
-            <ul className="space-y-3 text-sm text-zinc-400">
+            <ul className="space-y-3 text-sm text-slate-400">
               <li><LoadingLink href={localPath("/help")} className="hover:text-white transition">{t.helpCenter}</LoadingLink></li>
               <li><LoadingLink href={localPath("/community")} className="hover:text-white transition">{t.community}</LoadingLink></li>
               <li><LoadingLink href={localPath("/contact")} className="hover:text-white transition">{t.contactUs}</LoadingLink></li>
@@ -126,7 +126,7 @@ export const LandingFooter = ({ currentLang }: LandingFooterProps) => {
           {/* Legal */}
           <div>
             <h3 className="font-medium text-white mb-4 text-base">{t.legal}</h3>
-            <ul className="space-y-3 text-sm text-zinc-400">
+            <ul className="space-y-3 text-sm text-slate-400">
               <li><LoadingLink href={localPath("/privacy")} className="hover:text-white transition">{t.privacyPolicy}</LoadingLink></li>
               <li><LoadingLink href={localPath("/terms")} className="hover:text-white transition">{t.termsOfService}</LoadingLink></li>
               <li><LoadingLink href={localPath("/cookies")} className="hover:text-white transition">{t.cookieNotice}</LoadingLink></li>
@@ -136,10 +136,10 @@ export const LandingFooter = ({ currentLang }: LandingFooterProps) => {
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-zinc-800">
+      <div className="border-t border-white/10">
         <div className="mx-auto max-w-[1400px] px-6 lg:px-8 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-zinc-500">© 2025 PPTera Tech, Inc.</p>
-          <div className="flex gap-6 text-sm text-zinc-500">
+          <p className="text-sm text-slate-500">© 2025 PPTera Tech, Inc.</p>
+          <div className="flex gap-6 text-sm text-slate-500">
             <LoadingLink href={localPath("/privacy")} className="hover:text-white transition">{t.privacyPolicy}</LoadingLink>
             <LoadingLink href={localPath("/terms")} className="hover:text-white transition">{t.termsOfService}</LoadingLink>
             <LoadingLink href={localPath("/cookies")} className="hover:text-white transition">{t.cookieNotice}</LoadingLink>

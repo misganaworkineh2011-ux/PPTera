@@ -17,7 +17,7 @@ const logos = [
 
 export function TrustedBySection() {
   return (
-    <section className="py-2 border-y border-zinc-100 overflow-hidden bg-white" aria-label="Trusted by leading companies">
+    <section className="py-3 border-y border-white/10 overflow-hidden bg-white/[0.02]" aria-label="Trusted by leading companies">
       <div className="relative w-full overflow-hidden">
         <div className="flex animate-marquee hover:[animation-play-state:paused]">
           {/* First set */}
@@ -25,7 +25,7 @@ export function TrustedBySection() {
             {logos.map((logo, i) => (
               <span
                 key={`a-${i}`}
-                className="text-zinc-600 font-semibold text-sm tracking-wide whitespace-nowrap"
+                className="text-slate-500 font-semibold text-sm tracking-wide whitespace-nowrap"
               >
                 {logo.display}
               </span>
@@ -37,7 +37,7 @@ export function TrustedBySection() {
             {logos.map((logo, i) => (
               <span
                 key={`b-${i}`}
-                className="text-zinc-600 font-semibold text-sm tracking-wide whitespace-nowrap"
+                className="text-slate-500 font-semibold text-sm tracking-wide whitespace-nowrap"
               >
                 {logo.display}
               </span>

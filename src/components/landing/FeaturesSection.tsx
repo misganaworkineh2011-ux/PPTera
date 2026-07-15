@@ -91,33 +91,33 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
       <div className="mx-auto max-w-[1400px]">
         {/* Main Feature - Full Width */}
         <div className="mb-32">
-          <h2 className="text-[2.75rem] leading-[1.15] font-semibold tracking-tight text-zinc-900 max-w-2xl lg:text-[3.25rem]">
+          <h2 className="text-[2.75rem] leading-[1.15] font-semibold tracking-tight text-white max-w-2xl lg:text-[3.25rem]">
             {t.fromIdeaToPPT || "From idea to PowerPoint in minutes with AI"}
           </h2>
           
           {/* Feature Demo */}
           <div className="mt-12 relative">
-            <div className="rounded-2xl overflow-hidden border border-zinc-200 bg-white shadow-xl">
+            <div className="rounded-2xl overflow-hidden border border-white/10 bg-white/[0.04] shadow-2xl shadow-black/40">
               {/* App Interface */}
               <div className="flex flex-col lg:grid lg:grid-cols-[300px_1fr]">
                 {/* Left Panel - AI Chat - Hidden on mobile, shown on desktop */}
-                <div className="hidden lg:block border-r border-zinc-200 p-6 bg-white">
+                <div className="hidden lg:block border-r border-white/10 p-6 bg-white/[0.02]">
                   <div className="flex items-center gap-2 mb-6">
-                    <div className="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center">
                       <Sparkles className="w-4 h-4 text-white" />
                     </div>
-                    <span className="font-medium text-zinc-900">{t.aiAssistant || "AI Assistant"}</span>
+                    <span className="font-medium text-white">{t.aiAssistant || "AI Assistant"}</span>
                   </div>
                   
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <p className="text-xs text-zinc-600 font-medium">{t.generating || "Generating"}</p>
-                      <p className="text-xs text-zinc-600">{t.creatingSlides || "Creating professional slides with consistent branding and smart layouts..."}</p>
+                      <p className="text-xs text-slate-400 font-medium">{t.generating || "Generating"}</p>
+                      <p className="text-xs text-slate-400">{t.creatingSlides || "Creating professional slides with consistent branding and smart layouts..."}</p>
                     </div>
                     
                     <div className="space-y-2">
-                      <p className="text-xs text-zinc-600 font-medium">{t.slidesIncluded || "Slides included:"}</p>
-                      <ul className="text-xs text-zinc-600 space-y-1">
+                      <p className="text-xs text-slate-400 font-medium">{t.slidesIncluded || "Slides included:"}</p>
+                      <ul className="text-xs text-slate-400 space-y-1">
                         <li>• {t.titleSlideWithBranding || "Title slide with company branding"}</li>
                         <li>• {t.problemSolutionOverview || "Problem & solution overview"}</li>
                         <li>• {t.marketAnalysisCharts || "Market analysis with charts"}</li>
@@ -149,12 +149,12 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
             ].map((tab, i, arr) => (
               <div key={tab.label} className="flex items-center gap-2">
                 <span
-                  className={`text-sm font-medium transition cursor-default ${i === 0 ? "text-zinc-900 border-b-2 border-zinc-900 pb-1" : "text-zinc-600"}`}
+                  className={`text-sm font-medium transition cursor-default ${i === 0 ? "text-white border-b-2 border-cyan-400 pb-1" : "text-slate-400"}`}
                 >
                   {tab.label}
                 </span>
                 {i < arr.length - 1 && (
-                  <svg className="w-4 h-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 )}
@@ -162,12 +162,12 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
             ))}
           </div>
           
-          <p className="text-center text-zinc-600 mt-6">
+          <p className="text-center text-slate-400 mt-6">
             {t.createStunningPPT || "Create stunning PowerPoint presentations with just a prompt."}
           </p>
           <p className="text-center mt-2">
             <SignInButton mode="modal">
-              <button className="text-zinc-900 font-medium underline underline-offset-4 hover:text-zinc-600 transition" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
+              <button className="text-white font-medium underline underline-offset-4 hover:text-slate-300 transition" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
                 {t.tryPPTeraAI || "Try PPTera AI"}
               </button>
             </SignInButton>
@@ -179,7 +179,7 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
           {/* Feature 1 - Templates */}
           <SignInButton mode="modal">
             <button className="group block text-left w-full" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
-              <div className="rounded-xl overflow-hidden border border-zinc-200 bg-zinc-100 aspect-[4/3] mb-6 relative group-hover:border-zinc-300 group-hover:shadow-lg transition-all duration-300">
+              <div className="rounded-xl overflow-hidden border border-white/10 bg-white/[0.05] aspect-[4/3] mb-6 relative group-hover:border-white/25 group-hover:shadow-lg group-hover:shadow-black/40 transition-all duration-300">
                 <div className="absolute inset-0 p-3">
                   {/* Theme Preview Grid - 2 large on left, 3 stacked on right */}
                   <div className="grid grid-cols-5 gap-2 h-full">
@@ -284,13 +284,13 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
                   </div>
                 </div>
               </div>
-              <h3 className="text-lg font-semibold text-zinc-900 mb-2">
+              <h3 className="text-lg font-semibold text-white mb-2">
                 {t.professionalTemplatesUseCase || "Professional templates for every presentation."}
               </h3>
-              <p className="text-zinc-600">
+              <p className="text-slate-400">
                 {t.templatesDescription || "Choose from beautifully designed themes. Customize colors, fonts, and layouts to match your brand."}
               </p>
-              <span className="inline-block mt-4 text-zinc-900 font-medium underline underline-offset-4 group-hover:text-zinc-600 transition">
+              <span className="inline-block mt-4 text-white font-medium underline underline-offset-4 group-hover:text-slate-300 transition">
                 {t.exploreTemplates || "Explore templates"}
               </span>
             </button>
@@ -298,7 +298,7 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
 
           {/* Feature 2 - Get Inspired */}
           <LoadingLink href={localPath("/inspiration")} className="group block">
-            <div className="overflow-hidden border border-zinc-200 aspect-[4/3] mb-6 relative group-hover:border-zinc-300 transition">
+            <div className="overflow-hidden border border-white/10 aspect-[4/3] mb-6 relative group-hover:border-white/25 transition">
               {/* 3 Expandable Cards - Full height, no gap, sharp edges */}
               <div className="absolute inset-0 flex">
                 {INSPIRATION_IMAGES.map((img, i) => {
@@ -338,13 +338,13 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
                 })}
               </div>
             </div>
-            <h3 className="text-lg font-semibold text-zinc-900 mb-2">
+            <h3 className="text-lg font-semibold text-white mb-2">
               {t.getInspiredTitle || "Get inspired by amazing presentations."}
             </h3>
-            <p className="text-zinc-600">
+            <p className="text-slate-400">
               {t.getInspiredDesc || "Browse our gallery of AI-generated presentations. Find inspiration and see what's possible with PPTera."}
             </p>
-            <span className="inline-block mt-4 text-zinc-900 font-medium underline underline-offset-4 group-hover:text-zinc-600 transition">
+            <span className="inline-block mt-4 text-white font-medium underline underline-offset-4 group-hover:text-slate-300 transition">
               {t.exploreInspiration || "Explore inspiration"}
             </span>
           </LoadingLink>
@@ -353,18 +353,18 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
         {/* Ship Products Section */}
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
-            <h2 className="text-[2.75rem] leading-[1.15] font-semibold tracking-tight text-zinc-900 lg:text-[3.25rem]">
+            <h2 className="text-[2.75rem] leading-[1.15] font-semibold tracking-tight text-white lg:text-[3.25rem]">
               {t.exportShareTitle || "Export and share your way"}
             </h2>
             
             <div className="mt-12 space-y-8">
               {/* Feature Item */}
-              <LoadingLink href={localPath("/prompt-guide")} className="group block border-b border-zinc-200 pb-8">
+              <LoadingLink href={localPath("/prompt-guide")} className="group block border-b border-white/10 pb-8">
                 <div className="flex items-start gap-3">
-                  <Sparkles className="w-5 h-5 text-zinc-900 mt-0.5" />
+                  <Sparkles className="w-5 h-5 text-white mt-0.5" />
                   <div>
-                    <h3 className="font-semibold text-zinc-900 mb-2">{t.exportToPPT || "Export to PowerPoint, PDF, or Google Slides"}</h3>
-                    <p className="text-zinc-600 text-sm">
+                    <h3 className="font-semibold text-white mb-2">{t.exportToPPT || "Export to PowerPoint, PDF, or Google Slides"}</h3>
+                    <p className="text-slate-400 text-sm">
                       {t.exportToPPTDesc || "Download your presentations in any format. Perfect compatibility with Microsoft PowerPoint and Google Slides."}
                     </p>
                   </div>
@@ -372,12 +372,12 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
               </LoadingLink>
 
               {/* Feature Item */}
-              <div className="group block border-b border-zinc-200 pb-8">
+              <div className="group block border-b border-white/10 pb-8">
                 <SignInButton mode="modal">
                   <button className="flex items-start gap-3 text-left w-full" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
-                    <Wand2 className="w-5 h-5 text-zinc-900 mt-0.5" />
+                    <Wand2 className="w-5 h-5 text-white mt-0.5" />
                     <div>
-                      <h3 className="font-semibold text-zinc-900 mb-2 group-hover:text-zinc-600 transition">{t.shareWithLink || "Share with a link or embed anywhere"}</h3>
+                      <h3 className="font-semibold text-white mb-2 group-hover:text-slate-300 transition">{t.shareWithLink || "Share with a link or embed anywhere"}</h3>
                     </div>
                   </button>
                 </SignInButton>
@@ -387,9 +387,9 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
               <div className="group block">
                 <SignInButton mode="modal">
                   <button className="flex items-start gap-3 text-left w-full" style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
-                    <Share2 className="w-5 h-5 text-zinc-900 mt-0.5" />
+                    <Share2 className="w-5 h-5 text-white mt-0.5" />
                     <div>
-                      <h3 className="font-semibold text-zinc-900 mb-2 group-hover:text-zinc-600 transition">{t.presentDirectly || "Present directly from PPTera"}</h3>
+                      <h3 className="font-semibold text-white mb-2 group-hover:text-slate-300 transition">{t.presentDirectly || "Present directly from PPTera"}</h3>
                     </div>
                   </button>
                 </SignInButton>
@@ -399,10 +399,10 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
 
           {/* Right Side Demo */}
           <div className="relative">
-            <div className="rounded-2xl overflow-hidden border border-zinc-200 bg-white shadow-xl">
+            <div className="rounded-2xl overflow-hidden border border-white/10 bg-white/[0.04] shadow-2xl shadow-black/40">
               {/* Chat Interface */}
-              <div className="p-6 border-b border-zinc-200">
-                <p className="text-sm text-zinc-600">
+              <div className="p-6 border-b border-white/10">
+                <p className="text-sm text-slate-400">
                   {t.generatingPresentation || "Generating your presentation with professional design and smart layouts..."}
                 </p>
                 <div className="mt-4 space-y-2">
@@ -413,14 +413,14 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
                     t.progressGeneratingCharts || "Generating charts"
                   ].map((item, i) => (
                     <div key={i} className="flex items-center gap-2 text-sm">
-                      <span className="text-zinc-400">›</span>
-                      <span className="text-zinc-600">{item}</span>
+                      <span className="text-slate-500">›</span>
+                      <span className="text-slate-400">{item}</span>
                       <span className="text-emerald-500">✓</span>
                     </div>
                   ))}
                 </div>
-                <div className="mt-6 p-4 bg-zinc-50 rounded-lg">
-                  <p className="text-sm text-zinc-600">{t.presentationReady || "Your presentation is ready! Export to PPTX or share with a link."}</p>
+                <div className="mt-6 p-4 bg-white/[0.03] rounded-lg">
+                  <p className="text-sm text-slate-400">{t.presentationReady || "Your presentation is ready! Export to PPTX or share with a link."}</p>
                 </div>
               </div>
             </div>

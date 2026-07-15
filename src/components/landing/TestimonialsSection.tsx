@@ -18,7 +18,7 @@ export function TestimonialsSection({ t }: TestimonialsSectionProps) {
         {/* Quote - Very Big with extra thick stroke */}
         <div className="grid lg:grid-cols-[3fr_1fr] gap-16 items-start">
           <blockquote 
-            className="text-[2.5rem] leading-[1.2] font-black text-zinc-900 lg:text-[3.5rem] xl:text-[4rem]"
+            className="text-[2.5rem] leading-[1.2] font-black text-white lg:text-[3.5rem] xl:text-[4rem]"
             style={{ 
               WebkitTextStroke: '1.5px currentColor',
               paintOrder: 'stroke fill'
@@ -30,10 +30,10 @@ export function TestimonialsSection({ t }: TestimonialsSectionProps) {
           <div className="flex items-center gap-4 lg:justify-end">
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="text-zinc-900">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="text-cyan-300">
                   <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor"/>
                 </svg>
-                <span className="text-lg font-medium text-zinc-900">Canvelete</span>
+                <span className="text-lg font-medium text-slate-200">Canvelete</span>
               </div>
               <div className="flex items-center gap-4">
                 <img 
@@ -44,8 +44,8 @@ export function TestimonialsSection({ t }: TestimonialsSectionProps) {
                   className="w-16 h-16 rounded-full object-cover"
                 />
                 <div>
-                  <p className="text-xl font-semibold text-zinc-900">Amanuel Garomsa</p>
-                  <p className="text-lg text-zinc-500">CEO of Canvelete</p>
+                  <p className="text-xl font-semibold text-white">Amanuel Garomsa</p>
+                  <p className="text-lg text-slate-500">CEO of Canvelete</p>
                 </div>
               </div>
             </div>

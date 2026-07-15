@@ -9,7 +9,7 @@ interface TemplatesSectionProps {
 
 export function TemplatesSection({ t }: TemplatesSectionProps) {
   return (
-    <section className="bg-zinc-900 pt-20 pb-1 px-6 lg:px-8">
+    <section className="border-t border-white/10 bg-white/[0.03] pt-20 pb-1 px-6 lg:px-8">
       <div className="mx-auto max-w-[1400px]">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-12">
