@@ -484,8 +484,9 @@ export async function POST(request: Request) {
           // RANDOM STYLE WITHIN THE FAMILY
           // Once the family (category) is decided — deterministically or via
           // the LLM catalog — the specific layout inside it is chosen at
-          // RANDOM among styles whose item capacity fits this slide, never
-          // repeating the previous slide's style. Applies to content slides.
+          // RANDOM among styles whose item capacity fits this slide, weighted
+          // toward styles whose idealItems match the slide's item count, and
+          // never repeating the previous slide's style. Content slides only.
           // ==========================================
           if (transformedSlide.type !== "title") {
             const styleItemCount =

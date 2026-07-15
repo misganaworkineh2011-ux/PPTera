@@ -6,6 +6,12 @@
  * a 1-quote hero layout must not receive four testimonials, a 2x2 matrix
  * wants exactly four items. The immediately preceding slide's style is
  * excluded so decks never show the same style twice in a row.
+ *
+ * The draw is WEIGHTED toward each style's idealItems match: a style whose
+ * ideal count equals the slide's item count is twice as likely as one that is
+ * off by one, four times as likely as off by two (weight = 0.5^distance).
+ * Every capacity-fitting style remains possible — this shapes variety, it
+ * doesn't eliminate it.
  */
 
 import { stylesForCategory, type StyleCatalogEntry } from "~/lib/layouts/style-catalog";
@@ -49,6 +55,18 @@ export function pickRandomStyle(category: string, opts: RandomStyleOptions = {})
     if (without.length > 0) candidates = without;
   }
 
-  const idx = Math.min(candidates.length - 1, Math.floor(rng() * candidates.length));
-  return candidates[idx]!.id;
+  // Weighted draw: styles whose idealItems match the slide's item count are
+  // favored (halving per step of distance). Without an item count, uniform.
+  const weightFor = (s: StyleCatalogEntry) =>
+    typeof itemCount === "number" && itemCount > 0
+      ? Math.pow(0.5, Math.abs(s.idealItems - itemCount))
+      : 1;
+  const weights = candidates.map(weightFor);
+  const total = weights.reduce((a, b) => a + b, 0);
+  let roll = rng() * total;
+  for (let i = 0; i < candidates.length; i++) {
+    roll -= weights[i]!;
+    if (roll <= 0) return candidates[i]!.id;
+  }
+  return candidates[candidates.length - 1]!.id;
 }
