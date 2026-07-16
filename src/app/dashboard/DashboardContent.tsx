@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
-import { Filter, Grid, List as ListIcon, MoreHorizontal, Upload, Globe, Lock, Share2, Edit3, Copy, Trash2, Link2, Loader2, Heart, Sparkles, ListTree, ArrowUpRight } from "lucide-react";
+import { Filter, Grid, List as ListIcon, MoreHorizontal, Upload, Globe, Lock, Share2, Edit3, Copy, Trash2, Link2, Loader2, Heart, Sparkles, ListTree, ArrowUpRight, ArrowUpDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useNavigation } from "~/contexts/NavigationContext";
 import Image from "next/image";
@@ -46,6 +46,14 @@ interface DashboardContentProps {
 
 type ViewMode = "grid" | "list";
 type FilterMode = "all" | "favorites" | "public" | "private";
+type SortMode = "edited" | "name" | "oldest" | "favorites";
+
+const SORT_LABELS: Record<SortMode, string> = {
+  edited: "Last edited",
+  name: "Name A–Z",
+  oldest: "Oldest first",
+  favorites: "Favorites first",
+};
 
 // Deterministic aurora gradient + monogram for decks without a thumbnail —
 // each deck gets a stable, branded cover instead of a washed-out logo.
@@ -80,6 +88,8 @@ export default function DashboardContent({ presentations: propPresentations, use
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [filterMode, setFilterMode] = useState<FilterMode>("all");
   const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [sortMode, setSortMode] = useState<SortMode>("edited");
+  const [showSortMenu, setShowSortMenu] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
   const [showShareModal, setShowShareModal] = useState<string | null>(null);
@@ -131,8 +141,16 @@ export default function DashboardContent({ presentations: propPresentations, use
     if (filterMode === "favorites") filtered = filtered.filter(p => p.isPinned);
     else if (filterMode === "public") filtered = filtered.filter(p => p.isPublic);
     else if (filterMode === "private") filtered = filtered.filter(p => !p.isPublic);
-    return filtered;
-  }, [presentations, filterMode, searchQuery]);
+
+    const byEdited = (a: Presentation, b: Presentation) =>
+      new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+    const sorted = [...filtered];
+    if (sortMode === "edited") sorted.sort(byEdited);
+    else if (sortMode === "name") sorted.sort((a, b) => a.title.localeCompare(b.title));
+    else if (sortMode === "oldest") sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    else if (sortMode === "favorites") sorted.sort((a, b) => Number(b.isPinned) - Number(a.isPinned) || byEdited(a, b));
+    return sorted;
+  }, [presentations, filterMode, searchQuery, sortMode]);
 
   const optimisticUpdate = useCallback(<T extends Partial<Presentation>>(
     presId: string,
@@ -277,10 +295,20 @@ export default function DashboardContent({ presentations: propPresentations, use
       const target = event.target as HTMLElement;
       if (activeMenu && !target.closest('.menu-container')) setActiveMenu(null);
       if (showFilterMenu && !target.closest('.filter-menu-container')) setShowFilterMenu(false);
+      if (showSortMenu && !target.closest('.sort-menu-container')) setShowSortMenu(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [activeMenu, showFilterMenu]);
+  }, [activeMenu, showFilterMenu, showSortMenu]);
+
+  // Open a deck with client-side navigation: instant, keeps the dashboard
+  // mounted (no full page load), and shows the branded loading overlay.
+  const openPresentation = (e: React.MouseEvent, pres: Presentation) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return; // let new-tab clicks through
+    e.preventDefault();
+    startNavigating();
+    router.push(getPresentationUrl(pres.id, pres.title));
+  };
 
   const getThumbnail = (pres: Presentation) => {
     if (pres.thumbnailUrl && pres.thumbnailUrl.startsWith("http")) return pres.thumbnailUrl;
@@ -359,9 +387,11 @@ export default function DashboardContent({ presentations: propPresentations, use
       <div className="mb-4 flex flex-col gap-3">
         {/* Controls Bar */}
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/60 dark:border-zinc-800/60 pb-3">
+          <div className="flex items-center gap-2.5">
           <div className="relative filter-menu-container">
             <button
-              onClick={() => setShowFilterMenu(!showFilterMenu)}
+              type="button"
+              onClick={() => { setShowFilterMenu(!showFilterMenu); setShowSortMenu(false); }}
               className={`flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-[12px] font-black uppercase tracking-wider transition-all outline-none shadow-sm shadow-slate-200/50 dark:shadow-none hover:shadow-md ${
                 filterMode !== "all" 
                 ? "bg-[#06b6d4]/10 border-[#06b6d4] text-[#06b6d4]" 
@@ -385,6 +415,38 @@ export default function DashboardContent({ presentations: propPresentations, use
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Sort */}
+          <div className="relative sort-menu-container">
+            <button
+              type="button"
+              onClick={() => { setShowSortMenu(!showSortMenu); setShowFilterMenu(false); }}
+              className={`flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-[12px] font-black uppercase tracking-wider transition-all outline-none shadow-sm shadow-slate-200/50 dark:shadow-none hover:shadow-md ${
+                sortMode !== "edited"
+                ? "bg-[#06b6d4]/10 border-[#06b6d4] text-[#06b6d4]"
+                : "bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-white hover:border-[#06b6d4]"
+              }`}
+            >
+              <ArrowUpDown size={14} />
+              <span className="hidden sm:inline">{SORT_LABELS[sortMode]}</span>
+            </button>
+
+            {showSortMenu && (
+              <div className="absolute left-0 top-full z-20 mt-2 w-52 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-2 shadow-xl animate-in fade-in zoom-in-95 duration-200">
+                {(Object.keys(SORT_LABELS) as SortMode[]).map((mode) => (
+                  <button
+                    type="button"
+                    key={mode}
+                    onClick={() => { setSortMode(mode); setShowSortMenu(false); }}
+                    className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 text-[12px] font-black uppercase tracking-wider transition-colors ${sortMode === mode ? "bg-slate-900 text-white dark:bg-white dark:text-black" : "text-slate-500 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-900 dark:hover:text-white"}`}
+                  >
+                    {SORT_LABELS[mode]}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           </div>
 
           <div className="flex items-center rounded-2xl bg-white border border-slate-200 shadow-sm shadow-slate-200/50 dark:bg-zinc-900 dark:border-zinc-800 dark:shadow-none p-1">
@@ -436,6 +498,7 @@ export default function DashboardContent({ presentations: propPresentations, use
                 <a
                   key={pres.id}
                   href={getPresentationUrl(pres.id, pres.title)}
+                  onClick={(e) => openPresentation(e, pres)}
                   onContextMenu={(e) => {
                     e.preventDefault();
                     setMenuPosition({
@@ -483,8 +546,11 @@ export default function DashboardContent({ presentations: propPresentations, use
                     {/* Readability scrim */}
                     <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/25 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                    <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMenuAction("favorite", pres.id); }} className={`absolute top-3 right-3 p-2 rounded-xl backdrop-blur-md transition-all z-20 ${pres.isPinned ? "bg-amber-400 text-white shadow-lg shadow-amber-400/30" : "bg-white/85 dark:bg-black/50 text-slate-400 dark:text-zinc-300 opacity-0 group-hover:opacity-100 hover:text-amber-500 shadow-sm"}`}>
+                    <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMenuAction("favorite", pres.id); }} className={`absolute top-3 right-3 p-2 rounded-xl backdrop-blur-md transition-all z-20 ${pres.isPinned ? "bg-amber-400 text-white shadow-lg shadow-amber-400/30" : "bg-white/85 dark:bg-black/50 text-slate-400 dark:text-zinc-300 opacity-0 group-hover:opacity-100 hover:text-amber-500 shadow-sm"}`}>
                       <Heart size={16} className={pres.isPinned ? "fill-current" : ""} />
+                    </button>
+                    <button type="button" title="Share" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMenuAction("share", pres.id); }} className="absolute top-3 right-14 p-2 rounded-xl backdrop-blur-md transition-all z-20 bg-white/85 dark:bg-black/50 text-slate-400 dark:text-zinc-300 opacity-0 group-hover:opacity-100 hover:text-cyan-500 shadow-sm">
+                      <Share2 size={16} />
                     </button>
 
                     {/* Open affordance */}
@@ -510,7 +576,7 @@ export default function DashboardContent({ presentations: propPresentations, use
                         </span>
                       </div>
                       <div className="relative menu-container">
-                        <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (activeMenu === pres.id) { setActiveMenu(null); setMenuPosition(null); } else { const rect = e.currentTarget.getBoundingClientRect(); setMenuPosition({ top: rect.top - 50, left: rect.left - 180 }); setActiveMenu(pres.id); } }} className="p-2 -mr-2 rounded-xl text-slate-300 dark:text-zinc-500 opacity-0 group-hover:opacity-100 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all"><MoreHorizontal size={18} strokeWidth={2.5} /></button>
+                        <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (activeMenu === pres.id) { setActiveMenu(null); setMenuPosition(null); } else { const rect = e.currentTarget.getBoundingClientRect(); setMenuPosition({ top: rect.top - 50, left: rect.left - 180 }); setActiveMenu(pres.id); } }} className="p-2 -mr-2 rounded-xl text-slate-300 dark:text-zinc-500 opacity-0 group-hover:opacity-100 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all"><MoreHorizontal size={18} strokeWidth={2.5} /></button>
                       </div>
                     </div>
                   </div>
@@ -525,7 +591,7 @@ export default function DashboardContent({ presentations: propPresentations, use
         ) : (
           <div className="space-y-3">
             {filteredPresentations.map((pres, index) => (
-              <a key={pres.id} href={getPresentationUrl(pres.id, pres.title)} onContextMenu={(e) => { e.preventDefault(); setMenuPosition({ top: Math.min(window.innerHeight - 360, e.clientY), left: e.clientX }); setActiveMenu(pres.id); }} className="group flex items-center gap-5 rounded-2xl border border-slate-200/80 shadow-sm ring-1 ring-slate-900/5 bg-white p-3 transition-all duration-300 hover:border-cyan-400/40 hover:shadow-[0_12px_36px_-12px_rgba(8,15,35,0.3)] hover:-translate-y-0.5 dark:ring-0 dark:border-white/10 dark:shadow-none dark:bg-white/[0.04] dark:hover:bg-white/[0.06] cursor-pointer">
+              <a key={pres.id} href={getPresentationUrl(pres.id, pres.title)} onClick={(e) => openPresentation(e, pres)} onContextMenu={(e) => { e.preventDefault(); setMenuPosition({ top: Math.min(window.innerHeight - 360, e.clientY), left: e.clientX }); setActiveMenu(pres.id); }} className="group flex items-center gap-5 rounded-2xl border border-slate-200/80 shadow-sm ring-1 ring-slate-900/5 bg-white p-3 transition-all duration-300 hover:border-cyan-400/40 hover:shadow-[0_12px_36px_-12px_rgba(8,15,35,0.3)] hover:-translate-y-0.5 dark:ring-0 dark:border-white/10 dark:shadow-none dark:bg-white/[0.04] dark:hover:bg-white/[0.06] cursor-pointer">
                 <div className="w-24 h-16 sm:w-32 sm:h-20 flex-shrink-0 rounded-[14px] relative overflow-hidden border border-slate-100 dark:border-white/10">
                   {getThumbnail(pres) === "/logo.png" ? (
                     <div
@@ -541,7 +607,7 @@ export default function DashboardContent({ presentations: propPresentations, use
                 <div className="flex-1 min-w-0 py-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h3 className="text-[15px] font-bold text-slate-900 dark:text-white truncate group-hover:text-[#06b6d4] transition-colors">{pres.title}</h3>
-                    <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMenuAction("favorite", pres.id); }} className={`p-1.5 rounded-lg transition-all ${pres.isPinned ? "text-yellow-500 bg-yellow-50" : "text-slate-300 hover:text-yellow-500 opacity-0 group-hover:opacity-100"}`}>
+                    <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMenuAction("favorite", pres.id); }} className={`p-1.5 rounded-lg transition-all ${pres.isPinned ? "text-yellow-500 bg-yellow-50" : "text-slate-300 hover:text-yellow-500 opacity-0 group-hover:opacity-100"}`}>
                       <Heart size={16} className={pres.isPinned ? "fill-current" : ""} />
                     </button>
                   </div>
@@ -555,7 +621,7 @@ export default function DashboardContent({ presentations: propPresentations, use
                   </div>
                 </div>
                 <div className="relative menu-container px-2">
-                  <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (activeMenu === pres.id) { setActiveMenu(null); setMenuPosition(null); } else { const rect = e.currentTarget.getBoundingClientRect(); setMenuPosition({ top: rect.top - 50, left: rect.left - 180 }); setActiveMenu(pres.id); } }} className="p-2 rounded-xl text-slate-300 dark:text-zinc-600 opacity-0 group-hover:opacity-100 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all"><MoreHorizontal size={20} strokeWidth={2.5} /></button>
+                  <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (activeMenu === pres.id) { setActiveMenu(null); setMenuPosition(null); } else { const rect = e.currentTarget.getBoundingClientRect(); setMenuPosition({ top: rect.top - 50, left: rect.left - 180 }); setActiveMenu(pres.id); } }} className="p-2 rounded-xl text-slate-300 dark:text-zinc-600 opacity-0 group-hover:opacity-100 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all"><MoreHorizontal size={20} strokeWidth={2.5} /></button>
                 </div>
               </a>
             ))}
