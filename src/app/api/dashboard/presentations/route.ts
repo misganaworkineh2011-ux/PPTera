@@ -24,8 +24,21 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Build where clause
-    const where: Record<string, unknown> = { userId: user.id };
+    // Build where clause. Trash view lists soft-deleted decks (and lazily
+    // purges anything older than 30 days); every other view excludes them.
+    const trashed = searchParams.get("trashed") === "1";
+    if (trashed) {
+      await db.presentation.deleteMany({
+        where: {
+          userId: user.id,
+          deletedAt: { lt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
+        },
+      });
+    }
+    const where: Record<string, unknown> = {
+      userId: user.id,
+      deletedAt: trashed ? { not: null } : null,
+    };
     
     if (filter === "favorites") {
       where.isPinned = true;
@@ -55,10 +68,15 @@ export async function GET(req: Request) {
         isPinned: true,
         createdAt: true,
         updatedAt: true,
-        slides: true,
+        deletedAt: true,
+        thumbnailUrl: true,
         shareToken: true,
         outlineId: true,
-        // Don't include heavy fields like content unless needed
+        tags: true,
+        viewCount: true,
+        slideCount: true,
+        previewImages: true,
+        // Denormalized meta replaces the heavy slides JSON
       },
     });
 

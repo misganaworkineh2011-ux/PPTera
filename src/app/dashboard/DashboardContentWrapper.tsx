@@ -15,6 +15,10 @@ interface Presentation {
   thumbnailUrl: string | null;
   shareToken?: string | null;
   outlineId?: string | null;
+  tags?: string[];
+  viewCount?: number;
+  slideCount?: number;
+  previewImages?: string[];
 }
 
 interface DashboardContentWrapperProps {

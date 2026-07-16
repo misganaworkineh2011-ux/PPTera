@@ -30,10 +30,18 @@ export async function PATCH(
       );
     }
 
-    // Toggle isPinned
+    // Toggle by default; accept an explicit {pinned} body for idempotent
+    // bulk operations.
+    let nextPinned = !presentation.isPinned;
+    try {
+      const body = await request.json();
+      if (typeof body?.pinned === "boolean") nextPinned = body.pinned;
+    } catch {
+      // no body - plain toggle
+    }
     const updated = await db.presentation.update({
       where: { id },
-      data: { isPinned: !presentation.isPinned },
+      data: { isPinned: nextPinned },
     });
 
     return NextResponse.json({ success: true, isPinned: updated.isPinned });

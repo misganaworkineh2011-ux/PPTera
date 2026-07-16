@@ -30,21 +30,27 @@ export async function DELETE(
       );
     }
 
-    // Log activity before deletion
+    const permanent = request.nextUrl.searchParams.get("permanent") === "1";
+
     await db.activity.create({
       data: {
         userId: authUser.id,
         type: "delete",
-        description: `Deleted presentation "${presentation.title}"`,
+        description: permanent
+          ? `Permanently deleted presentation "${presentation.title}"`
+          : `Moved presentation "${presentation.title}" to trash`,
       },
     });
 
-    // Delete presentation (cascade will handle related records)
-    await db.presentation.delete({
-      where: { id },
-    });
+    if (permanent) {
+      // Hard delete (cascade handles related records)
+      await db.presentation.delete({ where: { id } });
+    } else {
+      // Soft delete: restorable from Trash for 30 days
+      await db.presentation.update({ where: { id }, data: { deletedAt: new Date() } });
+    }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, permanent });
   } catch (error) {
     console.error("Error deleting presentation:", error);
     return NextResponse.json(

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/server/db";
 import { requireAuth } from "~/lib/clerk-server";
+import { computeDeckMeta } from "~/lib/presentation/deck-meta";
 
 export async function PATCH(
   request: NextRequest,
@@ -81,7 +82,7 @@ export async function PATCH(
     // Update slides
     const updated = await db.presentation.update({
       where: { id },
-      data: { slides: slides },
+      data: { slides: slides, ...computeDeckMeta(slides) },
     });
 
     return NextResponse.json({ success: true, slides: updated.slides });

@@ -23,6 +23,7 @@ import { selectLayout, type LayoutSelectionContext } from "~/lib/presentation/sm
 import { selectLayoutFromCatalog } from "~/lib/presentation/catalog-layout-selector";
 import { pickRandomStyle } from "~/lib/presentation/random-style-picker";
 import { buildDeckArtDirection } from "~/lib/presentation/generate-ai-image";
+import { computeDeckMeta } from "~/lib/presentation/deck-meta";
 
 interface SlideInput {
   type: "title" | "content";
@@ -685,7 +686,7 @@ export async function POST(request: Request) {
           try {
             await db.presentation.update({
               where: { id: presentation.id },
-              data: { slides: JSON.parse(JSON.stringify(presentationSlides)) },
+              data: { slides: JSON.parse(JSON.stringify(presentationSlides)), ...computeDeckMeta(presentationSlides) },
             });
           } catch (persistError) {
             console.error(
@@ -746,7 +747,7 @@ export async function POST(request: Request) {
               try {
                 await db.presentation.update({
                   where: { id: presentation.id },
-                  data: { slides: JSON.parse(JSON.stringify(presentationSlides)) },
+                  data: { slides: JSON.parse(JSON.stringify(presentationSlides)), ...computeDeckMeta(presentationSlides) },
                 });
               } catch (persistError) {
                 console.error(

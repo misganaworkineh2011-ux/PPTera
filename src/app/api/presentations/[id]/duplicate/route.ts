@@ -10,6 +10,15 @@ export async function POST(
     const authUser = await requireAuth();
     const { id } = params;
 
+    // Optional custom title from the rename-on-duplicate dialog
+    let requestedTitle = "";
+    try {
+      const body = await request.json();
+      if (typeof body?.title === "string") requestedTitle = body.title.trim().slice(0, 160);
+    } catch {
+      // No/invalid body - fall back to "(Copy)"
+    }
+
     // Get the original presentation
     const original = await db.presentation.findUnique({
       where: { id },
@@ -20,6 +29,9 @@ export async function POST(
         content: true,
         slides: true,
         thumbnailUrl: true,
+        tags: true,
+        slideCount: true,
+        previewImages: true,
       },
     });
 
@@ -41,11 +53,14 @@ export async function POST(
     const duplicate = await db.presentation.create({
       data: {
         userId: authUser.id,
-        title: `${original.title} (Copy)`,
+        title: requestedTitle || `${original.title} (Copy)`,
         description: original.description,
         content: original.content ?? {},
         slides: original.slides ?? [],
         thumbnailUrl: original.thumbnailUrl,
+        tags: original.tags,
+        slideCount: original.slideCount,
+        previewImages: original.previewImages,
         isPinned: false,
         isPublic: false,
       },

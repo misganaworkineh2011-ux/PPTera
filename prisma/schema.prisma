@@ -60,9 +60,17 @@ model Presentation {
   updatedAt      DateTime        @updatedAt
   isPublic       Boolean         @default(false)
   shareToken     String?         @unique
-  sharePassword  String?         
-  shareExpiresAt DateTime?       
+  sharePassword  String?
+  shareExpiresAt DateTime?
   viewCount      Int             @default(0)
+  // Soft delete: non-null = in trash (restorable for 30 days, then purged)
+  deletedAt      DateTime?
+  // User-defined organization tags
+  tags           String[]        @default([])
+  // Denormalized deck meta, maintained on save (dashboard cards read these
+  // instead of loading the heavy slides JSON)
+  slideCount     Int             @default(0)
+  previewImages  String[]        @default([])
   activities     Activity[]
   charts         Chart[]
   collaborations Collaboration[]
@@ -76,6 +84,7 @@ model Presentation {
 
   @@index([userId, createdAt(sort: Desc)])
   @@index([userId, isPinned])
+  @@index([userId, deletedAt])
   @@index([shareToken])
   @@index([outlineId])
   @@map("presentation")

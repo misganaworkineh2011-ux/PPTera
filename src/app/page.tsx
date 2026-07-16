@@ -20,7 +20,7 @@ async function PresentationsGrid({
 }) {
   const [presentations, totalCount] = await Promise.all([
     db.presentation.findMany({
-      where: { userId },
+      where: { userId, deletedAt: null },
       orderBy: { createdAt: "desc" },
       take: 50,
       select: {
@@ -32,9 +32,14 @@ async function PresentationsGrid({
         updatedAt: true,
         thumbnailUrl: true,
         shareToken: true,
+        outlineId: true,
+        tags: true,
+        viewCount: true,
+        slideCount: true,
+        previewImages: true,
       },
     }),
-    db.presentation.count({ where: { userId } }),
+    db.presentation.count({ where: { userId, deletedAt: null } }),
   ]);
 
   return (

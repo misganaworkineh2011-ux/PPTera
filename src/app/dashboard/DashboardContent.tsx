@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
-import { Filter, Grid, List as ListIcon, MoreHorizontal, Upload, Globe, Lock, Share2, Edit3, Copy, Trash2, Link2, Loader2, Heart, Sparkles, ListTree, ArrowUpRight, ArrowUpDown } from "lucide-react";
+import { Filter, Grid, List as ListIcon, MoreHorizontal, Upload, Globe, Lock, Share2, Edit3, Copy, Trash2, Link2, Loader2, Heart, Sparkles, ListTree, ArrowUpRight, ArrowUpDown, Check, Eye, Layers, RotateCcw, Tag, LayoutTemplate, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useNavigation } from "~/contexts/NavigationContext";
 import Image from "next/image";
@@ -26,6 +26,11 @@ interface Presentation {
   thumbnailUrl: string | null;
   shareToken?: string | null;
   outlineId?: string | null;
+  tags?: string[];
+  viewCount?: number;
+  slideCount?: number;
+  previewImages?: string[];
+  deletedAt?: string | Date | null;
 }
 
 interface PaginationInfo {
@@ -77,6 +82,20 @@ function deckInitials(title: string): string {
   return letters.join("") || "P";
 }
 
+function relativeTime(d: Date | string): string {
+  const ms = Date.now() - new Date(d).getTime();
+  const m = Math.floor(ms / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const days = Math.floor(h / 24);
+  if (days < 30) return `${days}d ago`;
+  const mo = Math.floor(days / 30);
+  if (mo < 12) return `${mo}mo ago`;
+  return `${Math.floor(mo / 12)}y ago`;
+}
+
 export default function DashboardContent({ presentations: propPresentations, userName, searchQuery = "", pagination, onLoadMore, isLoadingMore }: DashboardContentProps) {
   const { user: clerkUser } = useUser();
   const { user: dashboardUser } = useDashboard();
@@ -98,6 +117,22 @@ export default function DashboardContent({ presentations: propPresentations, use
   const [loadingAction, setLoadingAction] = useState<{ id: string; action: string } | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState<string | null>(null);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [activeTag, setActiveTag] = useState<string | null>(null);
+  const [showTrash, setShowTrash] = useState(false);
+  const [trashItems, setTrashItems] = useState<Presentation[] | null>(null);
+  const [trashLoading, setTrashLoading] = useState(false);
+  const [permanentDeleteId, setPermanentDeleteId] = useState<string | null>(null);
+  const [showTagsDialog, setShowTagsDialog] = useState<string | null>(null); // pres id or "__bulk__"
+  const [tagsDraft, setTagsDraft] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
+  const [showDuplicateDialog, setShowDuplicateDialog] = useState<string | null>(null);
+  const [duplicateTitle, setDuplicateTitle] = useState("");
+  const [hoverPreview, setHoverPreview] = useState<{ id: string; idx: number } | null>(null);
+  const hoverTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const cardRefs = useRef<Map<string, HTMLAnchorElement | null>>(new Map());
   const { language } = useLanguage();
   const t = dashboardTranslations[language] || dashboardTranslations.en;
   
@@ -141,6 +176,7 @@ export default function DashboardContent({ presentations: propPresentations, use
     if (filterMode === "favorites") filtered = filtered.filter(p => p.isPinned);
     else if (filterMode === "public") filtered = filtered.filter(p => p.isPublic);
     else if (filterMode === "private") filtered = filtered.filter(p => !p.isPublic);
+    if (activeTag) filtered = filtered.filter(p => (p.tags ?? []).includes(activeTag));
 
     const byEdited = (a: Presentation, b: Presentation) =>
       new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
@@ -150,7 +186,198 @@ export default function DashboardContent({ presentations: propPresentations, use
     else if (sortMode === "oldest") sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     else if (sortMode === "favorites") sorted.sort((a, b) => Number(b.isPinned) - Number(a.isPinned) || byEdited(a, b));
     return sorted;
-  }, [presentations, filterMode, searchQuery, sortMode]);
+  }, [presentations, filterMode, searchQuery, sortMode, activeTag]);
+
+  const allTags = useMemo(() => {
+    const set = new Set<string>();
+    for (const pres of presentations) for (const tag of pres.tags ?? []) set.add(tag);
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [presentations]);
+
+  // ---- Trash: load soft-deleted decks when the trash view opens ----
+  useEffect(() => {
+    if (!showTrash) return;
+    let cancelled = false;
+    setTrashLoading(true);
+    fetch("/api/dashboard/presentations?trashed=1&limit=50")
+      .then((r) => r.json())
+      .then((json) => { if (!cancelled) setTrashItems(json.data ?? []); })
+      .catch(() => { if (!cancelled) setTrashItems([]); })
+      .finally(() => { if (!cancelled) setTrashLoading(false); });
+    return () => { cancelled = true; };
+  }, [showTrash]);
+
+  const handleRestore = async (presId: string) => {
+    const item = trashItems?.find((t) => t.id === presId);
+    setTrashItems((prev) => (prev ?? []).filter((t) => t.id !== presId));
+    try {
+      const res = await fetch(`/api/presentations/${presId}/restore`, { method: "POST" });
+      if (!res.ok) throw new Error();
+      if (item) setPresentations((prev) => [{ ...item, deletedAt: null }, ...prev]);
+      toast.success("Presentation restored");
+    } catch {
+      if (item) setTrashItems((prev) => [item, ...(prev ?? [])]);
+      toast.error("Could not restore presentation");
+    }
+  };
+
+  const handlePermanentDelete = async (presId: string) => {
+    setPermanentDeleteId(null);
+    const item = trashItems?.find((t) => t.id === presId);
+    setTrashItems((prev) => (prev ?? []).filter((t) => t.id !== presId));
+    try {
+      const res = await fetch(`/api/presentations/${presId}?permanent=1`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+      toast.success("Deleted forever");
+    } catch {
+      if (item) setTrashItems((prev) => [item, ...(prev ?? [])]);
+      toast.error("Could not delete presentation");
+    }
+  };
+
+  // ---- Bulk selection ----
+  const toggleSelected = (presId: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(presId)) next.delete(presId); else next.add(presId);
+      return next;
+    });
+  };
+
+  const exitSelectMode = () => { setSelectMode(false); setSelectedIds(new Set()); };
+
+  const bulkRun = async (action: "favorite" | "private" | "trash") => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    setBulkBusy(true);
+    try {
+      if (action === "favorite") {
+        await Promise.all(ids.map((id) => fetch(`/api/presentations/${id}/favorite`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pinned: true }),
+        })));
+        setPresentations((prev) => prev.map((pres) => selectedIds.has(pres.id) ? { ...pres, isPinned: true } : pres));
+        toast.success(`${ids.length} added to favorites`);
+      } else if (action === "private") {
+        await Promise.all(ids.map((id) => fetch(`/api/presentations/${id}/visibility`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ isPublic: false }),
+        })));
+        setPresentations((prev) => prev.map((pres) => selectedIds.has(pres.id) ? { ...pres, isPublic: false } : pres));
+        toast.success(`${ids.length} made private`);
+      } else {
+        await Promise.all(ids.map((id) => fetch(`/api/presentations/${id}`, { method: "DELETE" })));
+        setPresentations((prev) => prev.filter((pres) => !selectedIds.has(pres.id)));
+        toast.success(`${ids.length} moved to trash`);
+      }
+      exitSelectMode();
+    } catch {
+      toast.error("Some items could not be updated");
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  // ---- Tags dialog ----
+  const openTagsDialog = (presId: string) => {
+    const pres = presentations.find((x) => x.id === presId);
+    setTagsDraft(presId === "__bulk__" ? [] : [...(pres?.tags ?? [])]);
+    setTagInput("");
+    setShowTagsDialog(presId);
+  };
+
+  const commitTagInput = () => {
+    const tag = tagInput.trim().slice(0, 24);
+    if (tag && !tagsDraft.includes(tag) && tagsDraft.length < 8) setTagsDraft((prev) => [...prev, tag]);
+    setTagInput("");
+  };
+
+  const saveTags = async () => {
+    const target = showTagsDialog;
+    if (!target) return;
+    const ids = target === "__bulk__" ? Array.from(selectedIds) : [target];
+    setShowTagsDialog(null);
+    try {
+      await Promise.all(ids.map(async (id) => {
+        const existing = target === "__bulk__" ? (presentations.find((x) => x.id === id)?.tags ?? []) : [];
+        const merged = Array.from(new Set([...existing, ...tagsDraft])).slice(0, 8);
+        const res = await fetch(`/api/presentations/${id}/tags`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tags: target === "__bulk__" ? merged : tagsDraft }),
+        });
+        if (!res.ok) throw new Error();
+        setPresentations((prev) => prev.map((pres) => pres.id === id ? { ...pres, tags: target === "__bulk__" ? merged : tagsDraft } : pres));
+      }));
+      toast.success("Tags updated");
+      if (target === "__bulk__") exitSelectMode();
+    } catch {
+      toast.error("Could not update tags");
+    }
+  };
+
+  // ---- Rename-on-duplicate ----
+  const executeDuplicate = async (presId: string, title: string) => {
+    setShowDuplicateDialog(null);
+    try {
+      setLoadingAction({ id: presId, action: "duplicate" });
+      const response = await fetch(`/api/presentations/${presId}/duplicate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title }),
+      });
+      if (!response.ok) throw new Error();
+      const data = await response.json();
+      setPresentations((prev) => [data.presentation, ...prev]);
+      toast.success(t.presentationDuplicated || "Presentation duplicated!");
+    } catch {
+      toast.error("Could not duplicate presentation");
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  // ---- Hover slide preview ----
+  const previewSrcs = (pres: Presentation): string[] => {
+    const base = pres.thumbnailUrl && pres.thumbnailUrl.startsWith("http") ? [pres.thumbnailUrl] : [];
+    const all = [...base, ...(pres.previewImages ?? [])].filter((u, i, arr) => u.startsWith("http") && arr.indexOf(u) === i);
+    return all.slice(0, 4);
+  };
+
+  const startHoverPreview = (pres: Presentation) => {
+    const srcs = previewSrcs(pres);
+    if (srcs.length < 2) return;
+    setHoverPreview({ id: pres.id, idx: 0 });
+    if (hoverTimerRef.current) clearInterval(hoverTimerRef.current);
+    hoverTimerRef.current = setInterval(() => {
+      setHoverPreview((prev) => (prev && prev.id === pres.id ? { id: pres.id, idx: prev.idx + 1 } : prev));
+    }, 900);
+  };
+
+  const stopHoverPreview = () => {
+    if (hoverTimerRef.current) { clearInterval(hoverTimerRef.current); hoverTimerRef.current = null; }
+    setHoverPreview(null);
+  };
+
+  useEffect(() => () => { if (hoverTimerRef.current) clearInterval(hoverTimerRef.current); }, []);
+
+  // ---- Keyboard navigation across cards ----
+  const focusCard = (presId: string | undefined) => {
+    if (!presId) return;
+    cardRefs.current.get(presId)?.focus();
+  };
+
+  const handleCardKeyDown = (e: React.KeyboardEvent, pres: Presentation, index: number) => {
+    const cols = viewMode === "grid" ? 3 : 1;
+    if (e.key === "ArrowRight") { e.preventDefault(); focusCard(filteredPresentations[index + 1]?.id); }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); focusCard(filteredPresentations[index - 1]?.id); }
+    else if (e.key === "ArrowDown") { e.preventDefault(); focusCard(filteredPresentations[index + cols]?.id); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); focusCard(filteredPresentations[index - cols]?.id); }
+    else if (e.key.toLowerCase() === "f") { e.preventDefault(); handleMenuAction("favorite", pres.id); }
+    else if (e.key === "Delete") { e.preventDefault(); setShowDeleteDialog(pres.id); }
+  };
 
   const optimisticUpdate = useCallback(<T extends Partial<Presentation>>(
     presId: string,
@@ -213,18 +440,38 @@ export default function DashboardContent({ presentations: propPresentations, use
             rollbackFavorite();
           });
         break;
-      case "duplicate":
+      case "duplicate": {
+        setActiveMenu(null);
+        setMenuPosition(null);
+        const dupPres = presentations.find(x => x.id === presId);
+        setTimeout(() => {
+          setDuplicateTitle(`${dupPres?.title ?? "Presentation"} (Copy)`);
+          setShowDuplicateDialog(presId);
+        }, 50);
+        break;
+      }
+      case "tags":
+        setActiveMenu(null);
+        setMenuPosition(null);
+        setTimeout(() => openTagsDialog(presId), 50);
+        break;
+      case "template":
         setActiveMenu(null);
         setMenuPosition(null);
         try {
-          setLoadingAction({ id: presId, action: "duplicate" });
-          const response = await fetch(`/api/presentations/${presId}/duplicate`, { method: "POST" });
-          if (response.ok) {
-            const data = await response.json();
-            setPresentations(prev => [data.presentation, ...prev]);
-            toast.success(t.presentationDuplicated || "Presentation duplicated!");
-          }
-        } catch (error) { console.error(error); } finally { setLoadingAction(null); }
+          setLoadingAction({ id: presId, action: "template" });
+          const res = await fetch("/api/templates", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ presentationId: presId }),
+          });
+          if (!res.ok) throw new Error();
+          toast.success("Saved as a template");
+        } catch {
+          toast.error("Could not save as template");
+        } finally {
+          setLoadingAction(null);
+        }
         break;
       case "copyLink":
         setActiveMenu(null);
@@ -284,7 +531,7 @@ export default function DashboardContent({ presentations: propPresentations, use
     try {
       const response = await fetch(`/api/presentations/${presId}`, { method: "DELETE" });
       if (!response.ok) throw new Error();
-      toast.success(t.presentationDeleted || "Deleted");
+      toast.success("Moved to trash - restore it anytime within 30 days");
     } catch (error) {
       rollbackDelete();
     }
@@ -304,6 +551,11 @@ export default function DashboardContent({ presentations: propPresentations, use
   // Open a deck with client-side navigation: instant, keeps the dashboard
   // mounted (no full page load), and shows the branded loading overlay.
   const openPresentation = (e: React.MouseEvent, pres: Presentation) => {
+    if (selectMode) {
+      e.preventDefault();
+      toggleSelected(pres.id);
+      return;
+    }
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return; // let new-tab clicks through
     e.preventDefault();
     startNavigating();
@@ -311,7 +563,11 @@ export default function DashboardContent({ presentations: propPresentations, use
   };
 
   const getThumbnail = (pres: Presentation) => {
-    if (pres.thumbnailUrl && pres.thumbnailUrl.startsWith("http")) return pres.thumbnailUrl;
+    if (pres.thumbnailUrl && pres.thumbnailUrl.startsWith("http")) {
+      // Cache-bust so a regenerated cover shows immediately after edits
+      const sep = pres.thumbnailUrl.includes("?") ? "&" : "?";
+      return `${pres.thumbnailUrl}${sep}v=${new Date(pres.updatedAt).getTime()}`;
+    }
     return "/logo.png";
   };
 
@@ -449,6 +705,33 @@ export default function DashboardContent({ presentations: propPresentations, use
           </div>
           </div>
 
+          <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => { setShowTrash(!showTrash); exitSelectMode(); }}
+            title="Trash"
+            className={`flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-[12px] font-black uppercase tracking-wider transition-all outline-none shadow-sm shadow-slate-200/50 dark:shadow-none hover:shadow-md ${
+              showTrash
+              ? "bg-red-500/10 border-red-400 text-red-500"
+              : "bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-white hover:border-red-400"
+            }`}
+          >
+            <Trash2 size={14} />
+            <span className="hidden md:inline">Trash</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => { if (selectMode) { exitSelectMode(); } else { setSelectMode(true); setShowTrash(false); } }}
+            title="Select multiple"
+            className={`flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-[12px] font-black uppercase tracking-wider transition-all outline-none shadow-sm shadow-slate-200/50 dark:shadow-none hover:shadow-md ${
+              selectMode
+              ? "bg-[#06b6d4]/10 border-[#06b6d4] text-[#06b6d4]"
+              : "bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-white hover:border-[#06b6d4]"
+            }`}
+          >
+            <Check size={14} />
+            <span className="hidden md:inline">{selectMode ? "Done" : "Select"}</span>
+          </button>
           <div className="flex items-center rounded-2xl bg-white border border-slate-200 shadow-sm shadow-slate-200/50 dark:bg-zinc-900 dark:border-zinc-800 dark:shadow-none p-1">
             <button
               onClick={() => setViewMode("grid")}
@@ -467,11 +750,58 @@ export default function DashboardContent({ presentations: propPresentations, use
               <span className="text-[11px] font-bold uppercase tracking-wider hidden sm:block">List</span>
             </button>
           </div>
+          </div>
         </div>
       </div>
 
       <div className="min-h-[400px] pb-16">
-        {filteredPresentations.length === 0 ? (
+        {showTrash ? (
+          <div>
+            <div className="mb-5 flex items-center justify-between rounded-2xl border border-red-400/25 bg-red-500/5 px-5 py-4">
+              <div className="flex items-center gap-3">
+                <Trash2 size={18} className="text-red-400" />
+                <div>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white">Trash</p>
+                  <p className="text-xs text-slate-500 dark:text-zinc-500">Decks here are deleted forever after 30 days.</p>
+                </div>
+              </div>
+              <button type="button" onClick={() => setShowTrash(false)} className="text-xs font-black uppercase tracking-wider text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white transition-colors">Back to decks</button>
+            </div>
+            {trashLoading ? (
+              <div className="flex h-40 items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-slate-400" /></div>
+            ) : (trashItems ?? []).length === 0 ? (
+              <div className="flex h-40 flex-col items-center justify-center text-sm font-semibold text-slate-400 dark:text-zinc-500">Trash is empty</div>
+            ) : (
+              <div className="space-y-3">
+                {(trashItems ?? []).map((pres) => (
+                  <div key={pres.id} className="group flex items-center gap-5 rounded-2xl border border-slate-200/80 bg-white p-3 dark:border-white/10 dark:bg-white/[0.04]">
+                    <div className="w-24 h-16 flex-shrink-0 rounded-[14px] relative overflow-hidden border border-slate-100 dark:border-white/10">
+                      {pres.thumbnailUrl && pres.thumbnailUrl.startsWith("http") ? (
+                        <Image src={pres.thumbnailUrl} alt={pres.title} fill className="object-cover opacity-70" />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center opacity-80" style={{ background: `linear-gradient(135deg, ${deckGradient(pres.title)[0]}, ${deckGradient(pres.title)[1]})` }}>
+                          <span className="text-lg font-black text-white/90">{deckInitials(pres.title)}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="truncate text-[15px] font-bold text-slate-900 dark:text-white">{pres.title}</h3>
+                      {pres.deletedAt && (
+                        <p className="text-[11px] font-semibold text-slate-400 dark:text-zinc-500">Deleted {relativeTime(pres.deletedAt)}</p>
+                      )}
+                    </div>
+                    <button type="button" onClick={() => handleRestore(pres.id)} className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3.5 py-2 text-[12px] font-black uppercase tracking-wider text-slate-600 transition-colors hover:border-cyan-400 hover:text-cyan-500 dark:border-white/10 dark:text-zinc-300">
+                      <RotateCcw size={13} /> Restore
+                    </button>
+                    <button type="button" onClick={() => setPermanentDeleteId(pres.id)} className="inline-flex items-center gap-1.5 rounded-xl bg-red-600/90 px-3.5 py-2 text-[12px] font-black uppercase tracking-wider text-white transition-colors hover:bg-red-600">
+                      <Trash2 size={13} /> Delete forever
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : filteredPresentations.length === 0 ? (
           <div className="flex h-[400px] flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 bg-white text-center px-4 dark:border-zinc-800 dark:bg-zinc-900/50">
             <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] shadow-lg shadow-cyan-600/25">
               <Upload size={32} className="text-white" />
@@ -498,7 +828,11 @@ export default function DashboardContent({ presentations: propPresentations, use
                 <a
                   key={pres.id}
                   href={getPresentationUrl(pres.id, pres.title)}
+                  ref={(el) => { cardRefs.current.set(pres.id, el); }}
                   onClick={(e) => openPresentation(e, pres)}
+                  onKeyDown={(e) => handleCardKeyDown(e, pres, index)}
+                  onMouseEnter={() => startHoverPreview(pres)}
+                  onMouseLeave={stopHoverPreview}
                   onContextMenu={(e) => {
                     e.preventDefault();
                     setMenuPosition({
@@ -510,6 +844,19 @@ export default function DashboardContent({ presentations: propPresentations, use
                   className={`group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-md ring-1 ring-slate-900/5 transition-all duration-300 hover:-translate-y-1.5 hover:border-cyan-400/40 hover:shadow-[0_24px_60px_-20px_rgba(8,15,35,0.35)] dark:border-white/10 dark:bg-white/[0.04] dark:ring-0 dark:shadow-none dark:hover:bg-white/[0.06] dark:hover:shadow-[0_24px_60px_-24px_rgba(0,0,0,0.8)] cursor-pointer ${animationClass}`}
                   style={animationStyle}
                 >
+                  {/* Bulk selection checkbox */}
+                  {selectMode && (
+                    <span
+                      className={`absolute top-3 left-3 z-30 flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all ${
+                        selectedIds.has(pres.id)
+                          ? "border-transparent bg-gradient-to-br from-violet-600 to-cyan-500 text-white shadow-lg shadow-cyan-500/30"
+                          : "border-white/80 bg-black/25 text-transparent backdrop-blur"
+                      }`}
+                    >
+                      <Check size={14} strokeWidth={3.5} />
+                    </span>
+                  )}
+
                   {/* Aurora sheen on hover */}
                   <div
                     className="pointer-events-none absolute inset-0 z-10 rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100"
@@ -543,6 +890,30 @@ export default function DashboardContent({ presentations: propPresentations, use
                       <Image src={getThumbnail(pres)} alt={pres.title} fill className="object-cover transition-transform duration-700 group-hover:scale-[1.06]" />
                     )}
 
+                    {/* Hover slide preview: cycles through deck images */}
+                    {hoverPreview?.id === pres.id && (() => {
+                      const srcs = previewSrcs(pres);
+                      if (srcs.length < 2) return null;
+                      const src = srcs[hoverPreview.idx % srcs.length]!;
+                      return (
+                        <Image key={src} src={src} alt={pres.title} fill className="object-cover animate-in fade-in duration-500 z-[5]" />
+                      );
+                    })()}
+
+                    {/* Deck stats */}
+                    <div className="absolute bottom-3 left-3 z-20 flex items-center gap-1.5">
+                      {(pres.slideCount ?? 0) > 0 && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-bold text-white/90 backdrop-blur-md">
+                          <Layers size={10.5} /> {pres.slideCount}
+                        </span>
+                      )}
+                      {(pres.viewCount ?? 0) > 0 && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-bold text-white/90 backdrop-blur-md">
+                          <Eye size={10.5} /> {pres.viewCount}
+                        </span>
+                      )}
+                    </div>
+
                     {/* Readability scrim */}
                     <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/25 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
@@ -560,7 +931,28 @@ export default function DashboardContent({ presentations: propPresentations, use
                   </div>
 
                   <div className="flex flex-col flex-1 p-4 lg:p-5">
-                    <h3 className="line-clamp-2 text-[15px] font-bold text-slate-900 dark:text-white leading-snug transition-colors group-hover:text-cyan-600 dark:group-hover:text-cyan-300 mb-4">{pres.title}</h3>
+                    <h3 className="line-clamp-2 text-[15px] font-bold text-slate-900 dark:text-white leading-snug transition-colors group-hover:text-cyan-600 dark:group-hover:text-cyan-300 mb-2">{pres.title}</h3>
+                    {(pres.tags?.length ?? 0) > 0 && (
+                      <div className="mb-3 flex flex-wrap items-center gap-1.5">
+                        {pres.tags!.slice(0, 2).map((tag) => (
+                          <button
+                            type="button"
+                            key={tag}
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveTag(activeTag === tag ? null : tag); }}
+                            className={`rounded-full border px-2 py-0.5 text-[10px] font-bold transition-colors ${
+                              activeTag === tag
+                                ? "border-violet-400/60 bg-violet-500/15 text-violet-500 dark:text-violet-300"
+                                : "border-slate-200 bg-slate-50 text-slate-500 hover:border-violet-400/50 dark:border-white/10 dark:bg-white/5 dark:text-zinc-400"
+                            }`}
+                          >
+                            #{tag}
+                          </button>
+                        ))}
+                        {pres.tags!.length > 2 && (
+                          <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500">+{pres.tags!.length - 2}</span>
+                        )}
+                      </div>
+                    )}
                     <div className="mt-auto flex items-center justify-between gap-2">
                       <div className="flex min-w-0 items-center gap-2">
                         <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${
@@ -571,8 +963,11 @@ export default function DashboardContent({ presentations: propPresentations, use
                           {pres.isPublic ? <Globe size={11} strokeWidth={2.75} /> : <Lock size={11} strokeWidth={2.75} />}
                           <span className="hidden xs:inline">{pres.isPublic ? "Public" : "Private"}</span>
                         </span>
-                        <span className="truncate text-[11px] font-semibold text-slate-400 dark:text-zinc-500">
-                          Edited {new Date(pres.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                        <span
+                          className="truncate text-[11px] font-semibold text-slate-400 dark:text-zinc-500"
+                          title={new Date(pres.updatedAt).toLocaleString()}
+                        >
+                          Edited {relativeTime(pres.updatedAt)}
                         </span>
                       </div>
                       <div className="relative menu-container">
@@ -591,7 +986,7 @@ export default function DashboardContent({ presentations: propPresentations, use
         ) : (
           <div className="space-y-3">
             {filteredPresentations.map((pres, index) => (
-              <a key={pres.id} href={getPresentationUrl(pres.id, pres.title)} onClick={(e) => openPresentation(e, pres)} onContextMenu={(e) => { e.preventDefault(); setMenuPosition({ top: Math.min(window.innerHeight - 360, e.clientY), left: e.clientX }); setActiveMenu(pres.id); }} className="group flex items-center gap-5 rounded-2xl border border-slate-200/80 shadow-sm ring-1 ring-slate-900/5 bg-white p-3 transition-all duration-300 hover:border-cyan-400/40 hover:shadow-[0_12px_36px_-12px_rgba(8,15,35,0.3)] hover:-translate-y-0.5 dark:ring-0 dark:border-white/10 dark:shadow-none dark:bg-white/[0.04] dark:hover:bg-white/[0.06] cursor-pointer">
+              <a key={pres.id} href={getPresentationUrl(pres.id, pres.title)} onClick={(e) => openPresentation(e, pres)} onContextMenu={(e) => { e.preventDefault(); setMenuPosition({ top: Math.min(window.innerHeight - 360, e.clientY), left: e.clientX }); setActiveMenu(pres.id); }} className={`group flex items-center gap-5 rounded-2xl border border-slate-200/80 shadow-sm ring-1 ring-slate-900/5 bg-white p-3 transition-all duration-300 hover:border-cyan-400/40 hover:shadow-[0_12px_36px_-12px_rgba(8,15,35,0.3)] hover:-translate-y-0.5 dark:ring-0 dark:border-white/10 dark:shadow-none dark:bg-white/[0.04] dark:hover:bg-white/[0.06] cursor-pointer ${selectMode && selectedIds.has(pres.id) ? "ring-2 ring-cyan-400/70 dark:ring-cyan-400/70" : ""}`}>
                 <div className="w-24 h-16 sm:w-32 sm:h-20 flex-shrink-0 rounded-[14px] relative overflow-hidden border border-slate-100 dark:border-white/10">
                   {getThumbnail(pres) === "/logo.png" ? (
                     <div
@@ -617,7 +1012,7 @@ export default function DashboardContent({ presentations: propPresentations, use
                       <span className="hidden sm:inline">{pres.isPublic ? "Public" : "Private"}</span>
                     </div>
                     <span className="text-slate-300 dark:text-zinc-700">•</span>
-                    <span className="text-[11px] font-semibold text-slate-400 dark:text-zinc-500 tracking-normal">{new Date(pres.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                    <span className="text-[11px] font-semibold text-slate-400 dark:text-zinc-500 tracking-normal" title={new Date(pres.updatedAt).toLocaleString()}>Edited {relativeTime(pres.updatedAt)}</span>
                   </div>
                 </div>
                 <div className="relative menu-container px-2">
@@ -628,6 +1023,88 @@ export default function DashboardContent({ presentations: propPresentations, use
           </div>
         )}
       </div>
+
+      {/* Bulk action bar */}
+      {selectMode && selectedIds.size > 0 && createPortal(
+        <div className="fixed bottom-6 left-1/2 z-[9999] -translate-x-1/2 flex items-center gap-2 rounded-2xl border border-white/10 bg-[#0b1120]/95 px-4 py-3 shadow-2xl shadow-black/50 backdrop-blur-xl animate-in fade-in slide-in-from-bottom-4 duration-200">
+          <span className="pr-2 text-[13px] font-black text-white tabular-nums">{selectedIds.size} selected</span>
+          <button type="button" disabled={bulkBusy} onClick={() => bulkRun("favorite")} className="flex items-center gap-1.5 rounded-xl bg-white/10 px-3 py-2 text-[12px] font-bold text-white transition-colors hover:bg-white/20 disabled:opacity-50"><Heart size={13} /> Favorite</button>
+          <button type="button" disabled={bulkBusy} onClick={() => bulkRun("private")} className="flex items-center gap-1.5 rounded-xl bg-white/10 px-3 py-2 text-[12px] font-bold text-white transition-colors hover:bg-white/20 disabled:opacity-50"><Lock size={13} /> Private</button>
+          <button type="button" disabled={bulkBusy} onClick={() => openTagsDialog("__bulk__")} className="flex items-center gap-1.5 rounded-xl bg-white/10 px-3 py-2 text-[12px] font-bold text-white transition-colors hover:bg-white/20 disabled:opacity-50"><Tag size={13} /> Tag</button>
+          <button type="button" disabled={bulkBusy} onClick={() => bulkRun("trash")} className="flex items-center gap-1.5 rounded-xl bg-red-600/90 px-3 py-2 text-[12px] font-bold text-white transition-colors hover:bg-red-600 disabled:opacity-50">{bulkBusy ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />} Trash</button>
+          <button type="button" onClick={exitSelectMode} className="ml-1 rounded-xl p-2 text-zinc-400 transition-colors hover:bg-white/10 hover:text-white"><X size={15} /></button>
+        </div>, document.body
+      )}
+
+      {/* Tags dialog */}
+      {showTagsDialog && createPortal(
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowTagsDialog(null)}>
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl p-8 w-full max-w-md shadow-2xl border border-slate-200 dark:border-zinc-800" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-xl font-black text-slate-900 dark:text-white mb-1 uppercase tracking-tight">Tags</h3>
+            <p className="text-xs font-semibold text-slate-400 mb-5">{showTagsDialog === "__bulk__" ? `Add tags to ${selectedIds.size} selected decks` : "Organize this deck (max 8 tags)"}</p>
+            <div className="mb-4 flex flex-wrap gap-2">
+              {tagsDraft.map((tag) => (
+                <span key={tag} className="inline-flex items-center gap-1.5 rounded-full border border-violet-400/40 bg-violet-500/10 px-3 py-1 text-[12px] font-bold text-violet-500 dark:text-violet-300">
+                  #{tag}
+                  <button type="button" onClick={() => setTagsDraft((prev) => prev.filter((x) => x !== tag))} className="hover:text-red-500 transition-colors"><X size={12} /></button>
+                </span>
+              ))}
+              {tagsDraft.length === 0 && <span className="text-[12px] font-semibold text-slate-400">No tags yet</span>}
+            </div>
+            <div className="flex gap-2 mb-4">
+              <input type="text" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); commitTagInput(); } }} placeholder="Add a tag and press Enter" className="flex-1 rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold focus:border-[#06b6d4] focus:outline-none focus:ring-4 focus:ring-[#06b6d4]/10 dark:border-zinc-800 dark:bg-zinc-800 dark:text-white" />
+              <button type="button" onClick={commitTagInput} className="rounded-2xl border border-slate-200 px-4 text-sm font-black text-slate-600 hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800">Add</button>
+            </div>
+            {allTags.filter((tag) => !tagsDraft.includes(tag)).length > 0 && (
+              <div className="mb-6">
+                <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2">Your tags</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {allTags.filter((tag) => !tagsDraft.includes(tag)).slice(0, 10).map((tag) => (
+                    <button type="button" key={tag} onClick={() => tagsDraft.length < 8 && setTagsDraft((prev) => [...prev, tag])} className="rounded-full border border-slate-200 px-2.5 py-1 text-[11px] font-bold text-slate-500 transition-colors hover:border-violet-400/60 hover:text-violet-500 dark:border-white/10 dark:text-zinc-400">
+                      #{tag}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div className="flex gap-3">
+              <button type="button" onClick={() => setShowTagsDialog(null)} className="flex-1 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-black uppercase tracking-wider text-slate-600 hover:bg-slate-50">Cancel</button>
+              <button type="button" onClick={saveTags} className="flex-1 rounded-2xl bg-gradient-to-r from-violet-600 to-cyan-500 px-4 py-3 text-sm font-black uppercase tracking-wider text-white hover:brightness-110">Save</button>
+            </div>
+          </div>
+        </div>, document.body
+      )}
+
+      {/* Rename-on-duplicate dialog */}
+      {showDuplicateDialog && createPortal(
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowDuplicateDialog(null)}>
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl p-8 w-full max-w-md shadow-2xl border border-slate-200 dark:border-zinc-800" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-xl font-black text-slate-900 dark:text-white mb-6 uppercase tracking-tight">Duplicate Deck</h3>
+            <input type="text" value={duplicateTitle} onChange={(e) => setDuplicateTitle(e.target.value)} onKeyDown={(e) => e.key === "Enter" && duplicateTitle.trim() && executeDuplicate(showDuplicateDialog, duplicateTitle.trim())} className="w-full rounded-2xl border border-slate-200 px-5 py-3 text-sm font-bold focus:border-[#06b6d4] focus:outline-none focus:ring-4 focus:ring-[#06b6d4]/10 dark:border-zinc-800 dark:bg-zinc-800 dark:text-white mb-6" autoFocus />
+            <div className="flex gap-3">
+              <button type="button" onClick={() => setShowDuplicateDialog(null)} className="flex-1 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-black uppercase tracking-wider text-slate-600 hover:bg-slate-50">Cancel</button>
+              <button type="button" onClick={() => executeDuplicate(showDuplicateDialog, duplicateTitle.trim())} className="flex-1 rounded-2xl bg-gradient-to-r from-violet-600 to-cyan-500 px-4 py-3 text-sm font-black uppercase tracking-wider text-white hover:brightness-110 disabled:opacity-50" disabled={!duplicateTitle.trim()}>Duplicate</button>
+            </div>
+          </div>
+        </div>, document.body
+      )}
+
+      {/* Delete-forever confirm */}
+      {permanentDeleteId && createPortal(
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setPermanentDeleteId(null)}>
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl p-8 w-full max-w-md shadow-2xl border border-slate-200 dark:border-zinc-800" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 dark:bg-red-900/20">
+              <Trash2 size={24} className="text-red-600" />
+            </div>
+            <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tight">Delete forever?</h3>
+            <p className="text-sm text-slate-500 font-medium mb-8">This permanently deletes the deck. It cannot be restored.</p>
+            <div className="flex gap-3">
+              <button type="button" onClick={() => setPermanentDeleteId(null)} className="flex-1 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-black uppercase tracking-wider text-slate-600 hover:bg-slate-50">Cancel</button>
+              <button type="button" onClick={() => handlePermanentDelete(permanentDeleteId)} className="flex-1 rounded-2xl bg-red-600 px-4 py-3 text-sm font-black uppercase tracking-wider text-white hover:bg-red-700">Delete forever</button>
+            </div>
+          </div>
+        </div>, document.body
+      )}
 
       {/* Modals & Portals */}
       {showRenameDialog && createPortal(
@@ -678,6 +1155,10 @@ export default function DashboardContent({ presentations: propPresentations, use
             <button onClick={(e) => handleMenuAction("favorite", activeMenu, undefined, e)} className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-900 transition-colors">
               <Heart size={16} className={presentations.find(p => p.id === activeMenu)?.isPinned ? "fill-yellow-500 text-yellow-500" : ""} />
               {presentations.find(p => p.id === activeMenu)?.isPinned ? "Unfavorite" : "Favorite"}
+            </button>
+            <button onClick={(e) => handleMenuAction("tags", activeMenu, undefined, e)} className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-900 transition-colors"><Tag size={16} /> Tags</button>
+            <button onClick={(e) => handleMenuAction("template", activeMenu, undefined, e)} disabled={loadingAction?.id === activeMenu && loadingAction?.action === "template"} className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-900 transition-colors disabled:opacity-50">
+              {loadingAction?.id === activeMenu && loadingAction?.action === "template" ? <Loader2 size={16} className="animate-spin" /> : <LayoutTemplate size={16} />} Use as template
             </button>
             <button onClick={(e) => handleMenuAction("duplicate", activeMenu, undefined, e)} disabled={loadingAction?.id === activeMenu} className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-900 transition-colors disabled:opacity-50">
               {loadingAction?.id === activeMenu ? <Loader2 size={16} className="animate-spin" /> : <Copy size={16} />} Duplicate
