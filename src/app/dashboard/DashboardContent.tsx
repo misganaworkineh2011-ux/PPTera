@@ -15,6 +15,7 @@ import { getPresentationUrl } from "~/lib/utils";
 import ShareModal from "~/components/presentation/ShareModal";
 import InfiniteScrollTrigger from "./components/InfiniteScrollTrigger";
 import SkeletonCard from "./components/SkeletonCard";
+import DeckHoverPreview from "./components/DeckHoverPreview";
 
 interface Presentation {
   id: string;
@@ -340,15 +341,8 @@ export default function DashboardContent({ presentations: propPresentations, use
   };
 
   // ---- Hover slide preview ----
-  const previewSrcs = (pres: Presentation): string[] => {
-    const base = pres.thumbnailUrl && pres.thumbnailUrl.startsWith("http") ? [pres.thumbnailUrl] : [];
-    const all = [...base, ...(pres.previewImages ?? [])].filter((u, i, arr) => u.startsWith("http") && arr.indexOf(u) === i);
-    return all.slice(0, 4);
-  };
-
   const startHoverPreview = (pres: Presentation) => {
-    const srcs = previewSrcs(pres);
-    if (srcs.length < 2) return;
+    if ((pres.slideCount ?? 0) < 1) return;
     setHoverPreview({ id: pres.id, idx: 0 });
     if (hoverTimerRef.current) clearInterval(hoverTimerRef.current);
     hoverTimerRef.current = setInterval(() => {
@@ -904,15 +898,10 @@ export default function DashboardContent({ presentations: propPresentations, use
                       <Image src={getThumbnail(pres)} alt={pres.title} fill className="object-cover transition-transform duration-700 group-hover:scale-[1.06]" />
                     )}
 
-                    {/* Hover slide preview: cycles through deck images */}
-                    {hoverPreview?.id === pres.id && (() => {
-                      const srcs = previewSrcs(pres);
-                      if (srcs.length < 2) return null;
-                      const src = srcs[hoverPreview.idx % srcs.length]!;
-                      return (
-                        <Image key={src} src={src} alt={pres.title} fill className="object-cover animate-in fade-in duration-500 z-[5]" />
-                      );
-                    })()}
+                    {/* Hover preview: the deck's ACTUAL first slides, rendered live */}
+                    {hoverPreview?.id === pres.id && (
+                      <DeckHoverPreview presentationId={pres.id} tick={hoverPreview.idx} />
+                    )}
 
                     {/* Deck stats */}
                     <div className="absolute bottom-3 left-3 z-20 flex items-center gap-1.5">
@@ -1160,7 +1149,7 @@ export default function DashboardContent({ presentations: propPresentations, use
       {activeMenu && menuPosition && createPortal(
         <>
           <div className="fixed inset-0 z-[9998]" onMouseDown={() => { setActiveMenu(null); setMenuPosition(null); }} />
-          <div className="fixed w-56 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-2xl z-[9999] animate-in fade-in slide-in-from-top-2 duration-200 p-2" style={{ top: menuPosition.top, left: Math.min(window.innerWidth - 240, Math.max(8, menuPosition.left)) }}>
+          <div className="menu-container fixed w-56 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-2xl z-[9999] animate-in fade-in slide-in-from-top-2 duration-200 p-2" style={{ top: menuPosition.top, left: Math.min(window.innerWidth - 240, Math.max(8, menuPosition.left)) }}>
             <button onClick={(e) => handleMenuAction("share", activeMenu, undefined, e)} className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-900 transition-colors"><Share2 size={16} /> Share</button>
             <button onClick={(e) => handleMenuAction("rename", activeMenu, undefined, e)} className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-900 transition-colors"><Edit3 size={16} /> Rename</button>
             {presentations.find(p => p.id === activeMenu)?.outlineId && (
