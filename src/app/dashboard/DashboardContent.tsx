@@ -434,11 +434,15 @@ export default function DashboardContent({ presentations: propPresentations, use
           setPresentations(prev => prev.map(p => p.id === presId ? { ...p, isPinned: currentPres.isPinned } : p));
         });
         toast.success(newPinnedState ? (t.addedToFavorites || "Added to favorites") : (t.removedFromFavorites || "Removed from favorites"));
-        fetch(`/api/presentations/${presId}/favorite`, { method: "PATCH" })
-          .catch((error) => {
-            console.error("Error toggling favorite:", error);
-            rollbackFavorite();
-          });
+        fetch(`/api/presentations/${presId}/favorite`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pinned: newPinnedState }),
+          keepalive: true,
+        }).catch((error) => {
+          console.error("Error toggling favorite:", error);
+          rollbackFavorite();
+        });
         break;
       case "duplicate": {
         setActiveMenu(null);
@@ -550,7 +554,16 @@ export default function DashboardContent({ presentations: propPresentations, use
 
   // Open a deck with client-side navigation: instant, keeps the dashboard
   // mounted (no full page load), and shows the branded loading overlay.
+  // Capture-phase guard: any click that originates on a button inside a card
+  // can never trigger the card's navigation — the anchor default is cancelled
+  // before any other handler runs. (stopPropagation is deliberately NOT
+  // called here so the button's own handler still fires in the bubble phase.)
+  const guardInnerClicks = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest("button")) e.preventDefault();
+  };
+
   const openPresentation = (e: React.MouseEvent, pres: Presentation) => {
+    if ((e.target as HTMLElement).closest("button")) return; // button clicks never navigate
     if (selectMode) {
       e.preventDefault();
       toggleSelected(pres.id);
@@ -829,6 +842,7 @@ export default function DashboardContent({ presentations: propPresentations, use
                   key={pres.id}
                   href={getPresentationUrl(pres.id, pres.title)}
                   ref={(el) => { cardRefs.current.set(pres.id, el); }}
+                  onClickCapture={guardInnerClicks}
                   onClick={(e) => openPresentation(e, pres)}
                   onKeyDown={(e) => handleCardKeyDown(e, pres, index)}
                   onMouseEnter={() => startHoverPreview(pres)}
@@ -986,7 +1000,7 @@ export default function DashboardContent({ presentations: propPresentations, use
         ) : (
           <div className="space-y-3">
             {filteredPresentations.map((pres, index) => (
-              <a key={pres.id} href={getPresentationUrl(pres.id, pres.title)} onClick={(e) => openPresentation(e, pres)} onContextMenu={(e) => { e.preventDefault(); setMenuPosition({ top: Math.min(window.innerHeight - 360, e.clientY), left: e.clientX }); setActiveMenu(pres.id); }} className={`group flex items-center gap-5 rounded-2xl border border-slate-200/80 shadow-sm ring-1 ring-slate-900/5 bg-white p-3 transition-all duration-300 hover:border-cyan-400/40 hover:shadow-[0_12px_36px_-12px_rgba(8,15,35,0.3)] hover:-translate-y-0.5 dark:ring-0 dark:border-white/10 dark:shadow-none dark:bg-white/[0.04] dark:hover:bg-white/[0.06] cursor-pointer ${selectMode && selectedIds.has(pres.id) ? "ring-2 ring-cyan-400/70 dark:ring-cyan-400/70" : ""}`}>
+              <a key={pres.id} href={getPresentationUrl(pres.id, pres.title)} onClickCapture={guardInnerClicks} onClick={(e) => openPresentation(e, pres)} onContextMenu={(e) => { e.preventDefault(); setMenuPosition({ top: Math.min(window.innerHeight - 360, e.clientY), left: e.clientX }); setActiveMenu(pres.id); }} className={`group flex items-center gap-5 rounded-2xl border border-slate-200/80 shadow-sm ring-1 ring-slate-900/5 bg-white p-3 transition-all duration-300 hover:border-cyan-400/40 hover:shadow-[0_12px_36px_-12px_rgba(8,15,35,0.3)] hover:-translate-y-0.5 dark:ring-0 dark:border-white/10 dark:shadow-none dark:bg-white/[0.04] dark:hover:bg-white/[0.06] cursor-pointer ${selectMode && selectedIds.has(pres.id) ? "ring-2 ring-cyan-400/70 dark:ring-cyan-400/70" : ""}`}>
                 <div className="w-24 h-16 sm:w-32 sm:h-20 flex-shrink-0 rounded-[14px] relative overflow-hidden border border-slate-100 dark:border-white/10">
                   {getThumbnail(pres) === "/logo.png" ? (
                     <div
