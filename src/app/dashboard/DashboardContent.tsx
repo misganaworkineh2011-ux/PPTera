@@ -230,7 +230,7 @@ export default function DashboardContent({ presentations: propPresentations, use
     const item = trashItems?.find((t) => t.id === presId);
     setTrashItems((prev) => (prev ?? []).filter((t) => t.id !== presId));
     try {
-      const res = await fetch(`/api/presentations/${presId}?permanent=1`, { method: "DELETE" });
+      const res = await fetch(`/api/presentations/${presId}/delete?permanent=1`, { method: "DELETE" });
       if (!res.ok) throw new Error();
       toast.success("Deleted forever");
     } catch {
@@ -256,23 +256,26 @@ export default function DashboardContent({ presentations: propPresentations, use
     setBulkBusy(true);
     try {
       if (action === "favorite") {
-        await Promise.all(ids.map((id) => fetch(`/api/presentations/${id}/favorite`, {
+        const results = await Promise.all(ids.map((id) => fetch(`/api/presentations/${id}/favorite`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ pinned: true }),
         })));
+        if (results.some((r) => !r.ok)) throw new Error();
         setPresentations((prev) => prev.map((pres) => selectedIds.has(pres.id) ? { ...pres, isPinned: true } : pres));
         toast.success(`${ids.length} added to favorites`);
       } else if (action === "private") {
-        await Promise.all(ids.map((id) => fetch(`/api/presentations/${id}/visibility`, {
+        const results = await Promise.all(ids.map((id) => fetch(`/api/presentations/${id}/visibility`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ isPublic: false }),
         })));
+        if (results.some((r) => !r.ok)) throw new Error();
         setPresentations((prev) => prev.map((pres) => selectedIds.has(pres.id) ? { ...pres, isPublic: false } : pres));
         toast.success(`${ids.length} made private`);
       } else {
-        await Promise.all(ids.map((id) => fetch(`/api/presentations/${id}`, { method: "DELETE" })));
+        const results = await Promise.all(ids.map((id) => fetch(`/api/presentations/${id}/delete`, { method: "DELETE" })));
+        if (results.some((r) => !r.ok)) throw new Error();
         setPresentations((prev) => prev.filter((pres) => !selectedIds.has(pres.id)));
         toast.success(`${ids.length} moved to trash`);
       }
@@ -301,19 +304,27 @@ export default function DashboardContent({ presentations: propPresentations, use
   const saveTags = async () => {
     const target = showTagsDialog;
     if (!target) return;
+    // Fold in a tag that was typed but never committed with Enter/Add —
+    // otherwise "type one tag → Save" silently saves nothing.
+    const pending = tagInput.trim().slice(0, 24);
+    const draft =
+      pending && !tagsDraft.includes(pending) && tagsDraft.length < 8
+        ? [...tagsDraft, pending]
+        : tagsDraft;
+    setTagInput("");
     const ids = target === "__bulk__" ? Array.from(selectedIds) : [target];
     setShowTagsDialog(null);
     try {
       await Promise.all(ids.map(async (id) => {
         const existing = target === "__bulk__" ? (presentations.find((x) => x.id === id)?.tags ?? []) : [];
-        const merged = Array.from(new Set([...existing, ...tagsDraft])).slice(0, 8);
+        const merged = Array.from(new Set([...existing, ...draft])).slice(0, 8);
         const res = await fetch(`/api/presentations/${id}/tags`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tags: target === "__bulk__" ? merged : tagsDraft }),
+          body: JSON.stringify({ tags: target === "__bulk__" ? merged : draft }),
         });
         if (!res.ok) throw new Error();
-        setPresentations((prev) => prev.map((pres) => pres.id === id ? { ...pres, tags: target === "__bulk__" ? merged : tagsDraft } : pres));
+        setPresentations((prev) => prev.map((pres) => pres.id === id ? { ...pres, tags: target === "__bulk__" ? merged : draft } : pres));
       }));
       toast.success("Tags updated");
       if (target === "__bulk__") exitSelectMode();
@@ -530,11 +541,12 @@ export default function DashboardContent({ presentations: propPresentations, use
     const rollbackDelete = optimisticRemove(presId);
     setShowDeleteDialog(null);
     try {
-      const response = await fetch(`/api/presentations/${presId}`, { method: "DELETE" });
+      const response = await fetch(`/api/presentations/${presId}/delete`, { method: "DELETE" });
       if (!response.ok) throw new Error();
       toast.success("Moved to trash - restore it anytime within 30 days");
     } catch (error) {
       rollbackDelete();
+      toast.error("Could not move to trash");
     }
   };
 
@@ -718,6 +730,15 @@ export default function DashboardContent({ presentations: propPresentations, use
           <div className="flex items-center gap-2.5">
           <button
             type="button"
+            onClick={() => { startNavigating(); router.push("/dashboard/templates"); }}
+            title="Template gallery — curated starters plus decks you saved with 'Use as template'"
+            className="flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-[12px] font-black uppercase tracking-wider transition-all outline-none shadow-sm shadow-slate-200/50 dark:shadow-none hover:shadow-md bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-white hover:border-violet-400"
+          >
+            <LayoutTemplate size={14} />
+            <span className="hidden md:inline">Templates</span>
+          </button>
+          <button
+            type="button"
             onClick={() => { setShowTrash(!showTrash); exitSelectMode(); }}
             title="Trash"
             className={`flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-[12px] font-black uppercase tracking-wider transition-all outline-none shadow-sm shadow-slate-200/50 dark:shadow-none hover:shadow-md ${
@@ -765,6 +786,41 @@ export default function DashboardContent({ presentations: propPresentations, use
       </div>
 
       <div className="min-h-[400px] pb-16">
+        {/* Tag filter: visible home for every tag across the decks */}
+        {!showTrash && allTags.length > 0 && (
+          <div className="mb-6 flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-zinc-500">
+              <Tag size={12} /> Tags
+            </span>
+            {allTags.map((tag) => {
+              const count = presentations.filter((p) => !p.deletedAt && (p.tags ?? []).includes(tag)).length;
+              return (
+                <button
+                  type="button"
+                  key={tag}
+                  onClick={() => setActiveTag(activeTag === tag ? null : tag)}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-bold transition-colors ${
+                    activeTag === tag
+                      ? "border-violet-400/70 bg-violet-500/15 text-violet-500 dark:text-violet-300"
+                      : "border-slate-200 bg-white text-slate-500 hover:border-violet-400/50 hover:text-violet-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-400"
+                  }`}
+                >
+                  #{tag}
+                  <span className="text-[10px] font-black opacity-60 tabular-nums">{count}</span>
+                </button>
+              );
+            })}
+            {activeTag && (
+              <button
+                type="button"
+                onClick={() => setActiveTag(null)}
+                className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold text-slate-400 transition-colors hover:text-slate-700 dark:text-zinc-500 dark:hover:text-white"
+              >
+                <X size={12} /> Clear
+              </button>
+            )}
+          </div>
+        )}
         {showTrash ? (
           <div>
             <div className="mb-5 flex items-center justify-between rounded-2xl border border-red-400/25 bg-red-500/5 px-5 py-4">
@@ -1137,11 +1193,11 @@ export default function DashboardContent({ presentations: propPresentations, use
             <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 dark:bg-red-900/20">
               <Trash2 size={24} className="text-red-600" />
             </div>
-            <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tight">Delete Project?</h3>
-            <p className="text-sm text-slate-500 font-medium mb-8">This action is permanent and cannot be undone.</p>
+            <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tight">Move to trash?</h3>
+            <p className="text-sm text-slate-500 font-medium mb-8">The deck moves to Trash — you can restore it anytime within 30 days.</p>
             <div className="flex gap-3">
               <button onClick={() => setShowDeleteDialog(null)} className="flex-1 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-black uppercase tracking-wider text-slate-600 hover:bg-slate-50">Cancel</button>
-              <button onClick={() => handleDelete(showDeleteDialog)} className="flex-1 rounded-2xl bg-red-600 px-4 py-3 text-sm font-black uppercase tracking-wider text-white hover:bg-red-700">Delete</button>
+              <button onClick={() => handleDelete(showDeleteDialog)} className="flex-1 rounded-2xl bg-red-600 px-4 py-3 text-sm font-black uppercase tracking-wider text-white hover:bg-red-700">Move to Trash</button>
             </div>
           </div>
         </div>, document.body
