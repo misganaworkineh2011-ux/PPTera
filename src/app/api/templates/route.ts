@@ -21,14 +21,20 @@ export async function GET() {
         category: t.category,
         description: t.description,
         slideCount: t.slides.length,
+        // Slide-flow preview for the gallery card
+        flow: t.slides.filter((s) => s.type === "content").map((s) => s.title),
       })),
       mine: userTemplates.map((t) => {
-        const config = (t.config ?? {}) as { slides?: unknown[] };
+        const config = (t.config ?? {}) as { slides?: Array<{ type?: string; title?: string }> };
+        const slides = Array.isArray(config.slides) ? config.slides : [];
         return {
           id: t.id,
           name: t.name,
           category: t.category,
-          slideCount: Array.isArray(config.slides) ? config.slides.length : 0,
+          slideCount: slides.length,
+          flow: slides
+            .filter((s) => s?.type === "content" && typeof s?.title === "string")
+            .map((s) => s.title as string),
           createdAt: t.createdAt,
         };
       }),
