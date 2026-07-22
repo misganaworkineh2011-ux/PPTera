@@ -1,11 +1,15 @@
+import { Prisma } from "@prisma/client";
+
 /**
- * Denormalized deck metadata for dashboard cards: slide count + a few slide
- * image URLs for hover previews. Computed whenever slides are written so the
- * dashboard never has to load the heavy slides JSON.
+ * Denormalized deck metadata for dashboard cards: slide count, a few slide
+ * image URLs, and the first (cover) slide so cards can render the REAL slide.
+ * Computed whenever slides are written so the dashboard never has to load the
+ * heavy slides JSON.
  */
 export function computeDeckMeta(slides: unknown): {
   slideCount: number;
   previewImages: string[];
+  coverSlide: Prisma.InputJsonValue | typeof Prisma.JsonNull;
 } {
   const arr = Array.isArray(slides) ? slides : [];
   const urls: string[] = [];
@@ -25,5 +29,12 @@ export function computeDeckMeta(slides: unknown): {
       }
     }
   }
-  return { slideCount: arr.length, previewImages: urls };
+  return {
+    slideCount: arr.length,
+    previewImages: urls,
+    coverSlide:
+      arr.length > 0
+        ? (JSON.parse(JSON.stringify(arr[0])) as Prisma.InputJsonValue)
+        : Prisma.JsonNull,
+  };
 }

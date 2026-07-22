@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/server/db";
 import { requireAuth } from "~/lib/clerk-server";
+import { computeDeckMeta } from "~/lib/presentation/deck-meta";
 
 // Restore a presentation to a saved version. The current state is snapshotted
 // first ("Before restore"), so a restore is always itself reversible.
@@ -41,12 +42,17 @@ export async function POST(
       },
     });
 
+    // Keep the denormalized dashboard meta (cover slide, counts, theme id) in
+    // step with the restored state.
+    const restoredTheme = (version.content as { theme?: string } | null)?.theme;
     const updated = await db.presentation.update({
       where: { id },
       data: {
         title: version.title,
         slides: JSON.parse(JSON.stringify(version.slides ?? [])),
         content: JSON.parse(JSON.stringify(version.content ?? {})),
+        ...computeDeckMeta(version.slides),
+        ...(typeof restoredTheme === "string" ? { themeId: restoredTheme } : {}),
       },
       select: { title: true, slides: true, content: true },
     });

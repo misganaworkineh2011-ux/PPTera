@@ -16,6 +16,7 @@ import ShareModal from "~/components/presentation/ShareModal";
 import InfiniteScrollTrigger from "./components/InfiniteScrollTrigger";
 import SkeletonCard from "./components/SkeletonCard";
 import DeckHoverPreview from "./components/DeckHoverPreview";
+import DeckCoverSlide from "./components/DeckCoverSlide";
 
 interface Presentation {
   id: string;
@@ -31,6 +32,8 @@ interface Presentation {
   viewCount?: number;
   slideCount?: number;
   previewImages?: string[];
+  coverSlide?: unknown;
+  themeId?: string | null;
   deletedAt?: string | Date | null;
 }
 
@@ -898,6 +901,10 @@ export default function DashboardContent({ presentations: propPresentations, use
                       <Image src={getThumbnail(pres)} alt={pres.title} fill className="object-cover transition-transform duration-700 group-hover:scale-[1.06]" />
                     )}
 
+                    {/* Static cover: the deck's REAL first slide, rendered live
+                        (thumbnail/monogram above stays as the loading fallback) */}
+                    <DeckCoverSlide coverSlide={pres.coverSlide} themeId={pres.themeId} slideCount={pres.slideCount} />
+
                     {/* Hover preview: the deck's ACTUAL first slides, rendered live */}
                     {hoverPreview?.id === pres.id && (
                       <DeckHoverPreview presentationId={pres.id} tick={hoverPreview.idx} />
@@ -1001,6 +1008,7 @@ export default function DashboardContent({ presentations: propPresentations, use
                   ) : (
                     <Image src={getThumbnail(pres)} alt={pres.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
                   )}
+                  <DeckCoverSlide coverSlide={pres.coverSlide} themeId={pres.themeId} slideCount={pres.slideCount} />
                 </div>
                 <div className="flex-1 min-w-0 py-1">
                   <div className="flex items-center gap-3 mb-2">

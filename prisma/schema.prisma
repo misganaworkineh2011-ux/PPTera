@@ -71,6 +71,10 @@ model Presentation {
   // instead of loading the heavy slides JSON)
   slideCount     Int             @default(0)
   previewImages  String[]        @default([])
+  // First slide + theme id, denormalized so cards can render the REAL cover
+  // slide (live layout/theme) without fetching the full slides JSON
+  coverSlide     Json?
+  themeId        String?
   activities     Activity[]
   charts         Chart[]
   collaborations Collaboration[]

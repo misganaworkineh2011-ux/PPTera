@@ -12,6 +12,7 @@ import {
   generateImagesForSlides as generateAIImages,
 } from "~/lib/presentation";
 import { selectLayout, type LayoutSelectionContext } from "~/lib/presentation/smart-layout";
+import { computeDeckMeta } from "~/lib/presentation/deck-meta";
 import { env } from "~/env.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { AI_MODELS } from "~/lib/ai/models";
@@ -912,6 +913,10 @@ DO NOT output any [TITLE] tag - the title is fixed and will not change.`;
             where: { id: presentationId },
             data: {
               slides: JSON.parse(JSON.stringify(finalSlides)),
+              ...computeDeckMeta(finalSlides),
+              ...(typeof (content as { theme?: string } | null)?.theme === "string"
+                ? { themeId: (content as { theme?: string }).theme }
+                : {}),
               thumbnailUrl,
               content: JSON.parse(JSON.stringify({
                 ...content,

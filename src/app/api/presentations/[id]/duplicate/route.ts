@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { db } from "~/server/db";
 import { requireAuth } from "~/lib/clerk-server";
 
@@ -32,6 +33,8 @@ export async function POST(
         tags: true,
         slideCount: true,
         previewImages: true,
+        coverSlide: true,
+        themeId: true,
       },
     });
 
@@ -61,6 +64,11 @@ export async function POST(
         tags: original.tags,
         slideCount: original.slideCount,
         previewImages: original.previewImages,
+        coverSlide:
+          original.coverSlide === null
+            ? Prisma.JsonNull
+            : (original.coverSlide as Prisma.InputJsonValue),
+        themeId: original.themeId,
         isPinned: false,
         isPublic: false,
       },

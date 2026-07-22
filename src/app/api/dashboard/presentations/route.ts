@@ -76,6 +76,8 @@ export async function GET(req: Request) {
         viewCount: true,
         slideCount: true,
         previewImages: true,
+        coverSlide: true,
+        themeId: true,
         // Denormalized meta replaces the heavy slides JSON
       },
     });

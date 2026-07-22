@@ -19,6 +19,8 @@ interface Presentation {
   viewCount?: number;
   slideCount?: number;
   previewImages?: string[];
+  coverSlide?: unknown;
+  themeId?: string | null;
 }
 
 interface DashboardContentWrapperProps {

@@ -47,7 +47,8 @@ export async function PATCH(
 
     const updated = await db.presentation.update({
       where: { id },
-      data: { content: updatedContent },
+      // themeId is the denormalized copy dashboard cards read for live covers
+      data: { content: updatedContent, themeId: theme },
     });
 
     return NextResponse.json({ 

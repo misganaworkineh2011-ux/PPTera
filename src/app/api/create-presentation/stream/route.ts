@@ -329,6 +329,9 @@ export async function POST(request: Request) {
             // Link the source outline via the FK column too (not just the
             // content JSON) so lists can offer "Edit outline" cheaply.
             outlineId: outlineId || null,
+            // Denormalized theme id: dashboard cards read this to render the
+            // real cover slide without loading the content JSON.
+            themeId: resolvedTheme,
             content: JSON.parse(JSON.stringify({
               theme: resolvedTheme,
               themeConfig: themeConfig || null,
@@ -686,7 +689,7 @@ export async function POST(request: Request) {
           try {
             await db.presentation.update({
               where: { id: presentation.id },
-              data: { slides: JSON.parse(JSON.stringify(presentationSlides)), ...computeDeckMeta(presentationSlides) },
+              data: { slides: JSON.parse(JSON.stringify(presentationSlides)), themeId: resolvedTheme, ...computeDeckMeta(presentationSlides) },
             });
           } catch (persistError) {
             console.error(
@@ -747,7 +750,7 @@ export async function POST(request: Request) {
               try {
                 await db.presentation.update({
                   where: { id: presentation.id },
-                  data: { slides: JSON.parse(JSON.stringify(presentationSlides)), ...computeDeckMeta(presentationSlides) },
+                  data: { slides: JSON.parse(JSON.stringify(presentationSlides)), themeId: resolvedTheme, ...computeDeckMeta(presentationSlides) },
                 });
               } catch (persistError) {
                 console.error(

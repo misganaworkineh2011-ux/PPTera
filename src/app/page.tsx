@@ -37,6 +37,8 @@ async function PresentationsGrid({
         viewCount: true,
         slideCount: true,
         previewImages: true,
+        coverSlide: true,
+        themeId: true,
       },
     }),
     db.presentation.count({ where: { userId, deletedAt: null } }),
