@@ -1,5 +1,10 @@
+import type { Metadata } from "next";
 import { AuthenticateWithRedirectCallback } from "@clerk/nextjs";
 import { Loader2 } from "lucide-react";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 /**
  * OAuth landing route for the custom sign-in/sign-up pages: Clerk finishes the
