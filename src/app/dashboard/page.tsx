@@ -11,9 +11,12 @@ export const dynamic = "force-dynamic";
 // Separate async component for presentations data
 async function PresentationsGrid({ userId, userName }: { userId: string; userName: string }) {
   // Fetch presentations and total count in parallel
+  // Keep this select in lockstep with the one in src/app/page.tsx — both
+  // routes render the same dashboard and must ship the same card data
+  // (soft-deleted decks excluded, live-cover + tag fields included).
   const [presentations, totalCount] = await Promise.all([
     db.presentation.findMany({
-      where: { userId },
+      where: { userId, deletedAt: null },
       orderBy: { createdAt: "desc" },
       take: 50,
       select: {
@@ -26,10 +29,16 @@ async function PresentationsGrid({ userId, userName }: { userId: string; userNam
         thumbnailUrl: true,
         shareToken: true,
         outlineId: true,
+        tags: true,
+        viewCount: true,
+        slideCount: true,
+        previewImages: true,
+        coverSlide: true,
+        themeId: true,
       },
     }),
     db.presentation.count({
-      where: { userId },
+      where: { userId, deletedAt: null },
     }),
   ]);
 

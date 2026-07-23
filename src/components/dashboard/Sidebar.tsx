@@ -78,7 +78,12 @@ export default function Sidebar({ isCollapsed, subscriptionPlan, onCloseMobile }
     {
       title: t.dashboard,
       items: [
-        { name: t.presentations, href: "/", icon: LayoutDashboard },
+        // Deliberately /dashboard (NOT /): the root page mounts its own copy
+        // of the providers + DashboardLayout, so linking there tears down and
+        // remounts the whole shell. /dashboard renders the same content
+        // inside THIS persistent layout — tab switches keep the sidebar,
+        // topbar and dashboard context mounted.
+        { name: t.presentations, href: "/dashboard", icon: LayoutDashboard },
       ],
     },
     {
@@ -179,8 +184,9 @@ export default function Sidebar({ isCollapsed, subscriptionPlan, onCloseMobile }
               </h3>
               <div className="space-y-0.5">
                 {group.items.map((item) => {
-                  // For presentations link (href="/"), consider active if on "/" or "/dashboard"
-                  const isActive = item.href === "/"
+                  // Presentations is active on both entry points ("/" for the
+                  // signed-in landing, "/dashboard" for in-shell navigation)
+                  const isActive = item.href === "/dashboard"
                     ? pathname === "/" || pathname === "/dashboard"
                     : pathname === item.href;
                   
@@ -222,11 +228,13 @@ export default function Sidebar({ isCollapsed, subscriptionPlan, onCloseMobile }
                   }
 
                   // If not active, render as Link for navigation
+                  // Default prefetch: each route has a loading.tsx, so the
+                  // skeleton shell is prefetched and tab switches paint
+                  // instantly instead of waiting on the server round-trip.
                   return (
                     <Link
                       key={item.href}
                       href={item.href}
-                      prefetch={false}
                       onClick={() => onCloseMobile?.()}
                       className={itemClasses}
                     >
