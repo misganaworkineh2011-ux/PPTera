@@ -20,7 +20,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "~/lib/utils";
-import { UserButton, useUser, useClerk } from "~/lib/auth-compat";
+import { UserAvatar, UserButton, useUser, useClerk } from "~/lib/auth-compat";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
 
@@ -261,7 +261,8 @@ export default function Sidebar({ isCollapsed, subscriptionPlan, onCloseMobile }
             className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white dark:bg-zinc-800 dark:border-zinc-700 p-2.5 lg:p-3 shadow-sm transition hover:border-[#06b6d4] hover:shadow-md"
           >
             <div className="flex items-center gap-2 lg:gap-3 flex-1 min-w-0">
-              <UserButton />
+              {/* Plain avatar — this whole row is already a button */}
+              <UserAvatar />
               <div className="flex flex-col items-start overflow-hidden flex-1 min-w-0">
                 <div className="flex items-center justify-between w-full gap-2">
                   <span className="truncate text-sm font-bold text-[#1e3a8a] dark:text-white">

@@ -105,6 +105,32 @@ function initialsOf(user: CompatUser): string {
 }
 
 /**
+ * Non-interactive avatar (a <span>, never a <button>) — safe to embed inside
+ * other clickable elements, e.g. the sidebar's account row, without invalid
+ * button-in-button nesting.
+ */
+export function UserAvatar({ className }: { className?: string }) {
+  const { user } = useUser();
+  if (!user) return null;
+  return (
+    <span
+      className={
+        className ??
+        "flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-gradient-to-br from-violet-600 to-cyan-500 text-[11px] font-black text-white shadow-sm dark:border-white/10"
+      }
+      title={user.fullName ?? user.primaryEmailAddress?.emailAddress ?? "Account"}
+    >
+      {user.imageUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={user.imageUrl} alt="" className="h-full w-full object-cover" />
+      ) : (
+        initialsOf(user)
+      )}
+    </span>
+  );
+}
+
+/**
  * Clerk-compatible `<UserButton />`: avatar with a small sign-out menu.
  * Deliberately minimal — profile management lives in /dashboard/settings.
  * Accepts (and mostly ignores) Clerk's props so call sites don't churn.
@@ -142,15 +168,10 @@ export function UserButton({
           e.stopPropagation();
           setOpen((v) => !v);
         }}
-        className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-gradient-to-br from-violet-600 to-cyan-500 text-[11px] font-black text-white shadow-sm transition hover:brightness-110 dark:border-white/10"
+        className="rounded-full transition hover:brightness-110"
         title={user.fullName ?? user.primaryEmailAddress?.emailAddress ?? "Account"}
       >
-        {user.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={user.imageUrl} alt="" className="h-full w-full object-cover" />
-        ) : (
-          initialsOf(user)
-        )}
+        <UserAvatar />
       </button>
       {open && (
         <div className="absolute left-0 top-full z-[100] mt-2 w-48 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl dark:border-zinc-700 dark:bg-zinc-800">
