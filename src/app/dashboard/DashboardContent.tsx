@@ -755,7 +755,7 @@ export default function DashboardContent({ presentations: propPresentations, use
           <div className="flex items-center gap-2.5">
           <button
             type="button"
-            onClick={() => { startNavigating(); router.push("/dashboard/templates"); }}
+            onClick={() => router.push("/dashboard/templates")}
             title="Template gallery — curated starters plus decks you saved with 'Use as template'"
             className="flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-[12px] font-black uppercase tracking-wider transition-all outline-none shadow-sm shadow-slate-200/50 dark:shadow-none hover:shadow-md bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-white hover:border-violet-400"
           >
