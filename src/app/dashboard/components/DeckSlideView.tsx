@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import dynamic from "next/dynamic";
 import SlideScaler from "~/components/presentation/SlideScaler";
 import { TitleSlide } from "~/app/presentation/[slug]/components/TitleSlide";
@@ -11,11 +12,17 @@ const SlideRenderer = dynamic(() => import("~/components/presentation/SlideRende
   ssr: false,
 });
 
+// Stable no-op handlers: referentially identical across renders so the
+// memoized slide renderers below never re-render from prop churn.
+const NOOP = () => {};
+
 /**
  * Read-only miniature of ONE real slide (true theme + layout), shared by the
  * static card cover and the hover preview. Fills its positioned parent.
+ * Memoized: dashboard state churn (selection, favorites, hover ticks on
+ * OTHER cards) must not re-render dozens of live slide trees.
  */
-export default function DeckSlideView({
+function DeckSlideViewInner({
   slide,
   theme,
   index,
@@ -61,9 +68,9 @@ export default function DeckSlideView({
               isHovered={false}
               isEditing={false}
               editingText={null}
-              onStartEditing={() => {}}
-              onUpdateContent={() => {}}
-              onFinishEditing={() => {}}
+              onStartEditing={NOOP}
+              onUpdateContent={NOOP}
+              onFinishEditing={NOOP}
             />
           </SlideScaler>
         </>
@@ -79,14 +86,17 @@ export default function DeckSlideView({
             isHovered={false}
             isEditing={false}
             editingText={null}
-            onStartEditing={() => {}}
-            onUpdateContent={() => {}}
-            onFinishEditing={() => {}}
-            onAddBullet={() => {}}
-            onDeleteBullet={() => {}}
+            onStartEditing={NOOP}
+            onUpdateContent={NOOP}
+            onFinishEditing={NOOP}
+            onAddBullet={NOOP}
+            onDeleteBullet={NOOP}
           />
         </SlideScaler>
       )}
     </div>
   );
 }
+
+const DeckSlideView = memo(DeckSlideViewInner);
+export default DeckSlideView;

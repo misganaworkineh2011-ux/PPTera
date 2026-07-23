@@ -143,6 +143,9 @@ export default function DashboardContent({ presentations: propPresentations, use
   const renderedIdsRef = useRef<Set<string>>(new Set(propPresentations.map(p => p.id)));
   const prevCountRef = useRef(propPresentations.length);
   const isFirstRenderRef = useRef(true);
+  // Decks removed locally (trash/permanent delete) — must never be resurrected
+  // by a prop resync from stale parent data.
+  const locallyRemovedRef = useRef<Set<string>>(new Set());
   
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -164,8 +167,22 @@ export default function DashboardContent({ presentations: propPresentations, use
         newIds.forEach(id => renderedIdsRef.current.add(id));
       }, animationDuration);
     }
-    
-    setLocalPresentations(propPresentations);
+
+    // MERGE the incoming prop list instead of replacing state with it.
+    // The parent recombines from its original SSR snapshot, so a blind
+    // replace would wipe every optimistic update made since page load
+    // (tags, favorites, renames) and resurrect locally-deleted decks.
+    // Rule: a deck we already hold keeps its local version; new decks from
+    // the props are added; locally-created decks (duplicates) survive.
+    setLocalPresentations((prev) => {
+      const prevById = new Map(prev.map((p) => [p.id, p]));
+      const propIds = new Set(propPresentations.map((p) => p.id));
+      const base = propPresentations
+        .filter((p) => !locallyRemovedRef.current.has(p.id))
+        .map((p) => prevById.get(p.id) ?? p);
+      const localOnly = prev.filter((p) => !propIds.has(p.id));
+      return [...localOnly, ...base];
+    });
   }, [propPresentations]);
   
   const presentations = localPresentations;
@@ -217,6 +234,7 @@ export default function DashboardContent({ presentations: propPresentations, use
     try {
       const res = await fetch(`/api/presentations/${presId}/restore`, { method: "POST" });
       if (!res.ok) throw new Error();
+      locallyRemovedRef.current.delete(presId);
       if (item) setPresentations((prev) => [{ ...item, deletedAt: null }, ...prev]);
       toast.success("Presentation restored");
     } catch {
@@ -276,6 +294,7 @@ export default function DashboardContent({ presentations: propPresentations, use
       } else {
         const results = await Promise.all(ids.map((id) => fetch(`/api/presentations/${id}/delete`, { method: "DELETE" })));
         if (results.some((r) => !r.ok)) throw new Error();
+        ids.forEach((id) => locallyRemovedRef.current.add(id));
         setPresentations((prev) => prev.filter((pres) => !selectedIds.has(pres.id)));
         toast.success(`${ids.length} moved to trash`);
       }
@@ -399,16 +418,22 @@ export default function DashboardContent({ presentations: propPresentations, use
   }, []);
 
   const optimisticRemove = useCallback((presId: string) => {
-    const removed = presentations.find(p => p.id === presId);
-    setPresentations(prev => prev.filter(p => p.id !== presId));
+    let removed: Presentation | undefined;
+    setPresentations(prev => {
+      removed = prev.find(p => p.id === presId);
+      return prev.filter(p => p.id !== presId);
+    });
+    locallyRemovedRef.current.add(presId);
     return () => {
+      locallyRemovedRef.current.delete(presId);
       if (removed) {
-        setPresentations(prev => [...prev, removed].sort((a, b) =>
+        const item = removed;
+        setPresentations(prev => [...prev, item].sort((a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         ));
       }
     };
-  }, [presentations]);
+  }, []);
 
   const handleMenuAction = async (action: string, presId: string, _pres?: Presentation, e?: React.MouseEvent) => {
     if (e) {

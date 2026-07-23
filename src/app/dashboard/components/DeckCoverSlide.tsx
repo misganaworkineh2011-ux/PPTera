@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import DeckSlideView from "./DeckSlideView";
 import { getThemeById } from "~/lib/themes";
 import { type SlideData } from "~/components/presentation/types";
@@ -20,7 +20,7 @@ function isRenderableSlide(value: unknown): value is SlideData {
  * custom themes (their palette isn't denormalized) and malformed data — the
  * card's thumbnail/monogram underneath stays visible in those cases.
  */
-export default function DeckCoverSlide({
+function DeckCoverSlideInner({
   coverSlide,
   themeId,
   slideCount,
@@ -78,3 +78,8 @@ export default function DeckCoverSlide({
     </div>
   );
 }
+
+// Memoized: props only change when THIS deck's row is replaced (e.g. its
+// slides were edited) — dashboard-wide state churn skips all cover re-renders.
+const DeckCoverSlide = memo(DeckCoverSlideInner);
+export default DeckCoverSlide;
