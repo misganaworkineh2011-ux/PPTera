@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { authClient } from "~/lib/auth-client";
+import { useAuthProviders } from "~/lib/use-auth-providers";
 import AuthShell from "~/components/auth/AuthShell";
 import {
   ErrorBanner,
@@ -16,14 +17,13 @@ import {
   TextInput,
 } from "~/components/auth/AuthUi";
 
-const GOOGLE_ENABLED = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "1";
-
 function authErrorMessage(error: { message?: string } | null | undefined): string {
   return error?.message || "Something went wrong. Please try again.";
 }
 
 export default function SignUpPage() {
   const router = useRouter();
+  const { google: googleEnabled } = useAuthProviders();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -79,7 +79,7 @@ export default function SignUpPage() {
       </p>
 
       <div className="mt-8 space-y-4">
-        {GOOGLE_ENABLED && (
+        {googleEnabled && (
           <>
             <GoogleButton onClick={signUpWithGoogle} loading={oauthLoading} label="Sign up with Google" />
             <OrDivider />

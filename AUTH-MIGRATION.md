@@ -38,9 +38,9 @@ below are set on Vercel.
      (Web application).
    - Authorized redirect URI: `https://www.pptera.com/api/auth/callback/google`
      (plus `http://localhost:3000/api/auth/callback/google` for local dev).
-   - Set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`,
-     `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=1`. Without these the Google buttons are
-     hidden and email/password still works.
+   - Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`. The Google buttons
+     appear automatically once both are set (the pages ask
+     /api/auth/providers); without them email/password works alone.
 3. **Merge `better-auth` → `main`** and let Vercel deploy.
 4. **Existing users** (all sessions reset at cutover):
    - Google users: sign in with Google again — account linking matches them to

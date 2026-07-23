@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, MailCheck } from "lucide-react";
 import { authClient } from "~/lib/auth-client";
+import { useAuthProviders } from "~/lib/use-auth-providers";
 import AuthShell from "~/components/auth/AuthShell";
 import {
   ErrorBanner,
@@ -18,8 +19,6 @@ import {
 } from "~/components/auth/AuthUi";
 
 type Mode = "signin" | "forgot" | "sent" | "reset";
-
-const GOOGLE_ENABLED = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "1";
 
 /** Only allow same-origin relative destinations (never external URLs). */
 function sanitizeRedirect(raw: string | null): string {
@@ -34,6 +33,7 @@ function authErrorMessage(error: { message?: string } | null | undefined): strin
 function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { google: googleEnabled } = useAuthProviders();
   const redirectTo = sanitizeRedirect(searchParams.get("redirect_url"));
   // A reset link from the email lands back here with ?token=…
   const resetToken = searchParams.get("token");
@@ -138,7 +138,7 @@ function SignInForm() {
           )}
 
           <div className="mt-8 space-y-4">
-            {GOOGLE_ENABLED && (
+            {googleEnabled && (
               <>
                 <GoogleButton onClick={signInWithGoogle} loading={oauthLoading} label="Continue with Google" />
                 <OrDivider />
