@@ -186,7 +186,9 @@ export default function RootLayout({
           <link rel="preconnect" href="https://res.cloudinary.com" />
           <link rel="dns-prefetch" href="https://res.cloudinary.com" />
         </head>
-        <body className="font-sans bg-white">
+        {/* suppressHydrationWarning: browser extensions (Grammarly etc.) inject
+            attributes into <body> before React hydrates — harmless, but noisy. */}
+        <body className="font-sans bg-white" suppressHydrationWarning>
           <GoogleAnalytics />
           {/* Minimal noscript fallback - doesn't interfere with SEO */}
           <noscript>
