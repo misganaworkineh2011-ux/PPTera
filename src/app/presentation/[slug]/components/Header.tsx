@@ -32,7 +32,7 @@ import {
   History as HistoryIcon,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { UserButton } from "@clerk/nextjs";
+import { UserButton } from "~/lib/auth-compat";
 import type { Theme } from "~/lib/themes";
 import { getThemeType } from "./types";
 import { getUIColors } from "./ui-colors";

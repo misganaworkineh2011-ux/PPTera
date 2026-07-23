@@ -5,7 +5,7 @@ import { LoadingLink } from "~/components/LoadingLink";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkles } from "lucide-react";
-import { SignedIn, SignedOut, useUser } from "@clerk/nextjs";
+import { SignedIn, SignedOut, useUser } from "~/lib/auth-compat";
 import { type Language } from "~/lib/i18n";
 
 interface PromptSectionProps {

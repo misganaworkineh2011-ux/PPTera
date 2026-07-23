@@ -5,7 +5,7 @@
  * that was created with streaming=true mode.
  */
 
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "~/lib/auth-server";
 import { db } from "~/server/db";
 import { fetchImagesForSlides, type SlideWithVisualMetadata } from "~/lib/pexels";
 import {

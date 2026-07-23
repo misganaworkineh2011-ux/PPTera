@@ -4,10 +4,13 @@ import { z } from "zod";
 export const env = createEnv({
   server: {
     DATABASE_URL: z.string().url(),
-    CLERK_SECRET_KEY: z.string(),
-    // Webhook secret is optional but highly recommended in production
-    // The webhook handler will log warnings if missing
-    CLERK_WEBHOOK_SECRET: z.string().optional(),
+    // Better Auth session signing secret (required)
+    BETTER_AUTH_SECRET: z.string(),
+    // Canonical origin for auth callbacks (falls back to NEXT_PUBLIC_APP_URL)
+    BETTER_AUTH_URL: z.string().url().optional(),
+    // Google OAuth — optional; the Google button activates when both are set
+    GOOGLE_CLIENT_ID: z.string().optional(),
+    GOOGLE_CLIENT_SECRET: z.string().optional(),
     POLAR_ACCESS_TOKEN: z.string(),
     POLAR_ENV: z.enum(["sandbox", "production"]).default("sandbox"),
     POLAR_WEBHOOK_SECRET: z.string(),
@@ -41,13 +44,16 @@ export const env = createEnv({
       .default("development"),
   },
   client: {
-    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string(),
+    // "1" shows the Google sign-in buttons (set alongside the server creds)
+    NEXT_PUBLIC_GOOGLE_AUTH_ENABLED: z.string().optional(),
   },
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
-    CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
-    CLERK_WEBHOOK_SECRET: process.env.CLERK_WEBHOOK_SECRET,
+    BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+    BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     POLAR_ACCESS_TOKEN: process.env.POLAR_ACCESS_TOKEN,
     POLAR_ENV: process.env.POLAR_ENV,
     POLAR_WEBHOOK_SECRET: process.env.POLAR_WEBHOOK_SECRET,
@@ -72,8 +78,7 @@ export const env = createEnv({
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL,
     RESEND_REPLY_TO_EMAIL: process.env.RESEND_REPLY_TO_EMAIL,
-    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
-      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
+    NEXT_PUBLIC_GOOGLE_AUTH_ENABLED: process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
   emptyStringAsUndefined: true,

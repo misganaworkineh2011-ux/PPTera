@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "~/lib/auth-server";
 import { NextResponse } from "next/server";
 import { Polar } from "@polar-sh/sdk";
 import { env } from "~/env";

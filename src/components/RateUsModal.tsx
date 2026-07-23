@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Star, X, Send, Loader2, CheckCircle } from "lucide-react";
 import { cn } from "~/lib/utils";
-import { useUser } from "@clerk/nextjs";
+import { useUser } from "~/lib/auth-compat";
 import type { Theme } from "~/lib/themes";
 import { getModalColors } from "~/app/presentation/[slug]/components/ui-colors";
 import { PRESENTATIONS_THRESHOLD, markAsReviewed, markAsSkipped } from "./rate-us-utils";

@@ -8,7 +8,7 @@ import { useNavigation } from "~/contexts/NavigationContext";
 import Image from "next/image";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
-import { useUser } from "@clerk/nextjs";
+import { useUser } from "~/lib/auth-compat";
 import { useDashboard } from "~/contexts/DashboardContext";
 import { toast } from "sonner";
 import { getPresentationUrl } from "~/lib/utils";

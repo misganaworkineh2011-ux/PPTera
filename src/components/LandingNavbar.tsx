@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { SignedIn, SignedOut } from "~/lib/auth-compat";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { LoadingLink } from "./LoadingLink";

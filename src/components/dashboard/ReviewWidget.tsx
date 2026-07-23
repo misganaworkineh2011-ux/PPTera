@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Star, Send, Loader2, CheckCircle, MessageSquare, Edit3 } from "lucide-react";
 import { cn } from "~/lib/utils";
-import { useUser } from "@clerk/nextjs";
+import { useUser } from "~/lib/auth-compat";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
 

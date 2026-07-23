@@ -4,7 +4,9 @@ import { useState, useEffect } from "react";
 import { User, Shield, CreditCard, Bell, Monitor, ChevronRight, Loader2, Check, Save, ExternalLink, Sun, Moon, Laptop, MessageSquare } from "lucide-react";
 import ReviewWidget from "~/components/dashboard/ReviewWidget";
 import PricingModal from "~/components/dashboard/PricingModal";
-import { useUser, useClerk } from "@clerk/nextjs";
+import { useUser } from "~/lib/auth-compat";
+import { authClient } from "~/lib/auth-client";
+import { toast } from "sonner";
 import { useSettings } from "~/contexts/SettingsContext";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations, type Language } from "~/lib/dashboard-translations";
@@ -36,7 +38,6 @@ const languageNames: Record<Language, string> = {
 
 export default function SettingsPage() {
   const { user: clerkUser, isLoaded: clerkLoaded } = useUser();
-  const { openUserProfile } = useClerk();
   const { theme, setTheme, emailNotifications, setEmailNotifications, collaborationAlerts, setCollaborationAlerts } = useSettings();
   const { language, setLanguage } = useLanguage();
   
@@ -60,9 +61,9 @@ export default function SettingsPage() {
   }, []);
 
   useEffect(() => {
+    // Two-factor auth isn't wired up on Better Auth yet.
     if (clerkLoaded && clerkUser) {
-      // Check if user has 2FA enabled
-      setHas2FA(clerkUser.twoFactorEnabled || false);
+      setHas2FA(false);
     }
   }, [clerkLoaded, clerkUser]);
 
@@ -103,8 +104,19 @@ export default function SettingsPage() {
   };
 
   const handle2FAToggle = () => {
-    // Open Clerk's user profile to manage 2FA
-    openUserProfile();
+    toast.info("Two-factor authentication is coming soon.");
+  };
+
+  // Password changes go through the email reset link flow.
+  const sendPasswordReset = async () => {
+    const email = clerkUser?.primaryEmailAddress?.emailAddress;
+    if (!email) return;
+    const { error } = await authClient.requestPasswordReset({
+      email,
+      redirectTo: "/sign-in",
+    });
+    if (error) toast.error("Could not send the reset email. Try again.");
+    else toast.success(`Password reset link sent to ${email}`);
   };
 
   const tabs = [
@@ -388,7 +400,7 @@ export default function SettingsPage() {
                       <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 mt-0.5">{t.passwordManaged}</p>
                     </div>
                     <button
-                      onClick={() => openUserProfile()}
+                      onClick={() => void sendPasswordReset()}
                       className="flex items-center gap-2 text-sm font-bold text-[#06b6d4] hover:underline"
                     >
                       {t.manage} <ExternalLink size={12} />

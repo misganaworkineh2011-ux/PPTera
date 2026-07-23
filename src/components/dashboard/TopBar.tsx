@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Bell, Search, Sparkles, Gift, AlertCircle, AlertTriangle, FileText, Image as ImageIcon, BarChart, Palette, Sparkles as SparklesIcon, Users, History, Menu, Settings, Upload, Plus, Zap } from "lucide-react";
-import { UserButton } from "@clerk/nextjs";
+import { UserButton } from "~/lib/auth-compat";
 import { useStickyContext } from "./DashboardLayout";
 import { usePathname } from "next/navigation";
 import { useLanguage } from "~/contexts/LanguageContext";

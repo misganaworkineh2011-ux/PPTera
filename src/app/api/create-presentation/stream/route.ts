@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "~/lib/auth-server";
 import { db } from "~/server/db";
 import { fetchImagesForSlides, type SlideWithVisualMetadata, searchPexelsPhotos } from "~/lib/pexels";
 import { getThemeById } from "~/lib/themes";

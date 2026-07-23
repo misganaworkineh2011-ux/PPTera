@@ -4,7 +4,7 @@ import { LoadingLink } from "~/components/LoadingLink";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { useUser } from "~/lib/auth-compat";
 import { CheckCircle2, Users, Eye, Edit3 } from "lucide-react";
 import { toast } from "sonner";
 

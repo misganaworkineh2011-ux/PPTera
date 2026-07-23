@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { X, Loader2, AlertCircle, Zap, Check } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { DiscountTopBanner } from "~/components/DiscountTopBanner";
-import { useUser } from "@clerk/nextjs";
+import { useUser } from "~/lib/auth-compat";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";

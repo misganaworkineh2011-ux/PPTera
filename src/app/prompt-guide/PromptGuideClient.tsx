@@ -2,7 +2,6 @@
 
 import { LoadingLink } from "~/components/LoadingLink";
 
-import { } from "@clerk/nextjs";
 import { Zap } from "lucide-react";
 
 export function CTAButton() {

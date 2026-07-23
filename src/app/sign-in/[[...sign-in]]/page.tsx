@@ -4,11 +4,10 @@ import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { useSignIn } from "@clerk/nextjs";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, MailCheck } from "lucide-react";
+import { authClient } from "~/lib/auth-client";
 import AuthShell from "~/components/auth/AuthShell";
 import {
-  clerkErrorMessage,
   ErrorBanner,
   FieldLabel,
   GoogleButton,
@@ -18,7 +17,9 @@ import {
   TextInput,
 } from "~/components/auth/AuthUi";
 
-type Mode = "signin" | "forgot" | "reset";
+type Mode = "signin" | "forgot" | "sent" | "reset";
+
+const GOOGLE_ENABLED = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "1";
 
 /** Only allow same-origin relative destinations (never external URLs). */
 function sanitizeRedirect(raw: string | null): string {
@@ -26,98 +27,94 @@ function sanitizeRedirect(raw: string | null): string {
   return "/";
 }
 
+function authErrorMessage(error: { message?: string } | null | undefined): string {
+  return error?.message || "Something went wrong. Please try again.";
+}
+
 function SignInForm() {
-  const { isLoaded, signIn, setActive } = useSignIn();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = sanitizeRedirect(searchParams.get("redirect_url"));
+  // A reset link from the email lands back here with ?token=…
+  const resetToken = searchParams.get("token");
 
-  const [mode, setMode] = useState<Mode>("signin");
+  const [mode, setMode] = useState<Mode>(resetToken ? "reset" : "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(
+    searchParams.get("error") === "INVALID_TOKEN"
+      ? null
+      : null,
+  );
+  const [error, setError] = useState<string | null>(
+    searchParams.get("error") === "INVALID_TOKEN"
+      ? "That reset link is invalid or has expired. Request a new one."
+      : null,
+  );
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
 
   const signInWithGoogle = async () => {
-    if (!isLoaded) return;
     setError(null);
     setOauthLoading(true);
-    try {
-      await signIn.authenticateWithRedirect({
-        strategy: "oauth_google",
-        redirectUrl: "/sso-callback",
-        redirectUrlComplete: redirectTo,
-      });
-    } catch (err) {
-      setError(clerkErrorMessage(err));
+    const { error: err } = await authClient.signIn.social({
+      provider: "google",
+      callbackURL: redirectTo,
+    });
+    if (err) {
+      setError(authErrorMessage(err));
       setOauthLoading(false);
     }
   };
 
   const submitPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isLoaded) return;
     setError(null);
     setLoading(true);
-    try {
-      const result = await signIn.create({ identifier: email, password });
-      if (result.status === "complete") {
-        await setActive({ session: result.createdSessionId });
-        router.push(redirectTo);
-      } else {
-        // Extra factors (e.g. 2FA) aren't handled by this simple flow.
-        setError("Additional verification is required for this account.");
-      }
-    } catch (err) {
-      setError(clerkErrorMessage(err));
-    } finally {
+    const { error: err } = await authClient.signIn.email({ email, password });
+    if (err) {
+      setError(authErrorMessage(err));
       setLoading(false);
+      return;
     }
+    router.push(redirectTo);
+    router.refresh();
   };
 
-  const requestResetCode = async (e: React.FormEvent) => {
+  const requestReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isLoaded) return;
     setError(null);
     setLoading(true);
-    try {
-      await signIn.create({
-        strategy: "reset_password_email_code",
-        identifier: email,
-      });
-      setMode("reset");
-    } catch (err) {
-      setError(clerkErrorMessage(err));
-    } finally {
-      setLoading(false);
+    const { error: err } = await authClient.requestPasswordReset({
+      email,
+      redirectTo: "/sign-in",
+    });
+    setLoading(false);
+    if (err) {
+      setError(authErrorMessage(err));
+      return;
     }
+    setMode("sent");
   };
 
   const submitReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isLoaded) return;
+    if (!resetToken) return;
     setError(null);
     setLoading(true);
-    try {
-      const result = await signIn.attemptFirstFactor({
-        strategy: "reset_password_email_code",
-        code,
-        password: newPassword,
-      });
-      if (result.status === "complete") {
-        await setActive({ session: result.createdSessionId });
-        router.push(redirectTo);
-      } else {
-        setError("Could not complete the password reset. Please try again.");
-      }
-    } catch (err) {
-      setError(clerkErrorMessage(err));
-    } finally {
-      setLoading(false);
+    const { error: err } = await authClient.resetPassword({
+      newPassword,
+      token: resetToken,
+    });
+    setLoading(false);
+    if (err) {
+      setError(authErrorMessage(err));
+      return;
     }
+    setNotice("Password updated — sign in with your new password.");
+    setMode("signin");
+    router.replace("/sign-in");
   };
 
   return (
@@ -134,9 +131,19 @@ function SignInForm() {
             Sign in to keep building beautiful presentations.
           </p>
 
+          {notice && (
+            <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-[13.5px] font-semibold text-emerald-700">
+              {notice}
+            </div>
+          )}
+
           <div className="mt-8 space-y-4">
-            <GoogleButton onClick={signInWithGoogle} loading={oauthLoading} label="Continue with Google" />
-            <OrDivider />
+            {GOOGLE_ENABLED && (
+              <>
+                <GoogleButton onClick={signInWithGoogle} loading={oauthLoading} label="Continue with Google" />
+                <OrDivider />
+              </>
+            )}
             <form onSubmit={submitPassword} className="space-y-4">
               <div>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -201,9 +208,9 @@ function SignInForm() {
           </button>
           <h1 className="text-[26px] font-bold tracking-tight text-zinc-900">Reset your password</h1>
           <p className="mt-1.5 text-[15px] text-zinc-500">
-            Enter your email and we&apos;ll send you a verification code.
+            Enter your email and we&apos;ll send you a secure reset link.
           </p>
-          <form onSubmit={requestResetCode} className="mt-8 space-y-4">
+          <form onSubmit={requestReset} className="mt-8 space-y-4">
             <div>
               <FieldLabel htmlFor="email">Email</FieldLabel>
               <TextInput
@@ -217,32 +224,42 @@ function SignInForm() {
               />
             </div>
             <ErrorBanner message={error} />
-            <SubmitButton loading={loading}>Send reset code</SubmitButton>
+            <SubmitButton loading={loading}>Send reset link</SubmitButton>
           </form>
+        </>
+      )}
+
+      {mode === "sent" && (
+        <>
+          <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] shadow-lg shadow-cyan-600/25">
+            <MailCheck className="h-7 w-7 text-white" />
+          </div>
+          <h1 className="text-[26px] font-bold tracking-tight text-zinc-900">Check your email</h1>
+          <p className="mt-1.5 text-[15px] text-zinc-500">
+            If an account exists for{" "}
+            <span className="font-semibold text-zinc-700">{email}</span>, we sent a link to reset
+            your password. The link expires in one hour.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setError(null);
+              setMode("signin");
+            }}
+            className="mt-8 w-full text-center text-[13.5px] font-semibold text-zinc-500 transition-colors hover:text-zinc-800"
+          >
+            Back to sign in
+          </button>
         </>
       )}
 
       {mode === "reset" && (
         <>
-          <h1 className="text-[26px] font-bold tracking-tight text-zinc-900">Check your email</h1>
+          <h1 className="text-[26px] font-bold tracking-tight text-zinc-900">Choose a new password</h1>
           <p className="mt-1.5 text-[15px] text-zinc-500">
-            We sent a code to <span className="font-semibold text-zinc-700">{email}</span>. Enter it
-            below with your new password.
+            Set a new password for your account to finish the reset.
           </p>
           <form onSubmit={submitReset} className="mt-8 space-y-4">
-            <div>
-              <FieldLabel htmlFor="code">Verification code</FieldLabel>
-              <TextInput
-                id="code"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                required
-                placeholder="123456"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                className="text-center text-lg tracking-[0.35em]"
-              />
-            </div>
             <div>
               <FieldLabel htmlFor="new-password">New password</FieldLabel>
               <PasswordInput
@@ -255,7 +272,7 @@ function SignInForm() {
               />
             </div>
             <ErrorBanner message={error} />
-            <SubmitButton loading={loading}>Reset password &amp; sign in</SubmitButton>
+            <SubmitButton loading={loading}>Reset password</SubmitButton>
           </form>
         </>
       )}

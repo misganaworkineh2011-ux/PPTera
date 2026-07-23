@@ -1,4 +1,3 @@
-import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
 import { GeistSans } from "geist/font/sans";
 import { LanguageProvider } from "~/contexts/LanguageContext";
@@ -181,12 +180,9 @@ export default function RootLayout({
   };
 
   return (
-    <ClerkProvider>
-      <html lang="en" className={GeistSans.variable}>
+    <html lang="en" className={GeistSans.variable}>
         <head>
           {/* Preconnect to critical third-party origins for faster loading */}
-          <link rel="preconnect" href="https://clerk.pptmaster.app" />
-          <link rel="dns-prefetch" href="https://clerk.pptmaster.app" />
           <link rel="preconnect" href="https://res.cloudinary.com" />
           <link rel="dns-prefetch" href="https://res.cloudinary.com" />
         </head>
@@ -223,8 +219,7 @@ export default function RootLayout({
             dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationSchema) }}
           />
           <Toaster />
-        </body>
-      </html>
-    </ClerkProvider>
+      </body>
+    </html>
   );
 }

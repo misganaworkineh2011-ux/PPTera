@@ -1,16 +1,23 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { getSessionCookie } from "better-auth/cookies";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-// Define protected routes that require authentication
-const isProtectedRoute = createRouteMatcher([
-  "/dashboard(.*)",
-  "/api/generate(.*)",
-  "/api/user(.*)",
-  "/api/presentations(.*)",
-  "/api/credits(.*)",
-  "/api/cron(.*)",
-]);
+// Define protected routes that require authentication.
+// The middleware does an OPTIMISTIC cookie-presence check (no DB hit) — real
+// session validation happens server-side in requireAuth()/getSessionUser().
+const PROTECTED_ROUTE_PATTERNS = [
+  /^\/dashboard(\/.*)?$/,
+  /^\/api\/generate(\/.*)?$/,
+  /^\/api\/user(\/.*)?$/,
+  /^\/api\/presentations(\/.*)?$/,
+  /^\/api\/credits(\/.*)?$/,
+  /^\/api\/cron(\/.*)?$/,
+];
+
+function isProtectedRoute(request: NextRequest): boolean {
+  const { pathname } = request.nextUrl;
+  return PROTECTED_ROUTE_PATTERNS.some((p) => p.test(pathname));
+}
 
 // Known search engine bot user agents
 const BOT_USER_AGENTS = [
@@ -36,7 +43,7 @@ function isBot(userAgent: string | null): boolean {
 // i18n configuration
 const SUPPORTED_LANGUAGES = ["en", "es", "fr", "de", "zh", "pt", "it", "ja", "ko", "ar", "hi", "ru"];
 
-export default clerkMiddleware(async (auth, request) => {
+export default function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
   const userAgent = request.headers.get("user-agent");
 
@@ -65,9 +72,15 @@ export default clerkMiddleware(async (auth, request) => {
       return NextResponse.next();
     }
 
-    // Protect specific routes
-    if (isProtectedRoute(request)) {
-      await auth.protect();
+    // Protect specific routes: optimistic session-cookie check. Pages
+    // redirect to sign-in (preserving the destination); APIs get a 401.
+    if (isProtectedRoute(request) && !getSessionCookie(request)) {
+      if (pathname.startsWith("/api")) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+      const signInUrl = new URL("/sign-in", request.url);
+      signInUrl.searchParams.set("redirect_url", pathname + request.nextUrl.search);
+      return NextResponse.redirect(signInUrl);
     }
 
     return NextResponse.next();
@@ -115,7 +128,7 @@ export default clerkMiddleware(async (auth, request) => {
   }
 
   return NextResponse.next();
-});
+}
 
 export const config = {
   matcher: [

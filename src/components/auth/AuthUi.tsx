@@ -126,11 +126,3 @@ export function GoogleButton({
 }
 
 /** Map a Clerk API error to a human-readable message. */
-export function clerkErrorMessage(err: unknown): string {
-  const e = err as { errors?: Array<{ longMessage?: string; message?: string }> };
-  return (
-    e?.errors?.[0]?.longMessage ||
-    e?.errors?.[0]?.message ||
-    "Something went wrong. Please try again."
-  );
-}

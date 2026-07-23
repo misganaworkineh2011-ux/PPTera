@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Loader2, AlertCircle, Zap, Check, Sparkles } from "lucide-react";
 import { cn } from "~/lib/utils";
-import { useUser } from "@clerk/nextjs";
+import { useUser } from "~/lib/auth-compat";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
@@ -61,10 +61,21 @@ export default function PricingPageClient({ currentLang }: PricingPageClientProp
   const t = dashboardTranslations[language] || dashboardTranslations.en;
 
   useEffect(() => {
-    if (user?.publicMetadata?.subscriptionPlan) {
-      setCurrentPlan(user.publicMetadata.subscriptionPlan as string);
-    }
-  }, [user]);
+    // Plan lives in our DB (Better Auth sessions carry no metadata).
+    if (!isSignedIn) return;
+    let cancelled = false;
+    fetch("/api/user/me?include=basic")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!cancelled && data?.subscriptionPlan) {
+          setCurrentPlan(String(data.subscriptionPlan).toLowerCase());
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [isSignedIn]);
 
   const isPaidUser = currentPlan && currentPlan.toLowerCase() !== "free";
 

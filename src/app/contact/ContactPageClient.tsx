@@ -7,7 +7,7 @@ import { Mail, MessageCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { LoadingButton } from "~/components/LoadingButton";
 import { toast } from "sonner";
-import { useUser } from "@clerk/nextjs";
+import { useUser } from "~/lib/auth-compat";
 
 interface ContactPageClientProps {
   currentLang: Language;

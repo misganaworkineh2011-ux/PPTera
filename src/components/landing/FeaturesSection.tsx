@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Sparkles, Wand2, Share2 } from "lucide-react";
-import { } from "@clerk/nextjs";
 import { LoadingLink } from "~/components/LoadingLink";
 import { LazyVideo } from "./LazyVideo";
 import { type Language } from "~/lib/i18n";

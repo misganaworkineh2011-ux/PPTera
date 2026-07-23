@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { SignedOut, SignedIn } from "@clerk/nextjs";
+import { SignedOut, SignedIn } from "~/lib/auth-compat";
 import { LoadingLink } from "~/components/LoadingLink";
 import { type Language } from "~/lib/i18n";
 

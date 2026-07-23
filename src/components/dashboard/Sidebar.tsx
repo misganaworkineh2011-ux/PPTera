@@ -20,7 +20,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "~/lib/utils";
-import { UserButton, useUser, useClerk } from "@clerk/nextjs";
+import { UserButton, useUser, useClerk } from "~/lib/auth-compat";
 import { useLanguage } from "~/contexts/LanguageContext";
 import { dashboardTranslations } from "~/lib/dashboard-translations";
 

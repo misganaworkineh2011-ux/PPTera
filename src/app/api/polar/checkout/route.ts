@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { Polar } from "@polar-sh/sdk";
-import { currentUser } from "@clerk/nextjs/server";
+import { currentUser } from "~/lib/auth-server";
 import { env } from "~/env";
 
 export const dynamic = "force-dynamic";

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "~/lib/auth-server";
 import * as XLSX from "xlsx";
 import type { ChartData, ChartDataPoint, ChartType } from "~/lib/charts/types";
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Zap, Crown, Users, ArrowRight, Check, Sparkles, Timer, Loader2 } from "lucide-react";
 import { Button } from "~/components/ui/Button";
-import { useUser } from "@clerk/nextjs";
+import { useUser } from "~/lib/auth-compat";
 import { useRouter } from "next/navigation";
 
 interface CyberMondayDealsProps {
