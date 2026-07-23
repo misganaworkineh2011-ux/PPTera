@@ -74,19 +74,38 @@ async function processReferral(newUserId: string, newUserEmail: string, referral
 export const auth = betterAuth({
   database: prismaAdapter(db, { provider: "postgresql" }),
   secret: process.env.BETTER_AUTH_SECRET,
-  // In dev the server answers on localhost even when NEXT_PUBLIC_APP_URL
-  // points at production — origin checks must match the ACTUAL origin.
-  baseURL:
-    process.env.BETTER_AUTH_URL ||
-    (process.env.NODE_ENV === "development"
-      ? "http://localhost:3000"
-      : process.env.NEXT_PUBLIC_APP_URL) ||
-    "http://localhost:3000",
-  trustedOrigins: [
-    "http://localhost:3000",
-    ...(process.env.NEXT_PUBLIC_APP_URL ? [process.env.NEXT_PUBLIC_APP_URL] : []),
-    ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),
-  ],
+  // In dev, leave baseURL unset so Better Auth infers it from each request —
+  // Next may bind 3000, 3001, … depending on what's free, and OAuth callback
+  // URLs must match the port the app is ACTUALLY served on. Production pins
+  // the canonical origin. (NEXT_PUBLIC_APP_URL can't be used in dev: it points
+  // at the deployed site.)
+  ...(process.env.NODE_ENV === "development" && !process.env.BETTER_AUTH_URL
+    ? {}
+    : {
+        baseURL:
+          process.env.BETTER_AUTH_URL ||
+          process.env.NEXT_PUBLIC_APP_URL ||
+          "http://localhost:3000",
+      }),
+  // Dev additionally trusts the requesting origin when it's a local/private
+  // address on ANY port; production stays pinned to the configured origins.
+  trustedOrigins: (request) => {
+    const origins = [
+      "http://localhost:3000",
+      ...(process.env.NEXT_PUBLIC_APP_URL ? [process.env.NEXT_PUBLIC_APP_URL] : []),
+      ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),
+    ];
+    if (process.env.NODE_ENV === "development") {
+      const origin = request?.headers?.get("origin");
+      if (
+        origin &&
+        /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3})(:\d+)?$/.test(origin)
+      ) {
+        origins.push(origin);
+      }
+    }
+    return origins;
+  },
 
   emailAndPassword: {
     enabled: true,
