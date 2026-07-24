@@ -27,8 +27,8 @@ const logoUrl = "https://www.pptera.com/logo.png";
 
 // App colors
 const colors = {
-  primary: "#1e3a8a",
-  accent: "#06b6d4",
+  primary: "#0f766e",
+  accent: "#14b8a6",
   text: "#1e293b",
   textMuted: "#64748b",
   background: "#f8fafc",

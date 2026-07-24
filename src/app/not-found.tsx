@@ -16,7 +16,7 @@ export default function NotFound() {
             404
           </h1>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="h-32 w-32 rounded-full bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center animate-bounce">
+            <div className="h-32 w-32 rounded-full bg-gradient-to-br from-[#0f766e] to-[#14b8a6] flex items-center justify-center animate-bounce">
               <Search className="h-16 w-16 text-white" />
             </div>
           </div>
@@ -34,7 +34,7 @@ export default function NotFound() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <Link
             href="/"
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-bold rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105"
+            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#0f766e] to-[#14b8a6] text-white font-bold rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105"
           >
             <Home className="h-5 w-5" />
             {t.backToHome || "Back to Home"}

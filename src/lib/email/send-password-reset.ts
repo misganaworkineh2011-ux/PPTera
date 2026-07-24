@@ -27,7 +27,7 @@ export async function sendPasswordResetEmail({
             We received a request to reset the password for your PPTera account.
             Click the button below to choose a new one. This link expires in one hour.
           </p>
-          <a href="${url}" style="display:inline-block;padding:12px 22px;border-radius:12px;background:linear-gradient(90deg,#7c3aed,#06b6d4);color:#ffffff;font-weight:700;font-size:14px;text-decoration:none;">
+          <a href="${url}" style="display:inline-block;padding:12px 22px;border-radius:12px;background:linear-gradient(90deg,#059669,#14b8a6);color:#ffffff;font-weight:700;font-size:14px;text-decoration:none;">
             Choose a new password
           </a>
           <p style="margin:24px 0 0;font-size:12px;color:#64748b;line-height:1.6;">

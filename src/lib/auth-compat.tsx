@@ -116,7 +116,7 @@ export function UserAvatar({ className }: { className?: string }) {
     <span
       className={
         className ??
-        "flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-gradient-to-br from-violet-600 to-cyan-500 text-[11px] font-black text-white shadow-sm dark:border-white/10"
+        "flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-gradient-to-br from-emerald-600 to-teal-500 text-[11px] font-black text-white shadow-sm dark:border-white/10"
       }
       title={user.fullName ?? user.primaryEmailAddress?.emailAddress ?? "Account"}
     >

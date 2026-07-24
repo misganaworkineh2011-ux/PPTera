@@ -276,9 +276,9 @@ const NAV_STYLES = `
   position: relative;
   height: 100%;
   border-radius: 0 4px 4px 0;
-  background: linear-gradient(90deg, #1e3a8a 0%, #2563eb 35%, #06b6d4 70%, #22d3ee 100%);
+  background: linear-gradient(90deg, #0f766e 0%, #0d9488 35%, #14b8a6 70%, #2dd4bf 100%);
   background-size: 200% 100%;
-  box-shadow: 0 0 10px rgba(6, 182, 212, 0.7), 0 0 4px rgba(30, 58, 138, 0.6);
+  box-shadow: 0 0 10px rgba(20, 184, 166, 0.7), 0 0 4px rgba(15, 118, 110, 0.6);
   transition: width 0.2s ease, opacity 0.35s ease 0.05s;
   animation: ppt-nav-flow 1.6s linear infinite;
 }
@@ -290,7 +290,7 @@ const NAV_STYLES = `
   width: 90px;
   transform: translateX(40%);
   border-radius: 50%;
-  background: rgba(34, 211, 238, 0.65);
+  background: rgba(45, 212, 191, 0.65);
   filter: blur(6px);
 }
 @keyframes ppt-nav-flow {

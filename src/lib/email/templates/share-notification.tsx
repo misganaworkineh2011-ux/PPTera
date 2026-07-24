@@ -27,8 +27,8 @@ const logoUrl = "https://www.pptera.com/logo.png";
 
 // App colors from not-found page
 const colors = {
-  primary: "#1e3a8a",      // Deep blue
-  accent: "#06b6d4",       // Cyan
+  primary: "#0f766e",      // Deep blue
+  accent: "#14b8a6",       // Cyan
   text: "#1e293b",         // Slate 800
   textMuted: "#64748b",    // Slate 500
   background: "#f8fafc",   // Slate 50

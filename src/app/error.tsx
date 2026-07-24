@@ -71,19 +71,19 @@ export default function Error({
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={reset}
-            className="px-8 py-3 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white rounded-lg font-semibold hover:shadow-xl transition-all"
+            className="px-8 py-3 bg-gradient-to-r from-[#0f766e] to-[#14b8a6] text-white rounded-lg font-semibold hover:shadow-xl transition-all"
           >
             Try Again
           </button>
           <button
             onClick={handleRefresh}
-            className="px-8 py-3 bg-white border-2 border-slate-200 text-slate-700 rounded-lg font-semibold hover:border-[#06b6d4] transition-all"
+            className="px-8 py-3 bg-white border-2 border-slate-200 text-slate-700 rounded-lg font-semibold hover:border-[#14b8a6] transition-all"
           >
             Refresh Page
           </button>
           <button
             onClick={handleGoHome}
-            className="px-8 py-3 bg-white border-2 border-slate-200 text-slate-700 rounded-lg font-semibold hover:border-[#06b6d4] transition-all"
+            className="px-8 py-3 bg-white border-2 border-slate-200 text-slate-700 rounded-lg font-semibold hover:border-[#14b8a6] transition-all"
           >
             Go Home
           </button>
