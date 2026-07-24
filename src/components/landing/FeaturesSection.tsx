@@ -36,7 +36,7 @@ const THEME_PREVIEWS = [
     titleBg: "linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)",
     textColor: "#1a1a2e",
     headingColor: "#0d0d1a",
-    accentColor: "#4f46e5",
+    accentColor: "#059669",
     borderColor: "#e5e5ea",
   },
   {
@@ -46,7 +46,7 @@ const THEME_PREVIEWS = [
     titleBg: "linear-gradient(135deg, #1a1a35 0%, #2a1a45 100%)",
     textColor: "#e8e8f0",
     headingColor: "#ffffff",
-    accentColor: "#8b5cf6",
+    accentColor: "#10b981",
     borderColor: "#2a2a50",
   },
   {
@@ -102,7 +102,7 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
                 {/* Left Panel - AI Chat - Hidden on mobile, shown on desktop */}
                 <div className="hidden lg:block border-r border-white/10 p-6 bg-white/[0.02]">
                   <div className="flex items-center gap-2 mb-6">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-600 to-teal-500 flex items-center justify-center">
                       <Sparkles className="w-4 h-4 text-white" />
                     </div>
                     <span className="font-medium text-white">{t.aiAssistant || "AI Assistant"}</span>
@@ -148,7 +148,7 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
             ].map((tab, i, arr) => (
               <div key={tab.label} className="flex items-center gap-2">
                 <span
-                  className={`text-sm font-medium transition cursor-default ${i === 0 ? "text-white border-b-2 border-cyan-400 pb-1" : "text-slate-400"}`}
+                  className={`text-sm font-medium transition cursor-default ${i === 0 ? "text-white border-b-2 border-teal-400 pb-1" : "text-slate-400"}`}
                 >
                   {tab.label}
                 </span>
@@ -417,17 +417,17 @@ export function FeaturesSection({ t, currentLang }: FeaturesSectionProps) {
             </div>
 
             {/* Floating Profile Card */}
-            <div className="absolute -right-4 top-8 bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] rounded-xl p-4 w-48 text-white shadow-xl">
-              <div className="text-xs text-cyan-100 mb-3">PPTera / {t.export || "Export"}</div>
+            <div className="absolute -right-4 top-8 bg-gradient-to-br from-[#0f766e] to-[#14b8a6] rounded-xl p-4 w-48 text-white shadow-xl">
+              <div className="text-xs text-teal-100 mb-3">PPTera / {t.export || "Export"}</div>
               <div className="flex flex-col items-center">
                 <div className="w-14 h-14 rounded-full bg-white/20 mb-2 flex items-center justify-center">
                   <Share2 className="w-6 h-6 text-white" />
                 </div>
                 <p className="font-medium">{t.readyToShare || "Ready to Share"}</p>
-                <p className="text-xs text-cyan-100">10 {t.slides || "slides"}</p>
+                <p className="text-xs text-teal-100">10 {t.slides || "slides"}</p>
                 <div className="flex gap-2 mt-3">
-                  <LoadingLink href="/sign-in" className="px-3 py-1 bg-white text-[#1e3a8a] text-xs rounded-md font-medium hover:bg-cyan-50 transition">{t.export || "Export"}</LoadingLink>
-                  <LoadingLink href="/sign-in" className="px-3 py-1 border border-cyan-300 text-xs rounded-md hover:bg-white/10 transition">{t.share || "Share"}</LoadingLink>
+                  <LoadingLink href="/sign-in" className="px-3 py-1 bg-white text-[#0f766e] text-xs rounded-md font-medium hover:bg-teal-50 transition">{t.export || "Export"}</LoadingLink>
+                  <LoadingLink href="/sign-in" className="px-3 py-1 border border-teal-300 text-xs rounded-md hover:bg-white/10 transition">{t.share || "Share"}</LoadingLink>
                 </div>
               </div>
             </div>

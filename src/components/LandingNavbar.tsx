@@ -167,7 +167,7 @@ export const LandingNavbar = ({ currentLang }: LandingNavbarProps) => {
               <LoadingLink href="/sign-in" className="hidden lg:block px-4 py-2.5 text-[15px] text-slate-300 hover:text-white transition">
                   {t.navLogin || "Log in"}
                 </LoadingLink>
-              <LoadingLink href="/sign-up" className="px-5 py-2.5 text-[15px] font-medium text-white bg-gradient-to-r from-violet-600 to-cyan-500 rounded-lg shadow-lg shadow-cyan-500/20 hover:brightness-110 transition">
+              <LoadingLink href="/sign-up" className="px-5 py-2.5 text-[15px] font-medium text-white bg-gradient-to-r from-emerald-600 to-teal-500 rounded-lg shadow-lg shadow-teal-500/20 hover:brightness-110 transition">
                   Sign up
                 </LoadingLink>
             </SignedOut>
@@ -293,7 +293,7 @@ export const LandingNavbar = ({ currentLang }: LandingNavbarProps) => {
             <div className="mt-6">
               <SignedOut>
                 <LoadingLink href="/sign-in" 
-                    className="w-full py-3 text-base font-medium text-white bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] rounded-lg hover:opacity-90"
+                    className="w-full py-3 text-base font-medium text-white bg-gradient-to-r from-[#0f766e] to-[#14b8a6] rounded-lg hover:opacity-90"
                     onClick={() => setMobileOpen(false)}
                   >
                     Sign up
@@ -302,7 +302,7 @@ export const LandingNavbar = ({ currentLang }: LandingNavbarProps) => {
               <SignedIn>
                 <LoadingLink 
                   href="/" 
-                  className="block w-full py-3 text-base font-medium text-center text-white bg-gradient-to-r from-violet-600 to-cyan-500 rounded-lg shadow-lg shadow-cyan-500/20"
+                  className="block w-full py-3 text-base font-medium text-center text-white bg-gradient-to-r from-emerald-600 to-teal-500 rounded-lg shadow-lg shadow-teal-500/20"
                   onClick={() => setMobileOpen(false)}
                 >
                   {t.navDashboard || "Dashboard"}

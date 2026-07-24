@@ -269,18 +269,18 @@ export default function PricingModal({ isOpen, onClose, currentPlan, initialTab 
               >
                 {activeTab === "plans" ? (
                   <>
-                    <Zap className="h-4 w-4 text-cyan-600" />
+                    <Zap className="h-4 w-4 text-teal-600" />
                     {t.buyCredits || "Buy Credits"}
                   </>
                 ) : (
                   "Back to Plans"
                 )}
                 {activeTab === "topup" && (
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#06b6d4] rounded-t-full" />
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#14b8a6] rounded-t-full" />
                 )}
               </button>
             ) : (
-               <div className="px-5 py-3 text-sm font-bold text-slate-900 border-b-4 border-[#06b6d4]">
+               <div className="px-5 py-3 text-sm font-bold text-slate-900 border-b-4 border-[#14b8a6]">
                  {t.subscriptionPlans || "Subscription Plans"}
                </div>
             )}
@@ -340,7 +340,7 @@ export default function PricingModal({ isOpen, onClose, currentPlan, initialTab 
                       className={cn(
                         "relative rounded-[2rem] p-8 transition-all duration-300 flex flex-col group",
                         plan.highlight 
-                          ? "ring-2 ring-[#06b6d4] shadow-[0_20px_40px_-15px_rgba(6,182,212,0.15)] bg-gradient-to-b from-white to-cyan-50/20" 
+                          ? "ring-2 ring-[#14b8a6] shadow-[0_20px_40px_-15px_rgba(20,184,166,0.15)] bg-gradient-to-b from-white to-teal-50/20" 
                           : "border border-slate-100/80 hover:border-slate-200 hover:shadow-xl bg-white"
                       )}
                     >
@@ -348,8 +348,8 @@ export default function PricingModal({ isOpen, onClose, currentPlan, initialTab 
                         <div className={cn(
                           "absolute -top-4 left-1/2 -translate-x-1/2 text-[11px] font-black tracking-[0.15em] px-5 py-1.5 rounded-full shadow-lg whitespace-nowrap uppercase",
                           plan.badgeGradient 
-                            ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white" 
-                            : "bg-[#06b6d4] text-white shadow-cyan-500/20"
+                            ? "bg-gradient-to-r from-emerald-600 to-pink-600 text-white" 
+                            : "bg-[#14b8a6] text-white shadow-teal-500/20"
                         )}>
                           {plan.badge}
                         </div>
@@ -365,8 +365,8 @@ export default function PricingModal({ isOpen, onClose, currentPlan, initialTab 
                         <h3 className="text-xl font-black text-slate-900 mb-1 flex items-center gap-2">
                           {plan.name}
                           {plan.highlight && (
-                            <div className="flex items-center justify-center p-1 rounded-lg bg-cyan-50 border border-cyan-100">
-                              <Zap className="h-3.5 w-3.5 text-[#06b6d4] fill-[#06b6d4]/20" />
+                            <div className="flex items-center justify-center p-1 rounded-lg bg-teal-50 border border-teal-100">
+                              <Zap className="h-3.5 w-3.5 text-[#14b8a6] fill-[#14b8a6]/20" />
                             </div>
                           )}
                         </h3>
@@ -398,7 +398,7 @@ export default function PricingModal({ isOpen, onClose, currentPlan, initialTab 
                           <div key={j} className="flex items-start gap-3">
                             <div className={cn(
                               "mt-0.5 h-4 w-4 rounded-full flex items-center justify-center shrink-0",
-                              plan.highlight ? "bg-cyan-100 text-cyan-600" : "bg-slate-100 text-slate-400"
+                              plan.highlight ? "bg-teal-100 text-teal-600" : "bg-slate-100 text-slate-400"
                             )}>
                               <Check className="h-2.5 w-2.5 stroke-[4]" />
                             </div>
@@ -460,7 +460,7 @@ export default function PricingModal({ isOpen, onClose, currentPlan, initialTab 
                         )}
                       >
                         {isPopular && (
-                          <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#06b6d4] text-white text-[11px] font-black tracking-[0.15em] px-5 py-1.5 rounded-full shadow-lg shadow-cyan-500/20 uppercase whitespace-nowrap">
+                          <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#14b8a6] text-white text-[11px] font-black tracking-[0.15em] px-5 py-1.5 rounded-full shadow-lg shadow-teal-500/20 uppercase whitespace-nowrap">
                             {t.bestValue || "BEST VALUE"}
                           </div>
                         )}
@@ -469,19 +469,19 @@ export default function PricingModal({ isOpen, onClose, currentPlan, initialTab 
                           "w-16 h-16 rounded-3xl flex items-center justify-center mb-8 rotate-3 group-hover:rotate-6 transition-transform",
                           isPopular ? "bg-white/10 ring-1 ring-white/20" : "bg-slate-50 ring-1 ring-slate-100"
                         )}>
-                          <Zap className={cn("w-8 h-8", isPopular ? "text-cyan-400" : "text-slate-900")} />
+                          <Zap className={cn("w-8 h-8", isPopular ? "text-teal-400" : "text-slate-900")} />
                         </div>
 
                         <div className="mb-4">
                           <div className={cn("text-4xl font-black tracking-tighter", isPopular ? "text-white" : "text-slate-900")}>
                             {credits.toLocaleString()}
                           </div>
-                          <div className={cn("text-xs font-black tracking-[0.2em] uppercase mt-1", isPopular ? "text-cyan-400" : "text-slate-400")}>
+                          <div className={cn("text-xs font-black tracking-[0.2em] uppercase mt-1", isPopular ? "text-teal-400" : "text-slate-400")}>
                             {t.credits || "credits"}
                           </div>
                         </div>
 
-                        <div className={cn("text-3xl font-black mb-10", isPopular ? "text-white" : "text-[#06b6d4]")}>
+                        <div className={cn("text-3xl font-black mb-10", isPopular ? "text-white" : "text-[#14b8a6]")}>
                           {topupLoading || !option ? (
                             <div className="h-8 w-20 animate-pulse rounded-lg bg-current/20 mx-auto" />
                           ) : (
@@ -495,7 +495,7 @@ export default function PricingModal({ isOpen, onClose, currentPlan, initialTab 
                           className={cn(
                             "w-full py-4 rounded-2xl text-sm font-black transition-all duration-300 disabled:opacity-50 mt-auto",
                             isPopular
-                              ? "bg-[#06b6d4] text-white hover:bg-cyan-400 shadow-[0_10px_20px_-5px_rgba(6,182,212,0.4)]"
+                              ? "bg-[#14b8a6] text-white hover:bg-teal-400 shadow-[0_10px_20px_-5px_rgba(20,184,166,0.4)]"
                               : "bg-slate-900 text-white hover:scale-[1.02]"
                           )}
                         >

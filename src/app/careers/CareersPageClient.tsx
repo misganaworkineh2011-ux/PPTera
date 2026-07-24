@@ -120,7 +120,7 @@ export default function CareersPageClient({ currentLang = "en" }: CareersPageCli
 
         <div className="relative z-10 mx-auto max-w-5xl text-center">
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-4 py-2 backdrop-blur-sm animate-fade-in">
-            <Briefcase className="h-4 w-4 text-[#06b6d4]" />
+            <Briefcase className="h-4 w-4 text-[#14b8a6]" />
             <span className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
               {t.careers || "Careers"}
             </span>
@@ -128,7 +128,7 @@ export default function CareersPageClient({ currentLang = "en" }: CareersPageCli
 
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 mb-8 animate-fade-in-up [animation-delay:100ms]">
             {t.careersHeroTitle || "Build the future with"}{" "}
-            <span className="bg-gradient-to-r from-[#1e3a8a] via-[#06b6d4] to-[#1e3a8a] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#0f766e] via-[#14b8a6] to-[#0f766e] bg-clip-text text-transparent">
               {t.careersHeroHighlight || "us"}
             </span>
           </h1>
@@ -144,7 +144,7 @@ export default function CareersPageClient({ currentLang = "en" }: CareersPageCli
           <div className="mt-10 animate-fade-in-up [animation-delay:300ms]">
             <a
               href="#positions"
-              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-8 py-4 text-lg font-bold text-white shadow-xl hover:shadow-2xl transition-all hover:scale-105"
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#0f766e] to-[#14b8a6] px-8 py-4 text-lg font-bold text-white shadow-xl hover:shadow-2xl transition-all hover:scale-105"
             >
               {t.viewOpenPositions || "View Open Positions"}
               <Rocket className="h-5 w-5" />
@@ -205,7 +205,7 @@ export default function CareersPageClient({ currentLang = "en" }: CareersPageCli
                   onClick={() => setSelectedDepartment(dept)}
                   className={`px-6 py-2 rounded-full border text-sm font-semibold transition-all ${
                     selectedDepartment === dept
-                      ? "border-[#06b6d4] bg-[#06b6d4] text-white"
+                      ? "border-[#14b8a6] bg-[#14b8a6] text-white"
                       : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                   }`}
                 >
@@ -217,7 +217,7 @@ export default function CareersPageClient({ currentLang = "en" }: CareersPageCli
 
           {loading ? (
             <div className="text-center py-12">
-              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#06b6d4] border-r-transparent"></div>
+              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#14b8a6] border-r-transparent"></div>
               <p className="mt-4 text-slate-600">{t.loadingPositions || "Loading positions..."}</p>
             </div>
           ) : jobs.length === 0 ? (
@@ -231,16 +231,16 @@ export default function CareersPageClient({ currentLang = "en" }: CareersPageCli
                 return (
                   <div
                     key={job.id}
-                    className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-xl transition-all duration-300 hover:border-[#06b6d4] animate-fade-in-up"
+                    className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-xl transition-all duration-300 hover:border-[#14b8a6] animate-fade-in-up"
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                       <div className="flex items-start gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white flex-shrink-0">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#0f766e] to-[#14b8a6] text-white flex-shrink-0">
                           <Icon className="h-6 w-6" />
                         </div>
                         <div>
-                          <h3 className="text-xl font-bold text-slate-900 mb-1 group-hover:text-[#06b6d4] transition-colors">
+                          <h3 className="text-xl font-bold text-slate-900 mb-1 group-hover:text-[#14b8a6] transition-colors">
                             {job.title}
                           </h3>
                           <div className="flex flex-wrap gap-3 text-sm text-slate-600 mb-2">
@@ -261,7 +261,7 @@ export default function CareersPageClient({ currentLang = "en" }: CareersPageCli
                       </div>
                       <button
                         onClick={() => handleApplyClick(job)}
-                        className="self-start md:self-center px-6 py-2 rounded-full bg-slate-900 text-white font-semibold hover:bg-[#06b6d4] transition-colors whitespace-nowrap"
+                        className="self-start md:self-center px-6 py-2 rounded-full bg-slate-900 text-white font-semibold hover:bg-[#14b8a6] transition-colors whitespace-nowrap"
                       >
                         {t.applyNow || "Apply Now"}
                       </button>
@@ -278,7 +278,7 @@ export default function CareersPageClient({ currentLang = "en" }: CareersPageCli
             </p>
             <LoadingLink
               href={localPath("/contact")}
-              className="inline-flex items-center gap-2 text-[#06b6d4] font-semibold hover:underline"
+              className="inline-flex items-center gap-2 text-[#14b8a6] font-semibold hover:underline"
             >
               {t.getInTouch || "Get in touch"}
               <span>→</span>
@@ -288,7 +288,7 @@ export default function CareersPageClient({ currentLang = "en" }: CareersPageCli
       </section>
 
       {/* CTA Section */}
-      <section className="relative py-24 px-6 bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4]">
+      <section className="relative py-24 px-6 bg-gradient-to-br from-[#0f766e] to-[#14b8a6]">
         <div className="mx-auto max-w-4xl text-center text-white">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
             {t.readyToJoin || "Ready to join our mission?"}
@@ -298,7 +298,7 @@ export default function CareersPageClient({ currentLang = "en" }: CareersPageCli
           </p>
           <a
             href="#positions"
-            className="inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-lg font-bold text-[#1e3a8a] shadow-xl hover:shadow-2xl transition-all hover:scale-105"
+            className="inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-lg font-bold text-[#0f766e] shadow-xl hover:shadow-2xl transition-all hover:scale-105"
           >
             {t.exploreOpportunities || "Explore Opportunities"}
           </a>

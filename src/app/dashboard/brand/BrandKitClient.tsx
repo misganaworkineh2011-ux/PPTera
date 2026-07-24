@@ -45,7 +45,7 @@ export default function BrandKitClient({
   const [kit, setKit] = useState<BrandKitData>(
     initialKit ?? {
       logoUrl: null,
-      primaryColor: "#6366f1",
+      primaryColor: "#10b981",
       secondaryColor: null,
       accentColor: null,
       headingFont: "Inter",
@@ -93,18 +93,18 @@ export default function BrandKitClient({
       <div className="flex items-center gap-2">
         <input
           type="color"
-          value={kit[key] ?? "#6366f1"}
+          value={kit[key] ?? "#10b981"}
           onChange={(e) => set(key, e.target.value)}
           className="h-9 w-12 cursor-pointer rounded-lg border border-slate-200"
         />
         <input
           type="text"
           value={kit[key] ?? ""}
-          placeholder={required ? "#6366f1" : "Optional"}
+          placeholder={required ? "#10b981" : "Optional"}
           onChange={(e) =>
-            set(key, (e.target.value || (required ? "#6366f1" : null)) as never)
+            set(key, (e.target.value || (required ? "#10b981" : null)) as never)
           }
-          className="w-28 rounded-lg border border-slate-200 px-2.5 py-2 font-mono text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+          className="w-28 rounded-lg border border-slate-200 px-2.5 py-2 font-mono text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-200"
         />
       </div>
     </div>
@@ -114,7 +114,7 @@ export default function BrandKitClient({
     <div className="mx-auto max-w-2xl px-6 py-10">
       <div className="mb-8">
         <h1 className="flex items-center gap-2 text-2xl font-bold text-slate-900">
-          <Sparkles size={20} className="text-indigo-500" /> Brand kit
+          <Sparkles size={20} className="text-emerald-500" /> Brand kit
         </h1>
         <p className="mt-1.5 text-sm leading-relaxed text-slate-500">
           Set your brand once — every presentation you generate comes out
@@ -140,7 +140,7 @@ export default function BrandKitClient({
             type="checkbox"
             checked={kit.enabled}
             onChange={(e) => set("enabled", e.target.checked)}
-            className="h-5 w-5 accent-indigo-600"
+            className="h-5 w-5 accent-emerald-600"
           />
         </label>
 
@@ -206,7 +206,7 @@ export default function BrandKitClient({
               <select
                 value={kit[key] ?? "Inter"}
                 onChange={(e) => set(key, e.target.value)}
-                className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-200"
               >
                 {FONT_OPTIONS.map((f) => (
                   <option key={f} value={f}>
@@ -229,7 +229,7 @@ export default function BrandKitClient({
             onChange={(e) => set("footerText", e.target.value || null)}
             placeholder="© Acme Inc. — Confidential"
             maxLength={120}
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-200"
           />
         </div>
 
@@ -237,7 +237,7 @@ export default function BrandKitClient({
         <button
           onClick={save}
           disabled={isSaving}
-          className="flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50"
+          className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
         >
           {isSaving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
           Save brand kit

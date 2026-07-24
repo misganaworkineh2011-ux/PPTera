@@ -135,7 +135,7 @@ export default function ThemeSelector({
                 placeholder="Search for a theme"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-10 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4]"
+                className="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-10 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20 focus:border-[#14b8a6]"
               />
               {searchQuery && (
                 <button
@@ -162,7 +162,7 @@ export default function ThemeSelector({
                   onClick={() => setActiveFilter(filter.id)}
                   className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors flex items-center gap-1.5 ${
                     activeFilter === filter.id
-                      ? "bg-[#06b6d4] text-white"
+                      ? "bg-[#14b8a6] text-white"
                       : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
                   }`}
                 >
@@ -170,7 +170,7 @@ export default function ThemeSelector({
                   {filter.label}
                   {filter.id === "custom" && customThemes.length > 0 && (
                     <span className={`ml-1 text-xs px-1.5 py-0.5 rounded-full ${
-                      activeFilter === filter.id ? "bg-white/20" : "bg-[#06b6d4]/10 text-[#06b6d4]"
+                      activeFilter === filter.id ? "bg-white/20" : "bg-[#14b8a6]/10 text-[#14b8a6]"
                     }`}>
                       {customThemes.length}
                     </span>
@@ -202,7 +202,7 @@ export default function ThemeSelector({
                     onClick={() => handleThemeClick(theme.id)}
                     className={`group relative overflow-hidden rounded-lg border text-left transition-all hover:shadow-md ${
                       isSelected
-                        ? "border-[#3b82f6] ring-1 ring-[#3b82f6]"
+                        ? "border-[#14b8a6] ring-1 ring-[#14b8a6]"
                         : "border-slate-200 hover:border-slate-300"
                     }`}
                   >
@@ -266,7 +266,7 @@ export default function ThemeSelector({
 
                     {/* Custom Theme Badge */}
                     {(theme as any).isCustom && (
-                      <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">
+                      <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-gradient-to-r from-[#0f766e] to-[#14b8a6] px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">
                         <Sparkles size={10} />
                         Custom
                       </div>
@@ -277,13 +277,13 @@ export default function ThemeSelector({
                       className={`px-3 py-2 border-t flex items-center justify-between text-sm ${
                         isSelected ? "bg-blue-50/50" : "bg-white"
                       }`}
-                      style={{ borderColor: isSelected ? "#3b82f6" : "#e2e8f0" }}
+                      style={{ borderColor: isSelected ? "#14b8a6" : "#e2e8f0" }}
                     >
                       <div className="font-medium text-slate-700 flex items-center gap-1.5">
                         {theme.name}
                       </div>
                       {isSelected && (
-                        <Check size={16} className="text-[#3b82f6]" />
+                        <Check size={16} className="text-[#14b8a6]" />
                       )}
                     </div>
                   </button>
@@ -301,7 +301,7 @@ export default function ThemeSelector({
                 </Button>
                 <Button
                   onClick={handleSelect}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4]"
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-[#0f766e] to-[#14b8a6]"
                 >
                   Select theme
                 </Button>
@@ -528,7 +528,7 @@ export default function ThemeSelector({
               </Button>
               <Button
                 onClick={handleSelect}
-                className="px-6 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4]"
+                className="px-6 bg-gradient-to-r from-[#0f766e] to-[#14b8a6]"
               >
                 Select theme
               </Button>

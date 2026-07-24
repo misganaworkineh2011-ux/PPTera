@@ -137,7 +137,7 @@ export default function ImagesPageClient({
               placeholder={t.searchImages || "Search images..."}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 shadow-sm shadow-slate-200/50 dark:shadow-none focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all"
+              className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 shadow-sm shadow-slate-200/50 dark:shadow-none focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20 focus:border-[#14b8a6] transition-all"
             />
           </div>
           
@@ -167,9 +167,9 @@ export default function ImagesPageClient({
         {filteredImages.length === 0 ? (
           <div className="flex h-[400px] flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-900/50 text-center">
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white dark:bg-neutral-800 shadow-lg ring-1 ring-slate-100 dark:ring-neutral-700">
-              <ImageIcon size={28} className="text-[#06b6d4]" />
+              <ImageIcon size={28} className="text-[#14b8a6]" />
             </div>
-            <h3 className="mb-2 text-lg font-bold text-[#1e3a8a] dark:text-white">
+            <h3 className="mb-2 text-lg font-bold text-[#0f766e] dark:text-white">
               {searchQuery ? (t.noImagesFound || "No images found") : (t.noImagesYet || "No images yet")}
             </h3>
             <p className="text-sm text-slate-500 dark:text-neutral-400 max-w-xs mx-auto mb-6">
@@ -180,7 +180,7 @@ export default function ImagesPageClient({
             {!searchQuery && (
               <button
                 onClick={() => setShowGenerator(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white rounded-xl font-medium hover:opacity-90 transition"
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#0f766e] to-[#14b8a6] text-white rounded-xl font-medium hover:opacity-90 transition"
               >
                 <Sparkles className="h-4 w-4" />
                 {t.generateWithAI || "Generate with AI"}
@@ -193,7 +193,7 @@ export default function ImagesPageClient({
               <div
                 key={img.id}
                 onClick={() => setSelectedImage(img)}
-                className="group relative flex flex-col overflow-hidden rounded-[20px] border border-slate-200/80 shadow-md ring-1 ring-slate-900/5 dark:ring-0 dark:border-white/10 dark:shadow-none bg-white dark:bg-zinc-950 transition-all duration-300 hover:border-[#06b6d4]/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 cursor-pointer"
+                className="group relative flex flex-col overflow-hidden rounded-[20px] border border-slate-200/80 shadow-md ring-1 ring-slate-900/5 dark:ring-0 dark:border-white/10 dark:shadow-none bg-white dark:bg-zinc-950 transition-all duration-300 hover:border-[#14b8a6]/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 cursor-pointer"
               >
                 {/* Image Thumbnail */}
                 <div className="aspect-square w-full bg-slate-50 dark:bg-zinc-900 border-b border-slate-100 dark:border-zinc-800 relative overflow-hidden">
@@ -255,7 +255,7 @@ export default function ImagesPageClient({
 
                 {/* Content Section */}
                 <div className="flex flex-col p-4 lg:p-5">
-                  <h3 className="line-clamp-1 text-[14px] font-bold text-slate-900 dark:text-white leading-snug group-hover:text-[#06b6d4] transition-colors" title={img.filename}>
+                  <h3 className="line-clamp-1 text-[14px] font-bold text-slate-900 dark:text-white leading-snug group-hover:text-[#14b8a6] transition-colors" title={img.filename}>
                     {img.filename}
                   </h3>
                 </div>
@@ -269,7 +269,7 @@ export default function ImagesPageClient({
               <div
                 key={img.id}
                 onClick={() => setSelectedImage(img)}
-                className="group flex items-center gap-5 rounded-[20px] border border-slate-200/80 shadow-sm ring-1 ring-slate-900/5 dark:ring-0 dark:border-white/10 dark:shadow-none bg-white dark:bg-zinc-950 p-3 transition-all duration-300 hover:border-[#06b6d4]/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-0.5 cursor-pointer"
+                className="group flex items-center gap-5 rounded-[20px] border border-slate-200/80 shadow-sm ring-1 ring-slate-900/5 dark:ring-0 dark:border-white/10 dark:shadow-none bg-white dark:bg-zinc-950 p-3 transition-all duration-300 hover:border-[#14b8a6]/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-0.5 cursor-pointer"
               >
                 <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-[14px] overflow-hidden bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 flex-shrink-0 transition-transform duration-500 group-hover:scale-105">
                   {img.url && !failedImages.has(img.id) ? (
@@ -294,7 +294,7 @@ export default function ImagesPageClient({
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-[15px] font-bold text-slate-900 dark:text-white truncate group-hover:text-[#06b6d4] transition-colors mb-1">
+                  <h3 className="text-[15px] font-bold text-slate-900 dark:text-white truncate group-hover:text-[#14b8a6] transition-colors mb-1">
                     {img.filename}
                   </h3>
                   <p className="text-[11px] font-semibold text-slate-400 dark:text-zinc-500">
@@ -328,7 +328,7 @@ export default function ImagesPageClient({
           <div className="relative w-full max-w-lg bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 z-10 bg-white dark:bg-neutral-900 px-6 py-4 border-b border-slate-200 dark:border-neutral-800 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] rounded-xl">
+                <div className="p-2 bg-gradient-to-br from-[#0f766e] to-[#14b8a6] rounded-xl">
                   <Sparkles className="h-5 w-5 text-white" />
                 </div>
                 <div>
@@ -379,7 +379,7 @@ export default function ImagesPageClient({
                         setCopiedUrl(true);
                         setTimeout(() => setCopiedUrl(false), 2000);
                       }}
-                      className="p-2 text-slate-500 hover:text-[#06b6d4] transition"
+                      className="p-2 text-slate-500 hover:text-[#14b8a6] transition"
                       title="Copy URL"
                     >
                       {copiedUrl ? (
@@ -390,7 +390,7 @@ export default function ImagesPageClient({
                     </button>
                     <button
                       onClick={() => handleDownloadImage(selectedImage.url!, selectedImage.filename)}
-                      className="p-2 text-slate-500 hover:text-[#06b6d4] transition"
+                      className="p-2 text-slate-500 hover:text-[#14b8a6] transition"
                       title="Download"
                     >
                       <Download className="h-5 w-5" />
@@ -447,7 +447,7 @@ export default function ImagesPageClient({
                         setCopiedUrl(true);
                         setTimeout(() => setCopiedUrl(false), 2000);
                       }}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-[#06b6d4] hover:bg-[#0891b2] rounded-lg transition"
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-[#14b8a6] hover:bg-[#0d9488] rounded-lg transition"
                     >
                       {copiedUrl ? (
                         <>

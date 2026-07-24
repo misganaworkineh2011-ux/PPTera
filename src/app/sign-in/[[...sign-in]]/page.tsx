@@ -166,7 +166,7 @@ function SignInForm() {
                       setError(null);
                       setMode("forgot");
                     }}
-                    className="mb-1.5 text-[13px] font-semibold text-cyan-700 transition-colors hover:text-cyan-800"
+                    className="mb-1.5 text-[13px] font-semibold text-teal-700 transition-colors hover:text-teal-800"
                   >
                     Forgot password?
                   </button>
@@ -187,7 +187,7 @@ function SignInForm() {
 
           <p className="mt-8 text-center text-[14px] text-zinc-500">
             New to PPTera?{" "}
-            <Link href="/sign-up" className="font-semibold text-cyan-700 transition-colors hover:text-cyan-800">
+            <Link href="/sign-up" className="font-semibold text-teal-700 transition-colors hover:text-teal-800">
               Create a free account
             </Link>
           </p>
@@ -231,7 +231,7 @@ function SignInForm() {
 
       {mode === "sent" && (
         <>
-          <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] shadow-lg shadow-cyan-600/25">
+          <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#0f766e] to-[#14b8a6] shadow-lg shadow-teal-600/25">
             <MailCheck className="h-7 w-7 text-white" />
           </div>
           <h1 className="text-[26px] font-bold tracking-tight text-zinc-900">Check your email</h1>

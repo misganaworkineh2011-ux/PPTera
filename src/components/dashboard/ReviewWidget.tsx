@@ -128,7 +128,7 @@ export default function ReviewWidget() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-6 w-6 animate-spin text-[#06b6d4]" />
+        <Loader2 className="h-6 w-6 animate-spin text-[#14b8a6]" />
       </div>
     );
   }
@@ -177,7 +177,7 @@ export default function ReviewWidget() {
             </div>
             <button
               onClick={() => setIsEditing(true)}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-[#06b6d4] hover:bg-[#06b6d4]/10 rounded-xl transition-all active:scale-95"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-[#14b8a6] hover:bg-[#14b8a6]/10 rounded-xl transition-all active:scale-95"
             >
               <Edit3 size={14} />
               {t.edit || "Edit"}
@@ -232,7 +232,7 @@ export default function ReviewWidget() {
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white transition-all"
+              className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium focus:border-[#14b8a6] focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white transition-all"
               placeholder={t.yourName || "Your name"}
             />
           </div>
@@ -261,7 +261,7 @@ export default function ReviewWidget() {
             minLength={5}
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white transition-all"
+            className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium focus:border-[#14b8a6] focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white transition-all"
             placeholder={t.summarizeExperience || "Summarize your experience"}
           />
         </div>
@@ -277,7 +277,7 @@ export default function ReviewWidget() {
             rows={5}
             value={formData.content}
             onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-            className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white resize-none transition-all"
+            className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-[#14b8a6] focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white resize-none transition-all"
             placeholder={t.tellUsWhatYouLove || "Tell us what you love about PPTera and how we can improve..."}
           />
         </div>

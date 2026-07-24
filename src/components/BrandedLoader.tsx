@@ -74,7 +74,7 @@ const LOADER_STYLES = `
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: conic-gradient(from 0deg, #1e3a8a, #2563eb, #06b6d4, #22d3ee, #1e3a8a);
+  background: conic-gradient(from 0deg, #0f766e, #0d9488, #14b8a6, #2dd4bf, #0f766e);
   -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 calc(100% - 6px));
   mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 calc(100% - 6px));
   animation: ppt-loader-spin 1s linear infinite;
@@ -110,7 +110,7 @@ const LOADER_STYLES = `
   display: block;
   height: 3px;
   border-radius: 2px;
-  background: linear-gradient(90deg, #1e3a8a, #06b6d4);
+  background: linear-gradient(90deg, #0f766e, #14b8a6);
   background-size: 220% 100%;
   animation: ppt-loader-line 1.4s ease-in-out infinite;
 }
@@ -146,7 +146,7 @@ const LOADER_STYLES = `
   font-weight: 500;
   letter-spacing: 0.01em;
   color: #475569;
-  background: linear-gradient(90deg, #475569 0%, #1e3a8a 25%, #06b6d4 50%, #1e3a8a 75%, #475569 100%);
+  background: linear-gradient(90deg, #475569 0%, #0f766e 25%, #14b8a6 50%, #0f766e 75%, #475569 100%);
   background-size: 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;

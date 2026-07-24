@@ -60,7 +60,7 @@ export default function SearchPage() {
         {/* Images Group */}
         <div className="space-y-4">
           <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-            <ImageIcon size={20} className="text-purple-500" /> Images
+            <ImageIcon size={20} className="text-emerald-500" /> Images
           </h2>
           <div className="grid grid-cols-4 gap-4 sm:grid-cols-6 lg:grid-cols-8">
              {Array.from({ length: 4 }).map((_, i) => (

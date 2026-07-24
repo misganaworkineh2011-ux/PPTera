@@ -110,7 +110,7 @@ export default function RecentOutlines({ outlines: initialOutlines, mode = "ai" 
                   onClick={() => handleOutlineClick(outline.id)}
                   className="w-full text-left group"
                 >
-                  <div className="relative flex items-center justify-between p-3 rounded-lg bg-white/60 hover:bg-white/80 transition-all duration-200 hover:shadow-md border border-white/50 group-hover:border-[#06b6d4]/30">
+                  <div className="relative flex items-center justify-between p-3 rounded-lg bg-white/60 hover:bg-white/80 transition-all duration-200 hover:shadow-md border border-white/50 group-hover:border-[#14b8a6]/30">
                     {/* Status badge - inside card, top right corner - pointer-events-none to ensure clicks go to parent button */}
                     <div className="absolute top-2 right-2 z-10 pointer-events-none">
                       {hasPresentation ? (
@@ -131,7 +131,7 @@ export default function RecentOutlines({ outlines: initialOutlines, mode = "ai" 
                     </div>
 
                     <div className="flex-1 min-w-0 pr-6">
-                      <p className="text-sm font-medium text-slate-800 truncate group-hover:text-[#1e3a8a] transition-colors">
+                      <p className="text-sm font-medium text-slate-800 truncate group-hover:text-[#0f766e] transition-colors">
                         {outline.title}
                       </p>
                       <div className="flex items-center gap-1 mt-1">
@@ -150,7 +150,7 @@ export default function RecentOutlines({ outlines: initialOutlines, mode = "ai" 
                     </div>
                     <div className="ml-3 flex items-center">
                       <svg
-                        className="w-4 h-4 text-[#06b6d4] opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="w-4 h-4 text-[#14b8a6] opacity-0 group-hover:opacity-100 transition-opacity"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -185,7 +185,7 @@ export default function RecentOutlines({ outlines: initialOutlines, mode = "ai" 
                 }
               }}
               disabled={isLoadingMore}
-              className="mt-4 w-full flex items-center justify-center gap-2 text-sm font-medium text-[#06b6d4] hover:text-[#1e3a8a] transition-colors py-2 rounded-lg hover:bg-white/60 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="mt-4 w-full flex items-center justify-center gap-2 text-sm font-medium text-[#14b8a6] hover:text-[#0f766e] transition-colors py-2 rounded-lg hover:bg-white/60 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoadingMore ? (
                 <>
@@ -206,7 +206,7 @@ export default function RecentOutlines({ outlines: initialOutlines, mode = "ai" 
             <button
               onClick={handleLoadMore}
               disabled={isLoadingMore}
-              className="mt-4 w-full flex items-center justify-center gap-2 text-sm font-medium text-[#06b6d4] hover:text-[#1e3a8a] transition-colors py-2 rounded-lg hover:bg-white/60 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="mt-4 w-full flex items-center justify-center gap-2 text-sm font-medium text-[#14b8a6] hover:text-[#0f766e] transition-colors py-2 rounded-lg hover:bg-white/60 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoadingMore ? (
                 <>

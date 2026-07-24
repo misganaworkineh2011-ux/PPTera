@@ -191,7 +191,7 @@ export default function AnalyticsPage() {
         <select
           value={period}
           onChange={(e) => setPeriod(Number(e.target.value))}
-          className="px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm font-medium text-slate-900 dark:text-white shadow-sm shadow-slate-200/50 dark:shadow-none focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all"
+          className="px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm font-medium text-slate-900 dark:text-white shadow-sm shadow-slate-200/50 dark:shadow-none focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20 focus:border-[#14b8a6] transition-all"
         >
           <option value={7}>{t.last7Days || "Last 7 days"}</option>
           <option value={30}>{t.last30Days || "Last 30 days"}</option>
@@ -232,7 +232,7 @@ export default function AnalyticsPage() {
 
         <div className="group bg-white dark:bg-zinc-950 rounded-[20px] border border-slate-200/80 dark:border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] ring-1 ring-slate-900/5 dark:ring-0 dark:shadow-none p-5 sm:p-6 transition-all duration-300 hover:-translate-y-1">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg shadow-purple-500/30">
+            <div className="p-3 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl shadow-lg shadow-emerald-500/30">
               <Layers className="h-5 w-5 text-white" />
             </div>
           </div>
@@ -246,7 +246,7 @@ export default function AnalyticsPage() {
 
         <div className="group bg-white dark:bg-zinc-950 rounded-[20px] border border-slate-200/80 dark:border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] ring-1 ring-slate-900/5 dark:ring-0 dark:shadow-none p-5 sm:p-6 transition-all duration-300 hover:-translate-y-1">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-2xl shadow-lg shadow-cyan-500/30">
+            <div className="p-3 bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl shadow-lg shadow-teal-500/30">
               <Eye className="h-5 w-5 text-white" />
             </div>
           </div>
@@ -298,7 +298,7 @@ export default function AnalyticsPage() {
                       className={cn(
                         "w-full rounded-t-lg transition-all",
                         hasActivity 
-                          ? "bg-gradient-to-t from-[#06b6d4] to-[#3b82f6] hover:from-[#0891b2] hover:to-[#2563eb] cursor-pointer" 
+                          ? "bg-gradient-to-t from-[#14b8a6] to-[#14b8a6] hover:from-[#0d9488] hover:to-[#0d9488] cursor-pointer" 
                           : "bg-slate-100 dark:bg-zinc-800/50"
                       )}
                       style={{ height: `${displayHeight}%` }}
@@ -355,11 +355,11 @@ export default function AnalyticsPage() {
                   href={getPresentationUrl(pres.id, pres.title)}
                   className="flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-zinc-900/50 transition-all group border border-transparent hover:border-slate-200 dark:hover:border-zinc-800"
                 >
-                  <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-[#06b6d4] to-[#3b82f6] text-white text-sm font-bold shrink-0 shadow-lg shadow-cyan-500/30">
+                  <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-[#14b8a6] to-[#14b8a6] text-white text-sm font-bold shrink-0 shadow-lg shadow-teal-500/30">
                     {idx + 1}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm text-slate-900 dark:text-white truncate group-hover:text-[#06b6d4] transition-colors">
+                    <p className="font-semibold text-sm text-slate-900 dark:text-white truncate group-hover:text-[#14b8a6] transition-colors">
                       {pres.title}
                     </p>
                     <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium">
@@ -408,7 +408,7 @@ export default function AnalyticsPage() {
                     </div>
                     <div className="h-2.5 bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-[#06b6d4] to-[#3b82f6] rounded-full transition-all duration-500"
+                        className="h-full bg-gradient-to-r from-[#14b8a6] to-[#14b8a6] rounded-full transition-all duration-500"
                         style={{ width: `${percentage}%` }}
                       />
                     </div>
@@ -430,7 +430,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Recent Activity Summary */}
-      <div className="bg-gradient-to-br from-[#06b6d4] via-[#3b82f6] to-[#6366f1] rounded-[20px] p-6 sm:p-8 text-white shadow-xl shadow-cyan-500/20">
+      <div className="bg-gradient-to-br from-[#14b8a6] via-[#14b8a6] to-[#10b981] rounded-[20px] p-6 sm:p-8 text-white shadow-xl shadow-teal-500/20">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h3 className="text-xl sm:text-2xl font-bold mb-2">
@@ -442,7 +442,7 @@ export default function AnalyticsPage() {
           </div>
           <Link
             href="/createpresentation"
-            className="group flex items-center justify-center gap-2 px-6 py-3 bg-white text-[#06b6d4] rounded-2xl font-bold hover:bg-slate-50 hover:shadow-lg transition-all text-sm sm:text-base w-full sm:w-auto active:scale-95"
+            className="group flex items-center justify-center gap-2 px-6 py-3 bg-white text-[#14b8a6] rounded-2xl font-bold hover:bg-slate-50 hover:shadow-lg transition-all text-sm sm:text-base w-full sm:w-auto active:scale-95"
           >
             <Plus className="h-5 w-5 group-hover:scale-110 transition-transform" />
             {t.createNew || "Create New"}

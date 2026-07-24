@@ -190,7 +190,7 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
             value={searchQuery}
             onChange={handleSearchChange}
             placeholder={t.search || "Search projects..."}
-            className="w-full rounded-2xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900 pl-11 pr-4 py-2.5 text-sm font-medium text-slate-700 dark:text-white transition-all focus:bg-white dark:focus:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 dark:focus:ring-[#06b6d4]/10 focus:border-[#06b6d4]"
+            className="w-full rounded-2xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900 pl-11 pr-4 py-2.5 text-sm font-medium text-slate-700 dark:text-white transition-all focus:bg-white dark:focus:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20 dark:focus:ring-[#14b8a6]/10 focus:border-[#14b8a6]"
           />
         </div>
       </div>
@@ -211,7 +211,7 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
 
           {/* Mobile Credits */}
           <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-zinc-900/80 text-[11px] font-bold text-slate-500 dark:text-zinc-400">
-            <Sparkles size={11} className="text-[#06b6d4]" />
+            <Sparkles size={11} className="text-[#14b8a6]" />
             <span>{credits}</span>
             <span className="text-slate-400 dark:text-zinc-500">Credits</span>
           </div>
@@ -222,7 +222,7 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
               setPricingModalTab("plans");
               setShowPricingModal(true);
             }}
-            className="relative flex items-center rounded-full bg-gradient-to-r from-[#06b6d4] to-[#0891b2] border border-[#06b6d4]/30 px-3 py-1.5 text-[11px] font-black uppercase tracking-wider text-white transition-all hover:from-[#0891b2] hover:to-[#0e7490] active:scale-95 overflow-hidden"
+            className="relative flex items-center rounded-full bg-gradient-to-r from-[#14b8a6] to-[#0d9488] border border-[#14b8a6]/30 px-3 py-1.5 text-[11px] font-black uppercase tracking-wider text-white transition-all hover:from-[#0d9488] hover:to-[#0f766e] active:scale-95 overflow-hidden"
           >
             <div className="absolute inset-0 -translate-x-full animate-[shimmer_3s_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent" />
             <span className="relative z-10">{t.upgrade || "Upgrade"}</span>
@@ -242,7 +242,7 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
           {/* Referral Button */}
           <button
             onClick={() => window.location.href = '/dashboard/billing#referral'}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200/50 dark:border-purple-800/50 text-[12px] font-bold text-purple-600 dark:text-purple-400 hover:from-purple-100 hover:to-pink-100 dark:hover:from-purple-900/30 dark:hover:to-pink-900/30 transition-all active:scale-95"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-50 to-pink-50 dark:from-emerald-900/20 dark:to-pink-900/20 border border-emerald-200/50 dark:border-emerald-800/50 text-[12px] font-bold text-emerald-600 dark:text-emerald-400 hover:from-emerald-100 hover:to-pink-100 dark:hover:from-emerald-900/30 dark:hover:to-pink-900/30 transition-all active:scale-95"
           >
             <Gift size={12} />
             <span>Refer & Earn</span>
@@ -250,7 +250,7 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
 
           {/* Subtle Credits Indicator */}
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-zinc-900/80 text-[12px] font-bold text-slate-500 dark:text-zinc-400">
-            <Sparkles size={12} className="text-[#06b6d4]" />
+            <Sparkles size={12} className="text-[#14b8a6]" />
             <span>{credits}</span>
             <span className="font-semibold text-slate-400">Credits</span>
           </div>
@@ -262,7 +262,7 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
               setPricingModalTab("plans");
               setShowPricingModal(true);
             }}
-            className="relative flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#06b6d4] to-[#0891b2] border border-[#06b6d4]/30 px-4 py-1.5 text-[12px] font-black uppercase tracking-wider text-white transition-all hover:from-[#0891b2] hover:to-[#0e7490] hover:shadow-lg hover:shadow-cyan-500/30 active:scale-95 overflow-hidden"
+            className="relative flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#14b8a6] to-[#0d9488] border border-[#14b8a6]/30 px-4 py-1.5 text-[12px] font-black uppercase tracking-wider text-white transition-all hover:from-[#0d9488] hover:to-[#0f766e] hover:shadow-lg hover:shadow-teal-500/30 active:scale-95 overflow-hidden"
           >
             <div className="absolute inset-0 -translate-x-full animate-[shimmer_3s_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent" />
             <span className="relative z-10">{t.upgrade || "Upgrade"}</span>
@@ -296,7 +296,7 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
             >
               <Bell size={20} />
               {unreadCount > 0 && (
-                <span className="absolute right-2 top-2 h-2 w-2 rounded-full border-2 border-white dark:border-zinc-950 bg-[#06b6d4]"></span>
+                <span className="absolute right-2 top-2 h-2 w-2 rounded-full border-2 border-white dark:border-zinc-950 bg-[#14b8a6]"></span>
               )}
             </button>
 
@@ -307,7 +307,7 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-slate-900 dark:text-white">{t.notificationsTitle || "Notifications"}</h3>
                   {unreadCount > 0 && (
-                    <span className="rounded-full bg-[#06b6d4] px-2 py-0.5 text-xs font-semibold text-white">
+                    <span className="rounded-full bg-[#14b8a6] px-2 py-0.5 text-xs font-semibold text-white">
                       {unreadCount} {t.newNotifications || "new"}
                     </span>
                   )}
@@ -316,7 +316,7 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
               <div className="max-h-[60vh] sm:max-h-96 overflow-y-auto">
                 {loading ? (
                   <div className="p-8 text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#06b6d4] mx-auto"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#14b8a6] mx-auto"></div>
                   </div>
                 ) : notifications.length === 0 ? (
                   <div className="p-8 text-center">
@@ -348,8 +348,8 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
                             </div>
                           )}
                           {notif.type === "promo" && (
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/30">
-                              <Gift size={16} className="text-purple-600 dark:text-purple-400" />
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
+                              <Gift size={16} className="text-emerald-600 dark:text-emerald-400" />
                             </div>
                           )}
                           {notif.type === "warning" && (
@@ -376,7 +376,7 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
               <div className="border-t border-slate-100 dark:border-zinc-700 p-3">
                 <button
                   onClick={() => markAsRead()}
-                  className="w-full text-center text-sm font-medium text-[#06b6d4] hover:text-[#1e3a8a] dark:hover:text-white"
+                  className="w-full text-center text-sm font-medium text-[#14b8a6] hover:text-[#0f766e] dark:hover:text-white"
                 >
                   {t.markAllRead || "Mark all as read"}
                 </button>
@@ -390,7 +390,7 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
           afterSignOutUrl="/"
           appearance={{
             elements: {
-              avatarBox: "h-8 w-8 lg:h-9 lg:w-9 ring-2 ring-slate-100 hover:ring-[#06b6d4] transition-all",
+              avatarBox: "h-8 w-8 lg:h-9 lg:w-9 ring-2 ring-slate-100 hover:ring-[#14b8a6] transition-all",
             },
           }}
         />
@@ -408,7 +408,7 @@ export default function TopBar({ credits = 0, onSearch }: TopBarProps) {
               onChange={handleSearchChange}
               placeholder={t.search || "Search..."}
               autoFocus
-              className="w-full rounded-full border-none bg-slate-50 dark:bg-zinc-800 pl-10 pr-4 py-2.5 text-sm font-medium text-slate-700 dark:text-white ring-1 ring-slate-200 dark:ring-zinc-700 placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]/20 dark:focus:ring-white/20"
+              className="w-full rounded-full border-none bg-slate-50 dark:bg-zinc-800 pl-10 pr-4 py-2.5 text-sm font-medium text-slate-700 dark:text-white ring-1 ring-slate-200 dark:ring-zinc-700 placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 dark:focus:ring-white/20"
             />
           </div>
         </div>

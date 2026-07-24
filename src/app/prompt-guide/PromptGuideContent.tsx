@@ -17,28 +17,28 @@ export function PromptGuideContent({ currentLang = "en" }: PromptGuideContentPro
       title: t.beSpecific || "Be Specific",
       description: t.beSpecificDesc || "The more specific your prompt, the better the results. Instead of 'Create a presentation about marketing,' try:",
       example: t.beSpecificExample || "Create a 10-slide presentation about digital marketing strategies for small businesses, including social media, email marketing, and SEO best practices",
-      color: "from-[#1e3a8a] to-[#06b6d4]",
+      color: "from-[#0f766e] to-[#14b8a6]",
     },
     {
       icon: Layers,
       title: t.includeStructure || "Include Structure",
       description: t.includeStructureDesc || "Tell the AI how you want your presentation organized:",
       example: t.includeStructureExample || "Create a presentation with: 1) Problem statement, 2) Market analysis, 3) Our solution, 4) Business model, 5) Team, 6) Financial projections",
-      color: "from-[#1e3a8a] to-[#06b6d4]",
+      color: "from-[#0f766e] to-[#14b8a6]",
     },
     {
       icon: Zap,
       title: t.defineAudience || "Define Your Audience",
       description: t.defineAudienceDesc || "Specify who will be viewing your presentation:",
       example: t.defineAudienceExample || "Create an investor pitch deck for Series A funding, targeting venture capital firms interested in SaaS startups",
-      color: "from-[#1e3a8a] to-[#06b6d4]",
+      color: "from-[#0f766e] to-[#14b8a6]",
     },
     {
       icon: Lightbulb,
       title: t.setTone || "Set the Tone",
       description: t.setToneDesc || "Describe the style and tone you want:",
       example: t.setToneExample || "Create a professional yet friendly presentation for employee onboarding, with a modern design and conversational tone",
-      color: "from-[#1e3a8a] to-[#06b6d4]",
+      color: "from-[#0f766e] to-[#14b8a6]",
     },
   ];
 
@@ -135,7 +135,7 @@ export function PromptGuideContent({ currentLang = "en" }: PromptGuideContentPro
 
         <div className="relative z-10 mx-auto max-w-5xl text-center">
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-4 py-2 backdrop-blur-sm animate-fade-in">
-            <Lightbulb className="h-4 w-4 text-[#06b6d4]" />
+            <Lightbulb className="h-4 w-4 text-[#14b8a6]" />
             <span className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
               {t.promptGuide || "Prompt Guide"}
             </span>
@@ -143,7 +143,7 @@ export function PromptGuideContent({ currentLang = "en" }: PromptGuideContentPro
 
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 mb-6 animate-fade-in-up [animation-delay:100ms]">
             {t.promptGuideTitle || "Master the art of"}{" "}
-            <span className="bg-gradient-to-r from-[#1e3a8a] via-[#06b6d4] to-[#1e3a8a] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#0f766e] via-[#14b8a6] to-[#0f766e] bg-clip-text text-transparent">
               {t.promptGuideHighlight || "AI prompts"}
             </span>
           </h1>
@@ -216,7 +216,7 @@ export function PromptGuideContent({ currentLang = "en" }: PromptGuideContentPro
               >
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white text-xs font-semibold">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-[#0f766e] to-[#14b8a6] text-white text-xs font-semibold">
                       {example.category}
                     </span>
                   </div>
@@ -233,7 +233,7 @@ export function PromptGuideContent({ currentLang = "en" }: PromptGuideContentPro
       {/* CTA Section */}
       <section className="relative px-6 pb-24">
         <div className="mx-auto max-w-4xl">
-          <div className="rounded-3xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] p-12 md:p-16 text-center text-white">
+          <div className="rounded-3xl bg-gradient-to-br from-[#0f766e] to-[#14b8a6] p-12 md:p-16 text-center text-white">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               {t.readyToCreate || "Ready to create?"}
             </h2>

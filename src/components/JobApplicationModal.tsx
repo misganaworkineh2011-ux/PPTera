@@ -103,7 +103,7 @@ export function JobApplicationModal({ isOpen, onClose, job }: JobApplicationModa
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#14b8a6] focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20"
                 placeholder="John Doe"
               />
             </div>
@@ -116,7 +116,7 @@ export function JobApplicationModal({ isOpen, onClose, job }: JobApplicationModa
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#14b8a6] focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20"
                 placeholder="john@example.com"
               />
             </div>
@@ -130,7 +130,7 @@ export function JobApplicationModal({ isOpen, onClose, job }: JobApplicationModa
               type="tel"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#14b8a6] focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20"
               placeholder="+1 (555) 123-4567"
             />
           </div>
@@ -144,7 +144,7 @@ export function JobApplicationModal({ isOpen, onClose, job }: JobApplicationModa
               required
               value={formData.resume}
               onChange={(e) => setFormData({ ...formData, resume: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#14b8a6] focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20"
               placeholder="https://drive.google.com/..."
             />
             <p className="text-xs text-slate-500 mt-1">
@@ -160,7 +160,7 @@ export function JobApplicationModal({ isOpen, onClose, job }: JobApplicationModa
               rows={4}
               value={formData.coverLetter}
               onChange={(e) => setFormData({ ...formData, coverLetter: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#14b8a6] focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20 resize-none"
               placeholder="Tell us why you're a great fit..."
             />
           </div>
@@ -174,7 +174,7 @@ export function JobApplicationModal({ isOpen, onClose, job }: JobApplicationModa
                 type="url"
                 value={formData.linkedIn}
                 onChange={(e) => setFormData({ ...formData, linkedIn: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#14b8a6] focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20"
                 placeholder="https://linkedin.com/in/..."
               />
             </div>
@@ -186,7 +186,7 @@ export function JobApplicationModal({ isOpen, onClose, job }: JobApplicationModa
                 type="url"
                 value={formData.portfolio}
                 onChange={(e) => setFormData({ ...formData, portfolio: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#14b8a6] focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20"
                 placeholder="https://yourportfolio.com"
               />
             </div>

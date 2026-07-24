@@ -109,7 +109,7 @@ export default function ActivityPage() {
       case "edit":
         return {
           icon: FileEdit,
-          color: "bg-[#e0f2fe] text-[#06b6d4] dark:bg-[#06b6d4]/20",
+          color: "bg-[#e0f2fe] text-[#14b8a6] dark:bg-[#14b8a6]/20",
           label: t.edited,
         };
       case "view":
@@ -124,7 +124,7 @@ export default function ActivityPage() {
         return {
           icon: UserPlus,
           color:
-            "bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-300",
+            "bg-emerald-100 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-300",
           label: t.shared,
         };
       case "export":
@@ -260,7 +260,7 @@ export default function ActivityPage() {
             disabled={isPageLoading}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition ${
               filter === type
-                ? "bg-[#1e3a8a] text-white"
+                ? "bg-[#0f766e] text-white"
                 : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
             } disabled:opacity-50`}
           >
@@ -275,7 +275,7 @@ export default function ActivityPage() {
         {activities.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <History className="h-12 w-12 text-slate-300 mb-4" />
-            <h3 className="text-lg font-bold text-[#1e3a8a] dark:text-white">
+            <h3 className="text-lg font-bold text-[#0f766e] dark:text-white">
               {t.noActivity}
             </h3>
             <p className="text-sm text-slate-500 mt-1 dark:text-neutral-400">
@@ -286,7 +286,7 @@ export default function ActivityPage() {
           <div className="p-6">
             {isPageLoading && (
               <div className="flex items-center justify-center py-4 mb-4">
-                <Loader2 className="h-6 w-6 animate-spin text-[#06b6d4]" />
+                <Loader2 className="h-6 w-6 animate-spin text-[#14b8a6]" />
               </div>
             )}
             <div className="space-y-6">
@@ -308,7 +308,7 @@ export default function ActivityPage() {
                       <IconComponent size={18} />
                     </div>
                     <div className="flex flex-1 flex-col pt-1">
-                      <p className="text-sm font-semibold text-[#1e3a8a] dark:text-white">
+                      <p className="text-sm font-semibold text-[#0f766e] dark:text-white">
                         {activity.description}
                       </p>
                       <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-neutral-400">
@@ -325,7 +325,7 @@ export default function ActivityPage() {
                                 activity.presentation.id,
                                 activity.presentation.title
                               )}
-                              className="text-[#06b6d4] hover:underline"
+                              className="text-[#14b8a6] hover:underline"
                             >
                               {activity.presentation.title}
                             </Link>
@@ -386,7 +386,7 @@ export default function ActivityPage() {
                   disabled={isPageLoading}
                   className={`min-w-[36px] h-9 rounded-lg text-sm font-medium transition ${
                     currentPage === page
-                      ? "bg-[#1e3a8a] text-white"
+                      ? "bg-[#0f766e] text-white"
                       : "border border-slate-200 dark:border-neutral-700 text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800"
                   } disabled:opacity-50`}
                 >

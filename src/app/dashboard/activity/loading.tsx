@@ -26,11 +26,11 @@ export default function ActivityLoading() {
         {/* Header - static, no skeleton */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#0f766e] to-[#14b8a6] text-white shadow-md">
               <History size={22} />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-[#1e3a8a] dark:text-white">Activity</h1>
+              <h1 className="text-2xl font-bold text-[#0f766e] dark:text-white">Activity</h1>
               <p className="text-sm text-slate-500 dark:text-neutral-400">Track your recent actions and changes</p>
             </div>
           </div>
@@ -50,7 +50,7 @@ export default function ActivityLoading() {
               disabled
               className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap ${
                 i === 0
-                  ? "bg-[#1e3a8a] text-white"
+                  ? "bg-[#0f766e] text-white"
                   : "bg-slate-100 text-slate-400 dark:bg-neutral-800 dark:text-neutral-500"
               }`}
             >

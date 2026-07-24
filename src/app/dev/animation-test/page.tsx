@@ -41,16 +41,16 @@ export default function AnimationTestPage() {
         </select>
         <button
           onClick={() => setReplayKey((k) => k + 1)}
-          className="bg-cyan-600 hover:bg-cyan-500 rounded-lg px-4 py-2 text-sm font-medium"
+          className="bg-teal-600 hover:bg-teal-500 rounded-lg px-4 py-2 text-sm font-medium"
           data-testid="replay"
         >
           Replay
         </button>
         <div className="flex items-center gap-1.5">
           <span className="text-xs text-slate-400 mr-1">Build reveal:</span>
-          <button onClick={() => setReveal(undefined)} className={`px-2.5 py-1.5 rounded text-xs ${reveal === undefined ? "bg-cyan-600" : "bg-slate-700"}`}>auto</button>
+          <button onClick={() => setReveal(undefined)} className={`px-2.5 py-1.5 rounded text-xs ${reveal === undefined ? "bg-teal-600" : "bg-slate-700"}`}>auto</button>
           {[0, 1, 2, 3, 4].map((n) => (
-            <button key={n} onClick={() => setReveal(n)} className={`px-2.5 py-1.5 rounded text-xs ${reveal === n ? "bg-cyan-600" : "bg-slate-700"}`} data-testid={`reveal-${n}`}>
+            <button key={n} onClick={() => setReveal(n)} className={`px-2.5 py-1.5 rounded text-xs ${reveal === n ? "bg-teal-600" : "bg-slate-700"}`} data-testid={`reveal-${n}`}>
               {n}
             </button>
           ))}

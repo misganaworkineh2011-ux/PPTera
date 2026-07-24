@@ -70,10 +70,10 @@ export function ReferralCard() {
   if (!data) return null;
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-gradient-to-br from-purple-50 to-pink-50 p-6">
+    <div className="rounded-xl border border-zinc-200 bg-gradient-to-br from-emerald-50 to-pink-50 p-6">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
+        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-emerald-500 to-pink-500 flex items-center justify-center">
           <Gift className="w-5 h-5 text-white" />
         </div>
         <div>
@@ -121,7 +121,7 @@ export function ReferralCard() {
           <span className="text-xs text-zinc-500">{t.yourCode || "Your code"}</span>
           <button
             onClick={() => copyToClipboard(data.referralCode)}
-            className="text-xs text-purple-600 hover:text-purple-700 font-medium flex items-center gap-1"
+            className="text-xs text-emerald-600 hover:text-emerald-700 font-medium flex items-center gap-1"
           >
             <Copy className="w-3 h-3" />
             {t.copyCode || "Copy code"}
@@ -170,7 +170,7 @@ export function ReferralCard() {
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3">
         <div className="text-center p-3 bg-white/60 rounded-lg">
-          <div className="flex items-center justify-center gap-1 text-purple-600 mb-1">
+          <div className="flex items-center justify-center gap-1 text-emerald-600 mb-1">
             <Users className="w-4 h-4" />
           </div>
           <p className="text-xl font-bold text-zinc-900">{data?.stats?.completedReferrals || 0}</p>

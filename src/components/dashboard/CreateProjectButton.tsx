@@ -22,7 +22,7 @@ export default function CreateProjectButton({ userId, credits }: Props) {
       <Dialog.Trigger asChild>
         <button 
           data-onboarding="create"
-          className="flex items-center gap-1.5 md:gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-white transition-all hover:from-[#172554] hover:to-[#0891b2] hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap"
+          className="flex items-center gap-1.5 md:gap-2 rounded-full bg-gradient-to-r from-[#0f766e] to-[#14b8a6] px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-white transition-all hover:from-[#172554] hover:to-[#0d9488] hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap"
         >
           <Plus size={16} className="md:w-[18px] md:h-[18px]" />
           <span className="hidden sm:inline">{t.createNewAI || "Create new AI"}</span>

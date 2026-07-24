@@ -42,7 +42,7 @@ export default function NewsletterErrorPage({
             😕
           </h1>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="h-32 w-32 rounded-full bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center animate-bounce">
+            <div className="h-32 w-32 rounded-full bg-gradient-to-br from-[#0f766e] to-[#14b8a6] flex items-center justify-center animate-bounce">
               <IconComponent className="h-16 w-16 text-white" />
             </div>
           </div>
@@ -60,7 +60,7 @@ export default function NewsletterErrorPage({
         <div className="flex justify-center">
           <Link
             href="/"
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-bold rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105"
+            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#0f766e] to-[#14b8a6] text-white font-bold rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105"
           >
             <Home className="h-5 w-5" />
             Back to Home
@@ -72,7 +72,7 @@ export default function NewsletterErrorPage({
           Questions? Contact us at{" "}
           <a 
             href="mailto:pptmaster.app@gmail.com" 
-            className="text-[#1e3a8a] hover:underline font-medium"
+            className="text-[#0f766e] hover:underline font-medium"
           >
             pptmaster.app@gmail.com
           </a>

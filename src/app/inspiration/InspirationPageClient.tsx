@@ -91,8 +91,8 @@ export default function InspirationPageClient({ currentLang = "en" }: Inspiratio
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
-      business: "from-blue-500 to-cyan-500",
-      marketing: "from-purple-500 to-pink-500",
+      business: "from-blue-500 to-teal-500",
+      marketing: "from-emerald-500 to-pink-500",
       product: "from-orange-500 to-red-500",
       sales: "from-green-500 to-emerald-500",
       education: "from-amber-500 to-orange-500",
@@ -112,7 +112,7 @@ export default function InspirationPageClient({ currentLang = "en" }: Inspiratio
 
         <div className="relative z-10 mx-auto max-w-7xl text-center">
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-4 py-2 backdrop-blur-sm animate-fade-in">
-            <Sparkles className="h-4 w-4 text-[#06b6d4]" />
+            <Sparkles className="h-4 w-4 text-[#14b8a6]" />
             <span className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
               {t.inspiration || "Inspiration"}
             </span>
@@ -120,7 +120,7 @@ export default function InspirationPageClient({ currentLang = "en" }: Inspiratio
 
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 mb-6 animate-fade-in-up [animation-delay:100ms]">
             {t.inspirationHeroTitle || "Get inspired by"}{" "}
-            <span className="bg-gradient-to-r from-[#1e3a8a] via-[#06b6d4] to-[#1e3a8a] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#0f766e] via-[#14b8a6] to-[#0f766e] bg-clip-text text-transparent">
               {t.inspirationHeroHighlight || "amazing designs"}
             </span>
           </h1>
@@ -145,7 +145,7 @@ export default function InspirationPageClient({ currentLang = "en" }: Inspiratio
                 onClick={() => setSelectedCategory(category)}
                 className={`px-6 py-2 rounded-full border text-sm font-semibold transition-all animate-fade-in-up ${
                   selectedCategory === category
-                    ? "border-[#06b6d4] bg-[#06b6d4] text-white"
+                    ? "border-[#14b8a6] bg-[#14b8a6] text-white"
                     : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300"
                 }`}
                 style={{ animationDelay: `${300 + index * 50}ms` }}
@@ -162,7 +162,7 @@ export default function InspirationPageClient({ currentLang = "en" }: Inspiratio
         <div className="mx-auto max-w-7xl">
           {loading && items.length === 0 ? (
             <div className="text-center py-12">
-              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#06b6d4] border-r-transparent"></div>
+              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#14b8a6] border-r-transparent"></div>
               <p className="mt-4 text-slate-600">{t.loadingInspiration || "Loading inspiration..."}</p>
             </div>
           ) : items.length === 0 ? (
@@ -206,7 +206,7 @@ export default function InspirationPageClient({ currentLang = "en" }: Inspiratio
                     </div>
 
                     <div className="p-6">
-                      <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-[#06b6d4] transition-colors">
+                      <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-[#14b8a6] transition-colors">
                         {item.title}
                       </h3>
                       <div className="flex items-center justify-between text-sm text-slate-600">
@@ -223,7 +223,7 @@ export default function InspirationPageClient({ currentLang = "en" }: Inspiratio
                   <button
                     onClick={loadMore}
                     disabled={loading}
-                    className="px-8 py-3 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-bold hover:shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-8 py-3 rounded-full bg-gradient-to-r from-[#0f766e] to-[#14b8a6] text-white font-bold hover:shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? "Loading..." : t.loadMore || "Load More"}
                   </button>
@@ -248,7 +248,7 @@ export default function InspirationPageClient({ currentLang = "en" }: Inspiratio
 
           <div className="grid md:grid-cols-3 gap-8">
             <div className="p-6 rounded-2xl bg-white border border-slate-200 hover:shadow-lg transition-all">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center mb-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0f766e] to-[#14b8a6] flex items-center justify-center mb-4">
                 <Sparkles className="h-6 w-6 text-white" />
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-3">{t.tipSimpleTitle || "Keep It Simple"}</h3>
@@ -258,7 +258,7 @@ export default function InspirationPageClient({ currentLang = "en" }: Inspiratio
             </div>
 
             <div className="p-6 rounded-2xl bg-white border border-slate-200 hover:shadow-lg transition-all">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center mb-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0f766e] to-[#14b8a6] flex items-center justify-center mb-4">
                 <Sparkles className="h-6 w-6 text-white" />
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-3">{t.tipHierarchyTitle || "Use Visual Hierarchy"}</h3>
@@ -268,7 +268,7 @@ export default function InspirationPageClient({ currentLang = "en" }: Inspiratio
             </div>
 
             <div className="p-6 rounded-2xl bg-white border border-slate-200 hover:shadow-lg transition-all">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center mb-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0f766e] to-[#14b8a6] flex items-center justify-center mb-4">
                 <Sparkles className="h-6 w-6 text-white" />
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-3">{t.tipBrandingTitle || "Consistent Branding"}</h3>
@@ -284,7 +284,7 @@ export default function InspirationPageClient({ currentLang = "en" }: Inspiratio
             </p>
             <a
               href="/sign-up"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-bold hover:shadow-xl transition-all hover:scale-105"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-gradient-to-r from-[#0f766e] to-[#14b8a6] text-white font-bold hover:shadow-xl transition-all hover:scale-105"
             >
               <Sparkles className="h-5 w-5" />
               {t.startCreatingFree || "Start Creating Free"}

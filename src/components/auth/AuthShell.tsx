@@ -17,9 +17,9 @@ export default function AuthShell({ children }: { children: ReactNode }) {
       <aside className="relative hidden lg:flex w-[46%] flex-col justify-between overflow-hidden p-12">
         {/* Aurora backdrop */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -top-32 -left-24 w-[480px] h-[480px] rounded-full bg-[#1e3a8a]/50 blur-[130px]" />
-          <div className="absolute bottom-[-140px] left-1/3 w-[520px] h-[520px] rounded-full bg-[#06b6d4]/30 blur-[150px]" />
-          <div className="absolute top-1/3 right-[-120px] w-[380px] h-[380px] rounded-full bg-[#a855f7]/25 blur-[130px]" />
+          <div className="absolute -top-32 -left-24 w-[480px] h-[480px] rounded-full bg-[#0f766e]/50 blur-[130px]" />
+          <div className="absolute bottom-[-140px] left-1/3 w-[520px] h-[520px] rounded-full bg-[#14b8a6]/30 blur-[150px]" />
+          <div className="absolute top-1/3 right-[-120px] w-[380px] h-[380px] rounded-full bg-[#10b981]/25 blur-[130px]" />
           {/* Fine grid, fading out */}
           <div
             className="absolute inset-0 opacity-[0.14]"
@@ -41,7 +41,7 @@ export default function AuthShell({ children }: { children: ReactNode }) {
           <h2 className="text-4xl font-bold leading-[1.15] tracking-tight">
             Ideas in.
             <br />
-            <span className="bg-gradient-to-r from-cyan-300 via-sky-400 to-indigo-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-teal-300 via-sky-400 to-emerald-400 bg-clip-text text-transparent">
               Stunning decks out.
             </span>
           </h2>
@@ -58,7 +58,7 @@ export default function AuthShell({ children }: { children: ReactNode }) {
             ].map(({ icon: Icon, text }) => (
               <li key={text} className="flex items-center gap-3.5">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm">
-                  <Icon className="h-4 w-4 text-cyan-300" />
+                  <Icon className="h-4 w-4 text-teal-300" />
                 </span>
                 <span className="text-[15px] text-slate-200">{text}</span>
               </li>
@@ -67,7 +67,7 @@ export default function AuthShell({ children }: { children: ReactNode }) {
         </div>
 
         <div className="relative z-10 flex items-center gap-2.5 text-sm text-slate-400">
-          <Sparkles className="h-4 w-4 text-cyan-300" />
+          <Sparkles className="h-4 w-4 text-teal-300" />
           Trusted by presenters, founders, educators and teams worldwide
         </div>
       </aside>
@@ -76,8 +76,8 @@ export default function AuthShell({ children }: { children: ReactNode }) {
       <section className="relative flex flex-1 items-center justify-center px-5 py-10 sm:px-10 bg-white text-zinc-900">
         {/* Soft accent for the light side */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute -top-28 right-[-100px] w-[380px] h-[380px] rounded-full bg-cyan-100/60 blur-[110px]" />
-          <div className="absolute bottom-[-120px] left-[-80px] w-[320px] h-[320px] rounded-full bg-indigo-100/60 blur-[110px]" />
+          <div className="absolute -top-28 right-[-100px] w-[380px] h-[380px] rounded-full bg-teal-100/60 blur-[110px]" />
+          <div className="absolute bottom-[-120px] left-[-80px] w-[320px] h-[320px] rounded-full bg-emerald-100/60 blur-[110px]" />
         </div>
         <div className="relative w-full max-w-[420px]">{children}</div>
       </section>

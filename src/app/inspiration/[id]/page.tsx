@@ -129,8 +129,8 @@ export default function InspirationItemPage({ currentLang = "en" }: InspirationI
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
-      business: "from-blue-500 to-cyan-500",
-      marketing: "from-purple-500 to-pink-500",
+      business: "from-blue-500 to-teal-500",
+      marketing: "from-emerald-500 to-pink-500",
       product: "from-orange-500 to-red-500",
       sales: "from-green-500 to-emerald-500",
       education: "from-amber-500 to-orange-500",
@@ -145,7 +145,7 @@ export default function InspirationItemPage({ currentLang = "en" }: InspirationI
         <LandingNavbar currentLang={currentLang} />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
-            <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-[#06b6d4] border-r-transparent"></div>
+            <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-[#14b8a6] border-r-transparent"></div>
             <p className="mt-4 text-slate-600">Loading...</p>
           </div>
         </div>
@@ -208,7 +208,7 @@ export default function InspirationItemPage({ currentLang = "en" }: InspirationI
         <div className="mx-auto max-w-5xl">
           <button
             onClick={() => router.push("/inspiration")}
-            className="inline-flex items-center gap-2 text-slate-600 hover:text-[#06b6d4] transition-colors"
+            className="inline-flex items-center gap-2 text-slate-600 hover:text-[#14b8a6] transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
             <span className="font-medium">Back to Inspiration</span>
@@ -222,7 +222,7 @@ export default function InspirationItemPage({ currentLang = "en" }: InspirationI
           {/* Header */}
           <header className="mb-8">
             <div className="flex flex-wrap items-center gap-3 mb-4">
-              <span className="px-4 py-1.5 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white text-sm font-semibold">
+              <span className="px-4 py-1.5 rounded-full bg-gradient-to-r from-[#0f766e] to-[#14b8a6] text-white text-sm font-semibold">
                 {item.category}
               </span>
               {item.tags.map((tag) => (
@@ -249,7 +249,7 @@ export default function InspirationItemPage({ currentLang = "en" }: InspirationI
             <div className="flex flex-wrap items-center gap-6 text-slate-600">
               {item.authorName && (
                 <div className="flex items-center gap-2">
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center text-white font-bold">
+                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#0f766e] to-[#14b8a6] flex items-center justify-center text-white font-bold">
                     {item.authorName.charAt(0).toUpperCase()}
                   </div>
                   <span className="font-medium">{item.authorName}</span>
@@ -291,7 +291,7 @@ export default function InspirationItemPage({ currentLang = "en" }: InspirationI
               className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold transition-all ${
                 liked
                   ? "bg-red-100 text-red-600 cursor-not-allowed"
-                  : "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:shadow-xl hover:scale-105"
+                  : "bg-gradient-to-r from-[#0f766e] to-[#14b8a6] text-white hover:shadow-xl hover:scale-105"
               }`}
             >
               <Heart className={`h-5 w-5 ${liked ? "fill-current" : ""}`} />
@@ -300,7 +300,7 @@ export default function InspirationItemPage({ currentLang = "en" }: InspirationI
             <div className="relative">
               <button
                 onClick={handleShare}
-                className="flex items-center gap-2 px-6 py-3 rounded-full border-2 border-slate-200 bg-white text-slate-700 font-semibold hover:border-[#06b6d4] hover:text-[#06b6d4] transition-all"
+                className="flex items-center gap-2 px-6 py-3 rounded-full border-2 border-slate-200 bg-white text-slate-700 font-semibold hover:border-[#14b8a6] hover:text-[#14b8a6] transition-all"
               >
                 <Share2 className="h-5 w-5" />
                 {showCopied ? "Link Copied!" : "Share"}
@@ -323,7 +323,7 @@ export default function InspirationItemPage({ currentLang = "en" }: InspirationI
           )}
 
           {/* CTA Section */}
-          <div className="bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] rounded-2xl p-8 md:p-12 text-center text-white mb-16">
+          <div className="bg-gradient-to-r from-[#0f766e] to-[#14b8a6] rounded-2xl p-8 md:p-12 text-center text-white mb-16">
             <Sparkles className="h-12 w-12 mx-auto mb-4" />
             <h2 className="text-3xl font-bold mb-4">
               Ready to create your own?
@@ -333,7 +333,7 @@ export default function InspirationItemPage({ currentLang = "en" }: InspirationI
             </p>
             <button
               onClick={() => router.push("/dashboard")}
-              className="px-8 py-4 bg-white text-[#1e3a8a] rounded-full font-bold hover:shadow-xl transition-all hover:scale-105"
+              className="px-8 py-4 bg-white text-[#0f766e] rounded-full font-bold hover:shadow-xl transition-all hover:scale-105"
             >
               Start Creating Free
             </button>
@@ -375,7 +375,7 @@ export default function InspirationItemPage({ currentLang = "en" }: InspirationI
                     </div>
                   </div>
                   <div className="p-6">
-                    <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-[#06b6d4] transition-colors">
+                    <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-[#14b8a6] transition-colors">
                       {relatedItem.title}
                     </h3>
                     <div className="flex items-center justify-between text-sm text-slate-600">

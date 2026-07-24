@@ -167,14 +167,14 @@ export default function CommunityPageClient({ currentLang = "en" }: CommunityPag
 
         <div className="relative z-10 mx-auto max-w-4xl text-center">
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-4 py-2 backdrop-blur-sm animate-fade-in">
-            <Users className="h-4 w-4 text-[#06b6d4]" />
+            <Users className="h-4 w-4 text-[#14b8a6]" />
             <span className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
               {t.community}
             </span>
           </div>
 
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 mb-6 animate-fade-in-up [animation-delay:100ms]">
-            {t.communityHeroTitle || "Join the"} <span className="bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] bg-clip-text text-transparent">PPTera</span> {t.community}
+            {t.communityHeroTitle || "Join the"} <span className="bg-gradient-to-r from-[#0f766e] to-[#14b8a6] bg-clip-text text-transparent">PPTera</span> {t.community}
           </h1>
 
           <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed animate-fade-in-up [animation-delay:200ms]">
@@ -194,7 +194,7 @@ export default function CommunityPageClient({ currentLang = "en" }: CommunityPag
             <h2 className="text-4xl font-bold text-slate-900">{t.communityForums || "Community Forums"}</h2>
             <button
               onClick={() => setShowCreateForm(!showCreateForm)}
-              className="flex items-center gap-1 px-3 py-2 md:px-6 md:py-3 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white text-xs md:text-base font-bold hover:shadow-xl transition-all hover:scale-105 whitespace-nowrap"
+              className="flex items-center gap-1 px-3 py-2 md:px-6 md:py-3 rounded-full bg-gradient-to-r from-[#0f766e] to-[#14b8a6] text-white text-xs md:text-base font-bold hover:shadow-xl transition-all hover:scale-105 whitespace-nowrap"
             >
               <Plus className="h-3.5 w-3.5 md:h-5 md:w-5" />
               <span className="hidden sm:inline">{t.createPost || "Create Post"}</span>
@@ -215,7 +215,7 @@ export default function CommunityPageClient({ currentLang = "en" }: CommunityPag
                       required
                       value={newPost.authorName}
                       onChange={(e) => setNewPost({ ...newPost, authorName: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#06b6d4] focus:outline-none"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#14b8a6] focus:outline-none"
                       placeholder="John Doe"
                     />
                   </div>
@@ -225,7 +225,7 @@ export default function CommunityPageClient({ currentLang = "en" }: CommunityPag
                       type="email"
                       value={newPost.authorEmail}
                       onChange={(e) => setNewPost({ ...newPost, authorEmail: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#06b6d4] focus:outline-none"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#14b8a6] focus:outline-none"
                       placeholder="john@example.com"
                     />
                   </div>
@@ -236,7 +236,7 @@ export default function CommunityPageClient({ currentLang = "en" }: CommunityPag
                     required
                     value={newPost.category}
                     onChange={(e) => setNewPost({ ...newPost, category: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#06b6d4] focus:outline-none"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#14b8a6] focus:outline-none"
                   >
                     <option value="show-tell">{t.showTell || "Show & Tell"}</option>
                     <option value="discussion">{t.generalDiscussion || "General Discussion"}</option>
@@ -251,7 +251,7 @@ export default function CommunityPageClient({ currentLang = "en" }: CommunityPag
                     required
                     value={newPost.title}
                     onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#06b6d4] focus:outline-none"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#14b8a6] focus:outline-none"
                     placeholder={t.postAbout || "What's your post about?"}
                   />
                 </div>
@@ -262,7 +262,7 @@ export default function CommunityPageClient({ currentLang = "en" }: CommunityPag
                     rows={6}
                     value={newPost.content}
                     onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#06b6d4] focus:outline-none resize-none"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#14b8a6] focus:outline-none resize-none"
                     placeholder={t.shareThoughts || "Share your thoughts..."}
                   />
                 </div>
@@ -296,7 +296,7 @@ export default function CommunityPageClient({ currentLang = "en" }: CommunityPag
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-6 py-2 rounded-full border text-sm font-semibold transition-all ${
                   selectedCategory === cat
-                    ? "border-[#06b6d4] bg-[#06b6d4] text-white"
+                    ? "border-[#14b8a6] bg-[#14b8a6] text-white"
                     : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                 }`}
               >
@@ -312,7 +312,7 @@ export default function CommunityPageClient({ currentLang = "en" }: CommunityPag
           {/* Posts List */}
           {loading ? (
             <div className="text-center py-12">
-              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#06b6d4] border-r-transparent"></div>
+              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#14b8a6] border-r-transparent"></div>
               <p className="mt-4 text-slate-600">{t.loadingPosts || "Loading posts..."}</p>
             </div>
           ) : posts.length === 0 ? (
@@ -330,7 +330,7 @@ export default function CommunityPageClient({ currentLang = "en" }: CommunityPag
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <span className="px-3 py-1 rounded-full bg-[#06b6d4]/10 text-[#06b6d4] text-xs font-semibold">
+                        <span className="px-3 py-1 rounded-full bg-[#14b8a6]/10 text-[#14b8a6] text-xs font-semibold">
                           {post.category}
                         </span>
                         <span className="text-sm text-slate-500">
@@ -340,7 +340,7 @@ export default function CommunityPageClient({ currentLang = "en" }: CommunityPag
                           {new Date(post.createdAt).toLocaleDateString()}
                         </span>
                       </div>
-                      <h3 className="text-xl font-bold text-slate-900 mb-2 hover:text-[#06b6d4] transition-colors">
+                      <h3 className="text-xl font-bold text-slate-900 mb-2 hover:text-[#14b8a6] transition-colors">
                         {post.title}
                       </h3>
                       <p className="text-slate-600 line-clamp-2">{post.content}</p>
@@ -371,7 +371,7 @@ export default function CommunityPageClient({ currentLang = "en" }: CommunityPag
               <button
                 onClick={handleLoadMore}
                 disabled={loadingMore}
-                className="px-8 py-3 rounded-full border-2 border-[#06b6d4] text-[#06b6d4] font-semibold hover:bg-[#06b6d4] hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-8 py-3 rounded-full border-2 border-[#14b8a6] text-[#14b8a6] font-semibold hover:bg-[#14b8a6] hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loadingMore ? (
                   <span className="flex items-center gap-2">

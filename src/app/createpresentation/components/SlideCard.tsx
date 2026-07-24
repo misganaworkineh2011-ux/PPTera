@@ -72,8 +72,8 @@ export default function SlideCard({
       onDragStart={(e) => onDragStart && onDragStart(e, index)}
       onDragOver={(e) => onDragOver && onDragOver(e)}
       onDrop={(e) => onDrop && onDrop(e, index)}
-      className={`rounded-lg border bg-white/95 backdrop-blur-sm p-4 shadow-sm transition-all hover:shadow-md ${isDraggedOver ? "border-[#06b6d4] ring-2 ring-[#06b6d4]/20 shadow-lg" : "border-slate-200 hover:border-[#06b6d4]/40"
-        } ${isTitle ? "bg-gradient-to-br from-[#1e3a8a]/5 to-[#06b6d4]/5 border-[#1e3a8a]/20" : ""}`}
+      className={`rounded-lg border bg-white/95 backdrop-blur-sm p-4 shadow-sm transition-all hover:shadow-md ${isDraggedOver ? "border-[#14b8a6] ring-2 ring-[#14b8a6]/20 shadow-lg" : "border-slate-200 hover:border-[#14b8a6]/40"
+        } ${isTitle ? "bg-gradient-to-br from-[#0f766e]/5 to-[#14b8a6]/5 border-[#0f766e]/20" : ""}`}
     >
       <div className="flex items-start gap-3">
         {!isTitle && !isStreaming && (
@@ -84,8 +84,8 @@ export default function SlideCard({
 
         <div
           className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${isTitle
-            ? "bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-sm"
-            : "bg-[#1e3a8a]/10 text-[#1e3a8a] font-semibold"
+            ? "bg-gradient-to-br from-[#0f766e] to-[#14b8a6] text-white shadow-sm"
+            : "bg-[#0f766e]/10 text-[#0f766e] font-semibold"
             }`}
         >
           <span className="text-xs font-bold">{index + 1}</span>
@@ -98,7 +98,7 @@ export default function SlideCard({
                 type="text"
                 value={editedTitle}
                 onChange={(e) => setEditedTitle(e.target.value)}
-                className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-[#1e3a8a] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4]"
+                className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-[#0f766e] focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20 focus:border-[#14b8a6]"
               />
               {!isTitle && (
                 <textarea
@@ -106,13 +106,13 @@ export default function SlideCard({
                   onChange={(e) => setEditedBullets(e.target.value)}
                   rows={3}
                   placeholder="One bullet point per line..."
-                  className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] resize-none"
+                  className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20 focus:border-[#14b8a6] resize-none"
                 />
               )}
               <div className="flex gap-2">
                 <button
                   onClick={handleSave}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-md bg-[#06b6d4] text-white text-xs font-medium hover:bg-[#0891b2] transition-colors"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-md bg-[#14b8a6] text-white text-xs font-medium hover:bg-[#0d9488] transition-colors"
                 >
                   <Check size={13} /> Save
                 </button>
@@ -126,7 +126,7 @@ export default function SlideCard({
             </div>
           ) : (
             <>
-              <h3 className={`font-semibold text-[#1e3a8a] mb-1.5 leading-tight ${isTitle ? "text-base" : "text-sm"}`}>
+              <h3 className={`font-semibold text-[#0f766e] mb-1.5 leading-tight ${isTitle ? "text-base" : "text-sm"}`}>
                 {slide.title}
               </h3>
               {isTitle && slide.subtitle && (
@@ -136,7 +136,7 @@ export default function SlideCard({
                 <ul className="space-y-1.5 text-xs text-slate-600">
                   {slide.bulletPoints.map((bullet, i) => (
                     <li key={i} className="flex gap-2 leading-relaxed">
-                      <span className="text-[#06b6d4] flex-shrink-0">•</span>
+                      <span className="text-[#14b8a6] flex-shrink-0">•</span>
                       <span>{bulletToString(bullet)}</span>
                     </li>
                   ))}
@@ -150,7 +150,7 @@ export default function SlideCard({
           <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
               onClick={() => setIsEditing(true)}
-              className="p-1.5 rounded-md text-slate-400 hover:text-[#06b6d4] hover:bg-[#06b6d4]/10 transition-colors"
+              className="p-1.5 rounded-md text-slate-400 hover:text-[#14b8a6] hover:bg-[#14b8a6]/10 transition-colors"
               title="Edit slide"
             >
               <Edit3 size={13} />

@@ -193,7 +193,7 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
               key={i}
               className={`relative rounded-[2rem] p-8 flex flex-col h-auto transition-all duration-300 group border border-white/10 ${
                 plan.highlight
-                  ? "border-cyan-400/40 bg-white/[0.07] shadow-[0_20px_50px_-15px_rgba(34,211,238,0.25)]"
+                  ? "border-teal-400/40 bg-white/[0.07] shadow-[0_20px_50px_-15px_rgba(45,212,191,0.25)]"
                   : "hover:border-white/25 hover:bg-white/[0.06] bg-white/[0.04]"
               }`}
             >
@@ -201,8 +201,8 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
                 <div
                   className={`absolute -top-4 left-1/2 -translate-x-1/2 text-white text-[11px] font-black tracking-[0.15em] px-5 py-1.5 rounded-full shadow-lg whitespace-nowrap z-10 uppercase ${
                     plan.badgeGradient
-                      ? "bg-gradient-to-r from-purple-600 to-pink-600 shadow-purple-500/20"
-                      : "bg-gradient-to-r from-violet-600 to-cyan-500 shadow-cyan-500/20 shadow-lg"
+                      ? "bg-gradient-to-r from-emerald-600 to-pink-600 shadow-emerald-500/20"
+                      : "bg-gradient-to-r from-emerald-600 to-teal-500 shadow-teal-500/20 shadow-lg"
                   }`}
                 >
                   {plan.badge}
@@ -215,12 +215,12 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
                     {plan.name}
                   </h3>
                   {plan.highlight && (
-                    <div className="flex items-center justify-center p-1 rounded-lg bg-cyan-400/10 border border-cyan-400/30">
-                      <Zap className="h-4 w-4 text-cyan-300 fill-cyan-300/20" />
+                    <div className="flex items-center justify-center p-1 rounded-lg bg-teal-400/10 border border-teal-400/30">
+                      <Zap className="h-4 w-4 text-teal-300 fill-teal-300/20" />
                     </div>
                   )}
                   {plan.name === "Ultra" && (
-                    <Sparkles className="h-5 w-5 text-purple-500 fill-purple-500/20" />
+                    <Sparkles className="h-5 w-5 text-emerald-500 fill-emerald-500/20" />
                   )}
                 </div>
                 <p className="text-xs font-bold text-slate-400 leading-relaxed min-h-[32px]">
@@ -246,7 +246,7 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
               <ul className="space-y-3 mb-8">
                 {plan.features.map((feature, idx) => (
                   <li key={idx} className="flex items-start gap-3">
-                    <div className={`mt-0.5 h-3.5 w-3.5 rounded-full flex items-center justify-center shrink-0 ${plan.highlight ? "bg-cyan-400/15 text-cyan-300" : "bg-white/10 text-slate-400"}`}>
+                    <div className={`mt-0.5 h-3.5 w-3.5 rounded-full flex items-center justify-center shrink-0 ${plan.highlight ? "bg-teal-400/15 text-teal-300" : "bg-white/10 text-slate-400"}`}>
                       <Check className="h-2 w-2 stroke-[4]" />
                     </div>
                     <span className="text-[13px] font-bold text-slate-300 leading-tight">
@@ -261,7 +261,7 @@ export function PricingSection({ t, currentLang }: PricingSectionProps) {
                   href={localPath("/pricing")}
                   className={`w-full py-4 rounded-[1.2rem] text-sm font-black text-center transition-all duration-300 border border-white/15 block ${
                     plan.highlight
-                      ? "bg-gradient-to-r from-violet-600 to-cyan-500 text-white hover:brightness-110 hover:scale-[1.02] shadow-xl shadow-cyan-500/25"
+                      ? "bg-gradient-to-r from-emerald-600 to-teal-500 text-white hover:brightness-110 hover:scale-[1.02] shadow-xl shadow-teal-500/25"
                       : "bg-white/10 text-white hover:bg-white/20"
                   }`}
                 >

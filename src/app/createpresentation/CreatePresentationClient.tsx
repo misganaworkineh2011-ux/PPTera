@@ -574,7 +574,7 @@ export default function CreatePresentationClient({
               router.push("/dashboard");
             }
           }}
-          className="flex items-center gap-2 rounded-full bg-white/90 backdrop-blur-sm px-4 py-2 text-sm font-medium text-slate-700 shadow-md transition-all hover:bg-white hover:text-[#1e3a8a] hover:shadow-lg"
+          className="flex items-center gap-2 rounded-full bg-white/90 backdrop-blur-sm px-4 py-2 text-sm font-medium text-slate-700 shadow-md transition-all hover:bg-white hover:text-[#0f766e] hover:shadow-lg"
         >
           <ArrowLeft size={16} /> {showOutline ? t.startOver : t.backBtn}
         </button>
@@ -586,7 +586,7 @@ export default function CreatePresentationClient({
         {view === "navigating" && (
           <div className="flex items-center justify-center h-[calc(100vh-5rem)]">
             <div className="flex flex-col items-center gap-4">
-              <Loader2 className="w-8 h-8 animate-spin text-[#06b6d4]" />
+              <Loader2 className="w-8 h-8 animate-spin text-[#14b8a6]" />
               <p className="text-slate-600 text-sm">Loading...</p>
             </div>
           </div>
@@ -618,7 +618,7 @@ export default function CreatePresentationClient({
             <div className={`mx-auto ${showOutline ? "max-w-4xl" : "max-w-3xl"}`}>
               {!showOutline && (
                 <div className="flex flex-col items-center justify-center mb-8">
-                  <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#1e3a8a] mb-2 text-center">
+                  <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#0f766e] mb-2 text-center">
                     {mode === "ai" && t.aiGenerationMode}
                     {mode === "docs" && t.importDocumentsMode}
                     {mode === "scratch" && t.startFromScratchMode}
@@ -637,17 +637,17 @@ export default function CreatePresentationClient({
                 <div className={showOutline ? "flex flex-col md:flex-row items-start gap-4" : "space-y-5"}>
                   <div className={showOutline ? "flex-1 w-full" : ""}>
                     {!showOutline && mode === "ai" && (
-                      <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
+                      <label htmlFor="description" className="block text-sm font-semibold text-[#0f766e] mb-2">
                         {t.whatToCreateLabel}
                       </label>
                     )}
                     {!showOutline && mode === "docs" && (
-                      <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
+                      <label htmlFor="description" className="block text-sm font-semibold text-[#0f766e] mb-2">
                         {t.uploadOrPasteContent}
                       </label>
                     )}
                     {!showOutline && mode === "scratch" && (
-                      <label htmlFor="description" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
+                      <label htmlFor="description" className="block text-sm font-semibold text-[#0f766e] mb-2">
                         {t.presentationTitleLabel}
                       </label>
                     )}
@@ -661,7 +661,7 @@ export default function CreatePresentationClient({
                         placeholder={t.defineWhatToCreate}
                         rows={showOutline ? 2 : 3}
                         disabled={isStreaming}
-                        className={`w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all resize-none text-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""}`}
+                        className={`w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/30 focus:border-[#14b8a6] transition-all resize-none text-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""}`}
                         required
                       />
                     )}
@@ -671,7 +671,7 @@ export default function CreatePresentationClient({
                       <div className="space-y-4">
                         {/* File Upload Area */}
                         {!uploadedFile ? (
-                          <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center hover:border-[#06b6d4] transition-colors bg-slate-50/50">
+                          <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center hover:border-[#14b8a6] transition-colors bg-slate-50/50">
                             <Upload className="mx-auto h-10 w-10 text-slate-400 mb-2" />
                             <input
                               type="file"
@@ -755,7 +755,7 @@ export default function CreatePresentationClient({
                             />
                             <label
                               htmlFor="file-upload"
-                              className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-[#06b6d4] transition-all"
+                              className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-[#14b8a6] transition-all"
                             >
                               {t.chooseFile}
                             </label>
@@ -765,15 +765,15 @@ export default function CreatePresentationClient({
                           </div>
                         ) : (
                           /* Uploaded File Display */
-                          <div className="border-2 border-[#06b6d4] rounded-xl p-4 bg-gradient-to-br from-[#06b6d4]/5 to-[#1e3a8a]/5">
+                          <div className="border-2 border-[#14b8a6] rounded-xl p-4 bg-gradient-to-br from-[#14b8a6]/5 to-[#0f766e]/5">
                             <div className="flex items-center gap-4">
                               {/* File Icon */}
-                              <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center shadow-lg">
+                              <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br from-[#0f766e] to-[#14b8a6] flex items-center justify-center shadow-lg">
                                 <FileText className="w-7 h-7 text-white" />
                               </div>
                               {/* File Info */}
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold text-[#1e3a8a] truncate">
+                                <p className="text-sm font-semibold text-[#0f766e] truncate">
                                   {uploadedFile.name}
                                 </p>
                                 <p className="text-xs text-slate-500 mt-0.5">
@@ -818,7 +818,7 @@ export default function CreatePresentationClient({
                           placeholder={t.pasteContentHere}
                           rows={5}
                           disabled={isStreaming}
-                          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all resize-none text-sm"
+                          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/30 focus:border-[#14b8a6] transition-all resize-none text-sm"
                         />
                       </div>
                     )}
@@ -832,7 +832,7 @@ export default function CreatePresentationClient({
                         placeholder={t.yourContentPlaceholder}
                         rows={2}
                         disabled={isStreaming}
-                        className={`w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all resize-none text-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""}`}
+                        className={`w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/30 focus:border-[#14b8a6] transition-all resize-none text-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""}`}
                         required
                       />
                     )}
@@ -846,7 +846,7 @@ export default function CreatePresentationClient({
                         onChange={(e) => handleChange("description", e.target.value)}
                         placeholder={t.enterPresentationTitle}
                         disabled={isStreaming}
-                        className={`w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all text-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""}`}
+                        className={`w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/30 focus:border-[#14b8a6] transition-all text-sm ${isStreaming ? "opacity-60 cursor-not-allowed" : ""}`}
                         required
                       />
                     )}
@@ -859,7 +859,7 @@ export default function CreatePresentationClient({
                         value={formData.numberOfSlides}
                         disabled={isStreaming}
                         onChange={(e) => handleChange("numberOfSlides", parseInt(e.target.value))}
-                        className="flex-1 md:flex-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 disabled:opacity-60 min-w-[100px]"
+                        className="flex-1 md:flex-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20 disabled:opacity-60 min-w-[100px]"
                       >
                         {allSlideOptions
                           .filter((opt) => opt.value > 0)
@@ -873,7 +873,7 @@ export default function CreatePresentationClient({
                         value={formData.tone}
                         disabled={isStreaming}
                         onChange={(e) => handleChange("tone", e.target.value)}
-                        className="flex-1 md:flex-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 disabled:opacity-60 min-w-[120px]"
+                        className="flex-1 md:flex-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20 disabled:opacity-60 min-w-[120px]"
                       >
                         <optgroup label="Business">
                           <option value="professional"> Professional</option>
@@ -910,7 +910,7 @@ export default function CreatePresentationClient({
                         value={formData.language}
                         disabled={isStreaming}
                         onChange={(e) => handleChange("language", e.target.value)}
-                        className="flex-1 md:flex-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 disabled:opacity-60 min-w-[100px]"
+                        className="flex-1 md:flex-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20 disabled:opacity-60 min-w-[100px]"
                       >
                         <optgroup label="Popular">
                           <option value="english">🇺🇸 English</option>
@@ -964,7 +964,7 @@ export default function CreatePresentationClient({
                   <>
                     {/* Number of Slides */}
                     <div>
-                      <label htmlFor="slides" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
+                      <label htmlFor="slides" className="block text-sm font-semibold text-[#0f766e] mb-2">
                         {t.numberOfSlides}
                       </label>
                       <div className="relative">
@@ -982,7 +982,7 @@ export default function CreatePresentationClient({
                               handleChange("numberOfSlides", value);
                             }
                           }}
-                          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all appearance-none cursor-pointer"
+                          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/30 focus:border-[#14b8a6] transition-all appearance-none cursor-pointer"
                         >
                           {allSlideOptions.map((option, index) => {
                             if (option.isGroupHeader) {
@@ -1002,7 +1002,7 @@ export default function CreatePresentationClient({
                               <option
                                 key={option.value}
                                 value={option.value}
-                                style={option.disabled ? { color: "#06b6d4" } : {}}
+                                style={option.disabled ? { color: "#14b8a6" } : {}}
                               >
                                 {displayLabel}
                               </option>
@@ -1020,14 +1020,14 @@ export default function CreatePresentationClient({
                     {/* Tone and Language - Side by side */}
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label htmlFor="tone" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
+                        <label htmlFor="tone" className="block text-sm font-semibold text-[#0f766e] mb-2">
                           {t.tone}
                         </label>
                         <select
                           id="tone"
                           value={formData.tone}
                           onChange={(e) => handleChange("tone", e.target.value)}
-                          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
+                          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/30 focus:border-[#14b8a6] transition-all"
                         >
                           <optgroup label="Business">
                             <option value="professional"> Professional</option>
@@ -1063,14 +1063,14 @@ export default function CreatePresentationClient({
                       </div>
 
                       <div>
-                        <label htmlFor="language" className="block text-sm font-semibold text-[#1e3a8a] mb-2">
+                        <label htmlFor="language" className="block text-sm font-semibold text-[#0f766e] mb-2">
                           {t.languageLabel}
                         </label>
                         <select
                           id="language"
                           value={formData.language}
                           onChange={(e) => handleChange("language", e.target.value)}
-                          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
+                          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/30 focus:border-[#14b8a6] transition-all"
                         >
                           <optgroup label={t.languagePopular}>
                             <option value="english">🇺🇸 English</option>
@@ -1130,7 +1130,7 @@ export default function CreatePresentationClient({
                         ? t.regenerateOutlineBtn
                         : t.generateOutlineBtn
                     }
-                    className="w-full sm:w-auto px-10 py-3 rounded-xl bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold shadow-lg transition-all hover:opacity-90 hover:shadow-xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm"
+                    className="w-full sm:w-auto px-10 py-3 rounded-xl bg-gradient-to-r from-[#0f766e] to-[#14b8a6] text-white font-semibold shadow-lg transition-all hover:opacity-90 hover:shadow-xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm"
                   >
                     {isStreaming ? (
                       mode === "scratch" ? t.creatingDots :
@@ -1159,7 +1159,7 @@ export default function CreatePresentationClient({
               <div className="mx-auto max-w-4xl">
                 {/* Simple status text above slides - only show when actually streaming */}
                 {isStreaming && !hasError && streamState.totalSlides > 0 && (
-                  <div className="mb-6 text-sm text-[#06b6d4] flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-lg px-4 py-3 shadow-sm border border-[#06b6d4]/20">
+                  <div className="mb-6 text-sm text-[#14b8a6] flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-lg px-4 py-3 shadow-sm border border-[#14b8a6]/20">
                     <Loader2 size={16} className="animate-spin" />
                     <span className="font-medium">
                       {streamState.currentSlideIndex >= 0
@@ -1223,7 +1223,7 @@ export default function CreatePresentationClient({
                     {/* Text Content Section */}
                     <div className="mb-6 pb-6 border-b border-slate-200">
                       <div className="flex items-center gap-2 mb-3">
-                        <svg className="w-4 h-4 text-[#06b6d4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 text-[#14b8a6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
                         </svg>
                         <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
@@ -1247,7 +1247,7 @@ export default function CreatePresentationClient({
                               type="button"
                               onClick={() => handleChange("textDensity", option.id)}
                               className={`relative rounded-lg border p-3 text-left transition-all hover:shadow-sm ${isSelected
-                                ? "border-[#06b6d4] ring-2 ring-[#06b6d4]/20 bg-[#06b6d4]/5"
+                                ? "border-[#14b8a6] ring-2 ring-[#14b8a6]/20 bg-[#14b8a6]/5"
                                 : "border-slate-200 hover:border-slate-300 bg-white"
                                 }`}
                             >
@@ -1256,7 +1256,7 @@ export default function CreatePresentationClient({
                                 {Array.from({ length: option.lines }).map((_, i) => (
                                   <div
                                     key={i}
-                                    className={`h-1 rounded ${isSelected ? "bg-[#06b6d4]" : "bg-slate-300"
+                                    className={`h-1 rounded ${isSelected ? "bg-[#14b8a6]" : "bg-slate-300"
                                       }`}
                                     style={{
                                       width: i === option.lines - 1 ? "60%" : "100%",
@@ -1264,7 +1264,7 @@ export default function CreatePresentationClient({
                                   />
                                 ))}
                               </div>
-                              <div className={`text-xs font-medium ${isSelected ? "text-[#06b6d4]" : "text-slate-700"
+                              <div className={`text-xs font-medium ${isSelected ? "text-[#14b8a6]" : "text-slate-700"
                                 }`}>
                                 {option.label}
                               </div>
@@ -1288,7 +1288,7 @@ export default function CreatePresentationClient({
                         <button
                           type="button"
                           onClick={() => setIsThemeSelectorOpen(true)}
-                          className="text-xs font-medium text-[#06b6d4] hover:text-[#0891b2] transition-colors"
+                          className="text-xs font-medium text-[#14b8a6] hover:text-[#0d9488] transition-colors"
                         >
                           Browse all →
                         </button>
@@ -1322,7 +1322,7 @@ export default function CreatePresentationClient({
                                 });
                               }}
                               className={`group relative overflow-hidden rounded-lg border text-left transition-all hover:shadow-md ${isSelected
-                                ? "border-[#06b6d4] ring-2 ring-[#06b6d4]/20 shadow-sm"
+                                ? "border-[#14b8a6] ring-2 ring-[#14b8a6]/20 shadow-sm"
                                 : "border-slate-200 hover:border-slate-300"
                                 }`}
                             >
@@ -1383,15 +1383,15 @@ export default function CreatePresentationClient({
 
                               {/* Theme Name Footer */}
                               <div
-                                className={`px-2 py-1 border-t flex items-center justify-between text-[11px] ${isSelected ? "bg-[#06b6d4]/5" : "bg-white"
+                                className={`px-2 py-1 border-t flex items-center justify-between text-[11px] ${isSelected ? "bg-[#14b8a6]/5" : "bg-white"
                                   }`}
-                                style={{ borderColor: isSelected ? "#06b6d4" : "#e2e8f0" }}
+                                style={{ borderColor: isSelected ? "#14b8a6" : "#e2e8f0" }}
                               >
                                 <div className="font-medium text-slate-700 truncate">
                                   {theme.name}
                                 </div>
                                 {isSelected && (
-                                  <Check size={12} className="text-[#06b6d4] flex-shrink-0 ml-1" />
+                                  <Check size={12} className="text-[#14b8a6] flex-shrink-0 ml-1" />
                                 )}
                               </div>
                             </button>
@@ -1410,7 +1410,7 @@ export default function CreatePresentationClient({
                         <button
                           type="button"
                           onClick={() => setIsImageSourceDropdownOpen(!isImageSourceDropdownOpen)}
-                          className="w-full flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all"
+                          className="w-full flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20 focus:border-[#14b8a6] transition-all"
                         >
                           <div className="flex items-center gap-2">
                             {formData.imageSource === "no-images" && (
@@ -1431,7 +1431,7 @@ export default function CreatePresentationClient({
                             )}
                             {formData.imageSource === "ai-generated" && (
                               <>
-                                <Sparkles size={16} className="text-violet-500" />
+                                <Sparkles size={16} className="text-emerald-500" />
                                 <span>AI-Generated Images</span>
                               </>
                             )}
@@ -1483,7 +1483,7 @@ export default function CreatePresentationClient({
                                   {
                                     id: "ai-generated",
                                     label: "AI-Generated Images",
-                                    icon: <Sparkles size={16} className="text-violet-500" />,
+                                    icon: <Sparkles size={16} className="text-emerald-500" />,
                                     locked: isFreeUser, // Lock for free users
                                   },
                                   {
@@ -1534,12 +1534,12 @@ export default function CreatePresentationClient({
                                       }}
                                       className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left transition-colors ${
                                         formData.imageSource === option.id
-                                          ? "bg-[#06b6d4]/10 text-[#06b6d4]"
+                                          ? "bg-[#14b8a6]/10 text-[#14b8a6]"
                                           : "hover:bg-slate-50 text-slate-700"
                                       }`}
                                     >
                                       {formData.imageSource === option.id ? (
-                                        <Check size={16} className="text-[#06b6d4] flex-shrink-0" />
+                                        <Check size={16} className="text-[#14b8a6] flex-shrink-0" />
                                       ) : (
                                         <div className="flex-shrink-0">{option.icon}</div>
                                       )}
@@ -1569,10 +1569,10 @@ export default function CreatePresentationClient({
                             <button
                               type="button"
                               onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
-                              className="w-full flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
+                              className="w-full flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all"
                             >
                               <div className="flex items-center gap-2">
-                                <Sparkles size={16} className="text-violet-500" />
+                                <Sparkles size={16} className="text-emerald-500" />
                                 <span className="font-medium">
                                   {formData.imageModel === "gemini-2.5-flash-image" && "Nano Banana"}
                                   {formData.imageModel === "gemini-3-pro-image-preview" && "Nano Banana Pro"}
@@ -1622,17 +1622,17 @@ export default function CreatePresentationClient({
                                           setIsModelDropdownOpen(false);
                                         }}
                                         className={`w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors ${formData.imageModel === model.id
-                                            ? "bg-violet-50"
+                                            ? "bg-emerald-50"
                                             : "hover:bg-slate-50"
                                           }`}
                                       >
                                         <div className="flex items-center gap-2.5">
                                           {formData.imageModel === model.id ? (
-                                            <Check size={16} className="text-violet-600" />
+                                            <Check size={16} className="text-emerald-600" />
                                           ) : (
-                                            <Sparkles size={16} className="text-violet-500" />
+                                            <Sparkles size={16} className="text-emerald-500" />
                                           )}
-                                          <span className={`text-sm ${formData.imageModel === model.id ? "font-medium text-violet-700" : "text-slate-700"}`}>{model.name}</span>
+                                          <span className={`text-sm ${formData.imageModel === model.id ? "font-medium text-emerald-700" : "text-slate-700"}`}>{model.name}</span>
                                         </div>
                                         <span className="text-xs text-slate-400">{model.credits} ✦</span>
                                       </button>
@@ -1666,17 +1666,17 @@ export default function CreatePresentationClient({
                                             setIsModelDropdownOpen(false);
                                           }}
                                           className={`w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors ${formData.imageModel === model.id
-                                              ? "bg-violet-50"
+                                              ? "bg-emerald-50"
                                               : isLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50"
                                             }`}
                                         >
                                           <div className="flex items-center gap-2.5">
                                             {formData.imageModel === model.id ? (
-                                              <Check size={16} className="text-violet-600" />
+                                              <Check size={16} className="text-emerald-600" />
                                             ) : (
-                                              <Sparkles size={16} className="text-violet-500" />
+                                              <Sparkles size={16} className="text-emerald-500" />
                                             )}
-                                            <span className={`text-sm ${formData.imageModel === model.id ? "font-medium text-violet-700" : "text-slate-700"}`}>{model.name}</span>
+                                            <span className={`text-sm ${formData.imageModel === model.id ? "font-medium text-emerald-700" : "text-slate-700"}`}>{model.name}</span>
                                             {model.isNew && (
                                               <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-full">NEW</span>
                                             )}
@@ -1692,7 +1692,7 @@ export default function CreatePresentationClient({
                                   <div className="p-2 border-b border-slate-100">
                                     <div className="flex items-center gap-2 px-2 py-1.5 mb-1">
                                       <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{t.premiumModels}</span>
-                                      <span className="text-[10px] font-semibold text-white bg-indigo-600 px-1.5 py-0.5 rounded-full">PRO</span>
+                                      <span className="text-[10px] font-semibold text-white bg-emerald-600 px-1.5 py-0.5 rounded-full">PRO</span>
                                     </div>
                                     {[
                                       { id: "imagen-4.0-ultra-generate-001", name: "Imagen 4 Ultra", credits: CREDIT_COSTS.IMAGEN_4_ULTRA },
@@ -1714,17 +1714,17 @@ export default function CreatePresentationClient({
                                             setIsModelDropdownOpen(false);
                                           }}
                                           className={`w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors ${formData.imageModel === model.id
-                                              ? "bg-violet-50"
+                                              ? "bg-emerald-50"
                                               : isLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50"
                                             }`}
                                         >
                                           <div className="flex items-center gap-2.5">
                                             {formData.imageModel === model.id ? (
-                                              <Check size={16} className="text-violet-600" />
+                                              <Check size={16} className="text-emerald-600" />
                                             ) : (
-                                              <Sparkles size={16} className="text-violet-500" />
+                                              <Sparkles size={16} className="text-emerald-500" />
                                             )}
-                                            <span className={`text-sm ${formData.imageModel === model.id ? "font-medium text-violet-700" : "text-slate-700"}`}>{model.name}</span>
+                                            <span className={`text-sm ${formData.imageModel === model.id ? "font-medium text-emerald-700" : "text-slate-700"}`}>{model.name}</span>
                                             {isLocked && <Lock size={12} className="text-slate-400 ml-1" />}
                                           </div>
                                           <span className="text-xs text-slate-400">{model.credits} ✦</span>
@@ -1737,7 +1737,7 @@ export default function CreatePresentationClient({
                                   <div className="p-2">
                                     <div className="flex items-center gap-2 px-2 py-1.5 mb-1">
                                       <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Ultra models</span>
-                                      <span className="text-[10px] font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-500 px-1.5 py-0.5 rounded-full">ULTRA</span>
+                                      <span className="text-[10px] font-semibold text-white bg-gradient-to-r from-emerald-600 to-pink-500 px-1.5 py-0.5 rounded-full">ULTRA</span>
                                     </div>
                                     {[
                                       { id: "imagen-4.0-ultra-generate-001", name: "Imagen 4 Ultra (2K)", credits: CREDIT_COSTS.IMAGEN_4_ULTRA },
@@ -1759,17 +1759,17 @@ export default function CreatePresentationClient({
                                             setIsModelDropdownOpen(false);
                                           }}
                                           className={`w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors ${formData.imageModel === model.id
-                                              ? "bg-violet-50"
+                                              ? "bg-emerald-50"
                                               : isLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50"
                                             }`}
                                         >
                                           <div className="flex items-center gap-2.5">
                                             {formData.imageModel === model.id ? (
-                                              <Check size={16} className="text-violet-600" />
+                                              <Check size={16} className="text-emerald-600" />
                                             ) : (
-                                              <Sparkles size={16} className="text-violet-500" />
+                                              <Sparkles size={16} className="text-emerald-500" />
                                             )}
-                                            <span className={`text-sm ${formData.imageModel === model.id ? "font-medium text-violet-700" : "text-slate-700"}`}>{model.name}</span>
+                                            <span className={`text-sm ${formData.imageModel === model.id ? "font-medium text-emerald-700" : "text-slate-700"}`}>{model.name}</span>
                                             {isLocked && <Lock size={12} className="text-slate-400 ml-1" />}
                                           </div>
                                           <span className="text-xs text-slate-400">{model.credits} ✦</span>
@@ -1804,7 +1804,7 @@ export default function CreatePresentationClient({
                                   }`}
                               >
                                 <div className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${formData.imageArtStyle === style.id
-                                    ? "border-[#06b6d4] ring-2 ring-[#06b6d4]/30"
+                                    ? "border-[#14b8a6] ring-2 ring-[#14b8a6]/30"
                                     : "border-slate-200 hover:border-slate-300"
                                   }`}>
                                   <Image
@@ -1817,12 +1817,12 @@ export default function CreatePresentationClient({
                                     unoptimized={'isLocal' in style && style.isLocal}
                                   />
                                   {formData.imageArtStyle === style.id && (
-                                    <div className="absolute inset-0 bg-[#06b6d4]/20 flex items-end justify-start p-1">
-                                      <Check size={12} className="text-[#06b6d4] bg-white rounded-full p-0.5" />
+                                    <div className="absolute inset-0 bg-[#14b8a6]/20 flex items-end justify-start p-1">
+                                      <Check size={12} className="text-[#14b8a6] bg-white rounded-full p-0.5" />
                                     </div>
                                   )}
                                 </div>
-                                <span className={`text-[10px] font-medium ${formData.imageArtStyle === style.id ? "text-[#06b6d4]" : "text-slate-600"
+                                <span className={`text-[10px] font-medium ${formData.imageArtStyle === style.id ? "text-[#14b8a6]" : "text-slate-600"
                                   }`}>{style.label}</span>
                               </button>
                             ))}
@@ -1836,7 +1836,7 @@ export default function CreatePresentationClient({
                                 value={formData.customArtStyleText}
                                 onChange={(e) => handleChange("customArtStyleText", e.target.value)}
                                 placeholder="Describe your art style (e.g., watercolor, cyberpunk, minimalist flat design...)"
-                                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/30 focus:border-[#06b6d4] transition-all"
+                                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/30 focus:border-[#14b8a6] transition-all"
                               />
                               <p className="text-[10px] text-slate-500 mt-1">
                                 Be specific! E.g., &quot;vintage oil painting&quot;, &quot;anime style&quot;, &quot;neon cyberpunk&quot;, &quot;watercolor sketch&quot;
@@ -1867,21 +1867,21 @@ export default function CreatePresentationClient({
                 <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
                   <span className="flex items-center gap-1">
                     <span className="text-slate-500">{t.slidesCount}</span>
-                    <strong className="text-[#1e3a8a]">
+                    <strong className="text-[#0f766e]">
                       {slides.length || streamState.totalSlides || 0}
                     </strong>
                   </span>
                   <span className="hidden sm:inline text-slate-300">•</span>
                   <span className="hidden sm:flex items-center gap-1">
                     <span className="text-slate-500">{t.charactersCount}</span>
-                    <strong className="text-[#1e3a8a]">
+                    <strong className="text-[#0f766e]">
                       {totalCharacters.toLocaleString()}
                     </strong>
                   </span>
                   <span className="text-slate-300">•</span>
                   <span className="flex items-center gap-1">
                     <span className="text-slate-500">{t.creditsNeededLabel}</span>
-                    <strong className="text-[#1e3a8a]">
+                    <strong className="text-[#0f766e]">
                       {creditsNeededForPresentation}
                     </strong>
                   </span>
@@ -1891,7 +1891,7 @@ export default function CreatePresentationClient({
                     <strong
                       className={
                         hasEnoughCreditsForPresentation
-                          ? "text-[#06b6d4]"
+                          ? "text-[#14b8a6]"
                           : "text-red-500"
                       }
                     >
@@ -1909,7 +1909,7 @@ export default function CreatePresentationClient({
                     <button
                       type="button"
                       onClick={() => setShowCreditWarning(true)}
-                      className="px-3 py-1.5 rounded-lg border border-[#06b6d4] text-[#06b6d4] text-xs font-semibold hover:bg-cyan-50 transition-colors"
+                      className="px-3 py-1.5 rounded-lg border border-[#14b8a6] text-[#14b8a6] text-xs font-semibold hover:bg-teal-50 transition-colors"
                     >
                       Upgrade / Buy credits
                     </button>
@@ -1923,7 +1923,7 @@ export default function CreatePresentationClient({
                       isCreatingPresentation ||
                       !hasEnoughCreditsForPresentation
                     }
-                    className="px-5 py-2 rounded-lg bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white text-sm font-semibold shadow-md transition-all hover:opacity-90 hover:shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center gap-2"
+                    className="px-5 py-2 rounded-lg bg-gradient-to-r from-[#0f766e] to-[#14b8a6] text-white text-sm font-semibold shadow-md transition-all hover:opacity-90 hover:shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center gap-2"
                   >
                     {isCreatingPresentation ? (
                       <>

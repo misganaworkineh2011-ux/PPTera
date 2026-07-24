@@ -79,8 +79,8 @@ export function InsightsPageClient({
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
-      "ai-technology": "from-blue-500 to-cyan-500",
-      design: "from-purple-500 to-pink-500",
+      "ai-technology": "from-blue-500 to-teal-500",
+      design: "from-emerald-500 to-pink-500",
       "best-practices": "from-green-500 to-emerald-500",
     };
     return colors[category] || "from-slate-500 to-gray-500";
@@ -104,7 +104,7 @@ export function InsightsPageClient({
 
         <div className="relative z-10 mx-auto max-w-5xl text-center">
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-4 py-2 backdrop-blur-sm animate-fade-in">
-            <BookOpen className="h-4 w-4 text-[#06b6d4]" />
+            <BookOpen className="h-4 w-4 text-[#14b8a6]" />
             <span className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
               {t.insights || "Insights"}
             </span>
@@ -112,7 +112,7 @@ export function InsightsPageClient({
 
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 mb-6 animate-fade-in-up [animation-delay:100ms]">
             {t.insightsHeroTitle || "Learn from the"}{" "}
-            <span className="bg-gradient-to-r from-[#1e3a8a] via-[#06b6d4] to-[#1e3a8a] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#0f766e] via-[#14b8a6] to-[#0f766e] bg-clip-text text-transparent">
               {t.insightsHeroHighlight || "experts"}
             </span>
           </h1>
@@ -133,7 +133,7 @@ export function InsightsPageClient({
                 className="text-center animate-fade-in-up"
                 style={{ animationDelay: `${300 + index * 100}ms` }}
               >
-                <div className="text-4xl md:text-5xl font-black bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] bg-clip-text text-transparent mb-2">
+                <div className="text-4xl md:text-5xl font-black bg-gradient-to-r from-[#0f766e] to-[#14b8a6] bg-clip-text text-transparent mb-2">
                   {stat.value}
                 </div>
                 <div className="text-sm text-slate-600">{stat.label}</div>
@@ -168,7 +168,7 @@ export function InsightsPageClient({
                 </div>
 
                 <div className="p-8 md:p-12 flex flex-col justify-center">
-                  <span className="text-sm font-semibold text-[#06b6d4] mb-3">
+                  <span className="text-sm font-semibold text-[#14b8a6] mb-3">
                     {featuredPost.category.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
                   </span>
                   <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
@@ -189,7 +189,7 @@ export function InsightsPageClient({
                   </div>
                   <a 
                     href={`/insights/${featuredPost.slug}`}
-                    className="inline-flex items-center gap-2 text-[#06b6d4] font-semibold hover:gap-3 transition-all"
+                    className="inline-flex items-center gap-2 text-[#14b8a6] font-semibold hover:gap-3 transition-all"
                   >
                     {t.readMore?.replace(' →', '') || "Read More"}
                     <ArrowRight className="h-5 w-5" />
@@ -211,7 +211,7 @@ export function InsightsPageClient({
                 onClick={() => setSelectedCategory(category)}
                 className={`px-6 py-2 rounded-full border text-sm font-semibold transition-all ${
                   selectedCategory === category
-                    ? "border-[#06b6d4] bg-[#06b6d4] text-white"
+                    ? "border-[#14b8a6] bg-[#14b8a6] text-white"
                     : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                 }`}
               >
@@ -260,7 +260,7 @@ export function InsightsPageClient({
                     </div>
 
                     <div className="p-6">
-                      <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-[#06b6d4] transition-colors">
+                      <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-[#14b8a6] transition-colors">
                         {post.title}
                       </h3>
                       <p className="text-slate-600 mb-4 leading-relaxed text-sm line-clamp-3">
@@ -276,7 +276,7 @@ export function InsightsPageClient({
                           <Clock className="h-3 w-3" />
                           {post.readTime} min read
                         </span>
-                        <span className="text-[#06b6d4] font-semibold text-sm inline-flex items-center gap-1">
+                        <span className="text-[#14b8a6] font-semibold text-sm inline-flex items-center gap-1">
                           {t.read || "Read"}
                           <ArrowRight className="h-4 w-4" />
                         </span>
@@ -294,7 +294,7 @@ export function InsightsPageClient({
               <button
                 onClick={loadMore}
                 disabled={loading}
-                className="px-8 py-3 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-bold hover:shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-8 py-3 rounded-full bg-gradient-to-r from-[#0f766e] to-[#14b8a6] text-white font-bold hover:shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (t.loading || "Loading...") : (t.loadMore || "Load More Articles")}
               </button>

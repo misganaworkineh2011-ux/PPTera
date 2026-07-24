@@ -111,7 +111,7 @@ export default function AIImageGenerator({
     return (
       <div className={cn("space-y-4", className)}>
         <div className="flex flex-col items-center justify-center p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-neutral-900 dark:to-neutral-800 rounded-xl border-2 border-dashed border-slate-200 dark:border-neutral-700">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center mb-4">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center mb-4">
             <Lock className="w-8 h-8 text-white" />
           </div>
           <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
@@ -122,7 +122,7 @@ export default function AIImageGenerator({
           </p>
           <button
             onClick={() => setShowPricingModal(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white rounded-xl font-semibold hover:opacity-90 transition"
+            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#0f766e] to-[#14b8a6] text-white rounded-xl font-semibold hover:opacity-90 transition"
           >
             <Sparkles className="w-5 h-5" />
             Upgrade Now
@@ -234,7 +234,7 @@ export default function AIImageGenerator({
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             placeholder="A professional business presentation background with abstract blue shapes..."
-            className="w-full h-24 px-4 py-3 rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent resize-none"
+            className="w-full h-24 px-4 py-3 rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-[#14b8a6] focus:border-transparent resize-none"
             disabled={loading}
           />
           <div className="absolute bottom-2 right-2 text-xs text-slate-400">
@@ -269,10 +269,10 @@ export default function AIImageGenerator({
             <button
               type="button"
               onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
-              className="w-full flex items-center justify-between gap-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800 px-3 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 transition-all"
+              className="w-full flex items-center justify-between gap-2 rounded-lg border border-slate-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800 px-3 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
             >
               <div className="flex items-center gap-2">
-                <Sparkles size={16} className="text-violet-500" />
+                <Sparkles size={16} className="text-emerald-500" />
                 <span className="font-medium">{MODEL_INFO[model].name}</span>
               </div>
               <div className="flex items-center gap-2">
@@ -312,16 +312,16 @@ export default function AIImageGenerator({
                         }}
                         className={cn(
                           "w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors",
-                          model === m.id ? "bg-violet-50 dark:bg-violet-900/30" : "hover:bg-slate-50 dark:hover:bg-neutral-700"
+                          model === m.id ? "bg-emerald-50 dark:bg-emerald-900/30" : "hover:bg-slate-50 dark:hover:bg-neutral-700"
                         )}
                       >
                         <div className="flex items-center gap-2.5">
                           {model === m.id ? (
-                            <Check size={16} className="text-violet-600" />
+                            <Check size={16} className="text-emerald-600" />
                           ) : (
-                            <Sparkles size={16} className="text-violet-500" />
+                            <Sparkles size={16} className="text-emerald-500" />
                           )}
-                          <span className={cn("text-sm", model === m.id ? "font-medium text-violet-700 dark:text-violet-300" : "text-slate-700 dark:text-slate-200")}>{m.name}</span>
+                          <span className={cn("text-sm", model === m.id ? "font-medium text-emerald-700 dark:text-emerald-300" : "text-slate-700 dark:text-slate-200")}>{m.name}</span>
                         </div>
                         <span className="text-xs text-slate-400">{m.credits} ✦</span>
                       </button>
@@ -355,16 +355,16 @@ export default function AIImageGenerator({
                           }}
                           className={cn(
                             "w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors",
-                            model === m.id ? "bg-violet-50 dark:bg-violet-900/30" : isLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50 dark:hover:bg-neutral-700"
+                            model === m.id ? "bg-emerald-50 dark:bg-emerald-900/30" : isLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50 dark:hover:bg-neutral-700"
                           )}
                         >
                           <div className="flex items-center gap-2.5">
                             {model === m.id ? (
-                              <Check size={16} className="text-violet-600" />
+                              <Check size={16} className="text-emerald-600" />
                             ) : (
-                              <Sparkles size={16} className="text-violet-500" />
+                              <Sparkles size={16} className="text-emerald-500" />
                             )}
-                            <span className={cn("text-sm", model === m.id ? "font-medium text-violet-700 dark:text-violet-300" : "text-slate-700 dark:text-slate-200")}>{m.name}</span>
+                            <span className={cn("text-sm", model === m.id ? "font-medium text-emerald-700 dark:text-emerald-300" : "text-slate-700 dark:text-slate-200")}>{m.name}</span>
                             {m.isNew && (
                               <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-full">NEW</span>
                             )}
@@ -380,7 +380,7 @@ export default function AIImageGenerator({
                   <div className="p-2 border-b border-slate-100 dark:border-neutral-700">
                     <div className="flex items-center gap-2 px-2 py-1.5 mb-1">
                       <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Premium models</span>
-                      <span className="text-[10px] font-semibold text-white bg-indigo-600 px-1.5 py-0.5 rounded-full">PRO</span>
+                      <span className="text-[10px] font-semibold text-white bg-emerald-600 px-1.5 py-0.5 rounded-full">PRO</span>
                     </div>
                     {[
                       { id: "imagen-4.0-ultra-generate-001" as ImageModel, name: "Imagen 4 Ultra", credits: CREDIT_COSTS.IMAGEN_4_ULTRA },
@@ -402,16 +402,16 @@ export default function AIImageGenerator({
                           }}
                           className={cn(
                             "w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors",
-                            model === m.id ? "bg-violet-50 dark:bg-violet-900/30" : isLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50 dark:hover:bg-neutral-700"
+                            model === m.id ? "bg-emerald-50 dark:bg-emerald-900/30" : isLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50 dark:hover:bg-neutral-700"
                           )}
                         >
                           <div className="flex items-center gap-2.5">
                             {model === m.id ? (
-                              <Check size={16} className="text-violet-600" />
+                              <Check size={16} className="text-emerald-600" />
                             ) : (
-                              <Sparkles size={16} className="text-violet-500" />
+                              <Sparkles size={16} className="text-emerald-500" />
                             )}
-                            <span className={cn("text-sm", model === m.id ? "font-medium text-violet-700 dark:text-violet-300" : "text-slate-700 dark:text-slate-200")}>{m.name}</span>
+                            <span className={cn("text-sm", model === m.id ? "font-medium text-emerald-700 dark:text-emerald-300" : "text-slate-700 dark:text-slate-200")}>{m.name}</span>
                             {isLocked && <Lock size={12} className="text-slate-400 ml-1" />}
                           </div>
                           <span className="text-xs text-slate-400">{m.credits} ✦</span>
@@ -424,7 +424,7 @@ export default function AIImageGenerator({
                   <div className="p-2">
                     <div className="flex items-center gap-2 px-2 py-1.5 mb-1">
                       <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Ultra models</span>
-                      <span className="text-[10px] font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-500 px-1.5 py-0.5 rounded-full">ULTRA</span>
+                      <span className="text-[10px] font-semibold text-white bg-gradient-to-r from-emerald-600 to-pink-500 px-1.5 py-0.5 rounded-full">ULTRA</span>
                     </div>
                     {[
                       { id: "imagen-4.0-ultra-generate-001" as ImageModel, name: "Imagen 4 Ultra (2K)", credits: CREDIT_COSTS.IMAGEN_4_ULTRA },
@@ -446,16 +446,16 @@ export default function AIImageGenerator({
                           }}
                           className={cn(
                             "w-full flex items-center justify-between px-2 py-2.5 rounded-lg text-left transition-colors",
-                            model === m.id ? "bg-violet-50 dark:bg-violet-900/30" : isLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50 dark:hover:bg-neutral-700"
+                            model === m.id ? "bg-emerald-50 dark:bg-emerald-900/30" : isLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50 dark:hover:bg-neutral-700"
                           )}
                         >
                           <div className="flex items-center gap-2.5">
                             {model === m.id ? (
-                              <Check size={16} className="text-violet-600" />
+                              <Check size={16} className="text-emerald-600" />
                             ) : (
-                              <Sparkles size={16} className="text-purple-500" />
+                              <Sparkles size={16} className="text-emerald-500" />
                             )}
-                            <span className={cn("text-sm", model === m.id ? "font-medium text-violet-700 dark:text-violet-300" : "text-slate-700 dark:text-slate-200")}>{m.name}</span>
+                            <span className={cn("text-sm", model === m.id ? "font-medium text-emerald-700 dark:text-emerald-300" : "text-slate-700 dark:text-slate-200")}>{m.name}</span>
                             {isLocked && <Lock size={12} className="text-slate-400 ml-1" />}
                           </div>
                           <span className="text-xs text-slate-400">{m.credits} ✦</span>
@@ -484,7 +484,7 @@ export default function AIImageGenerator({
                 className={cn(
                   "flex-1 px-3 py-2 rounded-lg text-xs font-medium transition",
                   quality === "standard"
-                    ? "bg-[#06b6d4] text-white"
+                    ? "bg-[#14b8a6] text-white"
                     : "bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
                 )}
               >
@@ -495,7 +495,7 @@ export default function AIImageGenerator({
                 className={cn(
                   "flex-1 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center justify-center gap-1",
                   quality === "hd"
-                    ? "bg-[#06b6d4] text-white"
+                    ? "bg-[#14b8a6] text-white"
                     : "bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
                 )}
               >
@@ -518,7 +518,7 @@ export default function AIImageGenerator({
                   className={cn(
                     "flex-1 px-3 py-2 rounded-lg text-xs font-medium transition",
                     size === opt.value
-                      ? "bg-[#06b6d4] text-white"
+                      ? "bg-[#14b8a6] text-white"
                       : "bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
                   )}
                 >
@@ -551,7 +551,7 @@ export default function AIImageGenerator({
       <button
         onClick={handleGenerate}
         disabled={loading || !prompt.trim()}
-        className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white rounded-xl font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition"
+        className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#0f766e] to-[#14b8a6] text-white rounded-xl font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition"
       >
         {loading ? (
           <>

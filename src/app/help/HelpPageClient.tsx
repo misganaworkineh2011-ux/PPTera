@@ -84,7 +84,7 @@ export function HelpPageClient({
             placeholder={t.searchHelp || "Search for help..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-4 rounded-full border-2 border-slate-200 focus:border-[#06b6d4] focus:outline-none text-slate-900 placeholder:text-slate-400"
+            className="w-full pl-12 pr-4 py-4 rounded-full border-2 border-slate-200 focus:border-[#14b8a6] focus:outline-none text-slate-900 placeholder:text-slate-400"
           />
         </div>
       </div>
@@ -94,7 +94,7 @@ export function HelpPageClient({
         <section className="relative px-6 pb-16">
           <div className="mx-auto max-w-5xl">
             <div className="flex items-center gap-3 mb-8">
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center">
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#0f766e] to-[#14b8a6] flex items-center justify-center">
                 <Zap className="h-6 w-6 text-white" />
               </div>
               <h2 className="text-3xl font-bold text-slate-900">
@@ -125,7 +125,7 @@ export function HelpPageClient({
         <section className="relative px-6 pb-16 bg-gradient-to-br from-slate-50 to-white">
           <div className="mx-auto max-w-5xl">
             <div className="flex items-center gap-3 mb-8">
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center">
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#0f766e] to-[#14b8a6] flex items-center justify-center">
                 <Video className="h-6 w-6 text-white" />
               </div>
               <h2 className="text-3xl font-bold text-slate-900">
@@ -156,7 +156,7 @@ export function HelpPageClient({
         <section className="relative px-6 pb-16">
           <div className="mx-auto max-w-5xl">
             <div className="flex items-center gap-3 mb-8">
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center">
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#0f766e] to-[#14b8a6] flex items-center justify-center">
                 <Settings className="h-6 w-6 text-white" />
               </div>
               <h2 className="text-3xl font-bold text-slate-900">
@@ -187,7 +187,7 @@ export function HelpPageClient({
         <section className="relative px-6 pb-24 bg-gradient-to-br from-slate-50 to-white">
           <div className="mx-auto max-w-5xl">
             <div className="flex items-center gap-3 mb-8">
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center">
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#0f766e] to-[#14b8a6] flex items-center justify-center">
                 <HelpCircle className="h-6 w-6 text-white" />
               </div>
               <h2 className="text-3xl font-bold text-slate-900">
@@ -228,7 +228,7 @@ export function HelpPageClient({
               </p>
               <button
                 onClick={() => setSearchQuery("")}
-                className="px-6 py-3 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold hover:shadow-xl transition-all"
+                className="px-6 py-3 rounded-full bg-gradient-to-r from-[#0f766e] to-[#14b8a6] text-white font-semibold hover:shadow-xl transition-all"
               >
                 {t.clearSearch || "Clear Search"}
               </button>

@@ -17,7 +17,7 @@ export function TextInput(props: ComponentProps<"input">) {
   return (
     <input
       {...props}
-      className={`w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-[15px] text-zinc-900 placeholder-zinc-400 shadow-sm outline-none transition-all focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 ${props.className ?? ""}`}
+      className={`w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-[15px] text-zinc-900 placeholder-zinc-400 shadow-sm outline-none transition-all focus:border-teal-500 focus:ring-4 focus:ring-teal-500/15 ${props.className ?? ""}`}
     />
   );
 }
@@ -51,7 +51,7 @@ export function SubmitButton({
     <button
       type="submit"
       disabled={loading}
-      className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-4 py-3 text-[15px] font-semibold text-white shadow-lg shadow-cyan-600/20 transition-all hover:shadow-xl hover:shadow-cyan-600/30 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
+      className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-[#0f766e] to-[#14b8a6] px-4 py-3 text-[15px] font-semibold text-white shadow-lg shadow-teal-600/20 transition-all hover:shadow-xl hover:shadow-teal-600/30 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
     >
       {loading && <Loader2 className="h-4 w-4 animate-spin" />}
       {children}

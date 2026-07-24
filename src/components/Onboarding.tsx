@@ -45,7 +45,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
     mobileDescription:
       "Tap the menu icon to access your sidebar. Navigate to presentations, themes, images, and settings.",
     icon: LayoutDashboard,
-    color: "from-[#1e3a8a] to-[#06b6d4]",
+    color: "from-[#0f766e] to-[#14b8a6]",
     selector: "aside",
     mobileSelector: "[data-onboarding='mobile-menu']",
     tooltipPosition: "right",
@@ -57,7 +57,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
     description:
       "Unlock more features and credits by upgrading. Get access to premium themes, more AI generations, and priority support.",
     icon: Crown,
-    color: "from-purple-600 to-pink-600",
+    color: "from-emerald-600 to-pink-600",
     selector: "[data-onboarding='upgrade']",
     tooltipPosition: "bottom",
   },
@@ -69,7 +69,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
     mobileDescription:
       "Tap 'Create' to start. Describe your topic and our AI will generate professional slides instantly.",
     icon: Wand2,
-    color: "from-[#1e3a8a] to-[#06b6d4]",
+    color: "from-[#0f766e] to-[#14b8a6]",
     selector: "[data-onboarding='create']",
     tooltipPosition: "bottom",
   },
@@ -249,7 +249,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
       {/* Highlight border around element */}
       {highlightRect && (
         <div
-          className="pointer-events-none absolute z-[101] rounded-xl ring-4 ring-cyan-400/80"
+          className="pointer-events-none absolute z-[101] rounded-xl ring-4 ring-teal-400/80"
           style={{
             top: highlightRect.top - 8,
             left: highlightRect.left - 8,
@@ -257,7 +257,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
             height: highlightRect.height + 16,
           }}
         >
-          <div className="absolute inset-0 animate-pulse rounded-xl bg-cyan-400/10" />
+          <div className="absolute inset-0 animate-pulse rounded-xl bg-teal-400/10" />
         </div>
       )}
 
@@ -270,7 +270,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           {/* Progress Bar */}
           <div className="h-1.5 bg-zinc-100 dark:bg-zinc-800">
             <div
-              className="h-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] transition-all duration-500 ease-out"
+              className="h-full bg-gradient-to-r from-[#0f766e] to-[#14b8a6] transition-all duration-500 ease-out"
               style={{
                 width: `${((currentStep + 1) / ONBOARDING_STEPS.length) * 100}%`,
               }}
@@ -314,9 +314,9 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                   className={cn(
                     "h-2 rounded-full transition-all duration-300",
                     idx === currentStep
-                      ? "w-8 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4]"
+                      ? "w-8 bg-gradient-to-r from-[#0f766e] to-[#14b8a6]"
                       : idx < currentStep
-                        ? "w-2 bg-cyan-400"
+                        ? "w-2 bg-teal-400"
                         : "w-2 bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600"
                   )}
                 />
@@ -348,7 +348,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
 
               <button
                 onClick={handleNext}
-                className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-cyan-500/25 transition hover:opacity-90"
+                className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#0f766e] to-[#14b8a6] px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-teal-500/25 transition hover:opacity-90"
               >
                 {isLastStep ? "Get Started" : "Next"}
                 {!isLastStep && <ChevronRight className="h-4 w-4" />}

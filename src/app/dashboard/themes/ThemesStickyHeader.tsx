@@ -35,10 +35,10 @@ export default function ThemesStickyHeader() {
         if (sticky) {
           setStickyTitleContent(
             <>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#0f766e] to-[#14b8a6] text-white shadow-md">
                 <Palette size={18} />
               </div>
-              <h1 className="text-xl font-bold tracking-tight text-[#1e3a8a] dark:text-white whitespace-nowrap">{t.themes || "Themes"}</h1>
+              <h1 className="text-xl font-bold tracking-tight text-[#0f766e] dark:text-white whitespace-nowrap">{t.themes || "Themes"}</h1>
             </>
           );
         } else {

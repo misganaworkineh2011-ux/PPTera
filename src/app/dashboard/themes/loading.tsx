@@ -25,15 +25,15 @@ export default function ThemesLoading() {
         {/* Sticky Header Simulation */}
         <div className="flex flex-row items-center justify-between gap-4 transition-all duration-300 opacity-100">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#0f766e] to-[#14b8a6] text-white shadow-md">
               <Palette size={18} className="sm:hidden" />
               <Palette size={22} className="hidden sm:block" />
             </div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[#1e3a8a] dark:text-white">My Themes</h1>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[#0f766e] dark:text-white">My Themes</h1>
           </div>
           <button
             disabled
-            className="flex items-center gap-1.5 md:gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-white shadow-lg shadow-[#06b6d4]/20 opacity-70 whitespace-nowrap"
+            className="flex items-center gap-1.5 md:gap-2 rounded-full bg-gradient-to-r from-[#0f766e] to-[#14b8a6] px-3 py-2 md:px-5 md:py-2.5 text-sm md:text-base font-bold text-white shadow-lg shadow-[#14b8a6]/20 opacity-70 whitespace-nowrap"
           >
             <Plus size={16} className="md:w-[18px] md:h-[18px]" />
             <span className="hidden sm:inline">Create Custom Theme</span>

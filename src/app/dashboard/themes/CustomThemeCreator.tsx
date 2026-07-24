@@ -93,8 +93,8 @@ const CURATED_PALETTES = [
       backgroundAlt: "#f8fafc",
       text: "#334155",
       heading: "#0f172a",
-      primary: "#3b82f6",
-      accent: "#06b6d4",
+      primary: "#14b8a6",
+      accent: "#14b8a6",
     },
   },
   {
@@ -120,7 +120,7 @@ const CURATED_PALETTES = [
       text: "#e4e4e7",
       heading: "#fafafa",
       primary: "#f59e0b",
-      accent: "#6366f1",
+      accent: "#10b981",
     },
   },
   {
@@ -132,8 +132,8 @@ const CURATED_PALETTES = [
       backgroundAlt: "#1e293b",
       text: "#cbd5e1",
       heading: "#f1f5f9",
-      primary: "#3b82f6",
-      accent: "#06b6d4",
+      primary: "#14b8a6",
+      accent: "#14b8a6",
     },
   },
   {
@@ -197,7 +197,7 @@ const CURATED_PALETTES = [
       backgroundAlt: "#4c1d95",
       text: "#e9d5ff",
       heading: "#f3e8ff",
-      primary: "#a855f7",
+      primary: "#10b981",
       accent: "#c084fc",
     },
   },
@@ -208,9 +208,9 @@ const CURATED_PALETTES = [
     colors: {
       background: "#020617",
       backgroundAlt: "#0f172a",
-      text: "#22d3ee",
-      heading: "#67e8f9",
-      primary: "#06b6d4",
+      text: "#2dd4bf",
+      heading: "#5eead4",
+      primary: "#14b8a6",
       accent: "#f0abfc",
     },
   },
@@ -287,8 +287,8 @@ const initialThemeData: CustomThemeData = {
     backgroundAlt: "#f8fafc",
     text: "#334155",
     heading: "#0f172a",
-    primary: "#3b82f6",
-    accent: "#06b6d4",
+    primary: "#14b8a6",
+    accent: "#14b8a6",
   },
   headingFont: "inter",
   bodyFont: "inter",
@@ -400,7 +400,7 @@ export default function CustomThemeCreator({ isOpen, onClose, onSave, subscripti
             >
               <X size={20} />
             </button>
-            <div className="flex items-center gap-2 text-[#06b6d4]">
+            <div className="flex items-center gap-2 text-[#14b8a6]">
               {(() => {
                 const step = STEPS[currentStep - 1];
                 if (!step) return null;
@@ -421,7 +421,7 @@ export default function CustomThemeCreator({ isOpen, onClose, onSave, subscripti
                 <div
                   className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold transition-all sm:h-8 sm:w-8 sm:text-sm ${
                     currentStep === step.id
-                      ? "bg-[#06b6d4] text-white"
+                      ? "bg-[#14b8a6] text-white"
                       : currentStep > step.id
                         ? "bg-green-500 text-white"
                         : "bg-slate-200 text-slate-500 dark:bg-neutral-800 dark:text-neutral-400"
@@ -474,7 +474,7 @@ export default function CustomThemeCreator({ isOpen, onClose, onSave, subscripti
               <button
                 onClick={handleNext}
                 disabled={currentStep === 1 && !themeData.selectedPalette && themeData.colorMode === "curated"}
-                className="flex items-center gap-1 rounded-lg bg-[#06b6d4] px-4 py-1.5 text-xs font-bold text-white hover:bg-[#0891b2] disabled:cursor-not-allowed disabled:opacity-50 sm:gap-2 sm:px-6 sm:py-2 sm:text-sm"
+                className="flex items-center gap-1 rounded-lg bg-[#14b8a6] px-4 py-1.5 text-xs font-bold text-white hover:bg-[#0d9488] disabled:cursor-not-allowed disabled:opacity-50 sm:gap-2 sm:px-6 sm:py-2 sm:text-sm"
               >
                 {t.next || "Next"} <ChevronRight size={14} className="sm:h-4 sm:w-4" />
               </button>
@@ -482,7 +482,7 @@ export default function CustomThemeCreator({ isOpen, onClose, onSave, subscripti
               <button
                 onClick={handleSave}
                 disabled={isSaving || !themeData.themeName.trim()}
-                className="flex items-center gap-1 rounded-lg bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-4 py-1.5 text-xs font-bold text-white hover:from-[#172554] hover:to-[#0891b2] disabled:opacity-50 sm:gap-2 sm:px-6 sm:py-2 sm:text-sm"
+                className="flex items-center gap-1 rounded-lg bg-gradient-to-r from-[#0f766e] to-[#14b8a6] px-4 py-1.5 text-xs font-bold text-white hover:from-[#172554] hover:to-[#0d9488] disabled:opacity-50 sm:gap-2 sm:px-6 sm:py-2 sm:text-sm"
               >
                 {isSaving ? t.creating || "Creating..." : t.createTheme || "Create Theme"}
               </button>
@@ -533,7 +533,7 @@ function Step1Colors({
             onClick={() => setThemeData((prev) => ({ ...prev, colorMode: "curated" }))}
             className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition ${
               themeData.colorMode === "curated"
-                ? "bg-[#06b6d4] text-white"
+                ? "bg-[#14b8a6] text-white"
                 : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:text-neutral-400"
             }`}
           >
@@ -543,7 +543,7 @@ function Step1Colors({
             onClick={() => setThemeData((prev) => ({ ...prev, colorMode: "custom" }))}
             className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition ${
               themeData.colorMode === "custom"
-                ? "bg-[#06b6d4] text-white"
+                ? "bg-[#14b8a6] text-white"
                 : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:text-neutral-400"
             }`}
           >
@@ -562,7 +562,7 @@ function Step1Colors({
                 onClick={() => setSelectedCategory(cat)}
                 className={`rounded-full px-2 py-0.5 text-[10px] font-medium transition sm:px-3 sm:py-1 sm:text-xs ${
                   selectedCategory === cat
-                    ? "bg-[#1e3a8a] text-white"
+                    ? "bg-[#0f766e] text-white"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:text-neutral-400"
                 }`}
               >
@@ -579,7 +579,7 @@ function Step1Colors({
                 onClick={() => setThemeData((prev) => ({ ...prev, selectedPalette: palette.id }))}
                 className={`group relative overflow-hidden rounded-lg border-2 transition-all ${
                   themeData.selectedPalette === palette.id
-                    ? "border-[#06b6d4] ring-2 ring-[#06b6d4]/20"
+                    ? "border-[#14b8a6] ring-2 ring-[#14b8a6]/20"
                     : "border-slate-200 hover:border-slate-300"
                 }`}
               >
@@ -594,7 +594,7 @@ function Step1Colors({
                   </p>
                 </div>
                 {themeData.selectedPalette === palette.id && (
-                  <div className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#06b6d4] text-white sm:h-5 sm:w-5">
+                  <div className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#14b8a6] text-white sm:h-5 sm:w-5">
                     <Check size={10} className="sm:h-3 sm:w-3" />
                   </div>
                 )}
@@ -666,7 +666,7 @@ function Step2Fonts({
               onClick={() => setThemeData((prev) => ({ ...prev, headingFont: font.id }))}
               className={`relative rounded-lg border-2 p-2 text-left transition-all sm:p-3 ${
                 themeData.headingFont === font.id
-                  ? "border-[#06b6d4] bg-[#e0f2fe]"
+                  ? "border-[#14b8a6] bg-[#e0f2fe]"
                   : "border-slate-200 hover:border-slate-300"
               }`}
             >
@@ -678,7 +678,7 @@ function Step2Fonts({
               </p>
               <p className="truncate text-[10px] text-slate-500 sm:text-xs">{font.style}</p>
               {themeData.headingFont === font.id && (
-                <div className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#06b6d4] text-white sm:right-2 sm:top-2 sm:h-5 sm:w-5">
+                <div className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#14b8a6] text-white sm:right-2 sm:top-2 sm:h-5 sm:w-5">
                   <Check size={10} className="sm:h-3 sm:w-3" />
                 </div>
               )}
@@ -699,7 +699,7 @@ function Step2Fonts({
               onClick={() => setThemeData((prev) => ({ ...prev, bodyFont: font.id }))}
               className={`relative rounded-lg border-2 p-2 text-left transition-all sm:p-3 ${
                 themeData.bodyFont === font.id
-                  ? "border-[#06b6d4] bg-[#e0f2fe]"
+                  ? "border-[#14b8a6] bg-[#e0f2fe]"
                   : "border-slate-200 hover:border-slate-300"
               }`}
             >
@@ -711,7 +711,7 @@ function Step2Fonts({
               </p>
               <p className="truncate text-[10px] text-slate-500 sm:text-xs">{font.style}</p>
               {themeData.bodyFont === font.id && (
-                <div className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#06b6d4] text-white sm:right-2 sm:top-2 sm:h-5 sm:w-5">
+                <div className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#14b8a6] text-white sm:right-2 sm:top-2 sm:h-5 sm:w-5">
                   <Check size={10} className="sm:h-3 sm:w-3" />
                 </div>
               )}
@@ -762,7 +762,7 @@ function Step3Design({
             onClick={() => setThemeData((prev) => ({ ...prev, cardStyle: shape.id }))}
             className={`relative rounded-lg border-2 p-2 transition-all sm:p-3 ${
               themeData.cardStyle === shape.id
-                ? "border-[#06b6d4] bg-[#e0f2fe]"
+                ? "border-[#14b8a6] bg-[#e0f2fe]"
                 : "border-slate-200 hover:border-slate-300"
             }`}
           >
@@ -807,7 +807,7 @@ function Step3Design({
               {shape.name}
             </p>
             {themeData.cardStyle === shape.id && (
-              <div className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#06b6d4] text-white sm:right-1.5 sm:top-1.5">
+              <div className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#14b8a6] text-white sm:right-1.5 sm:top-1.5">
                 <Check size={10} />
               </div>
             )}
@@ -939,7 +939,7 @@ function Step4Background({
       case "advanced":
         return "bg-blue-100 text-blue-700";
       case "premium":
-        return "bg-purple-100 text-purple-700";
+        return "bg-emerald-100 text-emerald-700";
       case "ultra":
         return "bg-amber-100 text-amber-700";
       default:
@@ -980,12 +980,12 @@ function Step4Background({
             value={imageUrl}
             onChange={(e) => setImageUrl(e.target.value)}
             placeholder="https://example.com/image.jpg"
-            className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20"
+            className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-[#14b8a6] focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20"
           />
           <button
             onClick={handleUrlSubmit}
             disabled={!imageUrl.trim()}
-            className="rounded-lg bg-[#06b6d4] px-4 py-2 text-sm font-medium text-white hover:bg-[#0891b2] disabled:opacity-50"
+            className="rounded-lg bg-[#14b8a6] px-4 py-2 text-sm font-medium text-white hover:bg-[#0d9488] disabled:opacity-50"
           >
             Apply
           </button>
@@ -995,7 +995,7 @@ function Step4Background({
             setImageUrl(url);
             setThemeData((prev) => ({ ...prev, backgroundImageUrl: url }));
           }}
-          className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-[#06b6d4] hover:text-[#06b6d4] disabled:opacity-60 dark:border-neutral-700 dark:text-neutral-300"
+          className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-[#14b8a6] hover:text-[#14b8a6] disabled:opacity-60 dark:border-neutral-700 dark:text-neutral-300"
           label="Upload from computer"
         />
       </div>
@@ -1010,7 +1010,7 @@ function Step4Background({
       {/* AI Generation */}
       <div>
         <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-neutral-300">
-          <Sparkles size={14} className="mr-1.5 inline text-[#06b6d4]" />
+          <Sparkles size={14} className="mr-1.5 inline text-[#14b8a6]" />
           Generate with AI
         </label>
         <p className="mb-3 text-xs text-slate-500">
@@ -1022,7 +1022,7 @@ function Step4Background({
           <button
             type="button"
             onClick={() => setShowModelDropdown(!showModelDropdown)}
-            className="flex w-full items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left text-sm transition hover:border-[#06b6d4] focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20"
+            className="flex w-full items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left text-sm transition hover:border-[#14b8a6] focus:border-[#14b8a6] focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20"
           >
             <div className="flex items-center gap-2">
               <span className="font-medium text-slate-700">{selectedModelInfo?.name}</span>
@@ -1031,7 +1031,7 @@ function Step4Background({
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="rounded-full bg-[#06b6d4]/10 px-2 py-0.5 text-xs font-semibold text-[#06b6d4]">
+              <span className="rounded-full bg-[#14b8a6]/10 px-2 py-0.5 text-xs font-semibold text-[#14b8a6]">
                 {selectedModelInfo?.credits} credits
               </span>
               <ChevronRight
@@ -1061,18 +1061,18 @@ function Step4Background({
                       locked 
                         ? "cursor-not-allowed opacity-60" 
                         : "hover:bg-slate-50"
-                    } ${selectedModel === model.id ? "bg-[#06b6d4]/5" : ""}`}
+                    } ${selectedModel === model.id ? "bg-[#14b8a6]/5" : ""}`}
                   >
                     <div className="flex items-center gap-2">
                       {selectedModel === model.id && !locked && (
-                        <Check size={14} className="text-[#06b6d4]" />
+                        <Check size={14} className="text-[#14b8a6]" />
                       )}
                       {locked && (
                         <svg className="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                         </svg>
                       )}
-                      <span className={`font-medium ${selectedModel === model.id && !locked ? "text-[#06b6d4]" : locked ? "text-slate-400" : "text-slate-700"}`}>
+                      <span className={`font-medium ${selectedModel === model.id && !locked ? "text-[#14b8a6]" : locked ? "text-slate-400" : "text-slate-700"}`}>
                         {model.name}
                       </span>
                       <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${getTierBadgeColor(model.tier)}`}>
@@ -1101,12 +1101,12 @@ function Step4Background({
             value={aiPrompt}
             onChange={(e) => setAiPrompt(e.target.value)}
             placeholder="e.g., soft gradient blue waves, geometric patterns..."
-            className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20"
+            className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-[#14b8a6] focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20"
           />
           <button
             onClick={handleGenerateAI}
             disabled={!aiPrompt.trim() || isGenerating}
-            className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-4 py-2 text-sm font-medium text-white hover:from-[#172554] hover:to-[#0891b2] disabled:opacity-50"
+            className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#0f766e] to-[#14b8a6] px-4 py-2 text-sm font-medium text-white hover:from-[#172554] hover:to-[#0d9488] disabled:opacity-50"
           >
             {isGenerating ? (
               <>
@@ -1153,7 +1153,7 @@ function Step5Name({
           value={themeData.themeName}
           onChange={(e) => setThemeData((prev) => ({ ...prev, themeName: e.target.value }))}
           placeholder="My Custom Theme"
-          className="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20"
+          className="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm focus:border-[#14b8a6] focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20"
         />
       </div>
 

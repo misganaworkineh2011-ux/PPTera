@@ -88,8 +88,8 @@ export function DiscountBadgeBanner({ subscriptionPlan }: CyberMondayDealsProps)
         {/* Animated shining sweep from top-left to bottom-right */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           {/* Decorative glowing orbs */}
-          <div className="absolute top-0 left-0 w-48 h-48 bg-[#06b6d4]/20 blur-[80px] rounded-full -translate-x-1/2 -translate-y-1/2" />
-          <div className="absolute bottom-0 right-0 w-48 h-48 bg-purple-600/20 blur-[80px] rounded-full translate-x-1/2 translate-y-1/2" />
+          <div className="absolute top-0 left-0 w-48 h-48 bg-[#14b8a6]/20 blur-[80px] rounded-full -translate-x-1/2 -translate-y-1/2" />
+          <div className="absolute bottom-0 right-0 w-48 h-48 bg-emerald-600/20 blur-[80px] rounded-full translate-x-1/2 translate-y-1/2" />
         </div>
 
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-10 w-full">

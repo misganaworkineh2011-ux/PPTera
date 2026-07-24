@@ -11,7 +11,7 @@ export function PrivacyContent() {
         
         <div className="relative z-10 mx-auto max-w-4xl text-center">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-4 py-2 backdrop-blur-sm">
-            <Shield className="h-4 w-4 text-[#06b6d4]" />
+            <Shield className="h-4 w-4 text-[#14b8a6]" />
             <span className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
               Privacy
             </span>
@@ -46,12 +46,12 @@ export function PrivacyContent() {
             <div className="mb-12 p-6 bg-slate-50 rounded-lg border border-slate-200">
               <h3 className="text-lg font-semibold text-slate-900 mb-4">Table of Contents</h3>
               <ul className="space-y-2 text-sm text-slate-700">
-                <li><a href="#collection" className="hover:text-[#06b6d4]">1. Personal Information We Collect</a></li>
-                <li><a href="#use" className="hover:text-[#06b6d4]">2. How We Use Your Personal Information</a></li>
-                <li><a href="#sharing" className="hover:text-[#06b6d4]">3. How We Share Your Personal Information</a></li>
-                <li><a href="#choices" className="hover:text-[#06b6d4]">4. Your Choices</a></li>
-                <li><a href="#security" className="hover:text-[#06b6d4]">5. Security</a></li>
-                <li><a href="#contact" className="hover:text-[#06b6d4]">6. How to Contact Us</a></li>
+                <li><a href="#collection" className="hover:text-[#14b8a6]">1. Personal Information We Collect</a></li>
+                <li><a href="#use" className="hover:text-[#14b8a6]">2. How We Use Your Personal Information</a></li>
+                <li><a href="#sharing" className="hover:text-[#14b8a6]">3. How We Share Your Personal Information</a></li>
+                <li><a href="#choices" className="hover:text-[#14b8a6]">4. Your Choices</a></li>
+                <li><a href="#security" className="hover:text-[#14b8a6]">5. Security</a></li>
+                <li><a href="#contact" className="hover:text-[#14b8a6]">6. How to Contact Us</a></li>
               </ul>
             </div>
 
@@ -147,7 +147,7 @@ export function PrivacyContent() {
             </div>
 
             {/* Footer */}
-            <div className="mt-16 p-8 rounded-2xl bg-gradient-to-br from-[#1e3a8a]/5 to-[#06b6d4]/5 border border-[#06b6d4]/20">
+            <div className="mt-16 p-8 rounded-2xl bg-gradient-to-br from-[#0f766e]/5 to-[#14b8a6]/5 border border-[#14b8a6]/20">
               <p className="text-sm text-slate-600 text-center">
                 Last updated: {lastUpdated}
               </p>

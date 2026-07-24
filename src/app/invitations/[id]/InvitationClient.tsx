@@ -80,7 +80,7 @@ export default function InvitationClient({
         {/* Card */}
         <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-8 py-6 text-center">
+          <div className="bg-gradient-to-r from-[#0f766e] to-[#14b8a6] px-8 py-6 text-center">
             <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
               <Users className="w-8 h-8 text-white" />
             </div>
@@ -138,7 +138,7 @@ export default function InvitationClient({
                   <button
                     onClick={handleAccept}
                     disabled={accepting}
-                    className="w-full py-3 px-4 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold rounded-xl hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="w-full py-3 px-4 bg-gradient-to-r from-[#0f766e] to-[#14b8a6] text-white font-semibold rounded-xl hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {accepting ? (
                       <>
@@ -159,7 +159,7 @@ export default function InvitationClient({
                     </p>
                     <LoadingLink
                       href={`/sign-in?redirect_url=${encodeURIComponent(`/invitations/${collaboration.presentationId}?token=${token}`)}`}
-                      className="block w-full py-3 px-4 bg-gradient-to-r from-violet-600 to-cyan-500 text-white font-semibold text-center rounded-xl hover:brightness-110 transition shadow-lg shadow-cyan-500/20"
+                      className="block w-full py-3 px-4 bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-semibold text-center rounded-xl hover:brightness-110 transition shadow-lg shadow-teal-500/20"
                     >
                       Sign In to Accept
                     </LoadingLink>
@@ -173,7 +173,7 @@ export default function InvitationClient({
         {/* Footer */}
         <p className="text-center text-xs text-slate-500 mt-6">
           Powered by{" "}
-          <a href="/" className="text-[#1e3a8a] hover:underline">
+          <a href="/" className="text-[#0f766e] hover:underline">
             PPTera
           </a>
         </p>

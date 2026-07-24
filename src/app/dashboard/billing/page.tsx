@@ -169,7 +169,7 @@ export default function BillingPage() {
       <div className="group bg-white dark:bg-zinc-950 rounded-[20px] border border-slate-200/80 dark:border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] ring-1 ring-slate-900/5 dark:ring-0 dark:shadow-none p-5 sm:p-6 mb-5 transition-all duration-300">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-2xl shadow-lg shadow-cyan-500/30">
+            <div className="p-3 bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl shadow-lg shadow-teal-500/30">
               <CreditCard className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -185,7 +185,7 @@ export default function BillingPage() {
                 setPricingModalTab("plans");
                 setShowPricingModal(true);
               }}
-              className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-sm font-bold rounded-2xl hover:opacity-90 transition shadow-lg shadow-cyan-500/20 active:scale-95"
+              className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-teal-500 to-blue-600 text-white text-sm font-bold rounded-2xl hover:opacity-90 transition shadow-lg shadow-teal-500/20 active:scale-95"
             >
               <Sparkles className="h-4 w-4" />
               {t.upgrade || "Upgrade"}
@@ -234,7 +234,7 @@ export default function BillingPage() {
 
         <div className="h-2.5 bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden mb-4">
           <div
-            className="h-full bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full transition-all"
+            className="h-full bg-gradient-to-r from-teal-500 to-blue-600 rounded-full transition-all"
             style={{ width: `${Math.min(billing.credits.usagePercentage, 100)}%` }}
           />
         </div>
@@ -270,16 +270,16 @@ export default function BillingPage() {
             setPricingModalTab("plans");
             setShowPricingModal(true);
           }}
-          className="flex items-center gap-3 p-5 bg-white dark:bg-zinc-950 rounded-[20px] border border-slate-200/80 dark:border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:border-cyan-300 dark:hover:border-cyan-700 ring-1 ring-slate-900/5 dark:ring-0 dark:shadow-none transition-all group"
+          className="flex items-center gap-3 p-5 bg-white dark:bg-zinc-950 rounded-[20px] border border-slate-200/80 dark:border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:border-teal-300 dark:hover:border-teal-700 ring-1 ring-slate-900/5 dark:ring-0 dark:shadow-none transition-all group"
         >
-          <div className="p-2.5 bg-gradient-to-br from-cyan-500/10 to-blue-600/10 dark:from-cyan-500/20 dark:to-blue-600/20 rounded-xl group-hover:from-cyan-500/20 group-hover:to-blue-600/20 transition-all">
-            <TrendingUp className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
+          <div className="p-2.5 bg-gradient-to-br from-teal-500/10 to-blue-600/10 dark:from-teal-500/20 dark:to-blue-600/20 rounded-xl group-hover:from-teal-500/20 group-hover:to-blue-600/20 transition-all">
+            <TrendingUp className="h-5 w-5 text-teal-600 dark:text-teal-400" />
           </div>
           <div className="flex-1 text-left">
             <p className="text-sm font-bold text-slate-900 dark:text-white">{t.upgrade || "Upgrade"}</p>
             <p className="text-xs font-medium text-slate-500 dark:text-zinc-400">{t.moreCredits || "More credits"}</p>
           </div>
-          <ArrowUpRight className="h-4 w-4 text-slate-400 group-hover:text-cyan-500 transition-colors" />
+          <ArrowUpRight className="h-4 w-4 text-slate-400 group-hover:text-teal-500 transition-colors" />
         </button>
 
         {isPaidUser && (
@@ -328,8 +328,8 @@ export default function BillingPage() {
           <ul className="space-y-3">
             {billing.planDetails.features.map((feature, idx) => (
               <li key={idx} className="flex items-start gap-3 text-sm">
-                <div className="mt-0.5 h-5 w-5 rounded-full bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="h-3 w-3 text-cyan-600 dark:text-cyan-400" />
+                <div className="mt-0.5 h-5 w-5 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="h-3 w-3 text-teal-600 dark:text-teal-400" />
                 </div>
                 <span className="font-medium text-slate-600 dark:text-zinc-300">{feature}</span>
               </li>
@@ -343,7 +343,7 @@ export default function BillingPage() {
         <div className="bg-white dark:bg-zinc-950 rounded-[20px] border border-slate-200/80 dark:border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.06)] ring-1 ring-slate-900/5 dark:ring-0 dark:shadow-none p-5 sm:p-6 mb-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-slate-900 dark:text-white">{t.recentActivity || "Recent Activity"}</h2>
-            <Link href="/dashboard/activity" className="text-sm font-medium text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300 transition-colors">
+            <Link href="/dashboard/activity" className="text-sm font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300 transition-colors">
               {t.viewAll || "View all"} →
             </Link>
           </div>

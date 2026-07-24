@@ -55,9 +55,9 @@ export default async function Layout({ children }: { children: React.ReactNode }
         <DashboardProvider initialUser={initialUser}>
           {/* Subtle background gradient to add a modern touch to the content area */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden object-cover select-none isolate z-0">
-             <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[#06b6d4]/5 blur-[120px] mix-blend-screen" />
-             <div className="absolute top-1/2 right-[10%] w-[500px] h-[500px] rounded-full bg-[#3b82f6]/5 blur-[100px] opacity-70 mix-blend-screen" />
-             <div className="absolute bottom-0 left-[20%] w-[400px] h-[400px] rounded-full bg-[#a855f7]/5 blur-[100px] opacity-50 mix-blend-screen" />
+             <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[#14b8a6]/5 blur-[120px] mix-blend-screen" />
+             <div className="absolute top-1/2 right-[10%] w-[500px] h-[500px] rounded-full bg-[#14b8a6]/5 blur-[100px] opacity-70 mix-blend-screen" />
+             <div className="absolute bottom-0 left-[20%] w-[400px] h-[400px] rounded-full bg-[#10b981]/5 blur-[100px] opacity-50 mix-blend-screen" />
           </div>
           <DashboardLayout
             subscriptionPlan={user.subscriptionPlan ?? "Free"}

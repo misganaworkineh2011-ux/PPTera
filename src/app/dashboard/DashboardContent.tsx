@@ -67,11 +67,11 @@ const SORT_LABELS: Record<SortMode, string> = {
 // Deterministic aurora gradient + monogram for decks without a thumbnail —
 // each deck gets a stable, branded cover instead of a washed-out logo.
 const AURORA_PAIRS: Array<[string, string]> = [
-  ["#7c3aed", "#06b6d4"], // violet → cyan
-  ["#0ea5e9", "#8b5cf6"], // sky → violet
-  ["#d946ef", "#6366f1"], // fuchsia → indigo
-  ["#06b6d4", "#3b82f6"], // cyan → blue
-  ["#8b5cf6", "#ec4899"], // violet → pink
+  ["#059669", "#14b8a6"], // violet → cyan
+  ["#0ea5e9", "#10b981"], // sky → violet
+  ["#34d399", "#10b981"], // fuchsia → indigo
+  ["#14b8a6", "#14b8a6"], // cyan → blue
+  ["#10b981", "#34d399"], // violet → pink
 ];
 
 function deckGradient(title: string): [string, string] {
@@ -631,8 +631,8 @@ export default function DashboardContent({ presentations: propPresentations, use
       <div className="relative mb-6 overflow-hidden rounded-3xl border border-slate-200/70 bg-white dark:border-zinc-800 dark:bg-zinc-950 px-6 py-7 sm:px-8">
         {/* Aurora wash */}
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -top-24 right-[10%] h-64 w-64 rounded-full bg-cyan-200/40 blur-[90px] dark:bg-cyan-500/10" />
-          <div className="absolute -bottom-28 left-[5%] h-64 w-64 rounded-full bg-indigo-200/40 blur-[90px] dark:bg-indigo-500/10" />
+          <div className="absolute -top-24 right-[10%] h-64 w-64 rounded-full bg-teal-200/40 blur-[90px] dark:bg-teal-500/10" />
+          <div className="absolute -bottom-28 left-[5%] h-64 w-64 rounded-full bg-emerald-200/40 blur-[90px] dark:bg-emerald-500/10" />
           <div
             className="absolute inset-0 opacity-[0.35] dark:opacity-[0.12]"
             style={{
@@ -652,7 +652,7 @@ export default function DashboardContent({ presentations: propPresentations, use
             </p>
             <h1 className="mt-1 text-2xl sm:text-[28px] font-black tracking-tight text-slate-900 dark:text-white">
               Welcome back,{" "}
-              <span className="bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#0f766e] to-[#14b8a6] bg-clip-text text-transparent">
                 {firstName}
               </span>
             </h1>
@@ -678,7 +678,7 @@ export default function DashboardContent({ presentations: propPresentations, use
               startNavigating();
               router.push("/createpresentation");
             }}
-            className="group inline-flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-6 py-3.5 text-[14px] font-bold text-white shadow-lg shadow-cyan-600/25 transition-all hover:shadow-xl hover:shadow-cyan-600/35 hover:brightness-110"
+            className="group inline-flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#0f766e] to-[#14b8a6] px-6 py-3.5 text-[14px] font-bold text-white shadow-lg shadow-teal-600/25 transition-all hover:shadow-xl hover:shadow-teal-600/35 hover:brightness-110"
           >
             <Sparkles size={17} className="transition-transform group-hover:rotate-12" />
             Create with AI
@@ -697,8 +697,8 @@ export default function DashboardContent({ presentations: propPresentations, use
               onClick={() => { setShowFilterMenu(!showFilterMenu); setShowSortMenu(false); }}
               className={`flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-[12px] font-black uppercase tracking-wider transition-all outline-none shadow-sm shadow-slate-200/50 dark:shadow-none hover:shadow-md ${
                 filterMode !== "all" 
-                ? "bg-[#06b6d4]/10 border-[#06b6d4] text-[#06b6d4]" 
-                : "bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-white hover:border-[#06b6d4]"
+                ? "bg-[#14b8a6]/10 border-[#14b8a6] text-[#14b8a6]" 
+                : "bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-white hover:border-[#14b8a6]"
               }`}
             >
               <Filter size={14} />
@@ -727,8 +727,8 @@ export default function DashboardContent({ presentations: propPresentations, use
               onClick={() => { setShowSortMenu(!showSortMenu); setShowFilterMenu(false); }}
               className={`flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-[12px] font-black uppercase tracking-wider transition-all outline-none shadow-sm shadow-slate-200/50 dark:shadow-none hover:shadow-md ${
                 sortMode !== "edited"
-                ? "bg-[#06b6d4]/10 border-[#06b6d4] text-[#06b6d4]"
-                : "bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-white hover:border-[#06b6d4]"
+                ? "bg-[#14b8a6]/10 border-[#14b8a6] text-[#14b8a6]"
+                : "bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-white hover:border-[#14b8a6]"
               }`}
             >
               <ArrowUpDown size={14} />
@@ -757,7 +757,7 @@ export default function DashboardContent({ presentations: propPresentations, use
             type="button"
             onClick={() => router.push("/dashboard/templates")}
             title="Template gallery — curated starters plus decks you saved with 'Use as template'"
-            className="flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-[12px] font-black uppercase tracking-wider transition-all outline-none shadow-sm shadow-slate-200/50 dark:shadow-none hover:shadow-md bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-white hover:border-violet-400"
+            className="flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-[12px] font-black uppercase tracking-wider transition-all outline-none shadow-sm shadow-slate-200/50 dark:shadow-none hover:shadow-md bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-white hover:border-emerald-400"
           >
             <LayoutTemplate size={14} />
             <span className="hidden md:inline">Templates</span>
@@ -781,8 +781,8 @@ export default function DashboardContent({ presentations: propPresentations, use
             title="Select multiple"
             className={`flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-[12px] font-black uppercase tracking-wider transition-all outline-none shadow-sm shadow-slate-200/50 dark:shadow-none hover:shadow-md ${
               selectMode
-              ? "bg-[#06b6d4]/10 border-[#06b6d4] text-[#06b6d4]"
-              : "bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-white hover:border-[#06b6d4]"
+              ? "bg-[#14b8a6]/10 border-[#14b8a6] text-[#14b8a6]"
+              : "bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-white hover:border-[#14b8a6]"
             }`}
           >
             <Check size={14} />
@@ -826,8 +826,8 @@ export default function DashboardContent({ presentations: propPresentations, use
                   onClick={() => setActiveTag(activeTag === tag ? null : tag)}
                   className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-bold transition-colors ${
                     activeTag === tag
-                      ? "border-violet-400/70 bg-violet-500/15 text-violet-500 dark:text-violet-300"
-                      : "border-slate-200 bg-white text-slate-500 hover:border-violet-400/50 hover:text-violet-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-400"
+                      ? "border-emerald-400/70 bg-emerald-500/15 text-emerald-500 dark:text-emerald-300"
+                      : "border-slate-200 bg-white text-slate-500 hover:border-emerald-400/50 hover:text-emerald-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-400"
                   }`}
                 >
                   #{tag}
@@ -881,7 +881,7 @@ export default function DashboardContent({ presentations: propPresentations, use
                         <p className="text-[11px] font-semibold text-slate-400 dark:text-zinc-500">Deleted {relativeTime(pres.deletedAt)}</p>
                       )}
                     </div>
-                    <button type="button" onClick={() => handleRestore(pres.id)} className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3.5 py-2 text-[12px] font-black uppercase tracking-wider text-slate-600 transition-colors hover:border-cyan-400 hover:text-cyan-500 dark:border-white/10 dark:text-zinc-300">
+                    <button type="button" onClick={() => handleRestore(pres.id)} className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3.5 py-2 text-[12px] font-black uppercase tracking-wider text-slate-600 transition-colors hover:border-teal-400 hover:text-teal-500 dark:border-white/10 dark:text-zinc-300">
                       <RotateCcw size={13} /> Restore
                     </button>
                     <button type="button" onClick={() => setPermanentDeleteId(pres.id)} className="inline-flex items-center gap-1.5 rounded-xl bg-red-600/90 px-3.5 py-2 text-[12px] font-black uppercase tracking-wider text-white transition-colors hover:bg-red-600">
@@ -894,7 +894,7 @@ export default function DashboardContent({ presentations: propPresentations, use
           </div>
         ) : filteredPresentations.length === 0 ? (
           <div className="flex h-[400px] flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 bg-white text-center px-4 dark:border-zinc-800 dark:bg-zinc-900/50">
-            <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] shadow-lg shadow-cyan-600/25">
+            <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-[#0f766e] to-[#14b8a6] shadow-lg shadow-teal-600/25">
               <Upload size={32} className="text-white" />
             </div>
             <h3 className="mb-2 text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
@@ -904,7 +904,7 @@ export default function DashboardContent({ presentations: propPresentations, use
               {presentations.length === 0 ? "Start by generating an AI presentation." : "Try adjusting your filters."}
             </p>
             {filterMode !== "all" && (
-              <button onClick={() => setFilterMode("all")} className="text-xs font-black uppercase text-[#06b6d4] border-b-2 border-[#06b6d4]">Clear Filter</button>
+              <button onClick={() => setFilterMode("all")} className="text-xs font-black uppercase text-[#14b8a6] border-b-2 border-[#14b8a6]">Clear Filter</button>
             )}
           </div>
         ) : viewMode === "grid" ? (
@@ -933,7 +933,7 @@ export default function DashboardContent({ presentations: propPresentations, use
                     });
                     setActiveMenu(pres.id);
                   }}
-                  className={`group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-md ring-1 ring-slate-900/5 transition-all duration-300 hover:-translate-y-1.5 hover:border-cyan-400/40 hover:shadow-[0_24px_60px_-20px_rgba(8,15,35,0.35)] dark:border-white/10 dark:bg-white/[0.04] dark:ring-0 dark:shadow-none dark:hover:bg-white/[0.06] dark:hover:shadow-[0_24px_60px_-24px_rgba(0,0,0,0.8)] cursor-pointer ${animationClass}`}
+                  className={`group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-md ring-1 ring-slate-900/5 transition-all duration-300 hover:-translate-y-1.5 hover:border-teal-400/40 hover:shadow-[0_24px_60px_-20px_rgba(8,15,35,0.35)] dark:border-white/10 dark:bg-white/[0.04] dark:ring-0 dark:shadow-none dark:hover:bg-white/[0.06] dark:hover:shadow-[0_24px_60px_-24px_rgba(0,0,0,0.8)] cursor-pointer ${animationClass}`}
                   style={animationStyle}
                 >
                   {/* Bulk selection checkbox */}
@@ -941,7 +941,7 @@ export default function DashboardContent({ presentations: propPresentations, use
                     <span
                       className={`absolute top-3 left-3 z-30 flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all ${
                         selectedIds.has(pres.id)
-                          ? "border-transparent bg-gradient-to-br from-violet-600 to-cyan-500 text-white shadow-lg shadow-cyan-500/30"
+                          ? "border-transparent bg-gradient-to-br from-emerald-600 to-teal-500 text-white shadow-lg shadow-teal-500/30"
                           : "border-white/80 bg-black/25 text-transparent backdrop-blur"
                       }`}
                     >
@@ -952,7 +952,7 @@ export default function DashboardContent({ presentations: propPresentations, use
                   {/* Aurora sheen on hover */}
                   <div
                     className="pointer-events-none absolute inset-0 z-10 rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                    style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.12), transparent 38%, transparent 62%, rgba(34,211,238,0.12))" }}
+                    style={{ background: "linear-gradient(135deg, rgba(16,185,129,0.12), transparent 38%, transparent 62%, rgba(45,212,191,0.12))" }}
                   />
 
                   <div className="aspect-[16/10] w-full relative overflow-hidden border-b border-slate-100 dark:border-white/10">
@@ -1011,7 +1011,7 @@ export default function DashboardContent({ presentations: propPresentations, use
                     <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMenuAction("favorite", pres.id); }} className={`absolute top-3 right-3 p-2 rounded-xl backdrop-blur-md transition-all z-20 ${pres.isPinned ? "bg-amber-400 text-white shadow-lg shadow-amber-400/30" : "bg-white/85 dark:bg-black/50 text-slate-400 dark:text-zinc-300 opacity-0 group-hover:opacity-100 hover:text-amber-500 shadow-sm"}`}>
                       <Heart size={16} className={pres.isPinned ? "fill-current" : ""} />
                     </button>
-                    <button type="button" title="Share" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMenuAction("share", pres.id); }} className="absolute top-3 right-14 p-2 rounded-xl backdrop-blur-md transition-all z-20 bg-white/85 dark:bg-black/50 text-slate-400 dark:text-zinc-300 opacity-0 group-hover:opacity-100 hover:text-cyan-500 shadow-sm">
+                    <button type="button" title="Share" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMenuAction("share", pres.id); }} className="absolute top-3 right-14 p-2 rounded-xl backdrop-blur-md transition-all z-20 bg-white/85 dark:bg-black/50 text-slate-400 dark:text-zinc-300 opacity-0 group-hover:opacity-100 hover:text-teal-500 shadow-sm">
                       <Share2 size={16} />
                     </button>
 
@@ -1022,7 +1022,7 @@ export default function DashboardContent({ presentations: propPresentations, use
                   </div>
 
                   <div className="flex flex-col flex-1 p-4 lg:p-5">
-                    <h3 className="line-clamp-2 text-[15px] font-bold text-slate-900 dark:text-white leading-snug transition-colors group-hover:text-cyan-600 dark:group-hover:text-cyan-300 mb-2">{pres.title}</h3>
+                    <h3 className="line-clamp-2 text-[15px] font-bold text-slate-900 dark:text-white leading-snug transition-colors group-hover:text-teal-600 dark:group-hover:text-teal-300 mb-2">{pres.title}</h3>
                     {(pres.tags?.length ?? 0) > 0 && (
                       <div className="mb-3 flex flex-wrap items-center gap-1.5">
                         {pres.tags!.slice(0, 2).map((tag) => (
@@ -1032,8 +1032,8 @@ export default function DashboardContent({ presentations: propPresentations, use
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveTag(activeTag === tag ? null : tag); }}
                             className={`rounded-full border px-2 py-0.5 text-[10px] font-bold transition-colors ${
                               activeTag === tag
-                                ? "border-violet-400/60 bg-violet-500/15 text-violet-500 dark:text-violet-300"
-                                : "border-slate-200 bg-slate-50 text-slate-500 hover:border-violet-400/50 dark:border-white/10 dark:bg-white/5 dark:text-zinc-400"
+                                ? "border-emerald-400/60 bg-emerald-500/15 text-emerald-500 dark:text-emerald-300"
+                                : "border-slate-200 bg-slate-50 text-slate-500 hover:border-emerald-400/50 dark:border-white/10 dark:bg-white/5 dark:text-zinc-400"
                             }`}
                           >
                             #{tag}
@@ -1048,7 +1048,7 @@ export default function DashboardContent({ presentations: propPresentations, use
                       <div className="flex min-w-0 items-center gap-2">
                         <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${
                           pres.isPublic
-                            ? "border-cyan-500/30 bg-cyan-500/10 text-cyan-600 dark:text-cyan-300"
+                            ? "border-teal-500/30 bg-teal-500/10 text-teal-600 dark:text-teal-300"
                             : "border-slate-200 bg-slate-50 text-slate-400 dark:border-white/10 dark:bg-white/5 dark:text-zinc-400"
                         }`}>
                           {pres.isPublic ? <Globe size={11} strokeWidth={2.75} /> : <Lock size={11} strokeWidth={2.75} />}
@@ -1077,7 +1077,7 @@ export default function DashboardContent({ presentations: propPresentations, use
         ) : (
           <div className="space-y-3">
             {filteredPresentations.map((pres, index) => (
-              <a key={pres.id} href={getPresentationUrl(pres.id, pres.title)} onClickCapture={guardInnerClicks} onClick={(e) => openPresentation(e, pres)} onContextMenu={(e) => { e.preventDefault(); setMenuPosition({ top: Math.min(window.innerHeight - 360, e.clientY), left: e.clientX }); setActiveMenu(pres.id); }} className={`group flex items-center gap-5 rounded-2xl border border-slate-200/80 shadow-sm ring-1 ring-slate-900/5 bg-white p-3 transition-all duration-300 hover:border-cyan-400/40 hover:shadow-[0_12px_36px_-12px_rgba(8,15,35,0.3)] hover:-translate-y-0.5 dark:ring-0 dark:border-white/10 dark:shadow-none dark:bg-white/[0.04] dark:hover:bg-white/[0.06] cursor-pointer ${selectMode && selectedIds.has(pres.id) ? "ring-2 ring-cyan-400/70 dark:ring-cyan-400/70" : ""}`}>
+              <a key={pres.id} href={getPresentationUrl(pres.id, pres.title)} onClickCapture={guardInnerClicks} onClick={(e) => openPresentation(e, pres)} onContextMenu={(e) => { e.preventDefault(); setMenuPosition({ top: Math.min(window.innerHeight - 360, e.clientY), left: e.clientX }); setActiveMenu(pres.id); }} className={`group flex items-center gap-5 rounded-2xl border border-slate-200/80 shadow-sm ring-1 ring-slate-900/5 bg-white p-3 transition-all duration-300 hover:border-teal-400/40 hover:shadow-[0_12px_36px_-12px_rgba(8,15,35,0.3)] hover:-translate-y-0.5 dark:ring-0 dark:border-white/10 dark:shadow-none dark:bg-white/[0.04] dark:hover:bg-white/[0.06] cursor-pointer ${selectMode && selectedIds.has(pres.id) ? "ring-2 ring-teal-400/70 dark:ring-teal-400/70" : ""}`}>
                 <div className="w-24 h-16 sm:w-32 sm:h-20 flex-shrink-0 rounded-[14px] relative overflow-hidden border border-slate-100 dark:border-white/10">
                   {getThumbnail(pres) === "/logo.png" ? (
                     <div
@@ -1093,13 +1093,13 @@ export default function DashboardContent({ presentations: propPresentations, use
                 </div>
                 <div className="flex-1 min-w-0 py-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-[15px] font-bold text-slate-900 dark:text-white truncate group-hover:text-[#06b6d4] transition-colors">{pres.title}</h3>
+                    <h3 className="text-[15px] font-bold text-slate-900 dark:text-white truncate group-hover:text-[#14b8a6] transition-colors">{pres.title}</h3>
                     <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMenuAction("favorite", pres.id); }} className={`p-1.5 rounded-lg transition-all ${pres.isPinned ? "text-yellow-500 bg-yellow-50" : "text-slate-300 hover:text-yellow-500 opacity-0 group-hover:opacity-100"}`}>
                       <Heart size={16} className={pres.isPinned ? "fill-current" : ""} />
                     </button>
                   </div>
                   <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-wider">
-                    <div className={`flex items-center gap-1.5 ${pres.isPublic ? "text-[#06b6d4]" : "text-slate-400 dark:text-zinc-500"}`}>
+                    <div className={`flex items-center gap-1.5 ${pres.isPublic ? "text-[#14b8a6]" : "text-slate-400 dark:text-zinc-500"}`}>
                       {pres.isPublic ? <Globe size={12} strokeWidth={2.5} /> : <Lock size={12} strokeWidth={2.5} />}
                       <span className="hidden sm:inline">{pres.isPublic ? "Public" : "Private"}</span>
                     </div>
@@ -1136,7 +1136,7 @@ export default function DashboardContent({ presentations: propPresentations, use
             <p className="text-xs font-semibold text-slate-400 mb-5">{showTagsDialog === "__bulk__" ? `Add tags to ${selectedIds.size} selected decks` : "Organize this deck (max 8 tags)"}</p>
             <div className="mb-4 flex flex-wrap gap-2">
               {tagsDraft.map((tag) => (
-                <span key={tag} className="inline-flex items-center gap-1.5 rounded-full border border-violet-400/40 bg-violet-500/10 px-3 py-1 text-[12px] font-bold text-violet-500 dark:text-violet-300">
+                <span key={tag} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-[12px] font-bold text-emerald-500 dark:text-emerald-300">
                   #{tag}
                   <button type="button" onClick={() => setTagsDraft((prev) => prev.filter((x) => x !== tag))} className="hover:text-red-500 transition-colors"><X size={12} /></button>
                 </span>
@@ -1144,7 +1144,7 @@ export default function DashboardContent({ presentations: propPresentations, use
               {tagsDraft.length === 0 && <span className="text-[12px] font-semibold text-slate-400">No tags yet</span>}
             </div>
             <div className="flex gap-2 mb-4">
-              <input type="text" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); commitTagInput(); } }} placeholder="Add a tag and press Enter" className="flex-1 rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold focus:border-[#06b6d4] focus:outline-none focus:ring-4 focus:ring-[#06b6d4]/10 dark:border-zinc-800 dark:bg-zinc-800 dark:text-white" />
+              <input type="text" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); commitTagInput(); } }} placeholder="Add a tag and press Enter" className="flex-1 rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold focus:border-[#14b8a6] focus:outline-none focus:ring-4 focus:ring-[#14b8a6]/10 dark:border-zinc-800 dark:bg-zinc-800 dark:text-white" />
               <button type="button" onClick={commitTagInput} className="rounded-2xl border border-slate-200 px-4 text-sm font-black text-slate-600 hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800">Add</button>
             </div>
             {allTags.filter((tag) => !tagsDraft.includes(tag)).length > 0 && (
@@ -1152,7 +1152,7 @@ export default function DashboardContent({ presentations: propPresentations, use
                 <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2">Your tags</p>
                 <div className="flex flex-wrap gap-1.5">
                   {allTags.filter((tag) => !tagsDraft.includes(tag)).slice(0, 10).map((tag) => (
-                    <button type="button" key={tag} onClick={() => tagsDraft.length < 8 && setTagsDraft((prev) => [...prev, tag])} className="rounded-full border border-slate-200 px-2.5 py-1 text-[11px] font-bold text-slate-500 transition-colors hover:border-violet-400/60 hover:text-violet-500 dark:border-white/10 dark:text-zinc-400">
+                    <button type="button" key={tag} onClick={() => tagsDraft.length < 8 && setTagsDraft((prev) => [...prev, tag])} className="rounded-full border border-slate-200 px-2.5 py-1 text-[11px] font-bold text-slate-500 transition-colors hover:border-emerald-400/60 hover:text-emerald-500 dark:border-white/10 dark:text-zinc-400">
                       #{tag}
                     </button>
                   ))}
@@ -1161,7 +1161,7 @@ export default function DashboardContent({ presentations: propPresentations, use
             )}
             <div className="flex gap-3">
               <button type="button" onClick={() => setShowTagsDialog(null)} className="flex-1 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-black uppercase tracking-wider text-slate-600 hover:bg-slate-50">Cancel</button>
-              <button type="button" onClick={saveTags} className="flex-1 rounded-2xl bg-gradient-to-r from-violet-600 to-cyan-500 px-4 py-3 text-sm font-black uppercase tracking-wider text-white hover:brightness-110">Save</button>
+              <button type="button" onClick={saveTags} className="flex-1 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 px-4 py-3 text-sm font-black uppercase tracking-wider text-white hover:brightness-110">Save</button>
             </div>
           </div>
         </div>, document.body
@@ -1172,10 +1172,10 @@ export default function DashboardContent({ presentations: propPresentations, use
         <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowDuplicateDialog(null)}>
           <div className="bg-white dark:bg-zinc-900 rounded-3xl p-8 w-full max-w-md shadow-2xl border border-slate-200 dark:border-zinc-800" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-xl font-black text-slate-900 dark:text-white mb-6 uppercase tracking-tight">Duplicate Deck</h3>
-            <input type="text" value={duplicateTitle} onChange={(e) => setDuplicateTitle(e.target.value)} onKeyDown={(e) => e.key === "Enter" && duplicateTitle.trim() && executeDuplicate(showDuplicateDialog, duplicateTitle.trim())} className="w-full rounded-2xl border border-slate-200 px-5 py-3 text-sm font-bold focus:border-[#06b6d4] focus:outline-none focus:ring-4 focus:ring-[#06b6d4]/10 dark:border-zinc-800 dark:bg-zinc-800 dark:text-white mb-6" autoFocus />
+            <input type="text" value={duplicateTitle} onChange={(e) => setDuplicateTitle(e.target.value)} onKeyDown={(e) => e.key === "Enter" && duplicateTitle.trim() && executeDuplicate(showDuplicateDialog, duplicateTitle.trim())} className="w-full rounded-2xl border border-slate-200 px-5 py-3 text-sm font-bold focus:border-[#14b8a6] focus:outline-none focus:ring-4 focus:ring-[#14b8a6]/10 dark:border-zinc-800 dark:bg-zinc-800 dark:text-white mb-6" autoFocus />
             <div className="flex gap-3">
               <button type="button" onClick={() => setShowDuplicateDialog(null)} className="flex-1 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-black uppercase tracking-wider text-slate-600 hover:bg-slate-50">Cancel</button>
-              <button type="button" onClick={() => executeDuplicate(showDuplicateDialog, duplicateTitle.trim())} className="flex-1 rounded-2xl bg-gradient-to-r from-violet-600 to-cyan-500 px-4 py-3 text-sm font-black uppercase tracking-wider text-white hover:brightness-110 disabled:opacity-50" disabled={!duplicateTitle.trim()}>Duplicate</button>
+              <button type="button" onClick={() => executeDuplicate(showDuplicateDialog, duplicateTitle.trim())} className="flex-1 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 px-4 py-3 text-sm font-black uppercase tracking-wider text-white hover:brightness-110 disabled:opacity-50" disabled={!duplicateTitle.trim()}>Duplicate</button>
             </div>
           </div>
         </div>, document.body
@@ -1203,7 +1203,7 @@ export default function DashboardContent({ presentations: propPresentations, use
         <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowRenameDialog(null)}>
           <div className="bg-white dark:bg-zinc-900 rounded-3xl p-8 w-full max-w-md shadow-2xl border border-slate-200 dark:border-zinc-800" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-xl font-black text-slate-900 dark:text-white mb-6 uppercase tracking-tight">Rename Project</h3>
-            <input type="text" value={renameValue} onChange={(e) => setRenameValue(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleRename(showRenameDialog)} className="w-full rounded-2xl border border-slate-200 px-5 py-3 text-sm font-bold focus:border-[#06b6d4] focus:outline-none focus:ring-4 focus:ring-[#06b6d4]/10 dark:border-zinc-800 dark:bg-zinc-800 dark:text-white mb-6" autoFocus />
+            <input type="text" value={renameValue} onChange={(e) => setRenameValue(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleRename(showRenameDialog)} className="w-full rounded-2xl border border-slate-200 px-5 py-3 text-sm font-bold focus:border-[#14b8a6] focus:outline-none focus:ring-4 focus:ring-[#14b8a6]/10 dark:border-zinc-800 dark:bg-zinc-800 dark:text-white mb-6" autoFocus />
             <div className="flex gap-3">
               <button onClick={() => setShowRenameDialog(null)} className="flex-1 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-black uppercase tracking-wider text-slate-600 hover:bg-slate-50">Cancel</button>
               <button onClick={() => handleRename(showRenameDialog)} className="flex-1 rounded-2xl bg-slate-900 dark:bg-white px-4 py-3 text-sm font-black uppercase tracking-wider text-white dark:text-black hover:opacity-90 disabled:opacity-50" disabled={!renameValue.trim()}>Save</button>

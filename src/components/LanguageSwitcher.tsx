@@ -71,7 +71,7 @@ export function LanguageSwitcher({
               onClick={() => switchLanguage(lang)}
               className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm transition-colors ${
                 lang === currentLang
-                  ? "bg-cyan-50 text-cyan-700 border border-cyan-200"
+                  ? "bg-teal-50 text-teal-700 border border-teal-200"
                   : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-transparent"
               }`}
             >
@@ -114,7 +114,7 @@ export function LanguageSwitcher({
                   <span>{LANGUAGE_NAMES[lang].name}</span>
                 </span>
                 {lang === currentLang && (
-                  <Check className="h-4 w-4 text-[#06b6d4]" />
+                  <Check className="h-4 w-4 text-[#14b8a6]" />
                 )}
               </button>
             ))}

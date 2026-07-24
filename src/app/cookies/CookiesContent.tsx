@@ -10,7 +10,7 @@ export function CookiesContent() {
 
         <div className="relative z-10 mx-auto max-w-4xl text-center">
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-4 py-2 backdrop-blur-sm">
-            <Cookie className="h-4 w-4 text-[#06b6d4]" />
+            <Cookie className="h-4 w-4 text-[#14b8a6]" />
             <span className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
               Cookie Notice
             </span>
@@ -36,12 +36,12 @@ export function CookiesContent() {
                 This Cookie Notice explains how PPTera (&quot;PPTera&quot;, &quot;we&quot;, &quot;us&quot; or &quot;our&quot;) uses cookies and other similar technologies on its website that links to this Cookie Notice (the &quot;Site&quot;), as well as in our emails, and your related choices in relation to the same.
               </p>
               <p className="text-lg text-slate-700 leading-relaxed">
-                Please refer to our <a href="/privacy" className="text-[#06b6d4] hover:underline font-semibold">Privacy Policy</a> for more information on our privacy practices.
+                Please refer to our <a href="/privacy" className="text-[#14b8a6] hover:underline font-semibold">Privacy Policy</a> for more information on our privacy practices.
               </p>
             </div>
 
             {/* Managing Preferences */}
-            <div className="mb-12 p-6 bg-blue-50 border-l-4 border-[#06b6d4] rounded-r-lg">
+            <div className="mb-12 p-6 bg-blue-50 border-l-4 border-[#14b8a6] rounded-r-lg">
               <h2 className="text-2xl font-bold text-slate-900 mb-4 mt-0">Managing your preferences</h2>
               <p className="text-slate-700 leading-relaxed mb-0">
                 Before we dive into the details - if you are just looking to manage your preferences on our Site relating to cookies and similar technologies (including opting-out), you can do so at any time through your browser settings.
@@ -117,7 +117,7 @@ export function CookiesContent() {
               <h2 className="text-3xl font-bold text-slate-900 mb-4 mt-0">Questions</h2>
               <p className="text-slate-700 leading-relaxed mb-0">
                 If you have any questions about this Cookie Notice, please contact us by email at{" "}
-                <a href="mailto:pptmaster.app@gmail.com" className="text-[#06b6d4] hover:underline font-semibold">
+                <a href="mailto:pptmaster.app@gmail.com" className="text-[#14b8a6] hover:underline font-semibold">
                   pptmaster.app@gmail.com
                 </a>.
               </p>

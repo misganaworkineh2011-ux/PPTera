@@ -193,14 +193,14 @@ export default function SettingsPage() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`group flex items-center justify-between rounded-xl border p-3 text-left transition-all ${
                   activeTab === tab.id
-                    ? "border-[#06b6d4] bg-cyan-50/50 dark:bg-[#06b6d4]/10 shadow-sm"
+                    ? "border-[#14b8a6] bg-teal-50/50 dark:bg-[#14b8a6]/10 shadow-sm"
                     : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <div className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
                     activeTab === tab.id
-                      ? "bg-[#06b6d4] text-white shadow-lg shadow-cyan-500/30"
+                      ? "bg-[#14b8a6] text-white shadow-lg shadow-teal-500/30"
                       : "bg-slate-100 text-slate-500 group-hover:bg-slate-200 dark:bg-zinc-800 dark:text-zinc-400 dark:group-hover:bg-zinc-700"
                   }`}>
                     <tab.icon size={18} />
@@ -212,7 +212,7 @@ export default function SettingsPage() {
                     <span className="text-xs text-slate-500 hidden sm:block dark:text-zinc-400">{tab.description}</span>
                   </div>
                 </div>
-                {activeTab === tab.id && <ChevronRight size={16} className="text-[#06b6d4]" />}
+                {activeTab === tab.id && <ChevronRight size={16} className="text-[#14b8a6]" />}
               </button>
             ))}
           </nav>
@@ -231,7 +231,7 @@ export default function SettingsPage() {
                   <select 
                     value={language}
                     onChange={(e) => setLanguage(e.target.value as Language)}
-                    className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white transition-all"
+                    className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium focus:border-[#14b8a6] focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white transition-all"
                   >
                     {Object.entries(languageNames).map(([code, name]) => (
                       <option key={code} value={code}>{name}</option>
@@ -256,8 +256,8 @@ export default function SettingsPage() {
                           onChange={(e) => setTheme(e.target.value as "light" | "dark" | "system")}
                           className="peer sr-only" 
                         />
-                        <div className="flex flex-col items-center gap-2 rounded-xl border-2 border-slate-200 p-4 transition-all hover:border-[#06b6d4]/50 hover:shadow-sm peer-checked:border-[#06b6d4] peer-checked:bg-cyan-50/30 peer-checked:shadow-md dark:border-zinc-800 dark:peer-checked:bg-[#06b6d4]/10">
-                          <option.icon size={24} className={theme === option.value ? "text-[#06b6d4]" : "text-slate-400 dark:text-zinc-500"} />
+                        <div className="flex flex-col items-center gap-2 rounded-xl border-2 border-slate-200 p-4 transition-all hover:border-[#14b8a6]/50 hover:shadow-sm peer-checked:border-[#14b8a6] peer-checked:bg-teal-50/30 peer-checked:shadow-md dark:border-zinc-800 dark:peer-checked:bg-[#14b8a6]/10">
+                          <option.icon size={24} className={theme === option.value ? "text-[#14b8a6]" : "text-slate-400 dark:text-zinc-500"} />
                           <span className="text-xs font-bold text-slate-600 dark:text-zinc-300">{option.label}</span>
                         </div>
                       </label>
@@ -277,7 +277,7 @@ export default function SettingsPage() {
               
               <div className="space-y-5">
                 <div className="flex items-center gap-4 p-5 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-zinc-900 dark:to-zinc-800/50 border border-slate-200 dark:border-zinc-800">
-                  <div className="h-16 w-16 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-cyan-500/30">
+                  <div className="h-16 w-16 rounded-full bg-gradient-to-br from-teal-500 to-blue-600 flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-teal-500/30">
                     {clerkUser?.firstName?.[0] || userSettings?.name?.[0] || "U"}
                   </div>
                   <div>
@@ -293,7 +293,7 @@ export default function SettingsPage() {
                     type="text"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white transition-all"
+                    className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium focus:border-[#14b8a6] focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white transition-all"
                   />
                 </div>
 
@@ -331,11 +331,11 @@ export default function SettingsPage() {
                 <div className="flex items-center justify-between mb-5">
                   <div>
                     <p className="text-sm font-bold text-slate-500 dark:text-zinc-400 mb-1">{t.currentPlan}</p>
-                    <p className="text-3xl font-bold text-[#06b6d4] capitalize">{userSettings?.subscriptionPlan || t.free}</p>
+                    <p className="text-3xl font-bold text-[#14b8a6] capitalize">{userSettings?.subscriptionPlan || t.free}</p>
                   </div>
                   <button
                     onClick={() => setIsPricingModalOpen(true)}
-                    className="flex items-center gap-2 rounded-xl border-2 border-[#06b6d4] px-4 py-2 text-sm font-bold text-[#06b6d4] hover:bg-cyan-50 dark:hover:bg-[#06b6d4]/10 transition-all active:scale-95"
+                    className="flex items-center gap-2 rounded-xl border-2 border-[#14b8a6] px-4 py-2 text-sm font-bold text-[#14b8a6] hover:bg-teal-50 dark:hover:bg-[#14b8a6]/10 transition-all active:scale-95"
                   >
                     {t.upgrade}
                   </button>
@@ -356,7 +356,7 @@ export default function SettingsPage() {
               </div>
 
               <div className="space-y-3">
-                <label className="flex items-center justify-between p-5 rounded-xl border border-slate-200 dark:border-zinc-800 cursor-pointer hover:border-[#06b6d4]/50 hover:shadow-sm transition-all bg-white dark:bg-zinc-900">
+                <label className="flex items-center justify-between p-5 rounded-xl border border-slate-200 dark:border-zinc-800 cursor-pointer hover:border-[#14b8a6]/50 hover:shadow-sm transition-all bg-white dark:bg-zinc-900">
                   <div>
                     <span className="block text-sm font-bold text-slate-700 dark:text-zinc-300">{t.emailNotifications}</span>
                     <span className="text-xs font-medium text-slate-500 dark:text-zinc-400 mt-0.5">{t.emailNotificationsDesc}</span>
@@ -365,11 +365,11 @@ export default function SettingsPage() {
                     type="checkbox" 
                     checked={emailNotifications}
                     onChange={(e) => setEmailNotifications(e.target.checked)}
-                    className="h-5 w-5 rounded border-slate-300 text-[#06b6d4] focus:ring-[#06b6d4]" 
+                    className="h-5 w-5 rounded border-slate-300 text-[#14b8a6] focus:ring-[#14b8a6]" 
                   />
                 </label>
 
-                <label className="flex items-center justify-between p-5 rounded-xl border border-slate-200 dark:border-zinc-800 cursor-pointer hover:border-[#06b6d4]/50 hover:shadow-sm transition-all bg-white dark:bg-zinc-900">
+                <label className="flex items-center justify-between p-5 rounded-xl border border-slate-200 dark:border-zinc-800 cursor-pointer hover:border-[#14b8a6]/50 hover:shadow-sm transition-all bg-white dark:bg-zinc-900">
                   <div>
                     <span className="block text-sm font-bold text-slate-700 dark:text-zinc-300">{t.collaborationAlerts}</span>
                     <span className="text-xs font-medium text-slate-500 dark:text-zinc-400 mt-0.5">{t.collaborationAlertsDesc}</span>
@@ -378,7 +378,7 @@ export default function SettingsPage() {
                     type="checkbox" 
                     checked={collaborationAlerts}
                     onChange={(e) => setCollaborationAlerts(e.target.checked)}
-                    className="h-5 w-5 rounded border-slate-300 text-[#06b6d4] focus:ring-[#06b6d4]" 
+                    className="h-5 w-5 rounded border-slate-300 text-[#14b8a6] focus:ring-[#14b8a6]" 
                   />
                 </label>
               </div>
@@ -401,7 +401,7 @@ export default function SettingsPage() {
                     </div>
                     <button
                       onClick={() => void sendPasswordReset()}
-                      className="flex items-center gap-2 text-sm font-bold text-[#06b6d4] hover:underline"
+                      className="flex items-center gap-2 text-sm font-bold text-[#14b8a6] hover:underline"
                     >
                       {t.manage} <ExternalLink size={12} />
                     </button>
@@ -423,7 +423,7 @@ export default function SettingsPage() {
                         className={`px-4 py-2 text-sm font-bold rounded-xl transition-all active:scale-95 ${
                           has2FA 
                             ? "border-2 border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800" 
-                            : "bg-[#06b6d4] text-white hover:bg-cyan-600 shadow-sm"
+                            : "bg-[#14b8a6] text-white hover:bg-teal-600 shadow-sm"
                         }`}
                       >
                         {has2FA ? t.manage : t.enable2FA}

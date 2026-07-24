@@ -48,7 +48,7 @@ const categoryLabels: Record<string, string> = {
 };
 
 const categoryColors: Record<string, string> = {
-  "show-tell": "bg-purple-100 text-purple-700",
+  "show-tell": "bg-emerald-100 text-emerald-700",
   discussion: "bg-blue-100 text-blue-700",
   tips: "bg-green-100 text-green-700",
   "feature-request": "bg-orange-100 text-orange-700",
@@ -255,8 +255,8 @@ export default function CommunityPostClient({
                   onClick={handleLikePost}
                   className={`flex items-center gap-1 transition-colors ${
                     hasLikedPost
-                      ? "text-[#06b6d4] cursor-default"
-                      : "hover:text-[#06b6d4] cursor-pointer"
+                      ? "text-[#14b8a6] cursor-default"
+                      : "hover:text-[#14b8a6] cursor-pointer"
                   }`}
                   title={hasLikedPost ? "You liked this" : "Like this post"}
                 >
@@ -290,7 +290,7 @@ export default function CommunityPostClient({
                 </h2>
                 <button
                   onClick={() => setShowCommentForm(!showCommentForm)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#06b6d4] text-white text-sm font-semibold hover:bg-[#0891b2] transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#14b8a6] text-white text-sm font-semibold hover:bg-[#0d9488] transition-colors"
                 >
                   <Send className="h-4 w-4" />
                   Add Comment
@@ -321,7 +321,7 @@ export default function CommunityPostClient({
                             authorName: e.target.value,
                           })
                         }
-                        className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:border-[#06b6d4] focus:outline-none focus:ring-1 focus:ring-[#06b6d4]"
+                        className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:border-[#14b8a6] focus:outline-none focus:ring-1 focus:ring-[#14b8a6]"
                         placeholder="Enter your name"
                       />
                     </div>
@@ -339,7 +339,7 @@ export default function CommunityPostClient({
                             content: e.target.value,
                           })
                         }
-                        className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:border-[#06b6d4] focus:outline-none focus:ring-1 focus:ring-[#06b6d4] resize-none"
+                        className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:border-[#14b8a6] focus:outline-none focus:ring-1 focus:ring-[#14b8a6] resize-none"
                         placeholder="Share your thoughts..."
                       />
                     </div>
@@ -347,7 +347,7 @@ export default function CommunityPostClient({
                       <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="flex items-center gap-2 px-6 py-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center gap-2 px-6 py-2 rounded-full bg-gradient-to-r from-[#0f766e] to-[#14b8a6] text-white font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isSubmitting ? (
                           <>
@@ -401,8 +401,8 @@ export default function CommunityPostClient({
                           onClick={() => handleLikeComment(comment.id)}
                           className={`flex items-center gap-1 transition-colors ${
                             likedComments.has(comment.id)
-                              ? "text-[#06b6d4] cursor-default"
-                              : "hover:text-[#06b6d4] cursor-pointer"
+                              ? "text-[#14b8a6] cursor-default"
+                              : "hover:text-[#14b8a6] cursor-pointer"
                           }`}
                           title={
                             likedComments.has(comment.id)
@@ -433,7 +433,7 @@ export default function CommunityPostClient({
             </p>
             <Link
               href="/community"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-bold hover:shadow-xl transition-all hover:scale-105"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-[#0f766e] to-[#14b8a6] text-white font-bold hover:shadow-xl transition-all hover:scale-105"
             >
               Go to Community
             </Link>

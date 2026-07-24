@@ -27,13 +27,13 @@ interface UpgradeModalProps {
 const PLAN_INFO = {
   plus: {
     name: 'Plus',
-    color: 'from-blue-500 to-cyan-500',
+    color: 'from-blue-500 to-teal-500',
     features: ['1,000 monthly credits', '20 cards per prompt', 'Export to PDF, PPTX & PNG', 'Remove PPTera branding', 'Basic AI image models', 'Basic slide animations'],
     includesText: 'Everything in Free, and:',
   },
   pro: {
     name: 'Pro',
-    color: 'from-purple-500 to-pink-500',
+    color: 'from-emerald-500 to-pink-500',
     features: [
       '4,000 monthly credits', 
       '60 cards per prompt', 
@@ -152,7 +152,7 @@ export default function UpgradeModal({
         <div className="p-6">
           <div className="mb-6">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-neutral-800 mb-3">
-              <Sparkles className="h-4 w-4 text-[#06b6d4]" />
+              <Sparkles className="h-4 w-4 text-[#14b8a6]" />
               <span className="text-sm font-semibold text-slate-700 dark:text-neutral-300">
                 {feature}
               </span>
@@ -197,7 +197,7 @@ export default function UpgradeModal({
             <ul className="space-y-2">
               {planInfo.features.map((feat, idx) => (
                 <li key={idx} className="flex items-start gap-2 text-sm text-slate-600 dark:text-neutral-300">
-                  <div className="mt-0.5 h-1.5 w-1.5 rounded-full bg-[#06b6d4] flex-shrink-0" />
+                  <div className="mt-0.5 h-1.5 w-1.5 rounded-full bg-[#14b8a6] flex-shrink-0" />
                   <span>{feat}</span>
                 </li>
               ))}
@@ -215,7 +215,7 @@ export default function UpgradeModal({
             <button
               onClick={handleUpgrade}
               disabled={isNavigating}
-              className="flex-1 px-4 py-2.5 rounded-lg bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white font-semibold hover:shadow-lg transition disabled:opacity-70 flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2.5 rounded-lg bg-gradient-to-r from-[#0f766e] to-[#14b8a6] text-white font-semibold hover:shadow-lg transition disabled:opacity-70 flex items-center justify-center gap-2"
             >
               {isNavigating ? (
                 <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

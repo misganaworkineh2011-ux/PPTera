@@ -24,11 +24,11 @@ export default function AnalyticsLoading() {
         {/* Header - static, no skeleton */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#0f766e] to-[#14b8a6] text-white shadow-md">
               <BarChart3 size={22} />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-[#1e3a8a] dark:text-white">
+              <h1 className="text-2xl sm:text-3xl font-bold text-[#0f766e] dark:text-white">
                 Analytics
               </h1>
               <p className="text-slate-500 dark:text-neutral-400 text-sm">

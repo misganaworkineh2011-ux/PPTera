@@ -22,7 +22,7 @@ export function LoadingButton({
   const baseStyles = "relative inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 font-bold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed";
   
   const variantStyles = {
-    primary: "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95",
+    primary: "bg-gradient-to-r from-[#0f766e] to-[#14b8a6] text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95",
     secondary: "bg-black text-white shadow-xl hover:scale-105 hover:bg-slate-800 hover:shadow-2xl active:scale-95",
     outline: "border-2 border-slate-200 bg-white text-slate-900 hover:border-slate-300 hover:bg-slate-50 active:scale-95"
   };

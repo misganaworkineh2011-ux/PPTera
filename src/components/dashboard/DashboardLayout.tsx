@@ -111,7 +111,7 @@ export default function DashboardLayout({ children, subscriptionPlan, credits, o
             "bg-white dark:bg-zinc-800 rounded-full",
             "border border-slate-200 dark:border-zinc-700",
             "shadow-lg hover:shadow-xl",
-            "text-slate-500 hover:text-cyan-600 dark:text-zinc-400 dark:hover:text-cyan-400",
+            "text-slate-500 hover:text-teal-600 dark:text-zinc-400 dark:hover:text-teal-400",
             "transition-all duration-300 hover:scale-110",
             isSidebarCollapsed ? "left-[68px]" : "left-[270px]"
           )}

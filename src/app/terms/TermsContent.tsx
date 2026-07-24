@@ -11,7 +11,7 @@ export function TermsContent() {
         
         <div className="relative z-10 mx-auto max-w-4xl text-center">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-4 py-2 backdrop-blur-sm">
-            <Scale className="h-4 w-4 text-[#06b6d4]" />
+            <Scale className="h-4 w-4 text-[#14b8a6]" />
             <span className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
               Legal
             </span>
@@ -165,7 +165,7 @@ export function TermsContent() {
             </div>
 
             {/* Footer */}
-            <div className="mt-16 p-8 rounded-2xl bg-gradient-to-br from-[#1e3a8a]/5 to-[#06b6d4]/5 border border-[#06b6d4]/20">
+            <div className="mt-16 p-8 rounded-2xl bg-gradient-to-br from-[#0f766e]/5 to-[#14b8a6]/5 border border-[#14b8a6]/20">
               <p className="text-sm text-slate-600 text-center">
                 By using PPTera, you acknowledge that you have read, understood, and agree to be bound by these Terms of Use.
               </p>

@@ -128,7 +128,7 @@ export default function InsightPostPage({ currentLang = "en" }: InsightPostPageP
         <LandingNavbar currentLang={currentLang} />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
-            <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-[#06b6d4] border-r-transparent"></div>
+            <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-[#14b8a6] border-r-transparent"></div>
             <p className="mt-4 text-slate-600">Loading...</p>
           </div>
         </div>
@@ -194,7 +194,7 @@ export default function InsightPostPage({ currentLang = "en" }: InsightPostPageP
         <div className="mx-auto max-w-4xl">
           <button
             onClick={() => router.push("/insights")}
-            className="inline-flex items-center gap-2 text-slate-600 hover:text-[#06b6d4] transition-colors"
+            className="inline-flex items-center gap-2 text-slate-600 hover:text-[#14b8a6] transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
             <span className="font-medium">Back to Insights</span>
@@ -208,7 +208,7 @@ export default function InsightPostPage({ currentLang = "en" }: InsightPostPageP
           <header className="mb-12">
             {/* Category Badge */}
             <div className="mb-6">
-              <span className="px-4 py-1.5 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white text-sm font-semibold">
+              <span className="px-4 py-1.5 rounded-full bg-gradient-to-r from-[#0f766e] to-[#14b8a6] text-white text-sm font-semibold">
                 {post.category}
               </span>
             </div>
@@ -233,7 +233,7 @@ export default function InsightPostPage({ currentLang = "en" }: InsightPostPageP
                     className="h-12 w-12 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center text-white font-bold">
+                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#0f766e] to-[#14b8a6] flex items-center justify-center text-white font-bold">
                     {post.author.charAt(0).toUpperCase()}
                   </div>
                 )}
@@ -286,7 +286,7 @@ export default function InsightPostPage({ currentLang = "en" }: InsightPostPageP
               className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold transition-all ${
                 liked
                   ? "bg-red-100 text-red-600 cursor-not-allowed"
-                  : "bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white hover:shadow-xl hover:scale-105"
+                  : "bg-gradient-to-r from-[#0f766e] to-[#14b8a6] text-white hover:shadow-xl hover:scale-105"
               }`}
             >
               <Heart className={`h-5 w-5 ${liked ? "fill-current" : ""}`} />
@@ -295,7 +295,7 @@ export default function InsightPostPage({ currentLang = "en" }: InsightPostPageP
             <div className="relative">
               <button
                 onClick={handleShare}
-                className="flex items-center gap-2 px-6 py-3 rounded-full border-2 border-slate-200 bg-white text-slate-700 font-semibold hover:border-[#06b6d4] hover:text-[#06b6d4] transition-all"
+                className="flex items-center gap-2 px-6 py-3 rounded-full border-2 border-slate-200 bg-white text-slate-700 font-semibold hover:border-[#14b8a6] hover:text-[#14b8a6] transition-all"
               >
                 <Share2 className="h-5 w-5" />
                 {showCopied ? "Link Copied!" : "Share"}
@@ -323,8 +323,8 @@ export default function InsightPostPage({ currentLang = "en" }: InsightPostPageP
                 li: ({node, ...props}) => <li className="leading-relaxed pl-2" {...props} />,
                 strong: ({node, ...props}) => <strong className="font-semibold text-slate-900" {...props} />,
                 em: ({node, ...props}) => <em className="italic text-slate-800" {...props} />,
-                a: ({node, ...props}) => <a className="text-[#06b6d4] hover:text-[#0891b2] underline decoration-2 underline-offset-2 transition-colors" {...props} />,
-                blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-[#06b6d4] pl-6 py-2 my-8 italic text-slate-600 bg-slate-50 rounded-r-lg" {...props} />,
+                a: ({node, ...props}) => <a className="text-[#14b8a6] hover:text-[#0d9488] underline decoration-2 underline-offset-2 transition-colors" {...props} />,
+                blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-[#14b8a6] pl-6 py-2 my-8 italic text-slate-600 bg-slate-50 rounded-r-lg" {...props} />,
                 code: ({node, inline, ...props}: any) => 
                   inline ? 
                     <code className="bg-slate-100 text-slate-800 px-2 py-1 rounded text-sm font-mono" {...props} /> :
@@ -360,7 +360,7 @@ export default function InsightPostPage({ currentLang = "en" }: InsightPostPageP
                   className="h-16 w-16 rounded-full object-cover flex-shrink-0"
                 />
               ) : (
-                <div className="h-16 w-16 rounded-full bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] flex items-center justify-center text-white font-bold text-xl flex-shrink-0">
+                <div className="h-16 w-16 rounded-full bg-gradient-to-br from-[#0f766e] to-[#14b8a6] flex items-center justify-center text-white font-bold text-xl flex-shrink-0">
                   {post.author.charAt(0).toUpperCase()}
                 </div>
               )}
@@ -407,7 +407,7 @@ export default function InsightPostPage({ currentLang = "en" }: InsightPostPageP
                     </div>
                   </div>
                   <div className="p-6">
-                    <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-[#06b6d4] transition-colors">
+                    <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-[#14b8a6] transition-colors">
                       {relatedPost.title}
                     </h3>
                     <div className="flex items-center gap-3 text-xs text-slate-500">

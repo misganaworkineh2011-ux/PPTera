@@ -296,7 +296,7 @@ export default function PricingPageClient({ currentLang }: PricingPageClientProp
                 <div className="flex items-center gap-2 relative z-10">
                   {activeTab === "plans" ? (
                     <>
-                      <Zap className="h-4 w-4 text-cyan-600" />
+                      <Zap className="h-4 w-4 text-teal-600" />
                       {t.buyCredits || "Buy Credits"}
                     </>
                   ) : (
@@ -319,15 +319,15 @@ export default function PricingPageClient({ currentLang }: PricingPageClientProp
                     key={plan.key} 
                     className={`relative rounded-[2rem] p-8 flex flex-col h-auto transition-all duration-300 group border-2 border-slate-900 ${
                       plan.highlight
-                        ? "shadow-[0_20px_40px_-15px_rgba(6,182,212,0.15)] bg-gradient-to-b from-white to-cyan-50/20 text-left"
+                        ? "shadow-[0_20px_40px_-15px_rgba(20,184,166,0.15)] bg-gradient-to-b from-white to-teal-50/20 text-left"
                         : "hover:border-slate-800 hover:shadow-xl bg-white text-left"
                     }`}
                   >
                     {plan.badge && (
                       <div className={`absolute -top-4 left-1/2 -translate-x-1/2 text-white text-[11px] font-black tracking-[0.15em] px-5 py-1.5 rounded-full shadow-lg whitespace-nowrap z-10 uppercase ${
                         plan.badgeGradient 
-                          ? "bg-gradient-to-r from-purple-600 to-pink-600 shadow-purple-500/20" 
-                          : "bg-[#06b6d4] shadow-cyan-500/20 shadow-lg"
+                          ? "bg-gradient-to-r from-emerald-600 to-pink-600 shadow-emerald-500/20" 
+                          : "bg-[#14b8a6] shadow-teal-500/20 shadow-lg"
                       }`}>
                         {plan.badge}
                       </div>
@@ -345,12 +345,12 @@ export default function PricingPageClient({ currentLang }: PricingPageClientProp
                           {plan.name}
                         </h3>
                         {plan.highlight && (
-                          <div className="flex items-center justify-center p-1 rounded-lg bg-cyan-50 border border-cyan-100">
-                            <Zap className="h-4 w-4 text-[#06b6d4] fill-[#06b6d4]/20" />
+                          <div className="flex items-center justify-center p-1 rounded-lg bg-teal-50 border border-teal-100">
+                            <Zap className="h-4 w-4 text-[#14b8a6] fill-[#14b8a6]/20" />
                           </div>
                         )}
                         {plan.key === "ultra" && (
-                          <Sparkles className="h-5 w-5 text-purple-500 fill-purple-500/20" />
+                          <Sparkles className="h-5 w-5 text-emerald-500 fill-emerald-500/20" />
                         )}
                       </div>
                       <p className="text-xs font-bold text-slate-400 leading-relaxed min-h-[32px]">{plan.description}</p>
@@ -370,7 +370,7 @@ export default function PricingPageClient({ currentLang }: PricingPageClientProp
                     <div className="space-y-3 mb-8">
                       {plan.features.map((feature, j) => (
                         <div key={j} className="flex items-start gap-3">
-                          <div className={`mt-0.5 h-3.5 w-3.5 rounded-full flex items-center justify-center shrink-0 ${plan.highlight ? "bg-cyan-100 text-cyan-600" : "bg-slate-100 text-slate-400"}`}>
+                          <div className={`mt-0.5 h-3.5 w-3.5 rounded-full flex items-center justify-center shrink-0 ${plan.highlight ? "bg-teal-100 text-teal-600" : "bg-slate-100 text-slate-400"}`}>
                             <Check className="h-2 w-2 stroke-[4]" />
                           </div>
                           <span className="text-[13px] font-bold text-slate-600 leading-tight">{feature}</span>
@@ -430,7 +430,7 @@ export default function PricingPageClient({ currentLang }: PricingPageClientProp
                         }`}
                       >
                         {isPopular && (
-                          <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#06b6d4] text-white text-[11px] font-black tracking-[0.15em] px-6 py-2 rounded-full shadow-lg shadow-cyan-500/20 uppercase whitespace-nowrap z-10">
+                          <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#14b8a6] text-white text-[11px] font-black tracking-[0.15em] px-6 py-2 rounded-full shadow-lg shadow-teal-500/20 uppercase whitespace-nowrap z-10">
                             {t.bestValue || "BEST VALUE"}
                           </div>
                         )}
@@ -439,19 +439,19 @@ export default function PricingPageClient({ currentLang }: PricingPageClientProp
                           "w-20 h-20 rounded-[2rem] flex items-center justify-center mb-8 rotate-3 group-hover:rotate-6 transition-transform",
                           isPopular ? "bg-white/10 ring-1 ring-white/20" : "bg-slate-50 ring-1 ring-slate-100"
                         )}>
-                          <Zap className={cn("w-10 h-10", isPopular ? "text-cyan-400" : "text-slate-900")} />
+                          <Zap className={cn("w-10 h-10", isPopular ? "text-teal-400" : "text-slate-900")} />
                         </div>
 
                         <div className="mb-6">
                           <div className={cn("text-5xl font-black tracking-tighter", isPopular ? "text-white" : "text-slate-900")}>
                             {credits.toLocaleString()}
                           </div>
-                          <div className={cn("text-sm font-black tracking-[0.2em] uppercase mt-2", isPopular ? "text-cyan-400" : "text-slate-400")}>
+                          <div className={cn("text-sm font-black tracking-[0.2em] uppercase mt-2", isPopular ? "text-teal-400" : "text-slate-400")}>
                             {t.credits || "credits"}
                           </div>
                         </div>
 
-                        <div className={cn("text-3xl font-black mb-10", isPopular ? "text-white" : "text-[#06b6d4]")}>
+                        <div className={cn("text-3xl font-black mb-10", isPopular ? "text-white" : "text-[#14b8a6]")}>
                           {topupLoading || !option ? (
                             <div className="h-8 w-24 animate-pulse rounded-lg bg-current/20 mx-auto" />
                           ) : (
@@ -465,7 +465,7 @@ export default function PricingPageClient({ currentLang }: PricingPageClientProp
                           className={cn(
                             "w-full py-5 rounded-[1.5rem] text-sm font-black transition-all duration-300 disabled:opacity-50 mt-auto border-2 border-slate-900",
                             isPopular
-                              ? "bg-[#06b6d4] text-white hover:bg-cyan-400 shadow-[0_10px_20px_-5px_rgba(6,182,212,0.4)] border-transparent"
+                              ? "bg-[#14b8a6] text-white hover:bg-teal-400 shadow-[0_10px_20px_-5px_rgba(20,184,166,0.4)] border-transparent"
                               : "bg-white text-slate-900 hover:bg-slate-900 hover:text-white"
                           )}
                         >

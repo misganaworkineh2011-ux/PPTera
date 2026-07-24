@@ -34,10 +34,10 @@ export default function ImagesStickyHeader({ userId, credits }: StickyHeaderProp
         if (sticky) {
           setStickyTitleContent(
             <>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#0f766e] to-[#14b8a6] text-white shadow-md">
                 <ImageIcon size={18} />
               </div>
-              <h1 className="text-xl font-bold tracking-tight text-[#1e3a8a] whitespace-nowrap">Images</h1>
+              <h1 className="text-xl font-bold tracking-tight text-[#0f766e] whitespace-nowrap">Images</h1>
             </>
           );
         } else {
@@ -73,12 +73,12 @@ export default function ImagesStickyHeader({ userId, credits }: StickyHeaderProp
         }`}
       >
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#0f766e] to-[#14b8a6] text-white shadow-md">
             <ImageIcon size={22} />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-[#1e3a8a]">Images</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-[#0f766e]">Images</h1>
         </div>
-        <button className="flex items-center gap-1.5 md:gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] px-3 py-2 md:px-6 md:py-3 text-sm md:text-base font-bold text-white shadow-lg shadow-[#06b6d4]/20 transition-all hover:from-[#172554] hover:to-[#0891b2] hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap">
+        <button className="flex items-center gap-1.5 md:gap-2 rounded-full bg-gradient-to-r from-[#0f766e] to-[#14b8a6] px-3 py-2 md:px-6 md:py-3 text-sm md:text-base font-bold text-white shadow-lg shadow-[#14b8a6]/20 transition-all hover:from-[#172554] hover:to-[#0d9488] hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap">
           <Upload size={16} className="md:w-[18px] md:h-[18px]" /> <span className="hidden sm:inline">Upload Images</span><span className="sm:hidden">Upload</span>
         </button>
       </div>

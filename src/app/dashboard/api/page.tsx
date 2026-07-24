@@ -165,7 +165,7 @@ export default function ApiWebhooksPage() {
   if (loading && apiKeys.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-teal-500" />
       </div>
     );
   }
@@ -186,7 +186,7 @@ export default function ApiWebhooksPage() {
           className={cn(
             "px-6 py-3 text-sm font-semibold transition-all border-b-2",
             activeTab === "keys"
-              ? "border-cyan-500 text-cyan-500"
+              ? "border-teal-500 text-teal-500"
               : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-zinc-300"
           )}
         >
@@ -197,7 +197,7 @@ export default function ApiWebhooksPage() {
           className={cn(
             "px-6 py-3 text-sm font-semibold transition-all border-b-2",
             activeTab === "webhooks"
-              ? "border-cyan-500 text-cyan-500"
+              ? "border-teal-500 text-teal-500"
               : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-zinc-300"
           )}
         >
@@ -208,7 +208,7 @@ export default function ApiWebhooksPage() {
           className={cn(
             "px-6 py-3 text-sm font-semibold transition-all border-b-2",
             activeTab === "docs"
-              ? "border-cyan-500 text-cyan-500"
+              ? "border-teal-500 text-teal-500"
               : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-zinc-300"
           )}
         >
@@ -222,7 +222,7 @@ export default function ApiWebhooksPage() {
             {/* Create Section */}
             <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6">
               <h3 className="text-lg font-bold flex items-center gap-2 mb-4">
-                <Key size={18} className="text-cyan-500" />
+                <Key size={18} className="text-teal-500" />
                 Create New API Key
               </h3>
               
@@ -258,12 +258,12 @@ export default function ApiWebhooksPage() {
                     placeholder="e.g. Production App, Integration"
                     value={newKeyName}
                     onChange={(e) => setNewKeyName(e.target.value)}
-                    className="flex-1 px-4 py-2 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-800/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
+                    className="flex-1 px-4 py-2 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-800/50 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
                   />
                   <button
                     onClick={handleCreateKey}
                     disabled={isCreatingKey}
-                    className="px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="px-6 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     {isCreatingKey ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
                     Generate Key
@@ -332,7 +332,7 @@ export default function ApiWebhooksPage() {
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
             <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6">
               <h3 className="text-lg font-bold flex items-center gap-2 mb-4">
-                <Webhook size={18} className="text-cyan-500" />
+                <Webhook size={18} className="text-teal-500" />
                 Configure Outgoing Webhook
               </h3>
               
@@ -346,7 +346,7 @@ export default function ApiWebhooksPage() {
                     placeholder="https://your-app.com/api/webhooks/pptera"
                     value={webhookUrl}
                     onChange={(e) => setWebhookUrl(e.target.value)}
-                    className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-800/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
+                    className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-800/50 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
                   />
                 </div>
                 
@@ -368,7 +368,7 @@ export default function ApiWebhooksPage() {
                         className={cn(
                           "px-3 py-1.5 rounded-full text-xs font-semibold border transition-all",
                           selectedEvents.includes(event)
-                            ? "bg-cyan-50 border-cyan-200 text-cyan-600 dark:bg-cyan-950/30 dark:border-cyan-800"
+                            ? "bg-teal-50 border-teal-200 text-teal-600 dark:bg-teal-950/30 dark:border-teal-800"
                             : "bg-slate-50 border-slate-200 text-slate-600 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400"
                         )}
                       >
@@ -381,7 +381,7 @@ export default function ApiWebhooksPage() {
                 <button
                   onClick={handleCreateWebhook}
                   disabled={isCreatingWebhook}
-                  className="w-full py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {isCreatingWebhook ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
                   Add Webhook Endpoint
@@ -459,14 +459,14 @@ export default function ApiWebhooksPage() {
             <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 p-8 space-y-8">
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold flex items-center gap-3">
-                  <ShieldCheck className="text-cyan-500" size={28} />
+                  <ShieldCheck className="text-teal-500" size={28} />
                   Authentication
                 </h2>
                 <p className="text-slate-600 dark:text-zinc-400">
                   All API requests must include your API key in the <code>X-API-Key</code> header.
                   You can generate multiple keys for different environments.
                 </p>
-                <div className="bg-slate-900 rounded-xl p-4 font-mono text-sm text-cyan-400 border border-slate-800 shadow-xl overflow-x-auto">
+                <div className="bg-slate-900 rounded-xl p-4 font-mono text-sm text-teal-400 border border-slate-800 shadow-xl overflow-x-auto">
                   <div className="flex items-center justify-between mb-2 pb-2 border-b border-slate-800">
                     <span className="text-slate-500 text-xs">Example Shell Request</span>
                     <button onClick={() => copyToClipboard('curl -X GET "https://www.pptera.com/api/v1/presentations" \\\n  -H "X-API-Key: pptm_your_api_key_here"')} className="text-slate-500 hover:text-white transition-colors">
@@ -482,28 +482,28 @@ export default function ApiWebhooksPage() {
 
               <div className="grid sm:grid-cols-2 gap-6">
                 <div className="p-6 rounded-2xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-800 space-y-3">
-                  <div className="w-10 h-10 rounded-xl bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center">
-                    <Zap className="text-cyan-600" size={20} />
+                  <div className="w-10 h-10 rounded-xl bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
+                    <Zap className="text-teal-600" size={20} />
                   </div>
                   <h3 className="font-bold">Available Endpoints</h3>
                   <ul className="text-sm space-y-2 text-slate-600 dark:text-zinc-400">
-                    <li><code className="text-cyan-600 font-bold">GET</code> /api/v1/presentations</li>
-                    <li><code className="text-cyan-600 font-bold">POST</code> /api/v1/generate</li>
-                    <li><code className="text-cyan-600 font-bold">GET</code> /api/v1/exports/:id</li>
-                    <li><code className="text-cyan-600 font-bold">GET</code> /api/v1/credits</li>
+                    <li><code className="text-teal-600 font-bold">GET</code> /api/v1/presentations</li>
+                    <li><code className="text-teal-600 font-bold">POST</code> /api/v1/generate</li>
+                    <li><code className="text-teal-600 font-bold">GET</code> /api/v1/exports/:id</li>
+                    <li><code className="text-teal-600 font-bold">GET</code> /api/v1/credits</li>
                   </ul>
                 </div>
                 <div className="p-6 rounded-2xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-800 space-y-3">
-                  <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                    <Webhook className="text-purple-600" size={20} />
+                  <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                    <Webhook className="text-emerald-600" size={20} />
                   </div>
                   <h3 className="font-bold">Webhook Events</h3>
                   <p className="text-sm text-slate-600 dark:text-zinc-400">
                     Receive real-time notifications when long-running jobs are finished.
                   </p>
                   <ul className="text-sm space-y-2 text-slate-600 dark:text-zinc-400">
-                    <li><code className="text-purple-600 font-bold">export.completed</code></li>
-                    <li><code className="text-purple-600 font-bold">presentation.created</code></li>
+                    <li><code className="text-emerald-600 font-bold">export.completed</code></li>
+                    <li><code className="text-emerald-600 font-bold">presentation.created</code></li>
                   </ul>
                 </div>
               </div>
@@ -511,7 +511,7 @@ export default function ApiWebhooksPage() {
               <div className="flex justify-center pt-4">
                 <Link
                   href="/developer-docs"
-                  className="inline-flex items-center gap-2 text-cyan-600 font-bold hover:underline"
+                  className="inline-flex items-center gap-2 text-teal-600 font-bold hover:underline"
                 >
                   View Full Documentation
                   <ExternalLink size={16} />

@@ -20,7 +20,7 @@ export function AboutPageContent({ currentLang = "en" }: AboutPageContentProps) 
 
         <div className="relative z-10 mx-auto max-w-5xl text-center">
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-4 py-2 backdrop-blur-sm animate-fade-in">
-            <Sparkles className="h-4 w-4 text-[#06b6d4]" />
+            <Sparkles className="h-4 w-4 text-[#14b8a6]" />
             <span className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
               {t.aboutUs || "About Us"}
             </span>
@@ -28,7 +28,7 @@ export function AboutPageContent({ currentLang = "en" }: AboutPageContentProps) 
 
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 mb-8 animate-fade-in-up [animation-delay:100ms]">
             {t.aboutHeroTitle || "We're building the future of"}{" "}
-            <span className="bg-gradient-to-r from-[#1e3a8a] via-[#06b6d4] to-[#1e3a8a] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#0f766e] via-[#14b8a6] to-[#0f766e] bg-clip-text text-transparent">
               {t.aboutHeroHighlight || "presentations"}
             </span>
           </h1>
@@ -44,9 +44,9 @@ export function AboutPageContent({ currentLang = "en" }: AboutPageContentProps) 
         <div className="mx-auto max-w-7xl">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div>
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#1e3a8a]/10 to-[#06b6d4]/10 px-4 py-2">
-                <Target className="h-4 w-4 text-[#06b6d4]" />
-                <span className="text-sm font-semibold text-[#06b6d4] uppercase tracking-wide">
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#0f766e]/10 to-[#14b8a6]/10 px-4 py-2">
+                <Target className="h-4 w-4 text-[#14b8a6]" />
+                <span className="text-sm font-semibold text-[#14b8a6] uppercase tracking-wide">
                   {t.ourMission || "Our Mission"}
                 </span>
               </div>
@@ -62,7 +62,7 @@ export function AboutPageContent({ currentLang = "en" }: AboutPageContentProps) 
             </div>
 
             <div className="relative">
-              <div className="aspect-square rounded-3xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] p-1 rotate-3 hover:rotate-0 transition-transform duration-500">
+              <div className="aspect-square rounded-3xl bg-gradient-to-br from-[#0f766e] to-[#14b8a6] p-1 rotate-3 hover:rotate-0 transition-transform duration-500">
                 <img
                   src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=800&fit=crop&q=80"
                   alt="Team collaborating on presentations"
@@ -89,7 +89,7 @@ export function AboutPageContent({ currentLang = "en" }: AboutPageContentProps) 
           <div className="grid md:grid-cols-3 gap-8">
             {/* Value 1 */}
             <div className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 hover:shadow-2xl transition-all duration-300">
-              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] group-hover:scale-110 transition-transform">
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#0f766e] to-[#14b8a6] group-hover:scale-110 transition-transform">
                 <Users className="h-8 w-8 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-4">
@@ -102,7 +102,7 @@ export function AboutPageContent({ currentLang = "en" }: AboutPageContentProps) 
 
             {/* Value 2 */}
             <div className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 hover:shadow-2xl transition-all duration-300">
-              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] group-hover:scale-110 transition-transform">
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#0f766e] to-[#14b8a6] group-hover:scale-110 transition-transform">
                 <Zap className="h-8 w-8 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-4">
@@ -115,7 +115,7 @@ export function AboutPageContent({ currentLang = "en" }: AboutPageContentProps) 
 
             {/* Value 3 */}
             <div className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 hover:shadow-2xl transition-all duration-300">
-              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] group-hover:scale-110 transition-transform">
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#0f766e] to-[#14b8a6] group-hover:scale-110 transition-transform">
                 <Heart className="h-8 w-8 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-4">
@@ -130,7 +130,7 @@ export function AboutPageContent({ currentLang = "en" }: AboutPageContentProps) 
       </section>
 
       {/* Stats Section */}
-      <section className="relative py-24 px-6 bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4]">
+      <section className="relative py-24 px-6 bg-gradient-to-br from-[#0f766e] to-[#14b8a6]">
         <div className="mx-auto max-w-7xl">
           <div className="grid md:grid-cols-4 gap-8 text-center text-white">
             <div className="animate-fade-in-up">
@@ -165,7 +165,7 @@ export function AboutPageContent({ currentLang = "en" }: AboutPageContentProps) 
           <div className="space-y-12">
             <div className="flex gap-6 items-start">
               <div className="flex-shrink-0 w-24 text-right">
-                <div className="text-2xl font-bold text-[#06b6d4]">{t.story2025Year || "2025"}</div>
+                <div className="text-2xl font-bold text-[#14b8a6]">{t.story2025Year || "2025"}</div>
               </div>
               <div className="flex-1 border-l-2 border-slate-200 pl-6 pb-8">
                 <h3 className="text-xl font-bold text-slate-900 mb-2">{t.story2025Title || "The Beginning"}</h3>
@@ -175,7 +175,7 @@ export function AboutPageContent({ currentLang = "en" }: AboutPageContentProps) 
 
             <div className="flex gap-6 items-start">
               <div className="flex-shrink-0 w-24 text-right">
-                <div className="text-2xl font-bold text-[#06b6d4]">{t.story2026Year || "2026"}</div>
+                <div className="text-2xl font-bold text-[#14b8a6]">{t.story2026Year || "2026"}</div>
               </div>
               <div className="flex-1 pl-6">
                 <h3 className="text-xl font-bold text-slate-900 mb-2">{t.story2026Title || "The Future"}</h3>
@@ -220,7 +220,7 @@ export function AboutPageContent({ currentLang = "en" }: AboutPageContentProps) 
               </div>
             </div>
             <div className="relative">
-              <div className="aspect-square rounded-3xl bg-gradient-to-br from-[#06b6d4] to-[#1e3a8a] p-1 -rotate-3 hover:rotate-0 transition-transform duration-500">
+              <div className="aspect-square rounded-3xl bg-gradient-to-br from-[#14b8a6] to-[#0f766e] p-1 -rotate-3 hover:rotate-0 transition-transform duration-500">
                 <img
                   src="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=800&fit=crop&q=80"
                   alt="AI Technology powering PPTera"
@@ -243,19 +243,19 @@ export function AboutPageContent({ currentLang = "en" }: AboutPageContentProps) 
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="p-6 rounded-2xl bg-slate-50">
-              <div className="text-3xl font-bold text-[#06b6d4] mb-2">12+</div>
+              <div className="text-3xl font-bold text-[#14b8a6] mb-2">12+</div>
               <div className="text-sm text-slate-600">{t.languagesSupported || "Languages Supported"}</div>
             </div>
             <div className="p-6 rounded-2xl bg-slate-50">
-              <div className="text-3xl font-bold text-[#06b6d4] mb-2">24/7</div>
+              <div className="text-3xl font-bold text-[#14b8a6] mb-2">24/7</div>
               <div className="text-sm text-slate-600">{t.platformAvailability || "Platform Availability"}</div>
             </div>
             <div className="p-6 rounded-2xl bg-slate-50">
-              <div className="text-3xl font-bold text-[#06b6d4] mb-2">50+</div>
+              <div className="text-3xl font-bold text-[#14b8a6] mb-2">50+</div>
               <div className="text-sm text-slate-600">{t.professionalTemplatesCount || "Professional Templates"}</div>
             </div>
             <div className="p-6 rounded-2xl bg-slate-50">
-              <div className="text-3xl font-bold text-[#06b6d4] mb-2">99.9%</div>
+              <div className="text-3xl font-bold text-[#14b8a6] mb-2">99.9%</div>
               <div className="text-sm text-slate-600">{t.uptimeGuarantee || "Uptime Guarantee"}</div>
             </div>
           </div>

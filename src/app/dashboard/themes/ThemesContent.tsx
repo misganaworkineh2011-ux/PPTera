@@ -12,16 +12,16 @@ const GOOGLE_FONTS_URL = "https://fonts.googleapis.com/css2?family=Inter:wght@40
 
 // Curated color palettes - must match CustomThemeCreator and API
 const CURATED_PALETTES: Record<string, { background: string; backgroundAlt: string; text: string; heading: string; primary: string; accent: string }> = {
-  "clean-white": { background: "#ffffff", backgroundAlt: "#f8fafc", text: "#334155", heading: "#0f172a", primary: "#3b82f6", accent: "#06b6d4" },
+  "clean-white": { background: "#ffffff", backgroundAlt: "#f8fafc", text: "#334155", heading: "#0f172a", primary: "#14b8a6", accent: "#14b8a6" },
   "soft-cream": { background: "#fefce8", backgroundAlt: "#fef9c3", text: "#713f12", heading: "#422006", primary: "#ca8a04", accent: "#eab308" },
-  "elegant-noir": { background: "#0a0a0b", backgroundAlt: "#1a1a1d", text: "#e4e4e7", heading: "#fafafa", primary: "#f59e0b", accent: "#6366f1" },
-  "midnight-blue": { background: "#0f172a", backgroundAlt: "#1e293b", text: "#cbd5e1", heading: "#f1f5f9", primary: "#3b82f6", accent: "#06b6d4" },
+  "elegant-noir": { background: "#0a0a0b", backgroundAlt: "#1a1a1d", text: "#e4e4e7", heading: "#fafafa", primary: "#f59e0b", accent: "#10b981" },
+  "midnight-blue": { background: "#0f172a", backgroundAlt: "#1e293b", text: "#cbd5e1", heading: "#f1f5f9", primary: "#14b8a6", accent: "#14b8a6" },
   "forest-green": { background: "#052e16", backgroundAlt: "#14532d", text: "#bbf7d0", heading: "#dcfce7", primary: "#22c55e", accent: "#4ade80" },
   "ocean-depths": { background: "#0c4a6e", backgroundAlt: "#075985", text: "#bae6fd", heading: "#e0f2fe", primary: "#0ea5e9", accent: "#38bdf8" },
   "sunset-warm": { background: "#fff7ed", backgroundAlt: "#ffedd5", text: "#9a3412", heading: "#7c2d12", primary: "#f97316", accent: "#fb923c" },
   "rose-garden": { background: "#fff1f2", backgroundAlt: "#ffe4e6", text: "#9f1239", heading: "#881337", primary: "#f43f5e", accent: "#fb7185" },
-  "purple-haze": { background: "#2e1065", backgroundAlt: "#4c1d95", text: "#e9d5ff", heading: "#f3e8ff", primary: "#a855f7", accent: "#c084fc" },
-  "cyber-neon": { background: "#020617", backgroundAlt: "#0f172a", text: "#22d3ee", heading: "#67e8f9", primary: "#06b6d4", accent: "#f0abfc" },
+  "purple-haze": { background: "#2e1065", backgroundAlt: "#4c1d95", text: "#e9d5ff", heading: "#f3e8ff", primary: "#10b981", accent: "#c084fc" },
+  "cyber-neon": { background: "#020617", backgroundAlt: "#0f172a", text: "#2dd4bf", heading: "#5eead4", primary: "#14b8a6", accent: "#f0abfc" },
   "corporate-gray": { background: "#f8fafc", backgroundAlt: "#f1f5f9", text: "#475569", heading: "#1e293b", primary: "#64748b", accent: "#94a3b8" },
   "warm-earth": { background: "#faf5f0", backgroundAlt: "#f5ebe0", text: "#78350f", heading: "#451a03", primary: "#b45309", accent: "#d97706" },
 };
@@ -123,8 +123,8 @@ export default function ThemesContent({ initialThemes, onCreateClick }: ThemesCo
       backgroundAlt: "#f8fafc",
       text: "#334155",
       heading: "#0f172a",
-      primary: "#3b82f6",
-      accent: "#06b6d4",
+      primary: "#14b8a6",
+      accent: "#14b8a6",
     };
     
     // First try custom colors
@@ -252,7 +252,7 @@ export default function ThemesContent({ initialThemes, onCreateClick }: ThemesCo
           {themes.length === 0 ? (
             <div className="flex h-[400px] flex-col items-center justify-center rounded-[32px] border-2 border-dashed border-slate-200/60 dark:border-zinc-800/60 bg-slate-50/50 dark:bg-zinc-900/50 text-center px-4">
               <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white dark:bg-zinc-800 shadow-lg ring-1 ring-slate-900/5 dark:ring-0">
-                <Palette size={28} className="text-[#06b6d4]" />
+                <Palette size={28} className="text-[#14b8a6]" />
               </div>
               <h3 className="mb-2 text-lg font-bold text-slate-900 dark:text-white">
                 {t.noCustomThemes || "No custom themes yet"}
@@ -273,11 +273,11 @@ export default function ThemesContent({ initialThemes, onCreateClick }: ThemesCo
                 <div
                   key={theme.id}
                   onClick={() => setPreviewTheme(theme)}
-                  className="group relative flex flex-col overflow-hidden rounded-[20px] border border-slate-200/80 shadow-[0_4px_24px_rgba(0,0,0,0.06)] ring-1 ring-slate-900/5 dark:ring-0 dark:border-white/10 dark:shadow-none bg-white transition-all duration-300 hover:border-[#06b6d4]/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 cursor-pointer dark:bg-zinc-950"
+                  className="group relative flex flex-col overflow-hidden rounded-[20px] border border-slate-200/80 shadow-[0_4px_24px_rgba(0,0,0,0.06)] ring-1 ring-slate-900/5 dark:ring-0 dark:border-white/10 dark:shadow-none bg-white transition-all duration-300 hover:border-[#14b8a6]/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 cursor-pointer dark:bg-zinc-950"
                 >
                   {/* Custom badge */}
                   <div className="absolute top-3 left-3 z-10">
-                    <span className="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 px-2 py-0.5 text-xs font-bold text-white shadow-sm">
+                    <span className="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-emerald-500 to-pink-500 px-2 py-0.5 text-xs font-bold text-white shadow-sm">
                       ✨ Custom
                     </span>
                   </div>
@@ -344,7 +344,7 @@ export default function ThemesContent({ initialThemes, onCreateClick }: ThemesCo
                             e.stopPropagation();
                             setActiveMenu(activeMenu === theme.id ? null : theme.id);
                           }}
-                          className="text-slate-400 hover:text-[#06b6d4] dark:text-zinc-500 dark:hover:text-[#06b6d4] transition-colors"
+                          className="text-slate-400 hover:text-[#14b8a6] dark:text-zinc-500 dark:hover:text-[#14b8a6] transition-colors"
                         >
                           <MoreHorizontal size={18} />
                         </button>
@@ -394,7 +394,7 @@ export default function ThemesContent({ initialThemes, onCreateClick }: ThemesCo
                 <div
                   key={theme.id}
                   onClick={() => setPreviewTheme(theme)}
-                  className="group flex items-center gap-5 rounded-[20px] border border-slate-200/80 shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] ring-1 ring-slate-900/5 dark:ring-0 dark:border-white/10 dark:shadow-none bg-white transition-all duration-300 hover:border-[#06b6d4]/50 hover:-translate-y-0.5 p-4 dark:bg-zinc-950 cursor-pointer"
+                  className="group flex items-center gap-5 rounded-[20px] border border-slate-200/80 shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] ring-1 ring-slate-900/5 dark:ring-0 dark:border-white/10 dark:shadow-none bg-white transition-all duration-300 hover:border-[#14b8a6]/50 hover:-translate-y-0.5 p-4 dark:bg-zinc-950 cursor-pointer"
                 >
                   {/* Theme Preview - mini slide */}
                   <div 
@@ -432,8 +432,8 @@ export default function ThemesContent({ initialThemes, onCreateClick }: ThemesCo
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate group-hover:text-[#06b6d4] transition-colors">{theme.name}</h3>
-                      <span className="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 px-2 py-0.5 text-[9px] font-bold tracking-wide text-white uppercase">
+                      <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate group-hover:text-[#14b8a6] transition-colors">{theme.name}</h3>
+                      <span className="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-emerald-500 to-pink-500 px-2 py-0.5 text-[9px] font-bold tracking-wide text-white uppercase">
                         ✨ Custom
                       </span>
                     </div>
@@ -447,7 +447,7 @@ export default function ThemesContent({ initialThemes, onCreateClick }: ThemesCo
                         e.stopPropagation();
                         setActiveMenu(activeMenu === theme.id ? null : theme.id);
                       }}
-                      className="p-2 rounded-xl text-slate-400 hover:text-[#06b6d4] hover:bg-[#06b6d4]/10 dark:text-zinc-500 dark:hover:text-[#06b6d4] transition-colors"
+                      className="p-2 rounded-xl text-slate-400 hover:text-[#14b8a6] hover:bg-[#14b8a6]/10 dark:text-zinc-500 dark:hover:text-[#14b8a6] transition-colors"
                     >
                       <MoreHorizontal size={20} />
                     </button>
@@ -548,8 +548,8 @@ function ThemePreviewModal({ theme, onClose }: { theme: ThemeData; onClose: () =
       backgroundAlt: "#f8fafc",
       text: "#334155",
       heading: "#0f172a",
-      primary: "#3b82f6",
-      accent: "#06b6d4",
+      primary: "#14b8a6",
+      accent: "#14b8a6",
     };
     
     if (theme.colors.custom && theme.colors.custom.background) {
@@ -614,7 +614,7 @@ function ThemePreviewModal({ theme, onClose }: { theme: ThemeData; onClose: () =
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
           <div>
-            <h2 className="text-xl font-bold text-[#1e3a8a]">{theme.name}</h2>
+            <h2 className="text-xl font-bold text-[#0f766e]">{theme.name}</h2>
             <p className="text-sm text-slate-500">Theme Preview • Shape: {cardStyle}</p>
           </div>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100">

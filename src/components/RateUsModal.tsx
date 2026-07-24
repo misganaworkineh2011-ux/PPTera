@@ -205,7 +205,7 @@ export function RateUsModal({ onClose, theme }: RateUsModalProps) {
               minLength={5}
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent"
+              className="w-full px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-[#14b8a6] focus:border-transparent"
               style={{ 
                 backgroundColor: colors.inputBg,
                 borderColor: colors.border,
@@ -223,7 +223,7 @@ export function RateUsModal({ onClose, theme }: RateUsModalProps) {
               rows={3}
               value={formData.content}
               onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-[#06b6d4] focus:border-transparent resize-none"
+              className="w-full px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-[#14b8a6] focus:border-transparent resize-none"
               style={{ 
                 backgroundColor: colors.inputBg,
                 borderColor: colors.border,
@@ -256,7 +256,7 @@ export function RateUsModal({ onClose, theme }: RateUsModalProps) {
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] text-white rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 transition"
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#0f766e] to-[#14b8a6] text-white rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 transition"
             >
               {submitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

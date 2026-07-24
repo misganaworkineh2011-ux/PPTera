@@ -46,10 +46,10 @@ export default function DashboardStickyHeader({
         if (sticky) {
           setStickyTitleContent(
             <>
-              <div className="flex h-7 w-7 lg:h-8 lg:w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
+              <div className="flex h-7 w-7 lg:h-8 lg:w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#0f766e] to-[#14b8a6] text-white shadow-md">
                 {stickyIcon}
               </div>
-              <h1 className="text-lg lg:text-xl font-bold tracking-tight text-[#1e3a8a] dark:text-white whitespace-nowrap">
+              <h1 className="text-lg lg:text-xl font-bold tracking-tight text-[#0f766e] dark:text-white whitespace-nowrap">
                 {stickyTitle}
               </h1>
             </>
@@ -87,10 +87,10 @@ export default function DashboardStickyHeader({
         }`}
       >
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
+          <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#0f766e] to-[#14b8a6] text-white shadow-md">
             {icon}
           </div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[#1e3a8a] dark:text-white">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[#0f766e] dark:text-white">
             {title}
           </h1>
         </div>

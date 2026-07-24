@@ -23,11 +23,11 @@ export default function BillingLoading() {
       <div className="max-w-4xl mx-auto space-y-6 py-6">
         {/* Header - static */}
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#06b6d4] text-white shadow-md">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#0f766e] to-[#14b8a6] text-white shadow-md">
             <CreditCard size={22} />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-[#1e3a8a] dark:text-white">Billing</h1>
+            <h1 className="text-xl font-semibold text-[#0f766e] dark:text-white">Billing</h1>
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
               Manage your subscription and credits
             </p>
@@ -38,8 +38,8 @@ export default function BillingLoading() {
         <div className="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-br from-cyan-500/10 to-blue-900/10 dark:from-cyan-500/20 dark:to-blue-900/20 rounded-lg">
-                <CreditCard className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
+              <div className="p-2 bg-gradient-to-br from-teal-500/10 to-blue-900/10 dark:from-teal-500/20 dark:to-blue-900/20 rounded-lg">
+                <CreditCard className="h-5 w-5 text-teal-600 dark:text-teal-400" />
               </div>
               <div>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">Current Plan</p>
@@ -104,7 +104,7 @@ export default function BillingLoading() {
         {/* Quick Actions - static */}
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="flex items-center gap-3 p-4 bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700">
-            <TrendingUp className="h-5 w-5 text-cyan-500" />
+            <TrendingUp className="h-5 w-5 text-teal-500" />
             <div className="flex-1">
               <p className="text-sm font-medium text-zinc-900 dark:text-white">Upgrade</p>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">More credits</p>

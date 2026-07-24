@@ -300,7 +300,7 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
     <section className="relative min-h-[600px] h-auto lg:h-[95vh] flex items-center justify-center overflow-hidden">
       {/* Hero halo over the global atmosphere */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute top-[-120px] left-1/2 -translate-x-1/2 h-[420px] w-[720px] rounded-full bg-violet-600/[0.14] blur-[130px]" />
+        <div className="absolute top-[-120px] left-1/2 -translate-x-1/2 h-[420px] w-[720px] rounded-full bg-emerald-600/[0.14] blur-[130px]" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8 w-full pt-24 pb-12 lg:py-20">
@@ -310,8 +310,8 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
             {/* Eyebrow badge */}
             <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 shadow-sm backdrop-blur">
               <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-500 opacity-60" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-gradient-to-r from-violet-500 to-cyan-400" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-teal-500 opacity-60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400" />
               </span>
               <span className="text-[13px] font-semibold tracking-wide text-slate-300">
                 AI presentation studio
@@ -320,7 +320,7 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.08] mb-6">
               {t.heroTitle} <br />
-              <span className="bg-gradient-to-r from-violet-400 via-sky-300 to-cyan-300 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-emerald-400 via-sky-300 to-teal-300 bg-clip-text text-transparent">
                 {t.heroSubtitle}
               </span>
             </h1>
@@ -331,10 +331,10 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
 
             {/* Prompt Box synced with cards — glass card with gradient ring */}
             <div className="relative w-full mb-8 group">
-              <div className="absolute -inset-[1.5px] rounded-2xl bg-gradient-to-r from-violet-500/50 via-cyan-400/50 to-fuchsia-500/40 opacity-70 blur-[1.5px] transition-opacity group-hover:opacity-100" />
+              <div className="absolute -inset-[1.5px] rounded-2xl bg-gradient-to-r from-emerald-500/50 via-teal-400/50 to-teal-500/40 opacity-70 blur-[1.5px] transition-opacity group-hover:opacity-100" />
               <div className="relative w-full rounded-2xl bg-[#0b1120]/90 border border-white/10 p-5 shadow-[0_16px_50px_-16px_rgba(0,0,0,0.6)] backdrop-blur">
                 <div className="flex items-center gap-2 mb-3 border-b border-white/10 pb-3">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-violet-500 to-cyan-400">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-emerald-500 to-teal-400">
                     <Command className="w-3.5 h-3.5 text-white" />
                   </span>
                   <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
@@ -348,7 +348,7 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
                   <p className="text-slate-100 font-medium text-lg leading-relaxed">
                     {typedText}
                     {isTyping && (
-                      <span className="inline-block w-0.5 h-5 ml-1 bg-gradient-to-b from-violet-400 to-cyan-400 animate-pulse align-middle" />
+                      <span className="inline-block w-0.5 h-5 ml-1 bg-gradient-to-b from-emerald-400 to-teal-400 animate-pulse align-middle" />
                     )}
                   </p>
                 </div>
@@ -360,7 +360,7 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
                 <div style={{ cursor: "url('/pointinghand.svg') 12 8, pointer" }}>
                   <LoadingLink
                     href="/sign-in"
-                    className="group inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-violet-600 to-cyan-500 rounded-xl transition-all shadow-lg shadow-cyan-500/25 hover:shadow-xl hover:shadow-cyan-500/40 hover:brightness-110"
+                    className="group inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-emerald-600 to-teal-500 rounded-xl transition-all shadow-lg shadow-teal-500/25 hover:shadow-xl hover:shadow-teal-500/40 hover:brightness-110"
                   >
                     {t.getStartedBtn || "Get Started"}
                     <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-0.5" />
@@ -389,7 +389,7 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
                 { value: "< 1 min", label: "Prompt to full deck" },
               ].map(({ value, label }) => (
                 <div key={label} className="flex flex-col">
-                  <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-violet-400 to-cyan-300 bg-clip-text text-transparent">
+                  <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">
                     {value}
                   </span>
                   <span className="text-[12.5px] font-medium text-slate-500">{label}</span>
@@ -465,7 +465,7 @@ export function HeroSection({ t, currentLang }: HeroSectionProps) {
           {/* Right Column - Full Height Card Scroller (hidden on mobile) */}
           <div className="relative hidden lg:flex items-center justify-center h-full">
             {/* Glow bed behind the scroller */}
-            <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[70%] rounded-[48px] bg-gradient-to-b from-violet-500/20 via-cyan-400/15 to-fuchsia-500/20 blur-[70px]" />
+            <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[70%] rounded-[48px] bg-gradient-to-b from-emerald-500/20 via-teal-400/15 to-teal-500/20 blur-[70px]" />
             <div
               ref={containerRef}
               className={`relative w-full max-w-lg overflow-hidden select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}

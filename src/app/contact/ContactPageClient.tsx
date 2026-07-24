@@ -90,14 +90,14 @@ export function ContactPageClient({ currentLang }: ContactPageClientProps) {
       title: t.email || "Email",
       value: "pptmaster.app@gmail.com",
       description: t.emailDesc || "We'll respond within 24 hours",
-      color: "from-[#1e3a8a] to-[#06b6d4]",
+      color: "from-[#0f766e] to-[#14b8a6]",
     },
     {
       icon: MessageCircle,
       title: t.liveChat || "Live Chat",
       value: t.available247 || "Available 24/7",
       description: t.liveChatDesc || "Get instant help from our team",
-      color: "from-[#1e3a8a] to-[#06b6d4]",
+      color: "from-[#0f766e] to-[#14b8a6]",
     },
   ];
 
@@ -112,7 +112,7 @@ export function ContactPageClient({ currentLang }: ContactPageClientProps) {
 
         <div className="relative z-10 mx-auto max-w-5xl text-center">
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-4 py-2 backdrop-blur-sm animate-fade-in">
-            <MessageCircle className="h-4 w-4 text-[#06b6d4]" />
+            <MessageCircle className="h-4 w-4 text-[#14b8a6]" />
             <span className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
               {t.contactUs || "Contact Us"}
             </span>
@@ -144,7 +144,7 @@ export function ContactPageClient({ currentLang }: ContactPageClientProps) {
                 <h3 className="text-xl font-bold text-slate-900 mb-2">
                   {method.title}
                 </h3>
-                <p className="text-lg font-semibold text-[#06b6d4] mb-2">
+                <p className="text-lg font-semibold text-[#14b8a6] mb-2">
                   {method.value}
                 </p>
                 <p className="text-sm text-slate-600">
@@ -179,7 +179,7 @@ export function ContactPageClient({ currentLang }: ContactPageClientProps) {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     readOnly={!!user}
-                    className={`w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 ${user ? "bg-slate-50 text-slate-600 cursor-not-allowed" : ""}`}
+                    className={`w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#14b8a6] focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20 ${user ? "bg-slate-50 text-slate-600 cursor-not-allowed" : ""}`}
                     placeholder={t.yourName || "Your name"}
                   />
                 </div>
@@ -193,7 +193,7 @@ export function ContactPageClient({ currentLang }: ContactPageClientProps) {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     readOnly={!!user}
-                    className={`w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 ${user ? "bg-slate-50 text-slate-600 cursor-not-allowed" : ""}`}
+                    className={`w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#14b8a6] focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20 ${user ? "bg-slate-50 text-slate-600 cursor-not-allowed" : ""}`}
                     placeholder={t.yourEmail || "your@email.com"}
                   />
                 </div>
@@ -208,7 +208,7 @@ export function ContactPageClient({ currentLang }: ContactPageClientProps) {
                   required
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#14b8a6] focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20"
                   placeholder={t.messageSubject || "What's this about?"}
                 />
               </div>
@@ -221,7 +221,7 @@ export function ContactPageClient({ currentLang }: ContactPageClientProps) {
                   required
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value as typeof formData.category })}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 bg-white"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#14b8a6] focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20 bg-white"
                 >
                   <option value="general">General Inquiry</option>
                   <option value="support">Technical Support</option>
@@ -240,7 +240,7 @@ export function ContactPageClient({ currentLang }: ContactPageClientProps) {
                   rows={6}
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#06b6d4] focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 resize-none"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#14b8a6] focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20 resize-none"
                   placeholder={t.yourMessage || "Tell us more..."}
                 />
               </div>

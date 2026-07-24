@@ -81,12 +81,12 @@ export const LandingFooter = ({ currentLang }: LandingFooterProps) => {
                 placeholder="Enter your email"
                 required
                 disabled={loading}
-                className="flex-1 px-4 py-2 bg-white/5 border border-white/15 rounded-lg text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400/60 disabled:opacity-50"
+                className="flex-1 px-4 py-2 bg-white/5 border border-white/15 rounded-lg text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-teal-400/60 disabled:opacity-50"
               />
               <button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 bg-gradient-to-r from-violet-600 to-cyan-500 text-white text-sm font-medium rounded-lg hover:brightness-110 transition disabled:opacity-50"
+                className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-500 text-white text-sm font-medium rounded-lg hover:brightness-110 transition disabled:opacity-50"
               >
                 {loading ? "..." : t.subscribe}
               </button>

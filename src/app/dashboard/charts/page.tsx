@@ -355,7 +355,7 @@ export default function ChartsPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t.searchCharts || "Search charts..."}
-              className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 shadow-sm shadow-slate-200/50 dark:shadow-none focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 focus:border-[#06b6d4] transition-all"
+              className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 shadow-sm shadow-slate-200/50 dark:shadow-none focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20 focus:border-[#14b8a6] transition-all"
             />
           </div>
 
@@ -418,7 +418,7 @@ export default function ChartsPage() {
         {filteredCharts.length === 0 ? (
           <div className="flex h-[400px] flex-col items-center justify-center rounded-[32px] border-2 border-dashed border-slate-200/60 dark:border-zinc-800/60 bg-slate-50/50 dark:bg-zinc-900/50 text-center">
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white dark:bg-zinc-800 shadow-lg ring-1 ring-slate-900/5 dark:ring-0">
-              <BarChart3 size={28} className="text-[#06b6d4]" />
+              <BarChart3 size={28} className="text-[#14b8a6]" />
             </div>
             <h3 className="mb-2 text-lg font-bold text-slate-900 dark:text-white">
               {searchQuery ? (t.noChartsFound || "No charts found") : (t.noChartsYet || "No charts yet")}
@@ -443,7 +443,7 @@ export default function ChartsPage() {
           {filteredCharts.map((chart) => (
             <div
               key={chart.id}
-              className="group relative flex flex-col overflow-hidden rounded-[20px] border border-slate-200/80 shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] ring-1 ring-slate-900/5 dark:ring-0 dark:border-white/10 dark:shadow-none bg-white transition-all duration-300 hover:border-[#06b6d4]/50 hover:-translate-y-1 dark:bg-zinc-950"
+              className="group relative flex flex-col overflow-hidden rounded-[20px] border border-slate-200/80 shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] ring-1 ring-slate-900/5 dark:ring-0 dark:border-white/10 dark:shadow-none bg-white transition-all duration-300 hover:border-[#14b8a6]/50 hover:-translate-y-1 dark:bg-zinc-950"
             >
               {/* Chart Preview */}
               <div className="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 dark:from-neutral-800 dark:to-neutral-900">
@@ -454,19 +454,19 @@ export default function ChartsPage() {
                 <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/0 opacity-0 transition-all group-hover:bg-black/40 group-hover:opacity-100">
                   <button
                     onClick={() => handleEditChart(chart.id)}
-                    className="rounded-full bg-white p-2.5 text-slate-700 shadow-lg transition-transform hover:scale-110 hover:bg-[#06b6d4] hover:text-white"
+                    className="rounded-full bg-white p-2.5 text-slate-700 shadow-lg transition-transform hover:scale-110 hover:bg-[#14b8a6] hover:text-white"
                   >
                     <Edit3 size={16} />
                   </button>
                   <button
                     onClick={() => handleDuplicateChart(chart.id)}
-                    className="rounded-full bg-white p-2.5 text-slate-700 shadow-lg transition-transform hover:scale-110 hover:bg-[#06b6d4] hover:text-white"
+                    className="rounded-full bg-white p-2.5 text-slate-700 shadow-lg transition-transform hover:scale-110 hover:bg-[#14b8a6] hover:text-white"
                   >
                     <Copy size={16} />
                   </button>
                 </div>
                 {/* Chart type badge */}
-                <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-[#06b6d4] shadow-sm backdrop-blur-sm dark:bg-neutral-900/90">
+                <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-[#14b8a6] shadow-sm backdrop-blur-sm dark:bg-neutral-900/90">
                   {getChartIcon(chart.type)}
                   <span className="capitalize">{chart.type}</span>
                 </div>
@@ -487,7 +487,7 @@ export default function ChartsPage() {
                             if (e.key === "Enter") handleRename();
                             if (e.key === "Escape") cancelRename();
                           }}
-                          className="flex-1 rounded border border-[#06b6d4] bg-white px-2 py-0.5 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 dark:bg-neutral-800 dark:text-white"
+                          className="flex-1 rounded border border-[#14b8a6] bg-white px-2 py-0.5 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20 dark:bg-neutral-800 dark:text-white"
                         />
                         <button
                           onClick={handleRename}
@@ -504,7 +504,7 @@ export default function ChartsPage() {
                       </div>
                     ) : (
                       <h3
-                        className="mb-1 truncate text-sm font-bold text-slate-800 dark:text-white cursor-pointer hover:text-[#06b6d4] transition-colors"
+                        className="mb-1 truncate text-sm font-bold text-slate-800 dark:text-white cursor-pointer hover:text-[#14b8a6] transition-colors"
                         title="Click to rename"
                         onClick={() => startRename(chart.id, chart.title || "Untitled Chart")}
                       >
@@ -567,14 +567,14 @@ export default function ChartsPage() {
           {filteredCharts.map((chart) => (
             <div
               key={chart.id}
-              className="group flex items-center gap-5 rounded-[20px] border border-slate-200/80 shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] ring-1 ring-slate-900/5 dark:ring-0 dark:border-white/10 dark:shadow-none bg-white transition-all duration-300 hover:border-[#06b6d4]/50 p-4 dark:bg-zinc-950 cursor-pointer"
+              className="group flex items-center gap-5 rounded-[20px] border border-slate-200/80 shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] ring-1 ring-slate-900/5 dark:ring-0 dark:border-white/10 dark:shadow-none bg-white transition-all duration-300 hover:border-[#14b8a6]/50 p-4 dark:bg-zinc-950 cursor-pointer"
             >
               <div className="h-20 w-32 flex-shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-slate-50 to-slate-100 p-2 dark:from-neutral-800 dark:to-neutral-900">
                 <InteractiveChart chart={chart} compact={true} interactive={false} />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="mb-1.5 flex items-center gap-2">
-                  <div className="flex items-center gap-1.5 rounded-full bg-[#06b6d4]/10 px-2 py-0.5 text-xs font-medium text-[#06b6d4]">
+                  <div className="flex items-center gap-1.5 rounded-full bg-[#14b8a6]/10 px-2 py-0.5 text-xs font-medium text-[#14b8a6]">
                     {getChartIcon(chart.type)}
                     <span className="capitalize">{chart.type}</span>
                   </div>
@@ -590,7 +590,7 @@ export default function ChartsPage() {
                         if (e.key === "Enter") handleRename();
                         if (e.key === "Escape") cancelRename();
                       }}
-                      className="flex-1 max-w-xs rounded border border-[#06b6d4] bg-white px-2 py-1 text-base font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#06b6d4]/20 dark:bg-neutral-800 dark:text-white"
+                      className="flex-1 max-w-xs rounded border border-[#14b8a6] bg-white px-2 py-1 text-base font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/20 dark:bg-neutral-800 dark:text-white"
                     />
                     <button
                       onClick={handleRename}
@@ -607,7 +607,7 @@ export default function ChartsPage() {
                   </div>
                 ) : (
                   <h3
-                    className="mb-1 truncate text-base font-bold text-slate-800 dark:text-white cursor-pointer hover:text-[#06b6d4] transition-colors"
+                    className="mb-1 truncate text-base font-bold text-slate-800 dark:text-white cursor-pointer hover:text-[#14b8a6] transition-colors"
                     onClick={() => startRename(chart.id, chart.title || "Untitled Chart")}
                   >
                     {chart.title || "Untitled Chart"}
@@ -620,21 +620,21 @@ export default function ChartsPage() {
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => startRename(chart.id, chart.title || "Untitled Chart")}
-                  className="rounded-lg p-2.5 text-slate-400 transition-colors hover:bg-[#06b6d4]/10 hover:text-[#06b6d4]"
+                  className="rounded-lg p-2.5 text-slate-400 transition-colors hover:bg-[#14b8a6]/10 hover:text-[#14b8a6]"
                   title="Rename"
                 >
                   <Pencil size={18} />
                 </button>
                 <button
                   onClick={() => handleEditChart(chart.id)}
-                  className="rounded-lg p-2.5 text-slate-400 transition-colors hover:bg-[#06b6d4]/10 hover:text-[#06b6d4]"
+                  className="rounded-lg p-2.5 text-slate-400 transition-colors hover:bg-[#14b8a6]/10 hover:text-[#14b8a6]"
                   title="Edit"
                 >
                   <Edit3 size={18} />
                 </button>
                 <button
                   onClick={() => handleDuplicateChart(chart.id)}
-                  className="rounded-lg p-2.5 text-slate-400 transition-colors hover:bg-[#06b6d4]/10 hover:text-[#06b6d4]"
+                  className="rounded-lg p-2.5 text-slate-400 transition-colors hover:bg-[#14b8a6]/10 hover:text-[#14b8a6]"
                   title="Duplicate"
                 >
                   <Copy size={18} />
